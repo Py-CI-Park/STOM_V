@@ -635,6 +635,15 @@ class LoopConfig:
     #   _generate_pair 의 generate_strategy 호출부에서 이 토글을 전달). 기본 OFF면
     #   어떤 코드 경로도 게이트를 평가하지 않아 동작이 기존과 byte-동일하다(하위호환).
     principle_gate_enabled: bool = False
+    # --- CL-R05/R06 review fix (G003): declared evidence-ledger feature flag ---
+    # evidence_ledger_enabled: canonical evidence ledger (CandidatePassport/
+    #   FeedbackEnvelope/FeedbackConsumption/RunReceipt append-only wiring in
+    #   controller/loop.py) 기동 토글. 기본 OFF면 evidence_store 관련 코드 경로
+    #   전체가 스킵되어 동작이 기존과 byte-동일하다(하위호환). 이전에는 config.py에
+    #   선언되지 않은 채 loop.py에서 getattr(config, "evidence_ledger_enabled", False)로
+    #   ad-hoc 읽혔다 — 오타(예: evidence_ledger_enable)가 조용히 OFF로 흡수되는 것을
+    #   막기 위해 여기 정식 필드로 선언한다(R07 활성화 전 CL-R05/R06 리뷰 시정).
+    evidence_ledger_enabled: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

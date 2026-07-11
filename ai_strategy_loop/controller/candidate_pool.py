@@ -213,6 +213,19 @@ def select_official_candidate(
     # Round shape is valid: rank deterministically and select exactly one.
     ranked = sorted(entries, key=_sort_key)
     winner = ranked[0]
+
+    # G003 CL-R06 review fix: a structurally-invalid top rank must never be
+    # promoted to official — an all-invalid round should spend zero official
+    # quota rather than crown the "least-bad" invalid candidate.
+    if not winner['valid']:
+        pool_blockers.append('no_structurally_valid_candidate')
+        for entry in ranked:
+            reasons = list(pool_blockers)
+            if not entry['valid']:
+                reasons.append('not_structurally_valid')
+            rejected.append({'candidate': entry['proposal'], 'reasons': reasons})
+        return {'selected': None, 'rejected': rejected, 'pool_blockers': pool_blockers}
+
     selected = winner['proposal']
 
     for entry in ranked[1:]:

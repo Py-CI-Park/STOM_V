@@ -216,3 +216,42 @@ def test_selector_performs_zero_evaluator_or_provider_calls(monkeypatch):
     )
 
     assert calls == []
+
+
+def test_all_structurally_invalid_round_blocks_selection_with_no_promotion():
+    """G003 CL-R06 review fix: if every proposal in the round is structurally
+    invalid, the pool must NOT promote the top-ranked (least-bad) invalid
+    candidate — selected stays None and a dedicated blocker is reported, so
+    zero official quota is spent on an invalid round."""
+    proposals = _base_round()
+    for proposal in proposals:
+        # empty expression is never structurally valid (validate_b_only never
+        # even runs — _is_structurally_valid short-circuits on blank input)
+        # and never produces a fingerprint, so no semantic-duplicate blocker
+        # is spuriously triggered alongside it.
+        proposal['expression'] = ''
+
+    result = select_official_candidate(
+        proposals, timeframe=TIMEFRAME, methodology_version=METHODOLOGY_VERSION,
+    )
+
+    assert result['selected'] is None
+    assert 'no_structurally_valid_candidate' in result['pool_blockers']
+    assert len(result['rejected']) == 4
+    for entry in result['rejected']:
+        assert 'no_structurally_valid_candidate' in entry['reasons']
+        assert 'not_structurally_valid' in entry['reasons']
+
+
+def test_normal_valid_round_still_selects_exactly_one_official_candidate():
+    """Sanity companion to the all-invalid case: an ordinary valid round is
+    unaffected by the G003 fix and still promotes exactly one candidate."""
+    proposals = _base_round()
+    result = select_official_candidate(
+        proposals, timeframe=TIMEFRAME, methodology_version=METHODOLOGY_VERSION,
+    )
+
+    assert result['pool_blockers'] == []
+    assert result['selected'] is not None
+    assert 'no_structurally_valid_candidate' not in result['pool_blockers']
+    assert len(result['rejected']) == 3

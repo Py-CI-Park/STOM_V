@@ -199,6 +199,72 @@ class TestEnvelopeConsumptionChain:
 
         st.close()
 
+
+    def test_gen0_buy_and_sell_feedback_both_consumed_by_gen1(self, monkeypatch, tmp_path):
+        """G003 CL-R05 review fix: a generation that emits BOTH buy-side and
+        sell-side autopsy feedback (two envelopes) must have BOTH consumed by
+        the next generation's target passport — not just the newest one."""
+        rid = "fbrun2"
+        strat_db = _seed_strategy_db(
+            tmp_path,
+            buy_codes={f"AILOOP_{rid}_g0_buy": "R1 > 0", f"AILOOP_{rid}_g1_buy": "R2 > 0",
+                       f"AILOOP_{rid}_g2_buy": "R3 > 0"},
+            sell_codes={f"AILOOP_{rid}_g0_sell": "S1 > 0", f"AILOOP_{rid}_g1_sell": "S2 > 0",
+                        f"AILOOP_{rid}_g2_sell": "S3 > 0"},
+        )
+        monkeypatch.setattr(L.bootstrap, "LOOP_DB_STRATEGY", strat_db)
+        _neutralize_common(monkeypatch)
+
+        captured = []
+        _install_ok_generation_pipeline(monkeypatch, captured, feedback_text="unused")
+        # override the pipeline's feedback builder to emit BOTH sides every gen.
+        monkeypatch.setattr(
+            L, "_build_feedback",
+            lambda *a, **k: ("LOSS: buy avoid pattern", "LOSS: sell avoid pattern", None),
+        )
+
+        config = _base_config(max_generations=2)
+        config.evidence_ledger_enabled = True
+        st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
+        summary = L.run_loop(config, run_id=rid, state=st)
+        assert summary["generations"] == 2
+
+        ev = EvidenceStore(st)
+        passports = ev.passports_for_run(rid)
+        gen0 = next(p for p in passports if p["gen_no"] == 0)
+        gen1 = next(p for p in passports if p["gen_no"] == 1)
+
+        gen0_envelopes = ev.feedback_for_passport(gen0["passport_id"])
+        assert len(gen0_envelopes) == 2
+        assert {e["side"] for e in gen0_envelopes} == {"buy", "sell"}
+        gen0_envelope_ids = {e["feedback_id"] for e in gen0_envelopes}
+
+        # BOTH of gen0's envelopes must be consumed by gen1's target passport.
+        consumption_rows = st._con.execute(
+            "SELECT feedback_id, target_passport_id FROM feedback_consumptions"
+        ).fetchall()
+        assert len(consumption_rows) == 2
+        assert {row[0] for row in consumption_rows} == gen0_envelope_ids
+        assert all(row[1] == gen1["passport_id"] for row in consumption_rows)
+
+        # none left unconsumed after gen1.
+        unconsumed_ids = {row["feedback_id"] for row in ev.unconsumed_feedback(rid)}
+        assert unconsumed_ids.isdisjoint(gen0_envelope_ids)
+
+        # resume safety: extending the run must not double-consume gen0's envelopes.
+        config3 = _base_config(max_generations=3)
+        config3.evidence_ledger_enabled = True
+        summary3 = L.run_loop(config3, run_id=rid, state=st)
+        assert summary3["generations"] == 3
+        rows_after_resume = st._con.execute(
+            "SELECT feedback_id, target_passport_id FROM feedback_consumptions"
+        ).fetchall()
+        gen0_rows_after_resume = [r for r in rows_after_resume if r[0] in gen0_envelope_ids]
+        assert len(gen0_rows_after_resume) == 2
+        assert all(r[1] == gen1["passport_id"] for r in gen0_rows_after_resume)
+
+        st.close()
+
     def test_rendered_string_without_consumption_row_is_not_learning_proof(self, monkeypatch, tmp_path):
         """봉투(rendered_text)만 있고 소비 행이 없으면 학습 증거로 인정하지 않는다 —
         gen0 하나짜리 run은 다음 세대가 없어 소비가 생기지 않아야 한다."""

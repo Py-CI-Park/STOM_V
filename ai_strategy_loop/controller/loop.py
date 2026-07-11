@@ -1394,19 +1394,30 @@ def run_loop(
             #   렌더 텍스트는 손대지 않는다 — id만 추가로 들고 간다. 둘 다 비어 있으면
             #   (resume 직후 프로세스 재시작으로 로컬 변수가 초기화된 경우) 영속 봉투의
             #   rendered_text로 복원한다(resume restoration).
-            evidence_feedback_id_to_consume: Optional[str] = None
+            # G003 CL-R05 review fix: 세대 전환마다 아직 소비되지 않은 "모든" 봉투를
+            #   소비 후보로 잡는다(이전에는 최신 1건만 잡아, buy+sell 두 봉투가 함께
+            #   쌓인 세대에서 buy측이 영구히 미소비로 남았다). resume restoration은
+            #   여전히 각 side당 최초 1건의 rendered_text만 복원한다(로컬 변수 초기화
+            #   시에만 개입 — 정상 흐름에선 next_autopsy_feedback/next_sell_feedback가
+            #   이미 채워져 있어 무영향, byte-동일).
+            evidence_feedback_ids_to_consume: List[str] = []
             if evidence_enabled and evidence_store is not None:
                 _evidence_unconsumed = _evidence_safe_unconsumed_feedback(evidence_store, rid)
                 if _evidence_unconsumed:
-                    _evidence_newest_fb = _evidence_unconsumed[-1]
-                    evidence_feedback_id_to_consume = _evidence_newest_fb.get("feedback_id")
+                    evidence_feedback_ids_to_consume = [
+                        _fb.get("feedback_id") for _fb in _evidence_unconsumed if _fb.get("feedback_id")
+                    ]
                     if next_autopsy_feedback is None and next_sell_feedback is None:
-                        _evidence_rendered = _evidence_newest_fb.get("rendered_text")
-                        if _evidence_rendered:
-                            if _evidence_newest_fb.get("side") == FeedbackSide.SELL.value:
-                                next_sell_feedback = _evidence_rendered
+                        for _evidence_fb in _evidence_unconsumed:
+                            _evidence_rendered = _evidence_fb.get("rendered_text")
+                            if not _evidence_rendered:
+                                continue
+                            if _evidence_fb.get("side") == FeedbackSide.SELL.value:
+                                if next_sell_feedback is None:
+                                    next_sell_feedback = _evidence_rendered
                             else:
-                                next_autopsy_feedback = _evidence_rendered
+                                if next_autopsy_feedback is None:
+                                    next_autopsy_feedback = _evidence_rendered
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
@@ -1537,23 +1548,27 @@ def run_loop(
                 if _evidence_safe_append_passport(evidence_store, _evidence_passport):
                     evidence_current_passport_id = _evidence_passport.passport_id
                     evidence_prev_passport_id = _evidence_passport.passport_id
-                    # CL-R05 todo11 — consumption proof: 오직 target passport가 실제로
-                    #   존재할 때만(패스포트 append 성공 직후) 소비를 남긴다. 생성/코드
-                    #   확보가 이 지점에 못 미치고 실패하면(위 continue 경로들) 소비를
-                    #   절대 남기지 않아, 자원(rid) resume 시 unconsumed_feedback(rid)가
-                    #   같은 봉투를 다시 내놓는다(재시도 안전, 이중 소비 없음 — 이미
-                    #   소비된 feedback_id는 NOT EXISTS 조건으로 제외됨).
-                    if evidence_feedback_id_to_consume:
+                    # G003 CL-R05 review fix: 오직 target passport가 실제로 존재할
+                    #   때만(패스포트 append 성공 직후) 소비를 남긴다. 생성/코드 확보가
+                    #   이 지점에 못 미치고 실패하면(위 continue 경로들) 소비를 절대
+                    #   남기지 않아, 자원(rid) resume 시 unconsumed_feedback(rid)가 같은
+                    #   봉투를 다시 내놓는다(재시도 안전, 이중 소비 없음 — 이미 소비된
+                    #   feedback_id는 NOT EXISTS 조건으로 제외됨). 이번 세대 전환에 걸린
+                    #   미소비 봉투 전부(예: buy+sell 동시 발생)에 대해 각각 개별
+                    #   FeedbackConsumption을 남긴다(consumption_id가 feedback_id를 포함해
+                    #   내용주소화되므로 서로 구별되고 멱등하다).
+                    if evidence_feedback_ids_to_consume:
                         _evidence_prompt_id = f"promptrec_{rid}_g{gen_no}"
-                        _evidence_safe_append_consumption(
-                            evidence_store,
-                            _evidence_build_consumption(
-                                evidence_feedback_id_to_consume,
-                                _evidence_prompt_id,
-                                evidence_current_passport_id,
-                            ),
-                            rid,
-                        )
+                        for _evidence_fb_id in evidence_feedback_ids_to_consume:
+                            _evidence_safe_append_consumption(
+                                evidence_store,
+                                _evidence_build_consumption(
+                                    _evidence_fb_id,
+                                    _evidence_prompt_id,
+                                    evidence_current_passport_id,
+                                ),
+                                rid,
+                            )
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
             bootstrap.ensure_loop_db_engine_compat()
