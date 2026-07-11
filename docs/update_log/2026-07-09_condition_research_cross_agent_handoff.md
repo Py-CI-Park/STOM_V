@@ -1,5 +1,7 @@
 # 2026-07-09 Condition Research Cross-Agent Handoff
 
+> **[최신 정본 우선]** 이 문서는 역사 기록으로 보존된다. 현재 정본 핸드오프는 `docs/update_log/2026-07-11_ai_condition_loop_canonical_rebuild_handoff.md`, 정본 설계는 `docs/research/condition_research/generated_conditions/lattice_v3_design_20260709/lattice_v3_design_spec_20260709.md`다. 아래 본문은 2026-07-09 기준 역사값이다.
+
 ## 0. Purpose
 
 This document is the first-read handoff for Codex, Claude, GJC, or any other AI code agent resuming the condition-research workflow in `C:/System_Trading/STOM/STOM_V.wt-dev`.

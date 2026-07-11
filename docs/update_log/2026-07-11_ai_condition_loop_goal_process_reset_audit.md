@@ -188,14 +188,16 @@ B_* 입력 데이터와 허용 근거
 
 현재 직접 진행 가능한 범위는 기존 V3 design-only 계획의 T0~T4뿐이다.
 
+> 정본 ID 매핑: 아래 페이지 번호는 정본 설계 spec `lattice_v3_design_spec_20260709.md`의 canonical ID로 대체됐다. P1/T0=CL-D0, P2/T1=CL-D1, P3/T2=CL-D2, P4/T3=CL-D3, P5/T4=CL-D4, P6=CL-R01..R06, P7·P8=CL-R04/R06 흡수, P9=CL-R07, P10=CL-R08/R09, P11=CL-R10. 최신 정본 핸드오프: `docs/update_log/2026-07-11_ai_condition_loop_canonical_rebuild_handoff.md`.
+
 | 페이지 | 작업 | 주요 산출물 | 완료 게이트 | 현재 금지 | 기대 효과 |
 |---:|---|---|---|---|---|
 | P0 | 본 목표·프로세스 점검 기록 | 이 문서 | 점검 결론과 범위가 커밋됨 | 실행 범위 확대 | 방향 재설정의 기준점 확보 |
-| P1 / T0 | Source Receipt & Scope Lock | `source_read_receipt_v3_design_20260709.json` | 필수 근거의 경로·해시·전체 읽기 확인 | 조건식 생성, DB, replay | 출처 누락과 서로 다른 사실 사용 방지 |
-| P2 / T1 | Failure Lesson Matrix | `lattice_v3_failure_lesson_matrix_20260709.md` | 576, repair, Plan D, V2 실패를 유형별 분리 | 탈락 후보 재해석, gate 완화로 구조 실패 은폐 | 반복 실패와 잘못된 원인 진단 감소 |
-| P3 / T2 | Canonical Design Specification | `lattice_v3_design_spec_20260709.md` | 목표·용어·단일 소유권·입력/제외 입력·후보 여권·data split·go/no-go 확정 | 실제 buy/sell 본문, 후보 JSON, DB 등록 | 문서와 코드가 따라야 할 단일 정본 확보 |
-| P4 / T3 | Evaluation Protocol & Gates | `lattice_v3_evaluation_protocol_20260709.md`, `lattice_v3_next_command_20260709.md` | 단계별 사전 등록·stop rule·다음 dry-run 명령 확정 | apply, replay, OOS, Plan D, portfolio | 과적합과 단계 건너뛰기 차단 |
-| P5 / T4 | Design Handoff & Verification | V3 design-only handoff, 검증 receipt | 산출물 존재·금지 작업 부재·보호 경로 청결 확인 | 신규 실행 자동 개방 | 다음 세션이 같은 기준에서 안전하게 재개 |
+| CL-D0 (구 P1/T0) | Source Receipt & Scope Lock | `source_read_receipt_v3_design_20260709.json` | 필수 근거의 경로·해시·전체 읽기 확인 | 조건식 생성, DB, replay | 출처 누락과 서로 다른 사실 사용 방지 |
+| CL-D1 (구 P2/T1) | Failure Lesson Matrix | `lattice_v3_failure_lesson_matrix_20260709.md` | 576, repair, Plan D, V2 실패를 유형별 분리 | 탈락 후보 재해석, gate 완화로 구조 실패 은폐 | 반복 실패와 잘못된 원인 진단 감소 |
+| CL-D2 (구 P3/T2) | Canonical Design Specification | `lattice_v3_design_spec_20260709.md` | 목표·용어·단일 소유권·입력/제외 입력·후보 여권·data split·go/no-go 확정 | 실제 buy/sell 본문, 후보 JSON, DB 등록 | 문서와 코드가 따라야 할 단일 정본 확보 |
+| CL-D3 (구 P4/T3) | Evaluation Protocol & Gates | `lattice_v3_evaluation_protocol_20260709.md`, `lattice_v3_next_command_20260709.md` | 단계별 사전 등록·stop rule·다음 dry-run 명령 확정 | apply, replay, OOS, Plan D, portfolio | 과적합과 단계 건너뛰기 차단 |
+| CL-D4 (구 P5/T4) | Design Handoff & Verification | V3 design-only handoff, 검증 receipt | 산출물 존재·금지 작업 부재·보호 경로 청결 확인 | 신규 실행 자동 개방 | 다음 세션이 같은 기준에서 안전하게 재개 |
 
 현재 안전한 다음 명령은 기존 핸드오프와 동일하다.
 
@@ -211,12 +213,12 @@ $start-work docs/research/condition_research/plans/lattice_condition_generation_
 
 | 페이지 | 미래 작업 | 선행 조건 | 핵심 검증 | 완료 후 열리는 것 | 현재 상태 |
 |---:|---|---|---|---|---|
-| P6 | Canonical Loop Code Integration | P3 설계와 P4 프로토콜 승인 | controller가 research evidence·부검 ID·Candidate Passport를 실제 다음 생성에 전달하는 통합 테스트 | 후보 metadata dry-run 계획 | 잠금 |
-| P7 | Candidate Metadata & Body Static Dry-Run | P6 통합 증거, 사전 등록 quota | 의미 중복, lineage, syntax, buy/sell 분리, 금지 입력 검사 | DB registration dry-run | 잠금 |
-| P8 | DB Registration Dry-Run | P7 정적 게이트 통과 | 실제 DB 변경 없이 이름·충돌·INSERT 대상·rollback 범위 확인 | 명시적 INSERT 승인 요청 가능 | 잠금 |
-| P9 | Bounded Mini Closed-Loop Replay | P8 완료와 사용자 명시 범위, INSERT-only 원칙 | min 중심 2~3세대, 세대당 제한 후보, 부검→다음 clause 변경 증명 | survivor가 있을 때만 robustness 페이지 | 잠금 |
-| P10 | Blind/Walk-Forward Robustness | P9 survivor, 후보·설정 동결, OOS 사전 등록 | 시간 순서 보존, 비용·슬리피지, 최악 fold, 레짐 안정성 | 공정 benchmark 페이지 | 잠금 |
-| P11 | Human Benchmark & Promotion Review | P10 통과, 동일 cohort 구성 | 동일 기간·엔진·자금·비용·시간대에서 기준 조건식과 비교 | 통과 시에만 별도 export/live 검토 | 잠금 |
+| CL-R01..R06 (구 P6) | Canonical Loop Code Integration | P3 설계와 P4 프로토콜 승인 | controller가 research evidence·부검 ID·Candidate Passport를 실제 다음 생성에 전달하는 통합 테스트 | 후보 metadata dry-run 계획 | 잠금 |
+| CL-R04/R06 흡수 (구 P7) | Candidate Metadata & Body Static Dry-Run | P6 통합 증거, 사전 등록 quota | 의미 중복, lineage, syntax, buy/sell 분리, 금지 입력 검사 | DB registration dry-run | 잠금 |
+| CL-R06 dry-run 흡수 (구 P8) | DB Registration Dry-Run | P7 정적 게이트 통과 | 실제 DB 변경 없이 이름·충돌·INSERT 대상·rollback 범위 확인 | 명시적 INSERT 승인 요청 가능 | 잠금 |
+| CL-R07 (구 P9) | Bounded Mini Closed-Loop Replay | P8 완료와 사용자 명시 범위, INSERT-only 원칙 | min 중심 2~3세대, 세대당 제한 후보, 부검→다음 clause 변경 증명 | survivor가 있을 때만 robustness 페이지 | 잠금 |
+| CL-R08/R09 (구 P10) | Blind/Walk-Forward Robustness | P9 survivor, 후보·설정 동결, OOS 사전 등록 | 시간 순서 보존, 비용·슬리피지, 최악 fold, 레짐 안정성 | 공정 benchmark 페이지 | 잠금 |
+| CL-R10 (구 P11) | Human Benchmark & Promotion Review | P10 통과, 동일 cohort 구성 | 동일 기간·엔진·자금·비용·시간대에서 기준 조건식과 비교 | 통과 시에만 별도 export/live 검토 | 잠금 |
 
 P9에서 survivor가 없으면 P10을 열지 않는다. 실패 원인을 기록하고 가설을 종료하거나 P3 설계로 돌아가되, 같은 본체의 무제한 변형 루프는 금지한다.
 

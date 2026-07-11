@@ -1,0 +1,158 @@
+{
+  "schema": "cl_d0_source_read_receipt_v1",
+  "plan": ".omo/plans/ai-condition-loop-canonical-rebuild-20260711.md",
+  "phase": "CL-D0",
+  "generated_at_utc": "2026-07-11T00:00:00Z",
+  "scope": "design_only_no_generation_no_db_no_replay_no_oos_no_plan_d_no_portfolio_no_export_live",
+  "git_baseline": {
+    "branch": "loop/process-research-pipeline",
+    "head": "dc5ebc9b4f1f8694a3c6870a8d80dfa7e76314e7",
+    "upstream": "origin/loop/process-research-pipeline",
+    "dirty_porcelain_sha256": "4b0929fe16c48b6ae443d593d2da05b938eed628e213e3ef9432a4059239bc26",
+    "dirty_porcelain_linecount": 300
+  },
+  "required_roles": {
+    "goal_authority": 1,
+    "execution_contract": 1
+  },
+  "sources": [
+    {
+      "path": "docs/update_log/2026-07-11_ai_condition_loop_goal_process_reset_audit.md",
+      "role": "goal_authority",
+      "read_scope": "full_document",
+      "line_count": 286,
+      "sha256": "0ecc53ddbacaa553490e66e8ff7a3048a94ec910a950065ff6878f5f31e5e03b",
+      "applied_sections": "sec7 single goal restatement, sec8 single execution ownership table, sec9 next-page P0-P11 table, sec11 forbidden list"
+    },
+    {
+      "path": "docs/research/condition_research/plans/lattice_condition_generation_v3_design_only_20260709.md",
+      "role": "execution_contract",
+      "read_scope": "full_document",
+      "line_count": 466,
+      "sha256": "67e2ad65b65863bafcc05c8fe3b04b70c2ada36195a3699f9b07a49b4c133dec",
+      "applied_sections": "T0 source receipt spec, deliverables table, must/must-not lists, T1-T4 task defs, final verification wave"
+    },
+    {
+      "path": "docs/update_log/2026-07-09_lattice_v2_closeout_or_new_design_review.md",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 60,
+      "sha256": "cb5dbf0e239a1c905dc2f6b59a88a5ac7bf17d16ac46b4dd2a551878e7fc8067",
+      "applied_sections": "executive summary decision archive_v2_branch_and_stop, why branch should stop table, what remains useful table"
+    },
+    {
+      "path": "docs/update_log/2026-07-09_lattice_v2_closeout_or_new_design_handoff.md",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 24,
+      "sha256": "59644d59cb5e28bd71c64c1424ffe0144650ba0188f63813bfad7cd5e2e09fb5",
+      "applied_sections": "decision table, safe next options table"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_closeout_or_new_design_decision_20260709.json",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 39,
+      "sha256": "08397bb572664c5ed8cd816da25c413ceaaddb1d0756087dd94b3122674209ec",
+      "applied_sections": "decision_basis array, rejected_decisions, forbidden_next_actions_without_new_user_scope"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_corrected_sell_risk_clause_audit_20260709.md",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "5584f776aee8aa15713cf219c70692496f3db47ba5cf30362b3afbc64e49babe",
+      "applied_sections": "corrected threshold table, interpretation section (no_go unchanged)"
+    },
+    {
+      "path": "docs/update_log/2026-07-09_lattice_v2_closeout_context_matrix.md",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 18,
+      "sha256": "43edc52f74e059abc0a046df3d32712bbff821a65b7704f8b2d656dfde636ca2",
+      "applied_sections": "full page status matrix, current interpretation"
+    },
+    {
+      "path": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 363,
+      "sha256": "e2bf3ec56d2c6ada3b832b363bc1af42e96f8ad613608b63338dd3063adefbf3",
+      "applied_sections": "sec1 executive summary, sec6-9 tick/min/576 results, sec13 no_go cause table, sec16-19 Plan D rank comparison and overfit risk"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 1936,
+      "sha256": "391c51d95c6a128b4a1bf20a192369a853af86c3c25748c739c52d06962be183",
+      "applied_sections": "overall stats block, axis_summaries by time_bucket/size/strength/family, top_reasons, best_by_profit/mdd samples"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 2374,
+      "sha256": "6e548da4d40ec262bfa0b15431ce1ac78461415a9fdea1ca454d066e4d45aea3",
+      "applied_sections": "overall stats block, axis_summaries by time_bucket/size/strength/family, top_reasons, best_by_profit samples"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_go_no_go_hold_20260705.json",
+      "role": "closure_evidence",
+      "read_scope": "full_document",
+      "line_count": 1615,
+      "sha256": "bb165918b373fa7a485c37356c6840edbfc8289b93e598e44e077c690de214bf",
+      "applied_sections": "counts go=0/hold=0/no_go=576, no_go_sample rows with p6_decision/p6_reason"
+    },
+    {
+      "path": "docs/AGENT_HANDOFF.md",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 115,
+      "sha256": "6b5682c50e04fcce477ee1c4d387dff2f842d1bf2b59e9307b879c7e811a6be4",
+      "applied_sections": "sec2 hard invariants table, sec4 ground-truth lessons, sec6 next-work recommendation"
+    },
+    {
+      "path": "docs/update_log/2026-07-09_condition_research_cross_agent_handoff.md",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 259,
+      "sha256": "7fba4e24c9a24cf86329b99338ee3c12993fb078cf708e04112ced71dc3a8044",
+      "applied_sections": "agent start order table, executive state table, hard guardrails table"
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "applied_sections": "tick/min variable vocab sections, common variables, buy/sell example templates (future syntax reference only)"
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "applied_sections": "common rules and condition-generation rules for STOM strategy text authoring"
+    },
+    {
+      "path": "AGENTS.md",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 112,
+      "sha256": "62e77c30412c83b6ee20b133fb45374bc2d8b3c81a23f655a55574c62f62257f",
+      "applied_sections": "structure map, protected/runtime paths list, commit/review rules"
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "role": "supporting_history",
+      "read_scope": "full_document",
+      "line_count": 36,
+      "sha256": "793f2ccf791da68994456c596e8dac8c5a1523ecccf9ff9395df1f170e4a068b",
+      "applied_sections": "docs conventions, anti-patterns for gate/evidence records"
+    }
+  ],
+  "reconciled_after": "CL-D4 (banner/P-T-canonical-id corrections to audit + 2 legacy handoffs); git_baseline is the CL-D0 start baseline",
+  "reconciled_at_utc": "2026-07-11T09:57:27Z"
+}
