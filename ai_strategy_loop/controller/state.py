@@ -48,7 +48,11 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #         per-trade CSV에서 다운샘플한 누적수익곡선·일별손익·낙폭을 (run_id,gen_no)별로
 #         영속해 CSV 삭제 후에도 곡선을 보존하고 SQL 분석을 가능케 한다. CREATE TABLE
 #         IF NOT EXISTS라 구버전 DB도 안전(하위호환). 옵트인 토글(기본 OFF).
-SCHEMA_VERSION = 10
+#     v11: evidence tables(candidate_passports/feedback_envelopes/feedback_consumptions/
+#         evaluation_manifests/run_receipts) 신규 — CL-R03 append-only 증거 저장.
+#         CREATE TABLE IF NOT EXISTS라 구버전 DB도 안전(하위호환). FOREIGN KEY 적용
+#         (쓰기 모드 연결에서만 PRAGMA foreign_keys=ON).
+SCHEMA_VERSION = 11
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -110,6 +114,9 @@ class LoopState:
         # WAL 모드 — 동시 reader 비차단. journal_mode는 영구 설정이다.
         self._con.execute("PRAGMA journal_mode=WAL")
         self._con.execute("PRAGMA synchronous=NORMAL")
+        # FK 강제 — 쓰기 모드 연결에서만(readonly 분기는 위에서 이미 return).
+        #   v11 evidence 테이블(feedback_envelopes 등)의 FK 제약을 실제로 검증한다.
+        self._con.execute("PRAGMA foreign_keys=ON")
         self._init_schema()
 
     # ------------------------------------------------------------------
@@ -181,6 +188,57 @@ class LoopState:
                 PRIMARY KEY (run_id, gen_no, t_index)
             );
             CREATE INDEX IF NOT EXISTS idx_equity_run_gen ON equity_points(run_id, gen_no);
+            CREATE TABLE IF NOT EXISTS candidate_passports (
+                passport_id        TEXT PRIMARY KEY,
+                candidate_id       TEXT,
+                run_id             TEXT,
+                round_no           INTEGER,
+                gen_no             INTEGER,
+                slot_no            INTEGER,
+                parent_passport_id TEXT NULL,
+                manifest_id        TEXT,
+                payload_json       TEXT,
+                created_at         REAL,
+                UNIQUE(run_id, round_no, gen_no, slot_no)
+            );
+            CREATE INDEX IF NOT EXISTS idx_passports_run_gen ON candidate_passports(run_id, gen_no);
+            CREATE TABLE IF NOT EXISTS feedback_envelopes (
+                feedback_id        TEXT PRIMARY KEY,
+                source_passport_id TEXT,
+                payload_json       TEXT,
+                created_at         REAL,
+                FOREIGN KEY(source_passport_id) REFERENCES candidate_passports(passport_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_feedback_source ON feedback_envelopes(source_passport_id);
+            CREATE TABLE IF NOT EXISTS feedback_consumptions (
+                consumption_id     TEXT PRIMARY KEY,
+                feedback_id        TEXT,
+                prompt_id          TEXT,
+                target_passport_id TEXT,
+                payload_json       TEXT,
+                created_at         REAL,
+                UNIQUE(feedback_id, prompt_id, target_passport_id),
+                FOREIGN KEY(feedback_id) REFERENCES feedback_envelopes(feedback_id),
+                FOREIGN KEY(target_passport_id) REFERENCES candidate_passports(passport_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_consumption_feedback ON feedback_consumptions(feedback_id);
+            CREATE TABLE IF NOT EXISTS evaluation_manifests (
+                manifest_id  TEXT PRIMARY KEY,
+                run_id       TEXT,
+                role         TEXT,
+                payload_json TEXT,
+                created_at   REAL,
+                UNIQUE(run_id, role)
+            );
+            CREATE TABLE IF NOT EXISTS run_receipts (
+                receipt_id   TEXT PRIMARY KEY,
+                run_id       TEXT,
+                phase_id     TEXT,
+                outcome      TEXT,
+                payload_json TEXT,
+                created_at   REAL
+            );
+            CREATE INDEX IF NOT EXISTS idx_receipts_run_phase ON run_receipts(run_id, phase_id);
             """
         )
         self._migrate_schema()
