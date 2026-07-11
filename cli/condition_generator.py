@@ -6,7 +6,10 @@ from datetime import datetime
 import hashlib
 from pathlib import Path
 
+from cli.condition_fingerprint import FingerprintError, ast_fingerprint, validate_b_only
+
 MULTI_HYPOTHESIS_CANDIDATE_PACK_VERSION = 'multi_hypothesis_candidate_pack_v1'
+CANDIDATE_METHODOLOGY_VERSION = 'clr04_v1'
 _LLM_RESEARCH_SOURCE = 'llm_multi_hypothesis_candidate_pack'
 _DIAGNOSTIC_FALLBACK_SOURCE = 'diagnostic_deterministic_candidate_fallback'
 _PROHIBITED_AUTHORITY_KEYS = frozenset({
@@ -23,6 +26,8 @@ _PROHIBITED_AUTHORITY_KEYS = frozenset({
 })
 _RESEARCH_LANES = ('repair', 'discovery')
 _LEAKY_EXPRESSION_PREFIXES = ('R_', 'S_')
+_KNOWN_TIMEFRAMES = ('min', 'tick')
+_SAFE_DEFAULT_TIMEFRAME = 'min'
 
 
 
@@ -109,7 +114,61 @@ def _expression_leakage_reasons(expression: str) -> list[str]:
 
 
 
-def _candidate_failure_reasons(candidate: dict, seen_expressions: set[str]) -> list[str]:
+def _candidate_timeframe(candidate: dict, default_timeframe: str | None) -> str:
+    """Resolve a fingerprint-safe timeframe; never raises on missing/unknown metadata."""
+
+    timeframe = candidate.get('timeframe') or default_timeframe
+    if timeframe in _KNOWN_TIMEFRAMES:
+        return timeframe
+    return _SAFE_DEFAULT_TIMEFRAME
+
+
+def _b_only_blocking_reasons(expression: str, *, timeframe: str, kind: str = 'buy') -> list[str]:
+    """B-only guard subset that is safe to enforce additively at ingestion.
+
+    `validate_b_only` also flags `non_approved_variable:*` for any name outside
+    the strategy-code variable_scope registry; existing pre-B_* candidate
+    generators (raw scalar-name expressions) legitimately use names outside
+    that registry, so `non_approved_variable` stays a pure-function-only
+    diagnostic (see tests/unit/test_condition_fingerprint.py) and is not
+    wired as a hard ingestion blocker yet. `leaky_result_variable` (AST-based,
+    stricter than the legacy substring guard) and `forbidden_node` are new
+    hard blockers.
+    """
+
+    return [
+        reason
+        for reason in validate_b_only(expression, timeframe=timeframe, kind=kind)
+        if not reason.startswith('non_approved_variable:')
+    ]
+
+
+def _semantic_fingerprint_reasons(
+    expression: str,
+    *,
+    timeframe: str,
+    seen_fingerprints: set[str] | None,
+) -> tuple[list[str], str | None]:
+    """Return (reasons, fingerprint). fingerprint is None when it could not be computed."""
+
+    try:
+        fingerprint = ast_fingerprint(
+            expression, timeframe=timeframe, methodology_version=CANDIDATE_METHODOLOGY_VERSION,
+        )
+    except FingerprintError:
+        return ['forbidden_expression_node'], None
+    if seen_fingerprints is not None and fingerprint in seen_fingerprints:
+        return ['semantic_duplicate_expression'], fingerprint
+    return [], fingerprint
+
+
+def _candidate_failure_reasons(
+    candidate: dict,
+    seen_expressions: set[str],
+    seen_fingerprints: set[str] | None = None,
+    *,
+    default_timeframe: str | None = None,
+) -> list[str]:
     reasons: list[str] = []
     lane = candidate.get('lane')
     expression = str(candidate.get('expression') or '').strip()
@@ -118,9 +177,17 @@ def _candidate_failure_reasons(candidate: dict, seen_expressions: set[str]) -> l
     if not expression:
         reasons.append('missing_expression')
     else:
-        if expression in seen_expressions:
+        is_raw_duplicate = expression in seen_expressions
+        if is_raw_duplicate:
             reasons.append('duplicate_expression')
         reasons.extend(_expression_leakage_reasons(expression))
+        timeframe = _candidate_timeframe(candidate, default_timeframe)
+        reasons.extend(_b_only_blocking_reasons(expression, timeframe=timeframe, kind='buy'))
+        if not is_raw_duplicate:
+            fingerprint_reasons, _fingerprint = _semantic_fingerprint_reasons(
+                expression, timeframe=timeframe, seen_fingerprints=seen_fingerprints,
+            )
+            reasons.extend(fingerprint_reasons)
     if not candidate.get('hypothesis_id'):
         reasons.append('missing_hypothesis_id')
     if not (candidate.get('intended_hypothesis') or candidate.get('hypothesis')):
@@ -178,6 +245,8 @@ def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candid
     valid_candidates = []
     invalid_candidates = []
     seen_expressions: set[str] = set()
+    seen_fingerprints: set[str] = set()
+    pack_default_timeframe = candidate_pack.get('timeframe')
     pack_id = candidate_pack.get('candidate_pack_id') or candidate_pack.get('pack_id') or ''
     pack_blockers = []
     if candidate_pack.get('schema_version') not in (1, '1', None):
@@ -193,7 +262,9 @@ def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candid
             dict(raw_candidate or {}) if isinstance(raw_candidate, dict) else {},
             candidate_pack,
         )
-        reasons = _candidate_failure_reasons(candidate, seen_expressions)
+        reasons = _candidate_failure_reasons(
+            candidate, seen_expressions, seen_fingerprints, default_timeframe=pack_default_timeframe,
+        )
         expression = str(candidate.get('expression') or '').strip()
         if reasons:
             invalid_candidates.append({
@@ -203,6 +274,12 @@ def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candid
             })
             continue
         seen_expressions.add(expression)
+        timeframe = _candidate_timeframe(candidate, pack_default_timeframe)
+        _fingerprint_reasons, fingerprint = _semantic_fingerprint_reasons(
+            expression, timeframe=timeframe, seen_fingerprints=None,
+        )
+        if fingerprint is not None:
+            seen_fingerprints.add(fingerprint)
         pack_context = {
             key: candidate_pack.get(key)
             for key in (
