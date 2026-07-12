@@ -16,8 +16,9 @@
     "e2eCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/dashboard/test_v4_loop_cycle.py tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/dashboard/test_runtime_jsx_gate.py tests/unit/dashboard/test_p14_build_harness.py -p no:randomly -q (23 passed)", "npm run build / npm run typecheck (webui-build, 0 errors)"],
     "redTeamCommands": ["playwright live render + state-transition probes (cases D1-D3)", "bundle hygiene scan (case D4)", "emulate_media reduced-motion dynamic check (case D5)"],
     "artifactRefs": [
+      { "id": "g4-transcript", "kind": "browser-automation-transcript", "path": "artifacts/g4_browser_transcript.json", "description": "리더 헤드리스 세션 + QA Playwright 세션(D1~D5) 자동화 트랜스크립트" },
       { "id": "g4-leader-shot", "kind": "gui-screenshot", "path": "artifacts/g4_loop_cycle_render_20260712.png", "description": "리더 헤드리스 실렌더 — 8노드 순환 다이어그램/AI 뱃지 2/완료 상태" },
-      { "id": "g4-qa-shot", "kind": "gui-screenshot", "path": "artifacts/g4_qa_render.png", "description": "QA 레인 Playwright 실렌더(1280x900, 비균일 3,900색) + 자동화 트랜스크립트는 subagent 15 출력에 기록" }
+      { "id": "g4-qa-shot", "kind": "gui-screenshot", "path": "artifacts/g4_qa_render.png", "description": "QA 레인 Playwright 실렌더(1280x900, 비균일 3,900색)" }
     ],
     "contractCoverage": [
       { "id": "cc-1", "contractRef": "G004-다이어그램", "obligation": "8노드 순환 + AI 개입 뱃지 + 한국어 라벨/툴팁", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-1"] },
@@ -25,7 +26,7 @@
       { "id": "cc-3", "contractRef": "G004-빌드계약", "obligation": "webui-build 재빌드 번들 커밋 동반(?v= 정합)", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-3"] }
     ],
     "surfaceEvidence": [
-      { "id": "se-1", "contractRef": "G004-다이어그램", "surface": "gui", "invocation": "Playwright /ui/v4/ 실로드(D1) + 리더 헤드리스 스크린샷 — 노드/뱃지/keyframes DOM 검증", "verdict": "passed", "artifactRefs": ["g4-leader-shot", "g4-qa-shot"] }
+      { "id": "se-1", "contractRef": "G004-다이어그램", "surface": "gui", "invocation": "Playwright /ui/v4/ 실로드(D1) + 리더 헤드리스 스크린샷 — 노드/뱃지/keyframes DOM 검증", "verdict": "passed", "artifactRefs": ["g4-transcript", "g4-leader-shot", "g4-qa-shot"] }
     ],
     "adversarialCases": [
       { "id": "ac-1", "contractRef": "G004-다이어그램", "scenario": "탭 왕복/재진입 시 렌더 붕괴·JS 에러", "expectedBehavior": "8탭 왕복 에러 0, 복귀 후 8노드 유지", "verdict": "passed", "artifactRefs": ["g4-qa-shot"] },

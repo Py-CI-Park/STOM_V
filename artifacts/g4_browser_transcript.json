@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "story": "G004 V4 loop-cycle diagram live render verification",
+  "sessions": [
+    {
+      "actor": "leader (headless Chromium via GJC browser tool)",
+      "server": "uvicorn ai_strategy_loop.dashboard.app:app 127.0.0.1:8799 (PID 98748, 검증 후 외과적 종료·리스너 0 확인)",
+      "steps": [
+        { "action": "open", "url": "http://127.0.0.1:8799/ui/v4/", "result": "title 'STOM V4 · graph-first research terminal (preview)'" },
+        { "action": "evaluate", "script": "querySelectorAll('.v4-loop-node') / '.v4-loop-badge--ai' / '--code' / '--active' / '--complete' + styleSheets scan for 'v4-loop-pulse'", "result": { "found": true, "nodeCount": 8, "nodes": ["⚙시드", "⚙프롬프트 조립", "AI·AI 생성", "⚙게이트", "⚙공식 백테", "⚙채점", "⚙부검", "AI·환류"], "badges": { "ai": 2, "code": 6 }, "active": 0, "complete": 1, "pulseKeyframes": true } },
+        { "action": "screenshot", "path": "artifacts/g4_loop_cycle_render_20260712.png", "note": "1706x960 원본, 완료 상태(demo run 종료 — dim+완료 뱃지) 렌더" }
+      ]
+    },
+    {
+      "actor": "executor QA red-team (Playwright Chromium headless, subagent 15-G4QaRedTeam)",
+      "server": "uvicorn 127.0.0.1:8802 (netstat 확인 LISTENING PID 81768 — 외과적 종료·리스너 0)",
+      "steps": [
+        { "case": "D1", "action": "goto /ui/v4/ + wait_for_function nodes==8", "result": "nodes 8, ai badges 2, code badges 6, console_errors 0, page_errors 0, screenshot artifacts/g4_qa_render.png (1280x900, 3900 고유색 비균일)" },
+        { "case": "D2", "action": "window.normalizeFlowStepIndex probes(raw 0..5,-1 / bogus phase / malformed / null)", "result": "0..4 정합·5 클램프·전 케이스 무예외 폴백 -1" },
+        { "case": "D3", "action": "8탭(role=tab) 순차 클릭 왕복 후 research 복귀", "result": "console/page errors 0, 복귀 후 .v4-loop-node 8 유지" },
+        { "case": "D5", "action": "page.emulate_media(reduced_motion='reduce') → getComputedStyle(.v4-loop-node--active)", "result": "reduce: animationName none/0s, no-preference: v4-loop-pulse/1.8s" }
+      ]
+    }
+  ],
+  "full_qa_report_ref": "subagent:15-G4QaRedTeam"
+}
