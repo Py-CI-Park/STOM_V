@@ -1,8 +1,8 @@
-# 2026-07-12 CL-R07 제한 폐루프 결과 — 드라이버 GO_PROCESS_PROOF (architect BLOCK: provisional)
+# 2026-07-12 CL-R07 제한 폐루프 결과 — GO_PROCESS_PROOF (측정 무결성 수정 후 건전한 GO, run#6)
 
 - 단계: CL-R07 (제한 3라운드 폐루프, 프로세스 증명)
 - 승인: `I approve CL-R07 bounded mini-loop only`
-- **판정: 드라이버 술어상 `GO_PROCESS_PROOF`(실행 성공) 이나, architect 무결성 검증에서 `BLOCK`(REQUEST_CHANGES) → 명시 계약 하 건전한 증명으로는 미승인 = provisional.** 2026-07-11 `CL-R07_ENVIRONMENT_BLOCKED`는 재인증으로 해소(실행 자체는 실 provider+공식 엔진으로 성립).
+- **판정: `GO_PROCESS_PROOF` (건전).** 최초 run#3는 driver 술어상 GO였으나 architect 무결성 검증에서 BLOCK(측정 결함)이었고, 그 지적을 코드로 수정한 뒤 run#6에서 **측정까지 건전한 GO**를 확정. 성과(수익)는 판정 기준 아님(프로세스 증명). 2026-07-11 `CL-R07_ENVIRONMENT_BLOCKED`는 재인증으로 해소.
 
 ## 실행 요약 (실 provider + 공식 엔진)
 - provider: `gpt_auth` / **`gpt-5.6-terra`** + `reasoning_effort=high` (config 커밋 `85717edd`, 라이브 검증 완료)
@@ -51,3 +51,22 @@
 - **LOW** 공식 manifest가 여전히 fake 표기; `reasoning_effort=high`가 provider payload에 실제 미전송.
 
 **결론:** run#3는 실 실행으로 fakery는 배제됐고 학습사슬·엔진은 진짜이나, HIGH 2건(예산 회계·ablation 귀속 의미) 수정 + 재실행 전에는 **건전한 CL-R07 프로세스 증명으로 수용 불가**. 하류(CL-R08/R09/R10)는 계속 잠금.
+
+## 최종: 측정 무결성 수정 후 건전한 GO (run#6, ~14분)
+architect(25-ClR07GoReview) BLOCK 지적을 오너 결정(“이대로=pack 유지, 버그만 수정, 프로세스 증명에서 마무리”)에 따라 처리:
+
+| 지적 | 처리 | 커밋 |
+|---|---|---|
+| HIGH-2 ablation arm이 attribution 계약과 불일치 | parent(1라운드 primary)/candidate(최종 primary) 2×2로 정합화 + 단위테스트 | `757c1370` |
+| MEDIUM-1 0거래 no-metrics 가드 | returncode 대신 **엔진 종료 체크포인트(exitcode 0)+메시지+크래시 부재**로 판별(공식 CLI는 0거래를 RC=2로 반환) | `757c1370`→회귀→`9dc35c92` |
+| HIGH-1 provider 호출 회계(pack vs raw) | **pack 유지(오너 결정)** + raw 호출수(gen 24 / backtest 9)를 요약에 투명 기록 | `757c1370` |
+| 크래시 내성(비구별·생성실패) | per-candidate 재시도 + 우아 저하(예외 금지) | `922f21fd`, `dc029714` |
+
+**run#6 결과(건전 GO):** status GO_PROCESS_PROOF, learning_chain_ok true, **ablation_valid true**, provider_calls 3(pack), total_official_evaluation_spend 9, **raw_provider_generate_calls 24 / raw_official_backtest_calls 9**, feedback_consumptions 2, controls pos1/neg1, rounds 3, elapsed 847s. 증거: `.omo/evidence/task-14-.../cl_r07_SOUND_GO_summary.json` + `clr07_official_run_6/{state.sqlite, evidence/, run.log}`.
+
+### 정직하게 남겨둔 한계(문서 고지, 프로세스 증명 범위 밖)
+- **MEDIUM-2**: control(pos/neg)은 실행·증거 기록되나 GO 술어에서 성공 여부를 gating하지 않음(driver 동결계약 변경 회피).
+- **LOW-1**: 동결 manifest의 `fill_model`/`cost`가 사전등록 식별자상 여전히 “fake” 표기(변경 시 frozen config_hash 깨짐). 실제 실행은 실 어댑터이며 증거에 별도 기록.
+- **LOW-2**: `reasoning_effort=high`는 config 선언값이나 provider payload로 실제 전송되지 않음 → 이번 실행은 모델 기본 추론을 사용(투명 고지).
+
+**결론:** CL-R07 프로세스 증명 = **건전하게 완료**(오너의 pack 의미 결정 기준). 수익은 애초에 기준 아님. 하류(CL-R08/R09/R10)는 각 정확한 승인 문구 확보 전까지 잠금 유지.
