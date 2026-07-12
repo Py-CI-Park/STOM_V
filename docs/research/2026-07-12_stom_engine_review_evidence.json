@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "date": "2026-07-12",
+    "target": "C:/System_Trading/STOM/STOM_V.wt-dev (read-only)",
+    "constraints": {
+      "engine_backtest_runs": 0,
+      "code_changes": 0,
+      "git_commits": 0,
+      "allowed_measurements": "sqlite/pandas read-only micro-benchmarks + existing records only"
+    },
+    "report": "docs/research/2026-07-12_stom_engine_review_feasibility.md",
+    "verified_in_this_review": [
+      {"claim": "BackStop(3) sends nothing to bq/tq (only wq log when self.gubun==0)", "citation": "backtest/backengine_base.py:566-574", "status": "CONFIRMED by direct read"},
+      {"claim": "InitTradeInfo dict aliasing: v1/v2/v created once, shared across all t,k keys in opti_kind 1/3", "citation": "backtest/backengine_base.py:587-612", "status": "CONFIRMED by direct read (facet cited 588-608; verified span 587-612)"},
+      {"claim": "get_trade_info returns a dict (mutable, hence aliasing is real)", "citation": "backtest/back_static.py:49-63", "status": "CONFIRMED by direct read"}
+    ]
+  },
+  "grades": {
+    "loading": "C+",
+    "coreloop": "C+",
+    "parallel": "B",
+    "fill": "B-",
+    "results": "C+",
+    "perf_instrumentation": "B-",
+    "code_quality": "C+",
+    "overall": "B-"
+  },
+  "measured_numbers": {
+    "db_microbench_readonly": {
+      "tick_db_1day_full_read": {"file": "stock_tick_20220323.db", "size_mb": 32, "tables": 79, "rows": 130549, "pd_read_sql_sec": 2.41, "ram_mb": 55.7},
+      "back_db_1code": {"code": "247540", "rows": 167264, "cols": 54, "range_1day_rows": 1786, "range_1day_sec": 0.077, "or_chain_97day_sec": 3.27, "full_read_sec": 3.36, "ram_mb": 72.3},
+      "moneytop_range_count_sec": 0.935,
+      "indexes": {"stock_tick_back_tables": 2427, "index_count": 0, "moneytop_rows": 1713159, "moneytop_index_count": 0, "explain": "SCAN"},
+      "result_db_last_row": {"cold_sec": [0.30, 1.47], "warm_sec": 0.002, "sqlite_master_scan_cold_sec": 0.226}
+    },
+    "runtime_distribution_from_records": {
+      "source": ["_database/backtest_history.db (runs 137, success 125)", "seed_lattice_20260702 p5 receipts", "ai_strategy_loop/state/loop_runs.db (runs 506, generations 5124)"],
+      "rows": [
+        {"profile": "1d min full-session cold", "n": 1, "med_s": 50, "p90_s": null, "max_s": 50},
+        {"profile": "8-31d min full-session cold", "n": 6, "med_s": 50, "p90_s": 51, "max_s": 51},
+        {"profile": "1y tick 09:00-09:28 cold engine32", "n": 80, "med_s": 175, "p90_s": 246, "max_s": 257},
+        {"profile": "1y tick full-session cold", "n": 38, "med_s": 360, "p90_s": 372, "max_s": 400},
+        {"profile": "4y tick 09:00-09:28 warm64 per-pair", "n": "24x10 chunks", "med_s": 103, "max_s": 126, "chunk_range_s": [2266, 3019]},
+        {"profile": "4y tick warm load (once)", "n": 1, "med_s": 332},
+        {"profile": "11mo min warm64", "n": 1, "load_s": 121, "pairs24_s": 669, "per_pair_s": 28},
+        {"profile": "loop generation interval (small windows)", "n": 4611, "med_s": 35, "p90_s": 139}
+      ],
+      "cold_call_decomposition": {"citation": "cli/warm_session.py:4-13 (comment, measured)", "spawn_s": 130, "load_s": 80, "compute_s": 28, "total_approx_s": 273},
+      "error_runs_excluded": {"count": "12/137", "max_s": 25858, "note": "timeout-like errors distort distribution"}
+    },
+    "repo_scale": {
+      "py_files": 957, "loc_approx": 167639,
+      "unit_test_files": 279, "test_functions": 4144, "integration_tests": 20,
+      "bare_except_total": 246, "bare_except_legacy_core": 216, "except_exception": 488,
+      "files_over_800_lines_top3": [{"file": "dashboard/app.py", "lines": 3461}, {"file": "controller/loop.py", "lines": 3323}, {"file": "cli/research_loop.py", "lines": 3192}],
+      "root_temp_artifacts": 99,
+      "injected_strategy_functions": 181
+    },
+    "results_db": {
+      "backtest_db": {"size_gb": 3.28, "tables": 6833, "stock_bt_rows": 6828, "strategy_text_mb": 13.9},
+      "history_db": {"runs": 137, "discovery_runs": 623},
+      "loop_runs_db": {"runs": 506, "generations": 5124, "prompts": 460, "equity_points": 11267, "zero_row_tables": ["candidate_passports", "run_receipts", "+2 others"]}
+    }
+  },
+  "findings": [
+    {"id": "F1", "facet": "results/coreloop", "severity": "critical", "title": "BackStop(3) silent death -> 3600s timeout with no root cause", "citations": ["backtest/backengine_base.py:566-574 (verified)", "backtest/backengine_base.py:725-730", "backtest/backtest.py:204-206", "cli/runner.py:611-620", "backtest/backengine_base.py:728 (traceback only when gubun==0)"], "note": "strategy exception -> no tq/bq signal -> aggregator waits forever -> CLI kills at timeout with cause-less message"},
+    {"id": "F2", "facet": "coreloop", "severity": "critical-correctness", "title": "InitTradeInfo dict aliasing corrupts opti_kind 1/3 multi-variant scoring", "citations": ["backtest/backengine_base.py:587-612 (verified)", "backtest/back_static.py:49-63 (verified: returns dict)", "backtest/backengine_base.py:807-817 (Buy update mutates shared object)", "backtest/backengine_base.py:921 (replaced individually only after sell)"], "note": "measured impact not established (estimate)"},
+    {"id": "F3", "facet": "loading", "severity": "high-perf", "title": "Zero indexes on all tick/back tables and moneytop; every range query full-scans", "citations": ["measured: 2427 tables, 0 indexes, EXPLAIN=SCAN", "back_static.py:114-126 (per-day OR chain)", "back_static.py:129-141 (moneytop single range)"], "note": "97-day OR chain 3.27s ~= full read 3.36s; fix requires DB-only change"},
+    {"id": "F4", "facet": "parallel", "severity": "high-perf", "title": "optimize/sweep/wfo use cold run_backtest (~273s/combination) despite existing warm session", "citations": ["cli/subcommands.py:1053-1060", "cli/sweep.py:101,139", "cli/wfo.py:96,131", "cli/warm_session.py:83,425-480", "run_fn injection points: subcommands.py:1053, wfo.py:89-96"]},
+    {"id": "F5", "facet": "parallel", "severity": "medium-perf", "title": "Fixed 20 BackSubTotal spawns + sequential engine spawn on cold path", "citations": ["cli/runner.py:404-416", "cli/runner.py:429-441", "warm parallel spawn: cli/warm_session.py:279-280"]},
+    {"id": "F6", "facet": "loading", "severity": "medium", "title": "Per-day full scans in single-code mode; cross-mode rolling boundary inconsistency", "citations": ["backtest/backengine_base.py:379-393", "utility/static.py:78-132 (rolling crosses day boundary in multi-day df)", "utility/static.py:132 (warmup NaN->0 in per-day mode)"], "note": "same day/code can yield different indicator values by divid mode (unintended, estimate)"},
+    {"id": "F7", "facet": "loading", "severity": "medium-perf", "title": "Angle recomputed and overwritten inside avg_list loop; only last avg survives", "citations": ["utility/static.py:117-129", "df2 copy per avg: utility/static.py:117"], "note": "intent (last-avg semantics) unconfirmed; fix changes indicator values potentially"},
+    {"id": "F8", "facet": "coreloop", "severity": "medium", "title": "Silent bare excepts: tick loop (non-gubun0 dies unlogged), MainLoop, data_load table-missing", "citations": ["backtest/backengine_base.py:727-730", "backtest/backengine_base.py:346-348", "backtest/backengine_base.py:355-356"]},
+    {"id": "F9", "facet": "coreloop", "severity": "medium", "title": "GetArrayData stale shape: np.zeros uses previous arry_code shape when fm_tcnt>0", "citations": ["backtest/backengine_base.py:655-656"]},
+    {"id": "F10", "facet": "coreloop", "severity": "low", "title": "CheckAvglist stops only gubun 0; other engines fall back to on-the-fly calc (state divergence)", "citations": ["backtest/backengine_base.py:438-443", "on-the-fly cost: backtest/base_strategy.py:314-331"]},
+    {"id": "F11", "facet": "fill", "severity": "model-gap", "title": "No partial fills: order vanishes entirely when depth insufficient", "citations": ["backtest/backengine_base.py:508-518 (_calc_fill_amount)", "backtest/backengine_base.py:803"]},
+    {"id": "F12", "facet": "fill", "severity": "model-gap", "title": "No self-impact (audit §10.2): depth not decremented after fill; LastSell liquidates all at level-1 price on shortage", "citations": ["backtest/backengine_base.py:894-896"]},
+    {"id": "F13", "facet": "fill", "severity": "model-gap", "title": "Limit order queue not modeled; full fill on price break; min2 uses bar-low (optimistic intra-bar ordering)", "citations": ["backtest/backengine_base_oms.py:227-229 (strict break, conservative)", "backtest/backengine_base_oms.py:230-237"]},
+    {"id": "F14", "facet": "fill", "severity": "cost-staleness", "title": "Tax fixed 0.18% + fee 0.015% with 10-won truncation; likely stale vs 2025-26 rates (external check needed)", "citations": ["utility/static.py:753-760"], "note": "round-trip nominal 0.21%; upbit 0.05%x2 static.py:763-769; binance static.py:772-787"},
+    {"id": "F15", "facet": "fill", "severity": "model-gap", "title": "Zero latency; VWAP rounded to won before P&L recompute", "citations": ["backtest/backengine_kiwoom_tick.py:161-165", "backtest/backengine_base.py:912"]},
+    {"id": "F16", "facet": "results", "severity": "medium", "title": "_extract_metrics swallows all exceptions to None ('completed without metrics' masking)", "citations": ["cli/runner.py:701-702"]},
+    {"id": "F17", "facet": "results", "severity": "low", "title": "backtest.db bloat 3.28GB/6833 tables, dual save (table+CSV), no retention", "citations": ["backtest/backtest.py:325-329,338"]},
+    {"id": "F18", "facet": "perf-data", "severity": "low", "title": "discovery_runs phase durations all NULL (schema exists, recording unwired - estimate)", "citations": ["schema: cli/history.py:296-300", "checked 8 rows 2026-06-12"]},
+    {"id": "F19", "facet": "quality", "severity": "medium", "title": "246 bare excepts (216 in legacy core); global mutable DICT_SET; import-time cwd dependency", "citations": ["backtest/backengine_base.py:317", "utility/setting.py:126,418", "utility/setting.py:12,77-80", "utility/setting.py:13 (ALLOW_MINIMAL_SETTING default '1' on non-win32)"]},
+    {"id": "F20", "facet": "parallel", "severity": "low", "title": "Round-robin split ignores data size; hash-order set iteration varies distribution per run", "citations": ["cli/runner.py:539-540", "ui/ui_backtest_engine.py:262-267"]},
+    {"id": "F21", "facet": "loading", "severity": "medium-ram", "title": "Bulk shm load keeps original all_data + shm copy simultaneously (~2x peak RAM)", "citations": ["backtest/backengine_base.py:396-420"]},
+    {"id": "F22", "facet": "results", "severity": "low", "title": "day_count reverse-engineered by rounding from daily average (approximation; 0 when avg 0)", "citations": ["cli/runner.py:715-720"]}
+  ],
+  "strengths": [
+    {"facet": "coreloop", "title": "Strategies compiled once, exec'd per tick; numpy day-boundary split; throttled stop polling", "citations": ["back_static.py:150,170", "backengine_base.py:710-714", "backengine_base.py:733-737"]},
+    {"facet": "parallel", "title": "Warm session: ~273s -> ~30-60s per generation (measured comment); GA/loop already standard on warm path", "citations": ["cli/warm_session.py:4-13", "controller/loop.py:1298", "ga.py:266"]},
+    {"facet": "fill", "title": "Market orders walk real depth (N levels capped); limit fills require strict price break", "citations": ["backengine_base.py:508-518,126-127,796-802", "backengine_base_oms.py:227-229"]},
+    {"facet": "results", "title": "rowid watermark + config/result JSON preserved in history.runs", "citations": ["cli/runner.py:398,697-698", "cli/history.py:24-43"]},
+    {"facet": "quality", "title": "4144 test functions / 279 unit files / 20 integration; contract-test oriented; safe crypto degradation", "citations": ["utility/setting.py:52-64", "tests/unit/test_env_isolation.py:34-90"]}
+  ],
+  "improvement_opportunities": [
+    {"id": "S1", "action": "Create indexes on tick/back tables + moneytop (or INTEGER PRIMARY KEY rewrite)", "gain": "largest; removes all range full-scans", "difficulty": "low", "code_change": false, "risk": "low", "permission": "P1"},
+    {"id": "S2", "action": "BackStop(3) failure signal to tq + non-gubun0 traceback + surface _extract_metrics errors", "gain": "up to 3600s per failed run", "difficulty": "low", "code_change": true, "risk": "low", "permission": "P2"},
+    {"id": "S3", "action": "Inject WarmBacktestSession run_fn into optimize/sweep/wfo", "gain": "~273s -> ~30-60s per combination (4.5-9x)", "difficulty": "medium", "code_change": true, "risk": "medium (re-prepare on start_date change)", "permission": "P4"},
+    {"id": "S4", "action": "Backport parallel spawn to cold path + scale SUBTOTAL_COUNT to engine count", "gain": "tens of seconds of 130s spawn (estimate)", "difficulty": "low", "code_change": true, "risk": "low", "permission": "P5"},
+    {"id": "S5", "action": "Single-code mode: one query + groupby split", "gain": "removes day_count x full-scan", "difficulty": "low", "code_change": true, "risk": "low (boundary policy decision needed)", "permission": "P6"},
+    {"id": "S6", "action": "Move angle calc out of avg loop / per-avg columns", "gain": "part of rolling time, proportional to len(avg_list)", "difficulty": "low", "code_change": true, "risk": "medium (may change indicator values; intent must be confirmed)", "permission": "P6"},
+    {"id": "S7", "action": "Release all_data right after shm copyto", "gain": "~half peak RAM", "difficulty": "low", "code_change": true, "risk": "low", "permission": "P6"},
+    {"id": "S8", "action": "OR-chain -> BETWEEN for contiguous date ranges", "gain": "query-plan cost; re-evaluate after S1", "difficulty": "low", "code_change": true, "risk": "low", "permission": "P6"},
+    {"id": "S9", "action": "Fix InitTradeInfo aliasing (per-key get_trade_info())", "gain": "correctness, not speed", "difficulty": "low", "code_change": true, "risk": "medium (breaks comparability with past optimization results; sealing gate required)", "permission": "P3"},
+    {"id": "S10", "action": "Detail-table retention script (DROP + VACUUM)", "gain": "caps 3.28GB growth", "difficulty": "low", "code_change": false, "risk": "low (retention policy agreement)", "permission": "P8"}
+  ],
+  "concurrency_verdict": {
+    "possible_now": [
+      "1 prepare + N run serial batch via warm session (claude_candidate_batch_eval.py:3 pattern; 24 pairs on one 332s load, ~103s/pair 4y tick)",
+      "vars-variant multi-scoring within one tick pass (opti_kind 1/3) — but untrustworthy until S9 aliasing fix"
+    ],
+    "needs_change": [
+      "arbitrary N-pair single-pass scoring: run() takes one (buy,sell) (warm_session.py:425); BackTest scorer is single/serial (runner.py:597-608, ga.py:306-307); high difficulty, S9 prerequisite",
+      "warm conversion of optimize/sweep/wfo (S3, injection points exist)",
+      "promote batch-eval pattern to a cli subcommand (small)"
+    ],
+    "verdict": "Serial warm batching already delivers practical multi-condition throughput since loading dominates; true 1-pass multi-strategy scoring is a major refactor with lower ROI than S3 (estimate)."
+  },
+  "permission_points": ["P1 indexes (DB only)", "P2 failure signaling", "P3 aliasing fix (result-affecting, sealing gate)", "P4 warm injection", "P5 spawn optimization", "P6 loading-consistency bundle (possibly result-affecting)", "P7 fill-model realism (result-affecting, separate cycle)", "P8 hygiene bundle"],
+  "limits": [
+    "No engine backtest executed; all expected gains are estimates",
+    "wt-dev accessed read-only; no files written there, no commits",
+    "Only 3 citations re-verified directly in this synthesis (backengine_base.py:566-574, 587-612, back_static.py:49-63); remaining citations trusted from facet reviewers with minor line drift possible",
+    "Tax-rate currency requires external legal confirmation",
+    "discovery_runs wiring, loop_runs zero-row tables, day_count distortion remain 'estimate' status"
+  ]
+}

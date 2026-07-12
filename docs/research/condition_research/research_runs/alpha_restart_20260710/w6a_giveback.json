@@ -1,0 +1,844 @@
+{
+  "task": "W6a give-back forensics (diagnostic only, no adoption verdict, no n_trials entry)",
+  "generated": "2026-07-12",
+  "ledgers": {
+    "RR8_12": "stock_bt_ALP_V4_RR8_12_20260707074238.csv",
+    "RR8_0": "stock_bt_ALP_V4_RR8_0_20260707074352.csv",
+    "RR8_21": "stock_bt_ALP_V4_RR8_21_20260707074459.csv",
+    "GPTAUTH_G8": "stock_bt_ALP_V4_GPTAUTH_G8_20260707075127.csv"
+  },
+  "filter": {
+    "discovery_end_day": 20231231,
+    "rows_all": 2619,
+    "rows_used": 1658,
+    "rows_excluded_post2023": 961,
+    "unique_trades": 1188
+  },
+  "consistency": {
+    "R_MFE_eq_최고수익률": true,
+    "R_MAE_eq_최저수익률": true
+  },
+  "overall": {
+    "trades_analyzed": 1658,
+    "avg_mfe": 2.065,
+    "avg_mae": -1.237,
+    "avg_realized": 0.283,
+    "avg_giveback": 1.782,
+    "median_giveback": 1.54,
+    "q75_giveback": 2.107,
+    "q90_giveback": 3.23,
+    "p_giveback_ge1": 0.805,
+    "p_giveback_ge2": 0.29,
+    "p_giveback_ge3": 0.112,
+    "giveback_capture_ratio": 0.137
+  },
+  "by_hold_bin": [
+    {
+      "group": "0-60s",
+      "n": 282,
+      "mean_mfe": 1.238,
+      "mean_mae": -1.219,
+      "mean_realized": -0.697,
+      "mean_giveback": 1.935,
+      "median_giveback": 1.91,
+      "giveback_sum_share": 0.185,
+      "p_giveback_ge2": 0.422,
+      "win_rate": 0.379
+    },
+    {
+      "group": "60-120s",
+      "n": 503,
+      "mean_mfe": 1.144,
+      "mean_mae": -1.152,
+      "mean_realized": -0.478,
+      "mean_giveback": 1.622,
+      "median_giveback": 1.48,
+      "giveback_sum_share": 0.276,
+      "p_giveback_ge2": 0.199,
+      "win_rate": 0.231
+    },
+    {
+      "group": "120-300s",
+      "n": 530,
+      "mean_mfe": 2.723,
+      "mean_mae": -0.863,
+      "mean_realized": 1.202,
+      "mean_giveback": 1.522,
+      "median_giveback": 1.35,
+      "giveback_sum_share": 0.273,
+      "p_giveback_ge2": 0.211,
+      "win_rate": 0.689
+    },
+    {
+      "group": "300-600s",
+      "n": 170,
+      "mean_mfe": 3.752,
+      "mean_mae": -1.588,
+      "mean_realized": 1.808,
+      "mean_giveback": 1.944,
+      "median_giveback": 1.585,
+      "giveback_sum_share": 0.112,
+      "p_giveback_ge2": 0.282,
+      "win_rate": 0.782
+    },
+    {
+      "group": "600-1200s",
+      "n": 80,
+      "mean_mfe": 2.897,
+      "mean_mae": -2.261,
+      "mean_realized": -0.106,
+      "mean_giveback": 3.003,
+      "median_giveback": 3.08,
+      "giveback_sum_share": 0.081,
+      "p_giveback_ge2": 0.613,
+      "win_rate": 0.388
+    },
+    {
+      "group": "1200s+",
+      "n": 93,
+      "mean_mfe": 2.001,
+      "mean_mae": -2.368,
+      "mean_realized": -0.314,
+      "mean_giveback": 2.315,
+      "median_giveback": 2.37,
+      "giveback_sum_share": 0.073,
+      "p_giveback_ge2": 0.559,
+      "win_rate": 0.441
+    }
+  ],
+  "by_mfe_bin": [
+    {
+      "group": "0-1%",
+      "n": 705,
+      "mean_mfe": 0.357,
+      "mean_mae": -1.674,
+      "mean_realized": -1.525,
+      "mean_giveback": 1.882,
+      "median_giveback": 1.67,
+      "giveback_sum_share": 0.449,
+      "p_giveback_ge2": 0.36,
+      "win_rate": 0.047
+    },
+    {
+      "group": "1-2%",
+      "n": 260,
+      "mean_mfe": 1.441,
+      "mean_mae": -1.174,
+      "mean_realized": -0.616,
+      "mean_giveback": 2.058,
+      "median_giveback": 1.74,
+      "giveback_sum_share": 0.181,
+      "p_giveback_ge2": 0.396,
+      "win_rate": 0.427
+    },
+    {
+      "group": "2-3%",
+      "n": 206,
+      "mean_mfe": 2.449,
+      "mean_mae": -0.845,
+      "mean_realized": 0.632,
+      "mean_giveback": 1.817,
+      "median_giveback": 1.175,
+      "giveback_sum_share": 0.127,
+      "p_giveback_ge2": 0.257,
+      "win_rate": 0.811
+    },
+    {
+      "group": "3-4.5%",
+      "n": 275,
+      "mean_mfe": 3.637,
+      "mean_mae": -0.88,
+      "mean_realized": 2.1,
+      "mean_giveback": 1.537,
+      "median_giveback": 1.51,
+      "giveback_sum_share": 0.143,
+      "p_giveback_ge2": 0.124,
+      "win_rate": 0.982
+    },
+    {
+      "group": "4.5-9%",
+      "n": 193,
+      "mean_mfe": 5.786,
+      "mean_mae": -0.753,
+      "mean_realized": 4.306,
+      "mean_giveback": 1.481,
+      "median_giveback": 1.43,
+      "giveback_sum_share": 0.097,
+      "p_giveback_ge2": 0.176,
+      "win_rate": 1.0
+    },
+    {
+      "group": "9%+",
+      "n": 19,
+      "mean_mfe": 9.247,
+      "mean_mae": -0.242,
+      "mean_realized": 8.728,
+      "mean_giveback": 0.518,
+      "median_giveback": 0.18,
+      "giveback_sum_share": 0.003,
+      "p_giveback_ge2": 0.105,
+      "win_rate": 1.0
+    }
+  ],
+  "by_clause": [
+    {
+      "group": "G8_MA손절",
+      "n": 299,
+      "mean_mfe": 0.349,
+      "mean_mae": -1.194,
+      "mean_realized": -1.119,
+      "mean_giveback": 1.468,
+      "median_giveback": 1.41,
+      "giveback_sum_share": 0.149,
+      "p_giveback_ge2": 0.107,
+      "win_rate": 0.0
+    },
+    {
+      "group": "최저가이탈",
+      "n": 188,
+      "mean_mfe": 0.818,
+      "mean_mae": -2.396,
+      "mean_realized": -2.356,
+      "mean_giveback": 3.175,
+      "median_giveback": 3.02,
+      "giveback_sum_share": 0.202,
+      "p_giveback_ge2": 0.915,
+      "win_rate": 0.0
+    },
+    {
+      "group": "기타:elif 보유시간 >= 120 and 수익률 < 0.3:",
+      "n": 172,
+      "mean_mfe": 0.965,
+      "mean_mae": -0.606,
+      "mean_realized": -0.082,
+      "mean_giveback": 1.047,
+      "median_giveback": 0.99,
+      "giveback_sum_share": 0.061,
+      "p_giveback_ge2": 0.017,
+      "win_rate": 0.517
+    },
+    {
+      "group": "기타:if 최고수익률 > 2 and 체결강도 < 체결강도평균(20) and 수",
+      "n": 162,
+      "mean_mfe": 2.929,
+      "mean_mae": -0.349,
+      "mean_realized": 1.631,
+      "mean_giveback": 1.298,
+      "median_giveback": 1.22,
+      "giveback_sum_share": 0.071,
+      "p_giveback_ge2": 0.049,
+      "win_rate": 1.0
+    },
+    {
+      "group": "트레일링(피크60%)",
+      "n": 137,
+      "mean_mfe": 3.798,
+      "mean_mae": -1.008,
+      "mean_realized": 1.974,
+      "mean_giveback": 1.824,
+      "median_giveback": 1.69,
+      "giveback_sum_share": 0.085,
+      "p_giveback_ge2": 0.234,
+      "win_rate": 0.985
+    },
+    {
+      "group": "MA이탈익절(MFE>4.5)",
+      "n": 100,
+      "mean_mfe": 5.802,
+      "mean_mae": -0.867,
+      "mean_realized": 4.497,
+      "mean_giveback": 1.304,
+      "median_giveback": 1.29,
+      "giveback_sum_share": 0.044,
+      "p_giveback_ge2": 0.06,
+      "win_rate": 1.0
+    },
+    {
+      "group": "기타:elif 최고수익률 > 3 and 최고수익률 * 0.7 >= 수익률:",
+      "n": 86,
+      "mean_mfe": 3.946,
+      "mean_mae": -0.947,
+      "mean_realized": 2.45,
+      "mean_giveback": 1.495,
+      "median_giveback": 1.355,
+      "giveback_sum_share": 0.044,
+      "p_giveback_ge2": 0.105,
+      "win_rate": 0.988
+    },
+    {
+      "group": "LastSell(전략종료청산)",
+      "n": 81,
+      "mean_mfe": 1.682,
+      "mean_mae": -2.431,
+      "mean_realized": -0.655,
+      "mean_giveback": 2.338,
+      "median_giveback": 2.44,
+      "giveback_sum_share": 0.064,
+      "p_giveback_ge2": 0.605,
+      "win_rate": 0.395
+    },
+    {
+      "group": "각도급락(≥10)",
+      "n": 80,
+      "mean_mfe": 2.575,
+      "mean_mae": -0.969,
+      "mean_realized": 1.314,
+      "mean_giveback": 1.26,
+      "median_giveback": 1.23,
+      "giveback_sum_share": 0.034,
+      "p_giveback_ge2": 0.037,
+      "win_rate": 0.713
+    },
+    {
+      "group": "기타:elif 최저수익률 <= -1.8 and 수익률 <= -1.2:",
+      "n": 72,
+      "mean_mfe": 0.2,
+      "mean_mae": -1.883,
+      "mean_realized": -1.933,
+      "mean_giveback": 2.133,
+      "median_giveback": 2.04,
+      "giveback_sum_share": 0.052,
+      "p_giveback_ge2": 0.542,
+      "win_rate": 0.0
+    },
+    {
+      "group": "기타:elif 보유시간 >= 240:",
+      "n": 47,
+      "mean_mfe": 4.363,
+      "mean_mae": -0.384,
+      "mean_realized": 3.74,
+      "mean_giveback": 0.622,
+      "median_giveback": 0.48,
+      "giveback_sum_share": 0.01,
+      "p_giveback_ge2": 0.021,
+      "win_rate": 1.0
+    },
+    {
+      "group": "기타:elif 수익률 <= -2.0:",
+      "n": 46,
+      "mean_mfe": 0.3,
+      "mean_mae": -2.243,
+      "mean_realized": -2.274,
+      "mean_giveback": 2.574,
+      "median_giveback": 2.455,
+      "giveback_sum_share": 0.04,
+      "p_giveback_ge2": 0.978,
+      "win_rate": 0.0
+    },
+    {
+      "group": "기타:elif 최고수익률 >= 1.5 and 수익률 <= 0 and 체결강도 ",
+      "n": 41,
+      "mean_mfe": 1.741,
+      "mean_mae": -0.466,
+      "mean_realized": -0.299,
+      "mean_giveback": 2.04,
+      "median_giveback": 1.96,
+      "giveback_sum_share": 0.028,
+      "p_giveback_ge2": 0.463,
+      "win_rate": 0.0
+    },
+    {
+      "group": "시가하회손절",
+      "n": 27,
+      "mean_mfe": 0.841,
+      "mean_mae": -3.604,
+      "mean_realized": -3.659,
+      "mean_giveback": 4.5,
+      "median_giveback": 4.22,
+      "giveback_sum_share": 0.041,
+      "p_giveback_ge2": 1.0,
+      "win_rate": 0.0
+    },
+    {
+      "group": "기타:if 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) ",
+      "n": 27,
+      "mean_mfe": 2.109,
+      "mean_mae": -0.389,
+      "mean_realized": 1.095,
+      "mean_giveback": 1.014,
+      "median_giveback": 0.95,
+      "giveback_sum_share": 0.009,
+      "p_giveback_ge2": 0.0,
+      "win_rate": 0.741
+    },
+    {
+      "group": "하드익절손절(±9/-5)",
+      "n": 26,
+      "mean_mfe": 5.355,
+      "mean_mae": -2.558,
+      "mean_realized": 2.267,
+      "mean_giveback": 3.089,
+      "median_giveback": 2.24,
+      "giveback_sum_share": 0.027,
+      "p_giveback_ge2": 0.538,
+      "win_rate": 0.538
+    },
+    {
+      "group": "각도급락(0-5)",
+      "n": 23,
+      "mean_mfe": 1.959,
+      "mean_mae": -1.441,
+      "mean_realized": 0.531,
+      "mean_giveback": 1.428,
+      "median_giveback": 1.1,
+      "giveback_sum_share": 0.011,
+      "p_giveback_ge2": 0.087,
+      "win_rate": 0.652
+    },
+    {
+      "group": "기타:elif 최고수익률 >= 3 and 수익률 <= 최고수익률 * 0.55:",
+      "n": 18,
+      "mean_mfe": 3.851,
+      "mean_mae": -0.357,
+      "mean_realized": 1.4,
+      "mean_giveback": 2.451,
+      "median_giveback": 2.16,
+      "giveback_sum_share": 0.015,
+      "p_giveback_ge2": 0.722,
+      "win_rate": 0.889
+    },
+    {
+      "group": "각도급락(5-10)",
+      "n": 17,
+      "mean_mfe": 1.913,
+      "mean_mae": -0.639,
+      "mean_realized": 0.386,
+      "mean_giveback": 1.527,
+      "median_giveback": 1.35,
+      "giveback_sum_share": 0.009,
+      "p_giveback_ge2": 0.176,
+      "win_rate": 0.706
+    },
+    {
+      "group": "기타:elif 수익률 >= 9:",
+      "n": 5,
+      "mean_mfe": 9.252,
+      "mean_mae": -0.226,
+      "mean_realized": 8.698,
+      "mean_giveback": 0.554,
+      "median_giveback": 0.41,
+      "giveback_sum_share": 0.001,
+      "p_giveback_ge2": 0.0,
+      "win_rate": 1.0
+    },
+    {
+      "group": "기타:elif 최고수익률 >= 6 and 수익률 <= 최고수익률 * 0.70:",
+      "n": 4,
+      "mean_mfe": 6.52,
+      "mean_mae": -0.175,
+      "mean_realized": 4.228,
+      "mean_giveback": 2.293,
+      "median_giveback": 2.16,
+      "giveback_sum_share": 0.003,
+      "p_giveback_ge2": 0.75,
+      "win_rate": 1.0
+    }
+  ],
+  "by_champion": [
+    {
+      "group": "RR8_12",
+      "n": 298,
+      "mean_mfe": 2.87,
+      "mean_mae": -1.628,
+      "mean_realized": 0.656,
+      "mean_giveback": 2.214,
+      "median_giveback": 1.8,
+      "giveback_sum_share": 0.223,
+      "p_giveback_ge2": 0.436,
+      "win_rate": 0.581
+    },
+    {
+      "group": "RR8_0",
+      "n": 221,
+      "mean_mfe": 2.895,
+      "mean_mae": -1.629,
+      "mean_realized": 0.709,
+      "mean_giveback": 2.186,
+      "median_giveback": 1.78,
+      "giveback_sum_share": 0.164,
+      "p_giveback_ge2": 0.421,
+      "win_rate": 0.593
+    },
+    {
+      "group": "RR8_21",
+      "n": 246,
+      "mean_mfe": 2.765,
+      "mean_mae": -1.602,
+      "mean_realized": 0.677,
+      "mean_giveback": 2.088,
+      "median_giveback": 1.585,
+      "giveback_sum_share": 0.174,
+      "p_giveback_ge2": 0.382,
+      "win_rate": 0.593
+    },
+    {
+      "group": "GPTAUTH_G8",
+      "n": 893,
+      "mean_mfe": 1.398,
+      "mean_mae": -0.91,
+      "mean_realized": -0.055,
+      "mean_giveback": 1.453,
+      "median_giveback": 1.39,
+      "giveback_sum_share": 0.439,
+      "p_giveback_ge2": 0.183,
+      "win_rate": 0.384
+    }
+  ],
+  "by_year": [
+    {
+      "group": "2022",
+      "n": 510,
+      "mean_mfe": 2.239,
+      "mean_mae": -1.173,
+      "mean_realized": 0.452,
+      "mean_giveback": 1.787,
+      "median_giveback": 1.56,
+      "giveback_sum_share": 0.309,
+      "p_giveback_ge2": 0.294,
+      "win_rate": 0.504
+    },
+    {
+      "group": "2023",
+      "n": 1148,
+      "mean_mfe": 1.987,
+      "mean_mae": -1.266,
+      "mean_realized": 0.208,
+      "mean_giveback": 1.779,
+      "median_giveback": 1.54,
+      "giveback_sum_share": 0.691,
+      "p_giveback_ge2": 0.287,
+      "win_rate": 0.467
+    }
+  ],
+  "cross_hold_x_mfe": [
+    {
+      "hold_bin": "0-60s",
+      "mfe_bin": "0-1%",
+      "n": 156,
+      "mean_giveback": 2.173,
+      "sum_giveback": 339.0,
+      "mean_realized": -1.902
+    },
+    {
+      "hold_bin": "0-60s",
+      "mfe_bin": "1-2%",
+      "n": 44,
+      "mean_giveback": 1.899,
+      "sum_giveback": 83.6,
+      "mean_realized": -0.368
+    },
+    {
+      "hold_bin": "0-60s",
+      "mfe_bin": "2-3%",
+      "n": 49,
+      "mean_giveback": 1.285,
+      "sum_giveback": 62.9,
+      "mean_realized": 1.062
+    },
+    {
+      "hold_bin": "0-60s",
+      "mfe_bin": "3-4.5%",
+      "n": 28,
+      "mean_giveback": 1.685,
+      "sum_giveback": 47.2,
+      "mean_realized": 1.827
+    },
+    {
+      "hold_bin": "0-60s",
+      "mfe_bin": "4.5-9%",
+      "n": 5,
+      "mean_giveback": 2.576,
+      "sum_giveback": 12.9,
+      "mean_realized": 2.658
+    },
+    {
+      "hold_bin": "60-120s",
+      "mfe_bin": "0-1%",
+      "n": 332,
+      "mean_giveback": 1.559,
+      "sum_giveback": 517.5,
+      "mean_realized": -1.256
+    },
+    {
+      "hold_bin": "60-120s",
+      "mfe_bin": "1-2%",
+      "n": 51,
+      "mean_giveback": 2.301,
+      "sum_giveback": 117.3,
+      "mean_realized": -0.901
+    },
+    {
+      "hold_bin": "60-120s",
+      "mfe_bin": "2-3%",
+      "n": 49,
+      "mean_giveback": 1.418,
+      "sum_giveback": 69.5,
+      "mean_realized": 1.004
+    },
+    {
+      "hold_bin": "60-120s",
+      "mfe_bin": "3-4.5%",
+      "n": 58,
+      "mean_giveback": 1.559,
+      "sum_giveback": 90.4,
+      "mean_realized": 2.069
+    },
+    {
+      "hold_bin": "60-120s",
+      "mfe_bin": "4.5-9%",
+      "n": 13,
+      "mean_giveback": 1.64,
+      "sum_giveback": 21.3,
+      "mean_realized": 4.085
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "0-1%",
+      "n": 157,
+      "mean_giveback": 1.655,
+      "sum_giveback": 259.8,
+      "mean_realized": -1.155
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "1-2%",
+      "n": 100,
+      "mean_giveback": 1.475,
+      "sum_giveback": 147.5,
+      "mean_realized": -0.064
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "2-3%",
+      "n": 57,
+      "mean_giveback": 1.471,
+      "sum_giveback": 83.9,
+      "mean_realized": 1.007
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "3-4.5%",
+      "n": 102,
+      "mean_giveback": 1.557,
+      "sum_giveback": 158.8,
+      "mean_realized": 2.112
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "4.5-9%",
+      "n": 98,
+      "mean_giveback": 1.502,
+      "sum_giveback": 147.2,
+      "mean_realized": 4.215
+    },
+    {
+      "hold_bin": "120-300s",
+      "mfe_bin": "9%+",
+      "n": 16,
+      "mean_giveback": 0.584,
+      "sum_giveback": 9.3,
+      "mean_realized": 8.675
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "0-1%",
+      "n": 29,
+      "mean_giveback": 3.721,
+      "sum_giveback": 107.9,
+      "mean_realized": -3.353
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "1-2%",
+      "n": 10,
+      "mean_giveback": 2.944,
+      "sum_giveback": 29.4,
+      "mean_realized": -1.314
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "2-3%",
+      "n": 8,
+      "mean_giveback": 1.601,
+      "sum_giveback": 12.8,
+      "mean_realized": 1.134
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "3-4.5%",
+      "n": 68,
+      "mean_giveback": 1.494,
+      "sum_giveback": 101.6,
+      "mean_realized": 2.119
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "4.5-9%",
+      "n": 52,
+      "mean_giveback": 1.505,
+      "sum_giveback": 78.3,
+      "mean_realized": 4.567
+    },
+    {
+      "hold_bin": "300-600s",
+      "mfe_bin": "9%+",
+      "n": 3,
+      "mean_giveback": 0.167,
+      "sum_giveback": 0.5,
+      "mean_realized": 9.013
+    },
+    {
+      "hold_bin": "600-1200s",
+      "mfe_bin": "0-1%",
+      "n": 7,
+      "mean_giveback": 2.731,
+      "sum_giveback": 19.1,
+      "mean_realized": -2.114
+    },
+    {
+      "hold_bin": "600-1200s",
+      "mfe_bin": "1-2%",
+      "n": 24,
+      "mean_giveback": 3.89,
+      "sum_giveback": 93.3,
+      "mean_realized": -2.476
+    },
+    {
+      "hold_bin": "600-1200s",
+      "mfe_bin": "2-3%",
+      "n": 21,
+      "mean_giveback": 4.388,
+      "sum_giveback": 92.1,
+      "mean_realized": -1.869
+    },
+    {
+      "hold_bin": "600-1200s",
+      "mfe_bin": "3-4.5%",
+      "n": 11,
+      "mean_giveback": 1.607,
+      "sum_giveback": 17.7,
+      "mean_realized": 2.175
+    },
+    {
+      "hold_bin": "600-1200s",
+      "mfe_bin": "4.5-9%",
+      "n": 17,
+      "mean_giveback": 1.057,
+      "sum_giveback": 18.0,
+      "mean_realized": 4.767
+    },
+    {
+      "hold_bin": "1200s+",
+      "mfe_bin": "0-1%",
+      "n": 24,
+      "mean_giveback": 3.475,
+      "sum_giveback": 83.4,
+      "mean_realized": -2.82
+    },
+    {
+      "hold_bin": "1200s+",
+      "mfe_bin": "1-2%",
+      "n": 31,
+      "mean_giveback": 2.059,
+      "sum_giveback": 63.8,
+      "mean_realized": -0.616
+    },
+    {
+      "hold_bin": "1200s+",
+      "mfe_bin": "2-3%",
+      "n": 22,
+      "mean_giveback": 2.41,
+      "sum_giveback": 53.0,
+      "mean_realized": 0.079
+    },
+    {
+      "hold_bin": "1200s+",
+      "mfe_bin": "3-4.5%",
+      "n": 8,
+      "mean_giveback": 0.867,
+      "sum_giveback": 6.9,
+      "mean_realized": 2.844
+    },
+    {
+      "hold_bin": "1200s+",
+      "mfe_bin": "4.5-9%",
+      "n": 8,
+      "mean_giveback": 1.013,
+      "sum_giveback": 8.1,
+      "mean_realized": 4.135
+    }
+  ],
+  "top_decile": {
+    "threshold_giveback": 3.23,
+    "n": 168,
+    "hold_median": 431.5,
+    "hold_q25_q75": [
+      142.2,
+      866.0
+    ],
+    "mfe_median": 1.14,
+    "mfe_q25_q75": [
+      0.705,
+      2.07
+    ],
+    "realized_median": -2.81,
+    "realized_mean": -2.729,
+    "share_realized_negative": 0.94,
+    "clause_counts": {
+      "최저가이탈": 85,
+      "시가하회손절": 27,
+      "LastSell(전략종료청산)": 25,
+      "하드익절손절(±9/-5)": 12,
+      "트레일링(피크60%)": 6,
+      "기타:elif 최고수익률 > 3 and 최고수익률 * 0.7 >= 수익률:": 3,
+      "기타:elif 최고수익률 >= 3 and 수익률 <= 최고수익률 * 0.55:": 3,
+      "각도급락(0-5)": 2,
+      "MA이탈익절(MFE>4.5)": 2,
+      "기타:elif 수익률 <= -2.0:": 2,
+      "기타:elif 최고수익률 >= 1.5 and 수익률 <= 0 and 체결강도 ": 1
+    },
+    "champion_counts": {
+      "RR8_12": 65,
+      "RR8_21": 51,
+      "RR8_0": 46,
+      "GPTAUTH_G8": 6
+    },
+    "hold_bin_counts": {
+      "600-1200s": 40,
+      "120-300s": 31,
+      "300-600s": 30,
+      "1200s+": 28,
+      "60-120s": 23,
+      "0-60s": 16
+    },
+    "mfe_bin_counts": {
+      "0-1%": 71,
+      "1-2%": 54,
+      "2-3%": 29,
+      "4.5-9%": 9,
+      "3-4.5%": 5,
+      "<0%": 0,
+      "9%+": 0
+    }
+  },
+  "top_giveback_state_cell": {
+    "hold_bin": "60-120s",
+    "mfe_bin": "0-1%",
+    "n": 332,
+    "mean_giveback": 1.559,
+    "sum_giveback": 517.5,
+    "mean_realized": -1.256
+  },
+  "replay_validation": {
+    "n_sampled": 40,
+    "n_replayed": 40,
+    "n_unmapped_or_missing": 0,
+    "mfe_exact_match": 40,
+    "mae_exact_match": 40,
+    "mfe_max_abs_diff": 0.0,
+    "mae_max_abs_diff": 0.0,
+    "mismatches": [],
+    "note": "tick DB(mode=ro) 보유경로 재생 — alpha_lab/distill/replay.py 인프라(load_day_rows/kiwoom_pgsgsp), 표본 40건 원장 R_MFE/R_MAE 전수 일치"
+  },
+  "top_giveback_state": "MFE 0~2% 저피크 왕복 후 보유 120s+에서 최저가이탈/시가하회손절/LastSell 손실 마감(top-decile의 82%, 실현<0 94%) — 승자연장보다 패자조기처리 쪽 질량이 더 큼"
+}
