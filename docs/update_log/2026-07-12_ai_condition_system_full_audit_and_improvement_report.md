@@ -301,3 +301,28 @@ pull 반영으로 이 워크트리는 "V4 대시보드 + CL-R07 연구 통합" �
 ## 19. 4부 결론
 
 이 브랜치는 보고서가 지적한 **"배선 부채"의 즉시 실행 가능분을 전부 청산**했다: 깨져 있던 결정론 baseline 복원(P-13), 도메인 지식 3종의 두 프롬프트 lane 주입(P-3), 정본 연구 프로파일 확립과 잠자던 게이트/원장 토글의 연구 lane 상시화(P-4·P-5 전반부), 골드 시드의 few-shot 실효화(P-6 절반), **채굴 밴드 시드의 생성 프롬프트 환류(A-5 — 임계값이 데이터 분포에서 오는 첫 경로)**. 다음 정본 연구 run은 `research_presets`(tick_late/min_full) 프리셋으로 곧바로 "구조론 주입 + CSC 게이트 + 증거 원장 + 골드 few-shot + 밴드 힌트"가 켜진 상태에서 돈다. 남은 임계 경로는 A-4 → `I approve CL-R08 bounded min performance only`다.
+
+## 20. 데이터 정책 확정 + 대시보드 실기동 검증 (2026-07-12, PR 전 마감 점검)
+
+### 20.1 데이터 정책 (오너 결정 — 정본)
+
+- **연구는 현존 데이터로만 수행한다**: tick 2022-03-23~2026-02-27(09:00~09:30), min 2025-04-07~2026-02-27(09:00~15:19).
+- **데이터 추가(수집 확장·기간 연장·신규 소스)는 오너가 별도 결정할 때까지 계획·실행하지 않는다.** v2 §7 P2-12(min 수집 연속성)와 v3 §14의 데이터 관련 항목은 이 결정에 종속되는 **보류** 항목으로 재분류한다.
+- min lane 다년 OOS 한계(P-8)는 현존 데이터 제약으로 수용하고, 강건성 판정은 tick 4년 lane 대조 + CL-R09 봉인 창(현존 데이터 내 시간 분할)으로 수행한다.
+
+### 20.2 대시보드 실기동 검증 (브랜치 HEAD 기준)
+
+| 검증 | 결과 |
+|---|---|
+| 서버 기동 | `uvicorn ai_strategy_loop.dashboard.app:app` :8799 — startup complete, 오류 0 |
+| API 스모크 | `/health` 200(contract v2) · `/status` 200 · `/runs` 200(**506 run**) · `/hall_of_fame` 200 · `/equity_curves` 200 · `/gpt_auth/status` 200 · `/ui/` · `/ui/v4/` 200 |
+| **신규 토글 폼 노출** | `/config/spec`에 `structure_principles_prompt_enabled`·`band_seed_hint_enabled` 노출 확인(이번 배선 반영). `principle_gate_enabled` 폼 항목 누락 발견 → 즉시 추가 |
+| V4 UI 실렌더(헤드리스 브라우저) | Live 탭: 8탭 셸·"백엔드 연결됨·v2" 배지·HUMAN GATE/APPEND-ONLY 감사 배지·단계 파이프라인(생성→백테→채점→부검)·fitness 곡선·프로세스 거버넌스(fast-discovery, research allowed) 전부 렌더, **JS 에러 0**, 요소 564개. 증거: `artifacts/v4_dashboard_smoke_20260712.png` |
+| V4 History 탭 | 아카이브 플로우 + RESEARCH RECORDS 17개 캠페인 실데이터(q4-defense +641,616/MDD 12.52% 등) 렌더. 증거: `artifacts/v4_dashboard_history_20260712.png` |
+| 대시보드 회귀 스위트 | `pytest tests/unit/dashboard/` — **689 passed / 0 failed** (BRANCH_FLOW P3 기준 689+/0 정확 충족) |
+| 정리 | 스모크 서버 PID 단독 종료(외과적, 불변식 8), 포트 8799 리스너 0 확인 |
+
+### 20.3 PR 전 상태 판정
+
+- **코드 작업: 완료.** 계획된 P0 배선(A-1/2/3/5/6/8) 전부 커밋·검증됨. 전수 pytest 7 known / 4,480 passed / 신규 0, dashboard 689/0, nonrelease sync 통과, 대시보드 실기동·실렌더 확인.
+- **남은 것은 코드가 아니라 절차/승인**: ①PR(loop 머지) ②A-4 매도 ablation(실 provider 연구 run) ③CL-R08 승인 문구. 데이터 관련 항목은 20.1 결정으로 보류.

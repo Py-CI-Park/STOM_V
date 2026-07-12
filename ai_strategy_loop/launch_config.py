@@ -500,6 +500,12 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "있는 생성 시드 전용(복제 금지·부검 보정 고지 포함). 파일 없으면 무시. 기본 OFF.",
         },
         {
+            "name": "principle_gate_enabled", "label": "구조론 원리 일관성 게이트(T4.3)", "type": "bool",
+            "default": d.principle_gate_enabled,
+            "help": "켜면 저장 전 조건식 쌍을 CSC 핵심 규칙(CSC-06 무거래량 돌파 / CSC-07 손절 부재 / "
+                    "CSC-10 tick 시간창)으로 검사해 reject 위반 시 재생성한다. 기본 OFF.",
+        },
+        {
             "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
             "default": d.quantile_feedback_enabled,
             "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "
