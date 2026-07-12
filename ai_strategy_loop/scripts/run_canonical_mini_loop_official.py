@@ -382,7 +382,10 @@ def _save_strategy_pair(strategy_db: Path, buy_name: str, buy_code: str, sell_na
 
 
 def _is_clean_no_metrics_result(returncode: int, payload: dict[str, Any]) -> bool:
-    if returncode != 0 or not payload:
+    # NOTE: the STOM CLI returns returncode 2 for a clean zero-trade run (no CSV/metrics),
+    # so we must NOT gate on the CLI returncode. Cleanliness is judged from the engine
+    # checkpoints (message + backtest_process_finished exitcode 0 + no crash/timeout).
+    if not payload:
         return False
     if str(payload.get("message") or "") != "backtest completed without metrics":
         return False
@@ -404,7 +407,7 @@ def _is_clean_no_metrics_result(returncode: int, payload: dict[str, Any]) -> boo
             return int(detail.get("exitcode", -1)) == 0
         except (TypeError, ValueError):
             return False
-    return checkpoint_status not in {"timeout", "crash", "error"}
+    return False
 
 
 def _buy_code(expression: str) -> str:
