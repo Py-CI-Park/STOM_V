@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 from ai_strategy_loop.controller import contract as contract_module
 from ai_strategy_loop.controller import state as state_module
 from ai_strategy_loop.dashboard.app import create_app
+from ai_strategy_loop.provider.chatgpt_oauth.constants import DEFAULT_MODEL
 
 
 ORIGIN = "http://127.0.0.1:8770"
@@ -103,7 +104,7 @@ def test_enabled_provider_probe_connects_only_to_injected_loopback_fake(
             "client": "127.0.0.1",
             "path": "/v1/chat/completions",
             "payload": {
-                "model": "gpt-5.5",
+                "model": DEFAULT_MODEL,
                 "messages": [{"role": "user", "content": "OK"}],
                 "max_tokens": 4,
                 "stream": False,
