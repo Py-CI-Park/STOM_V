@@ -9,6 +9,9 @@
 
 전제 문서: `AGENTS.md`, `docs/WORKTREE_STRATEGY.md`, `docs/CARRY_FORWARD_REGISTRY.md`, `docs/V3_UPDATE_OPERATING_SYSTEM.md`.
 
+연결 문서: 전체 워크트리 pyd→py 상태 지도와 본 계획서의 wt-dev 반영 기능 연결은
+`docs/update_log/2026-07-12_worktree_pyd_status_map.md`에 정리되어 있다.
+
 ---
 
 ## 1. 재검토 결과 스냅샷 (2026-07-12 실행 완료)
