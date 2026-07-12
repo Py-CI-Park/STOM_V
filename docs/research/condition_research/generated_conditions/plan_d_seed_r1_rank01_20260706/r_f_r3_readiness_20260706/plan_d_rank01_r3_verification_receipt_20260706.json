@@ -1,0 +1,28 @@
+{
+  "schema": "plan_d_rank01_r3_verification_receipt_v1",
+  "created_at": "2026-07-06T19:09:34+09:00",
+  "scope": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+  "json_parse_ok": true,
+  "jsonl_parse_ok": true,
+  "source_read_receipt": ".omo/evidence/plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export-20260706/source_read_receipt.md",
+  "artifacts": [
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_parent_sha_recheck_20260706.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_parent_freeze_ledger_20260706.jsonl",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_ablation_static_20260706.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_axis_readiness_20260706.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_context_pack_20260706.md",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_readiness_summary_20260706.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_positive_control_receipt_20260706.json"
+  ],
+  "db_read_only": true,
+  "db_update_delete_used": false,
+  "db_insert_apply_used": false,
+  "official_replay_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "export_live_final_executed": false,
+  "verify_nonrelease_sync": "passed",
+  "git_diff_check": "passed_with_line_ending_warning_only",
+  "updated_at": "2026-07-06T19:10:12+09:00",
+  "line_ending_warning": ".omo/start-work/ledger.jsonl LF will be replaced by CRLF when Git touches it"
+}

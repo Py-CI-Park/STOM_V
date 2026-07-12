@@ -1,0 +1,692 @@
+{
+  "schema": "seed_lattice_seeds_v1",
+  "families": [
+    "composite_coverage_repair"
+  ],
+  "lanes": [
+    "min"
+  ],
+  "seed_count": 24,
+  "seeds": [
+    {
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_01",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc01_part1 = True\n\nif not (관심종목 == 1):\n    c01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part1 = False\n    elif not (체결강도 >= 108.0):\n        c01_part1 = False\nelse:\n    c01_part1 = False\n\nif c01_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc01_part2 = True\n\nif not (관심종목 == 1):\n    c01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part2 = False\n    elif not (체결강도 >= 107.0):\n        c01_part2 = False\nelse:\n    c01_part2 = False\n\nif c01_part2:\n    composite_signal = True\n\n# component 3: M10_POS\nc01_part3 = True\n\nif not (관심종목 == 1):\n    c01_part3 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c01_part3 = False\nelse:\n    c01_part3 = False\n\nif c01_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "96d1412242f17fb9ba6e1f52cf5fc851c04640118e512b895ddfbb28ee651811",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_01_cov01_sparse_positive_core_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_01",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc01_part1 = True\n\nif not (관심종목 == 1):\n    c01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part1 = False\n    elif not (체결강도 >= 108.0):\n        c01_part1 = False\nelse:\n    c01_part1 = False\n\nif c01_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc01_part2 = True\n\nif not (관심종목 == 1):\n    c01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part2 = False\n    elif not (체결강도 >= 107.0):\n        c01_part2 = False\nelse:\n    c01_part2 = False\n\nif c01_part2:\n    composite_signal = True\n\n# component 3: M10_POS\nc01_part3 = True\n\nif not (관심종목 == 1):\n    c01_part3 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c01_part3 = False\nelse:\n    c01_part3 = False\n\nif c01_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "96d1412242f17fb9ba6e1f52cf5fc851c04640118e512b895ddfbb28ee651811",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_01_cov01_sparse_positive_core_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_02",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc02_part1 = True\n\nif not (관심종목 == 1):\n    c02_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c02_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part1 = False\n    elif not (체결강도 >= 108.0):\n        c02_part1 = False\nelse:\n    c02_part1 = False\n\nif c02_part1:\n    composite_signal = True\n\n# component 2: S10_BAL\nc02_part2 = True\n\nif not (관심종목 == 1):\n    c02_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c02_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part2 = False\n    elif not (체결강도 >= 107.0):\n        c02_part2 = False\nelse:\n    c02_part2 = False\n\nif c02_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc02_part3 = True\n\nif not (관심종목 == 1):\n    c02_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c02_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c02_part3 = False\nelse:\n    c02_part3 = False\n\nif c02_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "18aa9716b25a7af689f9bcd36b74566592348544dfc778ee7bb498606938e064",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_BAL",
+          "M09_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_02",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc02_part1 = True\n\nif not (관심종목 == 1):\n    c02_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c02_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part1 = False\n    elif not (체결강도 >= 108.0):\n        c02_part1 = False\nelse:\n    c02_part1 = False\n\nif c02_part1:\n    composite_signal = True\n\n# component 2: S10_BAL\nc02_part2 = True\n\nif not (관심종목 == 1):\n    c02_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c02_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part2 = False\n    elif not (체결강도 >= 107.0):\n        c02_part2 = False\nelse:\n    c02_part2 = False\n\nif c02_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc02_part3 = True\n\nif not (관심종목 == 1):\n    c02_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c02_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c02_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c02_part3 = False\nelse:\n    c02_part3 = False\n\nif c02_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "18aa9716b25a7af689f9bcd36b74566592348544dfc778ee7bb498606938e064",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_BAL",
+          "M09_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_03",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc03_part1 = True\n\nif not (관심종목 == 1):\n    c03_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part1 = False\n    elif not (체결강도 >= 108.0):\n        c03_part1 = False\nelse:\n    c03_part1 = False\n\nif c03_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc03_part2 = True\n\nif not (관심종목 == 1):\n    c03_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part2 = False\n    elif not (체결강도 >= 107.0):\n        c03_part2 = False\nelse:\n    c03_part2 = False\n\nif c03_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc03_part3 = True\n\nif not (관심종목 == 1):\n    c03_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c03_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c03_part3 = False\nelse:\n    c03_part3 = False\n\nif c03_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc03_part4 = True\n\nif not (관심종목 == 1):\n    c03_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c03_part4 = False\nelse:\n    c03_part4 = False\n\nif c03_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "10acfefa3189015e4ba01d14d7875f4d2a0759295f7c3675f8f5c29a94650fd3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_03",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc03_part1 = True\n\nif not (관심종목 == 1):\n    c03_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part1 = False\n    elif not (체결강도 >= 108.0):\n        c03_part1 = False\nelse:\n    c03_part1 = False\n\nif c03_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc03_part2 = True\n\nif not (관심종목 == 1):\n    c03_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part2 = False\n    elif not (체결강도 >= 107.0):\n        c03_part2 = False\nelse:\n    c03_part2 = False\n\nif c03_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc03_part3 = True\n\nif not (관심종목 == 1):\n    c03_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c03_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c03_part3 = False\nelse:\n    c03_part3 = False\n\nif c03_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc03_part4 = True\n\nif not (관심종목 == 1):\n    c03_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c03_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c03_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c03_part4 = False\nelse:\n    c03_part4 = False\n\nif c03_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "10acfefa3189015e4ba01d14d7875f4d2a0759295f7c3675f8f5c29a94650fd3",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_04",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc04_part1 = True\n\nif not (관심종목 == 1):\n    c04_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part1 = False\n    elif not (체결강도 >= 109.0):\n        c04_part1 = False\nelse:\n    c04_part1 = False\n\nif c04_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc04_part2 = True\n\nif not (관심종목 == 1):\n    c04_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part2 = False\n    elif not (체결강도 >= 107.0):\n        c04_part2 = False\nelse:\n    c04_part2 = False\n\nif c04_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc04_part3 = True\n\nif not (관심종목 == 1):\n    c04_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c04_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c04_part3 = False\nelse:\n    c04_part3 = False\n\nif c04_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc04_part4 = True\n\nif not (관심종목 == 1):\n    c04_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c04_part4 = False\nelse:\n    c04_part4 = False\n\nif c04_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "e89f587b294c205c7c234529531eec6b29e4a5d0a5e2a302aed54dec2c0e7fc3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_04_cov04_profitmax_fourcell_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_04",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc04_part1 = True\n\nif not (관심종목 == 1):\n    c04_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part1 = False\n    elif not (체결강도 >= 109.0):\n        c04_part1 = False\nelse:\n    c04_part1 = False\n\nif c04_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc04_part2 = True\n\nif not (관심종목 == 1):\n    c04_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part2 = False\n    elif not (체결강도 >= 107.0):\n        c04_part2 = False\nelse:\n    c04_part2 = False\n\nif c04_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc04_part3 = True\n\nif not (관심종목 == 1):\n    c04_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c04_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c04_part3 = False\nelse:\n    c04_part3 = False\n\nif c04_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc04_part4 = True\n\nif not (관심종목 == 1):\n    c04_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c04_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c04_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c04_part4 = False\nelse:\n    c04_part4 = False\n\nif c04_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "e89f587b294c205c7c234529531eec6b29e4a5d0a5e2a302aed54dec2c0e7fc3",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_04_cov04_profitmax_fourcell_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_05",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc05_part1 = True\n\nif not (관심종목 == 1):\n    c05_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c05_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c05_part1 = False\n    elif not (체결강도 >= 108.0):\n        c05_part1 = False\nelse:\n    c05_part1 = False\n\nif c05_part1:\n    composite_signal = True\n\n# component 2: L14_NEAR\nc05_part2 = True\n\nif not (관심종목 == 1):\n    c05_part2 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c05_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c05_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c05_part2 = False\nelse:\n    c05_part2 = False\n\nif c05_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "2958b394856e6a7db56cc0a66f908ca516117d62d12369330de6be58aa2c1fde",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_05_cov05_daily_lift_l14_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_05",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc05_part1 = True\n\nif not (관심종목 == 1):\n    c05_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c05_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c05_part1 = False\n    elif not (체결강도 >= 108.0):\n        c05_part1 = False\nelse:\n    c05_part1 = False\n\nif c05_part1:\n    composite_signal = True\n\n# component 2: L14_NEAR\nc05_part2 = True\n\nif not (관심종목 == 1):\n    c05_part2 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c05_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c05_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c05_part2 = False\nelse:\n    c05_part2 = False\n\nif c05_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "2958b394856e6a7db56cc0a66f908ca516117d62d12369330de6be58aa2c1fde",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_05_cov05_daily_lift_l14_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_06",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc06_part1 = True\n\nif not (관심종목 == 1):\n    c06_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c06_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c06_part1 = False\n    elif not (체결강도 >= 109.0):\n        c06_part1 = False\nelse:\n    c06_part1 = False\n\nif c06_part1:\n    composite_signal = True\n\n# component 2: L14_NEAR\nc06_part2 = True\n\nif not (관심종목 == 1):\n    c06_part2 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c06_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c06_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c06_part2 = False\nelse:\n    c06_part2 = False\n\nif c06_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "7f4a8878b12446eacbdc87edcd7039d152a64a6e03be3a0b6f7923f82018151c",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_06_cov06_profitmax_l14_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_06",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc06_part1 = True\n\nif not (관심종목 == 1):\n    c06_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c06_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c06_part1 = False\n    elif not (체결강도 >= 109.0):\n        c06_part1 = False\nelse:\n    c06_part1 = False\n\nif c06_part1:\n    composite_signal = True\n\n# component 2: L14_NEAR\nc06_part2 = True\n\nif not (관심종목 == 1):\n    c06_part2 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c06_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c06_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c06_part2 = False\nelse:\n    c06_part2 = False\n\nif c06_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "7f4a8878b12446eacbdc87edcd7039d152a64a6e03be3a0b6f7923f82018151c",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_06_cov06_profitmax_l14_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_07",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc07_part1 = True\n\nif not (관심종목 == 1):\n    c07_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c07_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c07_part1 = False\n    elif not (체결강도 >= 108.0):\n        c07_part1 = False\nelse:\n    c07_part1 = False\n\nif c07_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc07_part2 = True\n\nif not (관심종목 == 1):\n    c07_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c07_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c07_part2 = False\n    elif not (체결강도 >= 107.0):\n        c07_part2 = False\nelse:\n    c07_part2 = False\n\nif c07_part2:\n    composite_signal = True\n\n# component 3: L14_NEAR\nc07_part3 = True\n\nif not (관심종목 == 1):\n    c07_part3 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c07_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c07_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c07_part3 = False\nelse:\n    c07_part3 = False\n\nif c07_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "ee6e562c8996608d30768c728eec8dab468594234b616dd7f1b4f661ec9516c3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_07_cov07_strength_pair_l14_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_07",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc07_part1 = True\n\nif not (관심종목 == 1):\n    c07_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c07_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c07_part1 = False\n    elif not (체결강도 >= 108.0):\n        c07_part1 = False\nelse:\n    c07_part1 = False\n\nif c07_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc07_part2 = True\n\nif not (관심종목 == 1):\n    c07_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c07_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c07_part2 = False\n    elif not (체결강도 >= 107.0):\n        c07_part2 = False\nelse:\n    c07_part2 = False\n\nif c07_part2:\n    composite_signal = True\n\n# component 3: L14_NEAR\nc07_part3 = True\n\nif not (관심종목 == 1):\n    c07_part3 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c07_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c07_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c07_part3 = False\nelse:\n    c07_part3 = False\n\nif c07_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "ee6e562c8996608d30768c728eec8dab468594234b616dd7f1b4f661ec9516c3",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_07_cov07_strength_pair_l14_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_08",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc08_part1 = True\n\nif not (관심종목 == 1):\n    c08_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c08_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c08_part1 = False\n    elif not (체결강도 >= 108.0):\n        c08_part1 = False\nelse:\n    c08_part1 = False\n\nif c08_part1:\n    composite_signal = True\n\n# component 2: M10_POS\nc08_part2 = True\n\nif not (관심종목 == 1):\n    c08_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c08_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c08_part2 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c08_part2 = False\nelse:\n    c08_part2 = False\n\nif c08_part2:\n    composite_signal = True\n\n# component 3: L14_NEAR\nc08_part3 = True\n\nif not (관심종목 == 1):\n    c08_part3 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c08_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c08_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c08_part3 = False\nelse:\n    c08_part3 = False\n\nif c08_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "2404ecf3896d82b0253b622a34f6ec5a4e92a22541f0988a416d409d78a784bf",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "M10_POS",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_08_cov08_sparse_pair_l14_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_08",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc08_part1 = True\n\nif not (관심종목 == 1):\n    c08_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c08_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c08_part1 = False\n    elif not (체결강도 >= 108.0):\n        c08_part1 = False\nelse:\n    c08_part1 = False\n\nif c08_part1:\n    composite_signal = True\n\n# component 2: M10_POS\nc08_part2 = True\n\nif not (관심종목 == 1):\n    c08_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c08_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c08_part2 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c08_part2 = False\nelse:\n    c08_part2 = False\n\nif c08_part2:\n    composite_signal = True\n\n# component 3: L14_NEAR\nc08_part3 = True\n\nif not (관심종목 == 1):\n    c08_part3 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c08_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c08_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c08_part3 = False\nelse:\n    c08_part3 = False\n\nif c08_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "2404ecf3896d82b0253b622a34f6ec5a4e92a22541f0988a416d409d78a784bf",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "M10_POS",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_08_cov08_sparse_pair_l14_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_09",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc09_part1 = True\n\nif not (관심종목 == 1):\n    c09_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c09_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c09_part1 = False\n    elif not (체결강도 >= 108.0):\n        c09_part1 = False\nelse:\n    c09_part1 = False\n\nif c09_part1:\n    composite_signal = True\n\n# component 2: L1430_NEAR\nc09_part2 = True\n\nif not (관심종목 == 1):\n    c09_part2 = False\nelif 143000 <= 시분초 < 144500:\n    if not (시가총액 >= 10000.0):\n        c09_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c09_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c09_part2 = False\nelse:\n    c09_part2 = False\n\nif c09_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "7ec87baac5dab3b7eee22607bc82eb0d643b65c6b74e8b1bc75cc02e1bfdb9aa",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "L1430_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_09_cov09_early_late_l1430_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_09",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc09_part1 = True\n\nif not (관심종목 == 1):\n    c09_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c09_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c09_part1 = False\n    elif not (체결강도 >= 108.0):\n        c09_part1 = False\nelse:\n    c09_part1 = False\n\nif c09_part1:\n    composite_signal = True\n\n# component 2: L1430_NEAR\nc09_part2 = True\n\nif not (관심종목 == 1):\n    c09_part2 = False\nelif 143000 <= 시분초 < 144500:\n    if not (시가총액 >= 10000.0):\n        c09_part2 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c09_part2 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c09_part2 = False\nelse:\n    c09_part2 = False\n\nif c09_part2:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "7ec87baac5dab3b7eee22607bc82eb0d643b65c6b74e8b1bc75cc02e1bfdb9aa",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "L1430_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_09_cov09_early_late_l1430_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_10",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc10_part1 = True\n\nif not (관심종목 == 1):\n    c10_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part1 = False\n    elif not (체결강도 >= 108.0):\n        c10_part1 = False\nelse:\n    c10_part1 = False\n\nif c10_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc10_part2 = True\n\nif not (관심종목 == 1):\n    c10_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part2 = False\n    elif not (체결강도 >= 107.0):\n        c10_part2 = False\nelse:\n    c10_part2 = False\n\nif c10_part2:\n    composite_signal = True\n\n# component 3: M10_POS\nc10_part3 = True\n\nif not (관심종목 == 1):\n    c10_part3 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c10_part3 = False\nelse:\n    c10_part3 = False\n\nif c10_part3:\n    composite_signal = True\n\n# component 4: L1430_NEAR\nc10_part4 = True\n\nif not (관심종목 == 1):\n    c10_part4 = False\nelif 143000 <= 시분초 < 144500:\n    if not (시가총액 >= 10000.0):\n        c10_part4 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c10_part4 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c10_part4 = False\nelse:\n    c10_part4 = False\n\nif c10_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "11c0f2fca741d355d84b5f1d957e83f5b745670c7f4d76486da387853bd834c3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M10_POS",
+          "L1430_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_10_cov10_strength_momentum_1430_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_10",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc10_part1 = True\n\nif not (관심종목 == 1):\n    c10_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part1 = False\n    elif not (체결강도 >= 108.0):\n        c10_part1 = False\nelse:\n    c10_part1 = False\n\nif c10_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc10_part2 = True\n\nif not (관심종목 == 1):\n    c10_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part2 = False\n    elif not (체결강도 >= 107.0):\n        c10_part2 = False\nelse:\n    c10_part2 = False\n\nif c10_part2:\n    composite_signal = True\n\n# component 3: M10_POS\nc10_part3 = True\n\nif not (관심종목 == 1):\n    c10_part3 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c10_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c10_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c10_part3 = False\nelse:\n    c10_part3 = False\n\nif c10_part3:\n    composite_signal = True\n\n# component 4: L1430_NEAR\nc10_part4 = True\n\nif not (관심종목 == 1):\n    c10_part4 = False\nelif 143000 <= 시분초 < 144500:\n    if not (시가총액 >= 10000.0):\n        c10_part4 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c10_part4 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c10_part4 = False\nelse:\n    c10_part4 = False\n\nif c10_part4:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "11c0f2fca741d355d84b5f1d957e83f5b745670c7f4d76486da387853bd834c3",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M10_POS",
+          "L1430_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_10_cov10_strength_momentum_1430_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_11",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc11_part1 = True\n\nif not (관심종목 == 1):\n    c11_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c11_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c11_part1 = False\n    elif not (체결강도 >= 109.0):\n        c11_part1 = False\nelse:\n    c11_part1 = False\n\nif c11_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc11_part2 = True\n\nif not (관심종목 == 1):\n    c11_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c11_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c11_part2 = False\n    elif not (체결강도 >= 107.0):\n        c11_part2 = False\nelse:\n    c11_part2 = False\n\nif c11_part2:\n    composite_signal = True\n\n# component 3: L13_NEAR\nc11_part3 = True\n\nif not (관심종목 == 1):\n    c11_part3 = False\nelif 130000 <= 시분초 < 140000:\n    if not (시가총액 >= 10000.0):\n        c11_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c11_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c11_part3 = False\nelse:\n    c11_part3 = False\n\nif c11_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "e7ccc1f8ebcaa32b82d88af6d21714aa7c2a89d204c53dc67666e41eb2ff4458",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "S10_PMAX",
+          "L13_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_11_cov11_l13_offset_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_11",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_PMAX\nc11_part1 = True\n\nif not (관심종목 == 1):\n    c11_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c11_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c11_part1 = False\n    elif not (체결강도 >= 109.0):\n        c11_part1 = False\nelse:\n    c11_part1 = False\n\nif c11_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc11_part2 = True\n\nif not (관심종목 == 1):\n    c11_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c11_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c11_part2 = False\n    elif not (체결강도 >= 107.0):\n        c11_part2 = False\nelse:\n    c11_part2 = False\n\nif c11_part2:\n    composite_signal = True\n\n# component 3: L13_NEAR\nc11_part3 = True\n\nif not (관심종목 == 1):\n    c11_part3 = False\nelif 130000 <= 시분초 < 140000:\n    if not (시가총액 >= 10000.0):\n        c11_part3 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c11_part3 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c11_part3 = False\nelse:\n    c11_part3 = False\n\nif c11_part3:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "e7ccc1f8ebcaa32b82d88af6d21714aa7c2a89d204c53dc67666e41eb2ff4458",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_PMAX",
+          "S10_PMAX",
+          "L13_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_11_cov11_l13_offset_sell_protect_tp2p5_sl2_hold45.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_default_tp3_sl3_hold60",
+      "cell_id": "min_composite_12",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc12_part1 = True\n\nif not (관심종목 == 1):\n    c12_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part1 = False\n    elif not (체결강도 >= 108.0):\n        c12_part1 = False\nelse:\n    c12_part1 = False\n\nif c12_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc12_part2 = True\n\nif not (관심종목 == 1):\n    c12_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part2 = False\n    elif not (체결강도 >= 107.0):\n        c12_part2 = False\nelse:\n    c12_part2 = False\n\nif c12_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc12_part3 = True\n\nif not (관심종목 == 1):\n    c12_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c12_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c12_part3 = False\nelse:\n    c12_part3 = False\n\nif c12_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc12_part4 = True\n\nif not (관심종목 == 1):\n    c12_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c12_part4 = False\nelse:\n    c12_part4 = False\n\nif c12_part4:\n    composite_signal = True\n\n# component 5: L14_NEAR\nc12_part5 = True\n\nif not (관심종목 == 1):\n    c12_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c12_part5 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c12_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c12_part5 = False\nelse:\n    c12_part5 = False\n\nif c12_part5:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "f227a5e01cc38e83f8c9de2effa96ebd7caa20d5e71ab4640133f98896b7b9dd",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_default_tp3_sl3_hold60",
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_default_tp3_sl3_hold60.md"
+    },
+    {
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_protect_tp2p5_sl2_hold45",
+      "cell_id": "min_composite_12",
+      "family": "composite_coverage_repair",
+      "buy_code": "composite_signal = False\n\n# component 1: S09_D03\nc12_part1 = True\n\nif not (관심종목 == 1):\n    c12_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part1 = False\n    elif not (체결강도 >= 108.0):\n        c12_part1 = False\nelse:\n    c12_part1 = False\n\nif c12_part1:\n    composite_signal = True\n\n# component 2: S10_PMAX\nc12_part2 = True\n\nif not (관심종목 == 1):\n    c12_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part2 = False\n    elif not (체결강도 >= 107.0):\n        c12_part2 = False\nelse:\n    c12_part2 = False\n\nif c12_part2:\n    composite_signal = True\n\n# component 3: M09_POS\nc12_part3 = True\n\nif not (관심종목 == 1):\n    c12_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        c12_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c12_part3 = False\nelse:\n    c12_part3 = False\n\nif c12_part3:\n    composite_signal = True\n\n# component 4: M10_POS\nc12_part4 = True\n\nif not (관심종목 == 1):\n    c12_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        c12_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        c12_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        c12_part4 = False\nelse:\n    c12_part4 = False\n\nif c12_part4:\n    composite_signal = True\n\n# component 5: L14_NEAR\nc12_part5 = True\n\nif not (관심종목 == 1):\n    c12_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 10000.0):\n        c12_part5 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        c12_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        c12_part5 = False\nelse:\n    c12_part5 = False\n\nif c12_part5:\n    composite_signal = True\n\nif composite_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 2.5:\n    매도 = True\nelif 수익률 <= -2.0:\n    매도 = True\nelif 보유시간 >= 45:\n    매도 = True\nelif 시분초 >= 145900:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "f227a5e01cc38e83f8c9de2effa96ebd7caa20d5e71ab4640133f98896b7b9dd",
+      "sell_sha256": "6d09ffaa443a9876a84ab3bba2c28bb92530abec804f75048594ab27c35a1721",
+      "params": {
+        "component_aliases": [
+          "S09_D03",
+          "S10_PMAX",
+          "M09_POS",
+          "M10_POS",
+          "L14_NEAR"
+        ],
+        "component_condition_ids": [
+          "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+        ],
+        "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "created_reason": "repair_v2_20260706 composite_coverage_preflight hypothesis_seed; no-D bounded min warm64 preflight only",
+      "passport_md": "repair_composite_coverage_20260706/passports/repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_protect_tp2p5_sl2_hold45.md"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "plan_d_rank02_r1_verification_receipt_v1",
+  "created_at": "2026-07-06T23:24:00+09:00",
+  "scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+  "commands": [
+    {
+      "name": "json_jsonl_parse",
+      "command": "python -c \"... parse source receipt, design, seeds, static gate, db absence, dry-run report, summary, pairs, mapping jsonl ...\"",
+      "exit_code": 0,
+      "evidence": "json_ok_count 8; jsonl_ok plan_d_rank02_r1_strategy_name_mapping_20260706.jsonl 8"
+    },
+    {
+      "name": "verify_nonrelease_sync",
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "exit_code": 0,
+      "evidence": "all nonrelease synchronization guard checks passed"
+    },
+    {
+      "name": "scoped_diff_check",
+      "command": "git diff --check -- .omo/evidence/plan-d-rank02-r1-generate8-dryrun-no-portfolio-export-20260706 .omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706",
+      "exit_code": 0,
+      "evidence": "no whitespace errors in scoped files"
+    },
+    {
+      "name": "full_diff_check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "evidence": "no whitespace errors in the worktree diff"
+    }
+  ],
+  "guardrails": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "git_add_a_used": false
+  },
+  "result": "passed",
+  "next_allowed_action": "plan-d-rank02-r1-insert-replay-no-portfolio-export"
+}

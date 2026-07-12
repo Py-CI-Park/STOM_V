@@ -1,0 +1,25 @@
+{
+  "schema": "plan_d_rank01_sha_recheck_v1",
+  "created_at": "2026-07-06T13:39:00+09:00",
+  "scope": "plan-d-seed-r1-rank01-no-portfolio-export",
+  "seed_id": "plan_d_rcs_oos_20260706_rank01",
+  "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+  "db_path": "ai_strategy_loop/state/loop_strategies.db",
+  "db_access": "read_only",
+  "db_code_columns": {
+    "stockbuy": "전략코드",
+    "stocksell": "전략코드"
+  },
+  "buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+  "sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+  "expected_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+  "actual_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+  "expected_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+  "actual_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+  "buy_sha_match": true,
+  "sell_sha_match": true,
+  "passport_path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rcs_oos_20260706_rank01.md",
+  "passport_contains_seed_id": true,
+  "passport_contains_buy_sha": true,
+  "passport_contains_sell_sha": true
+}

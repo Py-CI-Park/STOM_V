@@ -215,6 +215,76 @@ def test_warm_run_timeout_can_skip_recovery(monkeypatch):
     assert result["timing"]["timeout"] is True
     assert result["timing"]["timeout_count"] == 1
 
+
+class _DummyQueue:
+    def __init__(self):
+        self.items = []
+
+    def put(self, item):
+        self.items.append(item)
+
+
+def test_warm_send_engine_data_preserves_timeout_diagnostics(monkeypatch):
+    session = warm.WarmBacktestSession(_warm_config(engine_count=2))
+    session.config.avg_time = 30
+    session.config.divid_mode = "종목코드별 분류"
+    session.config.one_code = ""
+    session.config.start_date = 20260101
+    session.config.end_date = 20260227
+    session.config.start_time = 90000
+    session.config.end_time = 151900
+    session.dict_cn = {}
+    session.backQ = _DummyQueue()
+    session.windowQ = _DummyQueue()
+    session.back_eques = [_DummyQueue(), _DummyQueue()]
+    session._engine_procs = [_DummyProc(alive=True), _DummyProc(alive=False)]
+    captured = {}
+
+    def fake_collect(
+        backQ,
+        multi,
+        timeout,
+        checkpoint,
+        result,
+        windowQ,
+        log_gubun,
+        shared_info=None,
+        load_stats=None,
+        engine_procs=None,
+    ):
+        captured["load_stats"] = load_stats
+        captured["engine_procs"] = engine_procs
+        result["message"] = "engine data loading timed out"
+        result["engine_data_loading"] = {
+            "expected_count": multi,
+            "received_count": 1,
+            "missing_count": 1,
+            "timeout_seconds": timeout,
+            "received_lengths": [3],
+            "engine_liveness": [{"pid": 123, "alive": True, "exitcode": None}],
+        }
+        return None
+
+    monkeypatch.setattr(warm, "_collect_engine_shared_info", fake_collect)
+
+    result = session._send_engine_data(
+        {
+            "dict_info": {},
+            "code_set": ["A", "B", "C"],
+            "day_list": [],
+            "code_days": {},
+            "day_codes": {},
+        }
+    )
+
+    assert captured["load_stats"] == {"received_count": 0, "received_lengths": []}
+    assert captured["engine_procs"] == session._engine_procs
+    assert result["status"] == "error"
+    assert result["message"] == "engine data loading timed out"
+    assert result["engine_data_loading"]["received_count"] == 1
+    assert result["engine_data_loading"]["engine_liveness"][0]["alive"] is True
+
+
 def test_warm_session_page_data_projects_prepare_and_last_run_timing():
     prepare = {"timing": {"prepare_elapsed": 0.1, "status": "ok"}}
     last_run = {"timing": {"run_elapsed": 0.2, "status": "success"}}

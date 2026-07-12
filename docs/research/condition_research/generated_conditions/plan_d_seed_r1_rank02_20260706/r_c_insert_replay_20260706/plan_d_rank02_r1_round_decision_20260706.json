@@ -1,0 +1,40 @@
+{
+  "schema": "plan_d_rank02_r1_round_decision_v1",
+  "created_at": "2026-07-06T23:51:54+09:00",
+  "scope": "plan-d-rank02-r1-insert-limited-replay-no-portfolio-export",
+  "decision": "open_selected_oos_preregistration_next",
+  "basis": {
+    "honest_rows": 8,
+    "gate_passed_count": 8,
+    "decision_counts": {
+      "flat": 6,
+      "improved": 2
+    },
+    "selected_candidates": [
+      {
+        "label": "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+        "profit": 2216506.0,
+        "mdd": 16.31,
+        "trades": 203,
+        "daily": 1.0,
+        "selection_reason": "best_profit_and_lower_mdd_vs_rank02_parent_preflight"
+      },
+      {
+        "label": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+        "profit": 1348845.0,
+        "mdd": 18.56,
+        "trades": 204,
+        "daily": 1.0,
+        "selection_reason": "secondary_improved_confirmation_same_or_better_mdd"
+      }
+    ]
+  },
+  "next_allowed_action": "plan-d-rank02-selected-oos-if-goal-2",
+  "forbidden_until_next_scope": [
+    "OOS without preregistration",
+    "portfolio",
+    "export/live/final promotion",
+    "DB UPDATE/DELETE",
+    "full tick/min 288 batch"
+  ]
+}

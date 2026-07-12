@@ -1,0 +1,105 @@
+{
+  "created_at": "2026-07-07T17:34:04+09:00",
+  "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+  "parent": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+  "parent_metrics": {
+    "measurement_frame": "selected_oos_min_2026_01_01_to_2026_02_27_warm64",
+    "profit_krw": 865831.0,
+    "mdd_pct": 6.28,
+    "daily_avg_trades": 0.5,
+    "trade_count": 19,
+    "score": 8.405463678617608,
+    "calmar": 18.630573248407643,
+    "uptrend_r2": 0.630467957404525,
+    "payoff_ratio": 2.4264705882352944,
+    "give_back_rate": 0.1111111111111111,
+    "gate_passed": true,
+    "reason": "ok"
+  },
+  "quota": {
+    "repair": 5,
+    "discovery": 3
+  },
+  "designs": [
+    {
+      "slot": 1,
+      "condition_id": "plan_d_r1_rank03_r1_01_l1430_rate75_hold90",
+      "axis": "l1430_rate_floor75",
+      "mutation": "L1430 rate floor 8.0 -> 7.5; keep loose sell hold90",
+      "reason": "Probe whether rank03 can add late-day coverage with a small L1430 rate relaxation.",
+      "buy_sha256": "3effb46f475efb4b4afb58fa0de5157093c80b8a2fd428d25da60c261a3d245d",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 2,
+      "condition_id": "plan_d_r1_rank03_r1_02_l1430_amt9000_rate80_hold90",
+      "axis": "l1430_amount_floor9000_rate80",
+      "mutation": "L1430 amount floor 10000 -> 9000; keep rate floor 8.0 and loose sell hold90",
+      "reason": "Add marginal large-cap liquidity coverage while preserving the rank03 rate threshold.",
+      "buy_sha256": "e66b0468ce5720d2c4ac58aef459e24c1b3e0273ecb009cc0f2349dd49f220f3",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 3,
+      "condition_id": "plan_d_r1_rank03_r1_03_l1430_end1500_rate80_hold90",
+      "axis": "l1430_end1500_rate80",
+      "mutation": "L1430 window 14:30-14:45 -> 14:30-15:00; keep amount 10000/rate 8.0/loose sell hold90",
+      "reason": "Test if the late-day boost remains stable when the end boundary is extended.",
+      "buy_sha256": "f79646213cd18a15ea5d07eac3aec300e626c1ecf078b06b14c2c55367a90664",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 4,
+      "condition_id": "plan_d_r1_rank03_r1_04_l14_l1430_rate80_hold90",
+      "axis": "l14_l1430_bridge_rate80",
+      "mutation": "Add adjacent L14 14:00-14:30 amount>=10000/rate>=8.0 component; keep rank03 parent and loose sell hold90",
+      "reason": "Bridge the parent L1430 pulse with the earlier L14 coverage axis.",
+      "buy_sha256": "b41ce0fd25d1405b24bec955a979c2f8625a092d0f9a8f7f8f9878b2f0335a06",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 5,
+      "condition_id": "plan_d_r1_rank03_r1_05_l13_l1430_rate80_hold90",
+      "axis": "l13_l1430_bridge_rate80",
+      "mutation": "Add adjacent L13 13:00-14:00 amount>=10000/rate>=8.0 component; keep rank03 parent and loose sell hold90",
+      "reason": "Check whether rank03 can borrow the higher-coverage L13 bridge without opening replay yet.",
+      "buy_sha256": "a06888074d0a2890c98c277b00489b3c4fb966f22719f1bf42f4d2285d4911ea",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 6,
+      "condition_id": "plan_d_r1_rank03_r1_06_morning_strength_relax_hold90",
+      "axis": "morning_strength_relax_keep_l1430_rate80",
+      "mutation": "S09 108->107 and S10 107->106; keep rank03 L1430 and loose sell hold90",
+      "reason": "Add early-session coverage using minimal strength relaxation around the rank03 daily-boost core.",
+      "buy_sha256": "f8be76b0c296b8ba50bc2785747e0a7df1ba3ee26bf169a6f989fe6f45843b91",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 7,
+      "condition_id": "plan_d_r1_rank03_r1_07_momentum_mult992_hold90",
+      "axis": "momentum_mult992_keep_l1430_rate80",
+      "mutation": "M09/M10 current>=high*0.994 -> 0.992; keep rank03 L1430 and loose sell hold90",
+      "reason": "Slightly relax early high-price proximity while preserving the rank03 late-day component.",
+      "buy_sha256": "2ae05c013fdafb0766c8d4c4a8fb972a07af41f16f6e5db53c3dcaf416b76f12",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 8,
+      "condition_id": "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "axis": "sell_tp3_sl3_hold90_on_rank03_parent_buy",
+      "mutation": "Keep rank03 parent buy; tighten take-profit 4.0 -> 3.0 while keeping SL -3 and hold90",
+      "reason": "Check whether default TP behavior improves realizability without mutating rank03 buy coverage.",
+      "buy_sha256": "c6bf339034de92707413444e6cffc2a0b8c8877de6eb3bfd523ba281e68a1d13",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    }
+  ]
+}

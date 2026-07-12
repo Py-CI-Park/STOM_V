@@ -1,0 +1,46 @@
+{
+  "schema": "plan_d_rank02_r4_source_read_receipt_v1",
+  "created_at": "2026-07-07T16:18:20+09:00",
+  "scope": "plan-d-rank02-r4-generate8-dryrun-no-portfolio-export",
+  "read_scope": "full_document",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "active_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+  "documents": [
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank02_r3_selected_oos_handoff.md",
+      "line_count": 101,
+      "sha256": "4ec554a8ab2d53b7b37559ba8a262be6636b3eafb810944b27ca1b4e80597e45"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/plan_d_rank02_r3_selected_oos_result_20260707.json",
+      "line_count": 105,
+      "sha256": "352843605fd01ab68bef2c6ea6d2f906887ed818ea07aee1e0ac77b83639bbd2"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/plan_d_rank02_r3_next_seed_readiness_20260707.json",
+      "line_count": 41,
+      "sha256": "57509fa4fdb2474a36553a134dee81a82eee3675d733ef645b59a040eccbaafb"
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753"
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45"
+    },
+    {
+      "path": "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+      "line_count": 149,
+      "sha256": "e0dae7379559fe6556a769c8e4312a6f48d926fc299c9e78373afab00dd16ae7"
+    }
+  ],
+  "applied_sections": [
+    "R3 selected OOS survivor and next seed readiness",
+    "Plan D dry-run-first rule",
+    "strategy/rules STOM syntax guardrails",
+    "no replay/OOS/portfolio/export boundary"
+  ]
+}

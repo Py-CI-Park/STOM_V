@@ -1,0 +1,167 @@
+{
+  "schema": "plan_b_p5_min_full_run_protocol_after_preflight_v1",
+  "created_at": "2026-07-05T13:50:43+09:00",
+  "preflight_receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_preflight4_official_full_warm64_20260705_receipt.json",
+  "preflight_summary": {
+    "rows": 4,
+    "status_counts": {
+      "ok": 3,
+      "error": 1
+    },
+    "gate_passed_count": 0,
+    "full_288_allowed_before_protocol": false
+  },
+  "official_profile": {
+    "bt_timeframe": "min",
+    "bt_full_start": 20250407,
+    "bt_full_end": 20260227,
+    "bt_warm_engine_count": 64,
+    "bt_universe_start_time": 90000,
+    "bt_min_universe_end_time": 151900,
+    "bt_timeout": 14400,
+    "bt_warm_run_timeout": 1200,
+    "min_daily_trades": 0.5,
+    "mdd_cap": 35.0
+  },
+  "decision": {
+    "min_288_single_run_allowed": false,
+    "next_allowed_action": "chunk01 only",
+    "chunked_288_allowed_after_clean_chunk01": true,
+    "chunk_size": 24,
+    "chunk_count": 12
+  },
+  "rationale": [
+    "Preflight proved official min warm64/full-period execution can prepare and record rows.",
+    "Preflight included one csv=no/metrics=no raw error, so continue only with chunked coverage and per-chunk status monitoring.",
+    "24-pair chunks keep process lifetime bounded and match the official tick P5 chunk size.",
+    "P5 success remains coverage-map completion, not gate_passed count."
+  ],
+  "required_command_flags": [
+    "--fail-fast-timeout"
+  ],
+  "chunks": [
+    {
+      "chunk_no": 1,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk01_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 0,
+      "official_index_end": 23,
+      "run_id": "lat_min_official_full_warm64_chunk01_20260705",
+      "allowed_in_current_scope": true
+    },
+    {
+      "chunk_no": 2,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk02_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 24,
+      "official_index_end": 47,
+      "run_id": "lat_min_official_full_warm64_chunk02_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 3,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk03_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 48,
+      "official_index_end": 71,
+      "run_id": "lat_min_official_full_warm64_chunk03_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 4,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk04_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 72,
+      "official_index_end": 95,
+      "run_id": "lat_min_official_full_warm64_chunk04_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 5,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk05_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 96,
+      "official_index_end": 119,
+      "run_id": "lat_min_official_full_warm64_chunk05_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 6,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk06_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 120,
+      "official_index_end": 143,
+      "run_id": "lat_min_official_full_warm64_chunk06_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 7,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk07_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 144,
+      "official_index_end": 167,
+      "run_id": "lat_min_official_full_warm64_chunk07_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 8,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk08_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 168,
+      "official_index_end": 191,
+      "run_id": "lat_min_official_full_warm64_chunk08_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 9,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk09_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 192,
+      "official_index_end": 215,
+      "run_id": "lat_min_official_full_warm64_chunk09_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 10,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk10_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 216,
+      "official_index_end": 239,
+      "run_id": "lat_min_official_full_warm64_chunk10_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 11,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk11_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 240,
+      "official_index_end": 263,
+      "run_id": "lat_min_official_full_warm64_chunk11_20260705",
+      "allowed_in_current_scope": false
+    },
+    {
+      "chunk_no": 12,
+      "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk12_20260705.json",
+      "pair_count": 24,
+      "official_index_start": 264,
+      "official_index_end": 287,
+      "run_id": "lat_min_official_full_warm64_chunk12_20260705",
+      "allowed_in_current_scope": false
+    }
+  ],
+  "current_selected_scope": {
+    "allowed_chunk_no": 1,
+    "forbidden": [
+      "chunk02+",
+      "P6/P7/Plan D",
+      "OOS",
+      "DB UPDATE/DELETE",
+      "monolithic min 288"
+    ]
+  },
+  "source_hashes": {
+    "pairs_min_sha256": "f281563425fd8c970e2b832766df0cf57b4b454d6b5bc05542588cbb785cf746",
+    "config_sha256": "59e85716814e6973e32922b329d8906462206e260eac02eb9575bc1d23e72b2a",
+    "preflight_receipt_sha256": "164704148ccbfbb5040731f9d083cdfd92c5adfaa67b09dd8699ac4aa1bce48c"
+  }
+}

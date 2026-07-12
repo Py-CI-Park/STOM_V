@@ -27,6 +27,10 @@ from ai_strategy_loop.controller.loop import (
     _warm_to_outcome,
     _score_outcome,
 )
+from ai_strategy_loop.controller.phase_contract import (
+    EXECUTION_KIND_FIXED_BATCH,
+    canonical_phase_owner_ok,
+)
 from ai_strategy_loop.controller.state import LoopState, publish_batch_state
 from cli.warm_session import WarmBacktestSession
 
@@ -78,6 +82,15 @@ def main() -> int:
     st = LoopState()
     rid = st.start_run(config, run_id=args.run_id)
     print(f"[BATCH] run_id={rid} pairs={len(pairs)}", flush=True)
+    # CL-R04 todo10 — fixed_batch는 canonical passport lineage를 절대 진전시키지
+    #   않는다(EvidenceStore.append_passport/append_manifest를 이 스크립트가
+    #   호출하지 않는다). canonical_phase_owner_ok(fixed_batch)==False로 그
+    #   보장을 명시적으로 고정한다(회귀 시 즉시 AssertionError).
+    if canonical_phase_owner_ok(EXECUTION_KIND_FIXED_BATCH):
+        raise RuntimeError(
+            "claude_candidate_batch_eval is execution_kind=fixed_batch and must "
+            "never be treated as a canonical phase owner"
+        )
 
     sess = WarmBacktestSession(_build_warm_btconfig(config))
     t0 = time.time()

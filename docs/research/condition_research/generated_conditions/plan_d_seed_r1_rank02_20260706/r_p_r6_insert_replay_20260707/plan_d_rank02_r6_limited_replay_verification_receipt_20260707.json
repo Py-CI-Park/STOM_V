@@ -1,0 +1,77 @@
+{
+  "schema": "plan_d_rank02_r6_limited_replay_verification_receipt_v1",
+  "created_at": "2026-07-07T17:25:00+09:00",
+  "scope": "plan-d-rank02-r6-insert-limited-replay-no-oos-portfolio-export",
+  "checks": {
+    "json_parse": "pass",
+    "jsonl_parse": "pass",
+    "git_diff_check_scoped": "pass",
+    "verify_nonrelease_sync": "pass",
+    "live_python_batch_process": "none",
+    "warm_prepare_log": {
+      "status": "ok",
+      "back_count": 1379,
+      "elapsed_seconds": 110,
+      "done_seen": true
+    },
+    "constraints": {
+      "oos_executed": false,
+      "portfolio_executed": false,
+      "export_live_final_executed": false,
+      "full_tick_288_executed": false,
+      "full_min_288_executed": false,
+      "db_update_delete_used": false,
+      "git_add_A_used": false
+    }
+  },
+  "decision": {
+    "honest_rows": "8/8",
+    "gate_passed": "8/8",
+    "improved": 0,
+    "flat": 8,
+    "no_go": 0,
+    "rank02_branch_freeze_threshold_reached": true,
+    "oos_opened": false
+  },
+  "constraints_observed": {
+    "db_insert_apply_reconciliation": "preapply absent; provenance/mapping/postapply and db_content_sha_check pass; later retry collision_abort did not mutate DB."
+  },
+  "registration_reconciliation": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_registration_reconciliation_20260707.json",
+  "json_parse_file_count": 16,
+  "json_parse_checked_files": [
+    "pairs_min.json",
+    "pairs_plan_d_rank02_r6_8_inserted_20260707.json",
+    "pairs_plan_d_rank02_r6_selected_oos_draft_20260707.json",
+    "pairs_tick.json",
+    "plan_d_rank02_r6_branch_freeze_review_20260707.json",
+    "plan_d_rank02_r6_db_content_sha_check_20260707.json",
+    "plan_d_rank02_r6_limited_replay_result_20260707.json",
+    "plan_d_rank02_r6_limited_replay_verification_receipt_20260707.json",
+    "plan_d_rank02_r6_postapply_db_check_20260707.json",
+    "plan_d_rank02_r6_preapply_absence_check_20260707.json",
+    "plan_d_rank02_r6_registration_reconciliation_20260707.json",
+    "plan_d_rank02_r6_round_decision_20260707.json",
+    "plan_d_rank02_r6_selected_freeze_ledger_draft_20260707.jsonl",
+    "plan_d_rank02_r6_strategy_name_mapping_apply_20260707.jsonl",
+    "provenance_plan_d_rank02_r6_register_apply_20260707.jsonl",
+    "register_plan_d_rank02_r6_apply_20260707.json"
+  ],
+  "jsonl_counts": {
+    "pairs_min.json": 1,
+    "pairs_plan_d_rank02_r6_8_inserted_20260707.json": 1,
+    "pairs_plan_d_rank02_r6_selected_oos_draft_20260707.json": 1,
+    "pairs_tick.json": 1,
+    "plan_d_rank02_r6_branch_freeze_review_20260707.json": 1,
+    "plan_d_rank02_r6_db_content_sha_check_20260707.json": 1,
+    "plan_d_rank02_r6_limited_replay_result_20260707.json": 1,
+    "plan_d_rank02_r6_limited_replay_verification_receipt_20260707.json": 1,
+    "plan_d_rank02_r6_postapply_db_check_20260707.json": 1,
+    "plan_d_rank02_r6_preapply_absence_check_20260707.json": 1,
+    "plan_d_rank02_r6_registration_reconciliation_20260707.json": 1,
+    "plan_d_rank02_r6_round_decision_20260707.json": 1,
+    "plan_d_rank02_r6_selected_freeze_ledger_draft_20260707.jsonl": 0,
+    "plan_d_rank02_r6_strategy_name_mapping_apply_20260707.jsonl": 8,
+    "provenance_plan_d_rank02_r6_register_apply_20260707.jsonl": 8,
+    "register_plan_d_rank02_r6_apply_20260707.json": 1
+  }
+}

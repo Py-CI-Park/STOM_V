@@ -1,0 +1,13 @@
+{
+  "schema": "plan_d_rank02_r6_generate8_dryrun_summary_v1",
+  "created_at": "2026-07-07T17:03:26+09:00",
+  "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+  "candidate_count": 8,
+  "static_gate_passed": 8,
+  "static_gate_failed": 0,
+  "db_insert_apply_executed": false,
+  "official_replay_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "next_allowed_action_if_dryrun_clean": "rank02_r6_insert_limited_replay_no_oos_portfolio_export_or_rank02_terminal_review"
+}

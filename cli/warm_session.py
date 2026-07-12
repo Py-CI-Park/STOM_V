@@ -116,6 +116,7 @@ class WarmBacktestSession:
 
         # 정리 대상(엔진 + 서브토탈만 보관; BackTest 프로세스는 run마다 따로 reap)
         self._procs = []
+        self._engine_procs = []
         self.drainer = None
         self._warm_timeout_count = 0
         self._warm_recovery_attempts = 0
@@ -272,6 +273,7 @@ class WarmBacktestSession:
             )
             proc.start()
             self._procs.append(proc)
+            self._engine_procs.append(proc)
             self.windowQ.put((1.4, f'엔진 프로세스{idx + 1} 생성 완료'))
 
         with ThreadPoolExecutor(max_workers=self.config.engine_count) as executor:
@@ -395,14 +397,17 @@ class WarmBacktestSession:
         timeout = getattr(config, 'timeout', 3600) or 3600
         checkpoint = BacktestCheckpointRecorder()
         probe = {}
+        data_load_stats = {'received_count': 0, 'received_lengths': []}
         self.shared_info = []
         collected = _collect_engine_shared_info(
             self.backQ, multi, timeout, checkpoint, probe, self.windowQ, log_gubun,
-            self.shared_info,
+            self.shared_info, data_load_stats, self._engine_procs,
         )
         if collected is None:
-            return {'status': 'error',
-                    'message': probe.get('message', 'engine data loading timed out')}
+            result = dict(probe)
+            result['status'] = 'error'
+            result['message'] = probe.get('message', 'engine data loading timed out')
+            return result
 
         self.shared_info[:] = sorted(self.shared_info, key=lambda x: x['shape'][0], reverse=True)
         self.back_count = len(self.shared_info)
@@ -718,6 +723,7 @@ class WarmBacktestSession:
         for proc in self._procs:
             self._kill_proc(proc)
         self._procs = []
+        self._engine_procs = []
 
         if self.shared_info:
             _cleanup_shared_memory(self.shared_info)

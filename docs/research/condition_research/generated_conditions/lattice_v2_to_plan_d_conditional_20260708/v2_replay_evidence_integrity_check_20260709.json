@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-09T18:41:48+09:00",
+  "scope": "analysis_only_replay_evidence_integrity_no_replay",
+  "replay_result": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/lattice_v2_body8_min_warm64_limited_replay_result_20260708.json",
+  "failure_decomposition": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_risk_sell_failure_decomposition_20260709.json",
+  "checks": {
+    "row_count_is_8": true,
+    "honest_row_count_is_8": true,
+    "ok_count_is_7": true,
+    "error_count_is_1": true,
+    "gate_passed_count_is_0": true,
+    "survivor_count_is_0": true,
+    "hold_count_is_0": true,
+    "no_go_count_is_8": true,
+    "ok_rows_all_negative_profit": true,
+    "ok_rows_all_mdd_over_cap": true,
+    "parsed_rows_all_broad_based_loss": true,
+    "constraints_no_oos_plan_d_portfolio": true
+  },
+  "summary": {
+    "row_count": 8,
+    "honest_row_count": 8,
+    "ok_count": 7,
+    "status_counts": {
+      "ok": 7,
+      "error": 1
+    },
+    "gate_passed_count": 0,
+    "survivor_count": 0,
+    "hold_count": 0,
+    "no_go_count": 8,
+    "profit_min": -881171389.0,
+    "profit_max": -101728684.0,
+    "mdd_min": 89.63,
+    "mdd_max": 441.67,
+    "daily_avg_trades_min": 20.5,
+    "daily_avg_trades_max": 143.9,
+    "primary_failure": "negative profit with mdd far above cap; daily trade coverage was not the blocker for ok rows"
+  },
+  "decision": "replay_evidence_valid_for_branch_closeout",
+  "note": "corrected clause audit changes diagnostic table values but does not change replay metrics or no_go classification",
+  "all_checks_passed": true
+}

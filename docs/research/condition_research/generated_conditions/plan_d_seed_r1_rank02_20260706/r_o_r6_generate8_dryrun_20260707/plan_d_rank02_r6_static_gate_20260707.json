@@ -1,0 +1,96 @@
+{
+  "schema": "plan_d_rank02_r6_static_gate_v1",
+  "created_at": "2026-07-07T17:03:26+09:00",
+  "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "candidate_count": 8,
+  "passed_count": 8,
+  "failed_count": 0,
+  "formal_replay_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "export_live_final_executed": false,
+  "db_insert_apply_executed": false,
+  "gates": [
+    {
+      "condition_id": "plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_03_eod1515_pmax110_108",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_07_eod1510_l14_rate9",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_08_eod1520_l14_rate10",
+      "compile_ok": true,
+      "buy_call_contract_ok": true,
+      "sell_call_contract_ok": true,
+      "forbidden_token_check_ok": true,
+      "sanitized_name_ok": true,
+      "passed": true,
+      "errors": []
+    }
+  ]
+}

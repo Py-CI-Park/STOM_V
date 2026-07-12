@@ -1,0 +1,98 @@
+{
+  "schema": "plan_d_rank02_r6_preapply_absence_check_v1",
+  "created_at": "2026-07-07T17:06:51+09:00",
+  "scope": "plan-d-rank02-r6-insert-limited-replay-no-oos-portfolio-export",
+  "db": "ai_strategy_loop/state/loop_strategies.db",
+  "checked_tables": [
+    "stockbuy",
+    "stocksell"
+  ],
+  "checked_strategy_names": 16,
+  "exists_count": 0,
+  "existing_strategy_names": [],
+  "status": "pass_absent",
+  "debug_note": "Initial check incorrectly assumed a strategies table; actual loop DB schema uses stockbuy/stocksell primary key [index], matching register_lattice_seeds.py.",
+  "db_update_delete_used": false,
+  "checks": [
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_03_eod1515_pmax110_108_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_03_eod1515_pmax110_108_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_07_eod1510_l14_rate9_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_07_eod1510_l14_rate9_S",
+      "exists": false
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_08_eod1520_l14_rate10_B",
+      "exists": false
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_08_eod1520_l14_rate10_S",
+      "exists": false
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "created_at_kst": "2026-07-07T22:52:00+09:00",
+  "read_scope": "full_document",
+  "documents": [
+    {
+      "path": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "read_scope": "full_document",
+      "line_count": 363,
+      "sha256": "e2bf3ec56d2c6ada3b832b363bc1af42e96f8ad613608b63338dd3063adefbf3",
+      "bytes": 17802
+    },
+    {
+      "path": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+      "read_scope": "full_document",
+      "line_count": 170,
+      "sha256": "ac29af22df13aa9f1f22f7ccd2994af291188167874d62edd7b430f408892e72",
+      "bytes": 6538
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json",
+      "read_scope": "full_document",
+      "line_count": 1936,
+      "sha256": "391c51d95c6a128b4a1bf20a192369a853af86c3c25748c739c52d06962be183",
+      "bytes": 71811
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json",
+      "read_scope": "full_document",
+      "line_count": 2374,
+      "sha256": "6e548da4d40ec262bfa0b15431ce1ac78461415a9fdea1ca454d066e4d45aea3",
+      "bytes": 90182
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_go_no_go_hold_20260705.json",
+      "read_scope": "full_document",
+      "line_count": 1615,
+      "sha256": "bb165918b373fa7a485c37356c6840edbfc8289b93e598e44e077c690de214bf",
+      "bytes": 67494
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_overnight_20260705/overnight_no_d_576_deep_analysis_20260705.json",
+      "read_scope": "full_document",
+      "line_count": 1697,
+      "sha256": "17aa5833132588b918b6773290292acd5b683235c26821c34ebbadda4194cce5",
+      "bytes": 56195
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_coverage_20260706/repair_composite_coverage_preflight_result_20260706.json",
+      "read_scope": "full_document",
+      "line_count": 1988,
+      "sha256": "cf29fda18652e954be9bb400cf3221c03aa82c38beda738990da60d84fdd3085",
+      "bytes": 84579
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_expanded_preflight_result_20260706.json",
+      "read_scope": "full_document",
+      "line_count": 5385,
+      "sha256": "ee1af31288fd464bb79f7c548c6bd891e594363758eb7a2a0c8f374dfb148b9c",
+      "bytes": 238069
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+      "read_scope": "full_document",
+      "line_count": 873,
+      "sha256": "662d29fa2e87b3d0d82f21836a5038f50a626d303bfa93135a1ab51472b79d72",
+      "bytes": 45321
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+      "read_scope": "full_document",
+      "line_count": 24,
+      "sha256": "f8f7f115eb0d85d4417ddbd8cae25f8c5e19a4a28bbfc65519cc94cede56b926",
+      "bytes": 118271
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+      "read_scope": "full_document",
+      "line_count": 24,
+      "sha256": "5d62786250803136c3f6c3a8d1f963cda2efcb964f09f6113f3654f87fb97411",
+      "bytes": 32578
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "read_scope": "full_document",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "bytes": 25483
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "bytes": 2235
+    }
+  ],
+  "applied_sections": [
+    "lattice failure analysis",
+    "repair composite results",
+    "Plan D survivor seed inventory",
+    "STOM strategy/rules constraints",
+    "v2 redesign constraints"
+  ]
+}

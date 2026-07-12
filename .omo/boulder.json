@@ -1,441 +1,1050 @@
 {
-    "schema_version":  2,
-    "active_work_id":  "dashboard-v4-hardening-to-95",
-    "works":  {
-                  "condition-research-rereview-20260603":  {
-                                                               "work_id":  "condition-research-rereview-20260603",
-                                                               "active_plan":  ".omo/plans/condition-research-rereview-20260603.md",
-                                                               "plan_name":  "condition-research-rereview-20260603",
-                                                               "session_ids":  [
-                                                                                   "codex:condition-research-rereview-20260603"
-                                                                               ],
-                                                               "status":  "completed",
-                                                               "worktree_path":  null
-                                                           },
-                  "tick-oos-validation-20260603":  {
-                                                       "work_id":  "tick-oos-validation-20260603",
-                                                       "active_plan":  ".omo/plans/tick-oos-validation-20260603.md",
-                                                       "plan_name":  "tick-oos-validation-20260603",
-                                                       "session_ids":  [
-                                                                           "codex:tick-oos-validation-20260603",
-                                                                           "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
-                                                                       ],
-                                                       "status":  "completed",
-                                                       "worktree_path":  null
-                                                   },
-                  "tick-research-dashboard-upgrade-20260603":  {
-                                                                   "work_id":  "tick-research-dashboard-upgrade-20260603",
-                                                                   "active_plan":  ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
-                                                                   "plan_name":  "tick-research-dashboard-upgrade-20260603",
-                                                                   "session_ids":  [
-                                                                                       "codex:tick-research-dashboard-upgrade-20260603"
-                                                                                   ],
-                                                                   "status":  "completed",
-                                                                   "worktree_path":  null
-                                                               },
-                  "tick-oos-dashboard-validation-20260604":  {
-                                                                 "work_id":  "tick-oos-dashboard-validation-20260604",
-                                                                 "active_plan":  ".omo/plans/tick-oos-dashboard-validation-20260604.md",
-                                                                 "plan_name":  "tick-oos-dashboard-validation-20260604",
-                                                                 "session_ids":  [
-                                                                                     "codex:tick-oos-dashboard-validation-20260604"
-                                                                                 ],
-                                                                 "status":  "completed",
-                                                                 "worktree_path":  null,
-                                                                 "completed_at":  "2026-06-04T11:48:55.6080517+09:00"
-                                                             },
-                  "tick-selection-rule-sparse-gen5-research-20260604":  {
-                                                                            "work_id":  "tick-selection-rule-sparse-gen5-research-20260604",
-                                                                            "active_plan":  ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
-                                                                            "plan_name":  "tick-selection-rule-sparse-gen5-research-20260604",
-                                                                            "session_ids":  [
-                                                                                                "codex:tick-selection-rule-sparse-gen5-research-20260604"
-                                                                                            ],
-                                                                            "status":  "completed",
-                                                                            "worktree_path":  null,
-                                                                            "completed_at":  "2026-06-04T13:48:48.8255929+09:00"
-                                                                        },
-                  "tick-sparse-positive-generation-improvement-20260604":  {
-                                                                               "work_id":  "tick-sparse-positive-generation-improvement-20260604",
-                                                                               "active_plan":  ".omo/plans/tick-sparse-positive-generation-improvement-20260604.md",
-                                                                               "plan_name":  "tick-sparse-positive-generation-improvement-20260604",
-                                                                               "session_ids":  [
-                                                                                                   "codex:tick-sparse-positive-generation-improvement-20260604"
-                                                                                               ],
-                                                                               "status":  "completed",
-                                                                               "worktree_path":  null,
-                                                                               "completed_at":  "2026-06-04T18:36:30+09:00"
-                                                                           },
-                  "tick-sparse-positive-oos-robustness-20260604":  {
-                                                                       "work_id":  "tick-sparse-positive-oos-robustness-20260604",
-                                                                       "active_plan":  ".omo/plans/tick-sparse-positive-oos-robustness-20260604.md",
-                                                                       "plan_name":  "tick-sparse-positive-oos-robustness-20260604",
-                                                                       "session_ids":  [
-                                                                                           "codex:tick-sparse-positive-oos-robustness-20260604"
-                                                                                       ],
-                                                                       "status":  "completed",
-                                                                       "worktree_path":  null,
-                                                                       "completed_at":  "2026-06-04T21:29:45.0092262+09:00"
-                                                                   },
-                  "tick-dashboard-observability-research-ux-20260604":  {
-                                                                            "work_id":  "tick-dashboard-observability-research-ux-20260604",
-                                                                            "active_plan":  ".omo/plans/tick-dashboard-observability-research-ux-20260604.md",
-                                                                            "plan_name":  "tick-dashboard-observability-research-ux-20260604",
-                                                                            "session_ids":  [
-                                                                                                "codex:tick-dashboard-observability-research-ux-20260604"
-                                                                                            ],
-                                                                            "status":  "completed",
-                                                                            "worktree_path":  null,
-                                                                            "completed_at":  "2026-06-05T00:16:10.6705427+09:00"
-                                                                        },
-                  "tick-research-direction-realignment-20260605":  {
-                                                                       "work_id":  "tick-research-direction-realignment-20260605",
-                                                                       "active_plan":  ".omo/plans/tick-research-direction-realignment-20260605.md",
-                                                                       "plan_name":  "tick-research-direction-realignment-20260605",
-                                                                       "session_ids":  [
-                                                                                           "codex:tick-research-direction-realignment-20260605"
-                                                                                       ],
-                                                                       "status":  "completed",
-                                                                       "worktree_path":  null,
-                                                                       "completed_at":  "2026-06-05T07:24:21.2675354+09:00"
-                                                                   },
-                  "tick-p7-observability-bounded-training-20260605":  {
-                                                                          "work_id":  "tick-p7-observability-bounded-training-20260605",
-                                                                          "active_plan":  ".omo/plans/tick-p7-observability-bounded-training-20260605.md",
-                                                                          "plan_name":  "tick-p7-observability-bounded-training-20260605",
-                                                                          "session_ids":  [
-                                                                                              "codex:tick-p7-observability-bounded-training-20260605"
-                                                                                          ],
-                                                                          "status":  "completed",
-                                                                          "worktree_path":  null,
-                                                                          "completed_at":  "2026-06-05T12:22:35.0665084+09:00"
-                                                                      },
-                  "tick-p7-timeout-unblock-live-strategy-visibility-20260605":  {
-                                                                                    "work_id":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
-                                                                                    "active_plan":  ".omo/plans/tick-p7-timeout-unblock-live-strategy-visibility-20260605.md",
-                                                                                    "plan_name":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
-                                                                                    "session_ids":  [
-                                                                                                        "codex:tick-p7-timeout-unblock-live-strategy-visibility-20260605"
-                                                                                                    ],
-                                                                                    "status":  "completed",
-                                                                                    "worktree_path":  null,
-                                                                                    "completed_at":  "2026-06-05T15:27:48.0561541+09:00"
-                                                                                },
-                  "tick-seed-warm-timeout-root-cause-20260605":  {
-                                                                     "work_id":  "tick-seed-warm-timeout-root-cause-20260605",
-                                                                     "active_plan":  ".omo/plans/tick-seed-warm-timeout-root-cause-20260605.md",
-                                                                     "plan_name":  "tick-seed-warm-timeout-root-cause-20260605",
-                                                                     "session_ids":  [
-                                                                                         "codex:tick-seed-warm-timeout-root-cause-20260605"
-                                                                                     ],
-                                                                     "status":  "completed",
-                                                                     "worktree_path":  null,
-                                                                     "completed_at":  "2026-06-05T17:02:41.1988220+09:00"
-                                                                 },
-                  "ct-seed-tick-preflight-repair-20260605":  {
-                                                                 "work_id":  "ct-seed-tick-preflight-repair-20260605",
-                                                                 "active_plan":  ".omo/plans/ct-seed-tick-preflight-repair-20260605.md",
-                                                                 "plan_name":  "ct-seed-tick-preflight-repair-20260605",
-                                                                 "session_ids":  [
-                                                                                     "codex:ct-seed-tick-preflight-repair-20260605"
-                                                                                 ],
-                                                                 "status":  "completed",
-                                                                 "worktree_path":  null,
-                                                                 "completed_at":  "2026-06-05T19:35:31.9546622+09:00"
-                                                             },
-                  "ct-seed-branch-workload-isolation-20260605":  {
-                                                                     "work_id":  "ct-seed-branch-workload-isolation-20260605",
-                                                                     "active_plan":  ".omo/plans/ct-seed-branch-workload-isolation-20260605.md",
-                                                                     "plan_name":  "ct-seed-branch-workload-isolation-20260605",
-                                                                     "session_ids":  [
-                                                                                         "codex:ct-seed-branch-workload-isolation-20260605"
-                                                                                     ],
-                                                                     "status":  "completed",
-                                                                     "worktree_path":  null,
-                                                                     "completed_at":  "2026-06-05T20:00:21.0478602+09:00"
-                                                                 },
-                  "tick-human-like-research-criteria-dashboard-20260605":  {
-                                                                               "work_id":  "tick-human-like-research-criteria-dashboard-20260605",
-                                                                               "active_plan":  ".omo/plans/tick-human-like-research-criteria-dashboard-20260605.md",
-                                                                               "plan_name":  "tick-human-like-research-criteria-dashboard-20260605",
-                                                                               "session_ids":  [
-                                                                                                   "codex:tick-human-like-research-criteria-dashboard-20260605"
-                                                                                               ],
-                                                                               "status":  "completed",
-                                                                               "worktree_path":  null,
-                                                                               "completed_at":  "2026-06-06T07:42:47.2295790+09:00"
-                                                                           },
-                  "tick-900-930-generated-timeout-reduction-20260606":  {
-                                                                            "work_id":  "tick-900-930-generated-timeout-reduction-20260606",
-                                                                            "active_plan":  ".omo/plans/tick-900-930-generated-timeout-reduction-20260606.md",
-                                                                            "plan_name":  "tick-900-930-generated-timeout-reduction-20260606",
-                                                                            "session_ids":  [
-                                                                                                "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
-                                                                                            ],
-                                                                            "status":  "blocked",
-                                                                            "worktree_path":  null,
-                                                                            "blocked_at":  "2026-06-06T10:55:00+09:00",
-                                                                            "blocker":  "P3 split probes ended under wall cap, but generated strategy creation is blocked by gpt_auth HTTP 429 usage_limit_reached and no alternate openrouter/codex_proxy credentials are configured. Do not retry P4 until provider/fallback is available."
-                                                                        },
-                  "tick-min-condition-generation-review-20260613":  {
-                                                                        "work_id":  "tick-min-condition-generation-review-20260613",
-                                                                        "active_plan":  ".omo/plans/tick-min-condition-generation-review-20260613.md",
-                                                                        "plan_name":  "tick-min-condition-generation-review-20260613",
-                                                                        "session_ids":  [
-                                                                                            "codex:tick-min-condition-generation-review-20260613"
-                                                                                        ],
-                                                                        "status":  "completed",
-                                                                        "worktree_path":  null,
-                                                                        "started_at":  "2026-06-13T13:14:44.4405455+09:00",
-                                                                        "completed_at":  "2026-06-13T13:30:41.1011360+09:00"
-                                                                    },
-                  "tick-min-condition-deficit-rereview-20260613":  {
-                                                                       "work_id":  "tick-min-condition-deficit-rereview-20260613",
-                                                                       "active_plan":  ".omo/plans/tick-min-condition-generation-review-20260613.md",
-                                                                       "plan_name":  "tick-min-condition-generation-review-20260613",
-                                                                       "session_ids":  [
-                                                                                           "codex:tick-min-condition-deficit-rereview-20260613"
-                                                                                       ],
-                                                                       "status":  "completed",
-                                                                       "worktree_path":  null,
-                                                                       "started_at":  "2026-06-13T17:29:16.7288560+09:00",
-                                                                       "completed_at":  "2026-06-13T17:31:41.6178027+09:00"
-                                                                   },
-                  "condition-research-score-update-20260615":  {
-                                                                   "work_id":  "condition-research-score-update-20260615",
-                                                                   "active_plan":  ".omo/plans/condition-research-score-update-20260615.md",
-                                                                   "plan_name":  "condition-research-score-update-20260615",
-                                                                   "session_ids":  [
-                                                                                       "codex:condition-research-score-update-20260615"
-                                                                                   ],
-                                                                   "status":  "completed",
-                                                                   "worktree_path":  null,
-                                                                   "started_at":  "2026-06-15T22:05:55.6381866+09:00",
-                                                                   "completed_at":  "2026-06-15T22:15:30.3677436+09:00"
-                                                               },
-                  "condition-self-improvement-process-report-20260615":  {
-                                                                             "work_id":  "condition-self-improvement-process-report-20260615",
-                                                                             "active_plan":  ".omo/plans/condition-self-improvement-process-report-20260615.md",
-                                                                             "plan_name":  "condition-self-improvement-process-report-20260615",
-                                                                             "session_ids":  [
-                                                                                                 "codex:condition-self-improvement-process-report-20260615"
-                                                                                             ],
-                                                                             "status":  "completed",
-                                                                             "worktree_path":  null,
-                                                                             "started_at":  "2026-06-15T23:43:30.7402839+09:00",
-                                                                             "completed_at":  "2026-06-15T23:55:19.2768715+09:00"
-                                                                         },
-                  "condition-self-improvement-score-rereview-20260617":  {
-                                                                             "work_id":  "condition-self-improvement-score-rereview-20260617",
-                                                                             "active_plan":  ".omo/plans/condition-self-improvement-score-rereview-20260617.md",
-                                                                             "plan_name":  "condition-self-improvement-score-rereview-20260617",
-                                                                             "session_ids":  [
-                                                                                                 "codex:condition-self-improvement-score-rereview-20260617"
-                                                                                             ],
-                                                                             "status":  "completed",
-                                                                             "worktree_path":  null,
-                                                                             "started_at":  "2026-06-17T10:44:37.9354770+09:00",
-                                                                             "completed_at":  "2026-06-17T10:54:19.2246078+09:00"
-                                                                         },
-                  "condition-generation-breadth-evaluation-20260617":  {
-                                                                           "work_id":  "condition-generation-breadth-evaluation-20260617",
-                                                                           "active_plan":  ".omo/plans/condition-generation-breadth-evaluation-20260617.md",
-                                                                           "plan_name":  "condition-generation-breadth-evaluation-20260617",
-                                                                           "session_ids":  [
-                                                                                               "codex:condition-generation-breadth-evaluation-20260617"
-                                                                                           ],
-                                                                           "status":  "completed",
-                                                                           "worktree_path":  null,
-                                                                           "started_at":  "2026-06-17T11:16:00+09:00",
-                                                                           "completed_at":  "2026-06-17T11:45:00+09:00"
-                                                                       },
-                  "dashboard-research-records-oos-execution-20260618":  {
-                                                                            "work_id":  "dashboard-research-records-oos-execution-20260618",
-                                                                            "active_plan":  ".omo/plans/dashboard-research-records-oos-execution-20260618.md",
-                                                                            "plan_name":  "dashboard-research-records-oos-execution-20260618",
-                                                                            "session_ids":  [
-                                                                                                "codex:dashboard-research-records-oos-execution-20260618"
-                                                                                            ],
-                                                                            "status":  "completed",
-                                                                            "worktree_path":  null,
-                                                                            "started_at":  "2026-06-18T00:00:00+09:00",
-                                                                            "completed_at":  "2026-06-18T10:22:16.6358729+09:00"
-                                                                        },
-                  "oos-2023-2025-combo-experiments-20260618":  {
-                                                                   "work_id":  "oos-2023-2025-combo-experiments-20260618",
-                                                                   "active_plan":  ".omo/plans/oos-2023-2025-combo-experiments-20260618.md",
-                                                                   "plan_name":  "oos-2023-2025-combo-experiments-20260618",
-                                                                   "session_ids":  [
-                                                                                       "codex:oos-2023-2025-combo-experiments-20260618"
-                                                                                   ],
-                                                                   "status":  "completed",
-                                                                   "worktree_path":  null,
-                                                                   "started_at":  "2026-06-18T10:30:00+09:00",
-                                                                   "completed_at":  "2026-06-18T14:05:00+09:00"
-                                                               },
-                  "combo-defense-stress-followup-20260618":  {
-                                                                 "work_id":  "combo-defense-stress-followup-20260618",
-                                                                 "active_plan":  ".omo/plans/combo-defense-stress-followup-20260618.md",
-                                                                 "plan_name":  "combo-defense-stress-followup-20260618",
-                                                                 "session_ids":  [
-                                                                                     "codex:combo-defense-stress-followup-20260618"
-                                                                                 ],
-                                                                 "status":  "completed",
-                                                                 "worktree_path":  null,
-                                                                 "started_at":  "2026-06-18T14:10:00+09:00",
-                                                                 "completed_at":  "2026-06-18T14:35:00+09:00"
-                                                             },
-                  "q4-defense-prerule-halfexit-dashboard-20260618":  {
-                                                                         "work_id":  "q4-defense-prerule-halfexit-dashboard-20260618",
-                                                                         "active_plan":  ".omo/plans/q4-defense-prerule-halfexit-dashboard-20260618.md",
-                                                                         "plan_name":  "q4-defense-prerule-halfexit-dashboard-20260618",
-                                                                         "session_ids":  [
-                                                                                             "codex:q4-defense-prerule-halfexit-dashboard-20260618"
-                                                                                         ],
-                                                                         "status":  "completed",
-                                                                         "worktree_path":  null,
-                                                                         "started_at":  "2026-06-18T15:20:00+09:00",
-                                                                         "completed_at":  "2026-06-18T16:20:00+09:00"
-                                                                     },
-                  "post-q4-defense-next4-20260618":  {
-                                                         "work_id":  "post-q4-defense-next4-20260618",
-                                                         "active_plan":  ".omo/plans/post-q4-defense-next4-20260618.md",
-                                                         "plan_name":  "post-q4-defense-next4-20260618",
-                                                         "session_ids":  [
-                                                                             "codex:post-q4-defense-next4-20260618"
-                                                                         ],
-                                                         "status":  "completed",
-                                                         "worktree_path":  null,
-                                                         "started_at":  "2026-06-18T16:30:00+09:00",
-                                                         "completed_at":  "2026-06-18T17:00:00+09:00"
-                                                     },
-                  "post-q4-3h-bulk-research-20260618":  {
-                                                            "work_id":  "post-q4-3h-bulk-research-20260618",
-                                                            "active_plan":  ".omo/plans/post-q4-3h-bulk-research-20260618.md",
-                                                            "plan_name":  "post-q4-3h-bulk-research-20260618",
-                                                            "session_ids":  [
-                                                                                "codex:post-q4-3h-bulk-research-20260618"
-                                                                            ],
-                                                            "status":  "completed",
-                                                            "worktree_path":  null,
-                                                            "started_at":  "2026-06-18T16:48:14.475338+09:00",
-                                                            "completed_at":  "2026-06-18T17:03:04.417664+09:00"
-                                                        },
-                  "condition-research-current-state-rereview-20260618":  {
-                                                                             "work_id":  "condition-research-current-state-rereview-20260618",
-                                                                             "active_plan":  ".omo/plans/condition-research-current-state-rereview-20260618.md",
-                                                                             "plan_name":  "condition-research-current-state-rereview-20260618",
-                                                                             "session_ids":  [
-                                                                                                 "codex:condition-research-current-state-rereview-20260618"
-                                                                                             ],
-                                                                             "status":  "completed",
-                                                                             "worktree_path":  null,
-                                                                             "started_at":  "2026-06-18T18:00:00+09:00",
-                                                                             "completed_at":  "2026-06-18T18:25:00+09:00"
-                                                                         },
-                  "stom-condition-research-dashboard-reorganization-20260618-pages-1-3":  {
-                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-1-3",
-                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
-                                                                                              "session_ids":  [
-                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-pages-1-3"
-                                                                                                              ],
-                                                                                              "status":  "completed_selected_range",
-                                                                                              "worktree_path":  null,
-                                                                                              "started_at":  "2026-06-18T22:06:15+09:00",
-                                                                                              "requested_range":  "1~3",
-                                                                                              "completed_at":  "2026-06-18T22:06:15+09:00"
-                                                                                          },
-                  "stom-condition-research-dashboard-reorganization-20260618-pages-4-8":  {
-                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-4-8",
-                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
-                                                                                              "session_ids":  [
-                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-pages-4-8"
-                                                                                                              ],
-                                                                                              "status":  "completed_selected_range",
-                                                                                              "worktree_path":  null,
-                                                                                              "started_at":  "2026-06-18T22:20:00+09:00",
-                                                                                              "requested_range":  "4~8",
-                                                                                              "completed_at":  "2026-06-18T22:45:47+09:00"
-                                                                                          },
-                  "stom-condition-research-dashboard-reorganization-20260618-pages-9-12":  {
-                                                                                               "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-9-12",
-                                                                                               "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-                                                                                               "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
-                                                                                               "session_ids":  [
-                                                                                                                   "codex:stom-condition-research-dashboard-reorganization-20260618-pages-9-12"
-                                                                                                               ],
-                                                                                               "status":  "completed_selected_range",
-                                                                                               "worktree_path":  null,
-                                                                                               "started_at":  "2026-06-18T22:55:14+09:00",
-                                                                                               "requested_range":  "9~12",
-                                                                                               "completed_at":  "2026-06-18T23:15:00+09:00"
-                                                                                           },
-                  "stom-condition-research-dashboard-reorganization-20260618-remaining":  {
-                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-remaining",
-                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
-                                                                                              "session_ids":  [
-                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-remaining"
-                                                                                                              ],
-                                                                                              "status":  "completed",
-                                                                                              "started_at":  "2026-06-18T23:19:07+09:00",
-                                                                                              "ended_at":  "2026-06-18T23:32:13.2021265+09:00",
-                                                                                              "duration_ms":  786202,
-                                                                                              "duration_human":  "13.1m",
-                                                                                              "worktree_path":  null,
-                                                                                              "requested_range":  "13~16 F1~F4"
-                                                                                          },
-                  "dashboard-v3-functional-parity-20260701":  {
-                                                                  "work_id":  "dashboard-v3-functional-parity-20260701",
-                                                                  "active_plan":  ".omo/plans/dashboard-v3-functional-parity-20260701.md",
-                                                                  "plan_name":  "dashboard-v3-functional-parity-20260701",
-                                                                  "session_ids":  [
-                                                                                      "codex:dashboard-v3-functional-parity-20260701"
-                                                                                  ],
-                                                                  "status":  "completed",
-                                                                  "started_at":  "2026-07-01T23:00:09.3801563+09:00",
-                                                                  "ended_at":  "2026-07-02T02:10:19.0612507+09:00",
-                                                                  "duration_ms":  11409681,
-                                                                  "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
-                                                              },
-                  "dashboard-v3-desktop-visual-polish-20260702":  {
-                                                                      "work_id":  "dashboard-v3-desktop-visual-polish-20260702",
-                                                                      "active_plan":  ".omo/plans/dashboard-v3-desktop-visual-polish-20260702.md",
-                                                                      "plan_name":  "dashboard-v3-desktop-visual-polish-20260702",
-                                                                      "session_ids":  [
-                                                                                          "codex:dashboard-v3-desktop-visual-polish-20260702"
-                                                                                      ],
-                                                                      "status":  "completed",
-                                                                      "started_at":  "2026-07-02T13:25:00+09:00",
-                                                                      "ended_at":  "2026-07-02T14:24:05.9910826+09:00",
-                                                                      "duration_ms":  3545991,
-                                                                      "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
-                                                              },
-                  "dashboard-v4-remodel-research-handoff-20260704":  {
-                                                                      "work_id":  "dashboard-v4-remodel-research-handoff-20260704",
-                                                                      "active_plan":  ".omo/plans/dashboard-v4-remodel-research-handoff-20260704.md",
-                                                                      "plan_name":  "dashboard-v4-remodel-research-handoff-20260704",
-                                                                      "session_ids":  [
-                                                                                          "codex:dashboard-v4-remodel-research-handoff-20260704"
-                                                                                      ],
-                                                                      "status":  "completed",
-                                                                      "started_at":  "2026-07-04T11:17:13.9886335+09:00",
-                                                                      "ended_at":  "2026-07-04T11:23:10.2529690+09:00",
-                                                                      "duration_ms":  356264,
-                                                                      "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
-                                                              },
-                  "dashboard-v4-hardening-to-95":  {
-                                                        "work_id":  "dashboard-v4-hardening-to-95",
-                                                        "active_plan":  ".omo/plans/dashboard-v4-hardening-to-95.md",
-                                                        "plan_name":  "dashboard-v4-hardening-to-95",
-                                                        "session_ids":  [
-                                                                            "codex:019f48a4-b8b1-7580-b458-a09e20c2a0f6"
-                                                                        ],
-                                                        "status":  "active",
-                                                        "started_at":  "2026-07-11T00:00:00+09:00",
-                                                        "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
-                                                    }
-              }
+  "schema_version": 2,
+  "active_work_id": null,
+  "works": {
+    "condition-research-rereview-20260603": {
+      "work_id": "condition-research-rereview-20260603",
+      "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
+      "plan_name": "condition-research-rereview-20260603",
+      "session_ids": [
+        "codex:condition-research-rereview-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-validation-20260603": {
+      "work_id": "tick-oos-validation-20260603",
+      "active_plan": ".omo/plans/tick-oos-validation-20260603.md",
+      "plan_name": "tick-oos-validation-20260603",
+      "session_ids": [
+        "codex:tick-oos-validation-20260603",
+        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-research-dashboard-upgrade-20260603": {
+      "work_id": "tick-research-dashboard-upgrade-20260603",
+      "active_plan": ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+      "plan_name": "tick-research-dashboard-upgrade-20260603",
+      "session_ids": [
+        "codex:tick-research-dashboard-upgrade-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-dashboard-validation-20260604": {
+      "work_id": "tick-oos-dashboard-validation-20260604",
+      "active_plan": ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+      "plan_name": "tick-oos-dashboard-validation-20260604",
+      "session_ids": [
+        "codex:tick-oos-dashboard-validation-20260604"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-04T11:48:55.6080517+09:00"
+    },
+    "tick-selection-rule-sparse-gen5-research-20260604": {
+      "work_id": "tick-selection-rule-sparse-gen5-research-20260604",
+      "active_plan": ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
+      "plan_name": "tick-selection-rule-sparse-gen5-research-20260604",
+      "session_ids": [
+        "codex:tick-selection-rule-sparse-gen5-research-20260604"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-04T13:48:48.8255929+09:00"
+    },
+    "tick-sparse-positive-generation-improvement-20260604": {
+      "work_id": "tick-sparse-positive-generation-improvement-20260604",
+      "active_plan": ".omo/plans/tick-sparse-positive-generation-improvement-20260604.md",
+      "plan_name": "tick-sparse-positive-generation-improvement-20260604",
+      "session_ids": [
+        "codex:tick-sparse-positive-generation-improvement-20260604"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-04T18:36:30+09:00"
+    },
+    "tick-sparse-positive-oos-robustness-20260604": {
+      "work_id": "tick-sparse-positive-oos-robustness-20260604",
+      "active_plan": ".omo/plans/tick-sparse-positive-oos-robustness-20260604.md",
+      "plan_name": "tick-sparse-positive-oos-robustness-20260604",
+      "session_ids": [
+        "codex:tick-sparse-positive-oos-robustness-20260604"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-04T21:29:45.0092262+09:00"
+    },
+    "tick-dashboard-observability-research-ux-20260604": {
+      "work_id": "tick-dashboard-observability-research-ux-20260604",
+      "active_plan": ".omo/plans/tick-dashboard-observability-research-ux-20260604.md",
+      "plan_name": "tick-dashboard-observability-research-ux-20260604",
+      "session_ids": [
+        "codex:tick-dashboard-observability-research-ux-20260604"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T00:16:10.6705427+09:00"
+    },
+    "tick-research-direction-realignment-20260605": {
+      "work_id": "tick-research-direction-realignment-20260605",
+      "active_plan": ".omo/plans/tick-research-direction-realignment-20260605.md",
+      "plan_name": "tick-research-direction-realignment-20260605",
+      "session_ids": [
+        "codex:tick-research-direction-realignment-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T07:24:21.2675354+09:00"
+    },
+    "tick-p7-observability-bounded-training-20260605": {
+      "work_id": "tick-p7-observability-bounded-training-20260605",
+      "active_plan": ".omo/plans/tick-p7-observability-bounded-training-20260605.md",
+      "plan_name": "tick-p7-observability-bounded-training-20260605",
+      "session_ids": [
+        "codex:tick-p7-observability-bounded-training-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T12:22:35.0665084+09:00"
+    },
+    "tick-p7-timeout-unblock-live-strategy-visibility-20260605": {
+      "work_id": "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+      "active_plan": ".omo/plans/tick-p7-timeout-unblock-live-strategy-visibility-20260605.md",
+      "plan_name": "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+      "session_ids": [
+        "codex:tick-p7-timeout-unblock-live-strategy-visibility-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T15:27:48.0561541+09:00"
+    },
+    "tick-seed-warm-timeout-root-cause-20260605": {
+      "work_id": "tick-seed-warm-timeout-root-cause-20260605",
+      "active_plan": ".omo/plans/tick-seed-warm-timeout-root-cause-20260605.md",
+      "plan_name": "tick-seed-warm-timeout-root-cause-20260605",
+      "session_ids": [
+        "codex:tick-seed-warm-timeout-root-cause-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T17:02:41.1988220+09:00"
+    },
+    "ct-seed-tick-preflight-repair-20260605": {
+      "work_id": "ct-seed-tick-preflight-repair-20260605",
+      "active_plan": ".omo/plans/ct-seed-tick-preflight-repair-20260605.md",
+      "plan_name": "ct-seed-tick-preflight-repair-20260605",
+      "session_ids": [
+        "codex:ct-seed-tick-preflight-repair-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T19:35:31.9546622+09:00"
+    },
+    "ct-seed-branch-workload-isolation-20260605": {
+      "work_id": "ct-seed-branch-workload-isolation-20260605",
+      "active_plan": ".omo/plans/ct-seed-branch-workload-isolation-20260605.md",
+      "plan_name": "ct-seed-branch-workload-isolation-20260605",
+      "session_ids": [
+        "codex:ct-seed-branch-workload-isolation-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-05T20:00:21.0478602+09:00"
+    },
+    "tick-human-like-research-criteria-dashboard-20260605": {
+      "work_id": "tick-human-like-research-criteria-dashboard-20260605",
+      "active_plan": ".omo/plans/tick-human-like-research-criteria-dashboard-20260605.md",
+      "plan_name": "tick-human-like-research-criteria-dashboard-20260605",
+      "session_ids": [
+        "codex:tick-human-like-research-criteria-dashboard-20260605"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "completed_at": "2026-06-06T07:42:47.2295790+09:00"
+    },
+    "tick-900-930-generated-timeout-reduction-20260606": {
+      "work_id": "tick-900-930-generated-timeout-reduction-20260606",
+      "active_plan": ".omo/plans/tick-900-930-generated-timeout-reduction-20260606.md",
+      "plan_name": "tick-900-930-generated-timeout-reduction-20260606",
+      "session_ids": [
+        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+      ],
+      "status": "blocked",
+      "worktree_path": null,
+      "blocked_at": "2026-06-06T10:55:00+09:00",
+      "blocker": "P3 split probes ended under wall cap, but generated strategy creation is blocked by gpt_auth HTTP 429 usage_limit_reached and no alternate openrouter/codex_proxy credentials are configured. Do not retry P4 until provider/fallback is available."
+    },
+    "tick-min-condition-generation-review-20260613": {
+      "work_id": "tick-min-condition-generation-review-20260613",
+      "active_plan": ".omo/plans/tick-min-condition-generation-review-20260613.md",
+      "plan_name": "tick-min-condition-generation-review-20260613",
+      "session_ids": [
+        "codex:tick-min-condition-generation-review-20260613"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-13T13:14:44.4405455+09:00",
+      "completed_at": "2026-06-13T13:30:41.1011360+09:00"
+    },
+    "tick-min-condition-deficit-rereview-20260613": {
+      "work_id": "tick-min-condition-deficit-rereview-20260613",
+      "active_plan": ".omo/plans/tick-min-condition-generation-review-20260613.md",
+      "plan_name": "tick-min-condition-generation-review-20260613",
+      "session_ids": [
+        "codex:tick-min-condition-deficit-rereview-20260613"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-13T17:29:16.7288560+09:00",
+      "completed_at": "2026-06-13T17:31:41.6178027+09:00"
+    },
+    "condition-research-score-update-20260615": {
+      "work_id": "condition-research-score-update-20260615",
+      "active_plan": ".omo/plans/condition-research-score-update-20260615.md",
+      "plan_name": "condition-research-score-update-20260615",
+      "session_ids": [
+        "codex:condition-research-score-update-20260615"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-15T22:05:55.6381866+09:00",
+      "completed_at": "2026-06-15T22:15:30.3677436+09:00"
+    },
+    "condition-self-improvement-process-report-20260615": {
+      "work_id": "condition-self-improvement-process-report-20260615",
+      "active_plan": ".omo/plans/condition-self-improvement-process-report-20260615.md",
+      "plan_name": "condition-self-improvement-process-report-20260615",
+      "session_ids": [
+        "codex:condition-self-improvement-process-report-20260615"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-15T23:43:30.7402839+09:00",
+      "completed_at": "2026-06-15T23:55:19.2768715+09:00"
+    },
+    "condition-self-improvement-score-rereview-20260617": {
+      "work_id": "condition-self-improvement-score-rereview-20260617",
+      "active_plan": ".omo/plans/condition-self-improvement-score-rereview-20260617.md",
+      "plan_name": "condition-self-improvement-score-rereview-20260617",
+      "session_ids": [
+        "codex:condition-self-improvement-score-rereview-20260617"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-17T10:44:37.9354770+09:00",
+      "completed_at": "2026-06-17T10:54:19.2246078+09:00"
+    },
+    "condition-generation-breadth-evaluation-20260617": {
+      "work_id": "condition-generation-breadth-evaluation-20260617",
+      "active_plan": ".omo/plans/condition-generation-breadth-evaluation-20260617.md",
+      "plan_name": "condition-generation-breadth-evaluation-20260617",
+      "session_ids": [
+        "codex:condition-generation-breadth-evaluation-20260617"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-17T11:16:00+09:00",
+      "completed_at": "2026-06-17T11:45:00+09:00"
+    },
+    "dashboard-research-records-oos-execution-20260618": {
+      "work_id": "dashboard-research-records-oos-execution-20260618",
+      "active_plan": ".omo/plans/dashboard-research-records-oos-execution-20260618.md",
+      "plan_name": "dashboard-research-records-oos-execution-20260618",
+      "session_ids": [
+        "codex:dashboard-research-records-oos-execution-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T00:00:00+09:00",
+      "completed_at": "2026-06-18T10:22:16.6358729+09:00"
+    },
+    "oos-2023-2025-combo-experiments-20260618": {
+      "work_id": "oos-2023-2025-combo-experiments-20260618",
+      "active_plan": ".omo/plans/oos-2023-2025-combo-experiments-20260618.md",
+      "plan_name": "oos-2023-2025-combo-experiments-20260618",
+      "session_ids": [
+        "codex:oos-2023-2025-combo-experiments-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T10:30:00+09:00",
+      "completed_at": "2026-06-18T14:05:00+09:00"
+    },
+    "combo-defense-stress-followup-20260618": {
+      "work_id": "combo-defense-stress-followup-20260618",
+      "active_plan": ".omo/plans/combo-defense-stress-followup-20260618.md",
+      "plan_name": "combo-defense-stress-followup-20260618",
+      "session_ids": [
+        "codex:combo-defense-stress-followup-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T14:10:00+09:00",
+      "completed_at": "2026-06-18T14:35:00+09:00"
+    },
+    "q4-defense-prerule-halfexit-dashboard-20260618": {
+      "work_id": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "active_plan": ".omo/plans/q4-defense-prerule-halfexit-dashboard-20260618.md",
+      "plan_name": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "session_ids": [
+        "codex:q4-defense-prerule-halfexit-dashboard-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T15:20:00+09:00",
+      "completed_at": "2026-06-18T16:20:00+09:00"
+    },
+    "post-q4-defense-next4-20260618": {
+      "work_id": "post-q4-defense-next4-20260618",
+      "active_plan": ".omo/plans/post-q4-defense-next4-20260618.md",
+      "plan_name": "post-q4-defense-next4-20260618",
+      "session_ids": [
+        "codex:post-q4-defense-next4-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T16:30:00+09:00",
+      "completed_at": "2026-06-18T17:00:00+09:00"
+    },
+    "post-q4-3h-bulk-research-20260618": {
+      "work_id": "post-q4-3h-bulk-research-20260618",
+      "active_plan": ".omo/plans/post-q4-3h-bulk-research-20260618.md",
+      "plan_name": "post-q4-3h-bulk-research-20260618",
+      "session_ids": [
+        "codex:post-q4-3h-bulk-research-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T16:48:14.475338+09:00",
+      "completed_at": "2026-06-18T17:03:04.417664+09:00"
+    },
+    "condition-research-current-state-rereview-20260618": {
+      "work_id": "condition-research-current-state-rereview-20260618",
+      "active_plan": ".omo/plans/condition-research-current-state-rereview-20260618.md",
+      "plan_name": "condition-research-current-state-rereview-20260618",
+      "session_ids": [
+        "codex:condition-research-current-state-rereview-20260618"
+      ],
+      "status": "completed",
+      "worktree_path": null,
+      "started_at": "2026-06-18T18:00:00+09:00",
+      "completed_at": "2026-06-18T18:25:00+09:00"
+    },
+    "stom-condition-research-dashboard-reorganization-20260618-pages-1-3": {
+      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-1-3",
+      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
+      "session_ids": [
+        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-1-3"
+      ],
+      "status": "completed_selected_range",
+      "worktree_path": null,
+      "started_at": "2026-06-18T22:06:15+09:00",
+      "requested_range": "1~3",
+      "completed_at": "2026-06-18T22:06:15+09:00"
+    },
+    "stom-condition-research-dashboard-reorganization-20260618-pages-4-8": {
+      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-4-8",
+      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
+      "session_ids": [
+        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-4-8"
+      ],
+      "status": "completed_selected_range",
+      "worktree_path": null,
+      "started_at": "2026-06-18T22:20:00+09:00",
+      "requested_range": "4~8",
+      "completed_at": "2026-06-18T22:45:47+09:00"
+    },
+    "stom-condition-research-dashboard-reorganization-20260618-pages-9-12": {
+      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-9-12",
+      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
+      "session_ids": [
+        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-9-12"
+      ],
+      "status": "completed_selected_range",
+      "worktree_path": null,
+      "started_at": "2026-06-18T22:55:14+09:00",
+      "requested_range": "9~12",
+      "completed_at": "2026-06-18T23:15:00+09:00"
+    },
+    "stom-condition-research-dashboard-reorganization-20260618-remaining": {
+      "work_id": "stom-condition-research-dashboard-reorganization-20260618-remaining",
+      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
+      "session_ids": [
+        "codex:stom-condition-research-dashboard-reorganization-20260618-remaining"
+      ],
+      "status": "completed",
+      "started_at": "2026-06-18T23:19:07+09:00",
+      "ended_at": "2026-06-18T23:32:13.2021265+09:00",
+      "duration_ms": 786202,
+      "duration_human": "13.1m",
+      "worktree_path": null,
+      "requested_range": "13~16 F1~F4"
+    },
+    "dashboard-v3-functional-parity-20260701": {
+      "work_id": "dashboard-v3-functional-parity-20260701",
+      "active_plan": ".omo/plans/dashboard-v3-functional-parity-20260701.md",
+      "plan_name": "dashboard-v3-functional-parity-20260701",
+      "session_ids": [
+        "codex:dashboard-v3-functional-parity-20260701"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-01T23:00:09.3801563+09:00",
+      "ended_at": "2026-07-02T02:10:19.0612507+09:00",
+      "duration_ms": 11409681,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v3-desktop-visual-polish-20260702": {
+      "work_id": "dashboard-v3-desktop-visual-polish-20260702",
+      "active_plan": ".omo/plans/dashboard-v3-desktop-visual-polish-20260702.md",
+      "plan_name": "dashboard-v3-desktop-visual-polish-20260702",
+      "session_ids": [
+        "codex:dashboard-v3-desktop-visual-polish-20260702"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-02T13:25:00+09:00",
+      "ended_at": "2026-07-02T14:24:05.9910826+09:00",
+      "duration_ms": 3545991,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v4-remodel-research-handoff-20260704": {
+      "work_id": "dashboard-v4-remodel-research-handoff-20260704",
+      "active_plan": ".omo/plans/dashboard-v4-remodel-research-handoff-20260704.md",
+      "plan_name": "dashboard-v4-remodel-research-handoff-20260704",
+      "session_ids": [
+        "codex:dashboard-v4-remodel-research-handoff-20260704"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-04T11:17:13.9886335+09:00",
+      "ended_at": "2026-07-04T11:23:10.2529690+09:00",
+      "duration_ms": 356264,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v4-hardening-to-95": {
+      "work_id": "dashboard-v4-hardening-to-95",
+      "active_plan": ".omo/plans/dashboard-v4-hardening-to-95.md",
+      "plan_name": "dashboard-v4-hardening-to-95",
+      "session_ids": [
+        "codex:019f48a4-b8b1-7580-b458-a09e20c2a0f6"
+      ],
+      "status": "active",
+      "started_at": "2026-07-11T00:00:00+09:00",
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "lattice-rereview-rank03-r2-boundary-20260707": {
+      "work_id": "lattice-rereview-rank03-r2-boundary-20260707",
+      "active_plan": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
+      "plan_name": "lattice-rereview-rank03-r2-boundary-20260707",
+      "session_ids": [
+        "codex:lattice-rereview-rank03-r2-boundary-20260707",
+        "ulw-loop:20260708_rank03_r2_closeout_loop_v2"
+      ],
+      "status": "completed_selected_oos_closeout",
+      "started_at": "2026-07-07T21:04:14+09:00",
+      "ended_at": "2026-07-07T22:32:26+09:00",
+      "duration_ms": 1366000,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "duration_human": "22.8m",
+      "latest_handoff": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+      "latest_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
+      "latest_round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json",
+      "summary": {
+        "selected_oos_candidate": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+        "selected_oos_classification": "survivor",
+        "selected_oos_profit": 554624.0,
+        "selected_oos_mdd": 5.24,
+        "selected_oos_trades": 80,
+        "selected_oos_daily": 2.2,
+        "gate_passed": true,
+        "survivor_seed_id": "plan_d_rank03_r2_oos_20260708_01",
+        "r3_opened": false,
+        "portfolio_generated": false,
+        "next_recommended_action": "lattice_condition_generation_v2_redesign_plan_not_unbounded_plan_d_loop"
+      },
+      "latest_full_analysis": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "latest_boundary_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_boundary_receipt_20260708.json"
+    },
+    "ai-loop-full-next-execution-20260703-t0-t3": {
+      "work_id": "ai-loop-full-next-execution-20260703-t0-t3",
+      "active_plan": ".omo/plans/ai-loop-full-next-execution-20260703.md",
+      "plan_name": "ai-loop-full-next-execution-20260703",
+      "session_ids": [
+        "codex:ai-loop-full-next-execution-20260703-t0-t3"
+      ],
+      "status": "completed_selected_range",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T12:38:47.3701118+09:00",
+      "requested_range": "T0~T3",
+      "objective": "T0 preflight + Plan A A1/A2 provider stabilization + A3 blocked_pending_user_approval record",
+      "completed_at": "2026-07-03T13:39:11.7561604+09:00",
+      "completed_range": "T0~T3"
+    },
+    "ai-loop-full-next-execution-20260703-t4-t5": {
+      "work_id": "ai-loop-full-next-execution-20260703-t4-t5",
+      "active_plan": ".omo/plans/ai-loop-full-next-execution-20260703.md",
+      "plan_name": "ai-loop-full-next-execution-20260703",
+      "session_ids": [
+        "codex:ai-loop-full-next-execution-20260703-t4-t5"
+      ],
+      "status": "blocked_selected_range",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T15:43:39.3939116+09:00",
+      "requested_range": "T4~T5",
+      "objective": "Plan C CSS_V7 static gate + unique pair list + loop DB mirror INSERT-only + smoke/train/OOS/WF validation",
+      "blocked_at": "2026-07-03T16:48:00+09:00",
+      "completed_range": "T4",
+      "blocked_range": "T5",
+      "blocker": "CSS_V7 smoke validation produced no go candidates: tick 7/7 warm backtest timeout at 300s, min smoke stopped after first-pair long runtime with 1200s timeout risk. train/OOS/WF not opened."
+    },
+    "css-v7-root-cause-before-plan-b-20260703": {
+      "work_id": "css-v7-root-cause-before-plan-b-20260703",
+      "active_plan": ".omo/plans/css-v7-root-cause-before-plan-b-20260703.md",
+      "plan_name": "css-v7-root-cause-before-plan-b-20260703",
+      "session_ids": [
+        "codex:css-v7-root-cause-before-plan-b-20260703"
+      ],
+      "status": "completed",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T22:41:28.1535515+09:00",
+      "requested_range": "R0~R3",
+      "objective": "CSS_V7 timeout root-cause analysis before Plan B",
+      "completed_at": "2026-07-03T22:56:09.3257742+09:00",
+      "result": "root_cause_identified: CSS_V7 non-OPT Buy/Sell call arity mismatch; Plan B blocked unless repaired or excluded",
+      "completed_range": "R0~R3"
+    },
+    "css-v7-repair-plan-c-plan-b-d-20260703": {
+      "work_id": "css-v7-repair-plan-c-plan-b-d-20260703",
+      "active_plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+      "plan_name": "css-v7-repair-plan-c-plan-b-d-20260703",
+      "session_ids": [
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-p5r-20260704",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-b-pre-d-20260704",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-chunk09-resume-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-chunk10-12-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-tick-export-summary-min-readiness-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-preflight4-readiness-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk01-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk02-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk03-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk04-12-export-p6-no-d-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-overnight-repair-analysis-bounded-preflight-no-d-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-coverage-preflight-no-d-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-freeze-expanded-preflight-no-d-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-selected-oos-no-d-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-plan-d-seed-pool-intake-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-no-portfolio-export-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-generate8-dryrun-no-portfolio-export-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export-20260706"
+      ],
+      "status": "active",
+      "started_at": "2026-07-03T23:30:01.3258147+09:00",
+      "ended_at": null,
+      "duration_ms": null,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
+      "resumed_at": "2026-07-06T16:53:29+09:00",
+      "requested_range": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+      "current_priority": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+      "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01-12 + P5-official-tick-288-export + P5-official-min-preflight4 + P5-official-min-chunk01-12 + P5-official-min-288-export + P6-coverage-gaps-batch-plan-no-D",
+      "completed_at": "2026-07-05T07:06:21+09:00",
+      "last_completed_priority": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+      "last_completed_at": "2026-07-06T23:51:54+09:00",
+      "last_evidence": "docs/update_log/2026-07-06_plan_d_rank02_r1_insert_replay_handoff.md",
+      "next_priority": "plan-d-rank02-selected-oos-if-goal-2",
+      "p5_blocker_status": "completed_no_survivors_after_repair_preflight",
+      "blocked_at": "2026-07-05T21:03:32+09:00",
+      "blocked_priority": null,
+      "blocker": null,
+      "overnight_no_d_result": {
+        "completed_at": "2026-07-05T22:45:57+09:00",
+        "bounded_preflight_rows": 56,
+        "phase1": {
+          "honest_rows": 8,
+          "go": 0,
+          "hold": 5,
+          "no_go": 3
+        },
+        "phase2": {
+          "honest_rows": 24,
+          "go": 0,
+          "hold": 17,
+          "no_go": 7
+        },
+        "phase3": {
+          "honest_rows": 24,
+          "go": 0,
+          "hold": 15,
+          "no_go": 9
+        },
+        "full_chunk_allowed": false,
+        "plan_d_allowed": false,
+        "handoff": "docs/update_log/2026-07-05_overnight_repair_analysis_bounded_preflight_no_d_handoff.md"
+      },
+      "repair_composite_coverage_result": {
+        "completed_at": "2026-07-06T08:15:46+09:00",
+        "source_hold_raw": 37,
+        "dedup_groups": 7,
+        "designed_pairs": 24,
+        "inserted_seed_count": 24,
+        "inserted_row_count": 48,
+        "lane": "min",
+        "profile": "official_full_period_warm64",
+        "honest_rows": 24,
+        "status_counts": {
+          "ok": 24
+        },
+        "gate_passed_count": 16,
+        "decision_counts": {
+          "go": 16,
+          "hold": 1,
+          "no_go": 7
+        },
+        "full_chunk_allowed": true,
+        "plan_d_allowed": false,
+        "oos_executed": false,
+        "handoff": "docs/update_log/2026-07-06_repair_composite_coverage_preflight_no_d_handoff.md"
+      },
+      "repair_composite_freeze_expanded_started_at": "2026-07-06T09:00:06+09:00",
+      "repair_composite_freeze_expanded_result": {
+        "completed_at": "2026-07-06T09:32:40+09:00",
+        "source_go16_freeze_count": 16,
+        "expanded_candidate_count": 48,
+        "inserted_seed_count": 48,
+        "inserted_row_count": 96,
+        "lane": "min",
+        "profile": "official_full_period_warm64",
+        "honest_rows": 48,
+        "status_counts": {
+          "ok": 48
+        },
+        "gate_passed_count": 32,
+        "decision_counts": {
+          "go": 32,
+          "no_go": 16
+        },
+        "sell_profile_decision_counts": {
+          "sell_default_tp3_sl3_hold60": {
+            "go": 14,
+            "no_go": 2
+          },
+          "sell_tight_tp3_sl2p5_hold60": {
+            "go": 6,
+            "no_go": 10
+          },
+          "sell_loose_tp4_sl3_hold90": {
+            "go": 12,
+            "no_go": 4
+          }
+        },
+        "selected_freeze_count": 16,
+        "full_chunk_allowed": "narrowed_composite_repair_only",
+        "oos_ready_after_user_scope": true,
+        "plan_d_allowed": false,
+        "handoff": "docs/update_log/2026-07-06_repair_composite_freeze_expanded_preflight_no_d_handoff.md",
+        "result": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_expanded_preflight_result_20260706.json",
+        "selected_preregistration_draft": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_selected_freeze_preregistration_draft_20260706.md"
+      },
+      "repair_composite_selected_oos_started_at": "2026-07-06T10:41:56+09:00",
+      "repair_composite_selected_oos_preregistration": {
+        "created_at": "2026-07-06T10:41:56+09:00",
+        "selected_count": 16,
+        "pairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/pairs_repair_composite_selected_16_oos_20260706.json",
+        "config": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/oos_config_min_selected16_20260706.json",
+        "freeze_recheck": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_freeze_recheck_20260706.json",
+        "preregistration": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_preregistration_20260706.md",
+        "oos_window": "2026-01-01~2026-02-27",
+        "profile": "min_warm64",
+        "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS."
+      },
+      "repair_composite_selected_oos_result": {
+        "completed_at": "2026-07-06T10:51:50+09:00",
+        "run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+        "lane": "min",
+        "profile": "oos_2026_01_01_2026_02_27_warm64",
+        "honest_rows": 16,
+        "status_counts": {
+          "ok": 16
+        },
+        "gate_passed_count": 15,
+        "decision_counts": {
+          "survivor": 15,
+          "hold": 0,
+          "no_go": 1
+        },
+        "sell_profile_decision_counts": {
+          "sell_default_tp3_sl3_hold60": {
+            "survivor": 9,
+            "hold": 0,
+            "no_go": 0
+          },
+          "sell_loose_tp4_sl3_hold90": {
+            "survivor": 4,
+            "hold": 0,
+            "no_go": 1
+          },
+          "sell_tight_tp3_sl2p5_hold60": {
+            "survivor": 2,
+            "hold": 0,
+            "no_go": 0
+          }
+        },
+        "survivor_count": 15,
+        "plan_d_seed_pool_intake_allowed": true,
+        "plan_d_executed": false,
+        "portfolio_executed": false,
+        "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS.",
+        "handoff": "docs/update_log/2026-07-06_repair_composite_selected_oos_no_d_handoff.md",
+        "result": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+        "survivors": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+      },
+      "repair_composite_plan_d_seed_pool_intake_started_at": "2026-07-06T11:28:38+09:00",
+      "repair_composite_plan_d_seed_pool_intake_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_intake_receipt_20260706.json",
+      "repair_composite_plan_d_seed_pool_intake_result": {
+        "completed_at": "2026-07-06T11:31:02+09:00",
+        "seed_pool_appended": 15,
+        "oos_survivors_appended": 15,
+        "positive_control_passed": true,
+        "positive_control_passed_count": 34,
+        "positive_control_total": 34,
+        "scoped_lineage_exit_code": 0,
+        "global_lineage_exit_code": 1,
+        "readiness_status": "ready_for_plan_d_seed_round",
+        "plan_d_seed_round_allowed": true,
+        "portfolio_executed": false,
+        "plan_d_rounds_executed": false,
+        "handoff": "docs/update_log/2026-07-06_repair_composite_plan_d_seed_pool_intake_handoff.md",
+        "readiness_audit": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_readiness_audit_20260706.json"
+      },
+      "plan_d_seed_r1_rank01_started_at": "2026-07-06T13:37:55+09:00",
+      "plan_d_seed_r1_rank01_source_receipt": ".omo/evidence/plan-d-seed-r1-rank01-no-portfolio-export-20260706/source_read_receipt.md",
+      "plan_d_seed_r1_rank01_result": {
+        "completed_at": "2026-07-06T13:41:33+09:00",
+        "seed_id": "plan_d_rcs_oos_20260706_rank01",
+        "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+        "buy_sha_match": true,
+        "sell_sha_match": true,
+        "positive_control_passed": true,
+        "positive_control_passed_count": 20,
+        "positive_control_total": 20,
+        "r_a_buy_clause_count": 5,
+        "r_a_sell_clause_count": 4,
+        "axis_readiness": "ready_with_empty_priors",
+        "r_c_decision": "open_r_c_generation_dry_run_next_scope",
+        "generation_executed": false,
+        "evaluation_executed": false,
+        "oos_executed": false,
+        "portfolio_executed": false,
+        "db_update_delete_used": false,
+        "db_insert_used": false,
+        "handoff": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_readiness_handoff.md",
+        "readiness_summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/plan_d_rank01_r1_readiness_summary_20260706.json"
+      },
+      "plan_d_seed_r1_rank01_generate8_started_at": "2026-07-06T13:57:27+09:00",
+      "plan_d_seed_r1_rank01_generate8_result": {
+        "completed_at": "2026-07-06T14:06:18+09:00",
+        "candidate_count": 8,
+        "quota_repair": 5,
+        "quota_discovery": 3,
+        "static_gate_passed": 8,
+        "static_gate_failed": 0,
+        "candidate_pack_valid": true,
+        "dry_run_status": "dry_run_ok",
+        "planned_insert_count": 16,
+        "inserted_row_count": 0,
+        "db_candidate_matches_after_dry_run": 0,
+        "official_replay_executed": false,
+        "oos_executed": false,
+        "portfolio_executed": false,
+        "export_live_final_executed": false,
+        "db_insert_apply_used": false,
+        "db_update_delete_used": false,
+        "handoff": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_dryrun_handoff.md",
+        "summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_generate8_dryrun_20260706/plan_d_rank01_r_c_generate8_dryrun_summary_20260706.json",
+        "verification_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_generate8_dryrun_20260706/plan_d_rank01_r_c_verification_receipt_20260706.json"
+      },
+      "plan_d_seed_r1_rank01_generate8_insert_replay_started_at": "2026-07-06T15:48:16+09:00",
+      "plan_d_seed_r1_rank01_generate8_insert_replay_result": {
+        "completed_at": "2026-07-06T16:07:03+09:00",
+        "run_id": "lat_plan_d_r1_rank01_r_c_generate8_min_warm64_20260706",
+        "lane": "min",
+        "profile": "official_full_period_warm64",
+        "db_apply_inserted_row_count": 16,
+        "db_apply_backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T065150Z",
+        "honest_rows": 8,
+        "status_counts": {
+          "ok": 8
+        },
+        "gate_passed_count": 8,
+        "decision_counts": {
+          "flat": 7,
+          "improved": 1
+        },
+        "best_profit_label": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+        "best_profit": 2153579.0,
+        "best_profit_mdd": 18.69,
+        "r_d_round_decision_possible": true,
+        "oos_executed": false,
+        "portfolio_executed": false,
+        "export_live_final_executed": false,
+        "db_update_delete_used": false,
+        "handoff": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_insert_replay_handoff.md",
+        "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_limited_replay_result_20260706.json",
+        "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_round_decision_20260706.json"
+      },
+      "plan_d_rank01_rd_freeze_r2_started_at": "2026-07-06T16:53:29+09:00",
+      "plan_d_rank01_rd_freeze_r2_source_receipt": ".omo/evidence/plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706/source_read_receipt.md",
+      "last_completed_scope": "plan-d-rank02-r1-insert-replay-no-portfolio-export",
+      "plan_d_rank01_r2_survivor_freeze_r3_started_at": "2026-07-06T19:09:34+09:00",
+      "plan_d_rank01_r2_survivor_freeze_r3_result": {
+        "completed_at": "2026-07-06T19:09:34+09:00",
+        "summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_f_r3_readiness_20260706/plan_d_rank01_r3_readiness_summary_20260706.json",
+        "handoff": "docs/update_log/2026-07-06_plan_d_rank01_r2_survivor_freeze_r3_readiness_handoff.md",
+        "active_parent": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+        "positive_control_verdict": "gate_healthy",
+        "next_allowed_action": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export"
+      },
+      "plan_d_rank02_r1_insert_replay_result": {
+        "completed_at": "2026-07-06T23:51:54+09:00",
+        "run_id": "lat_plan_d_rank02_r1_8_min_warm64_20260706",
+        "lane": "min",
+        "profile": "official_full_period_warm64",
+        "db_apply_inserted_row_count": 16,
+        "db_apply_backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T143806Z",
+        "honest_rows": 8,
+        "status_counts": {
+          "ok": 8
+        },
+        "gate_passed_count": 8,
+        "decision_counts": {
+          "flat": 6,
+          "improved": 2
+        },
+        "selected_oos_candidate_count": 2,
+        "selected_oos_candidates": [
+          "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+          "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+        ],
+        "oos_executed": false,
+        "portfolio_executed": false,
+        "export_live_final_executed": false,
+        "db_update_delete_used": false,
+        "handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_insert_replay_handoff.md",
+        "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_limited_replay_result_20260706.json",
+        "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_round_decision_20260706.json",
+        "next_allowed_action": "plan-d-rank02-selected-oos-if-goal-2"
+      }
+    },
+    "lattice-v2-risk-sell-repair-review-20260709": {
+      "work_id": "lattice-v2-risk-sell-repair-review-20260709",
+      "active_plan": "docs/research/condition_research/plans/lattice_condition_generation_v2_risk_sell_repair_review_20260709.md",
+      "plan_name": "lattice_condition_generation_v2_risk_sell_repair_review_20260709",
+      "session_ids": [
+        "codex:lattice-v2-risk-sell-repair-review-20260709"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-09T13:04:49+09:00",
+      "ended_at": "2026-07-09T13:12:35+09:00",
+      "duration_ms": 466000,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "scope": "analysis_only_no_db_no_replay_no_oos_no_plan_d",
+      "duration_human": "466.0s",
+      "latest_handoff": "docs/update_log/2026-07-09_lattice_v2_risk_sell_repair_review_handoff.md",
+      "latest_result": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\v2_risk_sell_failure_decomposition_20260709.json",
+      "latest_decision": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\v2_risk_sell_repair_decision_20260709.json",
+      "summary": {
+        "decision": "stop_v2_body_branch",
+        "row_count": 8,
+        "loss_plus_mdd": 7,
+        "no_metrics": 1,
+        "db_mutation": false,
+        "replay_oos_plan_d": false
+      }
+    },
+    "lattice-v2-closeout-or-new-design-review-20260709": {
+      "work_id": "lattice-v2-closeout-or-new-design-review-20260709",
+      "active_plan": "docs/research/condition_research/plans/lattice_condition_generation_v2_closeout_or_new_design_review_20260709.md",
+      "plan_name": "lattice_condition_generation_v2_closeout_or_new_design_review_20260709.md",
+      "session_ids": [
+        "codex:20260709-closeout-review"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-09T18:41:48+09:00",
+      "ended_at": "2026-07-09T18:41:48+09:00",
+      "duration_ms": 67,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev"
+    }
+  },
+  "active_work": {
+    "current_priority": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+    "requested_range": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+    "completed_at": "2026-07-06T19:09:34+09:00",
+    "last_evidence": "docs/update_log/2026-07-06_plan_d_rank01_r2_survivor_freeze_r3_readiness_handoff.md",
+    "next_priority": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export",
+    "blocked_priority": null,
+    "blocker": null
+  },
+  "sessions": [
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706",
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export-20260706",
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export-20260706"
+  ],
+  "current_priority": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+  "last_completed_scope": "plan-d-rank02-r1-insert-replay-no-portfolio-export",
+  "updated_at": "2026-07-09T13:12:35+09:00",
+  "plan_d_rank01_rd_freeze_r2_result": {
+    "completed_at": "2026-07-06T17:17:04+09:00",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_limited_replay_result_20260706.json",
+    "decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_round_decision_20260706.json",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank01_r2_limited_replay_handoff.md",
+    "honest_rows": 24,
+    "gate_passed_count": 24,
+    "decision_counts": {
+      "improved": 9,
+      "flat": 15,
+      "no_go": 0
+    },
+    "next_allowed_action": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+    "recommended_freeze_next": [
+      {
+        "label": "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90",
+        "profit": 2773694.0,
+        "mdd": 15.75,
+        "trades": 192,
+        "daily": 0.9,
+        "buy_axis": "l14_amt14000",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "best_profit"
+      },
+      {
+        "label": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+        "profit": 2515910.0,
+        "mdd": 15.57,
+        "trades": 188,
+        "daily": 0.9,
+        "buy_axis": "l14_rate_floor85",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "lowest_mdd_among_improved"
+      },
+      {
+        "label": "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+        "profit": 2550258.0,
+        "mdd": 15.75,
+        "trades": 197,
+        "daily": 0.9,
+        "buy_axis": "l14_amt13000",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "nearby_amount_axis_confirmation"
+      }
+    ]
+  },
+  "plan_d_rank01_r2_selected_oos_started": {
+    "started_at": "2026-07-06T18:48:27+09:00",
+    "plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+    "source_read_receipt": ".omo/evidence/plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export-20260706/source_read_receipt.md",
+    "pairs": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/pairs_plan_d_rank01_r2_selected3_oos_20260706.json",
+    "config": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/oos_config_min_plan_d_rank01_r2_selected3_20260706.json",
+    "preregistration": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_preregistration_20260706.md",
+    "run_id": "lat_plan_d_rank01_r2_selected3_oos_min_warm64_20260706"
+  },
+  "plan_d_rank01_r2_selected_oos_result": {
+    "completed_at": "2026-07-06T18:56:08+09:00",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_result_20260706.json",
+    "decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_round_decision_20260706.json",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank01_r2_selected_oos_handoff.md",
+    "survivor_count": 3,
+    "next_allowed_action": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export"
+  },
+  "current_plan": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
+  "current_scope": "rank03-r2-one-cycle-boundary-no-portfolio-export",
+  "current_status": "completed_limited_replay_oos_not_executed",
+  "current_session_id": "codex:plan-d-rank02-r1-generate8-dryrun-no-portfolio-export-20260706",
+  "last_updated": "2026-07-06T23:51:54+09:00",
+  "latest_evidence_dir": ".omo/evidence/plan-d-rank02-r1-insert-limited-replay-no-portfolio-export-20260706",
+  "latest_output_dir": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706",
+  "guardrails": {
+    "db_registration": "dry_run_only",
+    "official_replay": false,
+    "oos": false,
+    "portfolio": false,
+    "export_live_final_promotion": false
+  },
+  "latest_handoff": "docs/update_log/2026-07-07_plan_d_rank03_r2_limited_replay_boundary_handoff.md",
+  "latest_summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_limited_replay_result_20260707.json",
+  "next_recommended_scope": "rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "last_result": {
+    "honest_rows": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "gate_passed_count": 8,
+    "decision_counts": {
+      "hold": 3,
+      "flat": 1,
+      "improved": 1,
+      "no_go": 3
+    },
+    "selected_oos_candidate": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+    "selected_profit": 1912728.0,
+    "selected_mdd": 10.79,
+    "selected_trades": 439,
+    "selected_daily": 2.1,
+    "next_allowed_action": "rank03-r2-selected-oos-prereg-no-portfolio-export"
+  },
+  "plan_d_rank02_r1_generate8_dryrun_result": {
+    "scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+    "status": "completed_dry_run_only",
+    "candidate_count": 8,
+    "static_gate_passed": 8,
+    "static_gate_failed": 0,
+    "dry_run_status": "dry_run_ok",
+    "planned_insert_count": 16,
+    "inserted_row_count": 0,
+    "db_insert_apply_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "verification": "passed",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_generate8_dryrun_handoff.md",
+    "next_allowed_action": "plan-d-rank02-r1-insert-replay-no-portfolio-export"
+  },
+  "plan_d_rank02_r1_insert_replay_result": {
+    "completed_at": "2026-07-06T23:51:54+09:00",
+    "run_id": "lat_plan_d_rank02_r1_8_min_warm64_20260706",
+    "lane": "min",
+    "profile": "official_full_period_warm64",
+    "db_apply_inserted_row_count": 16,
+    "db_apply_backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T143806Z",
+    "honest_rows": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "gate_passed_count": 8,
+    "decision_counts": {
+      "flat": 6,
+      "improved": 2
+    },
+    "selected_oos_candidate_count": 2,
+    "selected_oos_candidates": [
+      "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+    ],
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "db_update_delete_used": false,
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_insert_replay_handoff.md",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_limited_replay_result_20260706.json",
+    "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_round_decision_20260706.json",
+    "next_allowed_action": "plan-d-rank02-selected-oos-if-goal-2"
+  }
 }

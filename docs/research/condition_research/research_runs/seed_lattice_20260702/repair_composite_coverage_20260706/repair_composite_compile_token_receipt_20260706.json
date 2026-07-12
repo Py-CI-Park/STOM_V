@@ -1,0 +1,445 @@
+{
+  "schema": "repair_composite_compile_token_receipt_v1",
+  "created_at": "2026-07-06T07:59:38+09:00",
+  "candidate_count": 24,
+  "all_compile_ok": true,
+  "all_token_ok": true,
+  "receipts": [
+    {
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov01_sparse_positive_core",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov01_sparse_positive_core",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov02_sparse_positive_balanced",
+      "component_aliases": [
+        "S09_D03",
+        "S10_BAL",
+        "M09_POS"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov02_sparse_positive_balanced",
+      "component_aliases": [
+        "S09_D03",
+        "S10_BAL",
+        "M09_POS"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov03_sparse_positive_fourcell",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov03_sparse_positive_fourcell",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov04_profitmax_fourcell",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov04_profitmax_fourcell",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov05_daily_lift_l14",
+      "component_aliases": [
+        "S09_D03",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov05_daily_lift_l14",
+      "component_aliases": [
+        "S09_D03",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov06_profitmax_l14",
+      "component_aliases": [
+        "S09_PMAX",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov06_profitmax_l14",
+      "component_aliases": [
+        "S09_PMAX",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov07_strength_pair_l14",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov07_strength_pair_l14",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov08_sparse_pair_l14",
+      "component_aliases": [
+        "S09_D03",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov08_sparse_pair_l14",
+      "component_aliases": [
+        "S09_D03",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov09_early_late_l1430",
+      "component_aliases": [
+        "S09_D03",
+        "L1430_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov09_early_late_l1430",
+      "component_aliases": [
+        "S09_D03",
+        "L1430_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 40,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov10_strength_momentum_1430",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS",
+        "L1430_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov10_strength_momentum_1430",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS",
+        "L1430_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 76,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov11_l13_offset",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "L13_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov11_l13_offset",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "L13_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 58,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_default_tp3_sl3_hold60",
+      "combo_name": "cov12_all_positive_plus_l14",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 94,
+      "sell_line_count": 11
+    },
+    {
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_protect_tp2p5_sl2_hold45",
+      "combo_name": "cov12_all_positive_plus_l14",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "compile_ok": true,
+      "compile_reason": "",
+      "buy_token_ok": true,
+      "buy_token_reason": "",
+      "sell_token_ok": true,
+      "sell_token_reason": "",
+      "buy_line_count": 94,
+      "sell_line_count": 11
+    }
+  ]
+}

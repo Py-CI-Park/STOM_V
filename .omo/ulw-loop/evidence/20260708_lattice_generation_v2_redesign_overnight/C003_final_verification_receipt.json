@@ -1,0 +1,36 @@
+{
+  "schema": "ulw_c003_final_verification_receipt_v1",
+  "created_at": "2026-07-08T10:04:37+09:00",
+  "criterion": "C003_final_verification",
+  "status": "pass",
+  "main_artifact_commit": "f24c9500",
+  "verification": {
+    "json_parse": {
+      "status": "pass",
+      "json_files": 10,
+      "ledger_rows_before_c003_record": 6
+    },
+    "verify_nonrelease_sync": {
+      "status": "pass",
+      "command": "python scripts/verify_nonrelease_sync.py"
+    },
+    "scoped_git_diff_check": {
+      "status": "pass",
+      "command": "git diff --check -- scoped redesign artifacts"
+    },
+    "protected_path_status": {
+      "status": "pass",
+      "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "lines": 0
+    },
+    "guard_pattern_scan": {
+      "status": "pass",
+      "note": "rg hits were only in explicit forbidden/guard/no-execution contexts; no executable backtest/DB/OOS/portfolio/Plan D R3 command was added."
+    },
+    "staged_scope_before_commit": {
+      "status": "pass",
+      "note": "First commit staged only redesign ULW state, C001/C002 evidence, plans, and handoff artifacts."
+    }
+  },
+  "cleanup": "No runtime process, tmux session, browser, DB connection, or temp directory was spawned for C003; no subagents open."
+}

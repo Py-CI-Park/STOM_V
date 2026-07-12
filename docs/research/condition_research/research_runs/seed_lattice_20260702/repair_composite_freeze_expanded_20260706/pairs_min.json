@@ -1,0 +1,242 @@
+[
+  {
+    "label": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_13_top_four_plus_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_14_top_four_plus_l13_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_14_top_four_plus_l13_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_14_top_four_plus_l13_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_14_top_four_plus_l13_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_15_top_four_plus_l13_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_15_top_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_15_top_four_plus_l13_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_15_top_four_plus_l13_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_17_balanced_plus_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_17_balanced_plus_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_17_balanced_plus_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_17_balanced_plus_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_18_balanced_plus_l13_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_18_balanced_plus_l13_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_18_balanced_plus_l13_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_18_balanced_plus_l13_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_19_profitmax_plus_l1430_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_19_profitmax_plus_l1430_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_19_profitmax_plus_l1430_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_19_profitmax_plus_l1430_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_21_late_ladder_core_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_21_late_ladder_core_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_21_late_ladder_core_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_21_late_ladder_core_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_21_late_ladder_core_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_21_late_ladder_core_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_21_late_ladder_core_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_21_late_ladder_core_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_21_late_ladder_core_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_22_momentum_late_ladder_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_22_momentum_late_ladder_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_22_momentum_late_ladder_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_22_momentum_late_ladder_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_23_sparse_profitmax_l13_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_24_strength_profitmax_l13_l14_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_24_strength_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_24_strength_profitmax_l13_l14_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_24_strength_profitmax_l13_l14_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_25_daily_boost_core_l13_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_25_daily_boost_core_l13_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_25_daily_boost_core_l13_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_25_daily_boost_core_l13_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_26_daily_boost_core_l1430_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_26_daily_boost_core_l1430_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_27_l14_focus_sparse_strength_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_27_l14_focus_sparse_strength_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_27_l14_focus_sparse_strength_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_27_l14_focus_sparse_strength_sell_loose_tp4_sl3_hold90_S"
+  },
+  {
+    "label": "repair_v3_20260706_28_l13_l14_focus_strength_sell_default_tp3_sl3_hold60",
+    "buy": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_default_tp3_sl3_hold60_B",
+    "sell": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_default_tp3_sl3_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_28_l13_l14_focus_strength_sell_tight_tp3_sl2p5_hold60",
+    "buy": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_tight_tp3_sl2p5_hold60_B",
+    "sell": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_tight_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "repair_v3_20260706_28_l13_l14_focus_strength_sell_loose_tp4_sl3_hold90",
+    "buy": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_repair_v3_20260706_28_l13_l14_focus_strength_sell_loose_tp4_sl3_hold90_S"
+  }
+]

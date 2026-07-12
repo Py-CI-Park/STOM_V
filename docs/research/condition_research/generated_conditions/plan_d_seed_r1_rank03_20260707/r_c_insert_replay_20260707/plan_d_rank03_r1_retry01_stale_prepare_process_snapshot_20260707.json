@@ -1,0 +1,710 @@
+﻿{
+    "schema":  "plan_d_rank03_r1_retry01_stale_prepare_process_snapshot_v1",
+    "created_at":  "2026-07-07T17:49:52+09:00",
+    "scope":  "plan-d-rank03-r1-insert-replay-no-portfolio-export",
+    "run_id":  "lat_plan_d_rank03_r1_8_min_warm64_retry01_20260707",
+    "classification":  "stale_prepare_wait_evidence",
+    "reason":  "stdout stayed at BATCH pairs line, stderr stopped after Setting warnings, parent and child CPU did not increase between samples",
+    "official_result_usable":  false,
+    "process_count":  85,
+    "processes":  [
+                      {
+                          "process_id":  139472,
+                          "parent_process_id":  120872,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:24",
+                          "command_line":  "python  -u -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_c_insert_replay_20260707/pairs_plan_d_rank03_r1_8_inserted_20260707.json --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json --run-id lat_plan_d_rank03_r1_8_min_warm64_retry01_20260707 --fail-fast-timeout ",
+                          "cpu_seconds":  16.078125
+                      },
+                      {
+                          "process_id":  144372,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=1624)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.5
+                      },
+                      {
+                          "process_id":  76932,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2968)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.234375
+                      },
+                      {
+                          "process_id":  89504,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2952)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.21875
+                      },
+                      {
+                          "process_id":  76592,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=292)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.4375
+                      },
+                      {
+                          "process_id":  89480,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2996)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.4375
+                      },
+                      {
+                          "process_id":  27784,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2992)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.953125
+                      },
+                      {
+                          "process_id":  73340,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3012)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.171875
+                      },
+                      {
+                          "process_id":  124624,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3028)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.625
+                      },
+                      {
+                          "process_id":  108024,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3036)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.25
+                      },
+                      {
+                          "process_id":  100292,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=532)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.25
+                      },
+                      {
+                          "process_id":  134468,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3068)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.015625
+                      },
+                      {
+                          "process_id":  144016,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3084)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  10.9375
+                      },
+                      {
+                          "process_id":  90496,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3100)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.390625
+                      },
+                      {
+                          "process_id":  117992,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=1068)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.0625
+                      },
+                      {
+                          "process_id":  139928,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3096)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.3125
+                      },
+                      {
+                          "process_id":  134528,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3128)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.421875
+                      },
+                      {
+                          "process_id":  142356,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3124)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.171875
+                      },
+                      {
+                          "process_id":  107488,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3144)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.5625
+                      },
+                      {
+                          "process_id":  115880,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3164)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  11.6875
+                      },
+                      {
+                          "process_id":  145452,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:41",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3196)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  10.6875
+                      },
+                      {
+                          "process_id":  121232,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2988)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.296875
+                      },
+                      {
+                          "process_id":  142800,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2948)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.484375
+                      },
+                      {
+                          "process_id":  40432,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3116)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.9375
+                      },
+                      {
+                          "process_id":  65964,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3104)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.046875
+                      },
+                      {
+                          "process_id":  12088,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3136)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.046875
+                      },
+                      {
+                          "process_id":  88840,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7000)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.640625
+                      },
+                      {
+                          "process_id":  73632,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6728)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  12.921875
+                      },
+                      {
+                          "process_id":  53724,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6736)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.453125
+                      },
+                      {
+                          "process_id":  109932,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3088)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.640625
+                      },
+                      {
+                          "process_id":  121700,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=2972)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.671875
+                      },
+                      {
+                          "process_id":  146324,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3016)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.28125
+                      },
+                      {
+                          "process_id":  140928,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3168)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.59375
+                      },
+                      {
+                          "process_id":  122264,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6812)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.671875
+                      },
+                      {
+                          "process_id":  144084,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3132)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.171875
+                      },
+                      {
+                          "process_id":  16748,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6844)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  12.921875
+                      },
+                      {
+                          "process_id":  106920,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=3108)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.171875
+                      },
+                      {
+                          "process_id":  102012,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6888)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  17.15625
+                      },
+                      {
+                          "process_id":  142812,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6856)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.71875
+                      },
+                      {
+                          "process_id":  79260,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6896)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.203125
+                      },
+                      {
+                          "process_id":  138716,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6912)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.609375
+                      },
+                      {
+                          "process_id":  143696,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6864)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.890625
+                      },
+                      {
+                          "process_id":  116336,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6876)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.515625
+                      },
+                      {
+                          "process_id":  64896,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6920)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.1875
+                      },
+                      {
+                          "process_id":  71144,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6940)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.046875
+                      },
+                      {
+                          "process_id":  129404,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6932)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.9375
+                      },
+                      {
+                          "process_id":  112584,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6960)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.875
+                      },
+                      {
+                          "process_id":  146884,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6968)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.09375
+                      },
+                      {
+                          "process_id":  119708,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6988)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.265625
+                      },
+                      {
+                          "process_id":  93564,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6816)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  17.046875
+                      },
+                      {
+                          "process_id":  136740,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7012)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.84375
+                      },
+                      {
+                          "process_id":  102620,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6980)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.75
+                      },
+                      {
+                          "process_id":  92352,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7036)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.078125
+                      },
+                      {
+                          "process_id":  81704,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7048)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.59375
+                      },
+                      {
+                          "process_id":  52944,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7064)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.5625
+                      },
+                      {
+                          "process_id":  134596,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7076)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.015625
+                      },
+                      {
+                          "process_id":  88300,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7088)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.578125
+                      },
+                      {
+                          "process_id":  101440,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7116)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.203125
+                      },
+                      {
+                          "process_id":  82708,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7108)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.0625
+                      },
+                      {
+                          "process_id":  73788,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7132)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.71875
+                      },
+                      {
+                          "process_id":  146240,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7156)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.328125
+                      },
+                      {
+                          "process_id":  71544,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=6628)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.6875
+                      },
+                      {
+                          "process_id":  128628,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7196)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.484375
+                      },
+                      {
+                          "process_id":  119384,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7208)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.546875
+                      },
+                      {
+                          "process_id":  128968,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7144)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  17.71875
+                      },
+                      {
+                          "process_id":  120212,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7232)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  17.25
+                      },
+                      {
+                          "process_id":  145568,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7276)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.1875
+                      },
+                      {
+                          "process_id":  76856,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7216)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.25
+                      },
+                      {
+                          "process_id":  104940,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7268)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.171875
+                      },
+                      {
+                          "process_id":  126556,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7248)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.03125
+                      },
+                      {
+                          "process_id":  127828,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7260)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.65625
+                      },
+                      {
+                          "process_id":  141536,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7324)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.171875
+                      },
+                      {
+                          "process_id":  144724,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7348)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  16.21875
+                      },
+                      {
+                          "process_id":  106688,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7336)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  12.421875
+                      },
+                      {
+                          "process_id":  9172,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7376)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  18
+                      },
+                      {
+                          "process_id":  122468,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7364)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.828125
+                      },
+                      {
+                          "process_id":  107532,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7412)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.28125
+                      },
+                      {
+                          "process_id":  130044,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7388)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.328125
+                      },
+                      {
+                          "process_id":  89976,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7396)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.25
+                      },
+                      {
+                          "process_id":  53920,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7404)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15.75
+                      },
+                      {
+                          "process_id":  109612,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7428)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  15
+                      },
+                      {
+                          "process_id":  107928,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7444)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.59375
+                      },
+                      {
+                          "process_id":  102016,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7460)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.75
+                      },
+                      {
+                          "process_id":  78664,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7476)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  13.375
+                      },
+                      {
+                          "process_id":  122260,
+                          "parent_process_id":  139472,
+                          "name":  "python.exe",
+                          "creation_date":  "07/07/2026 17:42:42",
+                          "command_line":  "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=139472, pipe_handle=7436)\" \"--multiprocessing-fork\"",
+                          "cpu_seconds":  14.109375
+                      }
+                  ],
+    "files":  [
+                  {
+                      "path":  "artifacts/plan_d_rank03_r1_8_min_warm64_retry01_20260707.log",
+                      "length":  75,
+                      "last_write_time":  "07/07/2026 17:42:41"
+                  },
+                  {
+                      "path":  "artifacts/plan_d_rank03_r1_8_min_warm64_retry01_20260707.err",
+                      "length":  10075,
+                      "last_write_time":  "07/07/2026 17:44:34"
+                  }
+              ],
+    "constraints":  {
+                        "portfolio_executed":  false,
+                        "oos_executed":  false,
+                        "export_live_final_executed":  false,
+                        "db_update_delete_used":  false
+                    }
+}

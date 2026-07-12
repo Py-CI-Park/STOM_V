@@ -3107,6 +3107,7 @@ def create_app(
         try:
             import requests  # noqa: PLC0415
             from ai_strategy_loop.provider.chatgpt_oauth.constants import (  # noqa: PLC0415
+                DEFAULT_MODEL,
                 PROXY_OPENAI_API_KEY_PLACEHOLDER,
                 get_proxy_base_url,
             )
@@ -3129,7 +3130,7 @@ def create_app(
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "gpt-5.5",
+                    "model": DEFAULT_MODEL,
                     "messages": [{"role": "user", "content": "OK"}],
                     "max_tokens": 4,
                     "stream": False,
@@ -3140,8 +3141,8 @@ def create_app(
             return {
                 "status": "ok" if ok else "unavailable",
                 "mode": "gpt_auth",
-                "model": "gpt-5.5",
-                "reasoning_effort": "xhigh",
+                "model": DEFAULT_MODEL,
+                "reasoning_effort": "high",
                 "safe": True,
                 "starts_evolution": False,
                 "http_status": response.status_code,
@@ -3151,8 +3152,8 @@ def create_app(
             return {
                 "status": "unavailable",
                 "mode": "gpt_auth",
-                "model": "gpt-5.5",
-                "reasoning_effort": "xhigh",
+                "model": DEFAULT_MODEL,
+                "reasoning_effort": "high",
                 "safe": True,
                 "starts_evolution": False,
                 "message": "GPT auth connection test failed without starting evolution",

@@ -1,0 +1,36 @@
+{
+  "schema": "plan_d_rank03_r1_oos_append_reconciliation_receipt_v1",
+  "created_at": "2026-07-07T18:39:38+09:00",
+  "scope": "plan-d-rank03-r1-selected-oos-retry03-survivor-append",
+  "source_result_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_retry03_result_20260707.json",
+  "local_survivors_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_survivors_20260707.jsonl",
+  "global_oos_survivors_path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+  "seed_pool_path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+  "passport_paths": [
+    "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r1_oos_20260707_01.md"
+  ],
+  "appended": {
+    "local_survivors": [
+      "plan_d_rank03_r1_oos_20260707_01"
+    ],
+    "global_oos_survivors": [
+      "plan_d_rank03_r1_oos_20260707_01"
+    ],
+    "seed_pool": [
+      "plan_d_rank03_r1_oos_20260707_01"
+    ]
+  },
+  "db_update_delete_used": false,
+  "manual_db_mutation_used": false,
+  "canonical_append_receipt_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_oos_survivor_append_receipt_20260707.json",
+  "already_present": {
+    "global_oos_survivors": [
+      "plan_d_rank03_r1_oos_20260707_01"
+    ],
+    "seed_pool": [
+      "plan_d_rank03_r1_oos_20260707_01"
+    ]
+  },
+  "note": "Canonical append receipt recorded global OOS survivor and seed_pool append. This reconciliation receipt records local survivor creation and duplicate-guard state after append.",
+  "append_note": "Global oos_survivors.jsonl and seed_pool.jsonl contain the rank03 R1 OOS survivor record; duplicate guards prevent re-append."
+}

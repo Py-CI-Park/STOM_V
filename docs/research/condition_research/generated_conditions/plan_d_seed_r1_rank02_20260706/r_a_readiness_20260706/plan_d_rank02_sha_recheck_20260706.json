@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-07-06T22:33:21+09:00",
+  "scope": "rank02-readiness-review-only",
+  "seed_id": "plan_d_rcs_oos_20260706_rank02",
+  "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+  "buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_B",
+  "sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_S",
+  "db_buy_found": true,
+  "db_sell_found": true,
+  "expected_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+  "actual_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+  "expected_sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+  "actual_sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+  "passed": true
+}

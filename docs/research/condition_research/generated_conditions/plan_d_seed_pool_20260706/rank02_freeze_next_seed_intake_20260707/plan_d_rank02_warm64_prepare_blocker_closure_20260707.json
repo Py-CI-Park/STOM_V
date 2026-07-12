@@ -1,0 +1,125 @@
+{
+  "schema": "plan_d_rank02_warm64_prepare_blocker_closure_v1",
+  "created_at": "2026-07-07T17:45:00+09:00",
+  "scope": "diagnose-warm64-prepare-engine-response-wait-before-selected-oos-retry",
+  "status": "closed_resolved_by_retry02_and_follow_on_oos_runs",
+  "original_blocker": {
+    "blocked_result_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json",
+    "blocker": "warm64_prepare_engine_response_wait_reproduced",
+    "attempts": [
+      {
+        "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+        "generation_rows": 0,
+        "observed_stack": "WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info"
+      },
+      {
+        "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707",
+        "generation_rows": 0,
+        "observed_stack": "WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info"
+      }
+    ],
+    "classification": "not_condition_quality_result"
+  },
+  "runtime_resolution_evidence": {
+    "retry02_run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+    "same_selected_pairs": 2,
+    "profile": {
+      "lane": "min",
+      "db": "_database/stock_min_back.db",
+      "oos_window": "2026-01-01~2026-02-27",
+      "time_window": "09:00~15:19",
+      "warm_engine_count": 64
+    },
+    "warm_prepare": {
+      "status": "ok",
+      "back_count": 480,
+      "elapsed_seconds": 119
+    },
+    "honest_rows": "2/2",
+    "gate_passed": "2/2",
+    "survivors": 2,
+    "raw_log": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707.log"
+  },
+  "follow_on_oos_evidence": [
+    {
+      "round": "R2 selected OOS",
+      "run_id": "lat_plan_d_rank02_r2_selected3_oos_min_warm64_20260707",
+      "warm_prepare": "ok",
+      "honest_rows": "3/3",
+      "survivors": 3,
+      "handoff": "docs/update_log/2026-07-07_plan_d_rank02_r2_selected_oos_handoff.md"
+    },
+    {
+      "round": "R3 selected OOS",
+      "run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707",
+      "warm_prepare": "ok",
+      "honest_rows": "1/1",
+      "survivors": 1,
+      "handoff": "docs/update_log/2026-07-07_plan_d_rank02_r3_selected_oos_handoff.md"
+    }
+  ],
+  "code_and_test_evidence": {
+    "warm_session_diagnostics": {
+      "file": "cli/warm_session.py",
+      "relevant_lines": "393-407",
+      "behavior": "_collect_engine_shared_info timeout diagnostics are preserved in the returned error result."
+    },
+    "unit_test": {
+      "file": "tests/unit/test_warm_session_window.py",
+      "test": "test_warm_send_engine_data_preserves_timeout_diagnostics",
+      "relevant_lines": "227-282"
+    }
+  },
+  "source_hashes": [
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank02_r1_selected_oos_blocked_handoff.md",
+      "line_count": 45,
+      "sha256": "1103ad7e4cd2ade391faa1ec9082b4f75e6232a2fddef3bc0fc13ef94b365976"
+    },
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank02_r1_selected_oos_retry02_survivors_handoff.md",
+      "line_count": 104,
+      "sha256": "77dad80f8be74702852051ac6c938f73b58d7764cec6e1a9f41d57aa2f243092"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json",
+      "line_count": 94,
+      "sha256": "ad66a38f233531cfc1cf83309cfa88e6ea8fafb54c26c06d496e35974cb03352"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_retry02_result_20260707.json",
+      "line_count": 153,
+      "sha256": "5a4592b471e0544224620dbfe59c87e4102aac695c7187966d7591b70eb133c8"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_retry02_verification_receipt_20260707.json",
+      "line_count": 20,
+      "sha256": "10bbb7576f8f1404272d29de077d17ea215a3e2c8cfa4556670cb5d334249223"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_oos_append_receipt_20260707.json",
+      "line_count": 29,
+      "sha256": "4cc848de3d31b25d5f5b7b6e275d74790d0f3626cac0579d139c2d60c05a26ea"
+    },
+    {
+      "path": "cli/warm_session.py",
+      "line_count": 637,
+      "sha256": "cc669e99f76a5f9d5d3d2048c35dbb31ca6e130f4022ac5d1eb1ebbc68df4c22"
+    },
+    {
+      "path": "tests/unit/test_warm_session_window.py",
+      "line_count": 250,
+      "sha256": "cdbde0dd730be962ffea243f73fcf766963331e246ea5cd85f6f3b6226cd5c5f"
+    }
+  ],
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_without_preregistration_used": false,
+    "non_selected_candidate_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_or_min_288_executed": false
+  },
+  "conclusion": "The selected OOS warm64 wait was a runtime prepare/engine-response blocker in the first two attempts, not a candidate failure. The blocker is considered resolved for Plan D continuation because retry02 and later R2/R3 selected OOS runs completed with warm prepare ok and honest rows. Current rank02 continuation is blocked only by strategy no-improve criteria after R4/R5/R6, so the correct next page is rank02 branch freeze and rank03 seed intake."
+}

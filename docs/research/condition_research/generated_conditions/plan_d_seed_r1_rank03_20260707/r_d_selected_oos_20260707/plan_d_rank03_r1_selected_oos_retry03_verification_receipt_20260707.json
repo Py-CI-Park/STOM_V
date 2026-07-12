@@ -1,0 +1,26 @@
+{
+  "schema": "plan_d_rank03_r1_selected_oos_retry03_verification_receipt_v1",
+  "created_at": "2026-07-07T18:39:38+09:00",
+  "run_id": "lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry03_20260707",
+  "checks": {
+    "run_complete": true,
+    "honest_rows": 1,
+    "row_status": "ok",
+    "gate_passed": true,
+    "warm_prepare_back_count": 480,
+    "warm_prepare_elapsed_seconds": 106,
+    "no_live_target_process_expected_after_done": true,
+    "db_update_delete_used": false,
+    "orphan_cleanup_before_retry03": "killed_18_candidates",
+    "global_oos_survivors_append": "pass_present",
+    "seed_pool_append": "pass_present",
+    "target_python_process_scan_after_cleanup": "pass_no_live_target_python_or_fork"
+  },
+  "sha256": {
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_retry03_result_20260707.json": "e6eded6f15c23eef4831f3bad4d92155c6e50931d0eee7008b58120ce050e162",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_survivors_20260707.jsonl": "9c0e617444824c2311057fbc1747a419883238b94e81a6c7667bd3280c2a8a9d",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_oos_append_receipt_20260707.json": "725040e539b18aef11005fa7306dd930001bcf24f7c713f8ea87428aadf0a483",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_next_seed_readiness_20260707.json": "77f2bbe2f795bbda36702e7ad234a825a6be526587e47bd22177df78df603801"
+  },
+  "updated_at": "2026-07-07T18:42:45+09:00"
+}

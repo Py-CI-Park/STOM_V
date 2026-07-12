@@ -1,0 +1,257 @@
+{
+  "schema": "orphan_cleanup_receipt_v1",
+  "generated_at": "2026-07-07T09:32:16Z",
+  "authority": "advisory_only",
+  "mode": "kill",
+  "target_scope": "python processes whose command line contains a multiprocessing fork marker",
+  "fork_markers": [
+    "--multiprocessing-fork",
+    "from multiprocessing.spawn import spawn_main",
+    "from multiprocessing.resource_tracker import main"
+  ],
+  "older_than_minutes": 1.0,
+  "self_pid": 131856,
+  "parent_pid": 130540,
+  "extra_excluded_pids": [],
+  "scanned_python_processes": 29,
+  "candidate_count": 18,
+  "candidates": [
+    {
+      "pid": 69884,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7376)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 77144,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7080)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 94920,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7308)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 97536,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7832)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 99464,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7356)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 108068,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7632)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 109224,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7240)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 114784,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7396)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 115668,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7284)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 117004,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7332)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 128276,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7516)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 134236,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7024)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 135792,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7164)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 141056,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7676)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 141092,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7320)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 142472,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7368)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 143468,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7432)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    },
+    {
+      "pid": 149760,
+      "parent_pid": 72212,
+      "name": "python.exe",
+      "command_line_summary": "\"C:\\Python\\64\\Python31313\\python.exe\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=72212, pipe_handle=7924)\" \"--multiprocessing-for",
+      "creation_date": "2026-07-07T08:50:41Z",
+      "age_minutes": 41.59
+    }
+  ],
+  "killed": [
+    {
+      "pid": 69884,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 69884 has been terminated."
+    },
+    {
+      "pid": 77144,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 77144 has been terminated."
+    },
+    {
+      "pid": 94920,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 94920 has been terminated."
+    },
+    {
+      "pid": 97536,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 97536 has been terminated."
+    },
+    {
+      "pid": 99464,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 99464 has been terminated."
+    },
+    {
+      "pid": 108068,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 108068 has been terminated."
+    },
+    {
+      "pid": 109224,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 109224 has been terminated."
+    },
+    {
+      "pid": 114784,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 114784 has been terminated."
+    },
+    {
+      "pid": 115668,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 115668 has been terminated."
+    },
+    {
+      "pid": 117004,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 117004 has been terminated."
+    },
+    {
+      "pid": 128276,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 128276 has been terminated."
+    },
+    {
+      "pid": 134236,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 134236 has been terminated."
+    },
+    {
+      "pid": 135792,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 135792 has been terminated."
+    },
+    {
+      "pid": 141056,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 141056 has been terminated."
+    },
+    {
+      "pid": 141092,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 141092 has been terminated."
+    },
+    {
+      "pid": 142472,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 142472 has been terminated."
+    },
+    {
+      "pid": 143468,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 143468 has been terminated."
+    },
+    {
+      "pid": 149760,
+      "status": "killed",
+      "detail": "SUCCESS: The process with PID 149760 has been terminated."
+    }
+  ],
+  "kill_errors": []
+}

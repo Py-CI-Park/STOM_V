@@ -1,0 +1,68 @@
+{
+  "schema": "plan_d_rank02_r1_generate8_dryrun_summary_v1",
+  "created_at": "2026-07-06T23:20:00+09:00",
+  "scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+  "parent": {
+    "seed_id": "plan_d_rcs_oos_20260706_rank02",
+    "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+    "buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+    "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+    "selected_oos_profit_krw": 1124220.0,
+    "selected_oos_mdd_pct": 4.12,
+    "selected_oos_trades": 18,
+    "selected_oos_daily_avg_trades": 0.5
+  },
+  "candidate_design": {
+    "quota": {
+      "repair": 5,
+      "discovery": 3
+    },
+    "candidate_count": 8,
+    "lane": "min",
+    "label": "hypothesis_seed",
+    "name_style": "sanitized_filename_safe_v2",
+    "candidate_ids": [
+      "plan_d_r1_rank02_r1_01_l14_rate75_hold90",
+      "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+      "plan_d_r1_rank02_r1_03_l14_end1445_rate80_hold90",
+      "plan_d_r1_rank02_r1_04_l13_l14_rate80_hold90",
+      "plan_d_r1_rank02_r1_05_l1430_bridge_rate80_hold90",
+      "plan_d_r1_rank02_r1_06_morning_strength_relax_hold90",
+      "plan_d_r1_rank02_r1_07_momentum_mult992_hold90",
+      "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90"
+    ]
+  },
+  "gate_results": {
+    "static_gate_passed": 8,
+    "static_gate_failed": 0,
+    "db_absence_check_passed": true,
+    "buy_matches_before_dryrun": 0,
+    "sell_matches_before_dryrun": 0,
+    "dry_run_status": "dry_run_ok",
+    "planned_seed_count": 8,
+    "planned_insert_count": 16,
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "conflicts": []
+  },
+  "explicit_non_actions": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  },
+  "artifacts": {
+    "source_read_receipt": ".omo/evidence/plan-d-rank02-r1-generate8-dryrun-no-portfolio-export-20260706/source_read_receipt.md",
+    "context_pack": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_context_pack_20260706.md",
+    "design": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_design_20260706.json",
+    "seeds": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_generate8_seeds_20260706.json",
+    "static_gate": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_static_gate_20260706.json",
+    "db_absence_check": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_dryrun_db_absence_check_20260706.json",
+    "register_dry_run": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/register_plan_d_rank02_r1_generate8_dryrun_20260706.json",
+    "mapping": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_strategy_name_mapping_20260706.jsonl",
+    "pairs": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/pairs_plan_d_rank02_r1_generate8_20260706.json"
+  },
+  "next_allowed_action": "plan-d-rank02-r1-insert-replay-no-portfolio-export"
+}

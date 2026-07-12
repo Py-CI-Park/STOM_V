@@ -1,0 +1,59 @@
+{
+  "schema": "plan_d_seed_pool_readiness_audit_v1",
+  "created_at": "2026-07-06T11:31:02+09:00",
+  "scope": "repair-composite-plan-d-seed-pool-intake",
+  "status": "ready_for_plan_d_seed_round",
+  "seed_pool_ready": true,
+  "seed_pool_path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+  "oos_survivors_path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+  "passport_dir": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports",
+  "seed_pool_appended": 15,
+  "oos_survivors_appended": 15,
+  "passport_count": 15,
+  "positive_control": {
+    "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_positive_control_receipt_20260706.json",
+    "all_passed": true,
+    "passed_count": 34,
+    "total": 34,
+    "verdict": "gate_healthy",
+    "authority": "advisory_only"
+  },
+  "lineage": {
+    "scoped_report": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_lineage_scoped_report_20260706.json",
+    "scoped_exit_code": 0,
+    "scoped_counts": {
+      "error": 0,
+      "warning": 0,
+      "advisory": 2
+    },
+    "global_report": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_lineage_report_20260706.json",
+    "global_exit_code": 1,
+    "global_counts": {
+      "error": 2,
+      "warning": 0,
+      "advisory": 0
+    },
+    "global_issues_are_out_of_scope": true,
+    "global_issue_note": "Global checker reports legacy css_v7_validation_20260702 missing plan/management docs; scoped Plan D intake lineage exits 0."
+  },
+  "restrictions_confirmed": {
+    "plan_d_rounds_executed": false,
+    "portfolio_executed": false,
+    "promotion_export_live_final_touched": false,
+    "db_update_delete_used": false,
+    "db_insert_performed_in_this_scope": false,
+    "strategy_db_access": "read_only_sha_recheck"
+  },
+  "top_seed_ids": [
+    "plan_d_rcs_oos_20260706_rank01",
+    "plan_d_rcs_oos_20260706_rank02",
+    "plan_d_rcs_oos_20260706_rank03"
+  ],
+  "top_conditions": [
+    "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+    "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+    "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90"
+  ],
+  "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS.",
+  "next_recommended_scope": "plan-d-seed-r1-rank01-no-portfolio-export"
+}

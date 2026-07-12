@@ -1,0 +1,1 @@
+{"goal":{"threadId":"019f248b-4725-75f2-9eb9-06f8541ce25f","objective":"2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다.","status":"active","tokensUsed":1400628,"timeUsedSeconds":6769,"createdAt":1783346728,"updatedAt":1783353497}}

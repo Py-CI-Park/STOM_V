@@ -1,0 +1,50 @@
+[
+  {
+    "label": "plan_d_r1_rank01_r3_01_l14_rate80_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_01_l14_rate80_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_01_l14_rate80_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_07_morning_strength_relax_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_07_morning_strength_relax_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_07_morning_strength_relax_hold90_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_r3_08_momentum_mult992_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_08_momentum_mult992_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_08_momentum_mult992_hold90_S",
+    "lane": "plan"
+  }
+]

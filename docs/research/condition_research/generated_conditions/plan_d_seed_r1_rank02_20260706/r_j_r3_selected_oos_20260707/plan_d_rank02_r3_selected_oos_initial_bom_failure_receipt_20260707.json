@@ -1,0 +1,11 @@
+{
+  "schema": "plan_d_rank02_r3_selected_oos_initial_failure_receipt_v1",
+  "created_at": "2026-07-07T16:09:15+09:00",
+  "failed_run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_20260707",
+  "status": "failed_before_batch_config_load",
+  "root_cause": "PowerShell Set-Content wrote JSON with UTF-8 BOM; evaluator reads config with encoding=utf-8 and rejected BOM.",
+  "db_or_backtest_started": false,
+  "resolution": "Rewrote generated r_j JSON/JSONL/MD inputs with UTF-8 no-BOM and used retry01 run_id.",
+  "retry_run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707",
+  "failed_log_path": "artifacts/plan_d_rank02_r3_selected1_oos_min_warm64_20260707.log"
+}

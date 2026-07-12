@@ -1,0 +1,44 @@
+{
+  "schema": "plan_d_rank02_r6_round_decision_v1",
+  "created_at": "2026-07-07T17:15:51+09:00",
+  "scope": "plan-d-rank02-r6-insert-limited-replay-no-oos-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "baseline": {
+    "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "profit": 2297191.0,
+    "mdd": 16.31,
+    "trade_count": 209,
+    "daily_avg_trades": 1.0,
+    "source_path": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_i_r3_insert_replay_20260707\\plan_d_rank02_r3_limited_replay_result_20260707.json"
+  },
+  "decision_rule": "improved if profit not worse with lower MDD, or profit better with MDD not worse and trades >= 50% of parent; otherwise gate-pass rows are flat.",
+  "decision_counts": {
+    "improved": 0,
+    "flat": 8,
+    "no_go": 0
+  },
+  "improved": [],
+  "flat": [
+    "plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default",
+    "plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9",
+    "plan_d_r1_rank02_r6_03_eod1515_pmax110_108",
+    "plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000",
+    "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800",
+    "plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9",
+    "plan_d_r1_rank02_r6_07_eod1510_l14_rate9",
+    "plan_d_r1_rank02_r6_08_eod1520_l14_rate10"
+  ],
+  "no_go": [],
+  "coverage_watch": [
+    "plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000",
+    "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800"
+  ],
+  "selected_oos_candidates": [],
+  "rounds_no_improve_delta": 1,
+  "consecutive_no_improve_since_r3": 3,
+  "rank02_branch_freeze_threshold_reached": true,
+  "next_allowed_action": "rank02_branch_terminal_freeze_review_and_next_seed_intake_no_oos_portfolio_export",
+  "oos_opened": false,
+  "oos_open_reason": "not_opened_no_improved_candidate_and_three_round_no_improve_threshold_reached",
+  "portfolio_executed": false
+}

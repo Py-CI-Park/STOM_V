@@ -94,7 +94,7 @@ Plan C/B/D documents.
   - Sanitized acceptance probe used 20 pairs only and returned `ok=20`, `gate_passed=0`, `trade_count=24..1418`.
   - Threshold relaxation is not required before resuming full smoke; later refinement is still needed because no sampled pair passed performance gates.
 
-- [ ] P5. Plan B B1.3 overnight smoke batch
+- [x] P5. Plan B B1.3 overnight smoke batch
 
   Purpose: run tick first, then min, and export smoke results.
 
@@ -170,16 +170,194 @@ Plan C/B/D documents.
   `-514,230,966~-12,886,150`. Evidence:
   `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk03_official_full_warm64_20260704_receipt.json`.
   Chunk03 is coverage-map evidence only; next allowed action is chunk04 only.
+  Chunk04 blocker 2026-07-04: the first chunk04 attempt is partial/stale, not
+  complete. Evidence:
+  `docs/update_log/2026-07-04_p5_tick_chunk04_blocker_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk04_blocker_official_full_warm64_20260704_receipt.json`.
+  Current state: run `lat_tick_official_full_warm64_chunk04_20260704` has
+  13/24 rows (`ok=11`, `error=2`), DB status `running`, and no live batch
+  process. Do not start chunk05/min/P6/P7; resolve with a new chunk04
+  retry/supplement run id without DB `UPDATE`/`DELETE`.
+  Chunk04 supplement 2026-07-04: resolved the partial/stale run with new run id
+  `lat_tick_official_full_warm64_chunk04_supplement11_23_20260704`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk04_supplement11_23_official_full_warm64_20260704_receipt.json`
+  and combined official receipt
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk04_official_full_warm64_20260704_receipt.json`.
+  Combined chunk04 state is 24/24 honest `ok` rows, `gate_passed=0`,
+  MDD `295.04~990.41`, profit `-539,464,054~-30,170,099`. The stale first
+  attempt remains preserved as blocker evidence; do not mutate it.
+  Next allowed action is chunk05 only.
+  Chunk05 2026-07-05: executed cleanly with 24/24 honest `ok` rows,
+  `gate_passed=0`, MDD `181.44~1307.53`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk05_official_full_warm64_20260704_receipt.json`.
+  Chunk05 is coverage-map evidence only; next allowed action is chunk06 only.
+  Chunk06 blocker 2026-07-05: the first chunk06 attempt is partial/stale, not
+  complete. Evidence:
+  `docs/update_log/2026-07-04_p5_tick_chunk06_blocker_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_blocker_official_full_warm64_20260704_receipt.json`.
+  Current state: run `lat_tick_official_full_warm64_chunk06_20260704` has
+  10/24 rows (`ok=10`, `error=0`), DB status `running`, and no live batch
+  process. Do not start chunk07/min/P6/P7; resolve with new chunk06 supplement
+  run id `lat_tick_official_full_warm64_chunk06_supplement10_23_20260704`
+  without DB `UPDATE`/`DELETE`.
+  Chunk06 supplement 2026-07-05: resolved the partial/stale run with new run id
+  `lat_tick_official_full_warm64_chunk06_supplement10_23_20260704`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_supplement10_23_official_full_warm64_20260704_receipt.json`
+  and combined official receipt
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_official_full_warm64_20260704_receipt.json`.
+  Combined chunk06 state is 24/24 honest `ok` rows, `gate_passed=0`,
+  MDD `236.83~805.16`, profit `-506,115,259~-22,864,504`. The stale first
+  attempt remains preserved as blocker evidence; do not mutate it.
+  Next allowed action is chunk07 only.
+  Chunk07 2026-07-05: executed cleanly with 24/24 honest `ok` rows,
+  `gate_passed=0`, MDD `116.59~1034.91`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk07_official_full_warm64_20260704_receipt.json`.
+  Chunk07 is coverage-map evidence only; next allowed action is chunk08 only.
+  Chunk08 blocker 2026-07-05: the first chunk08 attempt is partial/stale, not
+  complete. Evidence:
+  `docs/update_log/2026-07-04_p5_tick_chunk08_blocker_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk08_blocker_official_full_warm64_20260704_receipt.json`.
+  Current state: run `lat_tick_official_full_warm64_chunk08_20260704` has
+  13/24 rows (`ok=13`, `error=0`), DB status `running`, and no live batch
+  process. Do not start chunk09/min/P6/P7; resolve with new chunk08 supplement
+  run id `lat_tick_official_full_warm64_chunk08_supplement13_23_20260704`
+  without DB `UPDATE`/`DELETE`.
+  Chunk08 supplement 2026-07-05: supplement rows were recorded with new run id
+  `lat_tick_official_full_warm64_chunk08_supplement13_23_20260704`, but the
+  supplement run also remained DB-status `running` after all 11 rows were
+  written. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk08_supplement13_23_official_full_warm64_20260704_receipt.json`
+  and combined official row-level receipt
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk08_official_full_warm64_20260704_receipt.json`.
+  Combined chunk08 row coverage is 24/24 honest `ok` rows, `gate_passed=0`,
+  MDD `208.90~653.93`, profit `-442,696,240~-25,456,677`. Both stale source
+  runs remain preserved as evidence; do not mutate them.
+  Next allowed action is chunk09 only.
+  Chunk09 stale-start 2026-07-05: original run id
+  `lat_tick_official_full_warm64_chunk09_20260704` stopped before warm prepare
+  and before any generation row was recorded. Evidence:
+  `docs/update_log/2026-07-05_p5_tick_chunk09_stale_start_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk09_stale_start_official_full_warm64_20260705_receipt.json`.
+  The stale run has DB status `running`, 0/24 rows, and no live batch process;
+  preserve it without DB `UPDATE`/`DELETE`.
+  Chunk09 retry 2026-07-05: completed with new run id
+  `lat_tick_official_full_warm64_chunk09_retry01_20260705`. Evidence:
+  `docs/update_log/2026-07-05_p5_tick_chunk09_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk09_official_full_warm64_20260705_receipt.json`.
+  Result: 24/24 honest `ok` rows, `gate_passed=0`, warm prepare
+  `back_count=2424 elapsed=262s`, MDD `53.41~1061.11`, profit
+  `-372,950,355~-2,497,875`. Chunk09 is coverage-map evidence only; next
+  allowed action is chunk10 only.
+  Chunk10 2026-07-05: executed cleanly with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_tick_chunk10_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk10_official_full_warm64_20260705_receipt.json`.
+  Result: 24/24 honest `ok` rows, `gate_passed=0`, warm prepare
+  `back_count=2424 elapsed=312s`, MDD `211.98~586.81`, profit
+  `-425,621,498~-21,242,273`. Chunk10 is coverage-map evidence only; next
+  allowed action is chunk11 only.
+  Chunk11 2026-07-05: executed cleanly with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_tick_chunk11_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk11_official_full_warm64_20260705_receipt.json`.
+  Result: 24/24 honest `ok` rows, `gate_passed=0`, warm prepare
+  `back_count=2424 elapsed=274s`, MDD `16.88~621.39`, profit
+  `-198,665,247~-899,093`. Chunk11 is coverage-map evidence only; next
+  allowed action is chunk12 only.
+  Chunk12 2026-07-05: executed cleanly with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_tick_chunk12_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk12_official_full_warm64_20260705_receipt.json`.
+  Result: 24/24 honest `ok` rows, `gate_passed=0`, warm prepare
+  `back_count=2424 elapsed=282s`, MDD `149.78~387.60`, profit
+  `-219,558,866~-11,642,820`. Chunk12 is coverage-map evidence only.
+  Official tick 288/288 coverage judgment 2026-07-05: complete. Evidence:
+  `docs/update_log/2026-07-05_p5_tick_288_coverage_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_coverage_20260705_receipt.json`.
+  Result: `12/12` chunks, `288/288` unique pairs, `ok=288`,
+  `gate_passed=0`. Tick export, min, P6, P7, and Plan D were not run in this
+  selected range. Next allowed action is tick export/summary only.
+  Tick export/summary and min readiness 2026-07-05: completed without running
+  min. Evidence:
+  `docs/update_log/2026-07-05_p5_tick_export_summary_min_readiness_handoff.md`
+  plus JSONL export
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.jsonl`
+  and summary JSON
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json`.
+  Result: `ok=288`, `gate_passed=0`, `negative_profit_count=288`,
+  `mdd_excess_count=287`, `low_daily_trades_count=9`. Root-cause judgment:
+  condition structure is primary; strict gate and tick lane are secondary
+  filters. Official min config and `pairs_min.json` are ready, but full min 288
+  should not start directly. Next allowed action is min official warm64
+  preflight4 only.
+  Min preflight4 2026-07-05: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_min_preflight4_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_preflight4_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `129s`;
+  recorded `4/4` honest rows with `status_counts={'ok': 3, 'error': 1}`,
+  `gate_passed=0`, total runtime `4.8m`. Full min 288 is possible only as a
+  chunked coverage run with per-chunk error monitoring; do not run monolithic
+  288. Next allowed action is min chunk manifest plus chunk01 only.
+  Min chunk01 2026-07-05: generated the official 12-chunk min manifest and ran
+  chunk01 only. Evidence:
+  `docs/update_log/2026-07-05_p5_min_chunk01_handoff.md`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_full_run_protocol_after_preflight_20260705.json`,
+  and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunk01_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `121s`;
+  recorded `24/24` honest `ok` rows, `gate_passed=0`, total runtime `11.4m`.
+  Chunk01 is clean coverage evidence but has no survivor. Next allowed action
+  is min chunk02 only; P6/P7/Plan D remain blocked until official min 288
+  coverage and export exist.
+  Min chunk02 2026-07-05: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_min_chunk02_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunk02_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `124s`;
+  recorded `24/24` honest `ok` rows, `gate_passed=0`, total runtime `13.3m`.
+  Official min coverage is now `48/288`. Chunk02 is clean coverage evidence
+  but has no survivor. Next allowed action is min chunk03 only; P6/P7/Plan D
+  remain blocked until official min 288 coverage and export exist.
+  Min chunk03 2026-07-05: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_min_chunk03_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunk03_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `110s`;
+  recorded `24/24` honest `ok` rows, `gate_passed=0`, total runtime `10.9m`.
+  Official min coverage is now `72/288`. Chunk03 is clean coverage evidence
+  but has no survivor. Next allowed action is min chunk04 only; P6/P7/Plan D
+  remain blocked until official min 288 coverage and export exist.
+  Min chunk04~12/export 2026-07-05: completed official DB-full-period + warm64
+  min coverage and export. Evidence:
+  `docs/update_log/2026-07-05_p5_min_288_export_p6_no_d_handoff.md`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunks04_12_official_full_warm64_20260705_receipt.json`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_coverage_20260705_receipt.json`,
+  and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json`.
+  Result: min `288/288` rows, `status_counts={'ok': 281, 'error': 7}`,
+  `gate_passed=0`. Chunk08 was resolved append-only with supplement01;
+  the original stale partial run remains preserved without DB UPDATE/DELETE.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
   - Tick smoke result export exists before min starts.
   - Any cleanup uses dry-run inventory and explicit PID exclusion.
 
-- [ ] P6. Plan B B2-B5 coverage, refinement, OOS, portfolio
+- [x] P6. Plan B B2-B5 coverage, refinement, OOS, portfolio
 
   Purpose: convert smoke results into go/no_go, refine go cells, freeze before OOS,
   then assemble a portfolio only with 2+ OOS survivors.
+
+  Status 2026-07-05: completed P6 no-D classification from official tick 288
+  and min 288 exports. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_coverage_gaps_batch_plan_no_d_20260705.json`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_go_no_go_hold_20260705.json`,
+  and append-only registry
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_revival_registry_20260705.jsonl`.
+  Result: coverage `576/576`, `go=0`, `hold=0`, `no_go=576`.
+  Refinement/OOS/portfolio were not opened because no go candidate or
+  preregistered survivor exists.
 
   Acceptance:
   - coverage/gaps/batch_plan JSONs exist per lane.

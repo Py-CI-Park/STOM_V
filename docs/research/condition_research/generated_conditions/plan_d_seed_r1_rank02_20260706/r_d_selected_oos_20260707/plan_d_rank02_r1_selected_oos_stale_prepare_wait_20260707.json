@@ -1,0 +1,25 @@
+{
+  "schema": "plan_d_rank02_r1_selected_oos_stale_prepare_wait_v1",
+  "created_at": "2026-07-07T00:42:07+09:00",
+  "scope": "plan-d-rank02-selected-oos-prereg-no-portfolio-export",
+  "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+  "classification": "stale_prepare_wait_aborted_without_db_update",
+  "observed": {
+    "log_tail": "[BATCH] run_id=lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707 pairs=2",
+    "loop_runs_status": "running_preserved_no_update",
+    "generation_rows": 0,
+    "elapsed_seconds_before_stop_approx": 1759,
+    "parent_stack": "WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info",
+    "sample_child_stack": "backengine_base.MainLoop -> multiprocessing.queues.get",
+    "parent_pid": 147752,
+    "stopped_pids_record": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_20260707_stopped_pids.json"
+  },
+  "interpretation": "The first selected OOS run never reached candidate evaluation. It is process/prepare evidence only and must not be used for survivor/hold/no_go classification.",
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "oos_result_rows_used_for_decision": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  },
+  "next_retry_run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707"
+}

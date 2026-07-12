@@ -1,0 +1,40 @@
+{
+  "schema": "ulw_final_verification_receipt_v1",
+  "created_at_kst": "2026-07-07T22:32:26+09:00",
+  "session_id": "20260708_rank03_r2_closeout_loop_v2",
+  "scope": "plan-d-rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "checks": {
+    "json_jsonl_parse": {
+      "status": "pass",
+      "parsed_units": 424,
+      "generation_rows_for_run": 1
+    },
+    "verify_nonrelease_sync": {
+      "status": "pass",
+      "command": "python scripts/verify_nonrelease_sync.py"
+    },
+    "git_diff_check_scoped": {
+      "status": "pass",
+      "command": "git diff --check -- <scoped closeout paths>",
+      "note": "Only LF/CRLF warning observed for .omo/start-work/ledger.jsonl; no whitespace errors."
+    },
+    "process_scan": {
+      "status": "pass",
+      "live_forbidden_processes": 0
+    },
+    "scope_guard": {
+      "status": "pass",
+      "dashboard_files_staged": false,
+      "gjc_staged": false,
+      "unrelated_omo_staged": false,
+      "git_add_A_used": false
+    }
+  },
+  "required_docs": {
+    "full_analysis": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+    "handoff": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+    "oos_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
+    "boundary_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_boundary_receipt_20260708.json"
+  },
+  "commit_note": "Commit hash is recorded in the ULW evidence ledger and final user report after commit creation."
+}

@@ -1,0 +1,182 @@
+{
+  "schema": "plan_d_rank03_r2_db_content_sha_check_v1",
+  "created_at": "2026-07-07T21:11:50+09:00",
+  "scope": "lattice-rereview-rank03-r2-boundary-20260707",
+  "seed_path": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_e_r2_boundary_20260707\\plan_d_rank03_r2_generate8_seeds_20260707.json",
+  "mapping_path": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_e_r2_boundary_20260707\\plan_d_rank03_r2_strategy_name_mapping_apply_20260707.jsonl",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "checked_strategy_names": 16,
+  "missing_count": 0,
+  "mismatch_count": 0,
+  "checks": [
+    {
+      "condition_id": "plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "38dc4435c44ef0f8b4a81c4ccc0d827cec3518a652d772132cd8dbb25de26e1d",
+      "actual_sha256": "38dc4435c44ef0f8b4a81c4ccc0d827cec3518a652d772132cd8dbb25de26e1d",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "actual_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "16cf597c1b08021cbfddf66327a537b4627cf86f779b326237114a7620ea8b97",
+      "actual_sha256": "16cf597c1b08021cbfddf66327a537b4627cf86f779b326237114a7620ea8b97",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "actual_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "81ed55f449945df749c0cd64816793b11d255606fd3bd07fcaf25a257147bf57",
+      "actual_sha256": "81ed55f449945df749c0cd64816793b11d255606fd3bd07fcaf25a257147bf57",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "actual_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "1bd12ae0c32e06d64edaf2a0a07129c285ea7b6667628204669bf886aa21098e",
+      "actual_sha256": "1bd12ae0c32e06d64edaf2a0a07129c285ea7b6667628204669bf886aa21098e",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "actual_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+      "actual_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "actual_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90_B",
+      "exists": true,
+      "expected_sha256": "4aa9844359438b1c10e66bee8c1ab77b7b1131734af0c15c97c729b6738801b7",
+      "actual_sha256": "4aa9844359438b1c10e66bee8c1ab77b7b1131734af0c15c97c729b6738801b7",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90_S",
+      "exists": true,
+      "expected_sha256": "85e6899bfc3cc2f4ba2d874f06caa3cf4ebe0ed94c0f892d6083b2bfc81c7d21",
+      "actual_sha256": "85e6899bfc3cc2f4ba2d874f06caa3cf4ebe0ed94c0f892d6083b2bfc81c7d21",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60_B",
+      "exists": true,
+      "expected_sha256": "024a2fce92d49fdc6ebe5a69625164ca56f6400d1e4b173de285e2af3adaae64",
+      "actual_sha256": "024a2fce92d49fdc6ebe5a69625164ca56f6400d1e4b173de285e2af3adaae64",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60_S",
+      "exists": true,
+      "expected_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "actual_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90",
+      "lane": "buy",
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90_B",
+      "exists": true,
+      "expected_sha256": "0930d46b63a3e4afcb781c1159ddc992bf60353c7c7f382c239014feda3785a2",
+      "actual_sha256": "0930d46b63a3e4afcb781c1159ddc992bf60353c7c7f382c239014feda3785a2",
+      "sha_match": true
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90",
+      "lane": "sell",
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90_S",
+      "exists": true,
+      "expected_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "actual_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "sha_match": true
+    }
+  ],
+  "constraints_observed": {
+    "read_only_check": true,
+    "db_update_delete_used": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "max_pairs_allowed": 8
+  },
+  "status": "pass"
+}

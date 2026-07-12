@@ -1,0 +1,27 @@
+{
+  "schema": "p5_min_chunk08_stale_partial_official_full_warm64_receipt_v1",
+  "created_at": "2026-07-05T21:00:44+09:00",
+  "scope": "P5-official-min-chunk08-stale-partial-and-supplement",
+  "original_run_id": "lat_min_official_full_warm64_chunk08_20260705",
+  "supplement_run_id": "lat_min_official_full_warm64_chunk08_supplement01_20260705",
+  "original_run_status_preserved": "running",
+  "supplement_run_status": "complete",
+  "db_update_delete_used": false,
+  "process_after_failure": "no live claude_candidate_batch_eval/backtest process observed before supplement",
+  "stderr_original_empty": true,
+  "original_rows": 2,
+  "supplement_rows": 22,
+  "combined_rows": 24,
+  "combined_status_counts": {
+    "ok": 24
+  },
+  "combined_gate_passed_count": 0,
+  "combined_honest_rows": true,
+  "supplement_pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk08_supplement01_20260705.json",
+  "evidence_logs": {
+    "original_stdout": "artifacts/p5_min_chunk08_20260705.log",
+    "original_stderr": "artifacts/p5_min_chunk08_20260705.err",
+    "supplement_stdout": "artifacts/p5_min_chunk08_supplement01_20260705.log",
+    "supplement_stderr": "artifacts/p5_min_chunk08_supplement01_20260705.err"
+  }
+}

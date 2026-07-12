@@ -1,0 +1,8 @@
+{
+  "schema": "lattice_condition_generation_v2_body_codex_goal_boundary_v1",
+  "created_at": "2026-07-08T15:18:43+09:00",
+  "status": "not_updated",
+  "reason": "current Codex goal is a paused legacy Plan D objective, not this body static dry-run objective; update_goal was intentionally not called",
+  "current_goal_objective": "Plan D ??? ??? ???? ??? ???? ????...",
+  "ulw_session": "20260708_lattice_generation_v2_body_static_dryrun"
+}

@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-07-06T00:00:00+09:00",
+  "scope": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export",
+  "dry_run_only": true,
+  "expected_buy_rows": 8,
+  "expected_sell_rows": 8,
+  "stockbuy_existing_matches": 0,
+  "stocksell_existing_matches": 0,
+  "db_mutation_observed": false,
+  "passed": true
+}

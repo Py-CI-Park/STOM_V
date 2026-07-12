@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-09T18:41:48+09:00",
+  "decision": "archive_v2_branch_and_stop",
+  "decision_basis": [
+    "official v2 body limited replay has 8 honest rows, 0 survivor, 0 hold, 8 no_go",
+    "7 OK rows all have negative profit and MDD above 35 cap",
+    "1 tick-origin negative-control row has no metrics and is not a hidden survivor",
+    "corrected sell/risk extraction fixes the diagnostic table but does not change replay metrics",
+    "broad-based loss appears across parsed CSVs, so failure is not isolated to one outlier trade or one malformed threshold table"
+  ],
+  "rejected_decisions": {
+    "continue_v2_body_branch": "rejected because there is no survivor/hold and no evidence contradiction",
+    "new_design_spec_only": "not opened automatically; can be planned separately if the user explicitly wants a v3 design-only page",
+    "manual_review_needed": "not required because replay row counts, constraints, and corrected audit are internally consistent"
+  },
+  "safe_next_command": null,
+  "recommended_next_user_decision": "commit/review current research closeout, then decide whether to open a separate v3 design-only plan",
+  "forbidden_next_actions_without_new_user_scope": [
+    "DB INSERT apply",
+    "official replay",
+    "OOS",
+    "Plan D/P7",
+    "portfolio",
+    "export/live/final promotion",
+    "full tick 288",
+    "full min 288"
+  ],
+  "artifacts": {
+    "source_receipt": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/source_read_receipt_closeout_or_new_design_20260709.json",
+    "corrected_audit_json": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_corrected_sell_risk_clause_audit_20260709.json",
+    "corrected_audit_md": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_corrected_sell_risk_clause_audit_20260709.md",
+    "integrity_json": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_replay_evidence_integrity_check_20260709.json",
+    "context_md": "docs/update_log/2026-07-09_lattice_v2_closeout_context_matrix.md",
+    "decision_json": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_closeout_or_new_design_decision_20260709.json",
+    "final_report": "docs/update_log/2026-07-09_lattice_v2_closeout_or_new_design_review.md",
+    "handoff": "docs/update_log/2026-07-09_lattice_v2_closeout_or_new_design_handoff.md"
+  }
+}

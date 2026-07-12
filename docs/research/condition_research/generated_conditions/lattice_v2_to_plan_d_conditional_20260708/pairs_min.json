@@ -1,0 +1,37 @@
+[
+  {
+    "label": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+    "buy": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B",
+    "sell": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_S"
+  },
+  {
+    "label": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+    "buy": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B",
+    "sell": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_S"
+  },
+  {
+    "label": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+    "buy": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_B",
+    "sell": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_S"
+  },
+  {
+    "label": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+    "buy": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B",
+    "sell": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_S"
+  },
+  {
+    "label": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+    "buy": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_B",
+    "sell": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_S"
+  },
+  {
+    "label": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+    "buy": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B",
+    "sell": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_S"
+  },
+  {
+    "label": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+    "buy": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B",
+    "sell": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_S"
+  }
+]

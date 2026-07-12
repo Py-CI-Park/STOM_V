@@ -1,0 +1,66 @@
+{
+  "schema": "lattice_condition_generation_v2_axis_spec_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "purpose": "Replace broad Cartesian lattice mining with failure-map constrained generation.",
+  "non_goals": [
+    "backtest execution",
+    "DB INSERT apply",
+    "OOS",
+    "portfolio",
+    "Plan D R3",
+    "promotion"
+  ],
+  "lanes": {
+    "min_primary": {
+      "role": "candidate discovery and validation design",
+      "reason": "sparse positive/low-MDD fragments exist"
+    },
+    "tick_diagnostic": {
+      "role": "stress and negative-control only",
+      "reason": "tick official 288 had positive_profit=0"
+    }
+  },
+  "axes": {
+    "time_regime": [
+      "morning_09_10_11_composite",
+      "midday_13h_watch",
+      "late_1430p_risk_watch"
+    ],
+    "coverage_class": [
+      "daily_floor_repair",
+      "low_frequency_control",
+      "holdout_control"
+    ],
+    "risk_class": [
+      "mdd_le_10_fragment",
+      "mdd_10_25_fragment",
+      "mdd_25_35_watch",
+      "mdd_gt_35_negative_control"
+    ],
+    "signal_component_pool": [
+      "price_position",
+      "volume_amount",
+      "strength_rate",
+      "prevday_active",
+      "seed_lineage_component"
+    ],
+    "sell_profile": [
+      "default_tp3_sl3_hold90_benchmark",
+      "tight_tp3_sl2p5_watch",
+      "diversity_control_only"
+    ],
+    "lineage": [
+      "repair_composite",
+      "plan_d_rank01_rank02_rank03",
+      "negative_lattice_control",
+      "holdout_survivor_control"
+    ]
+  },
+  "generation_rules": [
+    "No full Cartesian expansion; each candidate must cite a failure-map reason.",
+    "Each candidate gets a sanitized name, research lane label, and hypothesis_seed label only.",
+    "Every batch must include negative-control and holdout-control records.",
+    "Composite candidates must combine coverage and risk fragments rather than single time/size/strength cells.",
+    "Static gate and DB registration dry-run are allowed in the next phase; DB INSERT apply is not allowed until separately approved."
+  ]
+}

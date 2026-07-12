@@ -1,0 +1,33 @@
+{
+  "schema": "lattice_condition_generation_v2_body_static_gate_receipt_v1",
+  "created_at": "2026-07-08T15:14:13+09:00",
+  "status": "pass",
+  "seed_count": 8,
+  "selected_count": 8,
+  "class_counts": {
+    "coverage_composite": 3,
+    "risk_balanced_composite": 2,
+    "survivor_seed_derivative": 1,
+    "negative_control": 1,
+    "holdout_control": 1
+  },
+  "seed_json": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_dryrun_seeds_20260708.json",
+  "selection_json": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_selected_candidates_20260708.json",
+  "checks": {
+    "count_between_1_and_8": true,
+    "class_diversity_present": true,
+    "schema_seed_lattice_seeds_v1": true,
+    "body_present": true,
+    "compile_exec_mode_ok": true,
+    "buy_contains_self_buy": true,
+    "sell_contains_self_sell": true,
+    "buy_starts_true": true,
+    "sell_starts_false": true,
+    "sha256_matches": true,
+    "forbidden_token_scan": true,
+    "sanitized_condition_ids": true,
+    "research_lane_label": true,
+    "blocked_actions_preserved": true
+  },
+  "errors": []
+}

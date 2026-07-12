@@ -1,0 +1,27 @@
+{
+  "schema": "plan_d_rank02_r2_verification_receipt_v1",
+  "created_at": "2026-07-07T15:16:32+09:00",
+  "run_id": "lat_plan_d_rank02_r2_8_min_warm64_20260707",
+  "honest_rows": 8,
+  "status_ok_count": 8,
+  "gate_passed_count": 8,
+  "improved_count": 3,
+  "selected_oos_candidate_count": 3,
+  "db_insert_apply_used": true,
+  "db_update_delete_used": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "next_page_open": true,
+  "sha256": {
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_preapply_absence_check_20260707.json": "3640ee68cbcc2158f1a6465cfe9935515024fd0e233b696838b414c2ab3ae7a2",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/register_plan_d_rank02_r2_apply_20260707.json": "7f923c25699544fea0e6c9f6a62b392e76c03bb1890d47dfb06cfc7c496335b9",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_postapply_db_check_20260707.json": "709523819749ae57943822532c972c758d218c4b3eb5b4b837e64ff27f27fd0c",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/pairs_plan_d_rank02_r2_8_inserted_20260707.json": "00a664977f2c80a92a90db2ce022a19d659d17022d2f8b77612ba2c637ec7d7c",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_limited_replay_result_20260707.json": "883b6493c9c1916ef02d5f3171cd97492fd518e768e00f5778ba1b1c13511625",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_limited_replay_summary_20260707.md": "51233e48069548a02aaa78d668a13a412c7c059ce79e4e86d6935183f99bc4d5",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_round_decision_20260707.json": "c8de64e98141886acfbcade715feb3e42fa633346325bd59a395a0486ae6d7d8",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_selected_freeze_ledger_draft_20260707.jsonl": "6c7cf1c1924d2cc2a66ce9ce4b6d2f035cef28c14d1b253aba401913481b213c",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/pairs_plan_d_rank02_r2_selected3_oos_draft_20260707.json": "b6eb1dbb9018895fdba3bf28d2a9ca6b838139205456aed1f2d3fabf1b1c43d9",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_f_r2_insert_replay_20260707/plan_d_rank02_r2_selected_oos_preregistration_draft_20260707.md": "dfdadd1eeaf21c4ee5f5ecf8c5f545bd4340bbc3210b278e4769f3316c38912c"
+  }
+}

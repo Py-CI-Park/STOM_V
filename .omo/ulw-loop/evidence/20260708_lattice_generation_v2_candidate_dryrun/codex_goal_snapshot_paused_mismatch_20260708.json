@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-07-08T11:18:37+09:00",
+  "source": "functions.get_goal",
+  "goal": {
+    "threadId": "019f248b-4725-75f2-9eb9-06f8541ce25f",
+    "objective": "Plan D ??? ??? ???? ??? ???? ????. ?? rank02 selected OOS warm64 prepare/engine-response wait ?? ??? ????, ?? ?? ??? ??? ???? selected OOS, survivor append, next seed readiness, ?? Plan D ???? ?? ????. ????? ?? ??? ?? ???? ?? ????.",
+    "status": "paused",
+    "tokensUsed": 6156407,
+    "timeUsedSeconds": 23741,
+    "createdAt": 1783401712,
+    "updatedAt": 1783417487
+  },
+  "remainingTokens": null,
+  "completionBudgetReport": null,
+  "mismatch_note": "Active Codex goal is a paused older Plan D goal, not the current ULW candidate dry-run objective. update_goal was intentionally not called; ULW checkpoint records this mismatch instead."
+}

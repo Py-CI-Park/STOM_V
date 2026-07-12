@@ -1,0 +1,344 @@
+{
+  "schema": "plan_d_rank01_r3_limited_replay_result_v1",
+  "created_at": "2026-07-06T22:24:59+09:00",
+  "scope": "overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export",
+  "run_id": "lat_plan_d_rank01_r3_8_min_warm64_20260706",
+  "lane": "min",
+  "profile": "official_full_period_warm64",
+  "config": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+  "config_profile": {
+    "db_path": "_database/stock_min_back.db",
+    "source_db_start_date": 20250407,
+    "source_db_end_date": 20260227,
+    "runtime_full_start": 20250407,
+    "runtime_full_end": 20260227,
+    "bt_timeframe": "min",
+    "bt_engine_mode": "warm",
+    "bt_warm_engine_count": 64,
+    "full_session_enabled": true,
+    "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19."
+  },
+  "constraints_observed": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "pairs_executed": 8,
+    "max_pairs_allowed": 8,
+    "db_update_delete_used": false,
+    "db_insert_apply_used": true
+  },
+  "db_registration": {
+    "precheck": {
+      "scope": "overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export",
+      "created_at": "2026-07-06T00:00:00+09:00",
+      "candidate_count": 8,
+      "buy_matches_before_apply": 0,
+      "sell_matches_before_apply": 0,
+      "passed": true,
+      "lane_field_caveat": "pair lane values are inherited as plan from cell_id; replay uses explicit min config and buy/sell pairs."
+    },
+    "apply": {
+      "status": "inserted",
+      "schema_version": 1,
+      "dry_run": false,
+      "seeds": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_g_r3_generate8_dryrun_20260706\\plan_d_rank01_r3_generate8_seeds_20260706.json",
+      "db": "ai_strategy_loop\\state\\loop_strategies.db",
+      "pairs_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_h_r3_insert_replay_20260706\\pairs_plan_d_rank01_r3_8_inserted_20260706.json",
+      "ledger_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_h_r3_insert_replay_20260706\\provenance_plan_d_rank01_r3_register_apply_20260706.jsonl",
+      "mapping_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_h_r3_insert_replay_20260706\\plan_d_rank01_r3_strategy_name_mapping_apply_20260706.jsonl",
+      "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T131142Z",
+      "planned_seed_count": 8,
+      "planned_insert_count": 16,
+      "inserted_seed_count": 8,
+      "inserted_row_count": 16,
+      "unsafe_legacy_name_count": 0,
+      "unsafe_target_name_count": 0,
+      "name_style": "filename_safe_v2",
+      "conflicts": []
+    },
+    "postcheck": {
+      "candidate_count": 8,
+      "buy_matches_after_apply": 8,
+      "sell_matches_after_apply": 8,
+      "passed": true
+    }
+  },
+  "run": {
+    "run_id": "lat_plan_d_rank01_r3_8_min_warm64_20260706",
+    "started_at": 1783343575.1699107,
+    "config_json": "{\"provider\": \"gpt_auth\", \"model\": \"gpt-5.5\", \"reasoning_effort\": \"xhigh\", \"base_url\": null, \"api_key\": null, \"max_retries\": 2, \"temperature\": null, \"max_tokens\": null, \"mdd_cap\": 35.0, \"min_trades\": 30, \"min_daily_trades\": 0.5, \"overtrade_softcap\": 150, \"tpi_gate\": 1.2, \"tpi_gate_enabled\": false, \"exit_quality_enabled\": true, \"payoff_target\": 1.1, \"give_back_weight\": 0.5, \"give_back_mfe_threshold\": 1.5, \"graduation_holdout\": false, \"holdout_recent_days\": 30, \"bt_timeframe\": \"min\", \"bt_scope\": \"single_stock\", \"bt_one_code\": null, \"bt_start\": null, \"bt_end\": null, \"bt_universe_cap\": 1, \"bt_engine_count\": 1, \"bt_window_days\": 5, \"bt_timeout\": 14400, \"bt_warm_run_timeout\": 1200, \"bt_engine_mode\": \"warm\", \"bt_full_start\": 20250407, \"bt_full_end\": 20260227, \"bt_universe_start_time\": 90000, \"bt_universe_end_time\": 92800, \"full_session_enabled\": true, \"bt_min_universe_end_time\": 151900, \"bt_betting\": \"5\", \"bt_avg_time\": 30, \"bt_warm_engine_count\": 64, \"bt_subset_db\": null, \"bt_universe_size\": 12, \"bt_window_days_universe\": 20, \"bt_window_select\": \"earliest\", \"target_score\": null, \"max_generations\": 1, \"cost_cap_generations\": 200, \"feedback_window\": 8, \"engine_workers\": 0, \"engine_mem_cap_mb\": 0, \"engine_chunk_days\": 0, \"cost_cap_tokens\": null, \"autopsy_enabled\": false, \"segment_fine_time\": false, \"meta_seed_enabled\": false, \"seed_buy\": null, \"seed_sell\": null, \"seed_mode\": \"best_refine\", \"seed_source\": \"passing\", \"bt_refine_from_best\": true, \"freeze_buy_on_mdd_only\": true, \"winner_objective\": \"uptrend\", \"profit_weight\": 0.5, \"multi_calmar_norm\": 30.0, \"multi_payoff_norm\": 1.3, \"multi_daily_target\": 10.0, \"multiyear_min_years\": 2, \"multiyear_min_trades_per_year\": 20, \"multiyear_var_norm\": 0.2, \"multiyear_cv_norm\": 1.0, \"evolution_mode\": \"hillclimb\", \"ga_population\": 6, \"ga_elite\": 2, \"ga_crossover_rate\": 0.5, \"dispersion_prompt_enabled\": false, \"dispersion_enabled\": false, \"min_hold_symbols\": 6.0, \"target_daily_trades\": null, \"require_liquidity_gate\": false, \"mdd_control_enabled\": false, \"exit_edge_feedback_enabled\": false, \"segment_feedback_enabled\": false, \"segment_feedback_min_count\": 8, \"encourage_time_dispersion\": false, \"require_filter_gates\": false, \"min_filter_categories\": 5, \"require_meaningful_time_window\": false, \"few_shot_enabled\": false, \"few_shot_k\": 3, \"few_shot_source\": \"passing\", \"classification_generation_enabled\": false, \"time_cap_bucket_generation_enabled\": false, \"time_cap_bucket_end_time\": 92000, \"research_oos_mode\": \"disabled\", \"condition_discovery_preset\": \"fast\", \"condition_discovery_process\": \"fast-discovery\", \"condition_discovery_tick_window_start\": null, \"condition_discovery_tick_window_end\": null, \"sparse_positive_prompt_enabled\": false, \"exec_budget_prompt_enabled\": false, \"sell_exec_budget_guard_enabled\": false, \"sell_max_window_calls\": 8, \"report_principles_enabled\": false, \"quantile_feedback_enabled\": false, \"counterfactual_feedback_enabled\": false, \"feature_importance_feedback_enabled\": false, \"feature_importance_feedback_min_cell\": 20, \"exit_forensics_feedback_enabled\": false, \"prompt_logging_enabled\": false, \"equity_points_enabled\": true, \"adaptive_timing_enabled\": false, \"adaptive_timing_lookback\": 2, \"hypothesis_tracking_enabled\": false, \"principle_docs_enabled\": false, \"principle_gate_enabled\": false}",
+    "status": "complete",
+    "best_gen": null,
+    "best_score": null,
+    "finished_at": 1783344160.9842792
+  },
+  "warm_prepare": {
+    "status": "ok",
+    "back_count": 1379,
+    "elapsed_seconds": 152
+  },
+  "active_parent_baseline": {
+    "label": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+    "profit": 2515910.0,
+    "mdd": 15.57,
+    "trade_count": 188,
+    "daily_avg_trades": 0.9,
+    "selection_basis": "R2 active parent full-period min replay; frozen in R3 readiness handoff"
+  },
+  "summary": {
+    "honest_rows": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "gate_passed_count": 8,
+    "decision_counts": {
+      "hold": 1,
+      "flat": 6,
+      "improved": 1
+    },
+    "best_profit_label": "plan_d_r1_rank01_r3_01_l14_rate80_hold90",
+    "best_profit": 2482914.0,
+    "best_mdd_label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+    "best_mdd": 11.55,
+    "best_trade_count_label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+    "best_trade_count": 386,
+    "improved_labels": [
+      "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90"
+    ],
+    "hold_labels": [
+      "plan_d_r1_rank01_r3_01_l14_rate80_hold90"
+    ]
+  },
+  "oos_readiness": {
+    "ready": true,
+    "status": "conditional_ready_after_preregistration",
+    "selected_candidate_count": 1,
+    "selected_candidates": [
+      {
+        "label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+        "profit": 2124078.0,
+        "mdd": 11.55,
+        "trades": 386,
+        "daily": 1.8,
+        "selection_reason": "coverage_risk_improved_trade_count_1p5x_and_mdd_lower_positive_profit"
+      }
+    ],
+    "caveat": "R3 replay used official full-period min data; next selected OOS is fixed-window robustness/OOS-style, not fully blind discovery OOS."
+  },
+  "rows": [
+    {
+      "gen_no": 0,
+      "label": "plan_d_r1_rank01_r3_01_l14_rate80_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_01_l14_rate80_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_01_l14_rate80_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "hold",
+      "decision_reason": "near_parent_profit_with_coverage_gain_mdd_tolerable",
+      "profit": 2482914.0,
+      "mdd": 15.75,
+      "trade_count": 198,
+      "daily_avg_trades": 0.9,
+      "payoff_ratio": 1.456219517009936,
+      "total_profit_pct": 24.97,
+      "calmar": 1.860952380952381,
+      "uptrend_r2": 0.4925256489705305,
+      "score": 1.4514326477167312,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_01_l14_rate80_hold90_B_20260706221712.csv",
+      "delta_vs_active_parent": {
+        "profit": -32996.0,
+        "mdd": 0.17999999999999972,
+        "trade_count": 10,
+        "daily_avg_trades": 0.0
+      }
+    },
+    {
+      "gen_no": 1,
+      "label": "plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 2350845.0,
+      "mdd": 15.57,
+      "trade_count": 189,
+      "daily_avg_trades": 0.9,
+      "payoff_ratio": 1.439409771698173,
+      "total_profit_pct": 23.65,
+      "calmar": 1.7822736030828517,
+      "uptrend_r2": 0.32244987591969715,
+      "score": 1.1853099774462061,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90_B_20260706221748.csv",
+      "delta_vs_active_parent": {
+        "profit": -165065.0,
+        "mdd": 0.0,
+        "trade_count": 1,
+        "daily_avg_trades": 0.0
+      }
+    },
+    {
+      "gen_no": 2,
+      "label": "plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 2350845.0,
+      "mdd": 15.57,
+      "trade_count": 189,
+      "daily_avg_trades": 0.9,
+      "payoff_ratio": 1.439409771698173,
+      "total_profit_pct": 23.65,
+      "calmar": 1.7822736030828517,
+      "uptrend_r2": 0.32244987591969715,
+      "score": 1.1853099774462061,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90_B_20260706221823.csv",
+      "delta_vs_active_parent": {
+        "profit": -165065.0,
+        "mdd": 0.0,
+        "trade_count": 1,
+        "daily_avg_trades": 0.0
+      }
+    },
+    {
+      "gen_no": 3,
+      "label": "plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 1742342.0,
+      "mdd": 17.95,
+      "trade_count": 234,
+      "daily_avg_trades": 1.1,
+      "payoff_ratio": 1.4789687397728513,
+      "total_profit_pct": 17.47,
+      "calmar": 1.1426183844011144,
+      "uptrend_r2": 0.3924888546962491,
+      "score": 1.1760175067830898,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90_B_20260706221912.csv",
+      "delta_vs_active_parent": {
+        "profit": -773568.0,
+        "mdd": 2.379999999999999,
+        "trade_count": 46,
+        "daily_avg_trades": 0.20000000000000007
+      }
+    },
+    {
+      "gen_no": 4,
+      "label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "improved",
+      "decision_reason": "coverage_risk_improved_trade_count_1p5x_and_mdd_lower_positive_profit",
+      "profit": 2124078.0,
+      "mdd": 11.55,
+      "trade_count": 386,
+      "daily_avg_trades": 1.8,
+      "payoff_ratio": 1.3249446543735732,
+      "total_profit_pct": 14.34,
+      "calmar": 1.4571428571428569,
+      "uptrend_r2": 0.5843872391380506,
+      "score": 1.4976265916753442,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_B_20260706222043.csv",
+      "delta_vs_active_parent": {
+        "profit": -391832.0,
+        "mdd": -4.02,
+        "trade_count": 198,
+        "daily_avg_trades": 0.9
+      }
+    },
+    {
+      "gen_no": 5,
+      "label": "plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 1742342.0,
+      "mdd": 17.95,
+      "trade_count": 234,
+      "daily_avg_trades": 1.1,
+      "payoff_ratio": 1.4789687397728513,
+      "total_profit_pct": 17.47,
+      "calmar": 1.1426183844011144,
+      "uptrend_r2": 0.39252114209584826,
+      "score": 1.176046467510341,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90_B_20260706222112.csv",
+      "delta_vs_active_parent": {
+        "profit": -773568.0,
+        "mdd": 2.379999999999999,
+        "trade_count": 46,
+        "daily_avg_trades": 0.20000000000000007
+      }
+    },
+    {
+      "gen_no": 6,
+      "label": "plan_d_r1_rank01_r3_07_morning_strength_relax_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_07_morning_strength_relax_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_07_morning_strength_relax_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 1622084.0,
+      "mdd": 18.44,
+      "trade_count": 198,
+      "daily_avg_trades": 0.9,
+      "payoff_ratio": 1.42770571278826,
+      "total_profit_pct": 16.27,
+      "calmar": 1.0352494577006506,
+      "uptrend_r2": 0.05584746483968778,
+      "score": 1.0032288802489693,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_07_morning_strength_relax_hold90_B_20260706222148.csv",
+      "delta_vs_active_parent": {
+        "profit": -893826.0,
+        "mdd": 2.870000000000001,
+        "trade_count": 10,
+        "daily_avg_trades": 0.0
+      }
+    },
+    {
+      "gen_no": 7,
+      "label": "plan_d_r1_rank01_r3_08_momentum_mult992_hold90",
+      "buy_name": "LAT_plan_d_r1_rank01_r3_08_momentum_mult992_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r3_08_momentum_mult992_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "flat",
+      "decision_reason": "gate_passed_but_not_improved_for_r3_coverage_objective",
+      "profit": 1537805.0,
+      "mdd": 17.05,
+      "trade_count": 195,
+      "daily_avg_trades": 0.9,
+      "payoff_ratio": 1.4430283175514964,
+      "total_profit_pct": 15.46,
+      "calmar": 1.064516129032258,
+      "uptrend_r2": 0.08360884136738865,
+      "score": 1.0074414343776874,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r3_08_momentum_mult992_hold90_B_20260706222220.csv",
+      "delta_vs_active_parent": {
+        "profit": -978105.0,
+        "mdd": 1.4800000000000004,
+        "trade_count": 7,
+        "daily_avg_trades": 0.0
+      }
+    }
+  ],
+  "evidence": {
+    "source_read_receipt": ".omo/evidence/overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export-20260706/source_read_receipt.md",
+    "batch_log": "artifacts/plan_d_rank01_r3_8_min_warm64_20260706.log",
+    "pairs": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_h_r3_insert_replay_20260706/pairs_plan_d_rank01_r3_8_inserted_20260706.json",
+    "registration_report": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_h_r3_insert_replay_20260706/register_plan_d_rank01_r3_apply_20260706.json"
+  }
+}

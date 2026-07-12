@@ -1,0 +1,11 @@
+﻿Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start from commit 9ecf081c. Current state: rank01 R3 has one OOS survivor, and rank02 readiness is ready. Execute only research-lane work. Never run portfolio or export/live/final promotion. Never use DB UPDATE/DELETE. Never use git add -A. Never run OOS without preregistration. Never run full tick/min 288 batches in this overnight scope. Do not stage dashboard files, .gjc, or unrelated .omo/artifacts.
+
+Goal 1: rank02 R1 generate8 dry-run only. Use rank02 as the active seed, build context, generate eight R1 candidate slots, run static gate, and run DB registration dry-run only. Success requires source receipt, candidate seed JSON, static gate JSON, dry-run registration report, verification receipt, handoff, ledger, and Korean commit.
+
+Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal 1 passes. Insert only the dry-run-approved candidates, run preapply absence and postapply DB checks, then run official min full-period warm64 limited replay for at most the approved small set. Success requires replay result, classification, handoff, ledger, validation, and Korean commit.
+
+Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/preregister only selected candidates, run only selected OOS, classify survivor/hold/no_go, and never run portfolio/export. Success requires preregistration, OOS result, survivor/no_go ledgers, verification receipt, handoff, and Korean commit. If there are no improved candidates, record blocked-by-no-candidate and proceed to Goal 5.
+
+Goal 4: append survivor records and prepare next seed readiness if Goal 3 has survivors. Append-only update seed_pool and oos_survivors, create passport, and prepare rank03 or next-seed readiness review only. Success requires append-only ledger proof, passport, readiness summary, handoff, validation, and Korean commit.
+
+Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or earlier if all reachable goals complete, write final handoff with completed pages, remaining pages, objective/benefit, blockers, next command, validation results, and commit hash list. Success requires handoff, ulw-loop evidence records or equivalent ledger, clean scoped staging, and Korean commit if there are new artifacts.

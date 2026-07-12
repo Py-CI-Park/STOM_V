@@ -1,0 +1,221 @@
+{
+  "schema": "ulw_c002_boundary_guard_receipt_v1",
+  "created_at": "2026-07-08T10:01:43+09:00",
+  "criterion": "C002_boundary_guard",
+  "status": "pass",
+  "allowed_actions": [
+    "source reads",
+    "JSON/JSONL parsing",
+    "documentation",
+    "static/dry-run-only planning",
+    "scoped git staging/commit"
+  ],
+  "forbidden_actions": [
+    "backtest",
+    "limited replay",
+    "DB INSERT apply",
+    "DB UPDATE/DELETE",
+    "OOS",
+    "portfolio",
+    "Plan D R3",
+    "export/live/final promotion",
+    "full tick/min 288",
+    "git add -A",
+    "dashboard/.gjc/unrelated .omo staging"
+  ],
+  "documents_checked": {
+    ".omo/plans/lattice-condition-generation-v2-redesign-overnight-20260708.md": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": true,
+        "backtest_forbidden": true,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": true,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": true
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 80
+    },
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_dryrun_20260708.md": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": true,
+        "backtest_forbidden": true,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": true,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": true
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 58
+    },
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_static_dryrun_next_command_20260708.md": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": true,
+        "backtest_forbidden": true,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": true,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": true
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 38
+    },
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_axis_spec_20260708.json": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": false,
+        "backtest_forbidden": true,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": true,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": false
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 66
+    },
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_evaluation_protocol_20260708.json": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": false,
+        "db_insert_apply_forbidden": false,
+        "db_update_delete_forbidden": false,
+        "backtest_forbidden": false,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": false,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": false
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 60
+    },
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_quota_ledger_20260708.json": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": false,
+        "backtest_forbidden": true,
+        "oos_forbidden": true,
+        "portfolio_forbidden": true,
+        "plan_d_r3_forbidden": true,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": false
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 52
+    },
+    "docs/update_log/2026-07-08_lattice_condition_generation_v2_redesign_overnight_execution_handoff.md": {
+      "exists": true,
+      "required_pattern_presence": {
+        "dry_run_boundary": true,
+        "db_insert_apply_forbidden": true,
+        "db_update_delete_forbidden": false,
+        "backtest_forbidden": false,
+        "oos_forbidden": true,
+        "portfolio_forbidden": false,
+        "plan_d_r3_forbidden": false,
+        "promotion_forbidden": true,
+        "git_add_a_forbidden": false
+      },
+      "blocked_executable_hits": {
+        "stom_backtest": false,
+        "run_backtest": false,
+        "limited_replay_command": false,
+        "db_apply_flag": false,
+        "sql_insert": false,
+        "sql_update": false,
+        "sql_delete": false
+      },
+      "line_count": 47
+    }
+  },
+  "all_required_patterns_present_somewhere": {
+    "dry_run_boundary": true,
+    "db_insert_apply_forbidden": true,
+    "db_update_delete_forbidden": true,
+    "backtest_forbidden": true,
+    "oos_forbidden": true,
+    "portfolio_forbidden": true,
+    "plan_d_r3_forbidden": true,
+    "promotion_forbidden": true,
+    "git_add_a_forbidden": true
+  },
+  "candidate_plan_strict_pass": true,
+  "process_scan": {
+    "command": "Get-CimInstance Win32_Process -Filter \"name = 'python.exe'\" | Where-Object { $_.CommandLine -match 'claude_candidate_batch_eval|stock_min_back|stock_tick_back|stom_backtest|BackTest|portfolio|export|Plan D R3' } | Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress",
+    "returncode": 0,
+    "matches": [],
+    "stderr": ""
+  },
+  "protected_path_status": {
+    "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+    "returncode": 0,
+    "lines": [],
+    "stderr": ""
+  },
+  "cleanup": "No runtime process, tmux session, browser, DB connection, or temp directory was spawned for C002; process scan completed; no subagents open."
+}

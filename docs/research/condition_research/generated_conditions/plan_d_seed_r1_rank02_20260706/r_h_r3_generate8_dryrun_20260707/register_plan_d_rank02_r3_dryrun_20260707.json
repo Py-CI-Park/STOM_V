@@ -1,0 +1,19 @@
+{
+  "status": "dry_run_ok",
+  "schema_version": 1,
+  "dry_run": true,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_h_r3_generate8_dryrun_20260707\\plan_d_rank02_r3_generate8_seeds_20260707.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_h_r3_generate8_dryrun_20260707\\pairs_plan_d_rank02_r3_generate8_dryrun_20260707.json",
+  "ledger_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_h_r3_generate8_dryrun_20260707\\provenance_plan_d_rank02_r3_register_dryrun_20260707.jsonl",
+  "mapping_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_h_r3_generate8_dryrun_20260707\\plan_d_rank02_r3_strategy_name_mapping_20260707.jsonl",
+  "backup_path": null,
+  "planned_seed_count": 8,
+  "planned_insert_count": 16,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "unsafe_legacy_name_count": 0,
+  "unsafe_target_name_count": 0,
+  "name_style": "filename_safe_v2",
+  "conflicts": []
+}

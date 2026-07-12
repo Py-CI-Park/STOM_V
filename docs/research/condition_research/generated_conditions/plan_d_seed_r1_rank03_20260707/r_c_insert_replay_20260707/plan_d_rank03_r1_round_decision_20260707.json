@@ -1,0 +1,38 @@
+{
+  "schema": "plan_d_rank03_r1_round_decision_v1",
+  "created_at": "2026-07-07T17:55:13+09:00",
+  "scope": "plan-d-rank03-r1-insert-replay-no-portfolio-export",
+  "decision": "open_selected_oos_preregistration_next",
+  "basis": {
+    "honest_rows": 8,
+    "gate_passed_count": 6,
+    "decision_counts": {
+      "flat": 5,
+      "no_go": 2,
+      "improved": 1
+    },
+    "selected_candidates": [
+      {
+        "label": "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90",
+        "buy_name": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+        "sell_name": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+        "buy_sha256": "c6bf339034de92707413444e6cffc2a0b8c8877de6eb3bfd523ba281e68a1d13",
+        "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "profit": 1652322.0,
+        "mdd": 15.79,
+        "trades": 181,
+        "daily": 0.8,
+        "selection_reason": "best_profit_and_lower_mdd_vs_rank03_parent_preflight"
+      }
+    ]
+  },
+  "next_allowed_action": "plan-d-rank03-r1-selected-oos-prereg-no-portfolio-export",
+  "forbidden_until_next_scope": [
+    "OOS without preregistration",
+    "portfolio",
+    "export/live/final promotion",
+    "DB UPDATE/DELETE",
+    "full tick/min 288 batch",
+    "non-selected OOS"
+  ]
+}

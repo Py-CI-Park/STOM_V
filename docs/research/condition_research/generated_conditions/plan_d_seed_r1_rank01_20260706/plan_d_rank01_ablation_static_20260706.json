@@ -1,0 +1,129 @@
+{
+  "schema": "plan_d_rank01_ablation_static_v1",
+  "created_at": "2026-07-06T13:39:00+09:00",
+  "scope": "plan-d-seed-r1-rank01-no-portfolio-export",
+  "seed_id": "plan_d_rcs_oos_20260706_rank01",
+  "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+  "mode": "static_clause_decomposition_only",
+  "backtest_executed": false,
+  "per_trade_pool_used": false,
+  "buy_clause_count": 5,
+  "sell_clause_count": 4,
+  "buy_clauses": [
+    {
+      "index": 0,
+      "text": "e13_part1",
+      "expression": "e13_part1",
+      "combinator": "or",
+      "variables": [
+        "e13_part1"
+      ],
+      "derived_variables": [
+        "e13_part1"
+      ],
+      "source": "flag_path"
+    },
+    {
+      "index": 1,
+      "text": "e13_part2",
+      "expression": "e13_part2",
+      "combinator": "or",
+      "variables": [
+        "e13_part2"
+      ],
+      "derived_variables": [
+        "e13_part2"
+      ],
+      "source": "flag_path"
+    },
+    {
+      "index": 2,
+      "text": "e13_part3",
+      "expression": "e13_part3",
+      "combinator": "or",
+      "variables": [
+        "e13_part3"
+      ],
+      "derived_variables": [
+        "e13_part3"
+      ],
+      "source": "flag_path"
+    },
+    {
+      "index": 3,
+      "text": "e13_part4",
+      "expression": "e13_part4",
+      "combinator": "or",
+      "variables": [
+        "e13_part4"
+      ],
+      "derived_variables": [
+        "e13_part4"
+      ],
+      "source": "flag_path"
+    },
+    {
+      "index": 4,
+      "text": "e13_part5",
+      "expression": "e13_part5",
+      "combinator": "or",
+      "variables": [
+        "e13_part5"
+      ],
+      "derived_variables": [
+        "e13_part5"
+      ],
+      "source": "flag_path"
+    }
+  ],
+  "sell_clauses": [
+    {
+      "index": 0,
+      "text": "수익률 >= 3.0",
+      "expression": "수익률 >= 3.0",
+      "combinator": "or",
+      "variables": [
+        "수익률"
+      ],
+      "derived_variables": [],
+      "source": "flag_path"
+    },
+    {
+      "index": 1,
+      "text": "수익률 <= -3.0",
+      "expression": "수익률 <= -3.0",
+      "combinator": "or",
+      "variables": [
+        "수익률"
+      ],
+      "derived_variables": [],
+      "source": "flag_path"
+    },
+    {
+      "index": 2,
+      "text": "보유시간 >= 60",
+      "expression": "보유시간 >= 60",
+      "combinator": "or",
+      "variables": [
+        "보유시간"
+      ],
+      "derived_variables": [],
+      "source": "flag_path"
+    },
+    {
+      "index": 3,
+      "text": "시분초 >= 145900",
+      "expression": "시분초 >= 145900",
+      "combinator": "or",
+      "variables": [
+        "시분초"
+      ],
+      "derived_variables": [],
+      "source": "flag_path"
+    }
+  ],
+  "duplicate_expressions": [],
+  "static_ineffective_candidates": [],
+  "verdict": "no_data_backed_ineffective_clause_verdict",
+  "note": "Plan D R-a requires per-trade pool for pass-rate/removal effect. This scope only decomposes clauses and records static candidates; no backtest or replay was run."
+}

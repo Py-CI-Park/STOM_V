@@ -1,0 +1,77 @@
+{
+  "schema": "source_read_receipt_v1",
+  "created_at": "2026-07-07T21:10:00+09:00",
+  "read_scope": "full_document",
+  "sources": [
+    {
+      "path": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
+      "read_scope": "full_document",
+      "line_count": 127,
+      "sha256": "9071b0532c278c35d307cfe1d9bc29cf62aa9c9a38389cd89a1c35c8377493d5",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/update_log/2026-07-07_lattice_research_rereview_and_rank03_r2_recommendation.md",
+      "read_scope": "full_document",
+      "line_count": 144,
+      "sha256": "38ade5f0fc06072a5f3d85a8201927fbb184ecabb982ab6ab2bc183c2684679b",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank03_r1_selected_oos_retry03_survivor_handoff.md",
+      "read_scope": "full_document",
+      "line_count": 77,
+      "sha256": "5272bf64951e4eaa0cb74d5f8412994568890b9cbd4cf4fbad512d5f5a8a895f",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_retry03_result_20260707.json",
+      "read_scope": "full_document",
+      "line_count": 119,
+      "sha256": "e6eded6f15c23eef4831f3bad4d92155c6e50931d0eee7008b58120ce050e162",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_next_seed_readiness_20260707.json",
+      "read_scope": "full_document",
+      "line_count": 29,
+      "sha256": "77f2bbe2f795bbda36702e7ad234a825a6be526587e47bd22177df78df603801",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r1_oos_20260707_01.md",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "418cf546222805b4ad7ee8e3ed53a177cf65019f2e262e43f2d513fe68faf0c4",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+      "read_scope": "full_document",
+      "line_count": 149,
+      "sha256": "e0dae7379559fe6556a769c8e4312a6f48d926fc299c9e78373afab00dd16ae7",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "read_scope": "full_document",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_a_readiness_20260707/plan_d_rank03_readiness_summary_20260707.json",
+      "read_scope": "full_document",
+      "line_count": 77,
+      "sha256": "90246f32a0ca8df36051ce254ab1b8ed688a09a309c5cad03d505d1eeed05989",
+      "applied_section": "rank03 R2 boundary cycle source package"
+    }
+  ]
+}

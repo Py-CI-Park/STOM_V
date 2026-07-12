@@ -1,0 +1,25 @@
+{
+  "root": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_pool_20260706",
+  "research_runs": "docs/research/condition_research/research_runs",
+  "summaries_checked": 0,
+  "counts": {
+    "error": 2,
+    "warning": 0,
+    "advisory": 0
+  },
+  "issues": [
+    {
+      "path": "docs\\research\\condition_research\\research_runs\\css_v7_validation_20260702_plan.md",
+      "check": "research_run_doc_missing",
+      "severity": "error",
+      "detail": "run 'css_v7_validation_20260702' is missing its '_plan.md' document"
+    },
+    {
+      "path": "docs\\research\\condition_research\\research_runs\\css_v7_validation_20260702_management.md",
+      "check": "research_run_doc_missing",
+      "severity": "error",
+      "detail": "run 'css_v7_validation_20260702' is missing its '_management.md' document"
+    }
+  ],
+  "exit_code": 1
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "plan_d_rank02_r6_design_v1",
+  "created_at": "2026-07-07T17:03:26+09:00",
+  "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "reason": "R4/R5 are two consecutive no-improve replays. R6 is final dry-run-only terminal probe before rank02 branch termination or one last limited replay.",
+  "baseline": {
+    "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "profit": 2297191.0,
+    "mdd": 16.31,
+    "trade_count": 209,
+    "daily_avg_trades": 1.0,
+    "source_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_i_r3_insert_replay_20260707/plan_d_rank02_r3_limited_replay_result_20260707.json"
+  },
+  "watch_axis_from_r5": "plan_d_r1_rank02_r5_08_eod1515_default",
+  "candidates": [
+    {
+      "condition_id": "plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default",
+      "axis": "eod1515_l14_rate9_default",
+      "mutation": "Keep eod1515 sell watch axis and tighten L14 rate floor from 8.0 to 9.0.",
+      "quota_lane": "repair"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9",
+      "axis": "eod1515_l14_amt8500_rate9",
+      "mutation": "Keep eod1515 sell watch axis and combine conservative L14 amount 8500 with rate floor 9.0.",
+      "quota_lane": "repair"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_03_eod1515_pmax110_108",
+      "axis": "eod1515_pmax110_108",
+      "mutation": "Keep eod1515 sell watch axis and mildly tighten S09/S10 strength thresholds to 110/108.",
+      "quota_lane": "repair"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000",
+      "axis": "eod1515_morning_amt1800_3000",
+      "mutation": "Keep eod1515 sell watch axis and narrow morning PMAX amount lower bound to 1800 while retaining upper 3000.",
+      "quota_lane": "repair"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800",
+      "axis": "eod1515_morning_amt1500_2800",
+      "mutation": "Keep eod1515 sell watch axis and narrow morning PMAX amount upper bound from 3000 to 2800.",
+      "quota_lane": "repair"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9",
+      "axis": "eod1515_openpos996_rate9",
+      "mutation": "Keep eod1515 sell watch axis and combine M09/M10 price proximity 0.996 with L14 rate floor 9.0.",
+      "quota_lane": "discovery"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_07_eod1510_l14_rate9",
+      "axis": "eod1510_l14_rate9",
+      "mutation": "Test slightly earlier hard exit 15:10 with L14 rate floor 9.0 after eod1515 lowered MDD but missed profit.",
+      "quota_lane": "discovery"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_08_eod1520_l14_rate10",
+      "axis": "eod1520_l14_rate10",
+      "mutation": "Test slightly later hard exit 15:20 with L14 rate floor 10.0 as final watch-axis extension.",
+      "quota_lane": "discovery"
+    }
+  ],
+  "guardrails": {
+    "formal_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "db_insert_apply_executed": false,
+    "db_update_delete_used": false
+  }
+}

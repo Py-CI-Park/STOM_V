@@ -1,0 +1,74 @@
+{
+  "session_id": "20260708_lattice_generation_v2_redesign_plan",
+  "created_at_kst": "2026-07-07T23:03:13+09:00",
+  "criterion": "C002_boundary_guard",
+  "status": "pass",
+  "scope": "redesign plan only; no backtest, no DB mutation, no OOS, no portfolio, no Plan D R3",
+  "check_method": "ASCII regex keys against UTF-8 documents to avoid PowerShell codepage ambiguity.",
+  "documents_checked": {
+    "docs\\research\\condition_research\\plans\\2026-07-08_lattice_condition_generation_v2_redesign_plan.md": {
+      "sha256": "93d272b49977c0d68b46456e5cd70d405ffb58269798dfb5e6311506869e8822",
+      "line_count": 267,
+      "required_pattern_presence": {
+        "no_full_tick_288": true,
+        "no_full_min_288": true,
+        "no_oos": true,
+        "no_portfolio": true,
+        "no_plan_d_r3": true,
+        "no_export_live_final": true,
+        "no_db_update_delete": true,
+        "no_db_insert_apply": true,
+        "no_git_add_a": true,
+        "no_dashboard_7_files": true,
+        "blind_split_boundary": true,
+        "walk_forward_boundary": true
+      },
+      "has_next_ulw_command": true
+    },
+    "docs\\update_log\\2026-07-08_lattice_condition_generation_v2_redesign_plan_handoff.md": {
+      "sha256": "4d2a3dab248d054b17b5ee4aa25879e7816d1a46aae5e27d8be1a8b4755dac6b",
+      "line_count": 121,
+      "required_pattern_presence": {
+        "no_full_tick_288": true,
+        "no_full_min_288": true,
+        "no_oos": true,
+        "no_portfolio": true,
+        "no_plan_d_r3": true,
+        "no_export_live_final": true,
+        "no_db_update_delete": true,
+        "no_db_insert_apply": true,
+        "no_git_add_a": true,
+        "no_dashboard_7_files": true,
+        "blind_split_boundary": true,
+        "walk_forward_boundary": true
+      },
+      "has_next_ulw_command": true
+    },
+    ".omo\\plans\\lattice-condition-generation-v2-redesign-overnight-20260708.md": {
+      "sha256": "47596edb4d8916c151bb8b180eb21abe7ab04d480c37691cbf2d1e4185740f0a",
+      "line_count": 80,
+      "required_pattern_presence": {
+        "no_full_tick_288": true,
+        "no_full_min_288": true,
+        "no_oos": true,
+        "no_portfolio": true,
+        "no_plan_d_r3": true,
+        "no_export_live_final": true,
+        "no_db_update_delete": true,
+        "no_db_insert_apply": true,
+        "no_git_add_a": true,
+        "no_dashboard_7_files": true,
+        "blind_split_boundary": true,
+        "walk_forward_boundary": true
+      },
+      "has_next_ulw_command": true
+    }
+  },
+  "all_required_patterns_present_in_all_documents": true,
+  "plan_agent_review_integrated": {
+    "agent_id": "019f3cd8-fbee-7b10-8c0b-aa9473a317dd",
+    "status": "completed_and_closed",
+    "key_integration": ".omo/plans execution wrapper added and recommended command redirected to it."
+  },
+  "runtime_boundary": "No runtime command was started by this planning turn. Only file reads, evidence generation, and scoped documentation edits were performed."
+}

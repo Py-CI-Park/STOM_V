@@ -1,0 +1,78 @@
+{
+  "_comment": "Selected composite OOS profile; min lane; fixed 2026-01-01~2026-02-27 window; selected 16 only; post-selection caveat recorded.",
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "min",
+  "full_session_enabled": true,
+  "bt_min_universe_end_time": 151900,
+  "bt_universe_start_time": 90000,
+  "bt_warm_engine_count": 64,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.5,
+  "mdd_cap": 35.0,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20260101,
+  "bt_full_end": 20260227,
+  "max_generations": 1,
+  "bt_timeout": 14400,
+  "bt_warm_run_timeout": 1200,
+  "equity_points_enabled": true,
+  "condition_discovery_preset": "fast",
+  "condition_discovery_process": "fast-discovery",
+  "_official_profile": {
+    "schema": "plan_b_p5_official_profile_v1",
+    "lane": "min",
+    "source_db_range": {
+      "path": "_database/stock_min_back.db",
+      "table_count": 1381,
+      "temporal_row_count": 5578411,
+      "index_min_len_filter": 12,
+      "min_index": "202504070900",
+      "max_index": "202602271519",
+      "start_date": 20250407,
+      "end_date": 20260227,
+      "skipped_no_index_tables": [],
+      "skipped_no_index_table_count": 0
+    },
+    "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19.",
+    "full_run_forbidden_until_tick_official_export": true
+  },
+  "_oos_preregistration": {
+    "schema": "repair_composite_selected_oos_preregistration_v1",
+    "created_at": "2026-07-06T10:41:56+09:00",
+    "scope": "repair-composite-selected-oos-no-D",
+    "source_selection_run_id": "lat_repair_composite_expanded_48_official_full_warm64_20260706",
+    "candidate_count": 16,
+    "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/pairs_repair_composite_selected_16_oos_20260706.json",
+    "freeze_recheck_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_freeze_recheck_20260706.json",
+    "lane": "min",
+    "db": "_database/stock_min_back.db",
+    "oos_window": {
+      "start": 20260101,
+      "end": 20260227
+    },
+    "time_window": {
+      "start_time": 90000,
+      "end_time": 151900
+    },
+    "warm_engine_count": 64,
+    "selection_rule": "gate_passed and mdd<=25 and daily_avg_trades>=0.8; top16 by profit then lower mdd",
+    "decision_rule": {
+      "survivor": "status ok AND gate_passed true AND profit > 0 AND mdd <= 35 AND daily_avg_trades >= 0.5",
+      "hold": "status ok AND profit > 0 but one non-critical gate fails",
+      "no_go": "error/no_trades OR profit <= 0 OR mdd > 35"
+    },
+    "contamination_caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS.",
+    "forbidden": [
+      "Plan D/P7",
+      "portfolio",
+      "full tick 288",
+      "full min 288",
+      "selected outside these 16",
+      "DB UPDATE/DELETE",
+      "promotion/export/live/final"
+    ]
+  }
+}

@@ -14,6 +14,9 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
+from cli.condition_fingerprint import ThresholdEstimator, ThresholdProvenance
+
+
 try:
     from scipy import stats
 except ImportError:  # pragma: no cover - optional dependency
@@ -111,6 +114,32 @@ def _apply_named_buckets(df: pd.DataFrame, column: str, buckets: Iterable[tuple]
     return df
 
 
+def _threshold_row_signature(candidate: dict) -> str:
+    feature = candidate['feature']
+    operator = candidate['operator']
+    if operator == 'between':
+        return f"{feature}:{operator}:{candidate.get('lower_bound')}-{candidate.get('upper_bound')}"
+    return f"{feature}:{operator}:{candidate.get('threshold')}"
+
+
+def _attach_threshold_provenance(
+    candidate: dict, *, estimator: ThresholdEstimator, parameters: dict, provenance_context: dict,
+) -> dict:
+    provenance = ThresholdProvenance(
+        estimator=estimator,
+        parameters=parameters,
+        fit_role=provenance_context['fit_role'],
+        period=provenance_context['period'],
+        row_count=candidate['count'],
+        row_signature=_threshold_row_signature(candidate),
+        dataset_sha=provenance_context['dataset_sha'],
+        fold_id=provenance_context['fold_id'],
+        source_receipt=provenance_context['source_receipt'],
+    )
+    candidate['threshold_provenance'] = provenance.to_dict()
+    return candidate
+
+
 def _segment_candidates_from_results(
     results: list[dict],
     feature: str,
@@ -118,6 +147,7 @@ def _segment_candidates_from_results(
     source: str,
     min_return_diff: float = 0.0,
     min_win_rate_diff: float = 0.0,
+    provenance_context: dict | None = None,
 ) -> list[dict]:
     bucket_map = {name: (lower, upper) for name, lower, upper in buckets}
     candidates = []
@@ -127,7 +157,7 @@ def _segment_candidates_from_results(
             continue
         lower, upper = bucket_map.get(item['group'], (None, None))
         score = abs(min(item['mean_return_diff'], 0.0)) + abs(min(item['win_rate_diff'], 0.0))
-        candidates.append({
+        candidate = {
             'feature': feature,
             'source': source,
             'label': item['group'],
@@ -140,7 +170,15 @@ def _segment_candidates_from_results(
             'mean_return_diff': item['mean_return_diff'],
             'win_rate_diff': item['win_rate_diff'],
             'score': float(score),
-        })
+        }
+        if provenance_context:
+            _attach_threshold_provenance(
+                candidate,
+                estimator=ThresholdEstimator.BUCKET,
+                parameters={'buckets': list(buckets)},
+                provenance_context=provenance_context,
+            )
+        candidates.append(candidate)
     return candidates
 
 
@@ -150,13 +188,16 @@ def analyze_market_cap_segments(
     return_col: str = '수익률',
     min_samples: int = 30,
     buckets: Iterable[tuple] = DEFAULT_MARKET_CAP_BUCKETS,
+    provenance_context: dict | None = None,
 ) -> dict:
     if column not in df.columns:
         return {'status': 'error', 'message': f"column '{column}' not found", 'results': [], 'candidates': []}
 
     bucketed = _apply_named_buckets(df, column, buckets, '_시가총액구간')
     results = analyze_group_performance(bucketed, '_시가총액구간', return_col=return_col, min_samples=min_samples)
-    candidates = _segment_candidates_from_results(results, column, buckets, 'market_cap')
+    candidates = _segment_candidates_from_results(
+        results, column, buckets, 'market_cap', provenance_context=provenance_context,
+    )
     return {'status': 'ok', 'results': results, 'candidates': candidates}
 
 
@@ -166,13 +207,16 @@ def analyze_time_segments(
     return_col: str = '수익률',
     min_samples: int = 30,
     buckets: Iterable[tuple] = DEFAULT_TIME_BUCKETS,
+    provenance_context: dict | None = None,
 ) -> dict:
     if column not in df.columns:
         return {'status': 'error', 'message': f"column '{column}' not found", 'results': [], 'candidates': []}
 
     bucketed = _apply_named_buckets(df, column, buckets, '_시간대')
     results = analyze_group_performance(bucketed, '_시간대', return_col=return_col, min_samples=min_samples)
-    candidates = _segment_candidates_from_results(results, column, buckets, 'time_of_day')
+    candidates = _segment_candidates_from_results(
+        results, column, buckets, 'time_of_day', provenance_context=provenance_context,
+    )
     return {'status': 'ok', 'results': results, 'candidates': candidates}
 
 
@@ -252,6 +296,7 @@ def generate_quantile_candidates(
     quantiles: int = 10,
     min_return_diff: float = 0.0,
     min_win_rate_diff: float = 0.0,
+    provenance_context: dict | None = None,
 ) -> list[dict]:
     overall = _overall_metrics(df, return_col)
     feature_columns = list(feature_columns or get_feature_columns(df))
@@ -277,7 +322,15 @@ def generate_quantile_candidates(
             if metrics['mean_return'] >= overall['mean_return'] - min_return_diff and \
                     metrics['win_rate'] >= overall['win_rate'] - min_win_rate_diff:
                 continue
-            candidates.append(_make_range_candidate(feature, interval, metrics, overall, 'quantile'))
+            candidate = _make_range_candidate(feature, interval, metrics, overall, 'quantile')
+            if provenance_context:
+                _attach_threshold_provenance(
+                    candidate,
+                    estimator=ThresholdEstimator.QUANTILE,
+                    parameters={'quantiles': quantiles},
+                    provenance_context=provenance_context,
+                )
+            candidates.append(candidate)
 
     return sorted(candidates, key=lambda item: item['score'], reverse=True)
 
@@ -288,6 +341,7 @@ def analyze_ttest_candidates(
     return_col: str = '수익률',
     min_samples: int = 30,
     alpha: float = 0.05,
+    provenance_context: dict | None = None,
 ) -> list[dict]:
     if stats is None:
         return []
@@ -340,6 +394,14 @@ def analyze_ttest_candidates(
         candidate['accepted_fdr'] = bh.get('accepted_fdr', False)
         if candidate['accepted_fdr']:
             filtered.append(candidate)
+    if provenance_context:
+        for candidate in filtered:
+            _attach_threshold_provenance(
+                candidate,
+                estimator=ThresholdEstimator.MEDIAN_TTEST,
+                parameters={'alpha': alpha},
+                provenance_context=provenance_context,
+            )
     return sorted(filtered, key=lambda item: item['score'], reverse=True)
 
 

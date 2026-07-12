@@ -1,0 +1,42 @@
+{
+  "schema": "plan_d_rank02_r4_round_decision_v1",
+  "created_at": "2026-07-07T16:35:23+09:00",
+  "scope": "plan-d-rank02-r4-insert-limited-replay-no-oos-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "baseline": {
+    "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "profit": 2297191.0,
+    "mdd": 16.31,
+    "trade_count": 209,
+    "daily_avg_trades": 1.0,
+    "source_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_i_r3_insert_replay_20260707/plan_d_rank02_r3_limited_replay_result_20260707.json"
+  },
+  "decision_rule": "improved if profit not worse with lower MDD, or profit better with MDD not worse and trades >= 50% of parent; otherwise gate-pass rows are flat.",
+  "decision_counts": {
+    "improved": 0,
+    "flat": 8,
+    "no_go": 0
+  },
+  "improved": [],
+  "flat": [
+    "plan_d_r1_rank02_r4_01_amt7500_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r4_02_amt8500_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r4_03_amt8000_default_tp3_sl3_hold60",
+    "plan_d_r1_rank02_r4_04_amt8000_tight_sl2p5_hold90",
+    "plan_d_r1_rank02_r4_05_amt8000_take_tp2p5_hold90",
+    "plan_d_r1_rank02_r4_06_amt8000_take_tp4_hold90",
+    "plan_d_r1_rank02_r4_07_l1430_bridge_default_tp3_sl3",
+    "plan_d_r1_rank02_r4_08_l13_l14_default_tp3_sl3"
+  ],
+  "no_go": [],
+  "coverage_watch": [
+    "plan_d_r1_rank02_r4_07_l1430_bridge_default_tp3_sl3",
+    "plan_d_r1_rank02_r4_08_l13_l14_default_tp3_sl3"
+  ],
+  "selected_oos_candidates": [],
+  "rounds_no_improve_delta": 1,
+  "next_allowed_action": "rank02_r5_generate8_dryrun_no_oos_portfolio_export",
+  "oos_opened": false,
+  "oos_open_reason": "not_opened_no_improved_candidate",
+  "portfolio_executed": false
+}

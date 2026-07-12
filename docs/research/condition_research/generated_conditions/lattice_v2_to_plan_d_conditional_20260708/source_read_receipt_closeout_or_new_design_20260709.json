@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-09T18:41:48+09:00",
+  "plan": "docs/research/condition_research/plans/lattice_condition_generation_v2_closeout_or_new_design_review_20260709.md",
+  "scope": "review_only_no_db_no_replay_no_oos_no_plan_d",
+  "sources": [
+    {
+      "path": "docs/update_log/2026-07-09_lattice_v2_risk_sell_repair_review_handoff.md",
+      "exists": true,
+      "line_count": 58,
+      "sha256": "e3bd7fd4faccf7d1cb43d58992de2bf0396edd035d8b9dbb6cc74d3bc58490c2",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_risk_sell_failure_decomposition_20260709.json",
+      "exists": true,
+      "line_count": 1921,
+      "sha256": "467465caa7f8ee9e725760b0c5be6d6a2f4cedb71cc8d497cdec981a96520f18",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_risk_sell_failure_decomposition_20260709.md",
+      "exists": true,
+      "line_count": 72,
+      "sha256": "d6e9a8756a1168116d7b1b88c6575eace7b10cc26a7197fd45b39c20637c5516",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/v2_risk_sell_repair_decision_20260709.json",
+      "exists": true,
+      "line_count": 42,
+      "sha256": "506f30f180078ef6ab3aaeab0cb11be7de25f587bb9fad78b0e814a38a796223",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "exists": true,
+      "line_count": 363,
+      "sha256": "e2bf3ec56d2c6ada3b832b363bc1af42e96f8ad613608b63338dd3063adefbf3",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/update_log/2026-07-08_lattice_condition_generation_v2_redesign_plan_handoff.md",
+      "exists": true,
+      "line_count": 121,
+      "sha256": "4d2a3dab248d054b17b5ee4aa25879e7816d1a46aae5e27d8be1a8b4755dac6b",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/update_log/2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md",
+      "exists": true,
+      "line_count": 49,
+      "sha256": "f475a47bc4fcf23fc6ac8a5785dc2b426f4e4debb02eb2e54a4ccb71c8c5d4fb",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/update_log/2026-07-08_lattice_condition_generation_v2_body_static_dryrun_handoff.md",
+      "exists": true,
+      "line_count": 66,
+      "sha256": "885b7609bef4b6a7643537430f38a071565cfa5e2dd601312e461306cb767e5c",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/lattice_v2_body_static_dryrun_20260708/lattice_v2_body_static_dryrun_seeds_20260708.json",
+      "exists": true,
+      "line_count": 255,
+      "sha256": "473c9d1bc8bcade0c8275194e96b316a4f986c70a4f474b3cbe5e3d9a4f7241e",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "exists": true,
+      "line_count": 290,
+      "sha256": "1fadd1f4d7c2b10aa3a349939ae30c8f45a84832620a71053c48066d39941e4c",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "exists": true,
+      "line_count": 27,
+      "sha256": "bf9166aaa089a603a4f33492ab15f8d52c682cb2e6733e1fbf4dc23021a0d4bd",
+      "read_scope": "full_document",
+      "applied_sections": [
+        "full_document"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-09T04:11:02.049354+00:00",
+  "status": "pass",
+  "checks": [
+    {
+      "name": "source receipt parse/source_count=4",
+      "status": "pass"
+    },
+    {
+      "name": "decomposition row_count=8",
+      "status": "pass"
+    },
+    {
+      "name": "survivor_count remains 0",
+      "status": "pass"
+    },
+    {
+      "name": "decision enum valid",
+      "status": "pass"
+    },
+    {
+      "name": "next command avoids OOS/Plan D/full 288",
+      "status": "pass"
+    }
+  ],
+  "constraints_observed": {
+    "db_insert_update_delete": false,
+    "replay_executed": false,
+    "oos_executed": false,
+    "plan_d_executed": false,
+    "portfolio_executed": false,
+    "promotion_executed": false
+  },
+  "artifacts": [
+    "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\source_read_receipt_risk_sell_review_20260709.json",
+    "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\v2_risk_sell_failure_decomposition_20260709.json",
+    "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\v2_risk_sell_failure_decomposition_20260709.md",
+    "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\v2_risk_sell_repair_decision_20260709.json",
+    "docs\\update_log\\2026-07-09_lattice_v2_risk_sell_repair_review_handoff.md"
+  ],
+  "decision": "stop_v2_body_branch",
+  "duration_ms": 3103,
+  "final_commands": [
+    {
+      "command": "JSON evidence parse assertions",
+      "status": "pass"
+    },
+    {
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check -- scoped paths",
+      "status": "pass"
+    },
+    {
+      "command": "git status --short -- protected paths",
+      "status": "pass"
+    }
+  ],
+  "ended_at_local": "2026-07-09T13:12:35+09:00",
+  "duration_ms_total": 466000
+}

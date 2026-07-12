@@ -1,0 +1,87 @@
+{
+  "created_at": "2026-07-06T00:00:00+09:00",
+  "scope": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export",
+  "parent": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+  "designs": [
+    {
+      "slot": 1,
+      "condition_id": "plan_d_r1_rank01_r3_01_l14_rate80_hold90",
+      "axis": "l14_rate_floor80",
+      "mutation": "L14 rate floor 8.5 -> 8.0; keep default sell hold90",
+      "reason": "Recover daily coverage by reopening near-close candidates just below the active parent rate floor while avoiding the failed 7.5 axis.",
+      "buy_sha256": "841145a0d67931fd00132f3b045e90346f97ec9c5358c044585ba46ea76e00c3",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 2,
+      "condition_id": "plan_d_r1_rank01_r3_02_l14_amt11500_rate85_hold90",
+      "axis": "l14_amount_floor11500_rate85",
+      "mutation": "L14 amount floor 12000 -> 11500; keep rate floor 8.5 and default sell hold90",
+      "reason": "Small liquidity-floor relaxation aimed at extra trades without changing the active rate filter.",
+      "buy_sha256": "481bae357933c51f4a28ecfda7bf4dde47f81caeecae9e3e442d4251deb5c41d",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 3,
+      "condition_id": "plan_d_r1_rank01_r3_03_l14_amt11000_rate85_hold90",
+      "axis": "l14_amount_floor11000_rate85",
+      "mutation": "L14 amount floor 12000 -> 11000; keep rate floor 8.5 and default sell hold90",
+      "reason": "Wider liquidity-floor relaxation for coverage probe while preserving the active parent rate floor.",
+      "buy_sha256": "9865f7fed9edc5d02d077c8b1e85d560a4abfdac4c09d2550c870598e74ffab2",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 4,
+      "condition_id": "plan_d_r1_rank01_r3_04_l14_end1445_rate85_hold90",
+      "axis": "l14_end1445_rate85",
+      "mutation": "L14 window 14:00-14:30 -> 14:00-14:45; keep amount 12000/rate 8.5/default sell hold90",
+      "reason": "Extends the active L14 parent into the watched 14:30-14:45 coverage gap without changing filter strength.",
+      "buy_sha256": "1f8072c6d430551c7e665fdffac8e243860361e02b635a2e6fc34937012e1e68",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 5,
+      "condition_id": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+      "axis": "l13_l14_bridge_rate85",
+      "mutation": "Add adjacent L13 13:00-14:00 amount>=12000/rate>=8.5 component; keep active L14/default sell hold90",
+      "reason": "Tests whether the slot06 adjacent coverage watch can add trades while keeping parent-quality L14 strength.",
+      "buy_sha256": "9d53646346d6cb31dfa131a284316539f0620cac5fbbb48a64eccefc94101661",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 6,
+      "condition_id": "plan_d_r1_rank01_r3_06_l1430_bridge_rate85_hold90",
+      "axis": "l1430_bridge_rate85",
+      "mutation": "Add 14:30-14:45 bridge amount>=12000/rate>=8.5 component; keep active L14/default sell hold90",
+      "reason": "Targets the late L14 coverage watch directly while preserving active parent L14 filters.",
+      "buy_sha256": "8c465bf47811a0120f65ff36f73d56747cecadd182ac7f78a59f9552853b2d33",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 7,
+      "condition_id": "plan_d_r1_rank01_r3_07_morning_strength_relax_hold90",
+      "axis": "morning_strength_relax_keep_l14_rate85",
+      "mutation": "S09 109->108 and S10 107->106; keep active L14/default sell hold90",
+      "reason": "Adds early-session coverage via minimal strength relaxation while leaving the late-day parent intact.",
+      "buy_sha256": "e69fb25abc45198bab3fea067b3f38dc4c9543d287173b722f793710568d24bb",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 8,
+      "condition_id": "plan_d_r1_rank01_r3_08_momentum_mult992_hold90",
+      "axis": "momentum_mult992_keep_l14_rate85",
+      "mutation": "M09/M10 current>=high*0.994 -> 0.992; keep active L14/default sell hold90",
+      "reason": "Adds early momentum coverage by slightly relaxing the high-price proximity gate, without touching sell or L14 quality controls.",
+      "buy_sha256": "9be353f93383dbcfef547ed1bd7f61275664637fbb66e189ac3b84f2b2ad00e5",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    }
+  ]
+}

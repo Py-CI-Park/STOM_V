@@ -1,0 +1,42 @@
+[
+  {
+    "label": "plan_d_r1_rank02_r5_01_l14_rate_floor7_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_01_l14_rate_floor7_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_01_l14_rate_floor7_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_02_l14_rate_floor10_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_02_l14_rate_floor10_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_02_l14_rate_floor10_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_03_pmax_strength_relax_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_03_pmax_strength_relax_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_03_pmax_strength_relax_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_04_pmax_strength_tight_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_04_pmax_strength_tight_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_04_pmax_strength_tight_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_05_openpos_floor992_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_05_openpos_floor992_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_05_openpos_floor992_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_06_openpos_floor996_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_06_openpos_floor996_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_06_openpos_floor996_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_07_morning_amt1000_3500_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_07_morning_amt1000_3500_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_07_morning_amt1000_3500_default_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r5_08_eod1515_default",
+    "buy": "LAT_plan_d_r1_rank02_r5_08_eod1515_default_B",
+    "sell": "LAT_plan_d_r1_rank02_r5_08_eod1515_default_S"
+  }
+]

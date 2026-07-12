@@ -1,0 +1,14 @@
+{
+  "schema": "plan_d_rank03_r1_preapply_absence_check_v1",
+  "created_at": "2026-07-07T17:38:55+09:00",
+  "scope": "plan-d-rank03-r1-insert-replay-no-portfolio-export",
+  "db": "ai_strategy_loop/state/loop_strategies.db",
+  "seed_path": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_generate8_seeds_20260707.json",
+  "checked_strategy_names": 16,
+  "missing_target_count_before_apply": 16,
+  "existing_conflict_count": 0,
+  "conflicts": [],
+  "passed": true,
+  "db_update_delete_used": false,
+  "db_insert_apply_used": false
+}

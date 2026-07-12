@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-08T13:19:57.239669+00:00",
+  "read_scope": "full_document",
+  "sources": [
+    {
+      "path": "docs\\update_log\\2026-07-08_lattice_condition_generation_v2_body_static_dryrun_handoff.md",
+      "read_scope": "full_document",
+      "line_count": 66,
+      "sha256": "885b7609bef4b6a7643537430f38a071565cfa5e2dd601312e461306cb767e5c",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_dryrun_seeds_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 255,
+      "sha256": "473c9d1bc8bcade0c8275194e96b316a4f986c70a4f474b3cbe5e3d9a4f7241e",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_gate_receipt_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 33,
+      "sha256": "5b6806e61ff4769fc531698a72f5aa615877dd9e35eecf24ff75bac9acbd4e80",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_db_registration_dryrun_receipt_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 22,
+      "sha256": "e468ff6f8cbd55b78ec16a792c3c6ba43f78cdbcc90794e95eb431df786345e9",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    },
+    {
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_config_min_official_full_warm64_20260704.json",
+      "read_scope": "full_document",
+      "line_count": 42,
+      "sha256": "44ab3fa85dd4720a1ae918e3f9b7f988cf468c51a2fc725c236adba6a2206d29",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    },
+    {
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_to_plan_d_conditional_overnight_20260708.md",
+      "read_scope": "full_document",
+      "line_count": 94,
+      "sha256": "908b85576f7606a9a5da6d618172074adb57c9998af7364a0104051e0bc017b6",
+      "applied_sections": [
+        "read-first package",
+        "official min full-period warm64 profile",
+        "8-seed insert/replay constraints"
+      ]
+    }
+  ]
+}

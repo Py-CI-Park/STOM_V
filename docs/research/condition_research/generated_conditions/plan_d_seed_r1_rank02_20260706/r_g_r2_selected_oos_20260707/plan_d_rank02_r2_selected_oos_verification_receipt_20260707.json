@@ -1,0 +1,36 @@
+{
+  "schema": "plan_d_rank02_r2_selected_oos_verification_receipt_v1",
+  "created_at": "2026-07-07T15:33:04+09:00",
+  "scope": "plan-d-rank02-r2-selected-oos-prereg-no-portfolio-export",
+  "run_id": "lat_plan_d_rank02_r2_selected3_oos_min_warm64_20260707",
+  "checks": {
+    "selected_pair_count": 3,
+    "selected_matches_round_decision": true,
+    "json_parse": "ok",
+    "jsonl_parse": "ok",
+    "global_oos_survivors_jsonl_parse": "ok",
+    "global_seed_pool_jsonl_parse": "ok",
+    "verify_nonrelease_sync": "passed",
+    "scoped_git_diff_check": "passed"
+  },
+  "results": {
+    "honest_rows": 3,
+    "status_ok": 3,
+    "gate_passed": 3,
+    "survivor": 3,
+    "hold": 0,
+    "no_go": 0,
+    "appended_oos_survivors": 3,
+    "appended_seed_pool": 3
+  },
+  "guardrails": {
+    "preregistration_before_oos": true,
+    "non_selected_oos_used": false,
+    "db_update_delete_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false,
+    "git_add_a_used": false
+  }
+}

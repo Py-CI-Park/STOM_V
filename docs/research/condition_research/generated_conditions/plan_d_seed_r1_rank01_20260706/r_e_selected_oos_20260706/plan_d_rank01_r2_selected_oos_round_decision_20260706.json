@@ -1,0 +1,127 @@
+{
+  "schema": "plan_d_rank01_r2_selected_oos_round_decision_v1",
+  "created_at": "2026-07-06T18:56:08+09:00",
+  "decision": "continue_rank01_r3_readiness_next_scope",
+  "basis": {
+    "honest_rows": 3,
+    "status_counts": {
+      "ok": 3
+    },
+    "gate_passed": 3,
+    "decision_counts": {
+      "survivor": 3,
+      "hold": 0,
+      "no_go": 0
+    },
+    "positive_control_verdict": "gate_healthy"
+  },
+  "recommended_active_next_parent": {
+    "schema": "plan_d_rank01_r2_selected_oos_record_v1",
+    "created_at": "2026-07-06T18:56:08+09:00",
+    "scope": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+    "run_id": "lat_plan_d_rank01_r2_selected3_oos_min_warm64_20260706",
+    "gen_no": 1,
+    "label": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+    "decision": "survivor",
+    "status": "ok",
+    "gate_passed": true,
+    "reason": "ok",
+    "advisories": [
+      "trade_count_below_20_plan_d_advisory"
+    ],
+    "profit": 1174545.0,
+    "mdd": 3.25,
+    "daily_avg_trades": 0.5,
+    "trade_count": 17,
+    "score": 23.566296581181703,
+    "calmar": 48.83692307692308,
+    "uptrend_r2": 0.6797606161490914,
+    "payoff_ratio": 1.6530054644808745,
+    "give_back_rate": 0.2,
+    "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90_B_20260706185223.csv",
+    "buy_name": "LAT_plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90_B",
+    "sell_name": "LAT_plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90_S",
+    "r2_replay_profit": 2515910.0,
+    "r2_replay_mdd": 15.57,
+    "r2_replay_trade_count": 188,
+    "r2_replay_daily_avg_trades": 0.9,
+    "r2_selection_reason": "lowest_mdd_among_improved",
+    "caveat": "Selected from full-period R2 replay; this is fixed OOS-style robustness replay, not fully blind discovery OOS."
+  },
+  "watch_candidates": [
+    {
+      "schema": "plan_d_rank01_r2_selected_oos_record_v1",
+      "created_at": "2026-07-06T18:56:08+09:00",
+      "scope": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+      "run_id": "lat_plan_d_rank01_r2_selected3_oos_min_warm64_20260706",
+      "gen_no": 0,
+      "label": "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90",
+      "decision": "survivor",
+      "status": "ok",
+      "gate_passed": true,
+      "reason": "ok",
+      "advisories": [
+        "trade_count_below_20_plan_d_advisory"
+      ],
+      "profit": 1079768.0,
+      "mdd": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "score": 10.302048909853827,
+      "calmar": 35.9384236453202,
+      "uptrend_r2": 0.5087562967282776,
+      "payoff_ratio": 1.8593380614657211,
+      "give_back_rate": 0.14285714285714285,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90_B_20260706185203.csv",
+      "buy_name": "LAT_plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90_S",
+      "r2_replay_profit": 2773694.0,
+      "r2_replay_mdd": 15.75,
+      "r2_replay_trade_count": 192,
+      "r2_replay_daily_avg_trades": 0.9,
+      "r2_selection_reason": "best_profit",
+      "caveat": "Selected from full-period R2 replay; this is fixed OOS-style robustness replay, not fully blind discovery OOS."
+    },
+    {
+      "schema": "plan_d_rank01_r2_selected_oos_record_v1",
+      "created_at": "2026-07-06T18:56:08+09:00",
+      "scope": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+      "run_id": "lat_plan_d_rank01_r2_selected3_oos_min_warm64_20260706",
+      "gen_no": 2,
+      "label": "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+      "decision": "survivor",
+      "status": "ok",
+      "gate_passed": true,
+      "reason": "ok",
+      "advisories": [
+        "trade_count_below_20_plan_d_advisory"
+      ],
+      "profit": 1079768.0,
+      "mdd": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "score": 10.302048909853827,
+      "calmar": 35.9384236453202,
+      "uptrend_r2": 0.5087562967282776,
+      "payoff_ratio": 1.8593380614657211,
+      "give_back_rate": 0.14285714285714285,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90_B_20260706185252.csv",
+      "buy_name": "LAT_plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90_S",
+      "r2_replay_profit": 2550258.0,
+      "r2_replay_mdd": 15.75,
+      "r2_replay_trade_count": 197,
+      "r2_replay_daily_avg_trades": 0.9,
+      "r2_selection_reason": "nearby_amount_axis_confirmation",
+      "caveat": "Selected from full-period R2 replay; this is fixed OOS-style robustness replay, not fully blind discovery OOS."
+    }
+  ],
+  "blocking_actions": [
+    "portfolio not executed",
+    "export/live/final promotion not executed",
+    "DB UPDATE/DELETE not used",
+    "non-selected candidates not executed"
+  ],
+  "advisory": "All selected survivors have trade_count<20. Plan D treats this as advisory/HOLD-OK, but next round should improve trade support before portfolio/export.",
+  "next_recommended_scope": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export"
+}

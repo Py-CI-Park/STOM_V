@@ -1,0 +1,1697 @@
+{
+  "schema": "overnight_no_d_576_deep_analysis_v1",
+  "created_at": "2026-07-05T21:58:35+09:00",
+  "scope": "overnight-remaining-pages-repair-analysis-bounded-preflight-no-D",
+  "inputs": {
+    "tick_jsonl": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p5_tick_official_full_warm64_288_export_summary_20260705.jsonl",
+    "min_jsonl": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p5_min_official_full_warm64_288_export_summary_20260705.jsonl",
+    "p6_go_no_go_hold": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p6_lattice_go_no_go_hold_20260705.json"
+  },
+  "overall": {
+    "count": 576,
+    "status_counts": {
+      "ok": 569,
+      "error": 7
+    },
+    "primary_fail_counts": {
+      "mdd_excess": 479,
+      "mdd_excess_and_low_daily_trades": 23,
+      "low_daily_trades": 44,
+      "nonpositive_profit": 23,
+      "no_metrics_or_error": 7
+    },
+    "predicate_counts": {
+      "positive_profit": 10,
+      "mdd_le_35": 74,
+      "daily_ge_0_5": 502,
+      "positive_and_mdd_le_35": 10,
+      "positive_and_daily_ge_0_5": 0,
+      "mdd_le_35_and_daily_ge_0_5": 23,
+      "positive_mdd_le_35_daily_ge_0_5": 0
+    },
+    "axis_time_bucket": [
+      {
+        "time_bucket": "0900",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 0,
+        "daily_ge_0_5": 48,
+        "avg_profit": -230679601.4,
+        "avg_mdd": 714.3225,
+        "avg_daily": 8.7,
+        "primary_fail_counts": {
+          "mdd_excess": 48
+        }
+      },
+      {
+        "time_bucket": "0905",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 0,
+        "daily_ge_0_5": 48,
+        "avg_profit": -187524415.77,
+        "avg_mdd": 594.4494,
+        "avg_daily": 7.5333,
+        "primary_fail_counts": {
+          "mdd_excess": 48
+        }
+      },
+      {
+        "time_bucket": "0910",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 0,
+        "daily_ge_0_5": 47,
+        "avg_profit": -166897689.5,
+        "avg_mdd": 542.444,
+        "avg_daily": 6.6437,
+        "primary_fail_counts": {
+          "mdd_excess_and_low_daily_trades": 1,
+          "mdd_excess": 47
+        }
+      },
+      {
+        "time_bucket": "0915",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 0,
+        "daily_ge_0_5": 47,
+        "avg_profit": -143739890.35,
+        "avg_mdd": 466.0485,
+        "avg_daily": 6.0729,
+        "primary_fail_counts": {
+          "mdd_excess_and_low_daily_trades": 1,
+          "mdd_excess": 47
+        }
+      },
+      {
+        "time_bucket": "0920",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 0,
+        "daily_ge_0_5": 46,
+        "avg_profit": -136895149.65,
+        "avg_mdd": 453.475,
+        "avg_daily": 5.7833,
+        "primary_fail_counts": {
+          "mdd_excess_and_low_daily_trades": 2,
+          "mdd_excess": 46
+        }
+      },
+      {
+        "time_bucket": "0925",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 0,
+        "mdd_le_35": 1,
+        "daily_ge_0_5": 43,
+        "avg_profit": -72988352.81,
+        "avg_mdd": 302.5979,
+        "avg_daily": 3.1583,
+        "primary_fail_counts": {
+          "low_daily_trades": 1,
+          "mdd_excess": 43,
+          "mdd_excess_and_low_daily_trades": 4
+        }
+      },
+      {
+        "time_bucket": "09h",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 2,
+        "mdd_le_35": 7,
+        "daily_ge_0_5": 43,
+        "avg_profit": -15896329.46,
+        "avg_mdd": 89.0387,
+        "avg_daily": 2.9396,
+        "primary_fail_counts": {
+          "low_daily_trades": 4,
+          "mdd_excess": 40,
+          "mdd_excess_and_low_daily_trades": 1,
+          "nonpositive_profit": 3
+        }
+      },
+      {
+        "time_bucket": "10h",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 3,
+        "mdd_le_35": 7,
+        "daily_ge_0_5": 40,
+        "avg_profit": -19115443.73,
+        "avg_mdd": 84.1206,
+        "avg_daily": 3.4958,
+        "primary_fail_counts": {
+          "low_daily_trades": 5,
+          "mdd_excess": 38,
+          "mdd_excess_and_low_daily_trades": 3,
+          "nonpositive_profit": 2
+        }
+      },
+      {
+        "time_bucket": "11h",
+        "count": 48,
+        "ok": 48,
+        "positive_profit": 3,
+        "mdd_le_35": 7,
+        "daily_ge_0_5": 38,
+        "avg_profit": -14203563.35,
+        "avg_mdd": 68.7869,
+        "avg_daily": 2.7146,
+        "primary_fail_counts": {
+          "low_daily_trades": 7,
+          "mdd_excess": 38,
+          "mdd_excess_and_low_daily_trades": 3
+        }
+      },
+      {
+        "time_bucket": "13h",
+        "count": 48,
+        "ok": 47,
+        "positive_profit": 1,
+        "mdd_le_35": 16,
+        "daily_ge_0_5": 37,
+        "avg_profit": -16453068.19,
+        "avg_mdd": 79.7091,
+        "avg_daily": 2.6574,
+        "primary_fail_counts": {
+          "no_metrics_or_error": 1,
+          "mdd_excess": 30,
+          "low_daily_trades": 9,
+          "mdd_excess_and_low_daily_trades": 1,
+          "nonpositive_profit": 7
+        }
+      },
+      {
+        "time_bucket": "1430p",
+        "count": 48,
+        "ok": 45,
+        "positive_profit": 1,
+        "mdd_le_35": 14,
+        "daily_ge_0_5": 32,
+        "avg_profit": -7795713.73,
+        "avg_mdd": 49.3576,
+        "avg_daily": 1.5622,
+        "primary_fail_counts": {
+          "no_metrics_or_error": 3,
+          "mdd_excess": 28,
+          "low_daily_trades": 10,
+          "mdd_excess_and_low_daily_trades": 3,
+          "nonpositive_profit": 4
+        }
+      },
+      {
+        "time_bucket": "14h",
+        "count": 48,
+        "ok": 45,
+        "positive_profit": 0,
+        "mdd_le_35": 15,
+        "daily_ge_0_5": 33,
+        "avg_profit": -11053643.44,
+        "avg_mdd": 52.6362,
+        "avg_daily": 2.0022,
+        "primary_fail_counts": {
+          "no_metrics_or_error": 3,
+          "mdd_excess": 26,
+          "low_daily_trades": 8,
+          "mdd_excess_and_low_daily_trades": 4,
+          "nonpositive_profit": 7
+        }
+      }
+    ],
+    "axis_size": [
+      {
+        "size": "large",
+        "count": 144,
+        "ok": 144,
+        "positive_profit": 0,
+        "mdd_le_35": 18,
+        "daily_ge_0_5": 144,
+        "avg_profit": -103113465.87,
+        "avg_mdd": 211.9952,
+        "avg_daily": 7.0458,
+        "primary_fail_counts": {
+          "mdd_excess": 126,
+          "nonpositive_profit": 18
+        }
+      },
+      {
+        "size": "midlarge",
+        "count": 144,
+        "ok": 144,
+        "positive_profit": 1,
+        "mdd_le_35": 15,
+        "daily_ge_0_5": 131,
+        "avg_profit": -83619593.61,
+        "avg_mdd": 279.5821,
+        "avg_daily": 4.2903,
+        "primary_fail_counts": {
+          "mdd_excess": 127,
+          "nonpositive_profit": 4,
+          "low_daily_trades": 11,
+          "mdd_excess_and_low_daily_trades": 2
+        }
+      },
+      {
+        "size": "midsmall",
+        "count": 144,
+        "ok": 140,
+        "positive_profit": 6,
+        "mdd_le_35": 16,
+        "daily_ge_0_5": 117,
+        "avg_profit": -73089787.18,
+        "avg_mdd": 324.7267,
+        "avg_daily": 3.2614,
+        "primary_fail_counts": {
+          "mdd_excess": 116,
+          "mdd_excess_and_low_daily_trades": 8,
+          "low_daily_trades": 15,
+          "nonpositive_profit": 1,
+          "no_metrics_or_error": 4
+        }
+      },
+      {
+        "size": "small",
+        "count": 144,
+        "ok": 141,
+        "positive_profit": 3,
+        "mdd_le_35": 18,
+        "daily_ge_0_5": 110,
+        "avg_profit": -84542733.6,
+        "avg_mdd": 363.268,
+        "avg_daily": 3.222,
+        "primary_fail_counts": {
+          "mdd_excess": 110,
+          "mdd_excess_and_low_daily_trades": 13,
+          "low_daily_trades": 18,
+          "no_metrics_or_error": 3
+        }
+      }
+    ],
+    "axis_strength": [
+      {
+        "strength": "high",
+        "count": 192,
+        "ok": 192,
+        "positive_profit": 0,
+        "mdd_le_35": 12,
+        "daily_ge_0_5": 183,
+        "avg_profit": -83514597.26,
+        "avg_mdd": 382.9201,
+        "avg_daily": 4.0661,
+        "primary_fail_counts": {
+          "mdd_excess": 173,
+          "nonpositive_profit": 10,
+          "mdd_excess_and_low_daily_trades": 7,
+          "low_daily_trades": 2
+        }
+      },
+      {
+        "strength": "low",
+        "count": 192,
+        "ok": 185,
+        "positive_profit": 9,
+        "mdd_le_35": 32,
+        "daily_ge_0_5": 151,
+        "avg_profit": -85942822.8,
+        "avg_mdd": 230.1684,
+        "avg_daily": 4.5443,
+        "primary_fail_counts": {
+          "mdd_excess": 146,
+          "mdd_excess_and_low_daily_trades": 7,
+          "low_daily_trades": 27,
+          "nonpositive_profit": 5,
+          "no_metrics_or_error": 7
+        }
+      },
+      {
+        "strength": "mid",
+        "count": 192,
+        "ok": 192,
+        "positive_profit": 1,
+        "mdd_le_35": 23,
+        "daily_ge_0_5": 168,
+        "avg_profit": -89106413.1,
+        "avg_mdd": 267.5409,
+        "avg_daily": 4.8016,
+        "primary_fail_counts": {
+          "mdd_excess": 160,
+          "mdd_excess_and_low_daily_trades": 9,
+          "nonpositive_profit": 8,
+          "low_daily_trades": 15
+        }
+      }
+    ],
+    "axis_family": [
+      {
+        "family": "momentum_breakout",
+        "count": 144,
+        "ok": 139,
+        "positive_profit": 5,
+        "mdd_le_35": 34,
+        "daily_ge_0_5": 102,
+        "avg_profit": -34864294.4,
+        "avg_mdd": 199.7931,
+        "avg_daily": 2.1331,
+        "primary_fail_counts": {
+          "mdd_excess": 91,
+          "mdd_excess_and_low_daily_trades": 14,
+          "low_daily_trades": 23,
+          "nonpositive_profit": 11,
+          "no_metrics_or_error": 5
+        }
+      },
+      {
+        "family": "prevday_active",
+        "count": 144,
+        "ok": 144,
+        "positive_profit": 0,
+        "mdd_le_35": 2,
+        "daily_ge_0_5": 144,
+        "avg_profit": -127296034.4,
+        "avg_mdd": 354.939,
+        "avg_daily": 6.5986,
+        "primary_fail_counts": {
+          "mdd_excess": 142,
+          "nonpositive_profit": 2
+        }
+      },
+      {
+        "family": "strength_surge",
+        "count": 144,
+        "ok": 142,
+        "positive_profit": 5,
+        "mdd_le_35": 29,
+        "daily_ge_0_5": 112,
+        "avg_profit": -61331574.56,
+        "avg_mdd": 269.1205,
+        "avg_daily": 3.2859,
+        "primary_fail_counts": {
+          "mdd_excess": 104,
+          "mdd_excess_and_low_daily_trades": 9,
+          "low_daily_trades": 21,
+          "nonpositive_profit": 8,
+          "no_metrics_or_error": 2
+        }
+      },
+      {
+        "family": "volume_surge",
+        "count": 144,
+        "ok": 144,
+        "positive_profit": 0,
+        "mdd_le_35": 2,
+        "daily_ge_0_5": 144,
+        "avg_profit": -119144491.27,
+        "avg_mdd": 349.8062,
+        "avg_daily": 5.7639,
+        "primary_fail_counts": {
+          "mdd_excess": 142,
+          "nonpositive_profit": 2
+        }
+      }
+    ],
+    "near_miss_top_profit": [
+      {
+        "strategy_gist": "lattice_v1:min_09h_midsmall_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_09h_midsmall_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_09h_midsmall_low_strength_surge_S",
+        "profit": 819969.0,
+        "mdd": 15.91,
+        "daily_avg_trades": 0.2,
+        "payoff_ratio": 1.362707907791071,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "09h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_09h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_S",
+        "profit": 709986.0,
+        "mdd": 5.74,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 0.9462602137020742,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "09h",
+        "size": "small",
+        "strength": "low",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_10h_midsmall_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_10h_midsmall_low_momentum_breakout_S",
+        "profit": 608514.0,
+        "mdd": 6.0,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.8234100135317994,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "10h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_10h_midsmall_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_10h_midsmall_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_10h_midsmall_low_strength_surge_S",
+        "profit": 473145.0,
+        "mdd": 14.23,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.7220313096601751,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "10h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_11h_midsmall_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_11h_midsmall_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_11h_midsmall_low_momentum_breakout_S",
+        "profit": 259028.0,
+        "mdd": 6.78,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 1.2299376299376297,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "11h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_10h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_10h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_10h_small_low_momentum_breakout_S",
+        "profit": 155985.0,
+        "mdd": 8.41,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.1744776962168266,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "10h",
+        "size": "small",
+        "strength": "low",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_1430p_midsmall_mid:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_1430p_midsmall_mid_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_midsmall_mid_momentum_breakout_S",
+        "profit": 115237.0,
+        "mdd": 3.48,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 1.4545454545454544,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "1430p",
+        "size": "midsmall",
+        "strength": "mid",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_11h_small_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_11h_small_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_11h_small_low_strength_surge_S",
+        "profit": 68928.0,
+        "mdd": 1.54,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 3.7468354430379747,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "11h",
+        "size": "small",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_13h_midlarge_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_13h_midlarge_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_13h_midlarge_low_strength_surge_S",
+        "profit": 57781.0,
+        "mdd": 5.83,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.1175278622087133,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "13h",
+        "size": "midlarge",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_11h_midsmall_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_11h_midsmall_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_11h_midsmall_low_strength_surge_S",
+        "profit": 13725.0,
+        "mdd": 3.31,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 1.0389408099688473,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "11h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_14h_midlarge_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_14h_midlarge_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_14h_midlarge_low_strength_surge_S",
+        "profit": -41837.0,
+        "mdd": 3.24,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.03006993006993,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "14h",
+        "size": "midlarge",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_10h_small_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_10h_small_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_10h_small_low_strength_surge_S",
+        "profit": -56950.0,
+        "mdd": 6.3,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 1.176068376068376,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "10h",
+        "size": "small",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_1430p_midlarge_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_1430p_midlarge_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_midlarge_low_strength_surge_S",
+        "profit": -69598.0,
+        "mdd": 3.95,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 2.1934235976789167,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "1430p",
+        "size": "midlarge",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_1430p_small_mid:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_1430p_small_mid_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_small_mid_strength_surge_S",
+        "profit": -83292.0,
+        "mdd": 0.93,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "1430p",
+        "size": "small",
+        "strength": "mid",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_1430p_small_mid:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_1430p_small_mid_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_small_mid_momentum_breakout_S",
+        "profit": -120911.0,
+        "mdd": 1.71,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "1430p",
+        "size": "small",
+        "strength": "mid",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_11h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_S",
+        "profit": -150190.0,
+        "mdd": 3.0,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "11h",
+        "size": "small",
+        "strength": "low",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_11h_midlarge_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_11h_midlarge_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_11h_midlarge_low_strength_surge_S",
+        "profit": -166668.0,
+        "mdd": 10.4,
+        "daily_avg_trades": 0.2,
+        "payoff_ratio": 1.1708333333333334,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "11h",
+        "size": "midlarge",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_1430p_small_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_1430p_small_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_small_low_strength_surge_S",
+        "profit": -172039.0,
+        "mdd": 3.22,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "1430p",
+        "size": "small",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_13h_midsmall_low:strength_surge",
+        "buy_name": "LAT_lattice_v1_min_13h_midsmall_low_strength_surge_B",
+        "sell_name": "LAT_lattice_v1_min_13h_midsmall_low_strength_surge_S",
+        "profit": -174523.0,
+        "mdd": 1.18,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "13h",
+        "size": "midsmall",
+        "strength": "low",
+        "family": "strength_surge",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      },
+      {
+        "strategy_gist": "lattice_v1:min_14h_small_mid:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_14h_small_mid_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_14h_small_mid_momentum_breakout_S",
+        "profit": -207860.0,
+        "mdd": 3.38,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "primary_fail": "low_daily_trades",
+        "time_bucket": "14h",
+        "size": "small",
+        "strength": "mid",
+        "family": "momentum_breakout",
+        "status": "ok",
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+      }
+    ]
+  },
+  "by_lane": {
+    "tick": {
+      "count": 288,
+      "status_counts": {
+        "ok": 288
+      },
+      "primary_fail_counts": {
+        "mdd_excess": 279,
+        "mdd_excess_and_low_daily_trades": 8,
+        "low_daily_trades": 1
+      },
+      "predicate_counts": {
+        "positive_profit": 0,
+        "mdd_le_35": 1,
+        "daily_ge_0_5": 279,
+        "positive_and_mdd_le_35": 0,
+        "positive_and_daily_ge_0_5": 0,
+        "mdd_le_35_and_daily_ge_0_5": 0,
+        "positive_mdd_le_35_daily_ge_0_5": 0
+      },
+      "axis_time_bucket": [
+        {
+          "time_bucket": "0900",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 48,
+          "avg_profit": -230679601.4,
+          "avg_mdd": 714.3225,
+          "avg_daily": 8.7,
+          "primary_fail_counts": {
+            "mdd_excess": 48
+          }
+        },
+        {
+          "time_bucket": "0905",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 48,
+          "avg_profit": -187524415.77,
+          "avg_mdd": 594.4494,
+          "avg_daily": 7.5333,
+          "primary_fail_counts": {
+            "mdd_excess": 48
+          }
+        },
+        {
+          "time_bucket": "0910",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 47,
+          "avg_profit": -166897689.5,
+          "avg_mdd": 542.444,
+          "avg_daily": 6.6437,
+          "primary_fail_counts": {
+            "mdd_excess_and_low_daily_trades": 1,
+            "mdd_excess": 47
+          }
+        },
+        {
+          "time_bucket": "0915",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 47,
+          "avg_profit": -143739890.35,
+          "avg_mdd": 466.0485,
+          "avg_daily": 6.0729,
+          "primary_fail_counts": {
+            "mdd_excess_and_low_daily_trades": 1,
+            "mdd_excess": 47
+          }
+        },
+        {
+          "time_bucket": "0920",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 46,
+          "avg_profit": -136895149.65,
+          "avg_mdd": 453.475,
+          "avg_daily": 5.7833,
+          "primary_fail_counts": {
+            "mdd_excess_and_low_daily_trades": 2,
+            "mdd_excess": 46
+          }
+        },
+        {
+          "time_bucket": "0925",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 0,
+          "mdd_le_35": 1,
+          "daily_ge_0_5": 43,
+          "avg_profit": -72988352.81,
+          "avg_mdd": 302.5979,
+          "avg_daily": 3.1583,
+          "primary_fail_counts": {
+            "low_daily_trades": 1,
+            "mdd_excess": 43,
+            "mdd_excess_and_low_daily_trades": 4
+          }
+        }
+      ],
+      "axis_size": [
+        {
+          "size": "large",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 72,
+          "avg_profit": -189985544.11,
+          "avg_mdd": 380.5468,
+          "avg_daily": 9.3486,
+          "primary_fail_counts": {
+            "mdd_excess": 72
+          }
+        },
+        {
+          "size": "midlarge",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 72,
+          "avg_profit": -154796180.47,
+          "avg_mdd": 498.1585,
+          "avg_daily": 6.2583,
+          "primary_fail_counts": {
+            "mdd_excess": 72
+          }
+        },
+        {
+          "size": "midsmall",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 70,
+          "avg_profit": -129984671.54,
+          "avg_mdd": 547.1064,
+          "avg_daily": 4.8486,
+          "primary_fail_counts": {
+            "mdd_excess": 70,
+            "mdd_excess_and_low_daily_trades": 2
+          }
+        },
+        {
+          "size": "small",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 1,
+          "daily_ge_0_5": 65,
+          "avg_profit": -151050336.86,
+          "avg_mdd": 623.0799,
+          "avg_daily": 4.8056,
+          "primary_fail_counts": {
+            "mdd_excess": 65,
+            "mdd_excess_and_low_daily_trades": 6,
+            "low_daily_trades": 1
+          }
+        }
+      ],
+      "axis_strength": [
+        {
+          "strength": "high",
+          "count": 96,
+          "ok": 96,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 96,
+          "avg_profit": -145237639.22,
+          "avg_mdd": 654.9718,
+          "avg_daily": 4.974,
+          "primary_fail_counts": {
+            "mdd_excess": 96
+          }
+        },
+        {
+          "strength": "low",
+          "count": 96,
+          "ok": 96,
+          "positive_profit": 0,
+          "mdd_le_35": 1,
+          "daily_ge_0_5": 88,
+          "avg_profit": -157685299.92,
+          "avg_mdd": 403.3342,
+          "avg_daily": 6.9854,
+          "primary_fail_counts": {
+            "mdd_excess": 88,
+            "mdd_excess_and_low_daily_trades": 7,
+            "low_daily_trades": 1
+          }
+        },
+        {
+          "strength": "mid",
+          "count": 96,
+          "ok": 96,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 95,
+          "avg_profit": -166439610.6,
+          "avg_mdd": 478.3627,
+          "avg_daily": 6.9865,
+          "primary_fail_counts": {
+            "mdd_excess": 95,
+            "mdd_excess_and_low_daily_trades": 1
+          }
+        }
+      ],
+      "axis_family": [
+        {
+          "family": "momentum_breakout",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 1,
+          "daily_ge_0_5": 66,
+          "avg_profit": -62581283.08,
+          "avg_mdd": 330.8535,
+          "avg_daily": 3.2167,
+          "primary_fail_counts": {
+            "mdd_excess": 66,
+            "mdd_excess_and_low_daily_trades": 5,
+            "low_daily_trades": 1
+          }
+        },
+        {
+          "family": "prevday_active",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 72,
+          "avg_profit": -227926003.43,
+          "avg_mdd": 620.8604,
+          "avg_daily": 8.7236,
+          "primary_fail_counts": {
+            "mdd_excess": 72
+          }
+        },
+        {
+          "family": "strength_surge",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 69,
+          "avg_profit": -113525578.86,
+          "avg_mdd": 483.5815,
+          "avg_daily": 4.7639,
+          "primary_fail_counts": {
+            "mdd_excess": 69,
+            "mdd_excess_and_low_daily_trades": 3
+          }
+        },
+        {
+          "family": "volume_surge",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 0,
+          "daily_ge_0_5": 72,
+          "avg_profit": -221783867.61,
+          "avg_mdd": 613.5961,
+          "avg_daily": 8.5569,
+          "primary_fail_counts": {
+            "mdd_excess": 72
+          }
+        }
+      ],
+      "near_miss_top_profit": [
+        {
+          "strategy_gist": "lattice_v1:tick_0925_small_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_tick_0925_small_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_tick_0925_small_low_momentum_breakout_S",
+          "profit": -899093.0,
+          "mdd": 16.88,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 0.9668414435140846,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "0925",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        }
+      ]
+    },
+    "min": {
+      "count": 288,
+      "status_counts": {
+        "ok": 281,
+        "error": 7
+      },
+      "primary_fail_counts": {
+        "low_daily_trades": 43,
+        "mdd_excess": 200,
+        "mdd_excess_and_low_daily_trades": 15,
+        "nonpositive_profit": 23,
+        "no_metrics_or_error": 7
+      },
+      "predicate_counts": {
+        "positive_profit": 10,
+        "mdd_le_35": 73,
+        "daily_ge_0_5": 223,
+        "positive_and_mdd_le_35": 10,
+        "positive_and_daily_ge_0_5": 0,
+        "mdd_le_35_and_daily_ge_0_5": 23,
+        "positive_mdd_le_35_daily_ge_0_5": 0
+      },
+      "axis_time_bucket": [
+        {
+          "time_bucket": "09h",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 2,
+          "mdd_le_35": 7,
+          "daily_ge_0_5": 43,
+          "avg_profit": -15896329.46,
+          "avg_mdd": 89.0387,
+          "avg_daily": 2.9396,
+          "primary_fail_counts": {
+            "low_daily_trades": 4,
+            "mdd_excess": 40,
+            "mdd_excess_and_low_daily_trades": 1,
+            "nonpositive_profit": 3
+          }
+        },
+        {
+          "time_bucket": "10h",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 3,
+          "mdd_le_35": 7,
+          "daily_ge_0_5": 40,
+          "avg_profit": -19115443.73,
+          "avg_mdd": 84.1206,
+          "avg_daily": 3.4958,
+          "primary_fail_counts": {
+            "low_daily_trades": 5,
+            "mdd_excess": 38,
+            "mdd_excess_and_low_daily_trades": 3,
+            "nonpositive_profit": 2
+          }
+        },
+        {
+          "time_bucket": "11h",
+          "count": 48,
+          "ok": 48,
+          "positive_profit": 3,
+          "mdd_le_35": 7,
+          "daily_ge_0_5": 38,
+          "avg_profit": -14203563.35,
+          "avg_mdd": 68.7869,
+          "avg_daily": 2.7146,
+          "primary_fail_counts": {
+            "low_daily_trades": 7,
+            "mdd_excess": 38,
+            "mdd_excess_and_low_daily_trades": 3
+          }
+        },
+        {
+          "time_bucket": "13h",
+          "count": 48,
+          "ok": 47,
+          "positive_profit": 1,
+          "mdd_le_35": 16,
+          "daily_ge_0_5": 37,
+          "avg_profit": -16453068.19,
+          "avg_mdd": 79.7091,
+          "avg_daily": 2.6574,
+          "primary_fail_counts": {
+            "no_metrics_or_error": 1,
+            "mdd_excess": 30,
+            "low_daily_trades": 9,
+            "mdd_excess_and_low_daily_trades": 1,
+            "nonpositive_profit": 7
+          }
+        },
+        {
+          "time_bucket": "1430p",
+          "count": 48,
+          "ok": 45,
+          "positive_profit": 1,
+          "mdd_le_35": 14,
+          "daily_ge_0_5": 32,
+          "avg_profit": -7795713.73,
+          "avg_mdd": 49.3576,
+          "avg_daily": 1.5622,
+          "primary_fail_counts": {
+            "no_metrics_or_error": 3,
+            "mdd_excess": 28,
+            "low_daily_trades": 10,
+            "mdd_excess_and_low_daily_trades": 3,
+            "nonpositive_profit": 4
+          }
+        },
+        {
+          "time_bucket": "14h",
+          "count": 48,
+          "ok": 45,
+          "positive_profit": 0,
+          "mdd_le_35": 15,
+          "daily_ge_0_5": 33,
+          "avg_profit": -11053643.44,
+          "avg_mdd": 52.6362,
+          "avg_daily": 2.0022,
+          "primary_fail_counts": {
+            "no_metrics_or_error": 3,
+            "mdd_excess": 26,
+            "low_daily_trades": 8,
+            "mdd_excess_and_low_daily_trades": 4,
+            "nonpositive_profit": 7
+          }
+        }
+      ],
+      "axis_size": [
+        {
+          "size": "large",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 18,
+          "daily_ge_0_5": 72,
+          "avg_profit": -16241387.62,
+          "avg_mdd": 43.4436,
+          "avg_daily": 4.7431,
+          "primary_fail_counts": {
+            "mdd_excess": 54,
+            "nonpositive_profit": 18
+          }
+        },
+        {
+          "size": "midlarge",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 1,
+          "mdd_le_35": 15,
+          "daily_ge_0_5": 59,
+          "avg_profit": -12443006.75,
+          "avg_mdd": 61.0057,
+          "avg_daily": 2.3222,
+          "primary_fail_counts": {
+            "nonpositive_profit": 4,
+            "mdd_excess": 55,
+            "low_daily_trades": 11,
+            "mdd_excess_and_low_daily_trades": 2
+          }
+        },
+        {
+          "size": "midsmall",
+          "count": 72,
+          "ok": 68,
+          "positive_profit": 6,
+          "mdd_le_35": 16,
+          "daily_ge_0_5": 47,
+          "avg_profit": -12848144.91,
+          "avg_mdd": 89.2659,
+          "avg_daily": 1.5809,
+          "primary_fail_counts": {
+            "low_daily_trades": 15,
+            "mdd_excess": 46,
+            "nonpositive_profit": 1,
+            "mdd_excess_and_low_daily_trades": 6,
+            "no_metrics_or_error": 4
+          }
+        },
+        {
+          "size": "small",
+          "count": 72,
+          "ok": 69,
+          "positive_profit": 3,
+          "mdd_le_35": 17,
+          "daily_ge_0_5": 45,
+          "avg_profit": -15143495.41,
+          "avg_mdd": 92.16,
+          "avg_daily": 1.5696,
+          "primary_fail_counts": {
+            "low_daily_trades": 17,
+            "mdd_excess": 45,
+            "mdd_excess_and_low_daily_trades": 7,
+            "no_metrics_or_error": 3
+          }
+        }
+      ],
+      "axis_strength": [
+        {
+          "strength": "high",
+          "count": 96,
+          "ok": 96,
+          "positive_profit": 0,
+          "mdd_le_35": 12,
+          "daily_ge_0_5": 87,
+          "avg_profit": -21791555.29,
+          "avg_mdd": 110.8683,
+          "avg_daily": 3.1583,
+          "primary_fail_counts": {
+            "mdd_excess": 77,
+            "nonpositive_profit": 10,
+            "mdd_excess_and_low_daily_trades": 7,
+            "low_daily_trades": 2
+          }
+        },
+        {
+          "strength": "low",
+          "count": 96,
+          "ok": 89,
+          "positive_profit": 9,
+          "mdd_le_35": 31,
+          "daily_ge_0_5": 63,
+          "avg_profit": -8557678.94,
+          "avg_mdd": 43.3829,
+          "avg_daily": 1.9112,
+          "primary_fail_counts": {
+            "low_daily_trades": 26,
+            "mdd_excess": 58,
+            "nonpositive_profit": 5,
+            "no_metrics_or_error": 7
+          }
+        },
+        {
+          "strength": "mid",
+          "count": 96,
+          "ok": 96,
+          "positive_profit": 1,
+          "mdd_le_35": 23,
+          "daily_ge_0_5": 73,
+          "avg_profit": -11773215.6,
+          "avg_mdd": 56.7191,
+          "avg_daily": 2.6167,
+          "primary_fail_counts": {
+            "mdd_excess_and_low_daily_trades": 8,
+            "mdd_excess": 65,
+            "nonpositive_profit": 8,
+            "low_daily_trades": 15
+          }
+        }
+      ],
+      "axis_family": [
+        {
+          "family": "momentum_breakout",
+          "count": 72,
+          "ok": 67,
+          "positive_profit": 5,
+          "mdd_le_35": 33,
+          "daily_ge_0_5": 36,
+          "avg_profit": -5078873.73,
+          "avg_mdd": 58.9521,
+          "avg_daily": 0.9687,
+          "primary_fail_counts": {
+            "low_daily_trades": 22,
+            "mdd_excess_and_low_daily_trades": 9,
+            "mdd_excess": 25,
+            "nonpositive_profit": 11,
+            "no_metrics_or_error": 5
+          }
+        },
+        {
+          "family": "prevday_active",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 2,
+          "daily_ge_0_5": 72,
+          "avg_profit": -26666065.38,
+          "avg_mdd": 89.0176,
+          "avg_daily": 4.4736,
+          "primary_fail_counts": {
+            "mdd_excess": 70,
+            "nonpositive_profit": 2
+          }
+        },
+        {
+          "family": "strength_surge",
+          "count": 72,
+          "ok": 70,
+          "positive_profit": 5,
+          "mdd_le_35": 29,
+          "daily_ge_0_5": 43,
+          "avg_profit": -7646313.0,
+          "avg_mdd": 48.532,
+          "avg_daily": 1.7657,
+          "primary_fail_counts": {
+            "low_daily_trades": 21,
+            "mdd_excess": 35,
+            "nonpositive_profit": 8,
+            "mdd_excess_and_low_daily_trades": 6,
+            "no_metrics_or_error": 2
+          }
+        },
+        {
+          "family": "volume_surge",
+          "count": 72,
+          "ok": 72,
+          "positive_profit": 0,
+          "mdd_le_35": 2,
+          "daily_ge_0_5": 72,
+          "avg_profit": -16505114.93,
+          "avg_mdd": 86.0162,
+          "avg_daily": 2.9708,
+          "primary_fail_counts": {
+            "mdd_excess": 70,
+            "nonpositive_profit": 2
+          }
+        }
+      ],
+      "near_miss_top_profit": [
+        {
+          "strategy_gist": "lattice_v1:min_09h_midsmall_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_09h_midsmall_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_09h_midsmall_low_strength_surge_S",
+          "profit": 819969.0,
+          "mdd": 15.91,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.362707907791071,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_09h_small_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_S",
+          "profit": 709986.0,
+          "mdd": 5.74,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 0.9462602137020742,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_10h_midsmall_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_10h_midsmall_low_momentum_breakout_S",
+          "profit": 608514.0,
+          "mdd": 6.0,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.8234100135317994,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_10h_midsmall_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_10h_midsmall_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_10h_midsmall_low_strength_surge_S",
+          "profit": 473145.0,
+          "mdd": 14.23,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.7220313096601751,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_11h_midsmall_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_11h_midsmall_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_11h_midsmall_low_momentum_breakout_S",
+          "profit": 259028.0,
+          "mdd": 6.78,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 1.2299376299376297,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "11h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_10h_small_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_10h_small_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_10h_small_low_momentum_breakout_S",
+          "profit": 155985.0,
+          "mdd": 8.41,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.1744776962168266,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "10h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_1430p_midsmall_mid:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_1430p_midsmall_mid_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_1430p_midsmall_mid_momentum_breakout_S",
+          "profit": 115237.0,
+          "mdd": 3.48,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 1.4545454545454544,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "1430p",
+          "size": "midsmall",
+          "strength": "mid",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_11h_small_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_11h_small_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_11h_small_low_strength_surge_S",
+          "profit": 68928.0,
+          "mdd": 1.54,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 3.7468354430379747,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "11h",
+          "size": "small",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_13h_midlarge_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_13h_midlarge_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_13h_midlarge_low_strength_surge_S",
+          "profit": 57781.0,
+          "mdd": 5.83,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.1175278622087133,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "13h",
+          "size": "midlarge",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_11h_midsmall_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_11h_midsmall_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_11h_midsmall_low_strength_surge_S",
+          "profit": 13725.0,
+          "mdd": 3.31,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 1.0389408099688473,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "11h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_14h_midlarge_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_14h_midlarge_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_14h_midlarge_low_strength_surge_S",
+          "profit": -41837.0,
+          "mdd": 3.24,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.03006993006993,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "14h",
+          "size": "midlarge",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_10h_small_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_10h_small_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_10h_small_low_strength_surge_S",
+          "profit": -56950.0,
+          "mdd": 6.3,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 1.176068376068376,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "10h",
+          "size": "small",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_1430p_midlarge_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_1430p_midlarge_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_1430p_midlarge_low_strength_surge_S",
+          "profit": -69598.0,
+          "mdd": 3.95,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 2.1934235976789167,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "1430p",
+          "size": "midlarge",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_1430p_small_mid:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_1430p_small_mid_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_1430p_small_mid_strength_surge_S",
+          "profit": -83292.0,
+          "mdd": 0.93,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "1430p",
+          "size": "small",
+          "strength": "mid",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_1430p_small_mid:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_1430p_small_mid_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_1430p_small_mid_momentum_breakout_S",
+          "profit": -120911.0,
+          "mdd": 1.71,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "1430p",
+          "size": "small",
+          "strength": "mid",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_11h_small_low:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_S",
+          "profit": -150190.0,
+          "mdd": 3.0,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "11h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_11h_midlarge_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_11h_midlarge_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_11h_midlarge_low_strength_surge_S",
+          "profit": -166668.0,
+          "mdd": 10.4,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.1708333333333334,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "11h",
+          "size": "midlarge",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_1430p_small_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_1430p_small_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_1430p_small_low_strength_surge_S",
+          "profit": -172039.0,
+          "mdd": 3.22,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "1430p",
+          "size": "small",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_13h_midsmall_low:strength_surge",
+          "buy_name": "LAT_lattice_v1_min_13h_midsmall_low_strength_surge_B",
+          "sell_name": "LAT_lattice_v1_min_13h_midsmall_low_strength_surge_S",
+          "profit": -174523.0,
+          "mdd": 1.18,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "13h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        },
+        {
+          "strategy_gist": "lattice_v1:min_14h_small_mid:momentum_breakout",
+          "buy_name": "LAT_lattice_v1_min_14h_small_mid_momentum_breakout_B",
+          "sell_name": "LAT_lattice_v1_min_14h_small_mid_momentum_breakout_S",
+          "profit": -207860.0,
+          "mdd": 3.38,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "primary_fail": "low_daily_trades",
+          "time_bucket": "14h",
+          "size": "small",
+          "strength": "mid",
+          "family": "momentum_breakout",
+          "status": "ok",
+          "reason": "daily_avg_trades 0 < min_daily_trades 0.5"
+        }
+      ]
+    }
+  },
+  "root_cause": {
+    "verdict": "min_has_sparse_positive_low_mdd_signals_but_no_trade_frequency_overlap; tick_is_broad_loss_structure",
+    "tick_evidence": [
+      "288/288 status ok but positive_profit=0",
+      "mdd_le_35=1 and that row still has daily_avg_trades=0.1 and negative profit",
+      "therefore tick repair is lower priority until min repair produces durable seed logic"
+    ],
+    "min_evidence": [
+      "positive_profit=10 and all 10 also have mdd<=35",
+      "positive_and_daily_ge_0_5=0, so profitable rows are too sparse",
+      "mdd_le_35_and_daily_ge_0_5=23 but these are still nonpositive profit, so higher-frequency low-MDD variants need exit/risk repair"
+    ],
+    "not_engine_or_period_issue": true,
+    "gate_threshold_only_not_sufficient": true
+  }
+}

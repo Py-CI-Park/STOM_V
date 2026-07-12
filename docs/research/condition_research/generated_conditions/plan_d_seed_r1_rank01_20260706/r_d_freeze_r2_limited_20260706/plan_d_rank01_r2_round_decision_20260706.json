@@ -1,0 +1,62 @@
+{
+  "schema": "plan_d_rank01_r2_round_decision_v1",
+  "created_at": "2026-07-06T17:17:04+09:00",
+  "decision": "open_selected_oos_preregistration_next_scope",
+  "oos_open_possible": true,
+  "oos_open_type": "selected_preregistered_robustness_or_oos_style_only",
+  "basis": {
+    "honest_rows": 24,
+    "status_counts": {
+      "ok": 24
+    },
+    "gate_passed_count": 24,
+    "improved_count": 9,
+    "flat_count": 15,
+    "no_go_count": 0,
+    "frozen_parent_label": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+    "frozen_parent_profit": 2153579.0,
+    "frozen_parent_mdd": 18.69,
+    "frozen_parent_trades": 201,
+    "frozen_parent_daily": 0.9
+  },
+  "recommended_freeze_next": [
+    {
+      "label": "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90",
+      "profit": 2773694.0,
+      "mdd": 15.75,
+      "trades": 192,
+      "daily": 0.9,
+      "buy_axis": "l14_amt14000",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "selection_reason": "best_profit"
+    },
+    {
+      "label": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+      "profit": 2515910.0,
+      "mdd": 15.57,
+      "trades": 188,
+      "daily": 0.9,
+      "buy_axis": "l14_rate_floor85",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "selection_reason": "lowest_mdd_among_improved"
+    },
+    {
+      "label": "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+      "profit": 2550258.0,
+      "mdd": 15.75,
+      "trades": 197,
+      "daily": 0.9,
+      "buy_axis": "l14_amt13000",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "selection_reason": "nearby_amount_axis_confirmation"
+    }
+  ],
+  "blocked_actions": [
+    "OOS not executed in this scope",
+    "portfolio not executed",
+    "export/live/final promotion not executed",
+    "additional pairs beyond 24 not executed",
+    "DB UPDATE/DELETE not used"
+  ],
+  "next_recommended_scope": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export"
+}

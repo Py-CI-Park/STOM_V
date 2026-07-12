@@ -1,0 +1,70 @@
+{
+  "schema": "plan_d_seed_pool_intake_receipt_v1",
+  "created_at": "2026-07-06T11:28:38+09:00",
+  "scope": "repair-composite-plan-d-seed-pool-intake",
+  "source_stats": [
+    {
+      "path": "docs/update_log/2026-07-06_repair_composite_selected_oos_no_d_handoff.md",
+      "line_count": 103,
+      "sha256": "c1bd5e52e2a041f381bf82c5d9bc2b37fbc080228179826c0727bd59cce950c9",
+      "applied_section": "selected OOS survivor and Plan D intake readiness"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+      "line_count": 873,
+      "sha256": "662d29fa2e87b3d0d82f21836a5038f50a626d303bfa93135a1ab51472b79d72",
+      "applied_section": "OOS result counts and plan_d_readiness"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl",
+      "line_count": 15,
+      "sha256": "7b839361d10c2083abdc9f2af278698154686394c8ff8938767de131cadd761c",
+      "applied_section": "15 survivor records for seed-pool intake"
+    },
+    {
+      "path": "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+      "line_count": 149,
+      "sha256": "e0dae7379559fe6556a769c8e4312a6f48d926fc299c9e78373afab00dd16ae7",
+      "applied_section": "seed_pool/oos_survivors append-only and positive control"
+    },
+    {
+      "path": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+      "line_count": 384,
+      "sha256": "d6acdc65ff73dfd85f656463128b43005935e779d0bbe9a9e1f99bc96d2737fe",
+      "applied_section": "scope/invariants from active .omo plan"
+    }
+  ],
+  "source_result_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+  "source_survivors_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl",
+  "source_survivor_count": 15,
+  "existing_seed_pool_rows_before": 0,
+  "existing_oos_survivor_rows_before": 0,
+  "seed_pool_path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+  "oos_survivors_path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+  "passport_dir": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports",
+  "seed_pool_appended": 15,
+  "oos_survivors_appended": 15,
+  "skipped": [],
+  "db_path": "ai_strategy_loop/state/loop_strategies.db",
+  "db_access": "read_only",
+  "db_code_columns": {
+    "stockbuy": "전략코드",
+    "stocksell": "전략코드"
+  },
+  "sha_mismatches": [],
+  "positive_control_input": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/plan_d_seed_pool_positive_control_input_20260706.json",
+  "plan_d_rounds_executed": false,
+  "portfolio_executed": false,
+  "promotion_export_live_final_touched": false,
+  "top_seed_ids": [
+    "plan_d_rcs_oos_20260706_rank01",
+    "plan_d_rcs_oos_20260706_rank02",
+    "plan_d_rcs_oos_20260706_rank03"
+  ],
+  "top_conditions": [
+    "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+    "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+    "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90"
+  ],
+  "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS."
+}

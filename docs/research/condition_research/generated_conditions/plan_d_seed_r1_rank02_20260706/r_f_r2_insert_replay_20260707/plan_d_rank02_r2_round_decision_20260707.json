@@ -1,0 +1,56 @@
+{
+  "schema": "plan_d_rank02_r2_round_decision_v1",
+  "created_at": "2026-07-07T15:16:32+09:00",
+  "scope": "plan-d-rank02-r2-insert-limited-replay-no-oos-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r1_oos_20260707_02",
+  "baseline": {
+    "label": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+    "profit": 1348845.0,
+    "mdd": 18.56,
+    "trade_count": 204,
+    "daily_avg_trades": 1.0,
+    "measurement_frame": "rank02_r1_limited_replay_full_period_min_warm64",
+    "selected_oos_reference": {
+      "measurement_frame": "selected_oos_min_2026_01_01_to_2026_02_27_warm64",
+      "profit_krw": 1124220.0,
+      "mdd_pct": 4.12,
+      "daily_avg_trades": 0.5,
+      "trade_count": 18,
+      "score": 10.202250246680189,
+      "calmar": 36.873786407766985,
+      "uptrend_r2": 0.4995605692513437,
+      "payoff_ratio": 2.0863958736299164,
+      "gate_passed": true,
+      "reason": "status_ok_gate_passed_profit_positive_mdd_cap_daily_min_passed"
+    }
+  },
+  "decision_counts": {
+    "improved": 3,
+    "flat": 5,
+    "no_go": 0
+  },
+  "improved": [
+    "plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90",
+    "plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r2_07_active_buy_tight_tp3_sl2p5_hold90"
+  ],
+  "flat": [
+    "plan_d_r1_rank02_r2_02_l14_amt9000_rate75_hold90",
+    "plan_d_r1_rank02_r2_03_l14_end1445_amt9000_rate80_hold90",
+    "plan_d_r1_rank02_r2_04_l13_l14_amt9000_rate80_hold90",
+    "plan_d_r1_rank02_r2_05_l1430_bridge_amt9000_rate80_hold90",
+    "plan_d_r1_rank02_r2_08_active_buy_loose_hold60_tp4_sl3"
+  ],
+  "no_go": [],
+  "coverage_watch": [
+    "plan_d_r1_rank02_r2_04_l13_l14_amt9000_rate80_hold90"
+  ],
+  "selected_oos_candidates": [
+    "plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r2_07_active_buy_tight_tp3_sl2p5_hold90",
+    "plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90"
+  ],
+  "next_allowed_action": "freeze_preregister_selected_oos_only",
+  "oos_executed": false,
+  "portfolio_executed": false
+}

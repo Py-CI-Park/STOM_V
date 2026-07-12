@@ -30,6 +30,7 @@ from __future__ import annotations
 # (1) bootstrap을 가장 먼저 — cli.* / utility.* import 전에 env 격리.
 import ai_strategy_loop.bootstrap as bootstrap  # noqa: E402
 
+import dataclasses  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
 import os  # noqa: E402
@@ -37,11 +38,35 @@ import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from collections import deque  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
 from typing import Any, Callable, Deque, Dict, List, Optional, Tuple  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
 from cli.warm_session import WarmBacktestSession  # noqa: E402
+from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
+    CANDIDATE_PASSPORT_SCHEMA,
+    EVALUATION_MANIFEST_SCHEMA,
+    FEEDBACK_CONSUMPTION_SCHEMA,
+    FEEDBACK_ENVELOPE_SCHEMA,
+    RUN_RECEIPT_SCHEMA,
+    CandidatePassport,
+    canonical_json,
+    EvaluationManifest,
+    FeedbackConsumption,
+    FeedbackEnvelope,
+    FeedbackSide,
+    RunReceipt,
+    compute_candidate_id,
+    compute_consumption_id,
+    compute_feedback_id,
+    compute_manifest_id,
+    compute_passport_id,
+    compute_receipt_id,
+    sha256_hex,
+    text_sha256,
+)
+from ai_strategy_loop.controller.evidence_store import EvidenceStore  # noqa: E402
 from ai_strategy_loop.controller.history import (  # noqa: E402
     GenRecord,
     build_history_summary,
@@ -1147,6 +1172,12 @@ def run_loop(
     """
     from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
 
+    # CL-R04 todo10 — evidence_ledger_enabled은 LoopConfig의 선언 필드가 아니라
+    #   (config.py는 이 todo의 수정 범위 밖) ad-hoc 속성으로 주입된다.
+    #   effective_condition_discovery_runtime_config가 dataclasses.replace()로
+    #   config를 복제하면 ad-hoc 속성은 소실되므로, 그 복제 이전(원본 config)에서
+    #   1회 읽어 보존한다.
+    _evidence_ledger_enabled_flag = bool(getattr(config, "evidence_ledger_enabled", False))
     config = effective_condition_discovery_runtime_config(config)
     # P6 — cross-process single-writer 락 획득. CLI/GUI 어느 진입점이든 같은
     #   current_state.json/loop_runs.db에 쓰므로, 살아있는 다른 루프가 락을 잡고
@@ -1201,6 +1232,18 @@ def run_loop(
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
     last_completed_gen = start_gen - 1
+    # CL-R04 todo10 — canonical evidence ledger (DEFAULT-OFF). OFF(기본)면
+    #   evidence_store는 None으로 남아 아래 모든 evidence_* 호출부가 스킵된다
+    #   (byte-동일). ON이면 run 시작 시 1회 EvaluationManifest를 동결한다
+    #   (resume 시 동일 config면 동일 manifest_id -> append_manifest가 멱등
+    #   no-op이라 안전하게 재호출된다).
+    evidence_enabled = _evidence_ledger_enabled_flag
+    evidence_store: Optional[EvidenceStore] = None
+    evidence_manifest_id: Optional[str] = None
+    evidence_prev_passport_id: Optional[str] = None
+    if evidence_enabled:
+        evidence_store = EvidenceStore(st)
+        evidence_manifest_id = _evidence_safe_append_manifest(evidence_store, config, rid)
 
     # provider 준비 (gpt_auth면 프록시 기동).
     provider, proxy_active = _make_provider_with_proxy(config)
@@ -1369,11 +1412,46 @@ def run_loop(
                           winner_buy=winner_buy, winner_sell=winner_sell,
                           _log_buf=_live_log_buf, _timing=_timing)
             parent_gen_for_record: Optional[int] = None
+            evidence_current_passport_id: Optional[str] = None
+            _evidence_gen_mode = "fresh"
+            # CL-R05 todo11 — durable feedback consumption tracking (evidence
+            #   ledger ON only). unconsumed_feedback(rid)의 최신 항목이 있으면 그
+            #   feedback_id를 이 세대의 소비 후보로 잡아둔다(패스포트 생성 이후에만
+            #   consumption을 남긴다 — 아래 b 근처). next_autopsy_feedback/
+            #   next_sell_feedback가 이미 채워져 있으면(같은 프로세스 내 정상 흐름)
+            #   렌더 텍스트는 손대지 않는다 — id만 추가로 들고 간다. 둘 다 비어 있으면
+            #   (resume 직후 프로세스 재시작으로 로컬 변수가 초기화된 경우) 영속 봉투의
+            #   rendered_text로 복원한다(resume restoration).
+            # G003 CL-R05 review fix: 세대 전환마다 아직 소비되지 않은 "모든" 봉투를
+            #   소비 후보로 잡는다(이전에는 최신 1건만 잡아, buy+sell 두 봉투가 함께
+            #   쌓인 세대에서 buy측이 영구히 미소비로 남았다). resume restoration은
+            #   여전히 각 side당 최초 1건의 rendered_text만 복원한다(로컬 변수 초기화
+            #   시에만 개입 — 정상 흐름에선 next_autopsy_feedback/next_sell_feedback가
+            #   이미 채워져 있어 무영향, byte-동일).
+            evidence_feedback_ids_to_consume: List[str] = []
+            if evidence_enabled and evidence_store is not None:
+                _evidence_unconsumed = _evidence_safe_unconsumed_feedback(evidence_store, rid)
+                if _evidence_unconsumed:
+                    evidence_feedback_ids_to_consume = [
+                        _fb.get("feedback_id") for _fb in _evidence_unconsumed if _fb.get("feedback_id")
+                    ]
+                    if next_autopsy_feedback is None and next_sell_feedback is None:
+                        for _evidence_fb in _evidence_unconsumed:
+                            _evidence_rendered = _evidence_fb.get("rendered_text")
+                            if not _evidence_rendered:
+                                continue
+                            if _evidence_fb.get("side") == FeedbackSide.SELL.value:
+                                if next_sell_feedback is None:
+                                    next_sell_feedback = _evidence_rendered
+                            else:
+                                if next_autopsy_feedback is None:
+                                    next_autopsy_feedback = _evidence_rendered
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
                 sell_name = seed_sell
                 print(f"[LOOP] seed 사용: buy={buy_name} sell={sell_name}", flush=True)
+                _evidence_gen_mode = "seed"
                 # seed-and-refine: 시드가 곧 첫 출발점이다. 시드 코드를 base로 채워
                 #   gen1+가 이 코드를 점진 개선(hill-climb)하게 한다.
                 if getattr(config, "bt_refine_from_best", False):
@@ -1436,6 +1514,11 @@ def run_loop(
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
                 if getattr(config, "prompt_logging_enabled", False):
                     gen_kwargs["state"] = st
+                _evidence_gen_mode = (
+                    "refine"
+                    if ("base_buy_code" in gen_kwargs or "base_sell_code" in gen_kwargs)
+                    else "fresh"
+                )
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     **gen_kwargs,
@@ -1466,6 +1549,54 @@ def run_loop(
                               winner_buy=winner_buy, winner_sell=winner_sell,
                               _log_buf=_live_log_buf, _timing=_timing)
                 _print_strategy_head(buy_name)
+
+            # CL-R04 todo10 — canonical CandidatePassport (evidence ledger ON only).
+            #   생성+정적 수리 이후, 백테스트 이전에 후보 신원을 동결한다. 코드 본문을
+            #   못 읽으면(해시 불가) 이 후보는 백테스트 없이 실패 처리한다(본문 없는
+            #   후보는 평가하지 않는다 — evidence_enabled=False면 이 블록 전체가 스킵되어
+            #   byte-동일하다).
+            if evidence_enabled and evidence_store is not None:
+                _evidence_buy_code = _read_strategy_code(buy_name, "buy")
+                _evidence_sell_code = _read_strategy_code(sell_name, "sell")
+                if not _evidence_buy_code or not _evidence_sell_code:
+                    reason_g = "evidence: generated code missing/unreadable (candidate rejected before backtest)"
+                    print(f"[LOOP] {reason_g}", flush=True)
+                    st.record_generation(
+                        rid, gen_no,
+                        buy_name=buy_name, sell_name=sell_name,
+                        status="error", score=0.0, gate_passed=False, reason=reason_g,
+                    )
+                    gen_no += 1
+                    continue
+                _evidence_passport = _evidence_build_passport(
+                    config, rid, gen_no, _evidence_gen_mode,
+                    buy_name, sell_name, _evidence_buy_code, _evidence_sell_code,
+                    evidence_prev_passport_id, evidence_manifest_id,
+                )
+                if _evidence_safe_append_passport(evidence_store, _evidence_passport):
+                    evidence_current_passport_id = _evidence_passport.passport_id
+                    evidence_prev_passport_id = _evidence_passport.passport_id
+                    # G003 CL-R05 review fix: 오직 target passport가 실제로 존재할
+                    #   때만(패스포트 append 성공 직후) 소비를 남긴다. 생성/코드 확보가
+                    #   이 지점에 못 미치고 실패하면(위 continue 경로들) 소비를 절대
+                    #   남기지 않아, 자원(rid) resume 시 unconsumed_feedback(rid)가 같은
+                    #   봉투를 다시 내놓는다(재시도 안전, 이중 소비 없음 — 이미 소비된
+                    #   feedback_id는 NOT EXISTS 조건으로 제외됨). 이번 세대 전환에 걸린
+                    #   미소비 봉투 전부(예: buy+sell 동시 발생)에 대해 각각 개별
+                    #   FeedbackConsumption을 남긴다(consumption_id가 feedback_id를 포함해
+                    #   내용주소화되므로 서로 구별되고 멱등하다).
+                    if evidence_feedback_ids_to_consume:
+                        _evidence_prompt_id = f"promptrec_{rid}_g{gen_no}"
+                        for _evidence_fb_id in evidence_feedback_ids_to_consume:
+                            _evidence_safe_append_consumption(
+                                evidence_store,
+                                _evidence_build_consumption(
+                                    _evidence_fb_id,
+                                    _evidence_prompt_id,
+                                    evidence_current_passport_id,
+                                ),
+                                rid,
+                            )
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
             bootstrap.ensure_loop_db_engine_compat()
@@ -1532,6 +1663,13 @@ def run_loop(
                     reason=f"backtest failed/timeout: {outcome.reason} (elapsed {bt_elapsed:.0f}s)",
                     csv_path=outcome.csv_path,
                 )
+                if evidence_enabled and evidence_store is not None:
+                    _evidence_safe_append_receipt(
+                        evidence_store,
+                        _evidence_build_backtest_receipt(
+                            rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                        ),
+                    )
                 # 이력에 구체 실패 사유를 기록(CONVERGENCE — 회귀 회피 신호).
                 history_records.append(GenRecord(
                     gen_no=gen_no, graded_score=0.0, gate_passed=False,
@@ -1546,6 +1684,22 @@ def run_loop(
                     err_fb = _backtest_error_feedback(outcome.reason, config)
                     next_autopsy_feedback = err_fb
                     next_sell_feedback = err_fb
+                    # CL-R05 todo11 — 실패 세대도 부검 근거(autopsy_kind="backtest_error")
+                    #   로 durable FeedbackEnvelope를 남긴다. record_generation(위)이 이미
+                    #   커밋된 뒤(eager-commit seam)라 append_feedback을 안전하게 호출할
+                    #   수 있다.
+                    if (evidence_enabled and evidence_store is not None
+                            and evidence_current_passport_id is not None):
+                        _evidence_safe_append_feedback(
+                            evidence_store,
+                            _evidence_build_feedback_envelope(
+                                evidence_current_passport_id, "backtest_error",
+                                FeedbackSide.ERROR.value,
+                                _evidence_error_result_identity_sha256(outcome),
+                                err_fb,
+                            ),
+                            rid,
+                        )
                 # P2a — 실패 세대(0거래/크래시)는 게이트 분석할 metrics가 없어 가정을
                 #   세우지 않는다. carry를 비워 다음 세대가 빈/오래된 가정을 판정하지
                 #   않게 한다(토글 OFF면 어차피 항상 None).
@@ -1578,6 +1732,13 @@ def run_loop(
                     status="error", score=0.0, gate_passed=False,
                     reason=f"fitness failed: {fit_err}", csv_path=outcome.csv_path,
                 )
+                if evidence_enabled and evidence_store is not None:
+                    _evidence_safe_append_receipt(
+                        evidence_store,
+                        _evidence_build_backtest_receipt(
+                            rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                        ),
+                    )
                 gen_no += 1
                 continue
 
@@ -1639,6 +1800,13 @@ def run_loop(
                 # P2a — 직전 가정+이 세대 델타로 매긴 판정(토글 OFF면 None=NULL).
                 hypotheses_json=hypotheses_json,
             )
+            if evidence_enabled and evidence_store is not None:
+                _evidence_safe_append_receipt(
+                    evidence_store,
+                    _evidence_build_backtest_receipt(
+                        rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                    ),
+                )
             # O2 — 백테 시계열(누적수익곡선·일별손익·낙폭) 영속화. 토글 ON이고 결과
             #   CSV가 있을 때만, 이미 디스크에 있는 CSV를 파싱(추가 백테 0회)해
             #   equity_points에 다운샘플 영속한다. **파싱은 여기서(호출부) 하고 state엔
@@ -1752,6 +1920,33 @@ def run_loop(
                 effective_autopsy_fn, effective_exit_autopsy_fn,
                 effective_segment_autopsy_fn,
             )
+            # CL-R05 todo11 — ok-path autopsy 결과도 durable FeedbackEnvelope로
+            #   동결한다(record_generation은 위(ok-path st.record_generation)에서 이미
+            #   커밋된 뒤라 eager-commit seam을 만족한다). buy/sell 각각 텍스트가 있을
+            #   때만 append(둘 다 있으면 두 개의 별개 봉투 — side로 구분됨).
+            if (evidence_enabled and evidence_store is not None
+                    and evidence_current_passport_id is not None):
+                _evidence_ok_result_sha = _evidence_ok_result_identity_sha256(outcome, fit, graded)
+                if next_autopsy_feedback:
+                    _evidence_safe_append_feedback(
+                        evidence_store,
+                        _evidence_build_feedback_envelope(
+                            evidence_current_passport_id, "buy_autopsy",
+                            FeedbackSide.BUY.value, _evidence_ok_result_sha,
+                            next_autopsy_feedback,
+                        ),
+                        rid,
+                    )
+                if next_sell_feedback:
+                    _evidence_safe_append_feedback(
+                        evidence_store,
+                        _evidence_build_feedback_envelope(
+                            evidence_current_passport_id, "exit_autopsy",
+                            FeedbackSide.SELL.value, _evidence_ok_result_sha,
+                            next_sell_feedback,
+                        ),
+                        rid,
+                    )
             # T4 반복 정제 폐루프: 토글 ON일 때만 이 세대의 결과 CSV에서 '패배 구간'
             #   avoid 라인을 산출해 다음 세대 매수 프롬프트로 환류한다. 산출은 순수·무예외
             #   (build_segment_avoid_lines가 데이터 없음/부족/읽기 실패를 빈 리스트로 흡수).
@@ -1824,6 +2019,14 @@ def run_loop(
             "winner_sell": winner_sell,
             "stop_reason": stop_reason,
         }
+        if evidence_enabled and evidence_store is not None:
+            _evidence_safe_append_receipt(
+                evidence_store,
+                _evidence_build_run_finished_receipt(
+                    rid, gen_no, cumulative_tokens, stop_reason,
+                    evidence_current_passport_id,
+                ),
+            )
     finally:
         # warm 세션 정리(엔진/서브토탈/공유메모리) — 프록시/state 정리보다 먼저.
         if warm_session is not None:
@@ -2581,6 +2784,352 @@ def _compute_holdout_verdict(outcome: BacktestOutcome, config: LoopConfig):
             passed=False, status="error", trade_count=0, total_profit=0.0,
             mdd_pct=0.0, reason=f"holdout 판정 예외: {exc}",
         )
+
+
+# =====================================================================
+# CL-R04 todo10 — canonical evidence ledger wiring (DEFAULT-OFF, additive).
+#   getattr(config, "evidence_ledger_enabled", False)가 False(기본)면 이
+#   섹션의 어떤 함수도 run_loop에서 호출되지 않는다 — DB 기록/반환값이 기존과
+#   byte-동일하다. ON일 때만 EvaluationManifest(run 1회)/CandidatePassport
+#   (세대마다)/RunReceipt(백테 결과+run 종료)를 append-only로 남긴다.
+#   evidence_store append 실패는 로그 후 흡수한다(증거 원장은 루프를 막지
+#   않는다) — 단, 생성된 코드 본문을 못 읽으면(해시 불가) 그 후보는 백테스트
+#   전에 실패 처리한다(§9a B-only 원칙과 동일하게 "본문 없는 후보"는 평가하지
+#   않는다).
+# =====================================================================
+def _evidence_utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _evidence_safe_json(value: Any) -> Any:
+    """dataclass/임의 객체 -> JSON-safe 구조(해시용, 절대 raise하지 않는다)."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_evidence_safe_json(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _evidence_safe_json(v) for k, v in value.items()}
+    return str(value)
+
+
+def _evidence_config_dict(config: Any) -> Dict[str, Any]:
+    try:
+        raw = dataclasses.asdict(config)
+    except Exception:  # noqa: BLE001 - config가 dataclass가 아니어도 흡수.
+        raw = dict(getattr(config, "__dict__", {}) or {})
+    return {str(k): _evidence_safe_json(v) for k, v in raw.items()}
+
+
+def _evidence_fingerprint(code: str, timeframe: str) -> str:
+    """buy/sell 코드에서 결정론적 지문을 뽑는다.
+
+    코드가 파싱 가능한 단일 불리언 표현식이면 cli.condition_fingerprint.
+    ast_fingerprint(의미 정규화)를 쓴다. 대부분의 생성 코드는 다중 구문
+    스크립트라 파싱이 실패하므로, 그 경우 코드 본문 sha256 기반 폴백
+    문자열을 쓴다(안정적·결정론적, 매번 동일 코드 -> 동일 값).
+    """
+    try:
+        from cli.condition_fingerprint import ast_fingerprint  # noqa: PLC0415
+
+        return ast_fingerprint(code, timeframe=timeframe, methodology_version="v1")
+    except Exception:  # noqa: BLE001 - FingerprintError/SyntaxError 등 전부 폴백.
+        return f"codehash:{sha256_hex(code)}"
+
+
+def _evidence_rowset_fallback(buy_code: str, sell_code: str, timeframe: str) -> str:
+    """실제 데이터셋 조회 이전(백테스트 전) rowset_fingerprint 자리표시자.
+
+    dataset_sha/window/row_keys는 백테스트 이후에나 알 수 있어, 그 시점 이전에
+    필요한 이 필드는 buy+sell 코드 본문 결합 해시로 안정적으로 채운다.
+    """
+    return f"codehash:{sha256_hex(timeframe + '|' + buy_code + '|' + sell_code)}"
+
+
+def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
+    cfg_dict = _evidence_config_dict(config)
+    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
+    scope = str(getattr(config, "bt_scope", None) or "single_stock")
+    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    session = {
+        "start_time": getattr(config, "bt_universe_start_time", None),
+        "end_time": getattr(config, "bt_universe_end_time", None),
+    }
+    period = {
+        "start": getattr(config, "bt_start", None),
+        "end": getattr(config, "bt_end", None),
+        "window_days": getattr(config, "bt_window_days", None),
+    }
+    capital = {"universe_cap": getattr(config, "bt_universe_cap", None)}
+    cost = {"mdd_cap": getattr(config, "mdd_cap", None)}
+    fill = {"engine_count": getattr(config, "bt_engine_count", None)}
+    relevant = {
+        "bt_timeframe": cfg_dict.get("bt_timeframe"),
+        "bt_scope": cfg_dict.get("bt_scope"),
+        "evolution_mode": cfg_dict.get("evolution_mode"),
+        "bt_refine_from_best": cfg_dict.get("bt_refine_from_best"),
+        "mdd_cap": cfg_dict.get("mdd_cap"),
+        "min_daily_trades": cfg_dict.get("min_daily_trades"),
+    }
+    code_hash = sha256_hex(json.dumps(relevant, sort_keys=True, ensure_ascii=True))
+    # config_hash: manifest identity MUST be idempotent across a resume that only
+    # changes an operational knob (e.g. max_generations). It is deliberately hashed
+    # over the frozen evaluation subset only (`relevant`, i.e. the same fields that
+    # feed code_hash, plus the manifest's own session/period/capital/cost/fill §7
+    # fields below) -- NEVER the full LoopConfig -- so unrelated knobs never mint a
+    # new manifest_id and orphan later-gen passports under UNIQUE(run_id, role).
+    frozen_evaluation_subset = dict(relevant)
+    frozen_evaluation_subset.update({
+        "session": session,
+        "period": period,
+        "capital": capital,
+        "cost": cost,
+        "fill": fill,
+    })
+    config_hash = sha256_hex(
+        json.dumps(frozen_evaluation_subset, sort_keys=True, ensure_ascii=True)
+    )
+    manifest_id = compute_manifest_id(
+        run_id=run_id, profile="ai_strategy_loop", methodology=methodology,
+        timeframe=timeframe, scope=scope, role="run_primary",
+        code_hash=code_hash, config_hash=config_hash,
+    )
+    return EvaluationManifest(
+        schema=EVALUATION_MANIFEST_SCHEMA,
+        manifest_id=manifest_id,
+        run_id=run_id,
+        profile="ai_strategy_loop",
+        data=timeframe,
+        universe=scope,
+        methodology=methodology,
+        timeframe=timeframe,
+        scope=scope,
+        session=session,
+        period=period,
+        capital=capital,
+        cost=cost,
+        fill=fill,
+        role="run_primary",
+        code_hash=code_hash,
+        config_hash=config_hash,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_passport(
+    config: Any, run_id: str, gen_no: int, mode: str,
+    buy_name: str, sell_name: str, buy_code: str, sell_code: str,
+    parent_passport_id: Optional[str], manifest_id: Optional[str],
+) -> CandidatePassport:
+    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
+    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    buy_sha = text_sha256(buy_code)
+    sell_sha = text_sha256(sell_code)
+    candidate_id = compute_candidate_id(buy_sha, sell_sha, methodology, timeframe)
+    passport_id = compute_passport_id(run_id, 0, gen_no, 0)
+    return CandidatePassport(
+        schema=CANDIDATE_PASSPORT_SCHEMA,
+        passport_id=passport_id,
+        candidate_id=candidate_id,
+        run_id=run_id,
+        round_no=0,
+        gen_no=gen_no,
+        slot_no=0,
+        parent_passport_id=parent_passport_id,
+        mode=mode,
+        lane="canonical_run_loop",
+        family=methodology,
+        timeframe=timeframe,
+        buy_strategy_name=buy_name,
+        sell_strategy_name=sell_name,
+        buy_sha256=buy_sha,
+        sell_sha256=sell_sha,
+        ast_fingerprint=_evidence_fingerprint(buy_code, timeframe),
+        rowset_fingerprint=_evidence_rowset_fallback(buy_code, sell_code, timeframe),
+        evidence_ids=(manifest_id,) if manifest_id else (),
+        threshold_provenance={},
+        manifest_id=manifest_id or compute_manifest_id(
+            run_id=run_id, profile="ai_strategy_loop", methodology=methodology,
+            timeframe=timeframe, scope="unknown", role="run_primary",
+            code_hash=sha256_hex(""), config_hash=sha256_hex(""),
+        ),
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_backtest_receipt(
+    run_id: str, gen_no: int, cumulative_tokens: int, passport_id: Optional[str],
+) -> RunReceipt:
+    phase_id = f"gen{gen_no}"
+    receipt_id = compute_receipt_id(run_id, phase_id, "backtest_outcome", None)
+    return RunReceipt(
+        schema=RUN_RECEIPT_SCHEMA,
+        receipt_id=receipt_id,
+        run_id=run_id,
+        phase_id=phase_id,
+        outcome="backtest_outcome",
+        stop_reason=None,
+        budget_counters={"gen_no": int(gen_no), "cumulative_tokens": int(cumulative_tokens)},
+        predecessor_ids=(passport_id,) if passport_id else (),
+        artifact_hashes={},
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_run_finished_receipt(
+    run_id: str, gen_no: int, cumulative_tokens: int, stop_reason: str,
+    passport_id: Optional[str],
+) -> RunReceipt:
+    receipt_id = compute_receipt_id(run_id, "run", "run_finished", stop_reason)
+    return RunReceipt(
+        schema=RUN_RECEIPT_SCHEMA,
+        receipt_id=receipt_id,
+        run_id=run_id,
+        phase_id="run",
+        outcome="run_finished",
+        stop_reason=stop_reason,
+        budget_counters={"gen_no": int(gen_no), "cumulative_tokens": int(cumulative_tokens)},
+        predecessor_ids=(passport_id,) if passport_id else (),
+        artifact_hashes={},
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_safe_append_manifest(store: EvidenceStore, config: Any, run_id: str) -> Optional[str]:
+    try:
+        manifest = _evidence_build_manifest(config, run_id)
+        # Idempotent resume: manifest_id is content-addressed (frozen evaluation
+        # subset only, see _evidence_build_manifest). A resume that only changes an
+        # operational knob (e.g. max_generations) recomputes the SAME manifest_id,
+        # but `created_at` is wall-clock and would differ from the first freeze --
+        # re-inserting would trip the store's same-PK-different-payload corruption
+        # guard. Reuse the already-frozen row instead of attempting a re-insert.
+        existing = store._con.execute(
+            "SELECT manifest_id FROM evaluation_manifests WHERE manifest_id = ?",
+            (manifest.manifest_id,),
+        ).fetchone()
+        if existing is not None:
+            return existing[0]
+        store.append_manifest(manifest)
+        return manifest.manifest_id
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: manifest freeze failed (ignored)")
+        return None
+
+
+def _evidence_safe_append_passport(store: EvidenceStore, passport: CandidatePassport) -> bool:
+    try:
+        store.append_passport(passport)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: passport append failed (ignored)")
+        return False
+
+
+def _evidence_safe_append_receipt(store: EvidenceStore, receipt: RunReceipt) -> None:
+    try:
+        store.append_receipt(receipt)
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: receipt append failed (ignored)")
+
+
+
+# =====================================================================
+# CL-R05 todo11 — durable feedback envelope + consumption proof (DEFAULT-OFF,
+#   additive). evidence_enabled=False면 이 섹션의 어떤 함수도 run_loop에서
+#   호출되지 않는다(byte-동일). ON일 때만 autopsy가 만든 렌더 피드백 문자열을
+#   FeedbackEnvelope로 동결하고, 다음 세대가 그 봉투를 실제로 소비했다는
+#   FeedbackConsumption을 남긴다. 두 테이블 모두 append-only — UPDATE/DELETE
+#   없음. append 실패는 로그 후 흡수(루프를 막지 않는다).
+# =====================================================================
+def _evidence_build_feedback_envelope(
+    source_passport_id: str, autopsy_kind: str, side: str,
+    source_result_sha256: str, rendered_text: str,
+) -> FeedbackEnvelope:
+    rendered_sha = text_sha256(rendered_text)
+    feedback_id = compute_feedback_id(
+        source_passport_id, autopsy_kind, side, source_result_sha256, rendered_sha,
+    )
+    return FeedbackEnvelope(
+        schema=FEEDBACK_ENVELOPE_SCHEMA,
+        feedback_id=feedback_id,
+        source_passport_id=source_passport_id,
+        autopsy_kind=autopsy_kind,
+        side=side,
+        source_result_sha256=source_result_sha256,
+        # 최소 additive 배선: 구조화 지시문 파서는 이 todo 범위 밖이므로, 렌더된
+        #   NL 피드백 원문 자체를 단일 directive로 보존한다(정보 손실 없음).
+        directives=(rendered_text,),
+        rendered_text=rendered_text,
+        rendered_sha256=rendered_sha,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_ok_result_identity_sha256(outcome: Any, fit: Any, graded: Any) -> str:
+    """성공 백테스트 결과의 안정적 identity digest (CSV 전체를 다시 읽지 않는다)."""
+    payload = canonical_json({
+        "csv_path": str(getattr(outcome, "csv_path", None) or ""),
+        "status": str(getattr(outcome, "status", None) or ""),
+        "trade_count": _evidence_safe_json(getattr(fit, "trade_count", None)),
+        "mdd": _evidence_safe_json(getattr(graded, "mdd", None)),
+        "total_profit": _evidence_safe_json(getattr(graded, "total_profit", None)),
+        "gate_passed": bool(getattr(fit, "gate_passed", False)),
+    })
+    return sha256_hex(payload)
+
+
+def _evidence_error_result_identity_sha256(outcome: Any) -> str:
+    """실패 백테스트(0거래/크래시/타임아웃) 결과의 안정적 identity digest."""
+    payload = canonical_json({
+        "csv_path": str(getattr(outcome, "csv_path", None) or ""),
+        "status": str(getattr(outcome, "status", None) or ""),
+        "reason": str(getattr(outcome, "reason", None) or ""),
+    })
+    return sha256_hex(payload)
+
+
+def _evidence_safe_append_feedback(
+    store: EvidenceStore, envelope: FeedbackEnvelope, run_id: str,
+) -> bool:
+    try:
+        store.append_feedback(envelope, run_id=run_id)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: feedback envelope append failed (ignored)")
+        return False
+
+
+def _evidence_safe_unconsumed_feedback(store: EvidenceStore, run_id: str) -> List[Dict[str, Any]]:
+    try:
+        return store.unconsumed_feedback(run_id)
+    except Exception:  # noqa: BLE001 - 조회 실패는 흡수(소비 후보 없음으로 처리).
+        logger.exception("evidence: unconsumed_feedback query failed (ignored)")
+        return []
+
+
+def _evidence_build_consumption(
+    feedback_id: str, prompt_id: str, target_passport_id: str,
+) -> FeedbackConsumption:
+    return FeedbackConsumption(
+        schema=FEEDBACK_CONSUMPTION_SCHEMA,
+        consumption_id=compute_consumption_id(feedback_id, prompt_id, target_passport_id),
+        feedback_id=feedback_id,
+        prompt_id=prompt_id,
+        target_passport_id=target_passport_id,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_safe_append_consumption(
+    store: EvidenceStore, consumption: FeedbackConsumption, run_id: str,
+) -> bool:
+    try:
+        store.append_consumption(consumption, run_id=run_id)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: feedback consumption append failed (ignored)")
+        return False
+
 
 
 def _read_strategy_code(name: str, kind: str) -> Optional[str]:

@@ -1,0 +1,51 @@
+{
+  "schema": "lattice_condition_generation_v2_overnight_page_completion_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "pages": [
+    {
+      "page": "T0",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_overnight_source_receipt_20260708.json"
+    },
+    {
+      "page": "T1",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_failure_map_20260708.json/md"
+    },
+    {
+      "page": "T2",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_seed_lineage_audit_20260708.json/md"
+    },
+    {
+      "page": "T3",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_axis_spec_20260708.json/md"
+    },
+    {
+      "page": "T4",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_evaluation_protocol_20260708.json/md"
+    },
+    {
+      "page": "T5",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_candidate_quota_ledger_20260708.json/md"
+    },
+    {
+      "page": "T6",
+      "status": "complete",
+      "artifact": "lattice_condition_generation_v2_static_dryrun_next_command_20260708.md"
+    },
+    {
+      "page": "T7",
+      "status": "pending_until_boundary_receipt",
+      "artifact": "C002_boundary_guard_receipt.json"
+    },
+    {
+      "page": "T8",
+      "status": "pending_until_verification_commit",
+      "artifact": "handoff + C003 + commit"
+    }
+  ]
+}

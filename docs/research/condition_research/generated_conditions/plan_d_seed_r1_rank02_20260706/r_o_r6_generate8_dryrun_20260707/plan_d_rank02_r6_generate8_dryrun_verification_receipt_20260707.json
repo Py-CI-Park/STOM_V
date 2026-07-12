@@ -1,0 +1,50 @@
+{
+  "schema": "plan_d_rank02_r6_generate8_dryrun_verification_receipt_v1",
+  "created_at": "2026-07-07T17:00:48+09:00",
+  "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+  "static_gate": {
+    "candidate_count": 8,
+    "passed_count": 8,
+    "failed_count": 0
+  },
+  "registration_dry_run": {
+    "returncode": 0,
+    "status": "dry_run_ok",
+    "planned_seed_count": 8,
+    "planned_insert_count": 16,
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "conflict_count": 0,
+    "apply_used": false
+  },
+  "json_parse_checked": true,
+  "verify_nonrelease_sync": "pass",
+  "scoped_diff_check": "pass",
+  "constraints_observed": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "verified_at": "2026-07-07T17:02:20+09:00",
+  "json_parse_error_count": 0,
+  "json_parse_checked_files": [
+    "pairs_min.json",
+    "pairs_plan_d_rank02_r6_generate8_dryrun_20260707.json",
+    "pairs_tick.json",
+    "plan_d_rank02_r6_generate8_dryrun_summary_20260707.json",
+    "plan_d_rank02_r6_generate8_dryrun_verification_receipt_20260707.json",
+    "plan_d_rank02_r6_generate8_seeds_20260707.json",
+    "plan_d_rank02_r6_source_read_receipt_20260707.json",
+    "plan_d_rank02_r6_static_gate_20260707.json",
+    "plan_d_rank02_r6_strategy_name_mapping_20260707.jsonl",
+    "register_plan_d_rank02_r6_dryrun_20260707.json"
+  ],
+  "verify_nonrelease_sync_command": "python scripts/verify_nonrelease_sync.py",
+  "scoped_diff_check_command": "git diff --check -- docs/update_log/2026-07-07_plan_d_rank02_r6_generate8_dryrun_handoff.md docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_o_r6_generate8_dryrun_20260707",
+  "dry_run_provenance_note": "register_lattice_seeds dry-run reports ledger_out path, but no provenance JSONL is emitted without --apply; mapping JSONL and registration report are the dry-run ledger for this page."
+}

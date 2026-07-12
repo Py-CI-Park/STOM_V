@@ -1,0 +1,56 @@
+{
+  "schema": "lattice_condition_generation_v2_body_source_read_receipt_v1",
+  "created_at": "2026-07-08T15:14:13+09:00",
+  "read_scope": "full_document",
+  "sources": [
+    {
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_body_generation_static_dryrun_20260708.md",
+      "read_scope": "full_document",
+      "line_count": 74,
+      "sha256": "1246651909dc5d6b3aa69abfeaf92b3ab84f08c9c72bb487999b093ffcffc1b9"
+    },
+    {
+      "path": "docs\\update_log\\2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md",
+      "read_scope": "full_document",
+      "line_count": 49,
+      "sha256": "2b71de01a1fc4df176079424562a4835a612ac92f86a01074b545b32d470b2b9"
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_ledger_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 2234,
+      "sha256": "63f4a5139a49d1483a023457b5e10dbbb727150128ef284101f8a73d718d6446"
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_static_gate_receipt_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 31,
+      "sha256": "d11155bbd055fc307a47d7439f8267f317ff90f044b9e66f0c0f1b6b8cdb63cb"
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_db_registration_dryrun_receipt_20260708.json",
+      "read_scope": "full_document",
+      "line_count": 41,
+      "sha256": "0672f8492e00ec266e2a8aebdf4adf8252a0e2d8fbc8b60a2c3358b4e051ba76"
+    },
+    {
+      "path": "utility\\ai_agent\\strategy.txt",
+      "read_scope": "full_document",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753"
+    },
+    {
+      "path": "utility\\ai_agent\\rules.txt",
+      "read_scope": "full_document",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45"
+    }
+  ],
+  "applied_sections": [
+    "metadata-only handoff boundary",
+    "32-candidate ledger selection",
+    "previous static gate and dry-run boundaries",
+    "STOM strategy/rules syntax for buy=True, sell=False, self.Buy/self.Sell",
+    "body static-dry-run plan scope and forbiddens"
+  ]
+}

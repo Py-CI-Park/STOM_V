@@ -1,0 +1,59 @@
+{
+  "schema": "plan_d_rank03_r1_generate8_dryrun_verification_receipt_v1",
+  "created_at": "2026-07-07T17:36:09+09:00",
+  "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+  "commands": [
+    {
+      "name": "json_jsonl_parse",
+      "command": "python -c \"... parse rank03 JSON/JSONL artifacts ...\"",
+      "exit_code": 0,
+      "evidence": "json ok count=13; jsonl ok count=1; mapping rows=8"
+    },
+    {
+      "name": "verify_nonrelease_sync",
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "exit_code": 0,
+      "evidence": "all nonrelease synchronization guard checks passed"
+    },
+    {
+      "name": "scoped_diff_check",
+      "command": "git diff --check -- docs/update_log/2026-07-07_plan_d_rank03_r1_generate8_dryrun_handoff.md docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707",
+      "exit_code": 0,
+      "evidence": "no whitespace errors in scoped files"
+    }
+  ],
+  "static_gate_passed_count": 8,
+  "static_gate_failed_count": 0,
+  "db_registration_status": "dry_run_ok",
+  "planned_insert_count": 16,
+  "inserted_row_count": 0,
+  "guardrails": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "git_add_a_used": false
+  },
+  "artifact_sha256": {
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_a_readiness_20260707/plan_d_rank03_global_ledger_readiness_20260707.json": "ee4b69e89e73ef126c3755519baa89db1ae9426b6f8e248021480cd1e5a40cd2",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_a_readiness_20260707/plan_d_rank03_readiness_summary_20260707.json": "90246f32a0ca8df36051ce254ab1b8ed688a09a309c5cad03d505d1eeed05989",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_a_readiness_20260707/plan_d_rank03_readiness_summary_20260707.md": "965a635e1e4b0c2f65dc6e98e791ef6f16e096341a31d27ee3889932a737a9e8",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_a_readiness_20260707/plan_d_rank03_sha_recheck_20260707.json": "ee746b89f96c15f35c9f41abb74ca3539e72d468adf75d3e782e7249d3b5de35",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/pairs_min.json": "2c782e7c59fe85f08bea53b1b54196de6de85a9344eadf7b14b111d0806c7843",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/pairs_plan_d_rank03_r1_generate8_20260707.json": "a9bd31363837077793c1e88d5d0e465f9cffdc4914f0b98141149b2e5ca29409",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/pairs_tick.json": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_context_pack_20260707.md": "a556f6ad7b2a5d6cc90b84343d5f5fe1a4a47ce0a2800e812f0d9daa31c7a156",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_design_20260707.json": "be9ead4457678d4c41ea710c39d6ac6f73f520e0a1c57b9427e068c0162def85",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_dryrun_db_absence_check_20260707.json": "bdb25f1f9f005e93cf6795e25c80ad1698b63ef640452ac4a6c918e40479cc77",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_generate8_dryrun_summary_20260707.json": "5413cb908c65d306336661e556523897f7c2b319215d70bb12794d0618aaf7d8",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_generate8_seeds_20260707.json": "1ddf563a6044476ea5c3ec9aac0f145ddfb84f38b47ff9e9ad3666a751c5d1c2",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_source_read_receipt_20260707.json": "511f9561b0b17b64b1b92e429fce0738b9acbb6ba29f42c19e8a176708c1a311",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_static_gate_20260707.json": "0146a544c154d42d609fbe7c042b79a2a728196985485b42d8ad58a65e793529",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/plan_d_rank03_r1_strategy_name_mapping_20260707.jsonl": "968cf38db2db3939319916ce61a245e6f8876a71f994ea2bab8cb6904dcccc40",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_b_generate8_dryrun_20260707/register_plan_d_rank03_r1_generate8_dryrun_20260707.json": "a07c7d7f9fe97b068db3754947b3883ad8dff76ad7578189d48cfd9d27abf227"
+  },
+  "result": "passed",
+  "next_allowed_action": "plan-d-rank03-r1-insert-replay-no-portfolio-export"
+}

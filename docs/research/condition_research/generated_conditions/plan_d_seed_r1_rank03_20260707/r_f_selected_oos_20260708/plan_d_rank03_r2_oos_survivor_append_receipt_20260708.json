@@ -1,0 +1,33 @@
+{
+  "schema": "plan_d_rank03_r2_oos_append_receipt_v1",
+  "created_at": "2026-07-07T22:32:26+09:00",
+  "scope": "plan-d-rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "source_result_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
+  "local_survivors_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_survivors_20260708.jsonl",
+  "global_oos_survivors_path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+  "seed_pool_path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+  "passport_paths": [
+    "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r2_oos_20260708_01.md"
+  ],
+  "appended": {
+    "local_survivors": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ],
+    "global_oos_survivors": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ],
+    "seed_pool": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ]
+  },
+  "already_present": {
+    "local_survivors": [],
+    "global_oos_survivors": [],
+    "seed_pool": []
+  },
+  "db_update_delete_used": false,
+  "manual_db_mutation_used": false,
+  "selected_only": true,
+  "r3_opened": false,
+  "portfolio_generated": false
+}

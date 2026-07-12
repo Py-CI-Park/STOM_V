@@ -1,0 +1,2234 @@
+{
+  "summary": {
+    "schema": "lattice_condition_generation_v2_candidate_dryrun_summary_v1",
+    "created_at": "2026-07-08T11:01:22+09:00",
+    "source_plan": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_dryrun_20260708.md",
+    "candidate_count": 32,
+    "class_counts": {
+      "coverage_composite": 8,
+      "risk_balanced_composite": 8,
+      "survivor_seed_derivative": 8,
+      "negative_control": 4,
+      "holdout_control": 4
+    },
+    "quota": {
+      "coverage_composite": 8,
+      "risk_balanced_composite": 8,
+      "survivor_seed_derivative": 8,
+      "negative_control": 4,
+      "holdout_control": 4
+    },
+    "lane_policy": "research lane only; min_primary for discovery, tick only as diagnostic/control metadata",
+    "condition_body_policy": "metadata_only; no buy_code/sell_code generated in this page",
+    "static_gate_status": "pass",
+    "db_registration_dryrun_status": "pass",
+    "db_apply_executed": false,
+    "backtest_executed": false,
+    "limited_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "plan_d_r3_executed": false,
+    "next_execution_unlocked": false,
+    "reason_next_execution_locked": "Candidates are metadata-only. Separate approval is required before STOM body generation or DB INSERT apply."
+  },
+  "candidates": [
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 1,
+      "candidate_id": "lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "planned_buy_name": "LAT_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Bridge S09/S10 morning coverage with L13/L14 low-MDD fragments to attack daily_avg_trades gap.",
+      "axis_refs": [
+        "time_regime:morning_09_10_11_composite",
+        "time_regime:midday_13h_watch",
+        "coverage_class:daily_floor_repair"
+      ],
+      "expected_failure_mode_to_test": "low daily trades with otherwise low-MDD positive fragments",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "time_regime:morning_09_10_11_composite",
+            "time_regime:midday_13h_watch",
+            "coverage_class:daily_floor_repair"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 2,
+      "candidate_id": "lattice_v2_coverage_02_m09_m10_l13_l1430_tradefloor",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_02_m09_m10_l13_l1430_tradefloor",
+      "planned_buy_name": "LAT_lattice_v2_coverage_02_m09_m10_l13_l1430_tradefloor_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_02_m09_m10_l13_l1430_tradefloor_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Blend M09/M10 price-position components with L13/L1430 coverage watch to avoid single late-day dependence.",
+      "axis_refs": [
+        "time_regime:morning_09_10_11_composite",
+        "time_regime:late_1430p_risk_watch"
+      ],
+      "expected_failure_mode_to_test": "late liquidity may raise MDD if not paired with sell diversity",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "time_regime:morning_09_10_11_composite",
+            "time_regime:late_1430p_risk_watch"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 3,
+      "candidate_id": "lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "planned_buy_name": "LAT_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use L13/L14/L1430 coverage components as a candidate family, not a copied survivor.",
+      "axis_refs": [
+        "time_regime:midday_13h_watch",
+        "time_regime:late_1430p_risk_watch"
+      ],
+      "expected_failure_mode_to_test": "coverage lift can overfit selected OOS-style window",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "time_regime:midday_13h_watch",
+            "time_regime:late_1430p_risk_watch"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 4,
+      "candidate_id": "lattice_v2_coverage_04_09h_10h_11h_low_strength_mix",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_04_09h_10h_11h_low_strength_mix",
+      "planned_buy_name": "LAT_lattice_v2_coverage_04_09h_10h_11h_low_strength_mix_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_04_09h_10h_11h_low_strength_mix_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Constrain morning fragments to low/mid strength because high strength has no positive-profit evidence.",
+      "axis_refs": [
+        "strength:low",
+        "strength:mid",
+        "time_bucket:09h/10h/11h"
+      ],
+      "expected_failure_mode_to_test": "profit signal remains sparse",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "strength:low",
+            "strength:mid",
+            "time_bucket:09h/10h/11h"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 5,
+      "candidate_id": "lattice_v2_coverage_05_midsmall_midlarge_low_daily_mix",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_05_midsmall_midlarge_low_daily_mix",
+      "planned_buy_name": "LAT_lattice_v2_coverage_05_midsmall_midlarge_low_daily_mix_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_05_midsmall_midlarge_low_daily_mix_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Test size diversity around midsmall/midlarge where positive fragments exist, avoiding pure large/high axes.",
+      "axis_refs": [
+        "size:midsmall",
+        "size:midlarge",
+        "strength:low"
+      ],
+      "expected_failure_mode_to_test": "size fragmentation may reduce daily trades",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "size:midsmall",
+            "size:midlarge",
+            "strength:low"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 6,
+      "candidate_id": "lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "planned_buy_name": "LAT_lattice_v2_coverage_06_momentum_strength_surge_coverage_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_06_momentum_strength_surge_coverage_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Combine momentum_breakout and strength_surge fragments because both have sparse positive evidence.",
+      "axis_refs": [
+        "family:momentum_breakout",
+        "family:strength_surge"
+      ],
+      "expected_failure_mode_to_test": "family correlation may not add independent signal",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "family:momentum_breakout",
+            "family:strength_surge"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 7,
+      "candidate_id": "lattice_v2_coverage_07_l14_amount_floor_diverse_sell",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_07_l14_amount_floor_diverse_sell",
+      "planned_buy_name": "LAT_lattice_v2_coverage_07_l14_amount_floor_diverse_sell_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_07_l14_amount_floor_diverse_sell_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Keep L14 amount floor as component but require sell profile diversity to cap default-sell concentration.",
+      "axis_refs": [
+        "sell_profile:default_tp3_sl3_hold90_benchmark",
+        "lineage:repair_composite"
+      ],
+      "expected_failure_mode_to_test": "sell profile concentration risk",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "sell_profile:default_tp3_sl3_hold90_benchmark",
+            "lineage:repair_composite"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 8,
+      "candidate_id": "lattice_v2_coverage_08_l13_l1430_tradefloor_watch",
+      "class": "coverage_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_coverage_08_l13_l1430_tradefloor_watch",
+      "planned_buy_name": "LAT_lattice_v2_coverage_08_l13_l1430_tradefloor_watch_B",
+      "planned_sell_name": "LAT_lattice_v2_coverage_08_l13_l1430_tradefloor_watch_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Candidate family for daily floor repair using L13 plus L1430 only as watch, not promotion evidence.",
+      "axis_refs": [
+        "coverage_class:daily_floor_repair",
+        "risk_class:mdd_10_25_fragment"
+      ],
+      "expected_failure_mode_to_test": "may reproduce selected repair-composite bias",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "coverage_class:daily_floor_repair",
+            "risk_class:mdd_10_25_fragment"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 9,
+      "candidate_id": "lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "planned_buy_name": "LAT_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Prioritize MDD<=10 survivor-like fragments while varying component mix rather than copying code.",
+      "axis_refs": [
+        "risk_class:mdd_le_10_fragment",
+        "sell_profile:default_tp3_sl3_hold90_benchmark"
+      ],
+      "expected_failure_mode_to_test": "low MDD may come with too few trades",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "risk_class:mdd_le_10_fragment",
+            "sell_profile:default_tp3_sl3_hold90_benchmark"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 10,
+      "candidate_id": "lattice_v2_risk_02_mdd25_morning_l13_bridge",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_02_mdd25_morning_l13_bridge",
+      "planned_buy_name": "LAT_lattice_v2_risk_02_mdd25_morning_l13_bridge_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_02_mdd25_morning_l13_bridge_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Pair MDD 10-25 watch fragments with morning coverage to test whether daily floor can improve without MDD blowout.",
+      "axis_refs": [
+        "risk_class:mdd_10_25_fragment",
+        "coverage_class:daily_floor_repair"
+      ],
+      "expected_failure_mode_to_test": "MDD may exceed 35 when coverage increases",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "risk_class:mdd_10_25_fragment",
+            "coverage_class:daily_floor_repair"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 11,
+      "candidate_id": "lattice_v2_risk_03_mdd35_late_watch_tight_exit",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_03_mdd35_late_watch_tight_exit",
+      "planned_buy_name": "LAT_lattice_v2_risk_03_mdd35_late_watch_tight_exit_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_03_mdd35_late_watch_tight_exit_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Late watch components only with a tight-exit hypothesis because late cells had low-MDD but nonpositive fragments.",
+      "axis_refs": [
+        "risk_class:mdd_25_35_watch",
+        "time_regime:late_1430p_risk_watch"
+      ],
+      "expected_failure_mode_to_test": "profit may remain nonpositive",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "risk_class:mdd_25_35_watch",
+            "time_regime:late_1430p_risk_watch"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 12,
+      "candidate_id": "lattice_v2_risk_04_low_strength_mdd_cap_sell_diverse",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_04_low_strength_mdd_cap_sell_diverse",
+      "planned_buy_name": "LAT_lattice_v2_risk_04_low_strength_mdd_cap_sell_diverse_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_04_low_strength_mdd_cap_sell_diverse_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Low strength is retained but sell SHA repetition must be capped.",
+      "axis_refs": [
+        "strength:low",
+        "lineage:repair_composite"
+      ],
+      "expected_failure_mode_to_test": "default sell concentration",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "strength:low",
+            "lineage:repair_composite"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 13,
+      "candidate_id": "lattice_v2_risk_05_momentum_mdd_cap_daily_floor",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_05_momentum_mdd_cap_daily_floor",
+      "planned_buy_name": "LAT_lattice_v2_risk_05_momentum_mdd_cap_daily_floor_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_05_momentum_mdd_cap_daily_floor_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Momentum_breakout had positive/low-MDD fragments, so combine with explicit daily floor objective.",
+      "axis_refs": [
+        "family:momentum_breakout",
+        "coverage_class:daily_floor_repair"
+      ],
+      "expected_failure_mode_to_test": "frequency lift may degrade payoff",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "family:momentum_breakout",
+            "coverage_class:daily_floor_repair"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 14,
+      "candidate_id": "lattice_v2_risk_06_strength_surge_mdd_cap_daily_floor",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_06_strength_surge_mdd_cap_daily_floor",
+      "planned_buy_name": "LAT_lattice_v2_risk_06_strength_surge_mdd_cap_daily_floor_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_06_strength_surge_mdd_cap_daily_floor_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Strength_surge had positive/low-MDD fragments; use it as a second independent family candidate.",
+      "axis_refs": [
+        "family:strength_surge",
+        "coverage_class:daily_floor_repair"
+      ],
+      "expected_failure_mode_to_test": "same sparse-profit issue as momentum",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "family:strength_surge",
+            "coverage_class:daily_floor_repair"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 15,
+      "candidate_id": "lattice_v2_risk_07_midlarge_midsmall_sell_diversity",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_07_midlarge_midsmall_sell_diversity",
+      "planned_buy_name": "LAT_lattice_v2_risk_07_midlarge_midsmall_sell_diversity_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_07_midlarge_midsmall_sell_diversity_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use midlarge/midsmall fragments with sell-profile diversity to reduce sha concentration.",
+      "axis_refs": [
+        "size:midlarge",
+        "size:midsmall",
+        "sell_profile:diversity_control_only"
+      ],
+      "expected_failure_mode_to_test": "component may not beat holdout control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "size:midlarge",
+            "size:midsmall",
+            "sell_profile:diversity_control_only"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 16,
+      "candidate_id": "lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "class": "risk_balanced_composite",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "planned_buy_name": "LAT_lattice_v2_risk_08_dailycovered_nonpositive_repair_B",
+      "planned_sell_name": "LAT_lattice_v2_risk_08_dailycovered_nonpositive_repair_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Explicitly target min rows that had MDD<=35 and daily>=0.5 but nonpositive profit.",
+      "axis_refs": [
+        "official_coverage:min",
+        "deep_predicate:mdd_le_35_and_daily_ge_0_5"
+      ],
+      "expected_failure_mode_to_test": "profit sign may not flip",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "official_coverage:min",
+            "deep_predicate:mdd_le_35_and_daily_ge_0_5"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 17,
+      "candidate_id": "lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "planned_buy_name": "LAT_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use latest R2-05 survivor as benchmark lineage, component-only; no wholesale copy.",
+      "axis_refs": [
+        "latest_survivor:plan_d_rank03_r2_oos_20260708_01"
+      ],
+      "expected_failure_mode_to_test": "selection-window contamination",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "latest_survivor:plan_d_rank03_r2_oos_20260708_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank03_r2_oos_20260708_01",
+            "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 554624.0,
+            "mdd_pct": 5.24,
+            "daily_avg_trades": 2.2,
+            "trade_count": 80,
+            "score": 1.5293965228238289
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 18,
+      "candidate_id": "lattice_v2_seed_02_rank02_r3_amt8000_component_only",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_02_rank02_r3_amt8000_component_only",
+      "planned_buy_name": "LAT_lattice_v2_seed_02_rank02_r3_amt8000_component_only_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_02_rank02_r3_amt8000_component_only_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use rank02 R3 L14 amount component as lineage with new coverage/risk mix.",
+      "axis_refs": [
+        "survivor:plan_d_rank02_r3_oos_20260707_01"
+      ],
+      "expected_failure_mode_to_test": "buy sha reuse risk",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rank02_r3_oos_20260707_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank02_r3_oos_20260707_01",
+            "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 1079768.0,
+            "mdd_pct": 4.06,
+            "daily_avg_trades": 0.5,
+            "trade_count": 19,
+            "score": 10.302048909853827
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 19,
+      "candidate_id": "lattice_v2_seed_03_rcs_rank02_loose_sell_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_03_rcs_rank02_loose_sell_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_03_rcs_rank02_loose_sell_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_03_rcs_rank02_loose_sell_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use top repair-composite loose sell as a sell-profile benchmark, not as full seed.",
+      "axis_refs": [
+        "survivor:plan_d_rcs_oos_20260706_rank02"
+      ],
+      "expected_failure_mode_to_test": "sell sha concentration",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rcs_oos_20260706_rank02"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rcs_oos_20260706_rank02",
+            "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 1124220.0,
+            "mdd_pct": 4.12,
+            "daily_avg_trades": 0.5,
+            "trade_count": 18,
+            "score": 10.202250246680189
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 20,
+      "candidate_id": "lattice_v2_seed_04_rcs_rank01_hold60_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_04_rcs_rank01_hold60_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_04_rcs_rank01_hold60_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_04_rcs_rank01_hold60_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use rank01 hold60 default sell as a hold-time component to compare with hold90.",
+      "axis_refs": [
+        "survivor:plan_d_rcs_oos_20260706_rank01"
+      ],
+      "expected_failure_mode_to_test": "hold60 may undertrade",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rcs_oos_20260706_rank01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rcs_oos_20260706_rank01",
+            "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60"
+          ],
+          "metrics": {
+            "profit_krw": 1079768.0,
+            "mdd_pct": 4.06,
+            "daily_avg_trades": 0.5,
+            "trade_count": 19,
+            "score": 10.302048909853827
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 21,
+      "candidate_id": "lattice_v2_seed_05_rcs_rank08_daily_trade_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_05_rcs_rank08_daily_trade_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_05_rcs_rank08_daily_trade_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_05_rcs_rank08_daily_trade_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use higher daily trade survivor as a coverage component because daily_avg_trades was 1.8.",
+      "axis_refs": [
+        "survivor:plan_d_rcs_oos_20260706_rank08"
+      ],
+      "expected_failure_mode_to_test": "profit may be lower than top ranks",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rcs_oos_20260706_rank08"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rcs_oos_20260706_rank08",
+            "repair_v3_20260706_14_top_four_plus_l13_sell_default_tp3_sl3_hold60"
+          ],
+          "metrics": {
+            "profit_krw": 826691.0,
+            "mdd_pct": 4.29,
+            "daily_avg_trades": 1.8,
+            "trade_count": 67,
+            "score": 3.971153697765492
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 22,
+      "candidate_id": "lattice_v2_seed_06_rank01_r3_l13_l14_rate_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_06_rank01_r3_l13_l14_rate_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_06_rank01_r3_l13_l14_rate_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_06_rank01_r3_l13_l14_rate_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use rank01 R3 rate85 L13/L14 lineage as a diversity component.",
+      "axis_refs": [
+        "survivor:plan_d_rank01_r3_oos_20260706_01"
+      ],
+      "expected_failure_mode_to_test": "low score vs recent survivors",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rank01_r3_oos_20260706_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank01_r3_oos_20260706_01",
+            "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 312392.0,
+            "mdd_pct": 6.34,
+            "daily_avg_trades": 1.7,
+            "trade_count": 64,
+            "score": 1.0540320078076235
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 23,
+      "candidate_id": "lattice_v2_seed_07_rank03_r1_parent_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_07_rank03_r1_parent_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_07_rank03_r1_parent_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_07_rank03_r1_parent_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use rank03 R1 parent buy as a pre-R2 comparator, not an active continuation.",
+      "axis_refs": [
+        "survivor:plan_d_rank03_r1_oos_20260707_01"
+      ],
+      "expected_failure_mode_to_test": "may duplicate R2 parent logic",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rank03_r1_oos_20260707_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank03_r1_oos_20260707_01",
+            "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 931411.0,
+            "mdd_pct": 6.14,
+            "daily_avg_trades": 0.5,
+            "trade_count": 20,
+            "score": 9.995456794488643
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 24,
+      "candidate_id": "lattice_v2_seed_08_rank02_r2_tight_sell_component",
+      "class": "survivor_seed_derivative",
+      "class_quota": 8,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_seed_08_rank02_r2_tight_sell_component",
+      "planned_buy_name": "LAT_lattice_v2_seed_08_rank02_r2_tight_sell_component_B",
+      "planned_sell_name": "LAT_lattice_v2_seed_08_rank02_r2_tight_sell_component_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Use tight sell survivor as a risk-control component only.",
+      "axis_refs": [
+        "survivor:plan_d_rank02_r2_oos_20260707_02"
+      ],
+      "expected_failure_mode_to_test": "profit weaker despite lower-risk sell idea",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "survivor:plan_d_rank02_r2_oos_20260707_02"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank02_r2_oos_20260707_02",
+            "plan_d_r1_rank02_r2_07_active_buy_tight_tp3_sl2p5_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 486942.0,
+            "mdd_pct": 9.09,
+            "daily_avg_trades": 0.5,
+            "trade_count": 20,
+            "score": 1.035885240062386
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 25,
+      "candidate_id": "lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "class": "negative_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "planned_buy_name": "LAT_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_B",
+      "planned_sell_name": "LAT_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Known-failed tick-like discovery shape retained only to catch misleading success output.",
+      "axis_refs": [
+        "tick:positive_profit=0",
+        "family:prevday_active"
+      ],
+      "expected_failure_mode_to_test": "expected no_go control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "tick:positive_profit=0",
+            "family:prevday_active"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "negative_control"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 26,
+      "candidate_id": "lattice_v2_neg_02_tick_volume_surge_0925_loss_shape",
+      "class": "negative_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_neg_02_tick_volume_surge_0925_loss_shape",
+      "planned_buy_name": "LAT_lattice_v2_neg_02_tick_volume_surge_0925_loss_shape_B",
+      "planned_sell_name": "LAT_lattice_v2_neg_02_tick_volume_surge_0925_loss_shape_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Known-failed tick volume surge shape retained as diagnostic stress only.",
+      "axis_refs": [
+        "tick:positive_profit=0",
+        "family:volume_surge"
+      ],
+      "expected_failure_mode_to_test": "expected no_go control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "tick:positive_profit=0",
+            "family:volume_surge"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "negative_control"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 27,
+      "candidate_id": "lattice_v2_neg_03_min_prevday_active_high_mdd_shape",
+      "class": "negative_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_neg_03_min_prevday_active_high_mdd_shape",
+      "planned_buy_name": "LAT_lattice_v2_neg_03_min_prevday_active_high_mdd_shape_B",
+      "planned_sell_name": "LAT_lattice_v2_neg_03_min_prevday_active_high_mdd_shape_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Min prevday_active had no positive signal and should fail if gate is sane.",
+      "axis_refs": [
+        "min_family:prevday_active",
+        "strength:high"
+      ],
+      "expected_failure_mode_to_test": "expected no_go control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "min_family:prevday_active",
+            "strength:high"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "negative_control"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 28,
+      "candidate_id": "lattice_v2_neg_04_single_axis_cartesian_repeat_shape",
+      "class": "negative_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_neg_04_single_axis_cartesian_repeat_shape",
+      "planned_buy_name": "LAT_lattice_v2_neg_04_single_axis_cartesian_repeat_shape_B",
+      "planned_sell_name": "LAT_lattice_v2_neg_04_single_axis_cartesian_repeat_shape_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Old lattice-like single-axis repetition control to ensure v2 does not recreate the original failure.",
+      "axis_refs": [
+        "discard:single_axis_lattice_repetition"
+      ],
+      "expected_failure_mode_to_test": "expected no_go control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "discard:single_axis_lattice_repetition"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "negative_control"
+          ]
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 29,
+      "candidate_id": "lattice_v2_hold_01_holdout_rcs_rank01_default_hold60",
+      "class": "holdout_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_hold_01_holdout_rcs_rank01_default_hold60",
+      "planned_buy_name": "LAT_lattice_v2_hold_01_holdout_rcs_rank01_default_hold60_B",
+      "planned_sell_name": "LAT_lattice_v2_hold_01_holdout_rcs_rank01_default_hold60_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Frozen benchmark against rank01 selected OOS-style survivor; not a new promotion.",
+      "axis_refs": [
+        "holdout:plan_d_rcs_oos_20260706_rank01"
+      ],
+      "expected_failure_mode_to_test": "benchmark only",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "holdout:plan_d_rcs_oos_20260706_rank01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "holdout_control"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rcs_oos_20260706_rank01",
+            "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60"
+          ],
+          "metrics": {
+            "profit_krw": 1079768.0,
+            "mdd_pct": 4.06,
+            "daily_avg_trades": 0.5,
+            "trade_count": 19,
+            "score": 10.302048909853827
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 30,
+      "candidate_id": "lattice_v2_hold_02_holdout_rcs_rank02_loose_hold90",
+      "class": "holdout_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_hold_02_holdout_rcs_rank02_loose_hold90",
+      "planned_buy_name": "LAT_lattice_v2_hold_02_holdout_rcs_rank02_loose_hold90_B",
+      "planned_sell_name": "LAT_lattice_v2_hold_02_holdout_rcs_rank02_loose_hold90_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Frozen benchmark against top profit repair-composite survivor.",
+      "axis_refs": [
+        "holdout:plan_d_rcs_oos_20260706_rank02"
+      ],
+      "expected_failure_mode_to_test": "benchmark only",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "holdout:plan_d_rcs_oos_20260706_rank02"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "holdout_control"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rcs_oos_20260706_rank02",
+            "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 1124220.0,
+            "mdd_pct": 4.12,
+            "daily_avg_trades": 0.5,
+            "trade_count": 18,
+            "score": 10.202250246680189
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 31,
+      "candidate_id": "lattice_v2_hold_03_holdout_rank02_r3_amt8000_default",
+      "class": "holdout_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_hold_03_holdout_rank02_r3_amt8000_default",
+      "planned_buy_name": "LAT_lattice_v2_hold_03_holdout_rank02_r3_amt8000_default_B",
+      "planned_sell_name": "LAT_lattice_v2_hold_03_holdout_rank02_r3_amt8000_default_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Frozen benchmark against rank02 R3 selected survivor.",
+      "axis_refs": [
+        "holdout:plan_d_rank02_r3_oos_20260707_01"
+      ],
+      "expected_failure_mode_to_test": "benchmark only",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "holdout:plan_d_rank02_r3_oos_20260707_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "holdout_control"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank02_r3_oos_20260707_01",
+            "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 1079768.0,
+            "mdd_pct": 4.06,
+            "daily_avg_trades": 0.5,
+            "trade_count": 19,
+            "score": 10.302048909853827
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    },
+    {
+      "schema": "lattice_condition_generation_v2_candidate_metadata_v1",
+      "created_at": "2026-07-08T11:01:22+09:00",
+      "candidate_no": 32,
+      "candidate_id": "lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "class": "holdout_control",
+      "class_quota": 4,
+      "lane": "research",
+      "preferred_data_lane": "min_primary",
+      "label": "hypothesis_seed",
+      "sanitized_condition_component": "lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "planned_buy_name": "LAT_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B",
+      "planned_sell_name": "LAT_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_S",
+      "name_style": "filename_safe_v2",
+      "condition_body_present": false,
+      "buy_code_present": false,
+      "sell_code_present": false,
+      "registration_scope": "db_name_collision_and_mapping_dry_run_only",
+      "allowed_next_action": [
+        "static_gate",
+        "DB registration dry-run"
+      ],
+      "blocked_actions": [
+        "DB INSERT apply",
+        "DB UPDATE/DELETE",
+        "backtest",
+        "limited replay",
+        "OOS",
+        "portfolio",
+        "Plan D R3",
+        "export/live/final promotion",
+        "full tick 288",
+        "full min 288"
+      ],
+      "rationale": "Frozen benchmark against latest rank03 R2 selected survivor.",
+      "axis_refs": [
+        "holdout:plan_d_rank03_r2_oos_20260708_01"
+      ],
+      "expected_failure_mode_to_test": "benchmark only",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "holdout:plan_d_rank03_r2_oos_20260708_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "holdout_control"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank03_r2_oos_20260708_01",
+            "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 554624.0,
+            "mdd_pct": 5.24,
+            "daily_avg_trades": 2.2,
+            "trade_count": 80,
+            "score": 1.5293965228238289
+          }
+        }
+      ],
+      "notes": "Metadata-only candidate. It is not executable until a separate approved code-generation page creates STOM buy/sell bodies."
+    }
+  ]
+}

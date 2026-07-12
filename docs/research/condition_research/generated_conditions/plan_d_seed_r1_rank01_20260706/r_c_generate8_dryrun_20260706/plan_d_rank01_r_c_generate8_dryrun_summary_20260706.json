@@ -1,0 +1,108 @@
+{
+  "schema": "plan_d_rank01_r_c_generate8_dryrun_summary_v1",
+  "created_at": "2026-07-06T14:01:46+09:00",
+  "scope": "plan-d-seed-r1-rank01-generate8-dryrun-no-portfolio-export",
+  "candidate_count": 8,
+  "quota": {
+    "repair": 5,
+    "discovery": 3,
+    "total": 8
+  },
+  "static_gate": {
+    "passed_count": 8,
+    "failed_count": 0
+  },
+  "candidate_pack": {
+    "valid": true,
+    "valid_candidate_count": 8,
+    "invalid_candidate_count": 0,
+    "lane_counts": {
+      "repair": 5,
+      "discovery": 3
+    },
+    "failure_reasons": []
+  },
+  "db_registration_dry_run": {
+    "status": "dry_run_ok",
+    "planned_seed_count": 8,
+    "planned_insert_count": 16,
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "conflicts": [],
+    "unsafe_target_name_count": 0
+  },
+  "candidate_brief": [
+    {
+      "slot": 1,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_01_repair_strength_plus1_default",
+      "mutation_axis": "entry_strength_threshold_plus1",
+      "buy_sha256": "8bc075269259d0b5c26cdd8a06bbe85bc5bef31a2702ead24b6bb96cdd5aa1e3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 2,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_02_repair_momentum_wider_default",
+      "mutation_axis": "momentum_high_mult_0994_to_0992",
+      "buy_sha256": "969d5dd81379ae45431e03059b357bf0a34c13866d299a968a8eaa28eed7f5d0",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 3,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_03_repair_l14_liquidity_relaxed_default",
+      "mutation_axis": "l14_liquidity_relaxation",
+      "buy_sha256": "04e3c0cee0709c862b7ad641e3ee2ccb214ee211718742d435da3496d2c594b2",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 4,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+      "mutation_axis": "l14_liquidity_tightening",
+      "buy_sha256": "cce31d5127a2d6858c4a2744372424be890de5862bf3fcd77f5b63268b686ba2",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 5,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_05_repair_exit_protect_tp28_sl25_hold60",
+      "mutation_axis": "exit_protection_tp28_sl25",
+      "buy_sha256": "15f2cdf1da06f65b216b95a67de2b73a19965080ef228850bc6b45ab588e0418",
+      "sell_sha256": "696f18a392ee81d7a06cad88bd49113037756d858554fed145c766650a7b7a67"
+    },
+    {
+      "slot": 6,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+      "mutation_axis": "adjacent_l13_l14_coverage",
+      "buy_sha256": "cb2fb006eef4e3daeff48246506b6165d280ef465dd960ca47f3301cd1af42ee",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 7,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_07_discovery_adjacent_l14_l1430_extension",
+      "mutation_axis": "adjacent_l14_l1430_extension",
+      "buy_sha256": "49cbf9c8ec4e5c1fe44103873f3ede38c2a6fcce60fdaef4d0928cfa55437a5a",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 8,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_08_discovery_balanced_l14_tight_exit",
+      "mutation_axis": "balanced_l14_tight_exit",
+      "buy_sha256": "2922c270000a0e3320444832f22e914a5c54c5a795dc1d6b55908ca10a79cb70",
+      "sell_sha256": "01c800b9d64fa573fd823487d7e88e33b611ba818ca3b390b0904bb9464b35ce"
+    }
+  ],
+  "restrictions_confirmed": {
+    "db_insert_apply": false,
+    "official_replay": false,
+    "oos": false,
+    "portfolio": false,
+    "export_live_final": false
+  },
+  "decision": "ready_for_insert_only_apply_and_limited_official_replay_next_scope"
+}

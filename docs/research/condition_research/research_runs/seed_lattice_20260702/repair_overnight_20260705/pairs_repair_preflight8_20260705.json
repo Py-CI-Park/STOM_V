@@ -1,0 +1,50 @@
+[
+  {
+    "label": "repair_v1_20260705_r01_min_09h_midsmall_low_strength_trade_lift_tight20",
+    "buy": "LAT_repair_v1_20260705_r01_min_09h_midsmall_low_strength_trade_lift_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r01_min_09h_midsmall_low_strength_trade_lift_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r02_min_09h_midsmall_low_strength_trade_lift_hold30",
+    "buy": "LAT_repair_v1_20260705_r02_min_09h_midsmall_low_strength_trade_lift_hold30_B",
+    "sell": "LAT_repair_v1_20260705_r02_min_09h_midsmall_low_strength_trade_lift_hold30_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r03_min_09h_small_low_momentum_trade_lift_tight20",
+    "buy": "LAT_repair_v1_20260705_r03_min_09h_small_low_momentum_trade_lift_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r03_min_09h_small_low_momentum_trade_lift_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r04_min_10h_midsmall_low_momentum_trade_lift_tight20",
+    "buy": "LAT_repair_v1_20260705_r04_min_10h_midsmall_low_momentum_trade_lift_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r04_min_10h_midsmall_low_momentum_trade_lift_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r05_min_10h_midsmall_low_strength_trade_lift_tight20",
+    "buy": "LAT_repair_v1_20260705_r05_min_10h_midsmall_low_strength_trade_lift_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r05_min_10h_midsmall_low_strength_trade_lift_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r06_min_13h_large_high_momentum_loss_control_tight20",
+    "buy": "LAT_repair_v1_20260705_r06_min_13h_large_high_momentum_loss_control_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r06_min_13h_large_high_momentum_loss_control_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r07_min_14h_large_high_momentum_loss_control_tight20",
+    "buy": "LAT_repair_v1_20260705_r07_min_14h_large_high_momentum_loss_control_tight20_B",
+    "sell": "LAT_repair_v1_20260705_r07_min_14h_large_high_momentum_loss_control_tight20_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r08_min_1430p_large_high_momentum_loss_control_tight15",
+    "buy": "LAT_repair_v1_20260705_r08_min_1430p_large_high_momentum_loss_control_tight15_B",
+    "sell": "LAT_repair_v1_20260705_r08_min_1430p_large_high_momentum_loss_control_tight15_S",
+    "lane": "min"
+  }
+]

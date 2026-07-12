@@ -1,0 +1,109 @@
+{
+  "schema": "plan_d_rank03_r1_duplicate_retry_cleanup_receipt_v1",
+  "created_at": "2026-07-07T17:56:44+09:00",
+  "scope": "plan-d-rank03-r1-insert-replay-no-portfolio-export",
+  "official_decision_run_id": "lat_plan_d_rank03_r1_8_min_warm64_20260707",
+  "cleanup_action": "terminated_live_retry02_process_tree; retry01 had no rows; retry02 duplicate rows preserved as stale evidence",
+  "db_update_delete_used": false,
+  "retry_runs": [
+    {
+      "run_id": "lat_plan_d_rank03_r1_8_min_warm64_retry01_20260707",
+      "run": {
+        "run_id": "lat_plan_d_rank03_r1_8_min_warm64_retry01_20260707",
+        "status": "running",
+        "started_at": 1783413761.0390184,
+        "finished_at": null
+      },
+      "generation_row_count": 0,
+      "rows": [],
+      "decision_use": "excluded_duplicate_or_stale_attempt"
+    },
+    {
+      "run_id": "lat_plan_d_rank03_r1_8_min_warm64_retry02_20260707",
+      "run": {
+        "run_id": "lat_plan_d_rank03_r1_8_min_warm64_retry02_20260707",
+        "status": "running",
+        "started_at": 1783414240.5196834,
+        "finished_at": null
+      },
+      "generation_row_count": 8,
+      "rows": [
+        {
+          "gen_no": 0,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 831013.0,
+          "mdd": 16.9,
+          "trade_count": 184
+        },
+        {
+          "gen_no": 1,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 827445.0,
+          "mdd": 17.04,
+          "trade_count": 182
+        },
+        {
+          "gen_no": 2,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 932499.0,
+          "mdd": 18.24,
+          "trade_count": 219
+        },
+        {
+          "gen_no": 3,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 726216.0,
+          "mdd": 20.5,
+          "trade_count": 257
+        },
+        {
+          "gen_no": 4,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 168870.0,
+          "mdd": 12.8,
+          "trade_count": 434
+        },
+        {
+          "gen_no": 5,
+          "status": "ok",
+          "gate_passed": 0,
+          "reason": "total_profit -2.77e+05 <= 0",
+          "profit": -276996.0,
+          "mdd": 20.15,
+          "trade_count": 191
+        },
+        {
+          "gen_no": 6,
+          "status": "ok",
+          "gate_passed": 0,
+          "reason": "total_profit -1.039e+05 <= 0",
+          "profit": -103864.0,
+          "mdd": 19.0,
+          "trade_count": 186
+        },
+        {
+          "gen_no": 7,
+          "status": "ok",
+          "gate_passed": 1,
+          "reason": "ok",
+          "profit": 1652322.0,
+          "mdd": 15.79,
+          "trade_count": 181
+        }
+      ],
+      "decision_use": "excluded_duplicate_or_stale_attempt"
+    }
+  ],
+  "decision_policy": "Only the complete official run_id is used for limited replay decision. retry rows are preserved and excluded from survivor/round decisions.",
+  "process_scan_after_cleanup": "no live target process except transient scan command"
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "ulw_boundary_receipt_v1",
+  "created_at_kst": "2026-07-07T22:32:26+09:00",
+  "session_id": "20260708_rank03_r2_closeout_loop_v2",
+  "scope": "plan-d-rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "selected_only": {
+    "expected_pairs": 1,
+    "observed_generation_rows": 1,
+    "run_id": "lat_plan_d_rank03_r2_selected1_oos_min_warm64_20260708",
+    "run_status": "complete",
+    "label": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90"
+  },
+  "forbidden_scope": {
+    "r3_auto_opened": false,
+    "full_tick_288_run": false,
+    "full_min_288_run": false,
+    "portfolio_generated": false,
+    "export_live_final_promotion_touched": false,
+    "db_update_delete_used": false,
+    "non_selected_oos_run": false
+  },
+  "append_only": {
+    "survivor_exists": true,
+    "local_survivors_appended": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ],
+    "global_oos_survivors_appended": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ],
+    "seed_pool_appended": [
+      "plan_d_rank03_r2_oos_20260708_01"
+    ],
+    "passport_paths": [
+      "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r2_oos_20260708_01.md"
+    ]
+  },
+  "classification": "survivor",
+  "plan_d_decision": "survivor recorded; do not open R3 automatically; next work requires explicit user approval and redesigned evaluation boundary",
+  "evidence": {
+    "transcript": ".omo/ulw-loop/evidence/20260708_rank03_r2_closeout_loop_v2/C001_r2_05_oos_transcript.txt",
+    "result_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
+    "append_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_oos_survivor_append_receipt_20260708.json",
+    "passport": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r2_oos_20260708_01.md"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-07-06T00:00:00+09:00",
+  "scope": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export",
+  "checks": [
+    {
+      "name": "candidate_count",
+      "passed": true
+    },
+    {
+      "name": "static_gate_8_of_8",
+      "passed": true
+    },
+    {
+      "name": "db_registration_dry_run",
+      "passed": true
+    },
+    {
+      "name": "no_inserted_rows",
+      "passed": true
+    },
+    {
+      "name": "no_conflicts",
+      "passed": true
+    },
+    {
+      "name": "db_absence_check",
+      "passed": true
+    },
+    {
+      "name": "no_replay_oos_portfolio_export",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

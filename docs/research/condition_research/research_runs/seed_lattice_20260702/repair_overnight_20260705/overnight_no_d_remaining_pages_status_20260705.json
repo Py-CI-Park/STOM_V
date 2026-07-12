@@ -1,0 +1,74 @@
+{
+  "schema": "overnight_no_d_remaining_pages_status_v1",
+  "created_at": "2026-07-05T21:58:35+09:00",
+  "pages": [
+    {
+      "page": "P6 coverage/gaps/batch_plan",
+      "status": "completed",
+      "evidence": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p6_lattice_coverage_gaps_batch_plan_no_d_20260705.json",
+      "note": "576/576 coverage complete; go=0 hold=0 no_go=576"
+    },
+    {
+      "page": "P6 refinement",
+      "status": "blocked",
+      "blocker": "no go candidates from official tick/min lattice coverage"
+    },
+    {
+      "page": "P6 OOS",
+      "status": "blocked",
+      "blocker": "requires frozen/preregistered refinement survivor; OOS forbidden in current range"
+    },
+    {
+      "page": "P6 portfolio",
+      "status": "blocked",
+      "blocker": "requires OOS survivor; portfolio forbidden in current range"
+    },
+    {
+      "page": "P7 Plan D",
+      "status": "blocked",
+      "blocker": "requires survivor seed pool from Plan B/C/verified seeds; current pool empty"
+    },
+    {
+      "page": "repair seed design",
+      "status": "executable_now",
+      "note": "allowed in research lane only with hypothesis_seed label and sanitized names"
+    },
+    {
+      "page": "bounded preflight 1? max 8 pairs",
+      "status": "conditionally_executable_now",
+      "condition": "new repair seeds must be INSERT-only registered with unique names; no full 288 run"
+    },
+    {
+      "page": "bounded preflight 2? max 24 pairs",
+      "status": "conditional_after_1?",
+      "condition": "1? must produce honest rows and at least hold/go signal"
+    },
+    {
+      "page": "bounded preflight 3? max 48 pairs",
+      "status": "conditional_after_2?",
+      "condition": "2? must show meaningful go/hold rate and time budget remains"
+    },
+    {
+      "page": "final audit/handoff for current no-D range",
+      "status": "executable_now",
+      "note": "does not complete whole Plan B/D project; documents current range only"
+    }
+  ],
+  "plan_d_input_mapping": {
+    "required": [
+      "go candidates",
+      "refinement survivors",
+      "freeze/preregistration",
+      "OOS survivors",
+      "portfolio/seed pool candidates"
+    ],
+    "current": [
+      "go=0",
+      "refinement not opened",
+      "freeze/preregistration absent",
+      "OOS forbidden/not opened",
+      "portfolio absent"
+    ],
+    "decision": "Plan D/P7 must remain blocked until repair preflight creates preregisterable survivors."
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "plan_d_rank03_readiness_review_v1",
+  "created_at": "2026-07-07T17:34:04+09:00",
+  "scope": "rank03-readiness-review-only",
+  "rank03_seed": {
+    "seed_id": "plan_d_rcs_oos_20260706_rank03",
+    "condition_id": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+    "priority_rank": 3,
+    "buy_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_S",
+    "passport_path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rcs_oos_20260706_rank03.md",
+    "selected_oos_best": {
+      "measurement_frame": "selected_oos_min_2026_01_01_to_2026_02_27_warm64",
+      "profit_krw": 865831.0,
+      "mdd_pct": 6.28,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "score": 8.405463678617608,
+      "calmar": 18.630573248407643,
+      "uptrend_r2": 0.630467957404525,
+      "payoff_ratio": 2.4264705882352944,
+      "give_back_rate": 0.1111111111111111,
+      "gate_passed": true,
+      "reason": "ok"
+    },
+    "preflight": {
+      "profit_krw": 874241.0,
+      "mdd_pct": 17.04,
+      "daily_avg_trades": 0.8,
+      "trade_count": 179
+    }
+  },
+  "positive_control": {
+    "source": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_pool_20260706\\plan_d_seed_pool_positive_control_receipt_20260706.json",
+    "verdict": "gate_healthy",
+    "all_passed": true,
+    "passed_count": 34,
+    "total": 34,
+    "authority": "advisory_only"
+  },
+  "sha_recheck": {
+    "created_at": "2026-07-07T17:34:04+09:00",
+    "scope": "rank03-readiness-review-only",
+    "seed_id": "plan_d_rcs_oos_20260706_rank03",
+    "condition_id": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+    "buy_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_S",
+    "db_buy_found": true,
+    "db_sell_found": true,
+    "expected_buy_sha256": "8bc41fe1cead5449625dc6daf7b675fdc23009237d382a32028b6c10c413feb4",
+    "actual_buy_sha256": "8bc41fe1cead5449625dc6daf7b675fdc23009237d382a32028b6c10c413feb4",
+    "expected_sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+    "actual_sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+    "passed": true
+  },
+  "global_ledger_audit": {
+    "created_at": "2026-07-07T17:34:04+09:00",
+    "scope": "rank03-readiness-review-only",
+    "seed_pool_count": 22,
+    "oos_survivor_count": 22,
+    "rank03_present": true,
+    "rank03_oos_survivor_present": true,
+    "rank03_folder_preexisting": false,
+    "seed_pool_sha256": "aa05bc395d4f97f6489f0f5122bb824d516c508a274f8f1734c7393e91af4cb4",
+    "oos_survivors_sha256": "0ed6249c334c567a7d3336694c4bebd8408e8be0ce4bcb88aff1da53447f9428"
+  },
+  "readiness_status": "ready_for_rank03_r1_generate8_dryrun_next_scope",
+  "allowed_next_action": "plan-d-seed-r1-rank03-generate8-dryrun-no-oos-portfolio-export",
+  "forbidden_in_this_scope": [
+    "DB INSERT apply",
+    "official replay",
+    "OOS",
+    "portfolio",
+    "export/live/final promotion",
+    "DB UPDATE/DELETE"
+  ]
+}

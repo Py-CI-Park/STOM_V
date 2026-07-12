@@ -1,0 +1,47 @@
+{
+  "created_at_kst": "2026-07-07T22:32:26+09:00",
+  "read_scope": "full_document",
+  "applied_sections": [
+    "R2-05 selected candidate verification",
+    "OOS preregistration finalization",
+    "selected-only OOS-style robustness replay",
+    "full condition research result and analysis"
+  ],
+  "documents": [
+    {
+      "path": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
+      "line_count": 102,
+      "sha256": "ca3fd23051aab9aaebb1cb7131990aa96c076e7fb690b89701bd079366572705"
+    },
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank03_r2_limited_replay_boundary_handoff.md",
+      "line_count": 113,
+      "sha256": "896d77c91e84b7b3fb45ce919bf326997180f305a5d0b535a9853bf813bce80c"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_limited_replay_result_20260707.json",
+      "line_count": 613,
+      "sha256": "b092be690f9720614ead8b4c9a08f83816e058e738a29372430dc420f2910b36"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json",
+      "line_count": 23,
+      "sha256": "d6448045db76e77d6298ec8d4fdd992484ac5fbfd5b0358a9d7611b5c84b7d51"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_selected_freeze_ledger_20260707.jsonl",
+      "line_count": 1,
+      "sha256": "a17256d4e3fddc8262e24805c20b410689c0a54b4a1ac55d9dd9ed72804b3ed2"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_selected_oos_preregistration_draft_20260707.md",
+      "line_count": 40,
+      "sha256": "50ec39a5393093e62ee9a9fd3a5c2e28303152cf1aa8d53d53fb34047fb8662a"
+    },
+    {
+      "path": "docs/update_log/2026-07-07_lattice_research_rereview_and_rank03_r2_recommendation.md",
+      "line_count": 109,
+      "sha256": "38ade5f0fc06072a5f3d85a8201927fbb184ecabb982ab6ab2bc183c2684679b"
+    }
+  ]
+}

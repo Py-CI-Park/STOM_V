@@ -1,0 +1,2040 @@
+{
+  "version": 1,
+  "createdAt": "2026-07-08T13:19:08.898Z",
+  "updatedAt": "2026-07-08T13:33:20.849Z",
+  "briefPath": ".omo/ulw-loop/20260708_lattice_v2_to_plan_d_conditional_overnight/brief.md",
+  "goalsPath": ".omo/ulw-loop/20260708_lattice_v2_to_plan_d_conditional_overnight/goals.json",
+  "ledgerPath": ".omo/ulw-loop/20260708_lattice_v2_to_plan_d_conditional_overnight/ledger.jsonl",
+  "codexGoalMode": "aggregate",
+  "goals": [
+    {
+      "id": "G001-docs-update-log-2026-07-08-lattice-c",
+      "title": "`docs/update_log/2026-07-08_lattice_condition_generation_v2_body_stat...",
+      "objective": "`docs/update_log/2026-07-08_lattice_condition_generation_v2_body_static_dryrun_handoff.md`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `docs/update_log/2026-07-08_lattice_condition_generation_v2_body_static_dryru...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 1.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `docs/update_log/2026-07-08_lattice_condition_generation_v2_body_static_dryru....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `docs/update_log/2026-07-08_lattice_condition_generation_v2_body_static_dryru....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G002-docs-research-condition-research-gen",
+      "title": "`docs/research/condition_research/generated_conditions/lattice_v2_bod...",
+      "objective": "`docs/research/condition_research/generated_conditions/lattice_v2_body_static_dryrun_20260708/lattice_v2_body_static_dryrun_seeds_20260708.json`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G003-docs-research-condition-research-gen",
+      "title": "`docs/research/condition_research/generated_conditions/lattice_v2_bod...",
+      "objective": "`docs/research/condition_research/generated_conditions/lattice_v2_body_static_dryrun_20260708/lattice_v2_body_static_gate_receipt_20260708.json`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 3.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G004-docs-research-condition-research-gen",
+      "title": "`docs/research/condition_research/generated_conditions/lattice_v2_bod...",
+      "objective": "`docs/research/condition_research/generated_conditions/lattice_v2_body_static_dryrun_20260708/lattice_v2_body_db_registration_dryrun_receipt_20260708.json`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 4.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `docs/research/condition_research/generated_conditions/lattice_v2_body_static....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G005-docs-research-condition-research-res",
+      "title": "`docs/research/condition_research/research_runs/seed_lattice_20260702...",
+      "objective": "`docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_c...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 5.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_c....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_c....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G006-lane-min-official-limited-replay",
+      "title": "lane: min official limited replay",
+      "objective": "lane: min official limited replay",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: lane: min official limited replay",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 6.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: lane: min official limited replay.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: lane: min official limited replay.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G007-db-database-stock-min-back-db",
+      "title": "DB: `_database/stock_min_back.db`",
+      "objective": "DB: `_database/stock_min_back.db`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: DB: `_database/stock_min_back.db`",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 7.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: DB: `_database/stock_min_back.db`.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: DB: `_database/stock_min_back.db`.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G008-2025-04-07-2026-02-27",
+      "title": "기간: 2025-04-07 ~ 2026-02-27",
+      "objective": "기간: 2025-04-07 ~ 2026-02-27",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 기간: 2025-04-07 ~ 2026-02-27",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 8.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 기간: 2025-04-07 ~ 2026-02-27.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 기간: 2025-04-07 ~ 2026-02-27.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G009-09-00-15-19",
+      "title": "시간: 09:00 ~ 15:19",
+      "objective": "시간: 09:00 ~ 15:19",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 시간: 09:00 ~ 15:19",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 9.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 시간: 09:00 ~ 15:19.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 시간: 09:00 ~ 15:19.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G010-engine-warm64",
+      "title": "engine: warm64",
+      "objective": "engine: warm64",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: engine: warm64",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 10.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: engine: warm64.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: engine: warm64.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G011-64-warm-engine-prepare-8",
+      "title": "방식: 64개 warm engine prepare 후 등록된 8개 후보만 순차 평가",
+      "objective": "방식: 64개 warm engine prepare 후 등록된 8개 후보만 순차 평가",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 방식: 64개 warm engine prepare 후 등록된 8개 후보만 순차 평가",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 11.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 방식: 64개 warm engine prepare 후 등록된 8개 후보만 순차 평가.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 방식: 64개 warm engine prepare 후 등록된 8개 후보만 순차 평가.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G012-config-docs-research-condition-resea",
+      "title": "config: `docs/research/condition_research/research_runs/seed_lattice_...",
+      "objective": "config: `docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: config: `docs/research/condition_research/research_runs/seed_lattice_20260702...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 12.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: config: `docs/research/condition_research/research_runs/seed_lattice_20260702....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: config: `docs/research/condition_research/research_runs/seed_lattice_20260702....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G013-handoff-v2-body-static-dry-run",
+      "title": "최신 handoff와 v2 body static dry-run 산출물을 확인한다.",
+      "objective": "최신 handoff와 v2 body static dry-run 산출물을 확인한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 최신 handoff와 v2 body static dry-run 산출물을 확인한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 13.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 최신 handoff와 v2 body static dry-run 산출물을 확인한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 최신 handoff와 v2 body static dry-run 산출물을 확인한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G014-db-insert-only-apply-preflight",
+      "title": "DB INSERT-only apply 전 preflight를 수행한다.",
+      "objective": "DB INSERT-only apply 전 preflight를 수행한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: DB INSERT-only apply 전 preflight를 수행한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 14.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: DB INSERT-only apply 전 preflight를 수행한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: DB INSERT-only apply 전 preflight를 수행한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G015-8-body-seed-insert-only",
+      "title": "8개 body seed만 INSERT-only로 등록한다.",
+      "objective": "8개 body seed만 INSERT-only로 등록한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 8개 body seed만 INSERT-only로 등록한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 15.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 8개 body seed만 INSERT-only로 등록한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 8개 body seed만 INSERT-only로 등록한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G016-db-update-delete",
+      "title": "DB UPDATE/DELETE는 절대 하지 않는다.",
+      "objective": "DB UPDATE/DELETE는 절대 하지 않는다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: DB UPDATE/DELETE는 절대 하지 않는다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 16.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: DB UPDATE/DELETE는 절대 하지 않는다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: DB UPDATE/DELETE는 절대 하지 않는다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G017-pairs-mapping-provenance-backup-rece",
+      "title": "등록 후 pairs / mapping / provenance / backup receipt를 기록한다.",
+      "objective": "등록 후 pairs / mapping / provenance / backup receipt를 기록한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 등록 후 pairs / mapping / provenance / backup receipt를 기록한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 17.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 등록 후 pairs / mapping / provenance / backup receipt를 기록한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 등록 후 pairs / mapping / provenance / backup receipt를 기록한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G018-8-min-warm64-limited-replay",
+      "title": "등록된 8개만 공식 min 전체기간 warm64 limited replay로 실행한다.",
+      "objective": "등록된 8개만 공식 min 전체기간 warm64 limited replay로 실행한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 등록된 8개만 공식 min 전체기간 warm64 limited replay로 실행한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 18.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 등록된 8개만 공식 min 전체기간 warm64 limited replay로 실행한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 등록된 8개만 공식 min 전체기간 warm64 limited replay로 실행한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G019-survivor-hold-no-go",
+      "title": "결과를 `survivor` / `hold` / `no_go`로 분류한다.",
+      "objective": "결과를 `survivor` / `hold` / `no_go`로 분류한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 결과를 `survivor` / `hold` / `no_go`로 분류한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 19.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 결과를 `survivor` / `hold` / `no_go`로 분류한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 결과를 `survivor` / `hold` / `no_go`로 분류한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G020-survivor-plan-d",
+      "title": "survivor가 없으면 Plan D를 실행하지 않고 중단 보고한다.",
+      "objective": "survivor가 없으면 Plan D를 실행하지 않고 중단 보고한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: survivor가 없으면 Plan D를 실행하지 않고 중단 보고한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 20.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: survivor가 없으면 Plan D를 실행하지 않고 중단 보고한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: survivor가 없으면 Plan D를 실행하지 않고 중단 보고한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G021-survivor-selected-survivor-freeze-pr",
+      "title": "survivor가 있으면 selected survivor만 freeze/preregistration 확정한다.",
+      "objective": "survivor가 있으면 selected survivor만 freeze/preregistration 확정한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: survivor가 있으면 selected survivor만 freeze/preregistration 확정한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 21.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: survivor가 있으면 selected survivor만 freeze/preregistration 확정한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: survivor가 있으면 selected survivor만 freeze/preregistration 확정한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G022-preregistration-selected-survivor-oo",
+      "title": "preregistration된 selected survivor만 공식 OOS-style robustness replay로 실...",
+      "objective": "preregistration된 selected survivor만 공식 OOS-style robustness replay로 실행한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: preregistration된 selected survivor만 공식 OOS-style robustness replay로 실행한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 22.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: preregistration된 selected survivor만 공식 OOS-style robustness replay로 실행한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: preregistration된 selected survivor만 공식 OOS-style robustness replay로 실행한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G023-oos-survivor-append-only-oos-survivo",
+      "title": "OOS survivor가 있으면 append-only로 `oos_survivors`, `seed_pool`, `passpor...",
+      "objective": "OOS survivor가 있으면 append-only로 `oos_survivors`, `seed_pool`, `passport`를 기록한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: OOS survivor가 있으면 append-only로 `oos_survivors`, `seed_pool`, `passport`를 기록한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 23.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: OOS survivor가 있으면 append-only로 `oos_survivors`, `seed_pool`, `passport`를 기록한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: OOS survivor가 있으면 append-only로 `oos_survivors`, `seed_pool`, `passport`를 기록한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G024-seed-pool-plan-d-intake-readiness",
+      "title": "seed_pool 입력이 생긴 경우에만 Plan D intake/readiness를 수행한다.",
+      "objective": "seed_pool 입력이 생긴 경우에만 Plan D intake/readiness를 수행한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: seed_pool 입력이 생긴 경우에만 Plan D intake/readiness를 수행한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 24.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: seed_pool 입력이 생긴 경우에만 Plan D intake/readiness를 수행한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: seed_pool 입력이 생긴 경우에만 Plan D intake/readiness를 수행한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G025-plan-d-r-a-r-b-readiness-r-c",
+      "title": "Plan D는 R-a/R-b readiness와 다음 R-c 가능 여부 판단까지만 진행한다.",
+      "objective": "Plan D는 R-a/R-b readiness와 다음 R-c 가능 여부 판단까지만 진행한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Plan D는 R-a/R-b readiness와 다음 R-c 가능 여부 판단까지만 진행한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 25.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Plan D는 R-a/R-b readiness와 다음 R-c 가능 여부 판단까지만 진행한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Plan D는 R-a/R-b readiness와 다음 R-c 가능 여부 판단까지만 진행한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G026-portfolio-export-live-final-promotio",
+      "title": "portfolio / export / live / final promotion은 실행하지 않는다.",
+      "objective": "portfolio / export / live / final promotion은 실행하지 않는다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: portfolio / export / live / final promotion은 실행하지 않는다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 26.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: portfolio / export / live / final promotion은 실행하지 않는다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: portfolio / export / live / final promotion은 실행하지 않는다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G027-2026-07-09-06-50-kst-handoff",
+      "title": "2026-07-09 06:50 KST 전에는 전체 handoff와 다음 명령어를 작성하고 한글 커밋한다.",
+      "objective": "2026-07-09 06:50 KST 전에는 전체 handoff와 다음 명령어를 작성하고 한글 커밋한다.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 2026-07-09 06:50 KST 전에는 전체 handoff와 다음 명령어를 작성하고 한글 커밋한다.",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 27.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 2026-07-09 06:50 KST 전에는 전체 handoff와 다음 명령어를 작성하고 한글 커밋한다..",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 2026-07-09 06:50 KST 전에는 전체 handoff와 다음 명령어를 작성하고 한글 커밋한다..",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G028-db-update-delete",
+      "title": "DB UPDATE/DELETE 금지",
+      "objective": "DB UPDATE/DELETE 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: DB UPDATE/DELETE 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 28.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: DB UPDATE/DELETE 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: DB UPDATE/DELETE 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G029-8-body-seed-db",
+      "title": "8개 body seed 외 DB 등록 금지",
+      "objective": "8개 body seed 외 DB 등록 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 8개 body seed 외 DB 등록 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 29.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 8개 body seed 외 DB 등록 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 8개 body seed 외 DB 등록 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G030-8-body-seed-replay",
+      "title": "8개 body seed 외 replay 금지",
+      "objective": "8개 body seed 외 replay 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 8개 body seed 외 replay 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 30.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 8개 body seed 외 replay 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 8개 body seed 외 replay 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G031-preregistration-oos",
+      "title": "preregistration 없는 OOS 금지",
+      "objective": "preregistration 없는 OOS 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: preregistration 없는 OOS 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 31.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: preregistration 없는 OOS 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: preregistration 없는 OOS 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G032-survivor-plan-d",
+      "title": "survivor 없는 Plan D 실행 금지",
+      "objective": "survivor 없는 Plan D 실행 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: survivor 없는 Plan D 실행 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 32.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: survivor 없는 Plan D 실행 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: survivor 없는 Plan D 실행 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G033-portfolio",
+      "title": "portfolio 산출 금지",
+      "objective": "portfolio 산출 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: portfolio 산출 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 33.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: portfolio 산출 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: portfolio 산출 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G034-export-live-final-promotion",
+      "title": "export/live/final promotion 금지",
+      "objective": "export/live/final promotion 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: export/live/final promotion 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 34.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: export/live/final promotion 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: export/live/final promotion 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G035-full-tick-288",
+      "title": "full tick 288 실행 금지",
+      "objective": "full tick 288 실행 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: full tick 288 실행 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 35.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: full tick 288 실행 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: full tick 288 실행 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G036-full-min-288",
+      "title": "full min 288 실행 금지",
+      "objective": "full min 288 실행 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: full min 288 실행 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 36.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: full min 288 실행 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: full min 288 실행 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G037-git-add-a",
+      "title": "`git add -A` 금지",
+      "objective": "`git add -A` 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `git add -A` 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 37.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `git add -A` 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `git add -A` 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G038-dashboard-7-gjc-unrelated-omo",
+      "title": "dashboard 7파일, `.gjc`, unrelated `.omo` 잔재 스테이징 금지",
+      "objective": "dashboard 7파일, `.gjc`, unrelated `.omo` 잔재 스테이징 금지",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: dashboard 7파일, `.gjc`, unrelated `.omo` 잔재 스테이징 금지",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 38.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: dashboard 7파일, `.gjc`, unrelated `.omo` 잔재 스테이징 금지.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: dashboard 7파일, `.gjc`, unrelated `.omo` 잔재 스테이징 금지.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G039-batch-status-row",
+      "title": "batch status가 정상 row를 생성함",
+      "objective": "batch status가 정상 row를 생성함",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: batch status가 정상 row를 생성함",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 39.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: batch status가 정상 row를 생성함.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: batch status가 정상 row를 생성함.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G040-gate-passed-true",
+      "title": "`gate_passed=true`",
+      "objective": "`gate_passed=true`",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: `gate_passed=true`",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 40.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: `gate_passed=true`.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: `gate_passed=true`.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G041",
+      "title": "손익이 양수",
+      "objective": "손익이 양수",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 손익이 양수",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 41.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 손익이 양수.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 손익이 양수.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G042-mdd-config-gate",
+      "title": "MDD가 config gate 범위 이내",
+      "objective": "MDD가 config gate 범위 이내",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: MDD가 config gate 범위 이내",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 42.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: MDD가 config gate 범위 이내.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: MDD가 config gate 범위 이내.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G043-daily-trade-gate",
+      "title": "거래수 및 daily trade가 gate 기준을 만족",
+      "objective": "거래수 및 daily trade가 gate 기준을 만족",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 거래수 및 daily trade가 gate 기준을 만족",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 43.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 거래수 및 daily trade가 gate 기준을 만족.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 거래수 및 daily trade가 gate 기준을 만족.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G044-db-insert-only",
+      "title": "DB INSERT-only 결과",
+      "objective": "DB INSERT-only 결과",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: DB INSERT-only 결과",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 44.",
+          "essential": true,
+          "capturedEvidence": "INSERT-only apply inserted 8 seeds / 16 rows; postcheck SHA matched; receipts under docs/research/condition_research/generated_conditions/lattice_v2_to_plan_d_conditional_20260708/",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:32:23.353Z",
+          "notes": "DB UPDATE/DELETE not used; runtime DB backup ai_strategy_loop/state/loop_strategies.db.bak.lattice_20260708T132014Z"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: DB INSERT-only 결과.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: DB INSERT-only 결과.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:32:23.353Z"
+    },
+    {
+      "id": "G045-backup-provenance-mapping",
+      "title": "backup/provenance/mapping 경로",
+      "objective": "backup/provenance/mapping 경로",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: backup/provenance/mapping 경로",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 45.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: backup/provenance/mapping 경로.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: backup/provenance/mapping 경로.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G046-limited-replay",
+      "title": "limited replay 결과",
+      "objective": "limited replay 결과",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: limited replay 결과",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 46.",
+          "essential": true,
+          "capturedEvidence": "official min full-period warm64 limited replay completed for exactly 8 pairs; result JSON records 8/8 honest rows, 7 ok, 1 error, 0 gate_passed",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:32:48.903Z",
+          "notes": "run_id=lat_lattice_v2_body8_min_warm64_20260708"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: limited replay 결과.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: limited replay 결과.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:32:48.903Z"
+    },
+    {
+      "id": "G047-survivor-hold-no-go",
+      "title": "survivor/hold/no_go 목록",
+      "objective": "survivor/hold/no_go 목록",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: survivor/hold/no_go 목록",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 47.",
+          "essential": true,
+          "capturedEvidence": "classified 0 survivor, 0 hold, 8 no_go; all ok rows had negative profit and MDD above cap",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:32:48.936Z",
+          "notes": "see lattice_v2_body8_min_warm64_limited_replay_result_20260708.json"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: survivor/hold/no_go 목록.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: survivor/hold/no_go 목록.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:32:48.936Z"
+    },
+    {
+      "id": "G048-oos",
+      "title": "OOS 실행 여부와 결과",
+      "objective": "OOS 실행 여부와 결과",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: OOS 실행 여부와 결과",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 48.",
+          "essential": true,
+          "capturedEvidence": "OOS was correctly not executed because there were zero limited replay survivors and preregistration branch was not unlocked",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:32:58.105Z",
+          "notes": "constraint observed: no OOS without survivor/preregistration"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: OOS 실행 여부와 결과.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: OOS 실행 여부와 결과.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:32:58.105Z"
+    },
+    {
+      "id": "G049-seed-pool",
+      "title": "seed_pool 반영 여부",
+      "objective": "seed_pool 반영 여부",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: seed_pool 반영 여부",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 49.",
+          "essential": true,
+          "capturedEvidence": "seed_pool and oos_survivors were not appended because OOS was not opened and no OOS survivor exists",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:33:10.280Z",
+          "notes": "append-only files intentionally untouched in this page"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: seed_pool 반영 여부.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: seed_pool 반영 여부.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:33:10.280Z"
+    },
+    {
+      "id": "G050-plan-d",
+      "title": "Plan D 진행 가능/불가능 판단",
+      "objective": "Plan D 진행 가능/불가능 판단",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Plan D 진행 가능/불가능 판단",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 50.",
+          "essential": true,
+          "capturedEvidence": "Plan D was not executed; stop decision recorded because limited replay survivor_count=0",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:32:49.209Z",
+          "notes": "see lattice_v2_to_plan_d_stop_decision_20260708.json and handoff"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Plan D 진행 가능/불가능 판단.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Plan D 진행 가능/불가능 판단.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:32:49.209Z"
+    },
+    {
+      "id": "G051",
+      "title": "전체 연구 진행률",
+      "objective": "전체 연구 진행률",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 전체 연구 진행률",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 51.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 전체 연구 진행률.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 전체 연구 진행률.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    },
+    {
+      "id": "G052",
+      "title": "다음 추천 명령어",
+      "objective": "다음 추천 명령어",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 다음 추천 명령어",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 52.",
+          "essential": true,
+          "capturedEvidence": "handoff contains recommended next command: ulw-plan lattice_condition_generation_v2_risk_sell_repair_review_20260709",
+          "status": "pass",
+          "capturedAt": "2026-07-08T13:33:20.849Z",
+          "notes": "next step is analysis/plan, not another replay or Plan D continuation"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 다음 추천 명령어.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 다음 추천 명령어.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:33:20.849Z"
+    },
+    {
+      "id": "G053",
+      "title": "커밋 해시",
+      "objective": "커밋 해시",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: 커밋 해시",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 53.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: 커밋 해시.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: 커밋 해시.",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T13:19:08.898Z",
+      "updatedAt": "2026-07-08T13:19:08.898Z"
+    }
+  ],
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_lattice_v2_to_plan_d_conditional_overnight/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_lattice_v2_to_plan_d_conditional_overnight/ledger.jsonl as the audit trail."
+}

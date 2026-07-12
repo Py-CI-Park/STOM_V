@@ -1,0 +1,85 @@
+{
+  "schema": "plan_d_next_seed_intake_source_read_receipt_v1",
+  "created_at": "2026-07-07T17:25:16+09:00",
+  "read_scope": "full_document",
+  "purpose": "Confirm rank02 branch freeze and select the next unprocessed Plan D seed without opening OOS, portfolio, export/live/final, or DB mutation.",
+  "sources": [
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank02_r6_insert_replay_handoff.md",
+      "line_count": 74,
+      "sha256": "774b1bbace0f64093d2e44975290697302b1f58ff18a067bf0a5c8c2bfa0669a",
+      "applied_sections": [
+        "branch decision",
+        "next page",
+        "forbidden scope"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_p_r6_insert_replay_20260707/plan_d_rank02_r6_limited_replay_result_20260707.json",
+      "line_count": 296,
+      "sha256": "4bbc124aec55cb06269a94f2b8497d45b6b2be85772324934e2599a5a704f8dc",
+      "applied_sections": [
+        "8/8 honest rows",
+        "gate_passed 8/8",
+        "flat-only replay outcome"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_p_r6_insert_replay_20260707/plan_d_rank02_r6_round_decision_20260707.json",
+      "line_count": 44,
+      "sha256": "b91f5fb4869c1c9bfc82d19e21929ef368873516447cc0594eb8657454b92058",
+      "applied_sections": [
+        "decision_counts",
+        "consecutive_no_improve_since_r3",
+        "next_allowed_action"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_p_r6_insert_replay_20260707/plan_d_rank02_r6_branch_freeze_review_20260707.json",
+      "line_count": 46,
+      "sha256": "b371bbdb8618d5b6b802cf5f4da3f7bdbc925cb504da55ca838798ea35a35190",
+      "applied_sections": [
+        "freeze trigger",
+        "allowed_next_scope",
+        "forbidden_next_scope"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+      "line_count": 22,
+      "sha256": "aa05bc395d4f97f6489f0f5122bb824d516c508a274f8f1734c7393e91af4cb4",
+      "applied_sections": [
+        "seed priority order",
+        "rank01-rank15 original Plan B survivors",
+        "rank02 descendant records"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+      "line_count": 22,
+      "sha256": "0ed6249c334c567a7d3336694c4bebd8408e8be0ce4bcb88aff1da53447f9428",
+      "applied_sections": [
+        "survivor metrics",
+        "rank03 evidence",
+        "descendant survivor records"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rcs_oos_20260706_rank03.md",
+      "line_count": 147,
+      "sha256": "ede53446487066afbcf501d32ec7694a95043b15f83e2c60268ce3aa3cc15501",
+      "applied_sections": [
+        "seed passport",
+        "best evidence",
+        "caveat"
+      ]
+    }
+  ],
+  "guardrails": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "db_mutation_executed": false,
+    "full_tick_or_min_288_executed": false
+  }
+}

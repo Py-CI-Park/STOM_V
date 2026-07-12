@@ -1,0 +1,87 @@
+{
+  "schema": "lattice_condition_generation_v2_source_read_receipt_v1",
+  "created_at": "2026-07-08T11:01:22+09:00",
+  "read_scope": "full_document_to_eof",
+  "sources": [
+    {
+      "key": "candidate_plan",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_dryrun_20260708.md",
+      "read_scope": "full_document_to_eof",
+      "line_count": 59,
+      "sha256": "d69bd65e9390b37228c2cc3d837f8af8971b061fa64cdc3df49603df5b8013c4",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "failure_map",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+      "read_scope": "full_document_to_eof",
+      "line_count": 687,
+      "sha256": "774619a36744b1ad2eabb88809778cbb0610c129ec164aeeb641d4527811065f",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "seed_lineage_audit",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_seed_lineage_audit_20260708.json",
+      "read_scope": "full_document_to_eof",
+      "line_count": 249,
+      "sha256": "c463d04153a1adf2628d302f205a7b7eaa0d9e0268257181aea378702fe20a7d",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "axis_spec",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+      "read_scope": "full_document_to_eof",
+      "line_count": 67,
+      "sha256": "9b38bc3ab646ba2b22e970bb7db42ae23362dfee6640fc1995d7fd5b57417be1",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "evaluation_protocol",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_evaluation_protocol_20260708.json",
+      "read_scope": "full_document_to_eof",
+      "line_count": 61,
+      "sha256": "56f06efb1b8bb46b8ca4b43f08a39e0837bbdaa16ce8a84e0cb7ea6ca236c54f",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "candidate_quota",
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+      "read_scope": "full_document_to_eof",
+      "line_count": 53,
+      "sha256": "2c196262694e9d0d0387eb8c6a3cfd7acf26ba9995b28952374f039ba0a84382",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "strategy_txt",
+      "path": "utility\\ai_agent\\strategy.txt",
+      "read_scope": "full_document_to_eof",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "rules_txt",
+      "path": "utility\\ai_agent\\rules.txt",
+      "read_scope": "full_document_to_eof",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "seed_pool",
+      "path": "docs\\research\\condition_research\\generated_conditions\\seed_pool.jsonl",
+      "read_scope": "full_document_to_eof",
+      "line_count": 25,
+      "sha256": "f8f7f115eb0d85d4417ddbd8cae25f8c5e19a4a28bbfc65519cc94cede56b926",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    },
+    {
+      "key": "oos_survivors",
+      "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+      "read_scope": "full_document_to_eof",
+      "line_count": 25,
+      "sha256": "5d62786250803136c3f6c3a8d1f963cda2efcb964f09f6113f3654f87fb97411",
+      "applied_section": "candidate metadata generation, static boundary, lineage, and DB registration dry-run only"
+    }
+  ]
+}
