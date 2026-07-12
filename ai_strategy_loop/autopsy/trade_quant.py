@@ -61,8 +61,9 @@ def _numeric(df: pd.DataFrame, col: Optional[str]) -> Optional[pd.Series]:
 def _parse_hhmm(raw: Any) -> Optional[str]:
     """매수시간류 값에서 'HHMM' 4자리를 뽑는다. 실패하면 None.
 
-    지원 형태: YYYYMMDDHHMM(12자리), YYYYMMDDHHMMSS(14자리), HHMMSS(6자리),
-    HHMM(4자리). 그 외 자릿수는 해석 불가로 None.
+    지원 형태: YYYYMMDDHHMM(12자리), YYYYMMDDHHMMSS(14자리), HHMMSS(6자리 —
+    int 파싱으로 선행 0이 소실된 5자리도 zfill 복원), HHMM(4자리).
+    그 외 자릿수(13자리 epoch ms 등)는 오버매치 방지를 위해 None.
     """
     if raw is None:
         return None
@@ -70,8 +71,11 @@ def _parse_hhmm(raw: Any) -> Optional[str]:
     if s == "" or s.lower() == "nan":
         return None
     digits = "".join(ch for ch in s if ch.isdigit())
-    if len(digits) >= 12:
+    if len(digits) in (12, 14):
         return digits[8:12]
+    if len(digits) == 5:
+        # HHMMSS가 int로 읽혀 선행 0이 소실된 형태(예: 090512 → 90512).
+        digits = digits.zfill(6)
     if len(digits) == 6:
         return digits[0:4]
     if len(digits) == 4:
@@ -119,6 +123,9 @@ def _expectancy_pf_winrate_payoff(returns: pd.Series) -> Dict[str, Any]:
 
     gross_profit = float(wins.sum())
     gross_loss = float(-losses.sum())  # 양수화.
+    # 의도적 분기: fitness/score.py(load_exit_quality...)는 스코어 수식용이라
+    #   분모 0을 999.0 cap으로 처리하지만, 이 모듈은 서술/프롬프트 환류용이라
+    #   정직한 결측(None+사유)이 옳다 — 두 관례를 '정합화'하지 말 것.
     if gross_loss > 0:
         out["profit_factor"] = _safe_round(gross_profit / gross_loss)
     else:
@@ -259,6 +266,7 @@ def _time_of_day_analysis(
     returns: pd.Series,
     pnl: pd.Series,
     fine_time: bool,
+    pnl_unit: str = "pct",
 ) -> Optional[Dict[str, Any]]:
     """매수시각 HHMM 버킷(fine_time: 5분, else 30분)별 {count, win_rate, total_pnl}."""
     if buy_raw is None:
@@ -280,7 +288,10 @@ def _time_of_day_analysis(
             b["total_pnl"] += float(p)
 
     if not buckets:
-        return {"bucket_minutes": bucket_minutes, "buckets": {}, "reason": "매수시각 파싱 가능한 행 없음"}
+        return {
+            "bucket_minutes": bucket_minutes, "pnl_unit": pnl_unit,
+            "buckets": {}, "reason": "매수시각 파싱 가능한 행 없음",
+        }
 
     out_buckets: Dict[str, Any] = {}
     for label, b in sorted(buckets.items()):
@@ -289,7 +300,7 @@ def _time_of_day_analysis(
             "win_rate": _safe_round(b["win_count"] / b["count"]) if b["count"] else None,
             "total_pnl": _safe_round(b["total_pnl"]),
         }
-    return {"bucket_minutes": bucket_minutes, "buckets": out_buckets}
+    return {"bucket_minutes": bucket_minutes, "pnl_unit": pnl_unit, "buckets": out_buckets}
 
 
 def _mfe_mae_analysis(
@@ -364,21 +375,31 @@ def _drawdown_contributors(
     window = range(peak_idx + 1, trough_idx + 1)
     total_decline = abs(float(equity.iloc[trough_idx]) - float(equity.iloc[peak_idx]))
 
-    contributors = []
+    # 기여자 = 최대낙폭 구간 내 **손실 거래만**(아키텍트 리뷰 MEDIUM 반영).
+    #   share 분모는 구간 내 총손실(gross loss) — 구간 내 이익 거래가 상쇄해도
+    #   share 합이 100%를 넘지 않게 의미를 고정한다.
+    loss_contributors = []
     for i in window:
         pnl_i = float(p.iloc[i])
-        contributors.append(
+        if pnl_i >= 0:
+            continue
+        loss_contributors.append(
             {
                 "index": i,
                 "id": (str(ids.iloc[i]) if ids is not None else None),
                 "pnl": _safe_round(pnl_i),
             }
         )
-    contributors.sort(key=lambda c: c["pnl"] if c["pnl"] is not None else 0.0)
+    loss_contributors.sort(key=lambda c: c["pnl"] if c["pnl"] is not None else 0.0)
+    window_gross_loss = -sum(c["pnl"] for c in loss_contributors if c["pnl"] is not None)
 
     top = []
-    for c in contributors[:top_n]:
-        share = (abs(c["pnl"]) / total_decline) if total_decline > 0 and c["pnl"] is not None else None
+    for c in loss_contributors[:max(0, top_n)]:
+        share = (
+            (-c["pnl"] / window_gross_loss)
+            if window_gross_loss > 0 and c["pnl"] is not None
+            else None
+        )
         top.append(
             {
                 "index": c["index"],
@@ -390,6 +411,7 @@ def _drawdown_contributors(
 
     return {
         "total_decline": _safe_round(total_decline),
+        "window_gross_loss": _safe_round(window_gross_loss),
         "peak_index": peak_idx,
         "trough_index": trough_idx,
         "top": top,
@@ -466,8 +488,9 @@ def _build_nl_lines(metrics: Dict[str, Any], trade_count: int, top_n: int) -> Li
     tod = metrics.get("time_of_day")
     if tod and tod.get("buckets"):
         best_label, best = max(tod["buckets"].items(), key=lambda kv: kv[1]["total_pnl"] if kv[1]["total_pnl"] is not None else 0.0)
+        unit_txt = "원" if tod.get("pnl_unit") == "amount" else "%p합(비가산 근사)"
         lines.append(
-            f"시간대 {best_label} 버킷이 누적손익 최고({best['total_pnl']}, 승률 {best['win_rate']:.1%})."
+            f"시간대 {best_label} 버킷이 누적손익 최고({best['total_pnl']}{unit_txt}, 승률 {best['win_rate']:.1%})."
         )
 
     mm = metrics.get("mfe_mae")
@@ -484,14 +507,18 @@ def _build_nl_lines(metrics: Dict[str, Any], trade_count: int, top_n: int) -> Li
         top = dd.get("top") or []
         share_sum = sum(t["share_of_decline"] for t in top if t.get("share_of_decline") is not None)
         if top:
-            lines.append(f"낙폭({dd['total_decline']})의 {share_sum:.0%}가 상위 {len(top)}거래에서 발생.")
+            lines.append(
+                f"최대낙폭 구간({dd['total_decline']}) 손실의 {share_sum:.0%}가 "
+                f"구간 내 손실 상위 {len(top)}거래에서 발생."
+            )
 
     ef = metrics.get("entry_feature_split")
     if ef and ef.get("top"):
         best = ef["top"][0]
         lines.append(f"진입 피처 중 {best['column']}가 승패 평균차 최대(정규화 {best['diff_norm']:+.2f}).")
 
-    return lines[: max(5, min(8, len(lines)))] if lines else []
+    # 최대 8줄(가용 지표에 비례) — 희소 스키마면 더 적을 수 있다.
+    return lines[:8] if lines else []
 
 
 def analyze_trade_table(csv_path: str, *, fine_time: bool = False, top_n: int = 5) -> Dict[str, Any]:
@@ -575,6 +602,7 @@ def analyze_trade_table(csv_path: str, *, fine_time: bool = False, top_n: int = 
             returns,
             profit_amount if profit_amount is not None else returns,
             fine_time,
+            pnl_unit=("amount" if profit_amount is not None else "pct"),
         )
         metrics["mfe_mae"] = _mfe_mae_analysis(mfe, mae, returns)
 

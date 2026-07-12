@@ -320,3 +320,65 @@ def test_never_raises_on_garbage_path():
     result = analyze_trade_table("Z:/definitely/not/a/real/path/xyz.csv")
     assert result["status"] == STATUS_ERROR
     assert isinstance(result["error"], str)
+
+
+# --- G3 아키텍트 리뷰 반영 회귀 가드 ---
+
+def test_drawdown_contributors_exclude_positive_trades_and_share_le_100(tmp_path):
+    """MEDIUM 반영: 낙폭 구간 내 이익 거래는 기여자에서 제외, share 분모=구간 총손실(합<=100%)."""
+    import pandas as pd
+    from ai_strategy_loop.autopsy.trade_quant import _drawdown_contributors
+
+    # equity: +100 → -700 → -600 (peak idx0, trough idx1..2 창에 +100 반등 포함)
+    pnl = pd.Series([100.0, -800.0, 100.0, -200.0])
+    res = _drawdown_contributors(pnl, None, top_n=5)
+    tops = res["top"]
+    assert all(t["pnl"] < 0 for t in tops), tops  # 양수 거래 미포함
+    share_sum = sum(t["share_of_decline"] for t in tops)
+    assert share_sum <= 1.0 + 1e-9, share_sum
+    assert res["window_gross_loss"] == 1000.0  # 800+200 (분모=총손실)
+
+
+def test_parse_hhmm_forms():
+    """LOW 반영: 14/12/6/5(선행0 소실)/4자리 지원, 13자리 오버매치 거부."""
+    from ai_strategy_loop.autopsy.trade_quant import _parse_hhmm
+
+    assert _parse_hhmm("20250613091512") == "0915"   # 14자리
+    assert _parse_hhmm("202506130915") == "0915"     # 12자리
+    assert _parse_hhmm("091512") == "0915"           # 6자리
+    assert _parse_hhmm(90512) == "0905"              # int로 선행0 소실된 5자리
+    assert _parse_hhmm("0915") == "0915"             # 4자리
+    assert _parse_hhmm("1749790512345") is None      # 13자리 epoch ms — 거부
+    assert _parse_hhmm("쓰레기") is None
+
+
+def test_profit_factor_none_with_reason_when_no_losses(tmp_path):
+    """LOW 반영: 손실 0건이면 PF=None+사유(스코어러의 999 cap 관례와 의도적 분기)."""
+    import csv
+    from ai_strategy_loop.autopsy.trade_quant import analyze_trade_table
+
+    p = tmp_path / "all_wins.csv"
+    with open(p, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["수익률"])
+        for _ in range(5):
+            w.writerow(["1.5"])
+    res = analyze_trade_table(str(p))
+    assert res["status"] == "ok"
+    assert res["metrics"]["profit_factor"] is None
+    assert "손실 거래 없음" in res["metrics"]["profit_factor_reason"]
+
+
+def test_time_of_day_carries_pnl_unit(tmp_path):
+    """LOW 반영: time_of_day 결과에 pnl_unit(amount|pct) 명시."""
+    import csv
+    from ai_strategy_loop.autopsy.trade_quant import analyze_trade_table
+
+    p = tmp_path / "unit.csv"
+    with open(p, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["수익률", "매수시간"])
+        w.writerow(["1.0", "202506130905"])
+        w.writerow(["-0.5", "202506130912"])
+    res = analyze_trade_table(str(p))
+    assert res["metrics"]["time_of_day"]["pnl_unit"] == "pct"  # 수익금 컬럼 없음 → pct

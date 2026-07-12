@@ -3408,7 +3408,8 @@ def create_app(
         (모듈이 아직 없어도 조기 부팅을 막지 않는다). 승인/export/엔진 경로 무영향 —
         advisory 전용.
         """
-        return _trade_quant_payload(run_id, gen_no, fine_time, top_n)
+        # top_n 클램프(아키텍트 리뷰 LOW): 음수/초대형 입력 방어 — 이웃 라우트 관례.
+        return _trade_quant_payload(run_id, gen_no, fine_time, max(1, min(int(top_n), 50)))
 
     @app.get("/selector_preview")
     def selector_preview(run_id: str = "", selector: str = "sparse_positive_v1") -> Dict[str, Any]:
