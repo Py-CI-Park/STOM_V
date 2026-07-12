@@ -638,9 +638,8 @@ class LoopConfig:
     #   배선된 경로에서 brain/principle_gate.check_principle_consistency 의 reject
     #   severity 위반(CSC-06 돌파-무거래량 / CSC-07 손절 부재 / CSC-10 tick 시간창)
     #   시 저장 거부→재시도한다. advisory(PG-META-01)는 로그만 남긴다.
-    #   ⚠️ 현 시점 루프 오케스트레이터(controller/loop.py)는 이 토글을 읽지 않는다
-    #   (다른 워크플로우가 동시 수정 중인 파일이라 배선 보류 — 후속 배선 지점:
-    #   _generate_pair 의 generate_strategy 호출부에서 이 토글을 전달). 기본 OFF면
+    #   2026-07-12(A-3): controller/loop.py::_generate_pair가 이 토글을 getattr로 읽어
+    #   generate_strategy(principle_gate_enabled=...)에 전달한다(배선 완료). 기본 OFF면
     #   어떤 코드 경로도 게이트를 평가하지 않아 동작이 기존과 byte-동일하다(하위호환).
     principle_gate_enabled: bool = False
     # --- CL-R05/R06 review fix (G003): declared evidence-ledger feature flag ---

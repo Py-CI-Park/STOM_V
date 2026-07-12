@@ -854,6 +854,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             report_principles_enabled=getattr(config, "report_principles_enabled", False),
             # 차트술사 구조론 핵심 원리 주입(A-2) — 기본 OFF, getattr로 구버전 config 무영향.
             structure_principles_prompt_enabled=getattr(config, "structure_principles_prompt_enabled", False),
+            # T4.3 원리 일관성 게이트(A-3 배선) — 기본 OFF, reject 위반 시 재시도.
+            #   metadata는 None → PG-META-01 advisory만 로그(저장은 막지 않음).
+            principle_gate_enabled=getattr(config, "principle_gate_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).

@@ -58,6 +58,15 @@ _COMMON_DISCOVERY: Final[dict[str, PresetValue]] = {
     "report_principles_enabled": True,
     # A-2: 차트술사 구조론 핵심 원리 블록 — 연구 프리셋에서만 ON(전역 기본 OFF 유지).
     "structure_principles_prompt_enabled": True,
+    # A-3: 정본 연구 프로파일 공통 세트 — 검증된 생성/청산/증거 토글을 연구 lane에서 전부 켠다.
+    #   (전역 LoopConfig 기본값은 전부 OFF 유지 — 운영 무변경 불변식 4 준수.)
+    "principle_gate_enabled": True,        # CSC-06/07/10 reject 게이트(T4.3)
+    "evidence_ledger_enabled": True,       # CL-R04/05 passport/envelope/consumption 원장
+    "mdd_control_enabled": True,           # 매도 MDD 억제 최우선 블록
+    "exit_edge_feedback_enabled": True,    # edge_ratio 청산 효율 환류
+    "dispersion_prompt_enabled": True,     # 분산매매 유도(과발화 억제)
+    "dispersion_enabled": True,            # graded 동시보유 분산 보상 항
+    "meta_seed_enabled": True,             # P4 누적 메타 인사이트 주입
     "prompt_logging_enabled": True,
     # P3 환류 토글 ON (전역 LoopConfig 기본값은 OFF 유지 — 연구 경로에서만 켠다).
     #   "실행→분석→불필요 구간 제거/임계 제안/가정 판정→재생성" 폐루프를 활성화한다.
@@ -150,8 +159,7 @@ def _min_full_0900_1500() -> ResearchPreset:
         "require_filter_gates": True,
         "min_filter_categories": 5,
         "require_meaningful_time_window": True,
-        "mdd_control_enabled": True,
-        "exit_edge_feedback_enabled": True,
+        # mdd_control/exit_edge는 A-3에서 _COMMON_DISCOVERY로 승격(중복 제거).
         "few_shot_enabled": True,
         "few_shot_source": "seed_db",
         "few_shot_k": 3,
