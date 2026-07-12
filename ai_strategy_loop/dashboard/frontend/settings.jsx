@@ -160,7 +160,7 @@ function SettingsModal({
               <div className="field">
                 <label>GPT auth 연결 테스트</label>
                 <button type="button" className="btn ghost sm" onClick={onGptAuthTest} disabled={!onGptAuthTest}>
-                  GPT 5.5 xhigh 테스트
+                  GPT 5.6 xhigh 테스트
                 </button>
                 <span className="help">
                   진화 시작, 내보내기, 주문 없이 로컬 GPT OAuth 프록시 응답만 점검합니다.
