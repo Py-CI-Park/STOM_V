@@ -119,6 +119,8 @@ def test_go_process_proof(tmp_path: Path):
     assert len(set(evaluator.primary_clauses)) == 3
     assert "if 관심종목 != 1:" in backtest.buy_codes[0]
     assert "elif 체결강도 >= 1.0:" in backtest.buy_codes[0]
+    assert provider.raw_generate_calls == 24
+    assert evaluator.raw_backtest_calls == 9
 
 
 def test_protected_db_refused(tmp_path: Path):
@@ -208,3 +210,62 @@ def test_persistent_duplicate_degrades_gracefully(tmp_path: Path):
     )
 
     assert summary["status"] == "NO_GO_POOL_BLOCKED"
+
+
+def test_ablation_arm_mapping_uses_parent_candidate_contract(tmp_path: Path):
+    strategy_db = tmp_path / "strat.sqlite"
+    pairs: list[tuple[str, str]] = []
+
+    def backtest(buy_code: str, sell_code: str, one_code: str, start: int, end: int) -> dict:
+        pairs.append((buy_code, sell_code))
+        return {"status": "ok", "profit": 1.0, "mdd": 0.1, "trade_count": 1, "daily_freq": 0.2}
+
+    evaluator = OfficialEvaluator(backtest=backtest, select_window=_stub_select_window, strategy_db=strategy_db)
+    parent = {
+        "expression": "체결강도 > 101",
+        "buy_code": "PARENT_BUY_CODE",
+        "sell_code": "PARENT_SELL_CODE",
+    }
+    candidate = {
+        "expression": "등락율 < 4.7",
+        "buy_code": "CANDIDATE_BUY_CODE",
+        "sell_code": "CANDIDATE_SELL_CODE",
+    }
+
+    evaluator.evaluate(parent, kind="primary", arm="round_1", context={})
+    evaluator.evaluate(candidate, kind="primary", arm="round_3", context={})
+    pairs.clear()
+
+    for arm in ("A", "B", "C", "D"):
+        result = evaluator.evaluate({"candidate_id": f"ablation-{arm}"}, kind="ablation", arm=arm, context={})
+        assert result["status"] == "ok"
+
+    assert pairs == [
+        ("PARENT_BUY_CODE", "PARENT_SELL_CODE"),
+        ("CANDIDATE_BUY_CODE", "PARENT_SELL_CODE"),
+        ("PARENT_BUY_CODE", "CANDIDATE_SELL_CODE"),
+        ("CANDIDATE_BUY_CODE", "CANDIDATE_SELL_CODE"),
+    ]
+    assert evaluator.raw_backtest_calls == 6
+
+
+def test_raw_counters_exposed_for_summary_augmentation(tmp_path: Path):
+    strategy_db = tmp_path / "strat.sqlite"
+    provider = OfficialProvider(generate=_stub_generate, strategy_db=strategy_db)
+    evaluator = OfficialEvaluator(
+        backtest=RecordingBacktest(),
+        select_window=_stub_select_window,
+        strategy_db=strategy_db,
+    )
+
+    summary = run_mini_loop(
+        MiniLoopConfig(strategy_db=strategy_db, evidence_dir=tmp_path / "ev"),
+        provider=provider,
+        evaluator=evaluator,
+    )
+    summary["raw_provider_generate_calls"] = provider.raw_generate_calls
+    summary["raw_official_backtest_calls"] = evaluator.raw_backtest_calls
+
+    assert summary["status"] == "GO_PROCESS_PROOF"
+    assert summary["raw_provider_generate_calls"] == 24
+    assert summary["raw_official_backtest_calls"] == 9

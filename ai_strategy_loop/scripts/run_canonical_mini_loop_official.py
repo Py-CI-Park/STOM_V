@@ -35,6 +35,7 @@ class OfficialProvider:
     ) -> None:
         self.strategy_db = Path(strategy_db)
         self.timeframe = timeframe
+        self.raw_generate_calls = 0
         self._generate = generate or self._make_default_generate()
 
     def _make_default_generate(self) -> Callable[[str, str, str], dict[str, Any]]:
@@ -88,7 +89,9 @@ class OfficialProvider:
                     avoid=sorted(seen_expressions),
                     attempt=attempt,
                 )
+                self.raw_generate_calls += 1
                 buy = self._generate("buy", f"{stem}_buy", candidate_feedback)
+                self.raw_generate_calls += 1
                 sell = self._generate("sell", f"{stem}_sell", candidate_feedback)
                 if buy.get("status") != "ok" or sell.get("status") != "ok":
                     raise RuntimeError(f"generation_failed:{stem}")
@@ -230,6 +233,8 @@ class OfficialEvaluator:
         self._uses_default_backtest = backtest is None
         self._backtest = backtest or self._default_backtest
         self._select_window = select_window or self._default_select_window
+        self.raw_backtest_calls = 0
+        self._parent: dict[str, str] | None = None
         self._winner: dict[str, str] = {"buy": _buy_code("체결강도 > 100"), "sell": _sell_code("보유시간 >= 1"), "clause": "체결강도 > 100"}
 
     def evaluate(self, candidate: dict, *, kind: str, arm: str | None, context: dict) -> dict[str, Any]:
@@ -238,7 +243,10 @@ class OfficialEvaluator:
                 clause = str(candidate.get("expression") or candidate.get("buy") or "")
                 buy_code = str(candidate.get("buy_code") or _buy_code(clause))
                 sell_code = str(candidate.get("sell_code") or _sell_code(str(candidate.get("sell") or "보유시간 >= 1")))
-                self._winner = {"buy": buy_code, "sell": sell_code, "clause": clause}
+                current = {"buy": buy_code, "sell": sell_code, "clause": clause}
+                if self._parent is None:
+                    self._parent = current
+                self._winner = current
                 return self._evaluate_codes(BUY_NAME, SELL_NAME, buy_code, sell_code, clause)
             if kind == "control_positive":
                 return self._evaluate_codes(
@@ -259,10 +267,15 @@ class OfficialEvaluator:
             if kind == "ablation":
                 if arm not in {"A", "B", "C", "D"}:
                     return _error_result(f"invalid_ablation_arm:{arm}", str(candidate.get("expression") or "ablation"))
-                buy_on = arm in {"A", "B"}
-                sell_on = arm in {"A", "C"}
-                buy_code = self._winner["buy"] if buy_on else _buy_code("체결강도 < -999999")
-                sell_code = self._winner["sell"] if sell_on else _sell_code("보유시간 >= 999999")
+                parent = self._parent or self._winner
+                candidate_winner = self._winner
+                arm_codes = {
+                    "A": (parent["buy"], parent["sell"]),
+                    "B": (candidate_winner["buy"], parent["sell"]),
+                    "C": (parent["buy"], candidate_winner["sell"]),
+                    "D": (candidate_winner["buy"], candidate_winner["sell"]),
+                }
+                buy_code, sell_code = arm_codes[arm]
                 return self._evaluate_codes(f"{ABLATION_BUY}_{arm}", f"{ABLATION_SELL}_{arm}", buy_code, sell_code, f"ablation {arm}")
             if kind == "extra":
                 return self._evaluate_codes(BUY_NAME, SELL_NAME, self._winner["buy"], self._winner["sell"], "extra")
@@ -275,6 +288,7 @@ class OfficialEvaluator:
         if save.get("status") != "ok":
             return _error_result(str(save), clause)
         one_code, start, end = self._window()
+        self.raw_backtest_calls += 1
         raw = self._backtest(
             buy_name if self._uses_default_backtest else buy_code,
             sell_name if self._uses_default_backtest else sell_code,
@@ -331,10 +345,7 @@ class OfficialEvaluator:
             bootstrap.LOOP_DB_STRATEGY = original_loop_db
             e2e_smoke.bootstrap.LOOP_DB_STRATEGY = original_e2e_loop_db
         payload = _parse_cli_json(proc.stdout)
-        if payload and str(payload.get("message") or "") == "backtest completed without metrics":
-            # Clean zero-trade backtest (engine finished exitcode 0, no CSV produced):
-            # a valid zero-activity measurement, not an infra error. Required so degenerate
-            # ablation off-arms (buy-off/sell-off) yield the 4 metrics for compute_attribution.
+        if _is_clean_no_metrics_result(proc.returncode, payload):
             return {"status": "ok", "profit": 0.0, "mdd": 0.0, "trade_count": 0, "daily_freq": 0.0}
         if proc.returncode != 0 or not payload:
             return {"status": "error", "message": proc.stderr.strip() or proc.stdout.strip() or f"exit:{proc.returncode}"}
@@ -362,6 +373,32 @@ def _save_strategy_pair(strategy_db: Path, buy_name: str, buy_code: str, sell_na
     if sell.get("status") != "ok":
         return sell
     return {"status": "ok"}
+
+
+def _is_clean_no_metrics_result(returncode: int, payload: dict[str, Any]) -> bool:
+    if returncode != 0 or not payload:
+        return False
+    if str(payload.get("message") or "") != "backtest completed without metrics":
+        return False
+    hard_crash_checkpoints = {
+        "engine_data_response_timeout",
+        "backtest_process_missing",
+        "backtest_process_error",
+        "backtest_process_timeout",
+    }
+    last_checkpoint = str(payload.get("last_checkpoint") or "")
+    checkpoint_status = str(payload.get("checkpoint_status") or "")
+    if checkpoint_status in {"timeout", "crash"} or last_checkpoint in hard_crash_checkpoints:
+        return False
+    for event in payload.get("checkpoints") or []:
+        if not isinstance(event, dict) or event.get("name") != "backtest_process_finished":
+            continue
+        detail = event.get("detail") if isinstance(event.get("detail"), dict) else {}
+        try:
+            return int(detail.get("exitcode", -1)) == 0
+        except (TypeError, ValueError):
+            return False
+    return checkpoint_status not in {"timeout", "crash", "error"}
 
 
 def _buy_code(expression: str) -> str:
@@ -410,6 +447,8 @@ def main(argv: list[str] | None = None) -> int:
         provider = OfficialProvider(strategy_db=code_db, timeframe=TIMEFRAME)
         evaluator = OfficialEvaluator(strategy_db=code_db)
         summary = run_mini_loop(config, provider=provider, evaluator=evaluator)
+        summary["raw_provider_generate_calls"] = provider.raw_generate_calls
+        summary["raw_official_backtest_calls"] = evaluator.raw_backtest_calls
     finally:
         stop_proxy_sync()
         clear_env()
