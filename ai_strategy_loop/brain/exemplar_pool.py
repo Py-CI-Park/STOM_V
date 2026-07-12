@@ -55,6 +55,28 @@ _MAX_EXEMPLAR_CHARS = 6000
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SEED_DB_PATH = _REPO_ROOT / "_database" / "strategy.db"
 
+# --- A-6: seed_db few-shot 우선순위 (2026-07-12 전수검사 보고서 P-6) ---
+#   기존에는 테이블 순서 선착순 k개라 항상 같은 study 전략이 선점되고 골드 시드가
+#   뽑히지 않았다. 골드(다년 검증)·정본 인간 패밀리를 결정론적으로 우선한다.
+#   __AUTO_TMP__ 임시 전략은 few-shot 후보에서 제외한다.
+_SEED_DB_EXACT_PRIORITY = (
+    "Tick_B_902_905_Update_2", "Tick_S_902_905_Update_2",  # 다년 골드 시드
+    "C_T_900_920_U2_B", "C_T_900_920_U2_S",                # 30분 전창 정본
+)
+_SEED_DB_PREFIX_PRIORITY = ("Tick_", "C_T_", "CSS_V7_", "Min_")
+_SEED_DB_EXCLUDE_PREFIXES = ("__AUTO_TMP__",)
+
+
+def _seed_db_rank(name: str) -> tuple:
+    """seed_db 이름의 결정론 우선순위 키(작을수록 먼저). 골드 → 패밀리 → 기타."""
+    if name in _SEED_DB_EXACT_PRIORITY:
+        return (0, f"{_SEED_DB_EXACT_PRIORITY.index(name):02d}")
+    for tier, prefix in enumerate(_SEED_DB_PREFIX_PRIORITY, start=1):
+        if name.startswith(prefix):
+            return (tier, name)
+    return (len(_SEED_DB_PREFIX_PRIORITY) + 1, name)
+
+
 
 def _diversity_key(code: str) -> str:
     """다양성 중복 제거용 키. 정규화 AST 해시를 우선, 파싱 불가면 원문 해시 폴백."""
@@ -183,6 +205,11 @@ def select_exemplars(
         if source == "seed_db":
             code_db = str(db_path) if db_path else str(_SEED_DB_PATH)
             names = _seed_db_names(code_db, table)
+            # A-6: 임시 전략 배제 + 골드/패밀리 우선 결정론 정렬(선착순 k 폐지).
+            names = sorted(
+                (n for n in names if not n.startswith(_SEED_DB_EXCLUDE_PREFIXES)),
+                key=_seed_db_rank,
+            )
             codes = _read_codes_from_db(code_db, table, names)
         else:  # 'passing'
             if db_path:
