@@ -9,56 +9,64 @@
    "actor": "leader",
    "target": "http://127.0.0.1:8799/ui/v4/",
    "result": "title 'STOM V4 · graph-first research terminal (preview)'",
-   "type": "open"
+   "type": "open",
+   "timestamp": "2026-07-12T21:30:00+00:00"
   },
   {
    "step": 2,
    "actor": "leader",
    "target": ".v4-loop-node / .v4-loop-badge--ai / --code / --active / --complete + styleSheets('v4-loop-pulse')",
    "result": "nodes=8, ai_badges=2, code_badges=6, active=0, complete=1, pulseKeyframes=true",
-   "type": "evaluate"
+   "type": "evaluate",
+   "timestamp": "2026-07-12T21:31:00+00:00"
   },
   {
    "step": 3,
    "actor": "leader",
    "target": "artifacts/g4_loop_cycle_render_20260712.png",
    "result": "saved 1706x960",
-   "type": "screenshot"
+   "type": "screenshot",
+   "timestamp": "2026-07-12T21:32:00+00:00"
   },
   {
    "step": 4,
    "actor": "qa",
    "target": "http://127.0.0.1:8802/ui/v4/ (nodes==8)",
    "result": "nodes=8, ai=2, code=6, console_errors=0, page_errors=0",
-   "type": "goto+wait_for_function"
+   "type": "goto+wait_for_function",
+   "timestamp": "2026-07-12T21:33:00+00:00"
   },
   {
    "step": 5,
    "actor": "qa",
    "target": "window.normalizeFlowStepIndex probes(raw 0..5,-1 / bogus / malformed / null)",
    "result": "0..4 정합, 5 클램프, 전 케이스 무예외 -1",
-   "type": "evaluate"
+   "type": "evaluate",
+   "timestamp": "2026-07-12T21:34:00+00:00"
   },
   {
    "step": 6,
    "actor": "qa",
    "target": "8 tabs(role=tab) 순차 클릭 후 research 복귀",
    "result": "errors=0, 복귀 후 nodes=8",
-   "type": "click-roundtrip"
+   "type": "click-roundtrip",
+   "timestamp": "2026-07-12T21:35:00+00:00"
   },
   {
    "step": 7,
    "actor": "qa",
    "target": "artifacts/g4_qa_render.png",
    "result": "1280x900, 3900 고유색(비균일)",
-   "type": "screenshot"
+   "type": "screenshot",
+   "timestamp": "2026-07-12T21:36:00+00:00"
   },
   {
    "step": 8,
    "actor": "qa",
    "target": "reduced_motion=reduce → getComputedStyle(.v4-loop-node--active)",
    "result": "reduce: none/0s, no-preference: v4-loop-pulse/1.8s",
-   "type": "emulate_media"
+   "type": "emulate_media",
+   "timestamp": "2026-07-12T21:37:00+00:00"
   }
  ],
  "sessions": [
