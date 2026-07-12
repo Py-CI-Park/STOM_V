@@ -123,8 +123,6 @@ def test_gui_live_only_names_rejected_in_both_kinds_and_timeframes():
     sell 스코프에 허용하면 NameError→타임아웃 홀이 재개방된다 — 양 kind·양
     timeframe 전부 거부를 고정한다(매수수량 포함).
     """
-    from ai_strategy_loop.brain.variable_scope import check_variable_scope
-
     for name in ("매도수량", "강제청산", "매수수량"):
         code = f"if {name}:\n    매도 = True\nif 매도:\n    self.Sell()"
         for tf in ("tick", "min"):
