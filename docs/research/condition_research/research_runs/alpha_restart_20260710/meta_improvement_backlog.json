@@ -1,0 +1,377 @@
+{
+  "meta": {
+    "title": "메타 개선 백로그 — 6렌즈 아이디어 통합 판정 결과",
+    "created": "2026-07-12",
+    "source": "6렌즈(discovery/infra/methodology/engine/ops/deploy) 아이디어 34건 + 렌즈별 적대 판정",
+    "companion_md": "meta_improvement_backlog.md",
+    "note": "본 파일은 백로그이지 사전등록·승인이 아니다. D등급은 착수 전 별도 사전등록 봉인, B등급은 사장님 허가 1건 선행. git 커밋 금지 상태로 생성됨.",
+    "grade_definitions": {
+      "A": "즉시 에이전트 실행 가능 (엔진 0회, 승인 기완료 범위)",
+      "B": "사장님 허가 1개 필요",
+      "C": "엔진 예산 필요 (백테 실행 승인)",
+      "D": "별도 사전등록 봉인 필요"
+    }
+  },
+  "summary": {
+    "total_ideas": 34,
+    "adopted": 13,
+    "fixed": 20,
+    "rejected": 1,
+    "by_grade": { "A": 24, "B": 2, "C": 1, "D": 7 },
+    "grade_note": "C1은 A15(P4 하네스 설계)의 후속 실행 단계로 파생 항목이며 아이디어 수(33 생존)에는 A15로 1회만 계상"
+  },
+  "backlog": [
+    {
+      "id": "A1", "grade": "A", "verdict": "ADOPT", "lens": "infra",
+      "name": "W1b 가드 라이브러리 실장 (discipline 모듈)",
+      "one_line": "known-창 차단 + n_trials 자동 append + 사전등록 스켈레톤 생성기를 alpha_lab/discipline/로 코드화",
+      "agent_plan": "executor(sonnet) 구현 → 적대 verifier(opus) 우회 시나리오 10종 → 소형 executor가 기존 스크립트 2곳 적용",
+      "effort": "중(1-2일)",
+      "expected_value": "V-1형 위반 구조적 재발 방지, 시행 계상 누락 0화. infra verdict가 최우선 착수 대상으로 지명",
+      "fix_conditions": []
+    },
+    {
+      "id": "A2", "grade": "A", "verdict": "ADOPT", "lens": "infra",
+      "name": "증거-인용 린터",
+      "one_line": "계획서 md 수치 주장을 claim-registry로 증거 JSON과 자동 대사",
+      "agent_plan": "executor(sonnet) registry+린터 → verifier(haiku) 거짓양성/음성 표본 보고",
+      "effort": "소(반나절)",
+      "expected_value": "문서-증거 불일치 조기 검출, 과장 드리프트 방지. 판정 커밋 체크리스트에 registry 갱신 1행 추가 권고",
+      "fix_conditions": []
+    },
+    {
+      "id": "A3", "grade": "A", "verdict": "ADOPT", "lens": "infra",
+      "name": "표준 시각화 팩 (셀/온셋/give-back 3종)",
+      "one_line": "stats_map 산출물 렌더 함수 3개+정적 HTML, O-1G 144셀 결과의 첫 소비자. 창 지위·RR8_12 딱지 강제 인쇄",
+      "agent_plan": "executor(sonnet) 일반화 구현 → verifier(sonnet) 오독 유발 여부 체크리스트 검수",
+      "effort": "소(반나절)",
+      "expected_value": "O-1G 판정 세션 해석 속도 + 시각 표준 확보. 워터마크·딱지를 옵션으로 강등하면 즉시 무효",
+      "fix_conditions": []
+    },
+    {
+      "id": "A4", "grade": "A", "verdict": "ADOPT", "lens": "methodology",
+      "name": "ledger-lint (known-창 접촉 문서 린터)",
+      "one_line": "plans/·research_runs/ 전체 스캔으로 known 창 날짜의 측정 문맥 등장을 플래그, V-1 진양성 재검출이 합격 기준",
+      "agent_plan": "executor(sonnet) 린터 → fresh verifier가 전체 코퍼스 replay로 V-1 재검출·오탐률 보고",
+      "effort": "중(1-2일)",
+      "expected_value": "다음 W3-R급 오염을 커밋 전에 차단",
+      "fix_conditions": ["보고 전용 고정(차단 모드 금지)", "V-1 재검출 실패 시 도구 폐기"]
+    },
+    {
+      "id": "A5", "grade": "A", "verdict": "ADOPT", "lens": "methodology",
+      "name": "prereg-diff (봉인↔결과 자동 대조기)",
+      "one_line": "사전등록 md→seal-spec JSON 추출 후 결과 JSON과 자동 대조(경계·분모·창·비용·지표), O-1G가 첫 실전 적용",
+      "agent_plan": "executor 2개(추출기/대조기) → 적대 verifier가 결과 사본 5종 변조로 5/5 검출 확인",
+      "effort": "중(1-2일)",
+      "expected_value": "봉인 무결성의 기계 강제. O-1G 판정 커밋 전 완성이 시간 민감",
+      "fix_conditions": ["seal-spec은 봉인 커밋 해시 기준 추출", "판정 주체는 사람 유지(도구는 pass/fail 표까지)"]
+    },
+    {
+      "id": "A6", "grade": "A", "verdict": "ADOPT", "lens": "methodology",
+      "name": "n_trials 자동 병기 리포터 + 커밋 검사기",
+      "one_line": "판정 문서용 표준 시행 병기 블록(족 분모/누계/기대 최대 허위효과) 자동 생성 + 병기 누락 커밋 경고",
+      "agent_plan": "executor(sonnet) 단독 → verifier(haiku)가 V2-C·W4 리포트 소급 적용 수치 대조",
+      "effort": "소(반나절)",
+      "expected_value": "FDR 분모·전역 누계 누락의 구조적 제거",
+      "fix_conditions": ["type-d 시행 신설은 별도 규약 개정 제안으로 분리(원장 §5 준수)"]
+    },
+    {
+      "id": "A7", "grade": "A", "verdict": "ADOPT", "lens": "ops",
+      "name": "measure_gate (측정 전 게이트 + 커밋 대기열 규약)",
+      "one_line": "배치 기동 직전 사전등록 커밋 존재·측정 코드 sha 봉인·param_sha 일치 검사, 실패 시 기동 거부",
+      "agent_plan": "writer(규약 1p) + executor(게이트) + code-reviewer(우회 경로 검토), 러너 훅 연결",
+      "effort": "소(반나절)",
+      "expected_value": "측정 시점 코드를 항상 커밋 해시로 답변 가능 — O-1G untracked 코드 공백 재발 차단. 현 O-1G 런은 grandfather",
+      "fix_conditions": []
+    },
+    {
+      "id": "A8", "grade": "A", "verdict": "ADOPT", "lens": "engine",
+      "name": "P1 사전 벤치 (사본 DB 인덱스 실측)",
+      "one_line": "사본 DB에만 인덱스 생성 후 검수 쿼리 패턴 전/후 실측 + S8 2x2 겸사 측정 — P1 승인 근거의 실측화",
+      "agent_plan": "executor(sonnet) 2개 직렬(벤치/S8) → verifier가 원본 쓰기접근 0 코드검사+재실행",
+      "effort": "중(1-2일)",
+      "expected_value": "P1 승인 의사결정 시간 제거, 로딩 80s 절감 하한/상한 제시. 외삽은 하한 보수 추정만",
+      "fix_conditions": []
+    },
+    {
+      "id": "A9", "grade": "A", "verdict": "ADOPT", "lens": "engine",
+      "name": "P3 오염 원장 (GA 앨리어싱 영향 반경 스캔)",
+      "one_line": "history DB 전수 GA/최적화 런 식별→현 자산 계보 추적 + 코드 발췌 시뮬레이션 왜곡 논증 + 게이트 초안",
+      "agent_plan": "병렬 3(DB 스캐너 sonnet/메커니즘 분석 opus/게이트 설계 sonnet) + verifier 계보 표본 5건 대조",
+      "effort": "중(1-2일)",
+      "expected_value": "오염 0 vs 챔피언 계보 접촉의 분기가 허가 우선순위 자체를 바꿈 — 유일한 정확성 결함의 영향 확정",
+      "fix_conditions": []
+    },
+    {
+      "id": "A10", "grade": "A", "verdict": "ADOPT", "lens": "deploy",
+      "name": "W7-DC (대시보드 데이터 계약 명세)",
+      "one_line": "정본 증거 JSON 전수 인벤토리→필드 스키마 계약→기존 alpha_api 재사용 판정, 재계산 금지 1원칙 봉인",
+      "agent_plan": "explore(sonnet) 전수 추출 → writer(opus) 명세 → code-reviewer 적대 검증",
+      "effort": "중(1-2일)",
+      "expected_value": "W7 구현 go 시 착수 지연 0, 대시보드-연구 수치 불일치 원천 차단",
+      "fix_conditions": ["o1g_grid_summary 미생성 상태이므로 O-1G 사전등록 §5 판정표 스키마 참조로 선작성"]
+    },
+    {
+      "id": "A11", "grade": "A", "verdict": "ADOPT", "lens": "deploy",
+      "name": "W7-HM (판정 히트맵 뷰 스펙 — 감사 조항의 UI 컴파일)",
+      "one_line": "n<2,000 마스킹·CI 하한 색상·veto 워터마크·RR8_12 딱지 등 감사 구속 조항을 렌더링 규칙으로 번역",
+      "agent_plan": "스펙 작성(opus) 조항→규칙 대응표 → 적대 검증(opus) 오독 경로 공격",
+      "effort": "소(반나절)",
+      "expected_value": "O-1G 결과 공개 직후 오독 방지 — 산출물 생성 전 봉인해야 의미",
+      "fix_conditions": []
+    },
+    {
+      "id": "A12", "grade": "A", "verdict": "ADOPT", "lens": "deploy",
+      "name": "U4-CAL (실체결 캘리브레이션 기록기 스키마)",
+      "one_line": "거래 1건당 잔차 원장 스키마 + tick3 재해석 트리거 기계화 + 엔진 검수 §⑦ 괴리 대응표 + 기존 로그 gap 분석",
+      "agent_plan": "explore(sonnet) trade/ 필드 조사 → 설계(opus) → 적대 검증(VI·부분체결 시나리오)",
+      "effort": "중(1-2일)",
+      "expected_value": "실전 데이터의 채점+캘리브레이션 이중 자산화, P7 승인을 실측 잔차로 판단하는 유일한 경로",
+      "fix_conditions": ["코드 수정 필요 발견 시 P-신규 허가 포인트로 분리 제출(설계 단계는 gap 목록만)"]
+    },
+    {
+      "id": "A13", "grade": "A", "verdict": "FIX", "lens": "infra",
+      "name": "조건식 X-레이 도구",
+      "one_line": "임의 매수식→문법 검증→L1 온셋화→L3 라벨→give-back 원스톱 CLI",
+      "agent_plan": "planner(opus) 스펙 → executor(opus) 재조립 구현 → fresh verifier 챔피언 원문 V2-B 등가 재검",
+      "effort": "중(1-2일)",
+      "expected_value": "후보 진단 비용 세션 1개→CLI 1회, O-4·D5·W5 공통 전처리 도구",
+      "fix_conditions": ["실행 시 사전등록 ID 필수 인자(등가 재검·기측정 챔피언 재현만 화이트리스트 예외)", "시행 계상·known 차단은 A1 discipline 모듈 의존 소비 — A1 이후 착수(순서 의존)", "known 2025-01~2026-02 날짜 입력 하드 차단, 조회 무료 모드 도입 금지"]
+    },
+    {
+      "id": "A14", "grade": "A", "verdict": "FIX", "lens": "engine",
+      "name": "P2 턴키 패키지",
+      "one_line": "BackStop 신호 패치 diff + 계약 테스트 + 에러 런 12건 사인 분류 — 허가 즉시 당일 적용 가능 상태",
+      "agent_plan": "executor(sonnet) read-only 재확인+작성 → code-reviewer(opus) 프로토콜 정합·전파 순서 검토",
+      "effort": "소(반나절)",
+      "expected_value": "P2 절감액이 기록 12건 실측으로 승격, 허가 요청 설득력 상승",
+      "fix_conditions": ["계약 테스트는 승인 전 작성만·실엔진 실행 금지(스텁/모의 한도, 실엔진은 P2 승인 후)", "기준 커밋 해시 박기 필수 조건 승격", "2U(:437-442)/2U_C(:566-574) diff 분리 파일 유지"]
+    },
+    {
+      "id": "A15", "grade": "A", "verdict": "FIX", "lens": "engine",
+      "name": "P4 동등성 하네스 — 설계·초안",
+      "one_line": "골든 입력 채굴 + 콜드/웜 비교 프로토콜 + run_fn 주입 diff 초안 (실행은 C1)",
+      "agent_plan": "병렬 2(DB 채굴 haiku·sonnet/비교 스크립트 executor) → verifier dry-run 수준 로드 확인(엔진 미실행)",
+      "effort": "중(1-2일)",
+      "expected_value": "P4 승인 시 검증 1회 즉시 실행 가능, O-5 처리량 4.5~9배 선확보 경로",
+      "fix_conditions": ["골든 입력은 known 창 제외·발견창(2022~2023) 소창에서만 선별", "결과 JSON에 '공학 증거·성과 해석 금지' 딱지를 채굴 단계에서 선봉인"]
+    },
+    {
+      "id": "A16", "grade": "A", "verdict": "FIX", "lens": "engine",
+      "name": "비용 상수 현행화 — 축소판",
+      "one_line": "W3-R(bb0778ef) 대조 선행 후 (c)만: P7 세율 분리 승인 설계 + 엔진 상수 코드 지점 목록 + W3-R 미커버 자산 감도 노트",
+      "agent_plan": "분석가(sonnet) 1개 + verifier 교차 확인",
+      "effort": "극소",
+      "expected_value": "P7에서 세율 항목만 분리 승인 가능화",
+      "fix_conditions": ["w3r_boundary_reseal 대조를 첫 단계로 강제", "웹 조사 재수행 금지 — (a)(b)는 이미 봉인 완료", "범위 축소 없이 원안대로면 완전 중복 REJECT"]
+    },
+    {
+      "id": "A17", "grade": "A", "verdict": "FIX", "lens": "engine",
+      "name": "S10 retention 합의 자료",
+      "one_line": "backtest.db 6,840테이블 참조 그래프 + 삭제 후보 3안 산출(삭제 실행 0)",
+      "agent_plan": "executor(sonnet) 스캔+참조 그래프+3안 시뮬 → verifier 삭제 후보 표본 10개 독립 재검색(불확실=보존)",
+      "effort": "소(반나절)",
+      "expected_value": "S10 승인이 정책 논의→3안 중 택1로 단순화, backtest/graph/ 보호 경계 문서화",
+      "fix_conditions": ["O-1G 배치와 잠금 경합 회피: 유휴 시간대 또는 파일 스냅샷 사본 스캔, 라이브 DB는 immutable/read-only 연결만", "산출물에 '스냅샷 시점 원장, 실행 전 재스캔 필수' 조건 명기"]
+    },
+    {
+      "id": "A18", "grade": "A", "verdict": "FIX", "lens": "ops",
+      "name": "분리형 배치 러너 (detached runner + 런 매니페스트)",
+      "one_line": "배치를 세션과 분리된 OS 프로세스로 기동 + 매니페스트 JSON + 워크스페이스 C:/Temp 탈출 표준화",
+      "agent_plan": "executor(sonnet) 러너+이관 → fresh verifier가 더미 런으로 세션 종료 후 배치 생존 실증",
+      "effort": "소(반나절)",
+      "expected_value": "세션-사망 배치 손실(START 3회 중 2회 조기 사망) 구조적 제거 + 체크포인트 유실 리스크 제거",
+      "fix_conditions": ["기동/이관 전 pid·progress mtime 생존 확인 필수 선행, 라이브 런 절대 불가침", "O-1G 적용은 현 배치 자연 완주 또는 실제 사망 확인 후로 한정", "매니페스트 param_sha는 사전등록 봉인값(490da2f3d0e83bd8) 일치 검증 강제"]
+    },
+    {
+      "id": "A19", "grade": "A", "verdict": "FIX", "lens": "ops",
+      "name": "배치 워치독 (진행 모니터 + 자동 재개)",
+      "one_line": "매니페스트 기반 죽은 배치 자동 재기동 + 재개 상한 + 즉사 에스컬레이션",
+      "agent_plan": "executor(sonnet) 구현 → 검증 에이전트가 kill-시나리오 3종 더미 런 실증",
+      "effort": "소(반나절)",
+      "expected_value": "무감독 야간 완주율 상승, 크래시당 손실을 N분 상한으로 고정. A18 선행 필요",
+      "fix_conditions": ["허위 전제('O-1G 9시간 방치') 삭제 — 근거는 START 3회 중 2회 조기 사망만", "사망 판정은 pid 생존과 mtime의 AND 결합", "lock 파일로 이중 워치독·이중 기동 차단 구현 필수", "code sha·param_sha 불일치 시 자동 재개 금지", "kill-테스트는 더미 런 전용, 라이브 봉인 배치 검증 금지"]
+    },
+    {
+      "id": "A20", "grade": "A", "verdict": "FIX", "lens": "ops",
+      "name": "워크플로 템플릿 3종 (측정런·세션재개·적대검증)",
+      "one_line": "반복 실증된 절차 3종의 성문화 + 배치 재접속 0단계 신설",
+      "agent_plan": "writer 2 병렬 → fresh verifier가 session-resume만으로 프로그램 상태 복원 드라이런",
+      "effort": "소(반나절, 원안 '중'에서 재산정)",
+      "expected_value": "세션 간 절차 일관성, 배치 방치 사고 절차적 재발 방지",
+      "fix_conditions": [".claude/workflows가 아닌 .claude/skills 또는 CLAUDE.md·R13 명시 참조로 배선(자동 로드 메커니즘 아님)", "session-resume은 R13 개정에 종속 — 정본 단일화, 템플릿은 실행 체크리스트로 종속", "A18~A7(아이디어 1~3) 완료 후 작성(선행 의존)"]
+    },
+    {
+      "id": "A21", "grade": "A", "verdict": "FIX", "lens": "ops",
+      "name": "n_trials 원장 기입 헬퍼 + 창-지위 정합 린트",
+      "one_line": "스키마 검증 후에만 JSONL 기입 + known 창을 발견/봉인판정 유형으로 기입 시 거부 + --audit 소급 린트",
+      "agent_plan": "executor(sonnet) 1개, 검증은 A7 code-reviewer 패스 동승. A7과 한 세션 묶음 권장",
+      "effort": "소(반나절)",
+      "expected_value": "원장 기입 오류율 0 근접, known 창 오용의 마지막 방어선",
+      "fix_conditions": ["파싱 불가 시 기본 거부(fail-closed) 확정, 수동 진행은 --override + 위반 기록 강제만", "대상 원장 파일 명시 — 활성 런(alpha_restart_20260710) 경로 지정 규칙", "trial_type enum은 기존 2건 표기와 원장 §3에서 역도출, 소급 audit 2건 통과가 수용 기준"]
+    },
+    {
+      "id": "A22", "grade": "A", "verdict": "FIX", "lens": "deploy",
+      "name": "W7-PB (후보 여권 스키마 + 승격 사다리 파이프라인 보드)",
+      "one_line": "후보 1건당 기계가독 여권(candidates.jsonl) 스키마 + 원장 조인 자동 렌더 보드 설계(수기 보드 금지)",
+      "agent_plan": "스키마 설계(opus) → 적대 검증(sonnet)이 원장-여권 불일치 시나리오 5+개 생성",
+      "effort": "중(1-2일)",
+      "expected_value": "O-4 봉인·U-4 승격 심사가 여권 조회 1회로, 규율 위반 자동 탐지 기반",
+      "fix_conditions": ["기존 condition_passports/ 5종과 통합·이관 판정을 스키마 설계에 포함(병렬 이중 여권 금지)", "n_trials 원장·창-지위 원장이 정본, 여권 미러 필드는 파생·대조 검증값 명시", "챔피언 소급 계급 기입 예시는 비구속 illustrative 딱지 필수, 실제 계급 부여는 W1c 게이트 증거+별도 승인 분리"]
+    },
+    {
+      "id": "A23", "grade": "A", "verdict": "FIX", "lens": "deploy",
+      "name": "U4-SC (실전 채점표 계산 명세 + 백테 CSV 드라이런)",
+      "one_line": "채점 수식 확정 + 실현율 정의 불가 문제 대안 2~3개 + 발견창 챔피언 CSV 드라이런",
+      "agent_plan": "명세(opus) → 드라이런(sonnet, read-only 스크래치) → 검증(수식-코드 일치·known 미사용 확인)",
+      "effort": "중(1-2일)",
+      "expected_value": "U-4 개시 시 채점 즉시·무재량 가동, 실전 중 규약 개정 방지",
+      "fix_conditions": ["드라이런은 발견창 필터(매수일<=2023-12-31) 명시 적용 + known 비접촉·비시행 판단을 실행 전 창-지위 원장에 기록", "실현율 대안 정의의 사용자 선택은 드라이런 수치 공개 전에 봉인(사후 선택 차단)", "킬스위치 예산 소진율은 백테 CSV 대응 필드 부재로 드라이런 불가 항목임을 명세에 명기"]
+    },
+    {
+      "id": "A24", "grade": "A", "verdict": "FIX", "lens": "methodology",
+      "name": "다중검정 예산 대시보드 — W7 부록으로 격하 (착수 지연)",
+      "one_line": "검정족×창 소진 현황판 — 지금은 목업 부록, 실물 승격은 O-4 임박 시",
+      "agent_plan": "지연 항목. 착수 시 executor(집계)+designer(자기완결 HTML) 병렬 + verifier 전수 대조",
+      "effort": "중(1-2일)",
+      "expected_value": "O-4·U-7 승인 판단의 한 화면 가시화",
+      "fix_conditions": ["A4·A5·A6(아이디어 2·3)이 실데이터 생산한 뒤에만 착수", "독립 레인이 아닌 W7 요구사항 '규율 패널' 부록 목업 1파일로 시작", "O-4 봉인 실제 임박 시에만 실물 HTML 승격"]
+    },
+    {
+      "id": "B1", "grade": "B", "verdict": "FIX", "lens": "methodology",
+      "name": "W1b runner.py 봉인 가드 구현 + 우회 경로 사후 감사",
+      "one_line": "cli/runner.py 진입부에서 known 창(2025-01+) 백테를 원장 등록 없이는 exit 거부, 등록 시 자동 append",
+      "agent_plan": "tdd-guide 3케이스 선작성(RED) → executor(opus) 진입부 가드(코어 무변경) → fresh verifier가 verify_nonrelease_sync+pytest+CLI 계약 무충돌 확인",
+      "effort": "중(1-2일)",
+      "expected_value": "규율층의 유일한 미구현 자물쇠 — known 창 접촉의 물리적 원장 등록 강제. 수동 준수는 V-1로 이미 1회 실패",
+      "fix_conditions": ["사용자 go 선행(봉인 설계 원문: 코드 수정은 go 후)", "1차 구현 범위는 봉인 설계 그대로(2025-01+만), 2024 조건부 '경고+자동 append' 확장은 별도 규약 개정 제안", "우회 감사는 봉인된 진입점 목록(controller/loop.py·dashboard/backtest_api.py) 기준 우선, DB 스캔은 보조", "exit 코드·에러 문구 등 미규정 사항은 go 요청서에 명시해 승인"]
+    },
+    {
+      "id": "B2", "grade": "B", "verdict": "ADOPT", "lens": "deploy",
+      "name": "U4-GO (감독형 실전 발사 전 체크리스트 + '우위' 조작적 정의 결정 요청서)",
+      "one_line": "U-4 조건의 지표·비교 창·판정 절차 후보안 + 킬스위치 수치화 + 발사 최소 요건을 결정 요청서로 — 봉인은 사용자 1회 결정",
+      "agent_plan": "작성(opus) 항목당 권고 디폴트 1개 → 적대 검증(opus)이 자기기만 경로(비교 창 재량·킬스위치 사후 완화) 공격",
+      "effort": "소(반나절)",
+      "expected_value": "U-4가 감 판단→체크리스트 자동 진행으로 전환. 후보 실물 생성 전이 유일한 무편향 봉인 시점",
+      "fix_conditions": ["문서 작성은 즉시 가능하나 봉인은 사용자 결정 1회 필요(prereq B)"]
+    },
+    {
+      "id": "C1", "grade": "C", "verdict": "FIX", "lens": "engine",
+      "name": "P4 동등성 검증 실행 (콜드 vs 웜, 소창 3~5런)",
+      "one_line": "A15 산출물(골든 입력·비교 프로토콜)의 실제 엔진 실행 — P4 승인 + 엔진 예산 승인 후에만",
+      "agent_plan": "A15 산출물 소비, executor 1 + verifier 1",
+      "effort": "소(견적 첨부)",
+      "expected_value": "P4 전환(273s→30-60s) 승인 조건 충족, O-5 스윕 이전 완료 목표",
+      "fix_conditions": ["A15의 파생 실행 단계 — 아이디어 수에 별도 계상하지 않음", "허용오차 정책 실행 전 봉인"]
+    },
+    {
+      "id": "D1", "grade": "D", "verdict": "FIX", "lens": "discovery",
+      "name": "챔피언 절-단위 A/B 분해 (칸 '안' 조합 검정)",
+      "one_line": "챔피언 매수식 절 파싱 → L1 온셋 풀 절 멤버십 조건화 A/B — v2c §5 C등급 가설의 최초 직접 검정",
+      "agent_plan": "planner(opus) 사전등록 초안 → executor(sonnet) read-only 벡터 평가 배치 → fresh verifier 표본 100건 스칼라 등가 대조 → 병렬 doc",
+      "effort": "중(1-2일)",
+      "expected_value": "통과 시 최초의 조준 가능 생성 문법(O-4 가드 절 공급원), 전멸 시 탐색 공간 소거 — 어느 쪽이든 확정 지식",
+      "fix_conditions": ["족 내 다중성 통제(BH-FDR 또는 Bonferroni)와 절 수 상한을 파싱 전 봉인", "'known-오염 시드' 딱지·해석 한정을 사전등록 구속 조항으로, 사용 원문 sha 봉인", "idioms.py 화이트리스트 밖 함수 포함 절은 측정 불가로 사전 분류"]
+    },
+    {
+      "id": "D2", "grade": "D", "verdict": "FIX", "lens": "discovery",
+      "name": "복합함수 61종 온셋 센서스 → 상위 커버리지 L3 지도 (2단계)",
+      "one_line": "함수 목록 봉인→30일 발화율·자카드 센서스(1단계)→top-K(≤8) L3 편입(2단계 별도 사전등록)",
+      "agent_plan": "1단계 병렬 2(봉인 JSON 생성/센서스 스크립트) → 메인 종합, 2단계는 별도 prereg 에이전트 분리",
+      "effort": "중(1-2일)",
+      "expected_value": "최대 미탐사 공간 실측 지도 + 감사 인용 금지 정식 해제, 1단계만으로 독립 가치",
+      "fix_conditions": ["1단계 서술 통계도 경량 사전등록 선봉인 후 원장 기재(무봉인 측정 금지 — 원안 A_즉시는 불변식 충돌)", "감사 '90종' vs '61종(35+26)' 수치 불일치를 봉인 JSON에서 정산·근거 명기", "2단계는 별도 사전등록 + O-1G 종료 후 + O-3 §9.2 순서 비침범을 kill 조건과 함께 문서 고정"]
+    },
+    {
+      "id": "D3", "grade": "D", "verdict": "FIX", "lens": "discovery",
+      "name": "온셋-나이 타이밍 곡선 (진입 지연 스윕)",
+      "one_line": "진입을 온셋+{0,10,30,60,120}초 지연한 L3 라벨로 지연별 mean_net 곡선+일자 CI — '타이밍' 반쪽의 검정",
+      "agent_plan": "prereg 봉인 → executor(labels_v2 오프셋 파라미터화, 파일럿 1개월→게이트→본 적재 run_in_background) → fresh verifier 지연별 40건 순수 재계산",
+      "effort": "대(3일+)",
+      "expected_value": "단조 악화면 즉시 진입 최선 확정, 특정 지연 개선이면 '경과틱수' 절로 즉시 번역 가능한 신규 축",
+      "fix_conditions": ["O-1G 진입창 60/120초 축과의 구분(갭 vs 서지)·결과 상호참조 규칙 명기 — '완전 신규 축' 주장은 부정확", "본 적재는 O-1G 배치 종료 후 착수(순차 ablation + 자원 충돌 회피)", "온셋 소멸·호가 결측 표본의 생존 편향 규칙을 파일럿 전 봉인", "본 적재(86만x5)는 파일럿 실측 후 배치 예산 재승인 게이트", "entry 하드코딩 변경은 코드 수정 — verify-agent 등가 재인증(V2-B 게이트 상속) 필수"]
+    },
+    {
+      "id": "D4", "grade": "D", "verdict": "FIX", "lens": "discovery",
+      "name": "902905 계보 저상관 이웃 스크리닝 (5번째 슬롯 공급 파이프)",
+      "one_line": "발견창 일별 수익 상관 행렬로 저상관(<0.3)·양수익 전략군 식별 → 비상관 문법 사전(시드 선정 근거 전용)",
+      "agent_plan": "병렬 2(수익 행렬 빌더+known 가드/strategy.db 절 추출, W5와 데이터 공유) → 메인 상관 히트맵+후보 목록 종합",
+      "effort": "소(반나절)",
+      "expected_value": "W5 Composite·5번째 슬롯 후보 공급 파이프. 후보 0이어도 '내부 다각화 불가' 확정으로 자원 배분 근거",
+      "fix_conditions": ["데이터 원천 정정: backtest/csv(전부 ALP_* 클론)가 아닌 W2 원천 _database/*.db — 일별 행 존재 타당성 선확인을 1단계로", "앵커 축소 명기: GPTAUTH_G8 관측창 2025~26이라 발견창 행 0건, 앵커는 사실상 902905 계보만", "상관 임계 0.3·월간/일별 단위·양수익 조건 등 규칙을 실행 전 봉인 + 창-지위 원장 기재(스크리닝도 측정)", "known 행 혼입 시 즉시 중단 코드 가드 유지"]
+    },
+    {
+      "id": "D5", "grade": "D", "verdict": "FIX", "lens": "discovery",
+      "name": "D9 전이 온셋 L3 접목 — 패리티 PASS 조건부 사전등록 초안",
+      "one_line": "moneytop 유니버스 전이 사건(신규진입/재진입/체류)을 L1 온셋으로 stats_map v2 편입하는 사전등록 초안",
+      "agent_plan": "probe-min-d9 패리티 결과 대기 → PASS 시 planner가 전이 온셋 정의+클램프 가드+L3 접목 초안 작성, FAIL 시 정직 종결 문서화",
+      "effort": "소(반나절)",
+      "expected_value": "가장 깨끗한 미채굴 사건 축의 진행/종결 확정, 통과 시 관심종목N(n) 번역 가능 온셋이 O-4 공급원에 추가",
+      "fix_conditions": ["패리티 감사 실행 소유권은 probe-min-d9 — 이중 실행 금지, 본 범위는 'PASS 조건부 L3 접목 사전등록 초안'으로 한정", "사전등록 구속 조항: 이벤트 5족 FDR 0 전례와의 구분 논거(멤버십 전이+L3 출구 결합), 신규진입/재진입 구분 정의, 관심종목N(n) 클램프 가드, 패리티 통과 후 잔여 불확실성 딱지", "패리티 FAIL 시 정직 종결 경로 유지"]
+    },
+    {
+      "id": "D6", "grade": "D", "verdict": "FIX", "lens": "infra",
+      "name": "L3-multi 출구 은행 (온셋×출구변형 1-pass 사전계산)",
+      "one_line": "봉인된 출구 변형 ≤6종의 실현 손익을 tick 리플레이 1-pass 동시 산출 → parquet 은행, 이후 출구 연구는 조회로",
+      "agent_plan": "executor(opus) replay.py 다중 출구 확장 + 상태 완전 분리 테스트(P3 앨리어싱 교훈) + 1개월 파일럿 → verifier가 rr8_12 컬럼 bit 단위 등가 게이트",
+      "effort": "중(1-2일)",
+      "expected_value": "D5 수정판·give-back 개선·Composite 출구 선택이 엔진 0회·리플레이 1회 비용으로",
+      "fix_conditions": ["planner의 'D5 사전등록 초안에 변형 집합 봉인' 단계 제거 — d5r-prereg-draft 산출물을 입력으로만 소비(초안 작성 주체 이원화 금지)", "착수 게이트를 '사용자 봉인 커밋 SHA가 원장에 기록된 후'로 코드/문서 양쪽 명시", "변형 수 상한(≤6)·추가 변형 시 새 사전등록 요구·bit 등가 게이트 하드코딩 유지", "MFE '회수 가능 금액 아님' 문구 리포트 템플릿 고정"]
+    },
+    {
+      "id": "D7", "grade": "D", "verdict": "FIX", "lens": "infra",
+      "name": "엔진-리플레이 패리티 하니스",
+      "one_line": "기존 backtest.db 엔진 거래 기록 ↔ L3 리플레이의 거래 단위 자동 대사 + 괴리 6축 원인 분류 도구화",
+      "agent_plan": "병렬 2(추출기 A/대사·분류기 B) → 합류 후 opus verifier가 골든셋 100거래 수작업 대조로 하니스 자체 검증",
+      "effort": "중(1-2일)",
+      "expected_value": "통계층→엔진층 환율(오차 구조) 상시 계측, O-5·LIVE 판정 해석 신뢰도. D9 대기 항목의 재사용 자산화",
+      "fix_conditions": ["원안 A_즉시 기각 → D 재분류: known 구간에 L3 리플레이 신규 실행은 known 창 챔피언 성과 재생산 측정 — 사전등록(범위·오차 지표·인용 금지 규칙) 선봉인 + 원장 기록", "대사 우선순위는 발견창(2022~2023) 엔진 기록, known 기록은 거래별 수익·조건식별 성과 비저장·오차 분포 통계량만 잔존(스키마 수준 강제)", "골든셋 100거래 수작업 검증 유지"]
+    }
+  ],
+  "rejected": [
+    {
+      "name": "W6a 표적 출구 변형 리플레이 격자 (D5 수정판의 측정 기계)",
+      "lens": "discovery",
+      "reason": "렌즈 위반 + 활성 작업과 이중 작성. 스스로 '별도 트랙 신설 아님·선행 입력'이라 자인 — 발굴 렌즈 심사 대상이 아님. D5 수정판 사전등록은 이 세션의 d5r-prereg-draft 에이전트가 현재 작성 중이며, 제안 격자와 L3' 측정법은 그 초안이 당연히 도출할 내용. 채택 시 같은 사전등록의 이중 작성이라는 프로세스 위반 발생.",
+      "redirect": "격자 세부에 고유 기여가 있으면 d5r-prereg-draft에 코멘트로 전달",
+      "negative_map_lessons": ["활성 에이전트 소유 산출물은 새 아이디어로 재제안하지 않고 코멘트/입력으로 전달", "'선행 입력·구체화'는 아이디어가 아니라 기존 트랙 기여", "사전등록 작성 주체는 항상 1곳 — 이원화는 봉인 무결성 훼손"]
+    }
+  ],
+  "top5": [
+    {
+      "rank": 1, "id": "A1", "name": "W1b 가드 라이브러리 실장 (discipline 모듈)",
+      "reason": "infra verdict가 최우선 지명. V-1이 '수동 준수' 공백에서 발생했고 O-1G 이후 D5·W5·O-3 측정 연쇄 직전이 자동화 한계 수익 최대 시점. A13·A21이 의존성으로 소비하므로 선행해야 장부가 갈라지지 않음. 진행 중 O-1G·D5·W5 무접촉 순수 추가 작업."
+    },
+    {
+      "rank": 2, "id": "A5", "name": "prereg-diff (봉인↔결과 자동 대조기)",
+      "reason": "시간 민감 — O-1G 배치(62%+) 종료 임박. 판정 커밋 전 완성 시 O-1G가 첫 실전 적용 사례(144셀 분모·창·비용·지표 기계 대조 후 판정). 놓치면 첫 적용이 다음 봉인까지 밀림."
+    },
+    {
+      "rank": 3, "id": "A7+A21", "name": "measure_gate + n_trials 원장 기입 헬퍼 (묶음)",
+      "reason": "O-1G에서 실제 발생한 untracked 측정 코드 공백의 재발 차단. D5 수정판·W5 측정 시작 전에 게이트가 서 있어야 다음 배치부터 적용(현 런은 grandfather). ops verdict가 묶음 실행 명시 권장."
+    },
+    {
+      "rank": 4, "id": "A3+A11", "name": "표준 시각화 팩 + W7-HM 뷰 스펙 (O-1G 판정 준비물)",
+      "reason": "O-1G 144셀 결과의 즉시 소비자. W7-HM은 산출물 생성 전 봉인해야 의미(오독 가드레일). 둘 다 반나절 규모로 O-1G 잔여 배치 시간 내 완료 가능, W5·D5 리포트에 표준 재사용."
+    },
+    {
+      "rank": 5, "id": "A9", "name": "P3 오염 원장 (GA 앨리어싱 영향 반경 스캔)",
+      "reason": "분기 확정이 전체 우선순위를 바꿀 수 있는 유일 항목 — 챔피언 계보·W2 랭킹이 GA 오염에 닿아 있으면 D5(챔피언 출구 개선)·W5(Composite)의 근거 신뢰도가 흔들리므로 두 트랙 판정 도달 전에 아는 것이 싸다. read-only라 현행 흐름과 무충돌."
+    }
+  ],
+  "top5_runner_up_note": "A18+A19(러너·워치독)는 O-1G 자연 완주 임박으로 긴급성 하락 — 다음 장시간 배치(D3 본 적재·V2 후속) 전 완료면 충분. B1(runner.py 가드)은 가치 최고 등급이나 사장님 go 선행 — go 요청서 작성을 A1 직후 배치 권고.",
+  "dedup_records": [
+    { "pair": "A1(discipline 모듈) vs B1(runner.py 가드)", "resolution": "계층 상이(연구 스크립트 vs CLI 런타임) — 양쪽 유지하되 단일 W1b 트랙 통합 관리. A1 선행, B1은 go 요청서 후행. 원장 기입 코드는 A1로 단일화" },
+    { "pair": "n_trials 도구 3건: A1 auto-append vs A6 리포터 vs A21 헬퍼", "resolution": "기입 경로 1개(A1 append API를 A21이 공유), A6은 소비자(집계 전용). A21을 A1 하위 모듈로 흡수 검토" },
+    { "pair": "D5 수정판 관련: REJECT 격자 제안 + D6 은행 + 활성 d5r-prereg-draft", "resolution": "사전등록 작성 주체는 d5r-prereg-draft 1곳. 격자 세부는 코멘트 전달, D6은 봉인 문서를 입력으로만 소비" },
+    { "pair": "'D9 패리티' 동명 2건: D5(moneytop, probe-min-d9 소유) vs D7(엔진↔리플레이 대사)", "resolution": "축 상이(유니버스 멤버십 재구성 vs 체결·수익 대사) — 별개 유지. D5는 probe-min-d9 결과 대기·초안만, D7은 D등급 선봉인" },
+    { "pair": "비용 상수 현행화 vs W3-R 봉인(bb0778ef)", "resolution": "(a)세율표·(b)영향 상하한은 기봉인 — A16으로 (c)만 축소 잔존, 웹 조사 재수행 금지" },
+    { "pair": "예산 대시보드(A24) vs W7", "resolution": "W7 '규율 패널' 부록 목업으로 격하, A4·A5·A6 실데이터 생산 후 착수, W7에 '프로토타입 흡수' 명기" },
+    { "pair": "시각화 3건: A3(차트 팩) vs A11(렌더링 규칙) vs A10(데이터 계약)", "resolution": "상보 관계(구현/가드레일/입력 계약) — W7 묶음 관리, 대시보드 본 구현은 별도 go" },
+    { "pair": "린터 3계층: A4(문서 정적) vs A7(기동 시점) vs B1(런타임)", "resolution": "중복 아닌 3계층 방어선(커밋 전/기동 전/실행 시점) — 각자 유지, 오탐 규칙만 상호 참조" },
+    { "pair": "A20 session-resume 템플릿 vs R13 독해 순서", "resolution": "R13 개정이 정본, 템플릿은 실행 체크리스트로 종속(정본 단일화)" },
+    { "pair": "D2 61종 센서스 vs O-3 돌파 온셋 ablation", "resolution": "D2 1단계를 서술 통계로 한정해 O-3의 §9.2 순서 비침범을 사전등록에 문서 고정" },
+    { "pair": "A22 후보 여권 vs 기존 condition_passports/ 5종", "resolution": "통합·이관 판정을 스키마 설계에 포함(병렬 이중 여권 체계 금지)" },
+    { "pair": "A12 U4-CAL vs P7 체결 모델 현실화", "resolution": "중복 아님 — U4-CAL은 P7 승인 판단의 근거 측정기 설계, P7은 엔진 수정. 코드 수정 필요 시 P-신규로 분리 제출" }
+  ]
+}
