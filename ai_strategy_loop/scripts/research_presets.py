@@ -134,6 +134,8 @@ def _tick_late_0920_0925() -> ResearchPreset:
         "few_shot_enabled": True,
         "few_shot_source": "seed_db",
         "few_shot_k": 3,
+        # A-5: tick 채굴 밴드 시드 힌트 — 아티팩트(state/band_seeds.json) 없으면 무시(graceful).
+        "band_seed_hint_enabled": True,
     }
     return {
         "name": PresetName.TICK_LATE_0920_0925.value,

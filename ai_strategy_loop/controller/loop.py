@@ -668,6 +668,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    prev_judged_hypotheses: Optional[list] = None,
                    segment_avoid_lines: Optional[list] = None,
                    feature_hint_lines: Optional[list] = None,
+                   band_seed_lines: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
@@ -873,6 +874,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를
             #   byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
             feature_hint_lines=(feature_hint_lines if kind == "buy" else None),
+            # A-5 밴드 시드 힌트 — 매수 전용(kind=='buy'), 토글 OFF/아티팩트 없음이면
+            #   호출부가 None을 넘겨 미주입(byte-동일).
+            band_seed_lines=(band_seed_lines if kind == "buy" else None),
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
@@ -1233,6 +1237,12 @@ def run_loop(
     meta_seed_text: Optional[str] = None
     if getattr(config, "meta_seed_enabled", False):
         meta_seed_text = _load_meta_seed()
+    # A-5 밴드 시드 힌트: band_seed_hint_enabled ON이면 run 시작 시 1회 아티팩트를
+    #   로드해 매수 프롬프트용 NL 힌트 라인을 만든다. 기본 OFF면 None(미주입=하위호환).
+    #   파일 없음/파싱 실패는 생성 보조이므로 흡수한다(루프를 막지 않음).
+    band_seed_hint_lines: Optional[list] = None
+    if getattr(config, "band_seed_hint_enabled", False):
+        band_seed_hint_lines = _load_band_seed_lines(config)
 
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
@@ -1514,6 +1524,11 @@ def run_loop(
                 if (getattr(config, "feature_importance_feedback_enabled", False)
                         and next_feature_hint_lines):
                     gen_kwargs["feature_hint_lines"] = next_feature_hint_lines
+                # A-5 밴드 시드 힌트: run 시작 시 1회 로드한 정적 힌트를 매 세대 매수
+                #   프롬프트에 전달한다. OFF/아티팩트 없음이면 키를 넣지 않아 호출
+                #   시그니처가 기존과 byte-identical 하다(하위호환).
+                if band_seed_hint_lines:
+                    gen_kwargs["band_seed_lines"] = band_seed_hint_lines
                 # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
                 #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
@@ -2107,6 +2122,35 @@ def _fetch_parent_row(
     except Exception:  # noqa: BLE001 - 조회 실패는 diff 없이 진행(루프를 막지 않음).
         return None
     return rows.get(int(parent_gen))
+
+
+def _load_band_seed_lines(config) -> Optional[list]:
+    """A-5 — 밴드 시드 아티팩트(band_seeds.json)에서 매수 프롬프트 NL 힌트 라인을 만든다.
+
+    scripts/mine_band_seeds.py 산출(schema band_seed_hint_v1)을 읽어 seeds[].nl_guide를
+    lift 내림차순 상위 band_seed_hint_max_lines개까지 돌려준다. 파일 없음/파싱 실패/
+    시드 0개면 None(graceful — 생성 보조는 루프를 막지 않는다).
+    """
+    try:
+        path = str(getattr(config, "band_seed_hint_path", "") or "").strip()
+        if not path:
+            path = os.path.join(REPO_ROOT, "ai_strategy_loop", "state", "band_seeds.json")
+        if not os.path.exists(path):
+            return None
+        with open(path, encoding="utf-8") as f:
+            artifact = json.load(f)
+        seeds = artifact.get("seeds") or []
+        seeds = sorted(
+            (s for s in seeds if s.get("nl_guide")),
+            key=lambda s: float(s.get("lift") or 0.0),
+            reverse=True,
+        )
+        max_lines = max(1, int(getattr(config, "band_seed_hint_max_lines", 8) or 8))
+        lines = [str(s["nl_guide"]) for s in seeds[:max_lines]]
+        return lines or None
+    except Exception as exc:  # noqa: BLE001 — 생성 보조 경로: 어떤 실패도 루프를 막지 않음.
+        logger.info("밴드 시드 힌트 로드 실패(무시): %s", exc)
+        return None
 
 
 def _build_parent_diff(

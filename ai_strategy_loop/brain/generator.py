@@ -91,6 +91,7 @@ def generate_strategy(
     pattern_cards: Optional[list] = None,
     segment_avoid_lines: Optional[list] = None,
     feature_hint_lines: Optional[list] = None,
+    band_seed_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
@@ -217,6 +218,7 @@ def generate_strategy(
             few_shot_examples=few_shot_examples,
             segment_avoid_lines=segment_avoid_lines,
             feature_hint_lines=feature_hint_lines,
+            band_seed_lines=band_seed_lines,
         )
 
         # --- 1) LLM 호출 ---
@@ -284,6 +286,7 @@ def generate_strategy(
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
                         "has_few_shot": bool(few_shot_examples),
                         "has_segment_avoid": bool(segment_avoid_lines),
+                        "has_band_seed_hints": bool(band_seed_lines),
                         "guide_context": {
                             "system_prompt_assets": "v1",
                             "timeframe": timeframe,

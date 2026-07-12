@@ -949,6 +949,7 @@ def build_messages(
     few_shot_examples: Optional[List[str]] = None,
     segment_avoid_lines: Optional[List[str]] = None,
     feature_hint_lines: Optional[List[str]] = None,
+    band_seed_lines: Optional[List[str]] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -1213,6 +1214,17 @@ def build_messages(
                 "직전 백테에서 시총/시간대 구간마다 승패를 강하게 가른 진입 변수와 방향이다. "
                 "해당 구간 진입 조건에 이 변수의 제시된 방향(상단/하단)을 우선 반영하라:\n"
                 + "\n".join(feature_hint_lines)
+            )
+        # A-5 백파인더 밴드 시드 힌트(매수 전용) — 채굴 아티팩트(band_seeds.json)의
+        #   승자 셋업 NL 가이드. lookahead/survivorship 편향이 있는 생성 시드 전용이므로
+        #   '그대로 복제 금지·부검 분위수 보정' 고지를 함께 넣는다. None/빈 리스트면
+        #   미추가(byte 보존). 호출부가 토글 ON + 아티팩트 존재 시에만 채운다.
+        if band_seed_lines:
+            user_lines.append(
+                "데이터 채굴 진입 밴드 힌트(백파인더 승자 셋업 q25~q75 — lookahead 편향이 있는 "
+                "생성 시드 전용, 최종 판단은 백테/OOS 검증): 아래 세그먼트별 승자 분포 밴드를 "
+                "진입 임계값 설계의 출발점으로 참고하라(그대로 복제 금지, 부검 분위수로 보정하라):\n"
+                + "\n".join(band_seed_lines)
             )
         fb_text = autopsy_feedback or ""
         if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):

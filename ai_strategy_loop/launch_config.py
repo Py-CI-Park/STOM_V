@@ -493,6 +493,13 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "수치 임계값은 무근거 가설로 명시하고 부검 분위수 보정을 지시. 기본 OFF.",
         },
         {
+            "name": "band_seed_hint_enabled", "label": "백파인더 밴드 시드 힌트", "type": "bool",
+            "default": d.band_seed_hint_enabled,
+            "help": "켜면 채굴 아티팩트(state/band_seeds.json — scripts/mine_band_seeds.py 산출)의 "
+                    "승자 셋업 밴드(q25~q75)를 매수 프롬프트 힌트로 주입한다. lookahead 편향이 "
+                    "있는 생성 시드 전용(복제 금지·부검 보정 고지 포함). 파일 없으면 무시. 기본 OFF.",
+        },
+        {
             "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
             "default": d.quantile_feedback_enabled,
             "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "

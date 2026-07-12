@@ -528,6 +528,18 @@ class LoopConfig:
     #   명시되며 부검 분위수 보정을 지시한다. 기본 OFF면 출력이 기존과 byte-동일하다(하위호환).
     structure_principles_prompt_enabled: bool = False
 
+    # --- A-5: 백파인더 밴드 시드 힌트 주입 (T2 채굴 → 생성 프롬프트 배선) ---
+    # band_seed_hint_enabled: True면 run 시작 시 밴드 시드 아티팩트(band_seeds.json —
+    #   scripts/mine_band_seeds.py 산출)를 1회 로드해 매수 프롬프트에 '데이터 채굴 진입
+    #   밴드 힌트' 블록으로 주입한다. lookahead/survivorship 편향이 있는 **생성 시드
+    #   전용** 힌트라 '복제 금지·부검 분위수 보정' 고지를 함께 주입한다. 파일 없음/파싱
+    #   실패는 조용히 미주입(graceful). 기본 OFF면 출력이 기존과 byte-동일하다(하위호환).
+    band_seed_hint_enabled: bool = False
+    # band_seed_hint_path: 아티팩트 경로. 빈 문자열이면 기본 state/band_seeds.json.
+    band_seed_hint_path: str = ""
+    # band_seed_hint_max_lines: 주입할 최대 힌트 라인 수(lift 내림차순 상위).
+    band_seed_hint_max_lines: int = 8
+
     # --- 분석→생성 환류 업그레이드 (R1·R2, 2026-06-11 검토 보고서 §5) ---
     # 데이터 근거(G1): 부검이 "기준을 높여라/낮춰라"(방향)만 주면 LLM이 임의 숫자를
     #   찍는다 — 직이식 임계 5/5 음수 실측. 반사실 실증: 시드 train 307건에서
