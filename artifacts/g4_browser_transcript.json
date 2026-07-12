@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "browser-automation-transcript",
+  "tool": "playwright-chromium (QA lane) + gjc headless chromium (leader lane)",
   "story": "G004 V4 loop-cycle diagram live render verification",
   "sessions": [
     {
