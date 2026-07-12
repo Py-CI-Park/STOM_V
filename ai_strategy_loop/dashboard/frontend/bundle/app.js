@@ -33749,6 +33749,144 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4HeroChart });
 
+  // ai_strategy_loop/dashboard/frontend/v4-loop-cycle.jsx
+  var LOOP_NODES = [
+    { key: "seed", label: "\uC2DC\uB4DC", tip: "\uD0D0\uC0C9 \uC2DC\uC791\uC810 \u2014 \uC2DC\uB4DC \uACA9\uC790\uC5D0\uC11C \uB2E4\uC74C \uC138\uB300 \uC870\uAC74\uC2DD \uD6C4\uBCF4\uC758 \uCD9C\uBC1C \uD30C\uB77C\uBBF8\uD130\uB97C \uACE0\uB978\uB2E4.", step: 0, ai: false },
+    { key: "prompt", label: "\uD504\uB86C\uD504\uD2B8 \uC870\uB9BD", tip: "\uC2DC\uB4DC\uC640 \uC774\uC804 \uC138\uB300 \uBD80\uAC80 \uD53C\uB4DC\uBC31\uC744 \uC870\uD569\uD574 LLM \uD504\uB86C\uD504\uD2B8\uB97C \uAD6C\uC131\uD55C\uB2E4.", step: 0, ai: false },
+    { key: "generate", label: "AI \uC0DD\uC131", tip: "LLM\uC774 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uC0DD\uC131\uD55C\uB2E4.", step: 0, ai: true },
+    { key: "gate", label: "\uAC8C\uC774\uD2B8", tip: "\uC0DD\uC131\uB41C \uCF54\uB4DC\uAC00 \uAD6C\uBB38\xB7\uAE08\uC9C0 \uBCC0\uC218 \uB4F1 \uD544\uD130 \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD558\uB294\uC9C0 \uAC80\uC0AC\uD55C\uB2E4.", step: 0, ai: false },
+    { key: "backtest", label: "\uACF5\uC2DD \uBC31\uD14C", tip: "\uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uCF54\uB4DC\uB97C \uACF5\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC73C\uB85C \uACFC\uAC70 \uB370\uC774\uD130\uC5D0 \uC2E4\uD589\uD55C\uB2E4.", step: 1, ai: false },
+    { key: "score", label: "\uCC44\uC810", tip: "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC5D0\uC11C MDD\xB7\uC218\uC775\xB7\uBE48\uB3C4 \uB4F1\uC73C\uB85C graded fitness \uC810\uC218\uB97C \uC0B0\uCD9C\uD55C\uB2E4.", step: 2, ai: false },
+    { key: "autopsy", label: "\uBD80\uAC80", tip: "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \uB4F1 \uC2E4\uD328 \uC6D0\uC778\uC744 \uBD80\uAC80 \uB9AC\uD3EC\uD2B8\uB85C \uC815\uB9AC\uD55C\uB2E4.", step: 3, ai: false },
+    { key: "feedback", label: "\uD658\uB958", tip: "\uBD80\uAC80 \uC778\uC0AC\uC774\uD2B8\uB97C \uB2E4\uC74C \uC138\uB300 \uD504\uB86C\uD504\uD2B8\uC5D0 \uB418\uBA39\uC784\uD574 \uB8E8\uD504\uB97C \uBC18\uBCF5\uD55C\uB2E4.", step: 4, ai: true }
+  ];
+  var LOOP_STEP_NAMES = ["\uC0DD\uC131", "\uBC31\uD14C", "\uCC44\uC810", "\uBD80\uAC80", "\uBC18\uBCF5"];
+  var _LOOP_CYCLE_PHASE_STEP = {
+    generate_start: 0,
+    generate_done: 0,
+    warm_prepare_start: 0,
+    warm_prepare_done: 0,
+    loop_start: 0,
+    ga_init: 0,
+    backtest_start: 1,
+    backtest_end: 1,
+    ga_evaluate_start: 1,
+    score_start: 2,
+    score_done: 2,
+    autopsy_start: 3,
+    autopsy_done: 3,
+    generation_done: 4,
+    ga_generation_done: 4,
+    complete: -1,
+    stopping: -1
+  };
+  function _loopCycleFallbackStep(rawStep, phase) {
+    let value = Number(rawStep);
+    if (!Number.isInteger(value)) {
+      value = Object.prototype.hasOwnProperty.call(_LOOP_CYCLE_PHASE_STEP, phase) ? _LOOP_CYCLE_PHASE_STEP[phase] : -1;
+    }
+    if (!Number.isInteger(value) || value < 0) return -1;
+    return Math.min(LOOP_STEP_NAMES.length - 1, value);
+  }
+  function _loopCycleCurrentStep(state) {
+    const s = state || {};
+    const latest = s.latest || {};
+    const rawStep = latest.current_step != null ? latest.current_step : s.live_phase_step;
+    const phase = latest.phase || s.phase || "";
+    if (typeof window.normalizeFlowStepIndex === "function") {
+      return window.normalizeFlowStepIndex(rawStep, phase);
+    }
+    return _loopCycleFallbackStep(rawStep, phase);
+  }
+  function _loopCycleNodePos(i, total) {
+    const angle = (-90 + i * 360 / total) * (Math.PI / 180);
+    const radius = 38;
+    return { x: 50 + radius * Math.cos(angle), y: 50 + radius * Math.sin(angle) };
+  }
+  function _loopCycleEdge(i, total, nodeRadius) {
+    const a = _loopCycleNodePos(i, total);
+    const b = _loopCycleNodePos((i + 1) % total, total);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    return {
+      x1: a.x + ux * nodeRadius,
+      y1: a.y + uy * nodeRadius,
+      x2: b.x - ux * nodeRadius,
+      y2: b.y - uy * nodeRadius
+    };
+  }
+  function V4LoopCycle({ state }) {
+    const s = state || {};
+    const running = s.status === "running" || s.status === "stopping";
+    const isComplete = s.status === "complete";
+    const currentStep = running ? _loopCycleCurrentStep(s) : -1;
+    const currentStepName = currentStep >= 0 ? LOOP_STEP_NAMES[currentStep] : null;
+    const total = LOOP_NODES.length;
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-loop-cycle-panel panel", "aria-labelledby": "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title", id: "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074"), isComplete && /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok", "data-tip": "\uC774\uBC88 run\uC758 \uC138\uB300 \uB8E8\uD504\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4" }, "\uC644\uB8CC \xB7 run \uC885\uB8CC"), !isComplete && currentStepName && /* @__PURE__ */ React.createElement("span", { className: "v4-chip win", "data-tip": "\uD604\uC7AC \uD65C\uC131 \uB2E8\uACC4" }, "\uC9C4\uD589 \uC911 \xB7 ", currentStepName)), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "v4-loop-cycle" + (isComplete ? " v4-loop-cycle--complete" : ""),
+        role: "img",
+        "aria-label": "\uC870\uAC74\uC2DD AI \uB8E8\uD504 \uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074 \uB2E4\uC774\uC5B4\uADF8\uB7A8 \xB7 \uC2DC\uB4DC \u2192 \uD504\uB86C\uD504\uD2B8 \uC870\uB9BD \u2192 AI \uC0DD\uC131 \u2192 \uAC8C\uC774\uD2B8 \u2192 \uACF5\uC2DD \uBC31\uD14C \u2192 \uCC44\uC810 \u2192 \uBD80\uAC80 \u2192 \uD658\uB958 \uC21C\uD658. \uD604\uC7AC \uB2E8\uACC4 " + (currentStepName || "\uB300\uAE30")
+      },
+      /* @__PURE__ */ React.createElement("svg", { className: "v4-loop-cycle-svg", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid meet", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
+        "marker",
+        {
+          id: "v4-loop-arrowhead",
+          viewBox: "0 0 10 10",
+          refX: "8",
+          refY: "5",
+          markerWidth: "6",
+          markerHeight: "6",
+          orient: "auto-start-reverse"
+        },
+        /* @__PURE__ */ React.createElement("path", { d: "M0,0 L10,5 L0,10 Z", className: "v4-loop-arrowhead-fill" })
+      )), LOOP_NODES.map((_, i) => {
+        const isWrap = i === total - 1;
+        const lit = currentStep >= 0 && (isWrap ? currentStep === LOOP_STEP_NAMES.length - 1 : LOOP_NODES[(i + 1) % total].step <= currentStep);
+        const { x1, y1, x2, y2 } = _loopCycleEdge(i, total, 9);
+        return /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            key: "edge-" + LOOP_NODES[i].key,
+            x1,
+            y1,
+            x2,
+            y2,
+            className: "v4-loop-edge" + (lit ? " v4-loop-edge--lit" : "") + (isWrap ? " v4-loop-edge--wrap" : ""),
+            markerEnd: "url(#v4-loop-arrowhead)"
+          }
+        );
+      })),
+      LOOP_NODES.map((node, i) => {
+        const pos = _loopCycleNodePos(i, total);
+        const active = running && !isComplete && node.step === currentStep;
+        return /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            key: node.key,
+            className: "v4-loop-node" + (active ? " v4-loop-node--active" : "") + (isComplete ? " v4-loop-node--dim" : ""),
+            style: { left: pos.x + "%", top: pos.y + "%" },
+            "data-tip": node.tip,
+            "aria-label": node.label + " \u2014 " + node.tip + (active ? " (\uD604\uC7AC \uB2E8\uACC4)" : ""),
+            tabIndex: 0
+          },
+          /* @__PURE__ */ React.createElement(
+            "span",
+            {
+              className: "v4-loop-badge " + (node.ai ? "v4-loop-badge--ai" : "v4-loop-badge--code"),
+              title: node.ai ? "AI \uAC1C\uC785 \uC9C0\uC810" : "\uACB0\uC815\uB860\uC801 \uCF54\uB4DC"
+            },
+            node.ai ? "AI" : "\u2699"
+          ),
+          /* @__PURE__ */ React.createElement("span", { className: "v4-loop-node-label" }, node.label)
+        );
+      })
+    ));
+  }
+  Object.assign(window, { V4LoopCycle });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -33895,7 +34033,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
         onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
       }
-    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(
       MergedBestWinnerCard,
       {
         best: s.best,

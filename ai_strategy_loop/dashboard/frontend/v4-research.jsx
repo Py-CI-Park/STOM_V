@@ -17,6 +17,7 @@ import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
 import { PhaseTimeline, PhaseDetailPanel, ProcessFlowPanel } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
+import { V4LoopCycle } from "./v4-loop-cycle.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -305,6 +306,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         {/* ===== 관찰성 rail ===== */}
         <aside className="v4-side-col">
           <CurrentGenPanel state={s} />
+          <V4LoopCycle state={s} />
           {merged ? (
             <MergedBestWinnerCard best={s.best} winner={s.winner}
                                   onApprove={requestApproval} onViewCode={viewCode} />
