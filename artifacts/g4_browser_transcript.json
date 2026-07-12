@@ -3,6 +3,16 @@
   "kind": "browser-automation-transcript",
   "tool": "playwright-chromium (QA lane) + gjc headless chromium (leader lane)",
   "story": "G004 V4 loop-cycle diagram live render verification",
+  "actions": [
+    { "step": 1, "actor": "leader", "action": "open", "target": "http://127.0.0.1:8799/ui/v4/", "result": "title 'STOM V4 · graph-first research terminal (preview)'" },
+    { "step": 2, "actor": "leader", "action": "evaluate", "target": ".v4-loop-node / .v4-loop-badge--ai / --code / --active / --complete + styleSheets('v4-loop-pulse')", "result": "nodes=8, ai_badges=2, code_badges=6, active=0, complete=1, pulseKeyframes=true" },
+    { "step": 3, "actor": "leader", "action": "screenshot", "target": "artifacts/g4_loop_cycle_render_20260712.png", "result": "saved 1706x960" },
+    { "step": 4, "actor": "qa", "action": "goto+wait_for_function", "target": "http://127.0.0.1:8802/ui/v4/ (nodes==8)", "result": "nodes=8, ai=2, code=6, console_errors=0, page_errors=0" },
+    { "step": 5, "actor": "qa", "action": "evaluate", "target": "window.normalizeFlowStepIndex probes(raw 0..5,-1 / bogus / malformed / null)", "result": "0..4 정합, 5 클램프, 전 케이스 무예외 -1" },
+    { "step": 6, "actor": "qa", "action": "click-roundtrip", "target": "8 tabs(role=tab) 순차 클릭 후 research 복귀", "result": "errors=0, 복귀 후 nodes=8" },
+    { "step": 7, "actor": "qa", "action": "screenshot", "target": "artifacts/g4_qa_render.png", "result": "1280x900, 3900 고유색(비균일)" },
+    { "step": 8, "actor": "qa", "action": "emulate_media", "target": "reduced_motion=reduce → getComputedStyle(.v4-loop-node--active)", "result": "reduce: none/0s, no-preference: v4-loop-pulse/1.8s" }
+  ],
   "sessions": [
     {
       "actor": "leader (headless Chromium via GJC browser tool)",
