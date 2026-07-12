@@ -1,0 +1,1071 @@
+{
+ "kind": "d1_pairwise_interaction_summary",
+ "generated": "2026-07-12T19:14:18.872006+00:00",
+ "preregistration": "2026-07-12_d1_pairwise_interaction_preregistration.md (e1c12697)",
+ "window": "2022-03-23~2023-12-31 (발견창, 측정창=2개 연도)",
+ "seed": 20260713,
+ "reproduction_gate": {
+  "kind": "d1_pairwise_reproduction",
+  "n_labeled": 862932,
+  "tol": 1e-06,
+  "max_abs_err": 4.639355783847554e-07,
+  "pass": true,
+  "per_clause": {
+   "1": {
+    "recomputed_delta_pp": 0.1339513,
+    "d1_delta_pp": 0.133951,
+    "abs_err": 2.954505308738753e-07
+   },
+   "4": {
+    "recomputed_delta_pp": 0.14804542,
+    "d1_delta_pp": 0.148045,
+    "abs_err": 4.214153781212371e-07
+   },
+   "10": {
+    "recomputed_delta_pp": 0.1798069,
+    "d1_delta_pp": 0.179807,
+    "abs_err": 9.75152187332462e-08
+   },
+   "37": {
+    "recomputed_delta_pp": 0.19337307,
+    "d1_delta_pp": 0.193373,
+    "abs_err": 7.192558085233891e-08
+   },
+   "38": {
+    "recomputed_delta_pp": 0.19753067,
+    "d1_delta_pp": 0.197531,
+    "abs_err": 3.265358050619227e-07
+   },
+   "5": {
+    "recomputed_delta_pp": -0.12503936,
+    "d1_delta_pp": -0.125039,
+    "abs_err": 3.60401680610245e-07
+   },
+   "15": {
+    "recomputed_delta_pp": -0.11988737,
+    "d1_delta_pp": -0.119887,
+    "abs_err": 3.6877472472940376e-07
+   },
+   "16": {
+    "recomputed_delta_pp": -0.13396114,
+    "d1_delta_pp": -0.133961,
+    "abs_err": 1.415990455999605e-07
+   },
+   "17": {
+    "recomputed_delta_pp": -0.11235546,
+    "d1_delta_pp": -0.112355,
+    "abs_err": 4.639355783847554e-07
+   },
+   "29": {
+    "recomputed_delta_pp": -0.16739379,
+    "d1_delta_pp": -0.167394,
+    "abs_err": 2.095833398496616e-07
+   },
+   "31": {
+    "recomputed_delta_pp": -0.23821307,
+    "d1_delta_pp": -0.238213,
+    "abs_err": 7.190290052250248e-08
+   }
+  }
+ },
+ "qualification": {
+  "n_pairs_total": 39,
+  "n_qualified": 19,
+  "fdr_denominator": 19,
+  "qualified_pairs": [
+   "1x5",
+   "1x15",
+   "1x16",
+   "1x17",
+   "4x5",
+   "4x15",
+   "4x16",
+   "4x17",
+   "5x37",
+   "15x37",
+   "16x37",
+   "17x37",
+   "5x38",
+   "15x38",
+   "16x38",
+   "17x38",
+   "1x4",
+   "1x37",
+   "1x38"
+  ]
+ },
+ "judgment": {
+  "per_pair": {
+   "1x5": {
+    "pair_id": "1x5",
+    "a": 1,
+    "b": 5,
+    "family_pair": "시가총액 × 초당순매수금액",
+    "cell_counts": [
+     287455,
+     202365,
+     240782,
+     132330
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.019308,
+     -1.131631,
+     -0.887656,
+     -1.012015
+    ],
+    "delta_A_pp": 0.131652,
+    "delta_B_pp": -0.112323,
+    "delta_AB_pp": 0.007293,
+    "I_pp": -0.012036,
+    "ci_low_pp": -0.029272,
+    "ci_high_pp": 0.006269,
+    "se_pp": 0.009318,
+    "p_two_sided": 0.215,
+    "mde_pp": 0.025405,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.005643,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": -0.015804,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "1x15": {
+    "pair_id": "1x15",
+    "a": 1,
+    "b": 15,
+    "family_pair": "초당순매수금액 × 회전율",
+    "cell_counts": [
+     199728,
+     290092,
+     178005,
+     195107
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.002898,
+     -1.108962,
+     -0.870248,
+     -0.987884
+    ],
+    "delta_A_pp": 0.13265,
+    "delta_B_pp": -0.106064,
+    "delta_AB_pp": 0.015013,
+    "I_pp": -0.011572,
+    "ci_low_pp": -0.02638,
+    "ci_high_pp": 0.004937,
+    "se_pp": 0.008337,
+    "p_two_sided": 0.175,
+    "mde_pp": 0.022386,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.022353,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": -0.007098,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "1x16": {
+    "pair_id": "1x16",
+    "a": 1,
+    "b": 16,
+    "family_pair": "초당순매수금액 × 현재가 대역",
+    "cell_counts": [
+     173947,
+     315873,
+     151009,
+     222103
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.986484,
+     -1.109344,
+     -0.852629,
+     -0.985565
+    ],
+    "delta_A_pp": 0.133855,
+    "delta_B_pp": -0.12286,
+    "delta_AB_pp": 0.000919,
+    "I_pp": -0.010077,
+    "ci_low_pp": -0.025815,
+    "ci_high_pp": 0.006908,
+    "se_pp": 0.008322,
+    "p_two_sided": 0.27,
+    "mde_pp": 0.023391,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.014441,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": -0.005637,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "1x17": {
+    "pair_id": "1x17",
+    "a": 1,
+    "b": 17,
+    "family_pair": "초당순매수금액 × 현재가 대역",
+    "cell_counts": [
+     109814,
+     380006,
+     98889,
+     274223
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.982923,
+     -1.089638,
+     -0.855643,
+     -0.959212
+    ],
+    "delta_A_pp": 0.12728,
+    "delta_B_pp": -0.106716,
+    "delta_AB_pp": 0.023711,
+    "I_pp": 0.003146,
+    "ci_low_pp": -0.014707,
+    "ci_high_pp": 0.019412,
+    "se_pp": 0.008368,
+    "p_two_sided": 0.615,
+    "mde_pp": 0.024389,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.017129,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": 0.01644,
+      "sign": 1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "4x5": {
+    "pair_id": "4x5",
+    "a": 4,
+    "b": 5,
+    "family_pair": "라운드피겨 × 시가총액",
+    "cell_counts": [
+     6920,
+     4959,
+     521317,
+     329736
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.124093,
+     -1.195262,
+     -0.957111,
+     -1.08267
+    ],
+    "delta_A_pp": 0.166982,
+    "delta_B_pp": -0.071169,
+    "delta_AB_pp": 0.041424,
+    "I_pp": -0.05439,
+    "ci_low_pp": -0.166785,
+    "ci_high_pp": 0.063442,
+    "se_pp": 0.056813,
+    "p_two_sided": 0.35,
+    "mde_pp": 0.164568,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.040813,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": -0.061243,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "4x15": {
+    "pair_id": "4x15",
+    "a": 4,
+    "b": 15,
+    "family_pair": "라운드피겨 × 회전율",
+    "cell_counts": [
+     4658,
+     7221,
+     373075,
+     477978
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.075838,
+     -1.204096,
+     -0.938696,
+     -1.058102
+    ],
+    "delta_A_pp": 0.137142,
+    "delta_B_pp": -0.128259,
+    "delta_AB_pp": 0.017736,
+    "I_pp": 0.008853,
+    "ci_low_pp": -0.097622,
+    "ci_high_pp": 0.125551,
+    "se_pp": 0.057004,
+    "p_two_sided": 0.92,
+    "mde_pp": 0.159526,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.020093,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": -0.02013,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "4x16": {
+    "pair_id": "4x16",
+    "a": 4,
+    "b": 16,
+    "family_pair": "라운드피겨 × 현재가 대역",
+    "cell_counts": [
+     4057,
+     7822,
+     320899,
+     530154
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.013763,
+     -1.226437,
+     -0.923149,
+     -1.05576
+    ],
+    "delta_A_pp": 0.090614,
+    "delta_B_pp": -0.212674,
+    "delta_AB_pp": -0.041997,
+    "I_pp": 0.080063,
+    "ci_low_pp": -0.033101,
+    "ci_high_pp": 0.202502,
+    "se_pp": 0.060074,
+    "p_two_sided": 0.185,
+    "mde_pp": 0.168411,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.113212,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.026465,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "4x17": {
+    "pair_id": "4x17",
+    "a": 4,
+    "b": 17,
+    "family_pair": "라운드피겨 × 현재가 대역",
+    "cell_counts": [
+     3703,
+     8176,
+     205000,
+     646053
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.025765,
+     -1.211793,
+     -0.920751,
+     -1.032732
+    ],
+    "delta_A_pp": 0.105015,
+    "delta_B_pp": -0.186028,
+    "delta_AB_pp": -0.006966,
+    "I_pp": 0.074047,
+    "ci_low_pp": -0.034171,
+    "ci_high_pp": 0.181839,
+    "se_pp": 0.05622,
+    "p_two_sided": 0.18,
+    "mde_pp": 0.154406,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.132512,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": -0.008555,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "5x37": {
+    "pair_id": "5x37",
+    "a": 37,
+    "b": 5,
+    "family_pair": "시가총액 × 초당매수수량 vs 매도총잔량",
+    "cell_counts": [
+     502233,
+     303114,
+     26004,
+     31581
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.969513,
+     -1.105512,
+     -0.762012,
+     -0.881108
+    ],
+    "delta_A_pp": 0.207501,
+    "delta_B_pp": -0.135999,
+    "delta_AB_pp": 0.088406,
+    "I_pp": 0.016904,
+    "ci_low_pp": -0.029378,
+    "ci_high_pp": 0.071256,
+    "se_pp": 0.025952,
+    "p_two_sided": 0.47,
+    "mde_pp": 0.071934,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.1235,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": -0.01614,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "15x37": {
+    "pair_id": "15x37",
+    "a": 37,
+    "b": 15,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 회전율",
+    "cell_counts": [
+     361432,
+     443915,
+     16301,
+     41284
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.948221,
+     -1.079712,
+     -0.766695,
+     -0.851267
+    ],
+    "delta_A_pp": 0.181526,
+    "delta_B_pp": -0.131491,
+    "delta_AB_pp": 0.096953,
+    "I_pp": 0.046919,
+    "ci_low_pp": -0.004067,
+    "ci_high_pp": 0.105024,
+    "se_pp": 0.028925,
+    "p_two_sided": 0.085,
+    "mde_pp": 0.077979,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.075364,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.02581,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "16x37": {
+    "pair_id": "16x37",
+    "a": 37,
+    "b": 16,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 현재가 대역",
+    "cell_counts": [
+     309137,
+     496210,
+     15819,
+     41766
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.929939,
+     -1.077244,
+     -0.813701,
+     -0.832488
+    ],
+    "delta_A_pp": 0.116239,
+    "delta_B_pp": -0.147304,
+    "delta_AB_pp": 0.097451,
+    "I_pp": 0.128517,
+    "ci_low_pp": 0.077649,
+    "ci_high_pp": 0.195405,
+    "se_pp": 0.028547,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.084173,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.132544,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.107651,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": true,
+    "classification": "synergy"
+   },
+   "17x37": {
+    "pair_id": "17x37",
+    "a": 37,
+    "b": 17,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 현재가 대역",
+    "cell_counts": [
+     198763,
+     606584,
+     9940,
+     47645
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.930225,
+     -1.050346,
+     -0.770415,
+     -0.8392
+    ],
+    "delta_A_pp": 0.159811,
+    "delta_B_pp": -0.120121,
+    "delta_AB_pp": 0.091025,
+    "I_pp": 0.051335,
+    "ci_low_pp": -0.01408,
+    "ci_high_pp": 0.117464,
+    "se_pp": 0.033788,
+    "p_two_sided": 0.12,
+    "mde_pp": 0.094029,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.093731,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.028434,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "5x38": {
+    "pair_id": "5x38",
+    "a": 38,
+    "b": 5,
+    "family_pair": "시가총액 × 초당매수수량 vs 매도총잔량",
+    "cell_counts": [
+     513172,
+     314739,
+     15065,
+     19956
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.966064,
+     -1.096925,
+     -0.728822,
+     -0.885816
+    ],
+    "delta_A_pp": 0.237243,
+    "delta_B_pp": -0.130861,
+    "delta_AB_pp": 0.080248,
+    "I_pp": -0.026134,
+    "ci_low_pp": -0.089637,
+    "ci_high_pp": 0.048636,
+    "se_pp": 0.032841,
+    "p_two_sided": 0.46,
+    "mde_pp": 0.098839,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.077412,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": -0.052034,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "15x38": {
+    "pair_id": "15x38",
+    "a": 38,
+    "b": 15,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 회전율",
+    "cell_counts": [
+     368454,
+     459457,
+     9279,
+     25742
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.94512,
+     -1.072503,
+     -0.752435,
+     -0.842017
+    ],
+    "delta_A_pp": 0.192685,
+    "delta_B_pp": -0.127382,
+    "delta_AB_pp": 0.103103,
+    "I_pp": 0.0378,
+    "ci_low_pp": -0.03509,
+    "ci_high_pp": 0.10764,
+    "se_pp": 0.037172,
+    "p_two_sided": 0.28,
+    "mde_pp": 0.102024,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.050611,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.023426,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "16x38": {
+    "pair_id": "16x38",
+    "a": 38,
+    "b": 16,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 현재가 대역",
+    "cell_counts": [
+     316008,
+     511903,
+     8948,
+     26073
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.927006,
+     -1.070635,
+     -0.828054,
+     -0.814928
+    ],
+    "delta_A_pp": 0.098951,
+    "delta_B_pp": -0.143629,
+    "delta_AB_pp": 0.112078,
+    "I_pp": 0.156755,
+    "ci_low_pp": 0.08983,
+    "ci_high_pp": 0.230446,
+    "se_pp": 0.036679,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.100514,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.172741,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.128018,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": true,
+    "classification": "synergy"
+   },
+   "17x38": {
+    "pair_id": "17x38",
+    "a": 38,
+    "b": 17,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 현재가 대역",
+    "cell_counts": [
+     203005,
+     624906,
+     5698,
+     29323
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -0.92674,
+     -1.044748,
+     -0.77562,
+     -0.826572
+    ],
+    "delta_A_pp": 0.15112,
+    "delta_B_pp": -0.118008,
+    "delta_AB_pp": 0.100168,
+    "I_pp": 0.067057,
+    "ci_low_pp": -0.017753,
+    "ci_high_pp": 0.145888,
+    "se_pp": 0.04306,
+    "p_two_sided": 0.11,
+    "mde_pp": 0.116972,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.158199,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": 0.029202,
+      "sign": 1
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "1x4": {
+    "pair_id": "1x4",
+    "a": 1,
+    "b": 4,
+    "family_pair": "라운드피겨 × 초당순매수금액",
+    "cell_counts": [
+     6833,
+     482987,
+     5046,
+     368066
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.198151,
+     -1.06384,
+     -1.09375,
+     -0.929541
+    ],
+    "delta_A_pp": 0.104401,
+    "delta_B_pp": 0.134311,
+    "delta_AB_pp": 0.26861,
+    "I_pp": 0.029898,
+    "ci_low_pp": -0.028499,
+    "ci_high_pp": 0.091101,
+    "se_pp": 0.031739,
+    "p_two_sided": 0.38,
+    "mde_pp": 0.085491,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.031587,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": 0.096823,
+      "sign": 1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "no_detect_additive"
+   },
+   "1x37": {
+    "pair_id": "1x37",
+    "a": 1,
+    "b": 37,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 초당순매수금액",
+    "cell_counts": [
+     484344,
+     5476,
+     321003,
+     52109
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.067683,
+     -0.891486,
+     -0.94981,
+     -0.820585
+    ],
+    "delta_A_pp": 0.117873,
+    "delta_B_pp": 0.176197,
+    "delta_AB_pp": 0.247099,
+    "I_pp": -0.046972,
+    "ci_low_pp": -0.11772,
+    "ci_high_pp": 0.035268,
+    "se_pp": 0.037526,
+    "p_two_sided": 0.235,
+    "mde_pp": 0.109357,
+    "year_I": {
+     "2022": {
+      "I_pp": 0.078276,
+      "sign": 1
+     },
+     "2023": {
+      "I_pp": -0.076532,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   },
+   "1x38": {
+    "pair_id": "1x38",
+    "a": 1,
+    "b": 38,
+    "family_pair": "초당매수수량 vs 매도총잔량 × 초당순매수금액",
+    "cell_counts": [
+     486996,
+     2824,
+     340915,
+     32197
+    ],
+    "cell_order": "00,01,10,11",
+    "mu_pp": [
+     -1.066841,
+     -0.871176,
+     -0.942918,
+     -0.813642
+    ],
+    "delta_A_pp": 0.123924,
+    "delta_B_pp": 0.195666,
+    "delta_AB_pp": 0.253199,
+    "I_pp": -0.06639,
+    "ci_low_pp": -0.179953,
+    "ci_high_pp": 0.043976,
+    "se_pp": 0.056357,
+    "p_two_sided": 0.27,
+    "mde_pp": 0.160066,
+    "year_I": {
+     "2022": {
+      "I_pp": -0.086543,
+      "sign": -1
+     },
+     "2023": {
+      "I_pp": -0.055165,
+      "sign": -1
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260713,
+    "fdr_survive": false,
+    "classification": "undetected_power"
+   }
+  },
+  "n_qualified": 19,
+  "fdr_denominator": 19,
+  "fdr_q": 0.1,
+  "synergy_pairs": [
+   "16x37",
+   "16x38"
+  ],
+  "interference_pairs": [],
+  "weak_signal_pairs": [],
+  "undetected_power_pairs": [
+   "4x5",
+   "4x15",
+   "4x16",
+   "4x17",
+   "15x38",
+   "17x38",
+   "1x37",
+   "1x38"
+  ],
+  "no_detect_additive_pairs": [
+   "1x5",
+   "1x15",
+   "1x16",
+   "1x17",
+   "5x37",
+   "15x37",
+   "17x37",
+   "5x38",
+   "1x4"
+  ],
+  "family_pairs": {
+   "시가총액 × 초당순매수금액": {
+    "n_member_pairs": 1,
+    "member_pairs": [
+     "1x5"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "초당순매수금액 × 회전율": {
+    "n_member_pairs": 1,
+    "member_pairs": [
+     "1x15"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "초당순매수금액 × 현재가 대역": {
+    "n_member_pairs": 2,
+    "member_pairs": [
+     "1x16",
+     "1x17"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "라운드피겨 × 시가총액": {
+    "n_member_pairs": 1,
+    "member_pairs": [
+     "4x5"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "라운드피겨 × 회전율": {
+    "n_member_pairs": 1,
+    "member_pairs": [
+     "4x15"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "라운드피겨 × 현재가 대역": {
+    "n_member_pairs": 2,
+    "member_pairs": [
+     "4x16",
+     "4x17"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "시가총액 × 초당매수수량 vs 매도총잔량": {
+    "n_member_pairs": 2,
+    "member_pairs": [
+     "5x37",
+     "5x38"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "초당매수수량 vs 매도총잔량 × 회전율": {
+    "n_member_pairs": 2,
+    "member_pairs": [
+     "15x37",
+     "15x38"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "초당매수수량 vs 매도총잔량 × 현재가 대역": {
+    "n_member_pairs": 4,
+    "member_pairs": [
+     "16x37",
+     "17x37",
+     "16x38",
+     "17x38"
+    ],
+    "synergy_family": true,
+    "interference_family": false
+   },
+   "라운드피겨 × 초당순매수금액": {
+    "n_member_pairs": 1,
+    "member_pairs": [
+     "1x4"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   },
+   "초당매수수량 vs 매도총잔량 × 초당순매수금액": {
+    "n_member_pairs": 2,
+    "member_pairs": [
+     "1x37",
+     "1x38"
+    ],
+    "synergy_family": false,
+    "interference_family": false
+   }
+  },
+  "family_pair_cap": 22,
+  "n_synergy_families": 1,
+  "n_interference_families": 0,
+  "sanity_anchor_tripped": false,
+  "kill1_no_interaction_detected": false
+ },
+ "contamination_label": "본 결과의 절 집합(RR8_12 매수식)은 2024 선정창을 포함해 튜닝된 역사적 산물이다(창-지위 원장 §2 v4 계열). 발견되는 절 효과는 이 시드 계보(rr8_12_turnover_min_902_1.5, buy_sha 348c5181…)에 조건부인 진단이며, (a) 새 전략 성능 주장이 아니고, (b) 절의 보편적 유효성 주장이 아니며, (c) 다른 출구를 쓰면 지도가 달라진다(L3는 RR8_12 출구 조건부). 교호작용 효과 I도 동일하게 이 계보·이 출구에 조건부다 — 시너지 짝을 원-임계 그대로 신규 조건식에 이식하는 것은 금지되며(과적합 계승), O-4 승격은 별도 트랙의 임계 재도출·재검정을 거친다."
+}
