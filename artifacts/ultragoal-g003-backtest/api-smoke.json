@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "api-smoke-direct-and-tests",
+  "capturedAt": "2026-06-27T15:30:44Z",
+  "directServerBase": "http://127.0.0.1:8776",
+  "strategyDb": "C:/System_Trading/STOM/STOM_V.wt-dev/_database/strategy.db via STOM_WEBBT_STRATEGY_DB",
+  "directChecks": [
+    {
+      "method": "GET",
+      "path": "/bt/strategy?kind=buy&name=Tick_B_902",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/legacy/self_vars?kind=buy&name=Tick_B_902",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/backfinder/preflight?kind=buy&name=Tick_B_902",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/job?job_id=20260628_002928_TickB902_68767",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/compare?job_a=20260628_002928_TickB902_68767&job_b=20260628_002928_TickB902_68767",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/overlay?job_ids=20260628_002928_TickB902_68767,20260628_002928_TickB902_68767",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "GET",
+      "path": "/bt/report?job_id=20260628_002928_TickB902_68767",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "POST",
+      "path": "/bt/strategy/validate",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "method": "POST",
+      "path": "/bt/portfolio",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "browserConfirmed200": [
+    "/bt/jobs",
+    "/bt/health",
+    "/bt/strategies?kind=buy",
+    "/bt/strategies?kind=sell",
+    "/bt/data_range",
+    "/bt/result?job_id=__demo__",
+    "/bt/analysis/montecarlo?job_id=__demo__&n=2000"
+  ],
+  "focusedTests": "225 passed, 1 skipped across CRUD/jobs/ws_job/analysis/report/evo/portfolio/phase4/phase5/sweep/overlay/result identity",
+  "smallRuntimeJob": "20260628_002928_TickB902_68767 produced an available error-status result object; report/compare/portfolio endpoints handled it without 5xx. Full profitable-result rendering remains covered by existing fixture tests and demo result UI when no completed local job exists.",
+  "allOk": true
+}

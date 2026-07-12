@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G006",
+  "title": "Decision audit settings and safety completion",
+  "status": "verification-passed-before-review",
+  "commands": [
+    "pytest tests/unit/test_dashboard_ws.py tests/unit/test_dashboard_validation_views.py tests/unit/test_dashboard_integrated_layout.py tests/unit/dashboard/test_p2_structural.py tests/unit/dashboard/test_phase9_spa_tabs.py tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q -> 95 passed, 1 skipped",
+    "python -m py_compile ai_strategy_loop/dashboard/app.py && node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js && git diff --check -> passed",
+    "browser captured /ui/remodel/audit and SettingsModal -> audit/settings screenshots and DOM safety transcript saved",
+    "direct live API smoke: /decisions, /config/spec, /gpt_auth/status, /gpt_auth/test all HTTP 200 and safe flags present",
+    "TestClient API smoke: /record_decision invalid rejected; hold/reject append order preserved; final_approval WS ignores malicious dest_strategy_db and uses server-controlled PRODUCTION_STRATEGY_DB"
+  ],
+  "artifactRefs": [
+    "artifacts/ultragoal-g006-safety/browser-transcript.json",
+    "artifacts/ultragoal-g006-safety/audit-page.png",
+    "artifacts/ultragoal-g006-safety/settings-modal.png",
+    "artifacts/ultragoal-g006-safety/api-smoke.json",
+    "artifacts/ultragoal-g006-safety/source-safety-scan.json",
+    "artifacts/ultragoal-g006-safety/record-decision-smoke.jsonl"
+  ],
+  "notes": [
+    "Record-decision mutation test uses TestClient with DECISIONS_FILE redirected to the artifact JSONL, avoiding mutation of the worktree runtime decision ledger while still exercising the real route.",
+    "Live /gpt_auth/test is a safe probe: response includes safe=true and starts_evolution=false even when proxy/token is unavailable.",
+    "Browser DOM scan found zero live-order, broker-login, or account-trade controls; audit page labels final approval/export as separate from append-only decision audit."
+  ],
+  "capturedAt": "2026-06-27T16:17:46Z"
+}

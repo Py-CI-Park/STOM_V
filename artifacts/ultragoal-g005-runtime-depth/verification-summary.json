@@ -1,0 +1,94 @@
+{
+  "apiSmoke": {
+    "failures": 0,
+    "readOnly": true,
+    "rows": 12,
+    "status": "PASS"
+  },
+  "artifactRefs": [
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\runtime-depth-scorecard.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\backtest-runtime-evidence.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\chart-replay-runtime-evidence.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\api-smoke.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\forbidden-runtime-scan.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\browser-transcript.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\runtime-depth-contact-sheet.png"
+  ],
+  "commands": [
+    {
+      "command": "STOM_WEBBT_STRATEGY_DB=C:/System_Trading/STOM/STOM_V.wt-dev/_database/strategy.db python -c ... --port 8776",
+      "evidence": "runtime server served /health=200 with wt-dev strategy DB for read-only strategy-list smoke",
+      "status": "passed"
+    },
+    {
+      "command": "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g005-runtime-depth",
+      "evidence": "runtime-depth-scorecard status=PASS averageRuntimeDepthScore=100.0 failures=0",
+      "status": "passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "evidence": "29 passed",
+      "status": "passed"
+    },
+    {
+      "command": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py && git diff --check",
+      "evidence": "exit code 0",
+      "status": "passed"
+    }
+  ],
+  "coverage": {
+    "backtest": {
+      "contractCount": 24,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    },
+    "chartReplay": {
+      "contractCount": 19,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    }
+  },
+  "forbiddenRuntimeScan": {
+    "findings": 0,
+    "status": "PASS"
+  },
+  "generatedAt": "2026-06-28T23:04:25.171062+00:00",
+  "goalId": "G005",
+  "kind": "ultragoal-g005-verification-summary",
+  "schemaVersion": 1,
+  "scores": {
+    "apiSmoke": 100.0,
+    "backtest": 100.0,
+    "chartReplay": 100.0,
+    "safety": 100.0
+  },
+  "screenshots": {
+    "backtest": {
+      "available": true,
+      "lumaStddev": 18.32,
+      "nonUniform": true,
+      "size": [
+        1920,
+        1080
+      ],
+      "status": "PASS"
+    },
+    "chartReplay": {
+      "available": true,
+      "lumaStddev": 19.25,
+      "nonUniform": true,
+      "size": [
+        1920,
+        1080
+      ],
+      "status": "PASS"
+    }
+  },
+  "status": "passed"
+}

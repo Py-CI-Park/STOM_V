@@ -31,6 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -253,6 +254,27 @@ def test_track_z_v4_standalone_page_mounts() -> None:
     assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
 
 
+def test_track_z_v7_v4_dashboard_shell() -> None:
+    """V7: the V4 opt-in dashboard shell (/ui/v4.html -> window.DashboardV4Shell) and each of its 6
+    tabs (research idle+running, backtest, replay, lab, workbench, audit) mount from the SAME served
+    bundle with 0 errors and a non-empty #root. Separate gate from V4 (the 3 legacy standalone
+    lab/pro/verdict pages) - this covers the new graph-first V4 dashboard."""
+    data = _run_harness()
+    v7 = data["v7"]
+    pages = v7["pages"]
+    expected = {"v4shell", "v4shell-running", "v4-backtest", "v4-replay", "v4-lab", "v4-workbench", "v4-audit", "v4-context", "v4-history"}
+    assert set(pages) == expected, f"V7 must render the V4 shell + 8 views, got {set(pages)}"
+    for name in expected:
+        r = pages[name]
+        assert r["componentIsFunction"], f"{name}: window.DashboardV4Shell is not a function"
+        assert r["mountError"] is None, f"{name}: mount error {r['mountError']}"
+        assert r["rootNonEmpty"], f"{name}: #root empty after mount"
+        assert not r["errorBoundaryTripped"], f"{name}: ErrorBoundary tripped (render threw)"
+        assert r["errorCount"] == 0, f"{name} render errors: {r['errors']}"
+        assert r["pass"], f"V7 page {name} failed: {r}"
+    assert v7["pass"], f"V7 V4 dashboard shell failed: {v7}"
+
+
 def test_track_z_v5_records_behavior() -> None:
     """V5: governed records UI behavior is runtime-proven, not only source-grepped."""
     data = _run_harness()
@@ -322,12 +344,22 @@ def test_committed_bundle_in_sync_with_source() -> None:
     before = {rel: (Path(PROJECT_ROOT) / rel).read_bytes() for rel in targets}
     # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
     #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
-    r = subprocess.run(
-        [node, "build-app.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=240,
-    )
-    assert r.returncode == 0, f"build failed: {r.stderr}"
+    # Windows I/O transient guard: under full-suite load, node writeFileSync on the in-place
+    #   1.9MB bundle/manifest can hit a UNKNOWN/EBUSY handle race (Defender real-time scan of the
+    #   just-written app.js). The build itself is deterministic (proven in isolation and by
+    #   `npm run build`), so retry a crashing subprocess a few times before asserting. A genuine
+    #   non-deterministic build would still fail the byte-stability check below on every attempt.
+    r = None
+    for attempt in range(4):
+        r = subprocess.run(
+            [node, "build-app.mjs"],
+            cwd=str(WEBUI), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=240,
+        )
+        if r.returncode == 0:
+            break
+        time.sleep(1.0 + attempt)
+    assert r is not None and r.returncode == 0, f"build failed after retries: {r.stderr if r else 'no run'}"
     changed = [
         rel for rel in targets
         if (Path(PROJECT_ROOT) / rel).read_bytes() != before[rel]

@@ -1,0 +1,230 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 46-G004ArchitectReview approved G004. It verified 24 required /bt contracts, Backtest API Contract Matrix rendering, reference/demo inert gating, live safe read probes, conditional strategy/job/report/overlay/compare reads, fetchText for HTML report, static tests, screenshots, and no safety regression.",
+    "commands": [
+      "architect review subagent 46-G004ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 47-G004ExecutorQa passed. Evidence shows reference mode contracts=24/matrixRows=24 with zero fetch/ws/timer/storage side effects; live mode has 24 rows, 14 LIVE OK rows, 8 MANUAL-GATED rows, 2 NOT-USED rows with reasons, /bt/report LIVE OK HTML report, and no forbidden controls. Parent ran focused pytest (19 passed), node --check, git diff --check, and browser probes/captures.",
+    "e2eCommands": [
+      "browser automation probe/capture for /ui/remodel/backtest?demo=reference and /ui/remodel/backtest live"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "executor QA subagent 47-G004ExecutorQa"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g004-backtest/browser-transcript.json",
+        "description": "Automation transcript for reference and live Backtest page with monotonic timestamps, selectors, probes, screenshots, and passed verdict"
+      },
+      {
+        "id": "browser-probe-json",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-g004-backtest/browser-evidence.json",
+        "description": "Structured browser evidence for 24 /bt contracts, inert reference mode, live read adapter, report handling, manual gates, and not-used reasons"
+      },
+      {
+        "id": "screenshot-reference",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g004-backtest/g004-backtest-reference.png",
+        "description": "Non-uniform reference-mode Backtest screenshot with full API matrix and safety footer"
+      },
+      {
+        "id": "screenshot-live",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g004-backtest/g004-backtest-live.png",
+        "description": "Non-uniform live-mode Backtest screenshot with full API matrix, live read evidence, manual gates, and safety footer"
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-g004-backtest/cli-replay-g004.json",
+        "description": "Replay-safe CLI receipt for G004 Backtest adapter checkpoint"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-bt-matrix",
+        "contractRef": "G004 objective: approved /bt/* endpoint-action-evidence matrix",
+        "obligation": "BacktestContracts covers health, strategies, strategy CRUD/validate, extract_vars, legacy self_vars, backfinder, data_range, run, jobs, job, cancel/meta, ws_job, result, evo_gens, montecarlo, compare, overlay, portfolio, and report.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference",
+          "surface-web-live",
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-matrix-complete"
+        ]
+      },
+      {
+        "id": "contract-reference-inert",
+        "contractRef": "G004 objective: reference mode inert/no-network",
+        "obligation": "Reference/demo Backtest matrix renders all contracts with no /bt fetch, no /bt WS, no extra localStorage, and explicit inert status.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference"
+        ],
+        "adversarialCaseRefs": [
+          "case-reference-side-effects"
+        ]
+      },
+      {
+        "id": "contract-live-read-evidence",
+        "contractRef": "G004 objective: live mode evidence or not-used reason",
+        "obligation": "Live mode probes safe reads and conditional GETs when IDs/names exist while marking missing contexts as NOT-USED with reasons.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-live"
+        ],
+        "adversarialCaseRefs": [
+          "case-conditional-no-fake-success",
+          "case-report-html"
+        ]
+      },
+      {
+        "id": "contract-manual-gates",
+        "contractRef": "G004 objective: no hidden mutation or long-lived WS",
+        "obligation": "Mutating POSTs and /bt/ws_job are not auto-invoked and are visibly manual-gated/user-gated with reasons.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-live",
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-auto-mutation",
+          "case-ws-job-hidden"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-reference",
+        "contractRef": "Reference Backtest browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/backtest?demo=reference with probe wrappers before document scripts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-reference"
+        ]
+      },
+      {
+        "id": "surface-web-live",
+        "contractRef": "Live Backtest browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/backtest and observed live /bt read probes, manual gates, and screenshot",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-live"
+        ]
+      },
+      {
+        "id": "surface-cli-static",
+        "contractRef": "Static source/test contract surface",
+        "surface": "cli",
+        "invocation": "Focused pytest, node syntax check, git diff check, and replay-safe CLI receipt",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-matrix-complete",
+        "contractRef": "24 endpoint matrix completeness",
+        "scenario": "A required /bt endpoint is omitted from the zip-first Backtest matrix.",
+        "expectedBehavior": "24 contracts and 24 matrix rows include every objective endpoint.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json",
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-reference-side-effects",
+        "contractRef": "Reference/demo inertness",
+        "scenario": "Reference Backtest page secretly fetches /bt APIs, opens WS, schedules timers, or touches localStorage.",
+        "expectedBehavior": "Reference probe arrays are empty and matrix rows are INERT.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-auto-mutation",
+        "contractRef": "Mutating endpoint safety",
+        "scenario": "Backtest page auto-invokes /bt/run, strategy save/delete, job cancel/meta, extract_vars/validate payloads, or portfolio.",
+        "expectedBehavior": "POST/mutating rows are MANUAL-GATED and no mutating action hooks/direct auto-fetch markers exist.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json",
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-ws-job-hidden",
+        "contractRef": "No hidden long-lived /bt/ws_job stream",
+        "scenario": "Backtest page opens /bt/ws_job automatically when live mode loads.",
+        "expectedBehavior": "/bt/ws_job row is NOT-USED/user-gated and browser WS calls only include shell /ws.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-report-html",
+        "contractRef": "Report endpoint content type",
+        "scenario": "/bt/report is fetched as JSON and falsely reported as LIVE ERROR because it returns HTML.",
+        "expectedBehavior": "Report uses text/HTML handling and shows LIVE OK HTML report chars.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-conditional-no-fake-success",
+        "contractRef": "Conditional GETs without context",
+        "scenario": "Optional job/run endpoints fake success when no IDs are available.",
+        "expectedBehavior": "Rows are LIVE OK only when IDs exist, otherwise NOT-USED with explicit reason.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G004 implementation, static tests, node check, diff check, report fetchText fix, browser captures, architect review 46, and executor QA 47 all passed with blockers empty. Full verification loop reran after the report HTML handling fix.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "browser probes for Backtest reference/live",
+      "architect review 46-G004ArchitectReview",
+      "executor QA 47-G004ExecutorQa"
+    ],
+    "blockers": []
+  }
+}

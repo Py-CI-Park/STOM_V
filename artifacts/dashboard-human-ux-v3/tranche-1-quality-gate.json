@@ -1,0 +1,320 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect agent 138-G002BacktestArchAbs reviewed the absolute wt-dashboard-remodel files/artifacts and approved: shared IA primitives in app.js/theme.css, Backtest task flow, manual-gated safety boundaries, browser selector evidence, V2/V3 route separation, no Chart Replay scope creep, human UX scorecard PASS, safety audit PASS. Watch item only: future live mutation handlers should stay explicit and user-confirmed.",
+    "commands": [
+      "agent://138-G002BacktestArchAbs"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Leader ran browser and CLI verification; executor QA agent 137-G002BacktestQaAbs red-teamed exact absolute artifacts and passed all contract/adversarial rows. Browser transcript proves task frame, safety strip, select/edit/validate/gated-run/analyze steps, two large condition editors, evidence drawer, and forbiddenLiveControls=0.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-backtest --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche c --pages backtest --min-v3-score 86 --min-delta 5",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-safety-audit --timeout-ms 60000"
+    ],
+    "redTeamCommands": [
+      "agent://137-G002BacktestQaAbs",
+      "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-backtest-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-evidence.json",
+        "description": "Browser automation transcript for /ui/remodel/backtest?demo=reference capturing task frame, safety strip, Backtest steps, condition editors, validation, drawer, and forbiddenLiveControls=0.",
+        "tool": "browser",
+        "surface": "web",
+        "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+        "actions": [
+          {
+            "timestamp": "2026-06-30T07:25:50.000Z",
+            "type": "navigate",
+            "selector": "document",
+            "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+            "waitUntil": "networkidle2"
+          },
+          {
+            "timestamp": "2026-06-30T07:25:54.000Z",
+            "type": "evaluate",
+            "selector": "[data-ux-primary-canvas=\"backtest\"]",
+            "description": "Capture required G002 Backtest selectors and forbidden live controls"
+          },
+          {
+            "timestamp": "2026-06-30T07:25:55.000Z",
+            "type": "screenshot",
+            "selector": "body",
+            "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+            "fullPage": false
+          }
+        ],
+        "screenshotPath": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png"
+      },
+      {
+        "id": "browser-backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+        "description": "Non-uniform screenshot of the redesigned V3 Backtest first fold with task frame and compact safety strip.",
+        "surface": "web",
+        "nonUniform": true,
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "id": "human-ux-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/scorecard.json",
+        "description": "Human UX rubric scorecard for Backtest route: PASS, mean V3 score 97.3, mean named V3-V2 delta 13.06, no hard failures."
+      },
+      {
+        "id": "v2-v3-compare-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 route compare scorecard: PASS, average corrected total 100.0, Backtest and Chart Replay route preservation verified."
+      },
+      {
+        "id": "safety-audit-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-safety-audit/safety-scorecard.json",
+        "description": "Dashboard safety audit scorecard: PASS, average safety score 100.0, no forbidden network/source/DOM failures."
+      },
+      {
+        "id": "static-unit-tests",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-1-test-report.json",
+        "description": "Focused static/unit verification report: node syntax PASS, pytest 32 passed, diff check PASS, protected paths clean."
+      },
+      {
+        "id": "adversarial-qa",
+        "kind": "failure-mode-test",
+        "path": "agent://137-G002BacktestQaAbs",
+        "description": "Executor QA/red-team matrix covering missing selectors, unsafe auto-mutation, condition editor regression, drawer evidence hiding, and replay scope creep; all passed with blockers []."
+      },
+      {
+        "id": "architect-review",
+        "kind": "architecture-review",
+        "path": "agent://138-G002BacktestArchAbs",
+        "description": "Architect review with architecture/product/code CLEAR, recommendation APPROVE, blockers []."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-task-frame",
+        "contractRef": "G002 approved objective: shared explicit-V3 task frame selectors and compact task-first IA",
+        "obligation": "V3 Backtest exposes task frame and first-fold orientation without replacing V2 default route.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest",
+          "surface-v2-v3-compare"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-selectors"
+        ]
+      },
+      {
+        "id": "contract-backtest-flow",
+        "contractRef": "G002 approved objective: Backtest select/edit/validate/gated-run/analyze flow",
+        "obligation": "Backtest route provides stable step selectors for select, edit, validate, gated-run, and analyze.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-selectors",
+          "case-condition-editor-regression"
+        ]
+      },
+      {
+        "id": "contract-large-editors",
+        "contractRef": "G002 approved objective: large buy/sell condition editors",
+        "obligation": "Buy and sell condition editors remain separated, large enough for review, readonly/inert in reference mode, and browser-visible via data-backtest-condition markers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest"
+        ],
+        "adversarialCaseRefs": [
+          "case-condition-editor-regression"
+        ]
+      },
+      {
+        "id": "contract-manual-gate",
+        "contractRef": "G002 approved objective: manual-gated run/save/delete controls and safety markers",
+        "obligation": "Mutating Backtest actions are not auto-invoked on page load; reference/demo controls are inert; no live order/broker/account controls are introduced.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest",
+          "surface-safety-audit"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-auto-mutation"
+        ]
+      },
+      {
+        "id": "contract-evidence-drawer",
+        "contractRef": "G002 approved objective: evidence/contract drawer pattern with preserved markers",
+        "obligation": "Contract/safety evidence is compacted but remains present in DOM and accessible through an evidence drawer marker.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest"
+        ],
+        "adversarialCaseRefs": [
+          "case-drawer-hiding-evidence"
+        ]
+      },
+      {
+        "id": "contract-v2-v3-preservation",
+        "contractRef": "Original brief constraints: preserve V2 default and explicit V3 routing",
+        "obligation": "V2 /ui/backtest keeps V2 bundle while explicit V3 /ui/remodel/backtest uses remodel assets and passes required text/safety checks.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-v2-v3-compare"
+        ],
+        "adversarialCaseRefs": [
+          "case-replay-scope-creep"
+        ]
+      },
+      {
+        "id": "contract-replay-out-of-scope",
+        "contractRef": "User instruction: Do not start Chart Replay until Backtest passes its tranche gate",
+        "obligation": "Backtest tranche does not redesign/start Chart Replay; Chart Replay route remains separated and passing compare/safety checks.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-v2-v3-compare",
+          "surface-safety-audit"
+        ],
+        "adversarialCaseRefs": [
+          "case-replay-scope-creep"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-backtest",
+        "contractRef": "V3 Backtest user-facing web surface",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8776/ui/remodel/backtest?demo=reference and captured selector rectangles plus screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-backtest-transcript",
+          "browser-backtest-screenshot"
+        ]
+      },
+      {
+        "id": "surface-v2-v3-compare",
+        "contractRef": "V2 default and explicit V3 route preservation",
+        "surface": "api/package",
+        "invocation": "Read-only verification script/test-report artifact produced by leader commands; browser/web surface is separately proven by surface-web-backtest.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "v2-v3-compare-scorecard"
+        ]
+      },
+      {
+        "id": "surface-safety-audit",
+        "contractRef": "Dashboard safety/no-live-order/no-broker/no-account boundary",
+        "surface": "api/package",
+        "invocation": "Read-only verification script/test-report artifact produced by leader commands; browser/web surface is separately proven by surface-web-backtest.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-audit-scorecard"
+        ]
+      },
+      {
+        "id": "surface-unit-static",
+        "contractRef": "Static source/test contract for G002 Backtest selectors and safety strings",
+        "surface": "api/package",
+        "invocation": "Read-only verification script/test-report artifact produced by leader commands; browser/web surface is separately proven by surface-web-backtest.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "static-unit-tests"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-missing-selectors",
+        "contractRef": "G002 task frame/backtest step selectors",
+        "scenario": "Task frame, safety boundary, primary canvas, Backtest steps, evidence drawer, condition editor, or validation selectors are missing or hidden.",
+        "expectedBehavior": "Browser transcript includes all required selectors with nonzero rectangles/text.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-backtest-transcript",
+          "adversarial-qa"
+        ]
+      },
+      {
+        "id": "case-unsafe-auto-mutation",
+        "contractRef": "G002 manual-gated Backtest controls and safety boundary",
+        "scenario": "Page load or reference/demo Backtest route silently triggers mutating POST, WebSocket, live order, broker login, account trading, save/delete/run/cancel controls.",
+        "expectedBehavior": "No forbidden live controls, no forbidden safety audit findings, and reference/demo actions remain inert/manual-gated.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-backtest-transcript",
+          "safety-audit-scorecard",
+          "adversarial-qa"
+        ]
+      },
+      {
+        "id": "case-condition-editor-regression",
+        "contractRef": "G002 large buy/sell condition editors",
+        "scenario": "V3 Backtest loses V2-like large condition editing affordance or collapses buy/sell code into tiny cards.",
+        "expectedBehavior": "Two large buy/sell condition editors are captured with dimensions around 675x280 in browser evidence.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-backtest-transcript",
+          "human-ux-scorecard",
+          "adversarial-qa"
+        ]
+      },
+      {
+        "id": "case-drawer-hiding-evidence",
+        "contractRef": "G002 evidence/contract drawer pattern",
+        "scenario": "Moving contract matrix into drawer removes required evidence from DOM or makes safety/contract claims inaccessible.",
+        "expectedBehavior": "Visible compact safety strip remains first-fold; evidence drawer with contract marker exists and compare/safety required text passes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-backtest-transcript",
+          "v2-v3-compare-scorecard",
+          "adversarial-qa"
+        ]
+      },
+      {
+        "id": "case-replay-scope-creep",
+        "contractRef": "G002 excludes Chart Replay until Backtest gate passes",
+        "scenario": "Backtest-first tranche accidentally starts, rewrites, or breaks Chart Replay route or /sim/ws behavior.",
+        "expectedBehavior": "Chart Replay route remains separate and compare/safety audits pass without forbidden WebSocket activity.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "v2-v3-compare-scorecard",
+          "safety-audit-scorecard",
+          "adversarial-qa"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G002 blocker loop clean. Initial V2/V3 compare failed on missing legacy Backtest required text after compaction; app/test markers were restored via a compact feature map and drawer summary, then focused tests, human UX Backtest verifier, V2/V3 compare, safety audit, JS syntax, diff check, protected-path check, browser transcript, architect review, and executor QA were rerun cleanly. AI slop sweep found no blocking TODO/stub/fake placeholders in changed files; existing fake/no-fake strings are safety assertions, not masking fallbacks.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-backtest --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche c --pages backtest --min-v3-score 86 --min-delta 5",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-safety-audit --timeout-ms 60000",
+      "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+    ],
+    "blockers": []
+  }
+}

@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -44,7 +45,8 @@ def _read_strategy_code(loop_db: str, name: str, kind: str) -> str:
         KeyError: 전략이 없을 때.
     """
     table = "stockbuy" if kind == "buy" else "stocksell"
-    con = sqlite3.connect(loop_db)
+    loop_path = Path(loop_db).resolve()
+    con = sqlite3.connect(f"file:{loop_path.as_posix()}?mode=ro", uri=True)
     try:
         cur = con.cursor()
         cur.execute(f'PRAGMA table_info({table})')
@@ -62,6 +64,45 @@ def _read_strategy_code(loop_db: str, name: str, kind: str) -> str:
     return row[0]
 
 
+def _strategy_code_column(connection: sqlite3.Connection, table: str) -> str:
+    rows = connection.execute(f"PRAGMA table_info({table})").fetchall()
+    if not rows:
+        connection.execute(
+            f'CREATE TABLE {table} ("index" TEXT PRIMARY KEY, "전략코드" TEXT)'
+        )
+        return "전략코드"
+    columns = [str(row[1]) for row in rows]
+    if "전략코드" in columns:
+        return "전략코드"
+    if len(columns) >= 2:
+        return columns[1]
+    raise sqlite3.OperationalError(f"missing strategy code column: {table}")
+
+
+def _upsert_strategy(
+    connection: sqlite3.Connection,
+    table: str,
+    name: str,
+    code: str,
+) -> str:
+    code_column = _strategy_code_column(connection, table)
+    exists = connection.execute(
+        f'SELECT 1 FROM {table} WHERE "index" = ?',
+        (name,),
+    ).fetchone()
+    if exists is None:
+        connection.execute(
+            f'INSERT INTO {table} ("index", "{code_column}") VALUES (?, ?)',
+            (name, code),
+        )
+        return "created"
+    connection.execute(
+        f'UPDATE {table} SET "{code_column}" = ? WHERE "index" = ?',
+        (code, name),
+    )
+    return "updated"
+
+
 def export_winner(
     winner_buy: str,
     winner_sell: str,
@@ -70,6 +111,8 @@ def export_winner(
     user_sell_name: str,
     *,
     loop_db: Optional[str] = None,
+    expected_buy_code_hash: Optional[str] = None,
+    expected_sell_code_hash: Optional[str] = None,
 ) -> Dict[str, Any]:
     """우승 buy/sell 전략을 운영 strategy.db로 export 한다.
 
@@ -104,27 +147,54 @@ def export_winner(
             ),
         }
 
-    # save_strategy_to_db는 명시 db_path를 받는다 — 운영 경로를 직접 넘긴다.
-    # (이 import는 cli.strategy_generator 한 모듈뿐 — 주문/계좌/라이브 모듈 없음.)
-    from cli.strategy_generator import save_strategy_to_db  # noqa: PLC0415
-
     try:
         buy_code = _strip_namespace_marker(_read_strategy_code(loop_db, winner_buy, "buy"))
         sell_code = _strip_namespace_marker(_read_strategy_code(loop_db, winner_sell, "sell"))
-    except KeyError as exc:
+    except (KeyError, sqlite3.Error) as exc:
         return {"status": "error", "message": str(exc)}
+    actual_buy_hash = hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
+    actual_sell_hash = hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
+    if (
+        expected_buy_code_hash is not None
+        and actual_buy_hash != expected_buy_code_hash
+    ) or (
+        expected_sell_code_hash is not None
+        and actual_sell_hash != expected_sell_code_hash
+    ):
+        return {
+            "status": "error",
+            "code": "source_code_hash_mismatch",
+            "message": "winner source code changed after approval review",
+        }
 
-    saved_buy = save_strategy_to_db(dest, user_buy_name, buy_code, "buy")
-    if saved_buy.get("status") != "ok":
-        return {"status": "error", "message": f"buy 저장 실패: {saved_buy.get('message')}"}
-
-    saved_sell = save_strategy_to_db(dest, user_sell_name, sell_code, "sell")
-    if saved_sell.get("status") != "ok":
-        return {"status": "error", "message": f"sell 저장 실패: {saved_sell.get('message')}"}
+    connection: sqlite3.Connection | None = None
+    try:
+        connection = sqlite3.connect(dest)
+        connection.execute("BEGIN IMMEDIATE")
+        buy_action = _upsert_strategy(
+            connection,
+            "stockbuy",
+            user_buy_name,
+            buy_code,
+        )
+        sell_action = _upsert_strategy(
+            connection,
+            "stocksell",
+            user_sell_name,
+            sell_code,
+        )
+        connection.commit()
+    except sqlite3.Error as exc:
+        if connection is not None:
+            connection.rollback()
+        return {"status": "error", "message": f"strategy export failed: {exc}"}
+    finally:
+        if connection is not None:
+            connection.close()
 
     return {
         "status": "ok",
         "dest_db": dest,
-        "buy": {"name": user_buy_name, "action": saved_buy.get("action")},
-        "sell": {"name": user_sell_name, "action": saved_sell.get("action")},
+        "buy": {"name": user_buy_name, "action": buy_action},
+        "sell": {"name": user_sell_name, "action": sell_action},
     }

@@ -1,0 +1,8 @@
+G001 adversarial route selector report
+
+PASS: canonical routes do not silently switch to V3 by default; route matrix has 9 default V2 rows.
+PASS: dashboard_version=v3 does not persist; same-browser default-after-selector returns V2 with empty dashboard/version/remodel localStorage, sessionStorage, and cookie snapshots.
+PASS: /ui/remodel/ and /ui/remodel/* hard routes serve V3 and expose x-stom-dashboard-version=v3-remodel.
+PASS: legacy aliases preserve dashboard_version=v3 in redirect Location.
+PASS: unknown /ui/evolution/not-real and /ui/remodel/not-real return 404; browser screenshot for unknown remodel route shows a 404 page, not a dashboard shell.
+PASS: no local-only/research-only safety boundary regression was introduced by the route selector implementation.

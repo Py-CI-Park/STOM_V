@@ -1,0 +1,368 @@
+/* v4.css — V4 대시보드 전용 레이아웃 (.v4- 스코프)
+ *
+ *   승인된 리디자인 프로토타입(design-system/v4-redesign-prototype.html)의 구현 CSS.
+ *   디자인 토큰(var(--*))·공용 위젯(.btn/.theme-toggle/.panel/.progress-track/.evo-group)은
+ *   V2 styles.css 를 재사용하고, 레이아웃 클래스는 전부 v4- 프리픽스로 격리한다 → V2 회귀 0.
+ *   원칙: graph-first(대형 차트 컨테이너) · quiet-by-default(안전 정보는 작은 칩).
+ */
+
+/* ============ 앱 프레임: 좌측 레일 + 워크스페이스 ============ */
+.v4-root {
+  --control-dense: 32px;
+  --target-touch: 44px;
+  --focus-width: 2px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bg-0);
+  color: var(--ink-0);
+}
+.v4-root :where(section, article, aside, div, nav, main, header) { min-width: 0; }
+.v4-root :where(p, li, label, h1, h2, h3, h4) {
+  word-break: keep-all;
+  line-break: strict;
+  overflow-wrap: break-word;
+}
+.v4-root :where(code, pre, .mono, [data-long-id]) { overflow-wrap: anywhere; }
+
+/* ── 좌측 슬림 레일 ── */
+.v4-rail {
+  width: 76px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 14px 0 10px;
+  background: var(--bg-1);
+  border-right: 1px solid var(--line-1);
+  position: sticky; top: 0; height: 100vh;
+  z-index: 30;
+}
+.v4-rail-logo {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: grid; place-items: center;
+  background: var(--bg-3); border: 1px solid var(--line-2);
+  margin-bottom: 10px;
+}
+.v4-rail-tabs { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+.v4-rail-item {
+  width: 58px; padding: 9px 0 7px;
+  border-radius: 9px; border: 1px solid transparent;
+  background: transparent; color: var(--ink-2);
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  text-decoration: none; cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.v4-rail-item:hover { background: var(--bg-2); color: var(--ink-0); }
+.v4-rail-item.active {
+  background: rgba(76,214,179,.10);
+  border-color: rgba(76,214,179,.34);
+  color: var(--ink-0);
+}
+[data-theme="light"] .v4-rail-item.active { background: rgba(13,155,120,.10); border-color: rgba(13,155,120,.34); }
+.v4-rail-item.active .v4-ri-dot { opacity: 1; }
+.v4-ri-label { font-size: 9.5px; letter-spacing: .02em; }
+.v4-ri-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0; margin-top: -2px; }
+.v4-rail-spacer { flex: 1; }
+
+/* ── 워크스페이스 ── */
+.v4-workspace { display: flex; flex-direction: column; min-width: 0; }
+
+/* ── 상단바 ── */
+.v4-topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 18px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+  position: sticky; top: 0; z-index: 20;
+}
+.v4-brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; margin-right: 2px; }
+.v4-brand b { font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+.v4-brand span { font-size: 10.5px; color: var(--ink-2); }
+.v4-safety { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.v4-sfx {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .03em;
+  color: var(--ink-2); border: 1px solid var(--line-1); background: var(--bg-2);
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap;
+}
+.v4-sfx.demo { color: var(--violet); border-color: rgba(165,148,255,.34); background: rgba(165,148,255,.09); }
+.v4-sfx.gate { color: var(--amber); border-color: rgba(240,179,90,.32); background: rgba(240,179,90,.08); }
+.v4-grow { flex: 1 1 20px; }
+.v4-base {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-0); border: 1px solid var(--line-1);
+  border-radius: 6px; padding: 3px 6px;
+}
+.v4-base-lbl { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+.v4-base .toolbar-input { width: 168px; }
+
+/* ── 컨트롤바(뷰 제목 + run 제어) ── */
+.v4-controlbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  padding: 9px 18px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+  position: sticky; top: 57px; z-index: 19;
+}
+.v4-view-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.v4-view-title h2 { font-size: 16px; }
+.v4-view-title span { font-size: 11px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-runbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.v4-runbar-prog { display: flex; align-items: center; gap: 9px; min-width: 190px; }
+.v4-runbar-gen { font-size: 14px; }
+.v4-runbar-track { width: 120px; }
+/* RUN 셀렉터 — 아카이브 연구 조회의 핵심 컨트롤이라 크고 눈에 띄게(사용자 신고 반영) */
+.v4-runsel {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-0); border: 1px solid var(--line-2);
+  border-radius: 8px; padding: 5px 9px;
+}
+.v4-runsel.is-archive {
+  border-color: rgba(240,179,90,.5);
+  background: rgba(240,179,90,.07);
+  box-shadow: 0 0 0 1px rgba(240,179,90,.18);
+}
+.v4-runsel-lbl { font-size: 10px; color: var(--ink-2); letter-spacing: .1em; font-weight: 600; white-space: nowrap; }
+.v4-runsel-select {
+  font-size: 13px; font-weight: 500;
+  background: var(--bg-1); color: var(--ink-0);
+  border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 9px;
+  min-width: 220px; max-width: 360px;
+}
+.v4-runsel-select:hover:not(:disabled) { border-color: var(--teal); }
+.v4-runsel-select:focus-visible { border-color: var(--blue); }
+/* 비-Live 탭에서 연구 진행 중일 때만 뜨는 Live 바로가기 칩 */
+.v4-runbar-livelink {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--sans); font-size: 11px; color: var(--amber);
+  background: rgba(240,179,90,.08); border: 1px solid rgba(240,179,90,.4);
+  border-radius: 8px; padding: 5px 10px; cursor: pointer;
+}
+.v4-runbar-livelink:hover { background: rgba(240,179,90,.14); border-color: rgba(240,179,90,.7); }
+.v4-runbar-livedot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--amber);
+  box-shadow: 0 0 0 0 rgba(240,179,90,.6); animation: v4-livepulse 1.6s ease-out infinite;
+}
+@keyframes v4-livepulse {
+  0% { box-shadow: 0 0 0 0 rgba(240,179,90,.5); }
+  70% { box-shadow: 0 0 0 6px rgba(240,179,90,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,179,90,0); }
+}
+@media (prefers-reduced-motion: reduce) { .v4-runbar-livedot { animation: none; } }
+
+/* ── 스테이지 ── */
+.v4-stage { flex: 1; padding: 14px 18px 40px; min-width: 0; }
+/* V2 정본 페이지(ResearchIndexPage 등)를 재사용할 때 딸려오는 개발용 소유권 계약
+   헤더(EVIDENCE WORKSPACE · OWNER MATRIX + PHASE 2 INVENTORY GATE)는 Phase-9 SPA
+   통합 시 중복 방지용 설계 스캐폴딩이라 운영 사용자에겐 잡음이다. V4 좌측 레일이
+   이미 페이지 역할을 대신하므로 V4 스코프에서만 숨긴다(V2 경로 무영향).
+   '.research-index-page-head'(STOM 히스토리 제목)는 유지. */
+.v4-root .evidence-workspace-head { display: none; }
+
+/* ============ 공용 소품 ============ */
+/* 상태 칩 — 상태를 형태로 인코딩(시맨틱 색은 액센트와 분리) */
+.v4-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .03em;
+  border-radius: 999px; padding: 2px 8px;
+  border: 1px solid var(--line-1); background: var(--bg-2); color: var(--ink-1);
+  white-space: nowrap;
+}
+.v4-chip.ok   { color: var(--teal);   border-color: rgba(76,214,179,.34);  background: rgba(76,214,179,.08); }
+.v4-chip.warn { color: var(--amber);  border-color: rgba(240,179,90,.34);  background: rgba(240,179,90,.08); }
+.v4-chip.bad  { color: var(--red);    border-color: rgba(255,107,107,.36); background: rgba(255,107,107,.08); }
+.v4-chip.win  { color: var(--violet); border-color: rgba(165,148,255,.34); background: rgba(165,148,255,.09); }
+.v4-chip.off  { color: var(--ink-3); }
+.v4-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* 스탯 행 */
+.v4-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--line-1); border: 1px solid var(--line-1);
+  border-radius: 11px; overflow: hidden;
+}
+@media (max-width: 760px) { .v4-stats { grid-template-columns: repeat(2, 1fr); } }
+.v4-stat { background: var(--bg-1); padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.v4-stat .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 23px; line-height: 1; color: var(--ink-0); }
+.v4-stat .v.pos { color: var(--teal); }
+.v4-stat .v.neg { color: var(--red); }
+.v4-stat .v .dim { color: var(--ink-3); font-size: 15px; }
+.v4-stat .s { font-size: 10.5px; color: var(--ink-2); font-family: var(--mono); }
+
+/* workflow + authority strip */
+.v4-wf {
+  display: flex; align-items: stretch; flex-wrap: wrap;
+  border: 1px solid var(--line-1); border-radius: 11px;
+  background: var(--bg-1); overflow: hidden; margin-bottom: 14px;
+}
+.v4-wf-step { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-right: 1px solid var(--line-1); flex-shrink: 0; }
+.v4-wf-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 11px;
+  background: var(--bg-2); border: 1px solid var(--line-2); color: var(--ink-2);
+}
+.v4-wf-step.done .v4-wf-num { background: rgba(76,214,179,.12); border-color: var(--teal); color: var(--teal); }
+.v4-wf-step.active .v4-wf-num { background: rgba(240,179,90,.14); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 4px rgba(240,179,90,.10); }
+.v4-wf-txt b { display: block; font-size: 12.5px; }
+.v4-wf-txt span { display: block; font-size: 10px; color: var(--ink-2); font-family: var(--mono); }
+.v4-wf-next { margin-left: auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px; flex-wrap: wrap; }
+.v4-wf-next .k { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-family: var(--mono); display: block; margin-bottom: 2px; }
+.v4-wf-next b { font-size: 12.5px; color: var(--teal); }
+
+/* ============ Research Live (graph-first) ============ */
+.v4-research { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* workflow(PhaseTimeline 정본) + process/authority + 다음 행동 */
+.v4-wfwrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: stretch; }
+@media (max-width: 1180px) { .v4-wfwrap { grid-template-columns: 1fr; } }
+.v4-wfwrap .v4-wf-next {
+  margin-left: 0;
+  border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-1);
+}
+.v4-rlive {
+  display: grid; grid-template-columns: minmax(0, 1fr) 352px;
+  gap: 14px; align-items: start;
+}
+@media (max-width: 1180px) { .v4-rlive { grid-template-columns: 1fr; } }
+.v4-hero-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-side-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* graph-first: 주인공 차트 최대, 보조 중간 (차트는 크기 prop 없이 컨테이너로 스케일) */
+.v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 400px; }
+.v4-rlive .chart-wrap { min-height: 250px; }
+.v4-rlive .v4-two .chart-wrap { min-height: 220px; }
+.v4-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .v4-two { grid-template-columns: 1fr; } }
+.v4-idle-strip {
+  border: 1px solid rgba(240,179,90,.28); background: rgba(240,179,90,.06);
+  color: var(--ink-2); border-radius: 7px;
+  padding: 8px 12px; font-size: 11.5px; font-family: var(--mono);
+}
+
+/* V4 대형 캔버스 차트(v4-charts.jsx) */
+.v4-canvas-wrap { position: relative; width: 100%; }
+.v4-canvas-wrap canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; }
+.v4-canvas-legend {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  padding: 10px 14px 12px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--ink-2);
+}
+.v4-canvas-legend i { display: inline-block; width: 14px; height: 0; vertical-align: middle; margin-right: 6px; }
+.v4-canvas-legend .dot-v { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+
+/* ============ 탭별 컨테이너 ============ */
+.v4-backtest { min-width: 0; }
+.v4-backtest .chart-wrap { min-height: 320px; }
+.v4-replay { min-width: 0; }
+.v4-replay .chart-wrap { min-height: 360px; }
+.v4-lab, .v4-workbench, .v4-history { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
+.v4-history-archive-scroll .panel-bd > div:has(> table) {
+  max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
+}
+.v4-history-archive-scroll table { min-width: 680px; }
+.v4-history-archive-scroll table :where(th, td) {
+  white-space: nowrap; word-break: normal; overflow-wrap: normal;
+}
+/* 명예의 전당/후보 비교 테이블은 수백 행이라 페이지를 통째로 밀어 스캔성을 해쳤다(감사 #2).
+   워크벤치 스코프에서만 각 테이블의 '스크롤 래퍼'를 경계 처리해 영역 안에서 세로 스크롤되게
+   한다. 공유 컴포넌트 JS/HTML 은 무수정 — 프로 HoF/RunCompare(rp-table)는 :has() 로,
+   성과 HoF(.hof-scroll)는 직접 타겟. 헤더/컨트롤은 래퍼 밖이라 스크롤에 묻히지 않는다. */
+.v4-workbench div:has(> table.rp-table),
+.v4-workbench .hof-scroll {
+  max-height: 560px; overflow-y: auto;
+  border: 1px solid var(--line-1); border-radius: 8px;
+}
+/* 스크롤 영역 안 헤더 행은 상단 고정(스크롤해도 컬럼명이 보이게) */
+.v4-workbench div:has(> table.rp-table) thead th,
+.v4-workbench .hof-scroll thead th {
+  position: sticky; top: 0; z-index: 1; background: var(--bg-2);
+}
+.v4-audit { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-context { min-width: 0; }
+
+/* Audit compact 안전 strip (quiet-by-default) */
+.v4-safety-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.v4-safety-tile {
+  border: 1px solid var(--line-1); background: var(--bg-1);
+  border-radius: 6px; padding: 7px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.v4-safety-tile b { font-size: 12px; color: var(--ink-1); font-weight: 500; }
+.v4-safety-tile .mono { font-size: 10px; color: var(--ink-3); }
+
+/* placeholder(전환기용) */
+.v4-placeholder {
+  border: 1px dashed var(--line-2); border-radius: 10px;
+  padding: 48px 28px; text-align: center; color: var(--ink-2);
+  background: linear-gradient(180deg, rgba(76,214,179,.03), transparent 60%);
+}
+.v4-placeholder h2 { font-size: 20px; color: var(--ink-0); margin-bottom: 8px; }
+
+/* 온보딩(idle 첫 화면) */
+.v4-onboarding-bd { display: grid; grid-template-columns: minmax(260px, 1fr) 1.2fr; gap: 22px; padding: 22px; align-items: start; }
+@media (max-width: 900px) { .v4-onboarding-bd { grid-template-columns: 1fr; } }
+.v4-onboarding-bd h2 { font-size: 19px; margin-bottom: 10px; }
+.v4-onboarding-bd p { color: var(--ink-1); font-size: 13px; line-height: 1.65; margin: 0 0 18px; }
+.v4-onboarding-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.v4-onboarding-steps li { border: 1px solid var(--line-1); border-radius: 7px; background: var(--bg-2); padding: 8px 11px; }
+.v4-onboarding-steps b { display: block; font-size: 12px; color: var(--ink-0); }
+.v4-onboarding-steps span { font-size: 11.5px; color: var(--ink-2); line-height: 1.5; }
+
+/* 접근성: 키보드 포커스 가시화 + 모션 최소화 존중 */
+.v4-root :focus-visible { outline: var(--focus-width) solid var(--blue); outline-offset: 2px; border-radius: var(--radius-sm); }
+@media (prefers-reduced-motion: reduce) {
+  .v4-root *, .v4-root *::before, .v4-root *::after { animation: none !important; transition: none !important; }
+}
+
+/* 반응형: 좁은 폭에서 레일 축소 */
+@media (max-width: 768px) {
+  .v4-root { grid-template-columns: minmax(0, 1fr); }
+  .v4-rail {
+    width: 100%; height: auto; min-width: 0;
+    flex-direction: row; align-items: center;
+    padding: var(--space-1); overflow-x: auto;
+  }
+  .v4-rail-logo, .v4-rail-spacer { display: none; }
+  .v4-rail-tabs { flex-direction: row; flex: 0 0 auto; }
+  .v4-rail-item { width: var(--target-touch); min-width: var(--target-touch); min-height: var(--target-touch); padding: var(--space-1); }
+  .v4-ri-label { display: none; }
+  .v4-topbar, .v4-controlbar { position: static; padding: var(--space-3); }
+  .v4-topbar, .v4-controlbar, .v4-view-title { align-items: stretch; }
+  .v4-grow { display: none; }
+  .v4-brand, .v4-safety, .v4-base, .v4-runbar, .v4-runsel, .v4-view-title { width: 100%; }
+  .v4-base, .v4-runbar, .v4-runsel { flex-wrap: wrap; }
+  .v4-base .toolbar-input { width: auto; flex: 1 1 160px; min-width: 0; }
+  .v4-view-title { flex-direction: column; gap: var(--space-1); }
+  .v4-view-title span { white-space: normal; overflow: visible; text-overflow: clip; }
+  .v4-research .phase-timeline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+  .v4-research .phase-step {
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-1);
+    gap: var(--space-2);
+  }
+  .v4-research .phase-connector { display: none; }
+  .v4-research .phase-gen-tag { grid-column: 1 / -1; margin-left: 0; }
+  .v4-replay .grid-main { grid-template-columns: minmax(0, 1fr) !important; }
+  .v4-replay .v4-wf-step { flex: 1 1 100%; }
+  .v4-replay .panel-bd:has(> input[type="range"]) > div:first-child > div {
+    flex-wrap: wrap;
+    margin-left: 0 !important;
+  }
+  .v4-replay .panel-bd:has(> input[type="range"]) > div:first-child > span:last-child {
+    margin-left: 0 !important;
+  }
+  .v4-runbar-prog { min-width: 0; flex: 1 1 100%; }
+  .v4-runsel-select { width: 100%; min-width: 0; max-width: 100%; }
+  .v4-stage { padding: var(--space-3) var(--space-3) var(--space-6); }
+  .v4-root :where(button, a.v4-rail-item, input, select) {
+    min-width: var(--target-touch);
+    min-height: var(--target-touch);
+  }
+  .v4-root :where(.hof-scroll, .process-defaults-table-wrap, [data-region="scroll"]) {
+    max-width: 100%; overflow-x: auto;
+  }
+}

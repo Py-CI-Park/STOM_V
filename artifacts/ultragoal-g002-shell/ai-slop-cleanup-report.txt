@@ -1,0 +1,20 @@
+AI SLOP CLEANUP REPORT — Ultragoal G002
+
+Scope:
+- ai_strategy_loop/dashboard/app.py
+- ai_strategy_loop/dashboard/frontend/remodel/index.html
+- ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js
+- tests/unit/test_dashboard_remodel_baseline_contract.py
+- tests/unit/test_dashboard_remodel_static.py
+- docs/update_log/2026-06-27_ultragoal_g002_remodel_shell_bootstrap.md
+
+Blocking findings: 0
+Advisory findings: 0
+
+Checks:
+- No second accepted production renderer introduced; remodel root now loads production bundle.
+- Static prototype remains as preserved artifact only; root index no longer loads src/app.js.
+- No hidden live-order/broker/account/final_approval path introduced.
+- Route remap is explicit and bounded to same-origin canonical dashboard paths.
+- CSS additions are scoped by remodel route/root markers and loaded only from remodel index.
+- Tests cover route containment, manifest-version drift guard, canonical route preservation, and safety markers.

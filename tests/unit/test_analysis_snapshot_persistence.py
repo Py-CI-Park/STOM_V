@@ -13,6 +13,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
@@ -139,7 +140,7 @@ def test_analysis_snapshot_route_writes_only_local_research_db(monkeypatch, tmp_
     )
     st.close()
 
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
     resp = client.get("/analysis_snapshot?run_id=analysisRun&persist=true&method=spearman&fine_time=true")
 
     assert resp.status_code == 200

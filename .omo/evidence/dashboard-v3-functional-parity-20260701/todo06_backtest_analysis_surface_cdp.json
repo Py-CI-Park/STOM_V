@@ -1,0 +1,13 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "surfaceCount": 15,
+  "domSurfaceCount": 15,
+  "hasResult": true,
+  "hasMontecarlo": true,
+  "hasCompare": true,
+  "hasReport": true,
+  "emptyText": "No completed job selected; analysis calls remain disabled.",
+  "compareReason": "Need two completed job ids before compare.",
+  "reportState": "disabled"
+}

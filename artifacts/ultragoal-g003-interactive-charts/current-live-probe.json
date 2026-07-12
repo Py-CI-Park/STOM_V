@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "goalId": "G003",
+  "generatedAt": "2026-06-29T14:41:32.882911+00:00",
+  "routes": [
+    {
+      "route": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference&g003=legend-fix",
+      "interactiveChartCount": 7,
+      "legendCount": 4,
+      "legendActive": true,
+      "highlightedElements": 56,
+      "dimmedElements": 168,
+      "stateBadges": [
+        "status=CURRENT",
+        "run_id=R-250518-1421-7XQ9",
+        "freshness=reference-static",
+        "malformed=0"
+      ],
+      "activeText": "legend highlight · W1(Gen132) · Equity Overlay (Top 5) · T+54 · W1(Gen132): 30.25 · W2(Gen129): 27.03 · Human Ref: 22.10 · Buy&Hold: 5.559 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+    },
+    {
+      "route": "chart_replay",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference&g003=current",
+      "interactiveCandleChartCount": 3,
+      "hoverTooltipVisible": true,
+      "hoverText": "리플레이 차트 005930 · bar-24 · Close: 78457 · source=reference replay fixture",
+      "keyboardText": "리플레이 차트 005930 · bar-2 · Close: 76990 · source=reference replay fixture"
+    },
+    {
+      "route": "condition_live_fallback",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?g003=live-fallback",
+      "stateBadges": [
+        "status=STALE/FALLBACK",
+        "run_id=R-250518-1421-7XQ9",
+        "freshness=stale-fixture-fallback",
+        "malformed=0"
+      ],
+      "aria": "Fitness Score 추이 · T+50 · Series: 0.861 · source=fixture fallback · backend not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-fixture-fallback · status=STALE/FALLBACK",
+      "status": "STALE/FALLBACK"
+    },
+    {
+      "route": "chart_replay_live_fallback",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?g003=live-fallback",
+      "stateBadges": [
+        "status=STALE/FALLBACK",
+        "run_id=R-250518-1421-7XQ9",
+        "freshness=stale-replay-fixture-fallback",
+        "malformed=0"
+      ],
+      "aria": "리플레이 차트 005930 · bar-48 · Close: 79838 · source=fixture fallback · sim probe not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-replay-fixture-fallback · status=STALE/FALLBACK",
+      "status": "STALE/FALLBACK"
+    }
+  ],
+  "status": "PASS",
+  "startedAt": "2026-06-29T14:50:37.656793+00:00",
+  "actions": [
+    {
+      "type": "navigate-probe",
+      "timestamp": "2026-06-29T14:50:37.656793+00:00",
+      "route": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference&g003=legend-fix",
+      "selector": ".interactive-chart[data-chart-id], .candle-chart.interactive-chart[data-chart-id], .legend-item[data-legend-index], .chart-state-badge",
+      "verdict": "passed",
+      "details": {
+        "route": "condition",
+        "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference&g003=legend-fix",
+        "interactiveChartCount": 7,
+        "legendCount": 4,
+        "legendActive": true,
+        "highlightedElements": 56,
+        "dimmedElements": 168,
+        "stateBadges": [
+          "status=CURRENT",
+          "run_id=R-250518-1421-7XQ9",
+          "freshness=reference-static",
+          "malformed=0"
+        ],
+        "activeText": "legend highlight · W1(Gen132) · Equity Overlay (Top 5) · T+54 · W1(Gen132): 30.25 · W2(Gen129): 27.03 · Human Ref: 22.10 · Buy&Hold: 5.559 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+      }
+    },
+    {
+      "type": "navigate-probe",
+      "timestamp": "2026-06-29T14:50:38.656793+00:00",
+      "route": "chart_replay",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference&g003=current",
+      "selector": ".interactive-chart[data-chart-id], .candle-chart.interactive-chart[data-chart-id], .legend-item[data-legend-index], .chart-state-badge",
+      "verdict": "passed",
+      "details": {
+        "route": "chart_replay",
+        "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference&g003=current",
+        "interactiveCandleChartCount": 3,
+        "hoverTooltipVisible": true,
+        "hoverText": "리플레이 차트 005930 · bar-24 · Close: 78457 · source=reference replay fixture",
+        "keyboardText": "리플레이 차트 005930 · bar-2 · Close: 76990 · source=reference replay fixture"
+      }
+    },
+    {
+      "type": "navigate-probe",
+      "timestamp": "2026-06-29T14:50:39.656793+00:00",
+      "route": "condition_live_fallback",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?g003=live-fallback",
+      "selector": ".interactive-chart[data-chart-id], .candle-chart.interactive-chart[data-chart-id], .legend-item[data-legend-index], .chart-state-badge",
+      "verdict": "passed",
+      "details": {
+        "route": "condition_live_fallback",
+        "url": "http://127.0.0.1:8776/ui/remodel/condition?g003=live-fallback",
+        "stateBadges": [
+          "status=STALE/FALLBACK",
+          "run_id=R-250518-1421-7XQ9",
+          "freshness=stale-fixture-fallback",
+          "malformed=0"
+        ],
+        "aria": "Fitness Score 추이 · T+50 · Series: 0.861 · source=fixture fallback · backend not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-fixture-fallback · status=STALE/FALLBACK",
+        "status": "STALE/FALLBACK"
+      }
+    },
+    {
+      "type": "navigate-probe",
+      "timestamp": "2026-06-29T14:50:40.656793+00:00",
+      "route": "chart_replay_live_fallback",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?g003=live-fallback",
+      "selector": ".interactive-chart[data-chart-id], .candle-chart.interactive-chart[data-chart-id], .legend-item[data-legend-index], .chart-state-badge",
+      "verdict": "passed",
+      "details": {
+        "route": "chart_replay_live_fallback",
+        "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?g003=live-fallback",
+        "stateBadges": [
+          "status=STALE/FALLBACK",
+          "run_id=R-250518-1421-7XQ9",
+          "freshness=stale-replay-fixture-fallback",
+          "malformed=0"
+        ],
+        "aria": "리플레이 차트 005930 · bar-48 · Close: 79838 · source=fixture fallback · sim probe not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-replay-fixture-fallback · status=STALE/FALLBACK",
+        "status": "STALE/FALLBACK"
+      }
+    }
+  ],
+  "finishedAt": "2026-06-29T14:50:41.656793+00:00",
+  "verdict": "passed"
+}

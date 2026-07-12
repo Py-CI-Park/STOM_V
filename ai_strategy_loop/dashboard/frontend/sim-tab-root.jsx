@@ -12,11 +12,12 @@ import { SimOverlayChart, SimSignalLog } from "./simulation-charts.jsx";
 import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals, _simRenderBudget, _simRenderBars } from "./sim-tab-utils.jsx";
 import { SimControlBar, SimPresetBar, SimMarketMinimap, SimPlaybackBar, SimViewBar } from "./sim-tab-controls.jsx";
 import { SimChartByEngine, SimIndicatorTable, SimLearningPanel, SimVariableWatch } from "./sim-tab-panels.jsx";
+import { _bindReplayKeydown, _isReplayEditableTarget, _exactReplayTimestamp } from "./replay-lifecycle.jsx";
 
 // ===========================================================================
 // 탭 루트 — 컨트롤 + WS 리플레이 상태머신 + 차트 그리드 + 체결 로그.
 // ===========================================================================
-function SimulationTab({ baseUrl, wsStatus }) {
+function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -43,10 +44,10 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const [signals, setSignals] = useState_sim({});      // code → [signal...]
   const [signalErr, setSignalErr] = useState_sim("");
 
-  // 즉시 체험 — 자동 데모 진행 중 여부·프리셋 조회 busy·자동재생 대기 플래그.
-  const [demoActive, setDemoActive] = useState_sim(false);   // 예시 자동 재생 배지 노출.
+  // 즉시 체험 — 자동 데모 추천 여부·프리셋 조회 busy·수동 시작 대기 플래그.
+  const [demoActive, setDemoActive] = useState_sim(false);   // 예시 추천 배지 노출.
   const [presetBusy, setPresetBusy] = useState_sim(false);   // /sim/demo 조회 중.
-  const pendingAutoplayRef = useRef_sim(false);              // date/selected 반영 후 자동재생 트리거.
+  const pendingAutoplayRef = useRef_sim(false);              // 사용자 프리셋 후 재생 트리거.
   const demoTriedRef = useRef_sim(false);                    // 자동 데모 1회만 시도(재진입 루프 방지).
 
   // 보조지표 토글(MA·VWAP·볼린저) — localStorage 보존. 차트 라인 오버레이 제어.
@@ -273,24 +274,17 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const changeSpeed = (sp) => { setSpeed(sp); _wsSend({ action: "speed", value: sp }); };
 
 
-  // seek 슬라이더는 frame 인덱스 기준 — 서버 seek 은 t(HHMMSS) 이므로 인덱스→t 변환이 필요.
-  //   meta 만으로는 frame t 목록을 모르므로, 누적 수신된 bar 의 t 를 참조하거나(앞쪽)
-  //   세션 범위 선형 보간으로 근사한다(뒤쪽 미수신 구간). 단순·실용 우선.
   const seekByIndex = (idx) => {
     setCursor(idx);
-    const range = meta && meta.session_range;
-    if (!range || range[1] <= range[0] || !meta.bars_total) return;
-    const frac = meta.bars_total > 1 ? idx / (meta.bars_total - 1) : 0;
-    const approxT = Math.round(range[0] + frac * (range[1] - range[0]));
-    _wsSend({ action: "seek", t: approxT });
+    _wsSend({ action: "seek_index", index: idx });
   };
 
   const stopReplay = () => { _stopReplay(); };
 
-  // --- 즉시 체험: /sim/demo 추천 적용 + 자동재생 ---
+  // --- 즉시 체험: /sim/demo 추천 적용 + 수동 게이트 ---
   //   서버가 날짜·등락 1위 종목을 직접 주므로 stocks 목록 로딩을 기다리지 않고 바로 선택한다.
-  //   date/selected/src/speed 를 세팅한 뒤 pendingAutoplay 플래그로 다음 렌더에서 재생 시작.
-  const applyDemo = useCallback_sim((mode, asDemo) => {
+  //   페이지 진입만으로 /sim/ws 를 열지 않는다. 자동재생은 명시적 프리셋/재생 조작에서만 허용한다.
+  const applyDemo = useCallback_sim((mode, asDemo, autoStart = false) => {
     if (isDemo || !baseUrl) return;
     setPresetBusy(true);
     _stopReplay();
@@ -306,13 +300,13 @@ function SimulationTab({ baseUrl, wsStatus }) {
         setSelected([String(j.code)]);
         setSpeed(_SIM_DEMO_SPEED);
         setDemoActive(!!asDemo);
-        pendingAutoplayRef.current = true;
+        pendingAutoplayRef.current = !!autoStart;
         setPresetBusy(false);
       })
       .catch(() => { setPresetBusy(false); if (asDemo) setDemoActive(false); });
   }, [baseUrl, isDemo, _stopReplay]);
 
-  // 자동재생 트리거 — applyDemo 가 세팅한 date/selected 가 반영되면 1회 재생 시작.
+  // 수동 자동재생 트리거 — 명시적 프리셋이 세팅한 date/selected 가 반영되면 1회 재생 시작.
   useEffect_sim(() => {
     if (!pendingAutoplayRef.current) return;
     if (!date || selected.length === 0) return;
@@ -320,7 +314,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
     startReplay();
   }, [date, selected, startReplay]);
 
-  // 최초 진입 자동 데모 — 선택 없음 + 미시청 + 백엔드 연결 시 1회. localStorage 로 재방문 시 생략.
+  // 최초 진입 데모 추천 — 선택 없음 + 미시청 + 백엔드 연결 시 1회. localStorage 로 재방문 시 생략.
   useEffect_sim(() => {
     if (demoTriedRef.current) return;
     if (isDemo || !baseUrl) return;
@@ -328,7 +322,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
     if (_simDemoSeen()) return;                     // 이전에 본 적 있으면 강제 안 함.
     demoTriedRef.current = true;
     _simMarkDemoSeen();
-    applyDemo("latest", true);
+    applyDemo("latest", true, false);
   }, [baseUrl, isDemo, applyDemo]);
 
   // 사용자가 직접 선택/조작하면 데모 배지 해제(자동재생 컨텍스트 종료).
@@ -339,10 +333,10 @@ function SimulationTab({ baseUrl, wsStatus }) {
     setDate(""); setSelected([]);
   }, [_stopReplay]);
 
-  // 프리셋 클릭(수동) — 데모 배지 없이 추천 적용 + 자동재생.
+  // 프리셋 클릭(수동) — 데모 배지 없이 추천 적용 후 사용자 조작 컨텍스트에서 재생.
   const onPreset = useCallback_sim((mode) => {
     setDemoActive(false);
-    applyDemo(mode, false);
+    applyDemo(mode, false, true);
   }, [applyDemo]);
 
   // 렌더·로직 공용 파생값(차트 그리드·신호 평탄화·재생 가능 여부).
@@ -354,16 +348,11 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 신호 시각(HHMMSS)으로 직접 시킹 — 북마크 클릭용. 서버 seek 은 t(HHMMSS)를 직접 받는다.
   const seekToTime = useCallback_sim((hms) => {
-    if (hms == null) return;
-    _wsSend({ action: "seek", t: hms });
-    setCurT(hms);
-    // 커서 근사(세션 범위 선형 역보간) — 슬라이더/진행률 표시용.
-    const range = meta && meta.session_range;
-    if (range && range[1] > range[0] && meta.bars_total) {
-      const frac = (hms - range[0]) / (range[1] - range[0]);
-      setCursor(Math.max(0, Math.min(meta.bars_total, Math.round(frac * (meta.bars_total - 1)))));
-    }
-  }, [meta]);
+    const timestamp = _exactReplayTimestamp(hms);
+    if (timestamp == null) return;
+    _wsSend({ action: "seek", t: timestamp });
+    setCurT(timestamp);
+  }, []);
 
   // 학습 모드 — 평탄화된 전체 신호(시각순). 자동정지·북마크 공용.
   const flatSignals = useMemo_sim(() => _flattenSignals(signals, codes), [signals, codes.join(",")]);
@@ -394,8 +383,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
   // 키보드 단축키 — Space=재생/정지, ←/→=배속 다운/업, Esc=정지. 입력 필드 포커스 시 무시.
   useEffect_sim(() => {
     const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target && e.target.isContentEditable)) return;
+      if (_isReplayEditableTarget(e.target)) return;
       if (e.key === " " || e.code === "Space") {
         e.preventDefault();
         if (status === "playing") pauseReplay();
@@ -413,9 +401,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
         if (status === "playing" || status === "paused") stopReplay();
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [status, speed]);
+    return _bindReplayKeydown(active, window, onKey);
+  }, [active, status, speed]);
 
   const connected = !!(health && health.status === "ok");
   const badge = isDemo
@@ -512,10 +499,10 @@ function SimulationTab({ baseUrl, wsStatus }) {
                 fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
               }}>
                 <span className="dot" style={{ background: "var(--violet)" }}></span>
-                예시 자동 재생
+                예시 추천 준비
               </span>
               <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
-                준비된 데이터로 둘러보는 중 · {_SIM_DEMO_SPEED}x
+                예시 자동 재생 준비 · 재생은 사용자 게이트 후 시작
               </span>
               <button className="btn ghost sm" onClick={exitDemo}
                       style={{ marginLeft: "auto", fontSize: 10.5, padding: "3px 10px" }}>

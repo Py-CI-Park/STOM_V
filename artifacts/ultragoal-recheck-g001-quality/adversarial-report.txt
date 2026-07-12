@@ -1,0 +1,8 @@
+G001 route/function inventory red-team recheck passed.
+
+Adversarial checks:
+- Missing routes: all eight expected route ids have V2 and V3-remodel entries.
+- Failed statuses: compare scorecard, route matrix, and inventory gate have no failures.
+- V2/V3 asset mixing: V2 rows load /ui/bundle/app.js and forbid /ui/remodel/src/app.js; V3 rows load /ui/remodel/src/app.js and forbid /ui/bundle/app.js.
+- Route masking: unknown remodel route is 404 PASS, not shell-masked.
+- Inventory weakness: 81 items across 9 pages, 12 item types, and 7 safety classes.

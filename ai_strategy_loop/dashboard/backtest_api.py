@@ -20,14 +20,16 @@ import os
 import re
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, TypedDict
+from typing import Annotated, Any, Dict, List, Literal, Optional, Set, TypedDict
 
-from fastapi import APIRouter, Body, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
+from ai_strategy_loop.dashboard.security import Capability, close_websocket_failure
 
 # 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
 _WS_JOB_INTERVAL_SEC = 1.0
@@ -247,6 +249,87 @@ class HealthResponse(TypedDict):
 
 
 backtest_router = APIRouter(prefix="/bt", tags=["backtest"])
+
+StrategyKind = Literal["buy", "sell", "formula"]
+StrategyName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
+StrategyCode = Annotated[str, StringConstraints(min_length=1, max_length=100_000)]
+ShortText = Annotated[str, StringConstraints(max_length=128)]
+PathText = Annotated[str, StringConstraints(max_length=1024)]
+MemoText = Annotated[str, StringConstraints(max_length=2_000)]
+TagText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+
+
+class _MutationPayload(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
+
+
+class StrategyValidationPayload(_MutationPayload):
+    code: StrategyCode
+
+
+class StrategyWritePayload(_MutationPayload):
+    kind: StrategyKind
+    name: StrategyName
+    code: StrategyCode
+    overwrite: StrictBool = False
+
+
+class StrategyDeletePayload(_MutationPayload):
+    kind: StrategyKind
+    name: StrategyName
+    confirm: StrategyName
+
+
+class SweepSpecPayload(_MutationPayload):
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+    min: int | float
+    max: int | float
+    step: int | float
+
+
+class BacktestRunPayload(_MutationPayload):
+    buy: StrategyName
+    sell: StrategyName
+    start: int = Field(ge=20_000_101, le=20_991_231)
+    end: int = Field(ge=20_000_101, le=20_991_231)
+    timeframe: Literal["tick", "min"] = "min"
+    engines: int = Field(default=4, ge=1, le=16)
+    timeout: int = Field(default=600, ge=1, le=86_400)
+    divid_mode: ShortText = ""
+    one_code: ShortText | None = None
+    back_db_override: PathText | None = None
+    mode: Literal["backtest", "optimize", "wfo", "sweep"] = "backtest"
+    param_space: PathText | None = None
+    opt_method: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)] = "grid"
+    opt_objective: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)] = "tpi"
+    train_window_days: int = Field(default=0, ge=0, le=3_650)
+    test_window_days: int = Field(default=0, ge=0, le=3_650)
+    step_days: int = Field(default=0, ge=0, le=3_650)
+    sweep_action: Literal["param", "rolling"] = "param"
+    sweep_params: PathText | None = None
+    sweep_spec: list[SweepSpecPayload] | None = Field(default=None, max_length=8)
+    window_days: int = Field(default=0, ge=0, le=3_650)
+
+
+class JobIdPayload(_MutationPayload):
+    job_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
+
+
+class JobMetaPayload(JobIdPayload):
+    tags: list[TagText] | None = Field(default=None, max_length=20)
+    memo: MemoText | None = None
+    favorite: StrictBool | None = None
+
+
+class PortfolioItemPayload(_MutationPayload):
+    job_id: ShortText | None = None
+    run_id: ShortText | None = None
+    gen_no: int | None = Field(default=None, ge=0, le=1_000_000)
+    label: ShortText | None = None
+
+
+class PortfolioPayload(_MutationPayload):
+    items: list[PortfolioItemPayload] = Field(min_length=2, max_length=6)
 
 
 @backtest_router.get("/health")
@@ -523,10 +606,9 @@ def get_strategy(kind: str = "buy", name: str = "") -> Dict[str, Any]:
 
 
 @backtest_router.post("/strategy/validate")
-def validate_strategy_code(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def validate_strategy_code(payload: StrategyValidationPayload) -> Dict[str, Any]:
     """저장 없이 compile() 문법 검증. {ok, error?}."""
-    code = str(payload.get("code", "") or "")
-    return _compile_check(code)
+    return _compile_check(payload.code)
 
 
 # ---------------------------------------------------------------- variables SSOT
@@ -585,14 +667,14 @@ def list_variables() -> Dict[str, Any]:
 
 
 @backtest_router.post("/extract_vars")
-def extract_variables(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def extract_variables(payload: StrategyValidationPayload) -> Dict[str, Any]:
     """전략 코드에서 한글 식별자를 추출하고 SSOT 화이트리스트 멤버십을 판정한다.
 
     {code} → {known:[{name,count}], unknown:[{name,count}]}. known 은 SSOT 어휘에 있는
     한글 변수(칩 청록), unknown 은 어휘 밖(칩 경고). Python 키워드/주석은 식별자 추출
     특성상 제외된다(한글 키워드 없음). 무예외(빈 코드→빈 목록).
     """
-    code = str(payload.get("code", "") or "")
+    code = payload.code
     vocab = _load_ssot_vocabulary()
     counts: Dict[str, int] = {}
     for tok in _HANGUL_IDENT.findall(code):
@@ -933,17 +1015,17 @@ def _compile_check(code: str) -> Dict[str, Any]:
 
 
 @backtest_router.post("/strategy")
-def save_strategy(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def save_strategy(payload: StrategyWritePayload) -> Dict[str, Any]:
     """조건식 생성/수정 — compile() 검증 후 INSERT OR REPLACE.
 
     overwrite=false 인데 동일 이름이 이미 있으면 status='error'/code='exists' (HTTP 200,
     무예외 컨벤션). buy/sell 은 PK 충돌을 REPLACE 로 처리. formula 는 PK 가 없어
     수식명 기준으로 DELETE+INSERT(중복 방지).
     """
-    kind = str(payload.get("kind", "") or "")
-    name = str(payload.get("name", "") or "").strip()
-    code = str(payload.get("code", "") or "")
-    overwrite = bool(payload.get("overwrite", False))
+    kind = payload.kind
+    name = payload.name
+    code = payload.code
+    overwrite = payload.overwrite
 
     spec = _KIND_TABLES.get(kind)
     if spec is None:
@@ -982,11 +1064,11 @@ def save_strategy(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
 
 
 @backtest_router.post("/strategy/delete")
-def delete_strategy(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def delete_strategy(payload: StrategyDeletePayload) -> Dict[str, Any]:
     """조건식 삭제(실수 방지: confirm 에 이름 재입력 필수)."""
-    kind = str(payload.get("kind", "") or "")
-    name = str(payload.get("name", "") or "").strip()
-    confirm = str(payload.get("confirm", "") or "").strip()
+    kind = payload.kind
+    name = payload.name
+    confirm = payload.confirm
 
     spec = _KIND_TABLES.get(kind)
     if spec is None:
@@ -1065,82 +1147,68 @@ def _back_range(db_path: Path) -> Optional[Dict[str, int]]:
 
 # ------------------------------------------------------------------- jobs/run
 @backtest_router.post("/run")
-def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
     """백테스트 잡 시작 → {job_id}. 이름/날짜 검증은 잡 매니저가 수행."""
-    try:
-        one_code = str(payload["one_code"]).strip() if payload.get("one_code") else None
-        divid_mode = str(payload.get("divid_mode", "") or "").strip() or (
-            "한종목 로딩" if one_code else "종목코드별 분류"
-        )
-        back_db_override = None
-        if payload.get("back_db_override"):
-            raw_override = str(payload["back_db_override"]).strip()
-            back_db_override = _validate_back_db_override(raw_override)
-            # #36: allowlist(_database/ · ai_strategy_loop/state/) 밖이면 무예외 error.
-            if back_db_override is None:
-                return {
-                    "status": "error",
-                    "message": "back_db_override 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
-                }
-        mode = str(payload.get("mode", "backtest") or "backtest").strip() or "backtest"
-        # param_space(optimize·wfo)·sweep_params(sweep param) 은 동일 allowlist(_database/·state/)
-        #   로 게이트한다 — 임의 절대경로 JSON 읽기 차단(back_db_override 와 동일 위생).
-        param_space = _gated_json_path(payload.get("param_space"))
-        if payload.get("param_space") and param_space is None:
+    one_code = payload.one_code
+    divid_mode = payload.divid_mode.strip() or (
+        "한종목 로딩" if one_code else "종목코드별 분류"
+    )
+    back_db_override = _gated_json_path(payload.back_db_override)
+    if payload.back_db_override and back_db_override is None:
+        return {
+            "status": "error",
+            "message": "back_db_override 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+        }
+    param_space = _gated_json_path(payload.param_space)
+    if payload.param_space and param_space is None:
+        return {
+            "status": "error",
+            "message": "param_space 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+        }
+    sweep_params = _gated_json_path(payload.sweep_params)
+    if payload.sweep_params and sweep_params is None:
+        return {
+            "status": "error",
+            "message": "sweep_params 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+        }
+    if not sweep_params and payload.sweep_spec is not None:
+        rows = [row.model_dump() for row in payload.sweep_spec]
+        spec_dict = _build_sweep_spec(rows)
+        if spec_dict is None:
             return {
                 "status": "error",
-                "message": "param_space 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+                "message": "sweep 스펙이 비었습니다 — 변수명·범위(min/max/step)가 있는 행이 1개 이상 필요합니다.",
             }
-        sweep_params = _gated_json_path(payload.get("sweep_params"))
-        if payload.get("sweep_params") and sweep_params is None:
+        sweep_params = _write_sweep_spec_file(spec_dict)
+        if sweep_params is None:
             return {
                 "status": "error",
-                "message": "sweep_params 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+                "message": "sweep 스펙 임시 파일 생성에 실패했습니다.",
             }
-        # 인라인 sweep 스펙(빌더 UI) — 파일 경로 미지정 시 빌더 행을 게이트된 임시 JSON 으로
-        #   직렬화해 sweep_params 경로로 잇는다(CLI 는 --params <파일> 만 받음). 파일 경로가
-        #   직접 오면 그 경로가 우선(파일 입력 폴백 유지).
-        if not sweep_params and payload.get("sweep_spec") is not None:
-            spec_dict = _build_sweep_spec(payload.get("sweep_spec"))
-            if spec_dict is None:
-                return {
-                    "status": "error",
-                    "message": "sweep 스펙이 비었습니다 — 변수명·범위(min/max/step)가 있는 행이 1개 이상 필요합니다.",
-                }
-            sweep_params = _write_sweep_spec_file(spec_dict)
-            if sweep_params is None:
-                return {
-                    "status": "error",
-                    "message": "sweep 스펙 임시 파일 생성에 실패했습니다.",
-                }
-        buy_name = str(payload.get("buy", "") or "").strip()
-        sell_name = str(payload.get("sell", "") or "").strip()
-        spec = BacktestJobSpec(
-            buy=buy_name,
-            sell=sell_name,
-            start=int(payload.get("start", 0) or 0),
-            end=int(payload.get("end", 0) or 0),
-            buy_code=_lookup_strategy_code("buy", buy_name),
-            sell_code=_lookup_strategy_code("sell", sell_name),
-            timeframe=str(payload.get("timeframe", "min") or "min"),
-            engines=int(payload.get("engines", 4) or 4),
-            timeout=int(payload.get("timeout", 600) or 600),
-            divid_mode=divid_mode,
-            one_code=one_code,
-            back_db_override=back_db_override,
-            mode=mode,
-            param_space=param_space,
-            opt_method=str(payload.get("opt_method", "grid") or "grid").strip() or "grid",
-            opt_objective=str(payload.get("opt_objective", "tpi") or "tpi").strip() or "tpi",
-            train_window_days=int(payload.get("train_window_days", 0) or 0),
-            test_window_days=int(payload.get("test_window_days", 0) or 0),
-            step_days=int(payload.get("step_days", 0) or 0),
-            sweep_action=str(payload.get("sweep_action", "param") or "param").strip() or "param",
-            sweep_params=sweep_params,
-            window_days=int(payload.get("window_days", 0) or 0),
-        )
-    except (TypeError, ValueError) as exc:
-        return {"status": "error", "message": f"잘못된 파라미터: {exc}"}
+    spec = BacktestJobSpec(
+        buy=payload.buy,
+        sell=payload.sell,
+        start=payload.start,
+        end=payload.end,
+        buy_code=_lookup_strategy_code("buy", payload.buy),
+        sell_code=_lookup_strategy_code("sell", payload.sell),
+        timeframe=payload.timeframe,
+        engines=payload.engines,
+        timeout=payload.timeout,
+        divid_mode=divid_mode,
+        one_code=one_code,
+        back_db_override=back_db_override,
+        mode=payload.mode,
+        param_space=param_space,
+        opt_method=payload.opt_method,
+        opt_objective=payload.opt_objective,
+        train_window_days=payload.train_window_days,
+        test_window_days=payload.test_window_days,
+        step_days=payload.step_days,
+        sweep_action=payload.sweep_action,
+        sweep_params=sweep_params,
+        window_days=payload.window_days,
+    )
     return get_job_manager().submit(spec)
 
 
@@ -1159,35 +1227,26 @@ def get_job(job_id: str = "") -> Dict[str, Any]:
 
 
 @backtest_router.post("/job/cancel")
-def cancel_job(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def cancel_job(payload: JobIdPayload) -> Dict[str, Any]:
     """잡 취소(대기 중이면 큐 제거, 실행 중이면 프로세스 회수)."""
-    job_id = str(payload.get("job_id", "") or "")
-    if not job_id:
-        return {"status": "error", "message": "job_id 가 비었습니다."}
-    return get_job_manager().cancel(job_id)
+    return get_job_manager().cancel(payload.job_id)
 
 
 @backtest_router.post("/job/meta")
-def update_job_meta(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def update_job_meta(payload: JobMetaPayload) -> Dict[str, Any]:
     """잡 결과 메타(태그·메모·즐겨찾기) 부분 갱신 — 결과 체계 관리(트랙 B ③).
 
     {job_id, tags?(list[str]), memo?(str), favorite?(bool)}. 미포함 키는 미변경.
     잡 없음/잘못된 타입은 무예외 error 페이로드(HTTP 200, 대시보드 컨벤션).
     """
-    job_id = str(payload.get("job_id", "") or "")
-    if not job_id:
-        return {"status": "error", "message": "job_id 가 비었습니다."}
-    tags: Optional[List[str]] = None
-    if "tags" in payload:
-        raw_tags = payload.get("tags")
-        if not isinstance(raw_tags, list):
-            return {"status": "error", "message": "tags 는 문자열 리스트여야 합니다."}
-        tags = [str(t) for t in raw_tags]
-    memo = str(payload["memo"]) if "memo" in payload else None
-    favorite = bool(payload["favorite"]) if "favorite" in payload else None
-    result = get_job_manager().update_meta(job_id, tags=tags, memo=memo, favorite=favorite)
+    result = get_job_manager().update_meta(
+        payload.job_id,
+        tags=payload.tags,
+        memo=payload.memo,
+        favorite=payload.favorite,
+    )
     if not result.get("available"):
-        return {"status": "error", "message": "job_id 없음", "job_id": job_id}
+        return {"status": "error", "message": "job_id 없음", "job_id": payload.job_id}
     return {"status": "ok", **result}
 
 
@@ -1799,7 +1858,7 @@ def _portfolio_item_trades(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
 
 @backtest_router.post("/portfolio")
-def portfolio_combine(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+def portfolio_combine(payload: PortfolioPayload) -> Dict[str, Any]:
     """포트폴리오 결합 분석 — 2~6 전략(잡/세대)의 일별손익 합성(워크벤치 UI 레이어).
 
     요청: {"items": [{"job_id"} | {"run_id","gen_no"} (옵션 "label") ...]} (2~6개).
@@ -1811,14 +1870,7 @@ def portfolio_combine(payload: Dict[str, Any] = Body(default={})) -> Dict[str, A
     본 엔드포인트는 워크벤치가 한 화면에서 바로 시각화할 결합 결과만 만든다(advisory
     판정 지표 미생산). 레이어 구분은 backtest_analysis.portfolio_analysis docstring 참조.
     """
-    raw_items = payload.get("items")
-    if not isinstance(raw_items, list):
-        return {"status": "error", "message": "items 는 리스트여야 합니다."}
-    if not (_PORTFOLIO_MIN <= len(raw_items) <= _PORTFOLIO_MAX):
-        return {
-            "status": "error",
-            "message": f"포트폴리오는 {_PORTFOLIO_MIN}~{_PORTFOLIO_MAX}개 전략이 필요합니다(받음: {len(raw_items)}).",
-        }
+    raw_items = [item.model_dump(exclude_none=True) for item in payload.items]
     resolved: List[Dict[str, Any]] = []
     failed: List[int] = []
     for idx, item in enumerate(raw_items):
@@ -1973,6 +2025,11 @@ async def ws_job(websocket: WebSocket, job_id: str = "") -> None:
     잡이 없으면 {error} 후 close. 터미널 상태 도달 시 마지막 페이로드에 terminal:true.
     잡 매니저는 기존 모듈 레벨 싱글톤을 재사용한다(수정 없음).
     """
+    security = websocket.app.state.dashboard_security
+    failure = security.authorize_websocket(websocket, Capability.SAFE_BACKTEST)
+    if failure is not None:
+        await close_websocket_failure(websocket, failure)
+        return
     await websocket.accept()
     if not job_id:
         await websocket.send_json({"error": "job_id 가 필요합니다."})

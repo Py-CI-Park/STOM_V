@@ -31,6 +31,8 @@ from ai_strategy_loop.controller.state import (  # noqa: E402
     to_loop_state,
 )
 
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
+
 FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 
 
@@ -265,12 +267,11 @@ def strategy_code_env(monkeypatch, tmp_path):
 @pytest.fixture
 def client(monkeypatch, tmp_path):
     """대시보드 TestClient. current_state/STOP도 tmp 격리(운영 미접촉)."""
-    from fastapi.testclient import TestClient
     from ai_strategy_loop.dashboard.app import create_app
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 class TestStrategyCodeEndpoint:

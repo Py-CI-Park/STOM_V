@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-06-27T22:42:51.707173+00:00",
+  "url": "http://127.0.0.1:8776/ui/remodel/condition",
+  "activeEntrypoint": "reviewed zip prototype renderer",
+  "entrypointFiles": [
+    "ai_strategy_loop/dashboard/frontend/remodel/index.html",
+    "ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css",
+    "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+    "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+  ],
+  "browserChecks": {
+    "pages": [
+      "condition",
+      "process",
+      "history",
+      "lab",
+      "workbench",
+      "audit",
+      "backtest",
+      "chart-replay"
+    ],
+    "prototypeScriptPresent": true,
+    "productionBundleAbsent": true,
+    "consoleErrors": [],
+    "requestFailures": [],
+    "safetyCuesPresent": true,
+    "forbiddenControlsAbsent": true
+  },
+  "commands": [
+    "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q -> 11 passed",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js -> passed",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js -> passed",
+    "git diff --check -> passed"
+  ],
+  "screenshot": "artifacts/runtime/current-8776-zip-prototype.png"
+}

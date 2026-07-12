@@ -1,0 +1,331 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 20-G006ArchitectReview2: inspected absolute remodel files/artifacts; app.py provides /decisions, guarded /record_decision, /config/spec, safe /gpt_auth/status and /gpt_auth/test, and WS-only final_approval ignores client dest_strategy_db; dashboard/settings source and evidence clean; CLEAR/CLEAR/CLEAR APPROVE.",
+    "commands": [
+      "architect subagent 20-G006ArchitectReview2 read-only review"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 19-G006ExecutorQa passed: live browser transcript/screenshots prove audit and settings; DOM/source scans found no unsafe controls; API smoke proves /decisions, /config/spec, /gpt_auth/status, /gpt_auth/test, isolated /record_decision append-only/invalid rejection, and final_approval malicious dest ignored.",
+    "e2eCommands": [
+      "browser automation via artifacts/ultragoal-g006-safety/browser-transcript.json",
+      "focused G006 tests -> 95 passed, 1 skipped"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team subagent 19-G006ExecutorQa source/DOM/API/final-approval/append-only checks"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g006-safety/browser-transcript.json",
+        "description": "Browser automation transcript for audit page, SettingsModal opening, DOM markers, forbidden control scan, and screenshots.",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8776/ui/remodel/audit",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T16:16:01.151Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/audit",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "Decision audit remodel page loaded with append-only/final approval separation labels"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T16:16:01.151Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g006-safety/audit-page.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "click",
+            "timestamp": "2026-06-27T16:16:01.151Z",
+            "selector": "button:has-text(\"시작\")",
+            "verdict": "passed",
+            "result": "Opened SettingsModal without starting evolution"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T16:16:01.151Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g006-safety/settings-modal.png",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "audit-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g006-safety/audit-page.png",
+        "description": "Non-uniform screenshot for /ui/remodel/audit showing append-only decision audit and final approval/export separation."
+      },
+      {
+        "id": "settings-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g006-safety/settings-modal.png",
+        "description": "Non-uniform screenshot showing SettingsModal, LIVE /config/spec, GPT 5.5 xhigh safe test, and 진화 시작 button."
+      },
+      {
+        "id": "api-smoke",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g006-safety/api-smoke.json",
+        "description": "Live and isolated API smoke covering decisions, config spec, GPT auth safe probes, /record_decision append-only/invalid guards, and final_approval destination guard."
+      },
+      {
+        "id": "source-safety-scan",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g006-safety/source-safety-scan.json",
+        "description": "Source scan proving required safety markers and absence of forbidden live order/broker/account/export controls."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g006-safety/verification-summary.json",
+        "description": "Leader-run G006 test, browser, API, and source-scan summary."
+      },
+      {
+        "id": "record-decision-log",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g006-safety/record-decision-smoke.jsonl",
+        "description": "Isolated append-only decision log produced by TestClient route smoke."
+      },
+      {
+        "id": "ai-slop-cleanup",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g006-safety/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking or advisory findings."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-decision-audit",
+        "contractRef": "Approved G006 /decisions and /record_decision",
+        "obligation": "Expose decision history and append-only decision recording; reject invalid verdicts and preserve append order.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-api",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-invalid-verdict",
+          "case-append-only"
+        ]
+      },
+      {
+        "id": "contract-final-approval-separation",
+        "contractRef": "Approved G006 final approval/export separation",
+        "obligation": "Decision audit must not be final export; final_approval remains WS approval-dialog path and ignores client destination.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-api",
+          "surface-source"
+        ],
+        "adversarialCaseRefs": [
+          "case-malicious-dest",
+          "case-approval-confusion"
+        ]
+      },
+      {
+        "id": "contract-settings-config",
+        "contractRef": "Approved G006 /config/spec settings surface",
+        "obligation": "Settings modal renders live /config/spec, labels source, and only starts evolution through explicit 진화 시작.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-api",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-settings-no-config",
+          "case-button-ambiguity"
+        ]
+      },
+      {
+        "id": "contract-gpt-auth-safe",
+        "contractRef": "Approved G006 /gpt_auth/status and /gpt_auth/test",
+        "obligation": "GPT auth status/test are safe probes that do not start evolution, export, or order.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-api",
+          "surface-source"
+        ],
+        "adversarialCaseRefs": [
+          "case-gpt-starts-evolution"
+        ]
+      },
+      {
+        "id": "contract-forbidden-guards",
+        "contractRef": "Approved G006 source and DOM forbidden action guards",
+        "obligation": "No live-order, broker-login, account-trade, or automatic production export controls in source or DOM.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-source"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser",
+        "contractRef": "/ui/remodel/audit and SettingsModal browser UI",
+        "surface": "web",
+        "invocation": "Browser loaded /ui/remodel/audit, scanned DOM, captured audit screenshot, clicked 시작 to open SettingsModal, and captured settings screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "audit-screenshot",
+          "settings-screenshot"
+        ]
+      },
+      {
+        "id": "surface-api",
+        "contractRef": "Decision/config/GPT auth/final approval APIs",
+        "surface": "api",
+        "invocation": "Live HTTP and isolated TestClient smoke covered /decisions, /config/spec, /gpt_auth/status, /gpt_auth/test, /record_decision, and WS final_approval destination guard.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke",
+          "record-decision-log"
+        ]
+      },
+      {
+        "id": "surface-source",
+        "contractRef": "Source safety guards",
+        "surface": "package",
+        "invocation": "Source scan checked backend/frontend/remodel safety markers and forbidden control strings.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "source-safety-scan"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "G006 safety unit/integration tests",
+        "surface": "api",
+        "invocation": "Focused tests for dashboard WS, validation views, final approval, crosslinks, SPA tabs, and remodel static/baseline passed 95 with 1 skip.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-invalid-verdict",
+        "contractRef": "/record_decision guard",
+        "scenario": "Submit invalid verdict yolo.",
+        "expectedBehavior": "Route returns status invalid and decision count remains zero.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "case-append-only",
+        "contractRef": "Append-only decision ledger",
+        "scenario": "Submit hold then reject reversal.",
+        "expectedBehavior": "Two records append in order with timestamps; prior record is not overwritten or deleted.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke",
+          "record-decision-log"
+        ]
+      },
+      {
+        "id": "case-malicious-dest",
+        "contractRef": "final_approval export destination guard",
+        "scenario": "Send WS final_approval with dest_strategy_db=C:/evil/attacker.db.",
+        "expectedBehavior": "Backend ignores client destination and calls export with PRODUCTION_STRATEGY_DB.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "case-approval-confusion",
+        "contractRef": "Decision audit vs final approval separation",
+        "scenario": "Audit page could imply decision record performs final export.",
+        "expectedBehavior": "Audit DOM and source label /record_decision as append-only and final export as separate 승인·내보내기 / final_approval flow.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "source-safety-scan"
+        ]
+      },
+      {
+        "id": "case-settings-no-config",
+        "contractRef": "/config/spec settings",
+        "scenario": "Settings starts from demo/fallback without live config.",
+        "expectedBehavior": "Modal labels LIVE /config/spec and tests enforce start guard on config availability.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-gpt-starts-evolution",
+        "contractRef": "GPT auth probe safety",
+        "scenario": "GPT auth test starts evolution/export/order or hides unsafe unavailable state.",
+        "expectedBehavior": "Live and source evidence show safe=true, starts_evolution=false, and explanatory no evolution/export/order text.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke",
+          "browser-transcript",
+          "source-safety-scan"
+        ]
+      },
+      {
+        "id": "case-button-ambiguity",
+        "contractRef": "Button state clarity",
+        "scenario": "Start/stop/settings/decision buttons are unlabeled or silently disabled.",
+        "expectedBehavior": "Browser transcript shows SettingsModal opens from 시작, Stop disabled while idle, record button present, and modal explains GPT/test/start behavior.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-unsafe-controls",
+        "contractRef": "Forbidden live broker/action guard",
+        "scenario": "DOM or source exposes live-order, broker-login, account-trade, or automatic production export controls.",
+        "expectedBehavior": "DOM forbiddenControls is empty and source forbidden markers are all false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "source-safety-scan"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G006 cleanup report is clean, focused tests passed, syntax/diff checks passed, browser/API/source verification passed, architect review 20 approved, and executor QA 19 passed. Earlier architect review 18 used the wrong cwd and was superseded by absolute-path review 20.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "focused G006 pytest suite -> 95 passed, 1 skipped",
+      "python -m py_compile app.py && node --check remodel-bootstrap.js && git diff --check",
+      "browser automation for audit and SettingsModal",
+      "direct live API and TestClient safety smoke",
+      "architect subagent 20-G006ArchitectReview2",
+      "executor QA subagent 19-G006ExecutorQa"
+    ],
+    "blockers": []
+  }
+}

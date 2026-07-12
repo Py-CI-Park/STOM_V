@@ -1,0 +1,17 @@
+AI SLOP CLEANUP REPORT — G006 safety/audit gate
+
+Scope reviewed:
+- ai_strategy_loop/dashboard/frontend/cards.jsx
+- ai_strategy_loop/dashboard/frontend/conn-backend.jsx
+- ai_strategy_loop/dashboard/frontend/app.jsx
+- ai_strategy_loop/dashboard/frontend/remodel/src/app.js
+- ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css
+- scripts/verify_dashboard_safety_audit.py
+
+Blocking findings: 0
+Advisory findings: 0
+
+Checks:
+- Removed legacy production/live-deploy wording instead of masking it with comments.
+- Verifier is explicit, read-only, and fail-closed with artifacts for source, DOM, runtime network, audit/export separation, browser transcript, and contact sheet.
+- No fallback-like fake success path: scorecard status depends on empty failures and captured browser/runtime evidence.

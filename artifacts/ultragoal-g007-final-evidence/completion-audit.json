@@ -1,0 +1,52 @@
+{
+  "objective": "Complete durable ultragoal plan G001-G007 under original constraints using ledger as audit trail.",
+  "generatedAt": "2026-06-29T19:49:26Z",
+  "deliverables": [
+    {
+      "id": "G001",
+      "requirement": "Phase 0 matrices/rubric before mutation",
+      "evidence": "goals.json G001 complete; artifacts/ultragoal-g001-phase0/quality-gate.json"
+    },
+    {
+      "id": "G002",
+      "requirement": "V2/V3 baseline inventory and route compare",
+      "evidence": "goals.json G002 complete; final v2-v3 compare PASS 100; inventory gate 81/0"
+    },
+    {
+      "id": "G003",
+      "requirement": "Interactive chart primitives/provenance",
+      "evidence": "goals.json G003 complete; browser-final chart interaction; visual gate PASS"
+    },
+    {
+      "id": "G004",
+      "requirement": "Process monitoring cockpit payload-driven",
+      "evidence": "goals.json G004 complete; browser-final process modal/process UX proof"
+    },
+    {
+      "id": "G005",
+      "requirement": "Safety/provenance hardening",
+      "evidence": "goals.json G005 complete; final safety audit 100; browser network unsafe counts 0"
+    },
+    {
+      "id": "G006",
+      "requirement": "Eight-page UX/UI sweep",
+      "evidence": "goals.json G006 complete; visual gate PASS 97.79; browser-final routeCount 10"
+    },
+    {
+      "id": "G007",
+      "requirement": "Deterministic final evidence and 100/100 scorecard",
+      "evidence": "final-100-scorecard.json status PASS totalScore 100.0"
+    },
+    {
+      "id": "protected-paths",
+      "requirement": "No protected runtime writes",
+      "evidence": "protected path git status output empty; temporary strategy fixture DB removed"
+    },
+    {
+      "id": "v2-default",
+      "requirement": "V2 remains default and V3 explicit/selectable",
+      "evidence": "v2-v3 route matrix and final usage guidance"
+    }
+  ],
+  "status": "PASS"
+}

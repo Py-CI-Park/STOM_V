@@ -18,6 +18,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
@@ -96,7 +97,7 @@ class TestNewRoutes:
     def client(self, seeded_two_gen_db):
         from fastapi.testclient import TestClient
 
-        return TestClient(create_app())
+        return authorized_dashboard_client(create_app())
 
     def test_counterfactual_route_contract(self, client) -> None:
         r = client.get("/counterfactual", params={"run_id": "runG", "gen_no": 1})

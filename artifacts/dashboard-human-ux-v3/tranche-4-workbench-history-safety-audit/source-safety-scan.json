@@ -1,0 +1,32 @@
+{
+  "findings": [],
+  "forbiddenPatterns": [
+    "legacy_live_deploy",
+    "legacy_operating_db_copy",
+    "legacy_real_strategy_copy",
+    "hidden_live_action",
+    "live_order_endpoint_literal",
+    "order_sender_symbol"
+  ],
+  "generatedAt": "2026-06-30T11:56:42.068285+00:00",
+  "kind": "dashboard-source-safety-scan",
+  "requiredSafetyCopyFailures": [],
+  "scannedFiles": [
+    "ai_strategy_loop/dashboard/frontend/app.jsx",
+    "ai_strategy_loop/dashboard/frontend/cards.jsx",
+    "ai_strategy_loop/dashboard/frontend/conn-backend.jsx",
+    "ai_strategy_loop/dashboard/frontend/sim-tab-root.jsx",
+    "ai_strategy_loop/dashboard/frontend/dashboard-inventory.jsx",
+    "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+    "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js",
+    "ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css",
+    "ai_strategy_loop/dashboard/frontend/index.html",
+    "ai_strategy_loop/dashboard/frontend/lab.html",
+    "ai_strategy_loop/dashboard/frontend/pro.html",
+    "ai_strategy_loop/dashboard/frontend/verdict.html",
+    "ai_strategy_loop/dashboard/frontend/STOM AI Dashboard.html"
+  ],
+  "schemaVersion": 1,
+  "status": "PASS"
+}

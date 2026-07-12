@@ -1,0 +1,15 @@
+{
+  "artifacts": {
+    "apiSmoke": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\api-smoke.json",
+    "backtestEvidence": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\backtest-runtime-evidence.json",
+    "browserTranscript": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\browser-transcript.json",
+    "chartReplayEvidence": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\chart-replay-runtime-evidence.json",
+    "contactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\runtime-depth-contact-sheet.png",
+    "forbiddenRuntimeScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\forbidden-runtime-scan.json",
+    "scorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\runtime-depth\\runtime-depth-scorecard.json"
+  },
+  "generatedAt": "2026-06-29T19:44:09.303641+00:00",
+  "kind": "dashboard-runtime-depth-manifest",
+  "schemaVersion": 1,
+  "status": "PASS"
+}

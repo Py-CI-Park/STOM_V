@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G002",
+  "baseUrl": "http://127.0.0.1:8776",
+  "viewport": "1365x768",
+  "verdict": "passed",
+  "actions": [
+    {
+      "label": "clear-storage-and-load-v2",
+      "timestamp": "2026-06-28T22:09:02.090Z",
+      "started": 1782684542090,
+      "ended": 1782684543280,
+      "status": "passed",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "selector": "[data-dashboard-preview=\"v3\"]",
+      "href": "/ui/evolution?dashboard_version=v3",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "assertion": "V2 default renders a passive V3 preview link",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g002-preview-control\\v2-preview-control.png",
+      "type": "navigate"
+    },
+    {
+      "label": "click-v3-preview-link",
+      "timestamp": "2026-06-28T22:09:03.280Z",
+      "started": 1782684543280,
+      "ended": 1782684544443,
+      "status": "passed",
+      "url": "http://127.0.0.1:8776/ui/evolution?dashboard_version=v3",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selector": "script[src*=\"/ui/remodel/src/app.js\"]",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "assertion": "Passive preview link opens V3 through dashboard_version=v3",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g002-preview-control\\v3-preview-selected.png",
+      "type": "navigate"
+    },
+    {
+      "label": "return-default-v2-after-preview",
+      "timestamp": "2026-06-28T22:09:04.443Z",
+      "started": 1782684544443,
+      "ended": 1782684545566,
+      "status": "passed",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "selector": "script[src*=\"/ui/bundle/app.js\"]",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "assertion": "V3 preview link does not persist and default route returns V2",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g002-preview-control\\v2-after-preview.png",
+      "type": "navigate"
+    }
+  ],
+  "failures": []
+}

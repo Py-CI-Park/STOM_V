@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G002",
+  "reference": {
+    "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+    "mode": "reference",
+    "reference": true,
+    "liveBackend": false,
+    "fetchCalls": [],
+    "wsCalls": [],
+    "timeoutDelays": [],
+    "storageGets": [],
+    "storageSets": [],
+    "storageRemoves": [],
+    "backendInput": "http://127.0.0.1:9200",
+    "restBadge": "REST UP",
+    "wsBadge": "WebSocket 연결됨",
+    "runBadge": "Run Status running",
+    "screenshot": "artifacts/ultragoal-g002-reference/g002-reference-condition.png"
+  },
+  "demo": {
+    "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=fixture",
+    "mode": "demo",
+    "reference": false,
+    "liveBackend": false,
+    "fetchCalls": [],
+    "wsCalls": [],
+    "timeoutDelays": [],
+    "storageGets": [],
+    "storageSets": [],
+    "modeBadge": "DEMO mode",
+    "restBadge": "REST DEMO",
+    "wsBadge": "WebSocket 정적 fixture",
+    "backendInputReadonly": true
+  },
+  "live": {
+    "url": "http://127.0.0.1:8776/ui/remodel/condition",
+    "mode": "live",
+    "reference": false,
+    "liveBackend": true,
+    "fetchCalls": [
+      "http://127.0.0.1:8776/health",
+      "http://127.0.0.1:8776/status",
+      "http://127.0.0.1:8776/runs"
+    ],
+    "wsCalls": [
+      "ws://127.0.0.1:8776/ws"
+    ],
+    "storageGets": [
+      "stom_remodel_base_url"
+    ],
+    "storageSets": [],
+    "restBadge": "REST UP",
+    "wsBadge": "WebSocket 연결됨",
+    "backendInputReadonly": false
+  },
+  "allReferenceRoutes": {
+    "routes": [
+      {
+        "route": "condition",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 5294
+      },
+      {
+        "route": "process",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 2301
+      },
+      {
+        "route": "history",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 4251
+      },
+      {
+        "route": "lab",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 3130
+      },
+      {
+        "route": "workbench",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 2955
+      },
+      {
+        "route": "audit",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 3121
+      },
+      {
+        "route": "backtest",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 2860
+      },
+      {
+        "route": "chart-replay",
+        "mode": "reference",
+        "reference": true,
+        "liveBackend": false,
+        "fetchCalls": [],
+        "wsCalls": [],
+        "timeoutDelays": [],
+        "storageGets": [],
+        "storageSets": [],
+        "storageRemoves": [],
+        "shell": true,
+        "bodyLength": 2726
+      }
+    ],
+    "allPassed": true
+  }
+}

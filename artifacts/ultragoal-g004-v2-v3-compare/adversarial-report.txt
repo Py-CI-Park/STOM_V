@@ -1,0 +1,8 @@
+G004 adversarial/failure-mode report
+Verdict: passed
+- Unknown V3 remodel route is expected 404 in route-version-matrix; no V2/V3 shell masks the broken path.
+- V2 canonical routes remained V2: x-stom-dashboard-version=v2 and /ui/bundle/app.js; explicit V3 routes used x-stom-dashboard-version=v3-remodel and /ui/remodel/src/app.js.
+- V3 HTML no-store cache survived middleware after app.py fix; V2 remains no-cache.
+- V3 forbidden network scan found zero auto /bt/run, /bt/ws_job, /sim/ws, broker/account/order calls on page load.
+- Existing V2 chart replay /sim/ws auto-open was recorded as legacyV2Observation and not counted as a V3 rollout blocker; this preserves V2 behavior without hiding it.
+- All eight page pairs produced non-uniform screenshots and DOM inventories.

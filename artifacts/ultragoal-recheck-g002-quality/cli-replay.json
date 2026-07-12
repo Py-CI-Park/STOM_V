@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "scripts/verify_dashboard_remodel_visual_gate.py",
+    "--base-url",
+    "http://127.0.0.1:8776",
+    "--out",
+    "artifacts/ultragoal-recheck-g002-v3-reference-visual",
+    "--min-page-score",
+    "95",
+    "--min-average-score",
+    "97"
+  ],
+  "recordedStdout": "{\n  \"status\": \"PASS\",\n  \"averageCorrectedTotalScore\": 97.93,\n  \"failures\": []\n}\n"
+}

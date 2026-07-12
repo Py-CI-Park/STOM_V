@@ -1,0 +1,1363 @@
+{
+  "tool": "browser",
+  "kind": "browser-automation-transcript",
+  "generatedAt": "2026-06-29T18:46:35.075Z",
+  "actions": [
+    {
+      "timestamp": "2026-06-29T18:46:23.016Z",
+      "action": "navigate-and-assert",
+      "page": "reference-condition",
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "badgeSample": [
+          "REFERENCE mode",
+          "REST INERT",
+          "WebSocket 정적 fixture",
+          "Run Status reference",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "Fixture/static",
+          "LIVE",
+          "running",
+          "gate_passed",
+          "gate_passed",
+          "rejected",
+          "gate_passed",
+          "gate_passed",
+          "rejected",
+          "gate_passed",
+          "gate_passed",
+          "rejected",
+          "gate_passed",
+          "gate_passed",
+          "WINNER"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: reference fixture/static data · mode: REFERENCE · backend: http://127.0.0.1:9200 · loop pending/fallback\nFixture/static\ngeneration: 137 · strategyCount: 12 · gatePassed: 14 (43.8%)\nⓘ Export Status: Gen 136 스냅샷이 CSV/Parquet/JSON으로 내보내기 완료되었습니다. Winner 최종 승인 필요.\n상세 보기\n1. 코어 헬스\nCPU\n18.5%\nMEM\n42.3%\nDISK\n31.2%\nGPU\n12.1%\nWS\n128 msg/s\nREST\n36 req/s\n2. 히스토리 요약\n총 세대\n137\n총 전략\n5,480\n게이트 통과\n812\n우승\n7\n아카이브\n42\n3. 성과 스냅샷\n총 순이익\n+18.742%\n승률(트레이드)\n54.21%\n샤프\n1.36\n칼마\n1.12\nMDD\n-12.34%\n4. 게이트 통과율\n41.8%\n51.34\n47.62\n43.91\n40.19\n36.48\n명예 인스펙터\nS136-0321 (MeanRev_Adaptive_v9)\n# STOM CONDITION SCRIPT v1.0\n# Strategy: MeanRev_Adaptive_v9\n# BUY CONDITION\ncond = (\n    close < sma(close, 20) - 1.5 * atr(14)\n    and rsi(14) < 35\n현재 세대 라이브 상태\nLIVE\nPhase\nBACKTEST\nCheckpoint\n7 / 10\nMessage\n백테스트 실행 중 (7/10) - 1H · OOS Split 70/30\nElapsed\n02:14:38\nETA\n~01:02:11\n생성 전략\n32 / 80\n게이트 통과\n14 (43.8%)\n활성 전략 (현재 평가 중)\n인스펙터\nID\nS137-0321\nName\nMeanRev_Adaptive_v9\nGrade\nA-\nScore\n0.812\nProfit\n+18.742%\nMDD\n-12.34%\nTrades\n412\n프로세스 / 페이즈 타임라인\nPhase 1\n탐색\n완료\nPhase 2\n평가\n완료\nPhase 3\n필터/게이트\n진행 중\nPhase 4\n교차/변이\n대기\nPhase 5\n검증/보강\n대기\n현재 페이즈 상세\nPhase 3\n필터/게이트\n진행도\n64%\n소요\n00:18:22\n예상\n00:10:28\n완료\n51 / 80\n연구 기준 (Research Criteria)\n목표 샤프 ≥ 1.00\nMDD ≤ 15.00%\n최소 거래수 ≥ 150\n게이트 통과율 ≥ 30%\n홀드아웃 안정성 ≥ 1.00\n용어 사전 (Glossary)\nSharpe Ratio\n위험 대비 수익률\nMDD\n최대 낙폭\nProfit Factor\n총익/총손실 비율\nTrade Count\n전체 거래 수\nQuality Score\n다중 지표 종합 점수\nActive Config\n데이터 소스\nOHLCV (KRX + NYSE)\n기간\n2015-01-01 ~ 2024-12-31\n수수료\n0.015%\n슬리피지\n0.005%\n초기 자본\n100,000,000 KRW\nEngine Summary\nAI 엔진\nSTOM-AI Engine v2.3.1\n모델\ngpt-4o-mini\n전략 생성\nTop-K 64\n평가 워커\n16 / 16\nGPU\n12.1%\nCost / Tokens\n총 비용\n$214.317\n이번 세대\n$1.842\n입력 토큰\n1.28M\n출력 토큰\n0.49M\n캐시 적중률\n48.2%\nFitness Score 추이\nFitness Score 추이\n0.812 ↑ 0.032\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\n0.861\n0.763\n0.664\n0.566\n0.468\nlatest · Fitness Score 추이 0.861\nProfit 추이\nProfit 추이\n+18.742%\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\n21.79\n16.64\n11.48\n6.330\n1.176\nlatest · Profit 추이 21.21\nEquity Overlay (Top 5)\nEquity Overlay (Top 5)\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\n30.88\n22.86\n14.84\n6.822\n-1.199\nlatest · W1(Gen132) 30.40 · W2(Gen129) 28.44 · Human Ref 23.04 · Buy&Hold 5.889\nW1(Gen132)\nW2(Gen129)\nHuman Ref\nBuy&Hold\n백테스트 상세\n백테스트 상세\n+22.13%\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\nlatest · 백테스트 상세 · T+40 · Daily Profit: 2.830 · Cumulative: 83.23 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT\nDaily Profit\nCumulative\nGUI Parity / 품질\n09\n10\n11\n12\n13\n14\n시간대\n요일\nQuality Trend\n0.78\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\n1.269\n1.134\n1.000\n0.865\n0.731\nlatest · Quality Trend 1.243\n세대 테이블 (Generation Table)\ngen\tstatus\tgraded_score\tgate_passed\tgate_reason\ttrade_count\tdaily_avg_trades\tMDD\tprofit\tstrategy_gist\tactions\n137\t\nrunning\t—\t—\t평가 중\t—\t—\t—\t—\t변동성 적응형 평균회귀 + 거래량 확인\t코드백테스트\n136\t\ngate_passed\t0.808\t✓ 통과\tAll criteria passed\t302\t4.3\t-8.45%\t+14.05%\t이동평균 정배열 + ATR 필터 + 거래량 급증\t코드백테스트\n135\t\ngate_passed\t0.748\t✓ 통과\tAll criteria passed\t490\t5.6\t-21.33%\t+20.00%\tEMA 추세 + RSI 모멘텀 + 볼린저 확장\t코드백테스트\n134\t\nrejected\t0.716\t✕ 실패\tSharpe < 1.0\t201\t6.3\t-11.94%\t+19.12%\tDonchian Breakout + 필터(ADX)\t코드백테스트\n133\t\ngate_passed\t0.729\t✓ 통과\tAll criteria passed\t417\t6.4\t-20.62%\t+17.23%\tMACD 골든크로스 + 거래량 확인\t코드백테스트\n132\t\ngate_passed\t0.707\t✓ 통과\tAll criteria passed\t404\t5.2\t-8.12%\t+25.73%\tRSI 반전 + 추세 확인 필터\t코드백테스트\n131\t\nrejected\t0.639\t✕ 실패\tMDD > 25%\t235\t5.4\t-25.23%\t+15.41%\t과매수 구간 반전 전략\t코드백테스트\n130\t\ngate_passed\t0.624\t✓ 통과\tAll criteria passed\t210\t7.1\t-14.19%\t+13.82%\t체결강도 급등 + VI 직전 필터\t코드백테스트\n129\t\ngate_passed\t0.606\t✓ 통과\tAll criteria passed\t470\t5\t-25.52%\t+16.33%\t변동성 적응형 평균회귀 + 거래량 확인\t코드백테스트\n128\t\nrejected\t0.584\t✕ 실패\tSharpe < 1.0\t286\t7\t-23.94%\t+15.96%\t이동평균 정배열 + ATR 필터 + 거래량 급증\t코드백테스트\n127\t\ngate_passed\t0.521\t✓ 통과\tAll criteria passed\t228\t7.7\t-12.10%\t+14.37%\tEMA 추세 + RSI 모멘텀 + 볼린저 확장\t코드백테스트\n126\t\ngate_passed\t0.542\t✓ 통과\tAll criteria passed\t374\t4.4\t-14.84%\t+17.98%\tDonchian Breakout + 필터(ADX)\t코드백테스트\nHall of Fame (상위 전략 비교)\nrank\ttype\tname\tprofit\tmdd\tsharpe\tpf\tscore\n1\tAI\tS136-0321\t+22.13%\t-9.84%\t1.28\t1.87\t0.821\n2\tHuman Ref\tHuman_Trend_MA\t+21.12%\t-13.44%\t1.61\t2.02\t0.756\n3\tAI\tS129-0044\t+28.17%\t-9.34%\t1.67\t1.95\t0.721\n4\tAI\tS118-0833\t+21.36%\t-11.01%\t1.46\t1.74\t0.681\nGeneration Analytics\n다중 지표 진화 추이\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nma",
+        "disabledManualCount": 3,
+        "enabledManualCount": 0,
+        "disabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop"
+          }
+        ],
+        "enabledManualSample": [],
+        "inertControlCount": 3,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": true,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:20.226Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:20.250Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:20.250Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:20.250Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "reference-condition",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-condition.png",
+        "bytes": 1217744,
+        "sha256": "09b4017a4579d5222bf9c0209a77512a73f53b131ad87f07e688cac480f43206"
+      },
+      "index": 1,
+      "type": "navigate-and-assert",
+      "label": "reference-condition",
+      "selector": "reference-condition",
+      "at": 1782758783016
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.257Z",
+      "action": "navigate-and-assert",
+      "page": "reference-backtest",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "badgeSample": [
+          "REFERENCE mode",
+          "REST INERT",
+          "WebSocket 정적 fixture",
+          "Run Status reference",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "실행중",
+          "완료",
+          "완료",
+          "완료",
+          "Reference/demo inert",
+          "Evidence settled",
+          "GET",
+          "INERT",
+          "GET",
+          "INERT",
+          "GET",
+          "INERT",
+          "GET",
+          "INERT",
+          "POST",
+          "INERT",
+          "POST",
+          "INERT",
+          "POST",
+          "INERT",
+          "POST",
+          "INERT",
+          "GET",
+          "INERT",
+          "GET",
+          "INERT",
+          "GET",
+          "INERT",
+          "POST",
+          "INERT"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 시스템 상태\nAPI Health\nINERT\nData Pack\nKRX + US\nDemo Mode\nON\nUptime\nstatic fixture\n37.30\n29.82\n22.33\n14.84\n7.353\n2 마켓 요약\n지표\t현재가\t등락률\nKOSPI\t2,610.42\t+0.58%\nKOSDAQ\t859.12\t+0.74%\nUSD/KRW\t1,349.20\t-0.22%\n최근 백테스트\nID\t전략명\t상태\t수익률\n#10235\tBreakOut_v2\t\n실행중\t—\n#10234\tBreakOut_v2\t\n완료\t+23.41%\n#10233\tRSI_MA_Cross\t\n완료\t+12.88%\n#10232\tMeanRev_1h\t\n완료\t-3.21%\nDEMO / REFERENCE INERT MODE\n본 시스템은 연구/백테스트 용도이며 실거래 주문을 전송하지 않습니다. /bt/* mutating endpoints are manual-gated and never auto-invoked.\nReference/demo inert\nBacktest API Contract Matrix\nREFERENCE mode: reference/demo inert · no fetch, no WebSocket, no extra localStorage. Matrix is fixture/static only.\nEvidence settled\nEndpoint\tMethod\tMode behavior\tLive evidence/status\tAction owner / reason\n/bt/health\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=buy\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategy?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/strategy/validate\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nValidation accepts user-authored strategy text; manual gate required.\n\n/bt/strategy\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nMutates strategy storage; never auto-run from remodel load.\n\n/bt/strategy/delete\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nDeletes strategy storage; destructive and manual-gated.\n\n/bt/extract_vars\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nReads submitted code body; user action only, no automatic payload fabrication.\n\n/bt/legacy/self_vars?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/backfinder/preflight?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/data_range\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/run\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nStarts a backtest job; run creation must be explicit.\n\n/bt/jobs\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/job?job_id=\t\nGET\treference/demo inert fixture · live optional read only when an existing job_id is available\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/job/cancel\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nINERT\nreference/demo inert · no fetch, no WebSocket, no extra localStorage\n\tManual researcher action\nCancels acti",
+        "disabledManualCount": 14,
+        "enabledManualCount": 0,
+        "disabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop"
+          },
+          {
+            "text": "설정 저장",
+            "gate": "bt-settings-save"
+          },
+          {
+            "text": "WFO 미리보기",
+            "gate": "bt-wfo-preview"
+          },
+          {
+            "text": "+ 파라미터 추가",
+            "gate": "bt-vars-add"
+          },
+          {
+            "text": "self.vars 파싱",
+            "gate": "bt-vars-parse"
+          },
+          {
+            "text": "작업 취소",
+            "gate": "bt-job-cancel"
+          },
+          {
+            "text": "결과 미리보기",
+            "gate": "bt-result-preview"
+          },
+          {
+            "text": "보고서 HTML",
+            "gate": "bt-report-html"
+          },
+          {
+            "text": "검증",
+            "gate": "bt-strategy-validate"
+          },
+          {
+            "text": "저장",
+            "gate": "bt-strategy-save"
+          },
+          {
+            "text": "삭제",
+            "gate": "bt-strategy-delete"
+          },
+          {
+            "text": "독립 HTML 보고서 생성 (Standalone Report)",
+            "gate": "bt-report-export"
+          }
+        ],
+        "enabledManualSample": [],
+        "inertControlCount": 20,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": true,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:23.034Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:23.055Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:23.055Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:23.055Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "reference-backtest",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-backtest.png",
+        "bytes": 1040768,
+        "sha256": "d9bae2b356536f57113ac952597289ab5a1bd52d56afcc765a77a925a7441e80"
+      },
+      "index": 2,
+      "type": "navigate-and-assert",
+      "label": "reference-backtest",
+      "selector": "reference-backtest",
+      "at": 1782758785257
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.897Z",
+      "action": "navigate-and-assert",
+      "page": "reference-replay",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "badgeSample": [
+          "REFERENCE mode",
+          "REST INERT",
+          "WebSocket 정적 fixture",
+          "Run Status reference",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "Reference/demo inert",
+          "Evidence settled",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "GET · REST endpoint",
+          "INERT",
+          "WS · WS endpoint",
+          "INERT",
+          "ACTION · WS action",
+          "INERT",
+          "ACTION · WS action",
+          "INERT",
+          "ACTION · WS action",
+          "INERT",
+          "ACTION · WS action",
+          "INERT",
+          "ACTION · WS action",
+          "INERT",
+          "ACTION · WS action",
+          "INERT"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 데이터 소스 (Tick/Min)\n소스 유형\nTick\n데이터 소스\nSTOM Tick DB (Local)\n서버 시간\n2025-05-27 14:23:18\n지연 시간\nINERT\n2 사용 가능 일자\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n사용 가능 일수: 23일 · fixture calendar\n3 종목 리스트\n코드\t종목명\t최근가\t변동률\n005930\t삼성전자\t78600\t-0.25%\n000660\tSK하이닉스\t203000\t+1.35%\n373220\tLG에너지솔루션\t382500\t-1.04%\nDEMO / REFERENCE REPLAY INERT MODE\n실거래/주문 기능 없음 · 과거 틱/분 데이터 재생 · /sim/ws는 자동 연결하지 않고 사용자 시작으로만 동작\nReference/demo inert\nReplay API/WS Contract Matrix\nREFERENCE mode: reference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline. Replay API/WS Contract Matrix is fixture/static only.\nEvidence settled\nEndpoint / action / message\tMethod / type\tMode behavior\tLive evidence/status\tOwner / reason / recovery\n/sim/health\t\nGET · REST endpoint\treference/demo inert fixture · live safe read on Chart Replay page load\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/days?src=min|tick\t\nGET · REST endpoint\treference/demo inert fixture · live safe min-days read on Chart Replay page load\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/demo?src=min&mode=latest\t\nGET · REST endpoint\treference/demo inert fixture · live safe demo discovery read on Chart Replay page load\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/stocks?date=&src=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date is discovered\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/bt/strategies?kind=buy\t\nGET · REST endpoint\treference/demo inert fixture · live safe buy strategy read on Chart Replay page load\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET · REST endpoint\treference/demo inert fixture · live safe sell strategy read on Chart Replay page load\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/signals?date=&src=&code=&buy=&sell=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date/code and buy/sell names are discovered\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/sim/ws\t\nWS · WS endpoint\treference/demo inert fixture · live-only WebSocket never auto-opened; user-gated manual start\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tManual researcher action\nLong-lived replay stream must not auto-open from page load.\n\nstart\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tManual researcher action\nStarts a replay stream; explicit user action required.\n\npause\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tManual researcher action\nPauses an existing replay stream only after manual connection.\n\nresume\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tManual researcher action\nResumes an existing replay stream only after manual connection.\n\nspeed\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline\n\tManual researcher action\nChanges replay speed on a manual session only.\n\nseek\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nINERT\nreference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 bas",
+        "disabledManualCount": 22,
+        "enabledManualCount": 0,
+        "disabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop"
+          },
+          {
+            "text": "+",
+            "gate": "replay-add-symbol"
+          },
+          {
+            "text": "저장",
+            "gate": "replay-preset-save"
+          },
+          {
+            "text": "관리",
+            "gate": "replay-preset-manage"
+          },
+          {
+            "text": "즉시 시작",
+            "gate": "sim-start"
+          },
+          {
+            "text": "|◀",
+            "gate": "sim-0"
+          },
+          {
+            "text": "◀◀",
+            "gate": "sim-1"
+          },
+          {
+            "text": "▶ 재생",
+            "gate": "sim-2"
+          },
+          {
+            "text": "Ⅱ 일시정지",
+            "gate": "sim-3"
+          },
+          {
+            "text": "▶ 재개",
+            "gate": "sim-4"
+          },
+          {
+            "text": "■ 정지",
+            "gate": "sim-5"
+          },
+          {
+            "text": "지표 설정",
+            "gate": "replay-indicators"
+          },
+          {
+            "text": "브레이크포인트 추가",
+            "gate": "replay-breakpoint"
+          },
+          {
+            "text": "노트 저장",
+            "gate": "replay-notes"
+          },
+          {
+            "text": "start",
+            "gate": "sim-ws-start"
+          },
+          {
+            "text": "pause",
+            "gate": "sim-ws-pause"
+          },
+          {
+            "text": "resume",
+            "gate": "sim-ws-resume"
+          },
+          {
+            "text": "speed",
+            "gate": "sim-ws-speed"
+          }
+        ],
+        "enabledManualSample": [],
+        "inertControlCount": 26,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": true,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:25.271Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:25.292Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:25.293Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:25.293Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "reference-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-replay.png",
+        "bytes": 1170451,
+        "sha256": "85f35ffce292ec7ae8a9f35b7e20b868ca48042d1db449f4e6f0142ec312d042"
+      },
+      "index": 3,
+      "type": "navigate-and-assert",
+      "label": "reference-replay",
+      "selector": "reference-replay",
+      "at": 1782758787897
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.956Z",
+      "action": "navigate-and-assert",
+      "page": "reference-audit",
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "badgeSample": [
+          "REFERENCE mode",
+          "REST INERT",
+          "WebSocket 정적 fixture",
+          "Run Status reference",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "Fixture/static",
+          "Append-Only Ledger",
+          "우위",
+          "우위",
+          "보완",
+          "우위",
+          "우위",
+          "COMPLEMENT",
+          "PROMOTE",
+          "HOLD",
+          "REJECT",
+          "PROMOTE"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n1 모니터링\n13.35\n11.85\n10.35\n8.853\n7.353\n상태\n정상\n이상\n0건\n2 리스크\n13.35\n11.85\n10.35\n8.853\n7.353\n상태\n정상\n이상\n0건\n3 연구실\n17.76\n15.16\n12.55\n9.954\n7.353\n상태\n정상\n이상\n0건\n4 전략 저장소\n17.76\n15.16\n12.55\n9.954\n7.353\n상태\n정상\n이상\n0건\n5 알림 & 로그\n21.39\n18.22\n15.04\n11.87\n8.692\n상태\n정상\n이상\n0건\n6 시스템 상태\n25.78\n21.51\n17.23\n12.96\n8.692\n상태\n정상\n이상\n0건\n7 접근 & 감사\n25.78\n21.73\n17.68\n13.64\n9.591\n상태\n정상\n이상\n0건\n결정 감사 provenance · source: reference fixture/static data · mode: REFERENCE · backend: http://127.0.0.1:9200 · loop pending/fallback\nFixture/static\ndecisionCount: 5 · checklistCount: 10 · appendOnly: true\n최종 전략 추출(Export) 승인과 결정 감사(Decision Audit)는 별개입니다.\nEvidence → Validation → Human Decision 과정을 Append-Only 불변 원장으로 기록합니다.\nAppend-Only Ledger\n결정 대기\n7\nSLA 48h 이내\n감사 완료\n26\n평균 검토 2h 37m\n거절/보류\n5\n거절률 16.1%\n이번주 결정\n38\n승인 55% / 보완 29%\n불변 기록 상태\nAPPEND-ONLY\n해시체인 정상\n마지막 기록\n2025-05-20 14:18\nby 김연구\nPROMOTE 체크리스트\n데이터 무결성\n통과\n백테스트 신뢰성\n통과\nOOS 성능 우위\n통과\nOOS 일관성\n통과\n리스크 프로파일\n통과\n비용 반영 성과\n통과\n해석 가능성\n통과\n규정/정책 적합\n통과\n문서/증거 완비\n통과\n이해상충 검토\n검토 필요\n체크 완료: 9/10 · 최종 권고: 보완 필요\nOOS 성과 차이 신뢰구간\nWindow\t기간\tSharpe Diff\t95% CI Low\t95% CI High\tp-value\t결론\nW1\t2023-01 ~ 2023-06\t0.24\t0.08\t0.41\t0.003\t\n우위\nW2\t2023-07 ~ 2023-12\t0.31\t0.12\t0.51\t0.001\t\n우위\nW3\t2024-01 ~ 2024-06\t0.17\t-0.02\t0.36\t0.076\t\n보완\nW4\t2024-07 ~ 2024-12\t0.22\t0.05\t0.4\t0.011\t\n우위\n전체\t2023-01 ~ 2025-05\t0.24\t0.12\t0.35\t<0.001\t\n우위\nOOS Sharpe 비교\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-static\nmalformed=0\n23.74\n17.78\n11.81\n5.854\n-0.108\nlatest · OOS Sharpe 비교 23.32\n알림 & 요약 / 레짐 분해\n경고 2 · 정보 8 · OOS W3 보완 필요\n레짐\t비중\tSharpe V6\tSharpe M4\tDiff\nTrend-Strong\t28%\t1.76\t1.41\t0.35\nSideways\t25%\t0.72\t0.79\t-0.07\nHigh-Vol\t15%\t0.41\t0.62\t-0.21\nRevival Registry / Baseline 비교\n전략ID\t원본 버전\t만료일\t상태\nstrat_20240112_A\tv5.3.1\t2025-05-23\tD-3\nstrat_20240305_B\tv5.4.0\t2025-06-02\tD-13\nV6 Sharpe\n1.42\nM4 Sharpe\n1.08\nCAGR Diff\n+5.9%\n증거 & 링크\n🔗 백테스트 리포트\npdf/json\n🔗 OOS 성과 리포트\npdf/json\n🔗 레짐 분석 리포트\npdf/json\n🔗 비용/민감도 분석\npdf/json\n🔗 리스크 리포트\npdf/json\n🔗 데이터 무결성 리포트\npdf/json\n🔗 코드/파이프라인\npdf/json\n결정 입력 (Human Decision)\n PROMOTE\n정식 전략 추출 대상\n COMPLEMENT\n보완 후 추출 고려\n HOLD\n추가 검증 필요\n REJECT\n추출 비권고\n결정 노트 (필수)결정 제출 (Append-Only 기록)\n결정 히스토리 (Append-Only Ledger)\n내보내기 CSV\nDecision ID\t결정일시\t결정\t전략ID\t요약 노트\t결정자\t역할\t증거 링크\t레코드 해시\t검증\ndec_20250520_141809_7b1a4\t2025-05-20 14:18:09\t\nCOMPLEMENT\tstrat_20250520_v6 (v6.1.0)\tOOS W3 보완 필요. 비용 민감도 테스트 추가 권고\t김연구\tResearch Lead\t7개\td8c0ab41e0c0…\t✓ 검증됨\ndec_20250519_110575_e8c72\t2025-05-19 13:19:09\t\nPROMOTE\tstrat_20250519_v6 (v6.0.1)\t모든 기준 충족, 리스크 적정\t이성훈\tPM\t6개\t014ea2ee2fda…\t✓ 검증됨\ndec_20250518_079341_7b1a4\t2025-05-18 12:20:09\t\nHOLD\tstrat_20250518_v6 (v6.0.2)\t추가 데이터 확보 후 재검토\t박지원\tRisk Analyst\t5개\ta514af2be7dc…\t✓ 검증됨\ndec_20250517_048107_c2bfa\t2025-05-17 11:21:09\t\nREJECT\tstrat_20250517_v6 (v6.0.3)\tRegime Sideways 구간 열위 지속\t최민수\tCIO\t4개\t85d81b38ab96…\t✓ 검증됨\ndec_20250516_016873_c2bfa\t2025-05-16 10:22:09\t\nPROMOTE\tstrat_20250516_v6 (v6.0.4)\t성과 우수, 리스크 허용 범위\t김연구\tResearch Lead\t3개\td98cc4ece246…\t✓ 검증됨\n감사 메타데이터\n페이지\n결정 감사\n버전\nUI 2.2.0\n환경\ndev/reference\n사용자\nkim.research\n불변 원장\nON\n해시 체인\nOK\nWORM 보존\n7년\n🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "disabledManualCount": 3,
+        "enabledManualCount": 0,
+        "disabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop"
+          }
+        ],
+        "enabledManualSample": [],
+        "inertControlCount": 3,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": true,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:27.915Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:27.935Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:27.935Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:27.935Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "reference-audit",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-audit.png",
+        "bytes": 703607,
+        "sha256": "4d93ccc78360f5183b49b6916a928333b373b9c6a51a9abb9ab8448542254954"
+      },
+      "index": 4,
+      "type": "navigate-and-assert",
+      "label": "reference-audit",
+      "selector": "reference-audit",
+      "at": 1782758789956
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.463Z",
+      "action": "navigate-and-assert",
+      "page": "live-backtest",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "live",
+        "liveBackend": true,
+        "baseInput": "http://localhost:8777",
+        "badgeSample": [
+          "LIVE mode",
+          "REST FALLBACK",
+          "WebSocket 백엔드 미연결 · 정적 프리뷰",
+          "Run Status running",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "실행중",
+          "완료",
+          "완료",
+          "완료",
+          "LIVE read adapter",
+          "Evidence settled",
+          "GET",
+          "LIVE ERROR",
+          "GET",
+          "LIVE ERROR",
+          "GET",
+          "LIVE ERROR",
+          "GET",
+          "NOT-USED",
+          "POST",
+          "MANUAL-GATED",
+          "POST",
+          "MANUAL-GATED",
+          "POST",
+          "MANUAL-GATED",
+          "POST",
+          "MANUAL-GATED",
+          "GET",
+          "NOT-USED",
+          "GET",
+          "NOT-USED",
+          "GET",
+          "LIVE ERROR",
+          "POST",
+          "MANUAL-GATED"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST FALLBACK\nWebSocket 백엔드 미연결 · 정적 프리뷰\nRun Status running\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 시스템 상태\nAPI Health\nREAD probe only\nData Pack\nKRX + US\nDemo Mode\nOFF\nUptime\nstatic fixture\n37.30\n29.82\n22.33\n14.84\n7.353\n2 마켓 요약\n지표\t현재가\t등락률\nKOSPI\t2,610.42\t+0.58%\nKOSDAQ\t859.12\t+0.74%\nUSD/KRW\t1,349.20\t-0.22%\n최근 백테스트\nID\t전략명\t상태\t수익률\n#10235\tBreakOut_v2\t\n실행중\t—\n#10234\tBreakOut_v2\t\n완료\t+23.41%\n#10233\tRSI_MA_Cross\t\n완료\t+12.88%\n#10232\tMeanRev_1h\t\n완료\t-3.21%\nLIVE READ-ONLY MODE\n본 시스템은 연구/백테스트 용도이며 실거래 주문을 전송하지 않습니다. /bt/* mutating endpoints are manual-gated and never auto-invoked.\nLIVE read adapter\nBacktest API Contract Matrix\nLIVE mode: BacktestAdapter may call safe GET/read endpoints only; mutating POST endpoints stay manual-gated/not-auto-invoked.\nEvidence settled\nEndpoint\tMethod\tMode behavior\tLive evidence/status\tAction owner / reason\n/bt/health\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE ERROR\nFailed to fetch\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=buy\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE ERROR\nFailed to fetch\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE ERROR\nFailed to fetch\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategy?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nNOT-USED\nNeeds existing strategy/job context; no automatic call without evidence key.\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/strategy/validate\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nValidation accepts user-authored strategy text; manual gate required.\n\tManual researcher action\nValidation accepts user-authored strategy text; manual gate required.\n\n/bt/strategy\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nMutates strategy storage; never auto-run from remodel load.\n\tManual researcher action\nMutates strategy storage; never auto-run from remodel load.\n\n/bt/strategy/delete\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nDeletes strategy storage; destructive and manual-gated.\n\tManual researcher action\nDeletes strategy storage; destructive and manual-gated.\n\n/bt/extract_vars\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nReads submitted code body; user action only, no automatic payload fabrication.\n\tManual researcher action\nReads submitted code body; user action only, no automatic payload fabrication.\n\n/bt/legacy/self_vars?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nNOT-USED\nNeeds existing strategy/job context; no automatic call without evidence key.\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/backfinder/preflight?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nNOT-USED\nNeeds existing strategy/job context; no automatic call without evidence key.\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/data_range\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE ERROR\nFailed to fetch\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/run\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nStarts a backtest job; run creation must be explicit.\n\tManual researcher action\nStarts a backtest job; run creation must be explicit.\n\n/bt/jobs\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE ERROR\nFailed to fetch\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/job?job_id=\t\nGET\treference/demo inert fixture · live optional read only when an existing job_id is available\t\nNOT-USED\nNo existing job_id returned by /bt/jobs.\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/job/cancel\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nCancels active work; destructive and manual-gated.\n\tManual researcher action\nCancels active work; destructive and manual-gated.\n\n/bt/job/meta\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nMutates job metadata; not auto-invoked.\n\tManual researcher action\nMutates job metadata; not auto-invok",
+        "disabledManualCount": 0,
+        "enabledManualCount": 14,
+        "disabledManualSample": [],
+        "enabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "설정 저장",
+            "gate": "bt-settings-save",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "WFO 미리보기",
+            "gate": "bt-wfo-preview",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "+ 파라미터 추가",
+            "gate": "bt-vars-add",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "self.vars 파싱",
+            "gate": "bt-vars-parse",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "작업 취소",
+            "gate": "bt-job-cancel",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "결과 미리보기",
+            "gate": "bt-result-preview",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "보고서 HTML",
+            "gate": "bt-report-html",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "검증",
+            "gate": "bt-strategy-validate",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "저장",
+            "gate": "bt-strategy-save",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "삭제",
+            "gate": "bt-strategy-delete",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "독립 HTML 보고서 생성 (Standalone Report)",
+            "gate": "bt-report-export",
+            "title": "Human-gated manual action; never runs on page load"
+          }
+        ],
+        "inertControlCount": 0,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": false,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:29.968Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:29.987Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:29.988Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:29.988Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.023Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/data_range",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/jobs",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/result?job_id=__demo__",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.024Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:30.025Z",
+          "method": "GET",
+          "url": "http://localhost:8777/health",
+          "resourceType": "fetch"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "live-backtest",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\live-backtest.png",
+        "bytes": 1044160,
+        "sha256": "641fccef93002672c74aeec5c3da651682f7fd300395dfbaf59ca22385d8eb26"
+      },
+      "index": 5,
+      "type": "navigate-and-assert",
+      "label": "live-backtest",
+      "selector": "live-backtest",
+      "at": 1782758792463
+    },
+    {
+      "timestamp": "2026-06-29T18:46:35.074Z",
+      "action": "navigate-and-assert",
+      "page": "live-replay",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+      "dom": {
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "mode": "live",
+        "liveBackend": true,
+        "baseInput": "http://localhost:8777",
+        "badgeSample": [
+          "LIVE mode",
+          "REST FALLBACK",
+          "WebSocket 백엔드 미연결 · 정적 프리뷰",
+          "Run Status running",
+          "경계선 내 조건식 엔진 · 연구 전용",
+          "Route Owner Quant-Research",
+          "Boundary local-only",
+          "Provider STOM-AI Engine v2.3.1",
+          "TF 1D",
+          "run_id R-250518-1421-7XQ9",
+          "LIVE read adapter",
+          "Evidence settled",
+          "GET · REST endpoint",
+          "LIVE ERROR",
+          "GET · REST endpoint",
+          "LIVE ERROR",
+          "GET · REST endpoint",
+          "LIVE ERROR",
+          "GET · REST endpoint",
+          "NOT-USED",
+          "GET · REST endpoint",
+          "LIVE ERROR",
+          "GET · REST endpoint",
+          "LIVE ERROR",
+          "GET · REST endpoint",
+          "NOT-USED",
+          "WS · WS endpoint",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED",
+          "ACTION · WS action",
+          "USER-GATED"
+        ],
+        "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST FALLBACK\nWebSocket 백엔드 미연결 · 정적 프리뷰\nRun Status running\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 데이터 소스 (Tick/Min)\n소스 유형\nTick\n데이터 소스\nSTOM Tick DB (Local)\n서버 시간\n2025-05-27 14:23:18\n지연 시간\nsafe read pending\n2 사용 가능 일자\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n사용 가능 일수: 23일 · fixture calendar\n3 종목 리스트\n코드\t종목명\t최근가\t변동률\n005930\t삼성전자\t78600\t-0.25%\n000660\tSK하이닉스\t203000\t+1.35%\n373220\tLG에너지솔루션\t382500\t-1.04%\nLIVE READ-ONLY REPLAY MODE\n실거래/주문 기능 없음 · 과거 틱/분 데이터 재생 · /sim/ws는 자동 연결하지 않고 사용자 시작으로만 동작\nLIVE read adapter\nReplay API/WS Contract Matrix\nLIVE mode: ReplayAdapter probes safe REST reads only; /sim/ws stays user-gated/manual and exposes start, pause, resume, speed, seek, stop plus meta, bars, history, done, error protocol.\nEvidence settled\nEndpoint / action / message\tMethod / type\tMode behavior\tLive evidence/status\tOwner / reason / recovery\n/sim/health\t\nGET · REST endpoint\treference/demo inert fixture · live safe read on Chart Replay page load\t\nLIVE ERROR\nFailed to fetch\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/days?src=min|tick\t\nGET · REST endpoint\treference/demo inert fixture · live safe min-days read on Chart Replay page load\t\nLIVE ERROR\nFailed to fetch\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/demo?src=min&mode=latest\t\nGET · REST endpoint\treference/demo inert fixture · live safe demo discovery read on Chart Replay page load\t\nLIVE ERROR\nFailed to fetch\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/stocks?date=&src=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date is discovered\t\nNOT-USED\nNo date returned by /sim/demo?src=min&mode=latest.\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/bt/strategies?kind=buy\t\nGET · REST endpoint\treference/demo inert fixture · live safe buy strategy read on Chart Replay page load\t\nLIVE ERROR\nFailed to fetch\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET · REST endpoint\treference/demo inert fixture · live safe sell strategy read on Chart Replay page load\t\nLIVE ERROR\nFailed to fetch\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/signals?date=&src=&code=&buy=&sell=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date/code and buy/sell names are discovered\t\nNOT-USED\nNeed date, code, buy strategy, and sell strategy from live discovery before probing signals.\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/sim/ws\t\nWS · WS endpoint\treference/demo inert fixture · live-only WebSocket never auto-opened; user-gated manual start\t\nUSER-GATED\nLong-lived replay stream must not auto-open from page load.\n\tManual researcher action\nLong-lived replay stream must not auto-open from page load.\n\nstart\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nStarts a replay stream; explicit user action required.\n\tManual researcher action\nStarts a replay stream; explicit user action required.\n\npause\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nPauses an existing replay stream only after manual connection.\n\tManual researcher action\nPauses an existing replay stream only after manual connection.\n\nresume\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nResumes an existing replay stream only after manual connection.\n\tManual researcher action\nResumes an existing replay stream only after manual connection.\n\nspeed\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nChanges replay speed on a manual session only.\n\tManual researcher action\nChanges replay speed on a manual session only.\n\nseek\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nMoves replay cursor on a manual session only.\n\tManual researcher action\nMoves replay cursor on a manual session only.\n\nstop\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nStops a manual replay session; no hidden stream control.\n\tManual researcher action\nStops a manual replay session; no hidden stream control.\n\nmeta\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nServer metadata frame expected after manual /sim/ws s",
+        "disabledManualCount": 0,
+        "enabledManualCount": 22,
+        "disabledManualSample": [],
+        "enabledManualSample": [
+          {
+            "text": "⚙ 설정",
+            "gate": "settings",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "Start ▶",
+            "gate": "loop-start",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "Stop ■",
+            "gate": "loop-stop",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "+",
+            "gate": "replay-add-symbol",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "저장",
+            "gate": "replay-preset-save",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "관리",
+            "gate": "replay-preset-manage",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "즉시 시작",
+            "gate": "sim-start",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "|◀",
+            "gate": "sim-0",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "◀◀",
+            "gate": "sim-1",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "▶ 재생",
+            "gate": "sim-2",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "Ⅱ 일시정지",
+            "gate": "sim-3",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "▶ 재개",
+            "gate": "sim-4",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "■ 정지",
+            "gate": "sim-5",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "지표 설정",
+            "gate": "replay-indicators",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "브레이크포인트 추가",
+            "gate": "replay-breakpoint",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "노트 저장",
+            "gate": "replay-notes",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "start",
+            "gate": "sim-ws-start",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "pause",
+            "gate": "sim-ws-pause",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "resume",
+            "gate": "sim-ws-resume",
+            "title": "Human-gated manual action; never runs on page load"
+          },
+          {
+            "text": "speed",
+            "gate": "sim-ws-speed",
+            "title": "Human-gated manual action; never runs on page load"
+          }
+        ],
+        "inertControlCount": 0,
+        "safetyFooter": "🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+        "referenceShellInert": false,
+        "safetyLabels": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T18:46:32.478Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.499Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.500Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.500Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.526Z",
+          "method": "GET",
+          "url": "http://localhost:8777/sim/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.527Z",
+          "method": "GET",
+          "url": "http://localhost:8777/sim/days?src=min",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.527Z",
+          "method": "GET",
+          "url": "http://localhost:8777/sim/demo?src=min&mode=latest",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.527Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.527Z",
+          "method": "GET",
+          "url": "http://localhost:8777/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T18:46:32.528Z",
+          "method": "GET",
+          "url": "http://localhost:8777/health",
+          "resourceType": "fetch"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "key": "live-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\live-replay.png",
+        "bytes": 1172382,
+        "sha256": "2579c304d22b2ef7ee4a11776f61155e800aaf83ec1f39ae281bd3e3fccee19a"
+      },
+      "index": 6,
+      "type": "navigate-and-assert",
+      "label": "live-replay",
+      "selector": "live-replay",
+      "at": 1782758795074
+    }
+  ],
+  "requests": [
+    {
+      "timestamp": "2026-06-29T18:46:20.226Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.250Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.250Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.250Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.034Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.055Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.055Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.055Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.271Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.292Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.293Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.293Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.915Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.935Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.935Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.935Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.968Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.987Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.988Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.988Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.023Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/data_range",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/jobs",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/result?job_id=__demo__",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.024Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.025Z",
+      "method": "GET",
+      "url": "http://localhost:8777/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.478Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.499Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.500Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.500Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.526Z",
+      "method": "GET",
+      "url": "http://localhost:8777/sim/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.527Z",
+      "method": "GET",
+      "url": "http://localhost:8777/sim/days?src=min",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.527Z",
+      "method": "GET",
+      "url": "http://localhost:8777/sim/demo?src=min&mode=latest",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.527Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.527Z",
+      "method": "GET",
+      "url": "http://localhost:8777/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.528Z",
+      "method": "GET",
+      "url": "http://localhost:8777/health",
+      "resourceType": "fetch"
+    }
+  ],
+  "responses": [
+    {
+      "timestamp": "2026-06-29T18:46:20.233Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.254Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.266Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:20.268Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.040Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.060Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.068Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:23.071Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.277Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.298Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.304Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:25.305Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.921Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.942Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.949Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:27.950Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.974Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:29.998Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.007Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:30.008Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.487Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2Flocalhost%3A8777&g005=1782758780212"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.506Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.513Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical"
+    },
+    {
+      "timestamp": "2026-06-29T18:46:32.515Z",
+      "status": 200,
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical"
+    }
+  ],
+  "websockets": [],
+  "schemaVersion": 1,
+  "surface": "web",
+  "page": "safety-provenance",
+  "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g005=manual-gate"
+}

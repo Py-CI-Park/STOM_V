@@ -1,0 +1,378 @@
+{
+  "averageCorrectedTotalScore": 100.0,
+  "basis": "Reference captures under ai_strategy_loop/dashboard/frontend/remodel/docs/captures versus current Playwright Chromium captures at 1920x1080 with ?demo=reference.",
+  "failures": [],
+  "generatedAt": "2026-06-30T13:11:05.880936+00:00",
+  "rows": [
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "01_condition_ai_overview",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\01_condition_ai_overview.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/condition?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\01_condition_ai_overview.png",
+      "title": "조건식 AI / 조건식 AI",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "02_process",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\02_process.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/process?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\02_process.png",
+      "title": "조건식 AI / 프로세스",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "03_history",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\03_history.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/history?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\03_history.png",
+      "title": "조건식 AI / 히스토리",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "04_lab",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\04_lab.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/lab?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\04_lab.png",
+      "title": "조건식 AI / 연구실",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "05_workbench",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\05_workbench.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/workbench?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\05_workbench.png",
+      "title": "조건식 AI / 분석 워크벤치",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "06_decision_audit",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\06_decision_audit.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/audit?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\06_decision_audit.png",
+      "title": "조건식 AI / 결정 감사",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "07_backtest",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\07_backtest.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/backtest?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\07_backtest.png",
+      "title": "백테스트",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    },
+    {
+      "consoleErrors": [],
+      "hardFailures": [],
+      "id": "08_chart_replay",
+      "missingRequiredText": [],
+      "missingSafetyText": [],
+      "pageErrors": [],
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\08_chart_replay.png",
+      "requiredTextScore": 100.0,
+      "responseStatus": 200,
+      "route": "/ui/remodel/chart-replay?demo=reference",
+      "safetyTextScore": 100.0,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\08_chart_replay.png",
+      "title": "차트 리플레이",
+      "totalCorrectedScore": 100.0,
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "visualMetrics": {
+        "available": true,
+        "blankOrUnreadable": false,
+        "currentSize": [
+          1920,
+          1080
+        ],
+        "dhashSimilarity": 100.0,
+        "edgeIoU": 100.0,
+        "histogramCosine": 100.0,
+        "meanAbsPixelDelta": 0.0,
+        "pixelSimilarity": 100.0,
+        "referenceSize": [
+          1920,
+          1080
+        ],
+        "rmsPixelDelta": 0.0,
+        "rmseSimilarity": 100.0,
+        "scoreFieldDocumentation": {
+          "dhashSimilarity": "Similarity of 64-bit difference hashes for coarse layout drift detection.",
+          "edgeIoU": "Intersection-over-union of FIND_EDGES luminance masks for structure drift detection.",
+          "histogramCosine": "Cosine similarity of RGB histograms after deterministic downscale.",
+          "pixelSimilarity": "100 - average absolute RGB channel delta percentage after deterministic 320x180 downscale.",
+          "rmseSimilarity": "100 - RMS RGB channel delta percentage after deterministic 320x180 downscale.",
+          "weightedVisualParityScore": "0.35 pixel + 0.25 RMSE + 0.20 histogram + 0.10 dHash + 0.10 edgeIoU; forced to 0 for blank/unreadable captures."
+        },
+        "weightedVisualParityScore": 100.0
+      }
+    }
+  ],
+  "scoreFieldDocumentation": {
+    "requiredTextScore": "Percent of route-specific contract text found in DOM body text.",
+    "safetyTextScore": "Percent of required safety text found in DOM body text: No Live Order, No Broker Login, No Account Trading, Research Only, Human Approval Gate, Append-Only Audit.",
+    "totalCorrectedScore": "0.45 requiredTextScore + 0.25 safetyTextScore + 0.20 pixelSimilarity + 0.05 rmseSimilarity + 0.05 histogramCosine; capped below threshold by hard failures. weightedVisualParityScore, edgeIoU, and dHash remain diagnostics only."
+  },
+  "status": "PASS",
+  "thresholds": {
+    "minAverageScore": 97.0,
+    "minPageScore": 95.0
+  }
+}

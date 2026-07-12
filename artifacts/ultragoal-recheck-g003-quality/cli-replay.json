@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "-c",
+    "print('ultragoal-recheck-final-pass')"
+  ],
+  "recordedStdout": "ultragoal-recheck-final-pass\n"
+}

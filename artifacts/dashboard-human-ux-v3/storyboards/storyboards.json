@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-human-ux-storyboards",
+  "generatedAt": "2026-06-30T04:10:00Z",
+  "sourcePlan": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md",
+  "tranche": "baseline",
+  "notes": [
+    "Tranche 0 storyboards are machine-checkable contracts for the human UX verifier before UI redesign.",
+    "Selectors are target contracts for later tranches; Tranche 0 validates schema and baseline evidence without requiring all target selectors to already exist.",
+    "Safety and contract markers must remain discoverable in the DOM even when moved into progressive disclosure drawers."
+  ],
+  "scenarios": [
+    {
+      "id": "UX-S01",
+      "page": "condition",
+      "title": "Condition review storyboard",
+      "routeV2": "/ui/evolution",
+      "routeV3": "/ui/remodel/condition?demo=reference",
+      "goal": "Review current generation, candidate quality, provenance, and gated export state without mistaking reference/demo output for live trading readiness.",
+      "steps": [
+        {
+          "id": "condition-orient",
+          "label": "Understand current run state and mode",
+          "route": "/ui/remodel/condition?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-ux-task-header=condition]", "obligation": "Task header states page purpose, mode, risk boundary, and primary action." },
+            { "selector": "[data-ux-field=mode]", "obligation": "Reference/demo/live mode is visible in the task frame." }
+          ],
+          "safetyAssertions": [
+            "No Live Order text remains visible or discoverable.",
+            "Human Approval Gate text remains visible or discoverable.",
+            "No mutating request is issued on page load."
+          ],
+          "rubricObservations": [
+            { "category": "taskOrientation", "observation": "Purpose/state/action/risk/mode appear in first fold." },
+            { "category": "safetyHierarchy", "observation": "Mode and approval boundary are visible before any export action." }
+          ],
+          "expectedObservation": "A researcher can tell whether the page is reference, demo, or live and what action is safe next.",
+          "artifactRefs": ["condition-v2-v3-screenshot", "condition-network-trace"]
+        },
+        {
+          "id": "condition-inspect-candidate",
+          "label": "Inspect candidate and evidence chart",
+          "route": "/ui/remodel/condition?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-ux-primary-canvas=condition]", "obligation": "Primary candidate and evidence chart dominate the first working area." },
+            { "selector": "[data-ux-chart]", "obligation": "Main chart has title, unit, active value, and provenance." },
+            { "selector": "[data-chart-active-value]", "obligation": "Focused/hovered chart value is available as text." }
+          ],
+          "safetyAssertions": [
+            "Export remains human-gated and separated from audit evidence.",
+            "Reference/demo data is labeled as fixture/static or fallback."
+          ],
+          "rubricObservations": [
+            { "category": "chartHeatmapReadability", "observation": "Main evidence chart is large enough and has textual active values." },
+            { "category": "workflowQuality", "observation": "Candidate inspection precedes any gated export decision." }
+          ],
+          "expectedObservation": "The best candidate, its evidence, and the reason export is gated are all understandable without scanning many equal-weight cards.",
+          "artifactRefs": ["condition-chart-active-value"]
+        }
+      ]
+    },
+    {
+      "id": "UX-S07",
+      "page": "backtest",
+      "title": "Backtest edit and validate storyboard",
+      "routeV2": "/ui/backtest",
+      "routeV3": "/ui/remodel/backtest?demo=reference",
+      "goal": "Select strategy/data, inspect or edit buy/sell conditions, validate, then review gated run and results with safety detail available but not blocking the task flow.",
+      "steps": [
+        {
+          "id": "backtest-select",
+          "label": "Select strategy and data range",
+          "route": "/ui/remodel/backtest?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-ux-task-header=backtest]", "obligation": "Backtest task frame is visible before contract detail." },
+            { "selector": "[data-backtest-step=select]", "obligation": "Strategy/data/timeframe controls are grouped as the first workflow step." }
+          ],
+          "safetyAssertions": [
+            "The page does not POST to /bt/run on load.",
+            "The page does not POST to /bt/strategy/validate on load.",
+            "Reference/demo inert state is visible."
+          ],
+          "rubricObservations": [
+            { "category": "taskOrientation", "observation": "The user sees where to start without scrolling past the contract matrix." },
+            { "category": "workflowQuality", "observation": "Selection controls form a clear first step." }
+          ],
+          "expectedObservation": "A researcher can immediately identify which strategy/data range will be tested.",
+          "artifactRefs": ["backtest-first-fold"]
+        },
+        {
+          "id": "backtest-edit",
+          "label": "Inspect or edit buy and sell conditions",
+          "route": "/ui/remodel/backtest?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-backtest-step=edit]", "obligation": "Buy/sell condition editor or code panes are large and visible near the top-level flow." },
+            { "selector": "[data-ux-primary-canvas=backtest]", "obligation": "Condition editing shares the primary canvas with validation, not a low-priority card." }
+          ],
+          "safetyAssertions": [
+            "Saving remains manual-gated and not page-load triggered.",
+            "Strategy delete remains manual-gated and not page-load triggered."
+          ],
+          "rubricObservations": [
+            { "category": "visualHierarchy", "observation": "Editor occupies enough area to compare favorably with V2 textarea layout." },
+            { "category": "cognitiveLoad", "observation": "Contract endpoint details are in an evidence drawer, not the primary editing area." }
+          ],
+          "expectedObservation": "Buy and sell conditions are readable at V2-or-better size and are not hidden below safety tables.",
+          "artifactRefs": ["backtest-editor-comparison"]
+        },
+        {
+          "id": "backtest-validate-run-analyze",
+          "label": "Validate, preview gated run, and analyze result",
+          "route": "/ui/remodel/backtest?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-backtest-validation-status]", "obligation": "Validation result is visible as pass/fail/warning text." },
+            { "selector": "[data-backtest-step=gated-run]", "obligation": "Run/save actions are manual-gated with local reason text." },
+            { "selector": "[data-backtest-step=analyze]", "obligation": "Result summary and chart are reachable in the same workflow." }
+          ],
+          "safetyAssertions": [
+            "Manual-gate reason is within 220px of the action.",
+            "No hidden production export marker is present.",
+            "Backtest contract markers remain discoverable in [data-ux-evidence-drawer=backtest]."
+          ],
+          "rubricObservations": [
+            { "category": "workflowQuality", "observation": "Select, edit, validate, gated-run, analyze sequence completes." },
+            { "category": "safetyHierarchy", "observation": "Manual gate explains why actions are not automatic." }
+          ],
+          "expectedObservation": "The user understands validation status and can see that execution is user-gated before results are analyzed.",
+          "artifactRefs": ["backtest-validation-gate", "backtest-result-chart"]
+        }
+      ]
+    },
+    {
+      "id": "UX-S08",
+      "page": "chart_replay",
+      "title": "Chart Replay investigate signal storyboard",
+      "routeV2": "/ui/chart-replay",
+      "routeV3": "/ui/remodel/chart-replay?demo=reference",
+      "goal": "Choose source/date/symbol, choose strategy, preview replay bars/signals, manually start replay, and inspect synchronized chart and signal log.",
+      "steps": [
+        {
+          "id": "replay-source-symbol",
+          "label": "Choose source, date, symbol, and strategy",
+          "route": "/ui/remodel/chart-replay?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-ux-task-header=chart_replay]", "obligation": "Replay purpose, mode, and risk boundary are visible first." },
+            { "selector": "[data-replay-step=source]", "obligation": "Source/date/symbol selection is the first workflow step." },
+            { "selector": "[data-replay-step=strategy]", "obligation": "Strategy selection is visible before playback controls." }
+          ],
+          "safetyAssertions": [
+            "The page does not open /sim/ws on load.",
+            "The page does not issue replay control frames on load.",
+            "Research-only and no-live-order boundaries remain discoverable."
+          ],
+          "rubricObservations": [
+            { "category": "taskOrientation", "observation": "V3 starts with the same intuitive source/date/symbol task as V2." },
+            { "category": "safetyHierarchy", "observation": "Manual /sim/ws gate is visible without making protocol detail the primary task." }
+          ],
+          "expectedObservation": "A user can understand how to begin replay without reading the API/WS contract matrix first.",
+          "artifactRefs": ["replay-source-selector"]
+        },
+        {
+          "id": "replay-preview-start",
+          "label": "Preview bars and manually start replay",
+          "route": "/ui/remodel/chart-replay?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-replay-step=preview]", "obligation": "Preview bars and signals are visible before playback." },
+            { "selector": "[data-replay-step=manual-start]", "obligation": "Manual start gate is action-local and not hidden." },
+            { "selector": "[data-replay-playback-sticky]", "obligation": "Playback/timeline controls remain sticky or first-fold visible." }
+          ],
+          "safetyAssertions": [
+            "Manual-start reason is within 220px of the start action.",
+            "Contract markers remain discoverable in [data-ux-evidence-drawer=chart_replay]."
+          ],
+          "rubricObservations": [
+            { "category": "workflowQuality", "observation": "Preview and manual start can be completed without scrolling through endpoint tables." },
+            { "category": "cognitiveLoad", "observation": "Protocol detail is progressive-disclosure evidence, not the main canvas." }
+          ],
+          "expectedObservation": "The user sees the replay timeline and can start only after an explicit human gate.",
+          "artifactRefs": ["replay-playback-sticky"]
+        },
+        {
+          "id": "replay-investigate-signal",
+          "label": "Inspect main candle chart, selected bar, and signal log",
+          "route": "/ui/remodel/chart-replay?demo=reference",
+          "selectorAssertions": [
+            { "selector": "[data-ux-primary-canvas=chart_replay]", "obligation": "Main candle chart is the primary visual canvas." },
+            { "selector": "[data-replay-selected-bar]", "obligation": "Selected bar details are available as text." },
+            { "selector": "[data-replay-signal-log]", "obligation": "Signal log synchronizes with selected chart point." }
+          ],
+          "safetyAssertions": [
+            "Replay chart remains historical/research only.",
+            "No live order or broker/account affordance is present."
+          ],
+          "rubricObservations": [
+            { "category": "chartHeatmapReadability", "observation": "Main candle chart meets size threshold and exposes selected-bar text." },
+            { "category": "accessibilityResponsive", "observation": "Selected chart value is readable without hover-only dependence." }
+          ],
+          "expectedObservation": "The user can link a chart point to the relevant signal row and understand it is historical replay only.",
+          "artifactRefs": ["replay-selected-bar", "replay-signal-log"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STOM AI Smoke Test</title>
+  <link rel="stylesheet" href="../styles/theme.css" />
+</head>
+<body style="padding:24px">
+  <section class="panel pad">
+    <h1>STOM AI Smoke Test</h1>
+    <p>이 파일은 더미 데이터의 주요 키와 탭 구성이 존재하는지 확인합니다.</p>
+    <div id="result" class="code-box"></div>
+    <p><a class="btn blue" href="../index.html">대시보드 열기</a></p>
+  </section>
+  <script src="../src/data.js"></script>
+  <script>
+    const required = ['shell','overview','process','history','lab','workbench','audit','backtest','replay','strategyCode'];
+    const missing = required.filter(k => !(k in window.STOM_DATA));
+    const messages = [];
+    messages.push('required keys: ' + required.join(', '));
+    messages.push('missing: ' + (missing.length ? missing.join(', ') : 'none'));
+    messages.push('generations: ' + window.STOM_DATA.overview.generations.length);
+    messages.push('history runs: ' + window.STOM_DATA.history.runs.length);
+    messages.push('replay stocks: ' + window.STOM_DATA.replay.stocks.length);
+    messages.push('status: ' + (missing.length ? 'FAIL' : 'PASS'));
+    document.getElementById('result').textContent = messages.join('\n');
+  </script>
+</body>
+</html>

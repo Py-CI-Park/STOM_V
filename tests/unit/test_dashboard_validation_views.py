@@ -32,6 +32,7 @@ from ai_strategy_loop.dashboard.app import (  # noqa: E402
     _run_yearly_payload,
     _selector_preview_payload,
 )
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 
@@ -227,12 +228,11 @@ class TestDecisions:
     """F3/P-D(2026-06-11) — V6 결정 기록: append-only·검증값 거부·이력 순서."""
 
     def test_record_and_list_roundtrip(self, seeded_validation_db, tmp_path, monkeypatch):
-        from fastapi.testclient import TestClient
-
         import ai_strategy_loop.dashboard.app as A
 
-        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "decisions.jsonl"))
-        client = TestClient(A.create_app())
+        monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(tmp_path / "decisions.jsonl"))
+        monkeypatch.setenv("STOM_DASHBOARD_ALLOW_DECISION_WRITE", "1")
+        client = authorized_dashboard_client(A.create_app())
         r1 = client.post("/record_decision", json={"verdict": "hold", "note": "검증 추가 대기"})
         assert r1.json()["status"] == "ok"
         r2 = client.post("/record_decision", json={"verdict": "promote", "note": "OOS 통과"})
@@ -245,7 +245,7 @@ class TestDecisions:
     def test_invalid_verdict_rejected(self, tmp_path, monkeypatch):
         import ai_strategy_loop.dashboard.app as A
 
-        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "d.jsonl"))
+        monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(tmp_path / "d.jsonl"))
         out = A._record_decision("yolo", "x")
         assert out["status"] == "invalid"
         assert A._decisions_payload()["count"] == 0  # 무효 입력은 기록 안 됨.
@@ -675,7 +675,7 @@ class TestPortfolioVerdict:
             _json.dumps(m4_data), encoding="utf-8"
         )
 
-        monkeypatch.setattr(A, "DECISIONS_FILE", str(decisions_file))
+        monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(decisions_file))
         monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
                             str(m4_dir / "m4_monitor_baseline.json"))
 
@@ -696,7 +696,7 @@ class TestPortfolioVerdict:
         """decisions.jsonl·m4_monitor_baseline.json 모두 없으면 unavailable."""
         import ai_strategy_loop.dashboard.app as A
 
-        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "no_decisions.jsonl"))
+        monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(tmp_path / "no_decisions.jsonl"))
         monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
                             str(tmp_path / "no_m4.json"))
 
@@ -707,8 +707,6 @@ class TestPortfolioVerdict:
     def test_endpoint_returns_200(self, tmp_path, monkeypatch):
         """TestClient로 /portfolio_verdict GET → 200 + adopted 키 존재."""
         import json as _json
-
-        from fastapi.testclient import TestClient
 
         import ai_strategy_loop.dashboard.app as A
 
@@ -725,11 +723,11 @@ class TestPortfolioVerdict:
                                     "challenger_total": 2, "alerts": []}}),
             encoding="utf-8",
         )
-        monkeypatch.setattr(A, "DECISIONS_FILE", str(decisions_file))
+        monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(decisions_file))
         monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
                             str(m4_dir / "m4_monitor_baseline.json"))
 
-        client = TestClient(A.create_app())
+        client = authorized_dashboard_client(A.create_app())
         r = client.get("/portfolio_verdict")
         assert r.status_code == 200
         data = r.json()

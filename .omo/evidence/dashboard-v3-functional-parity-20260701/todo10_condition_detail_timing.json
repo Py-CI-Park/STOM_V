@@ -1,0 +1,82 @@
+﻿{
+    "task":  "TODO 10 - Condition AI Detail APIs In V3",
+    "event":  "task-evidence-refreshed",
+    "status":  "passed",
+    "started_at":  "2026-07-02T00:56:46.3636052+09:00",
+    "ended_at":  "2026-07-02T00:58:45.2592178+09:00",
+    "duration_ms":  118896,
+    "worktree":  "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel",
+    "branch":  "feature/dashboard-remodel-20260626",
+    "head":  "887c3591161e95b2d828112266dc9d34a749adab",
+    "evidence":  [
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo10_condition_detail.log",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo10_condition_detail_narrow.png",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo10_condition_detail_cdp.json"
+                 ],
+    "steps":  [
+                  {
+                      "name":  "condition detail tests pass 1",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_condition_detail_surface.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:56:46.3873672+09:00",
+                      "ended_at":  "2026-07-02T00:56:54.2298188+09:00",
+                      "duration_ms":  7842
+                  },
+                  {
+                      "name":  "condition detail tests pass 2 flaky probe",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_condition_detail_surface.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:56:54.2403610+09:00",
+                      "ended_at":  "2026-07-02T00:57:03.9235696+09:00",
+                      "duration_ms":  9683
+                  },
+                  {
+                      "name":  "research pro backend API contract tests",
+                      "command":  "python -m pytest tests/unit/dashboard/test_research_pro.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:57:03.9240974+09:00",
+                      "ended_at":  "2026-07-02T00:57:51.5907116+09:00",
+                      "duration_ms":  47667
+                  },
+                  {
+                      "name":  "condition static flow regression",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g004_lab_condition_task_flow tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g006_eight_page_ux_sweep_panels -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:57:51.5912697+09:00",
+                      "ended_at":  "2026-07-02T00:58:06.4065121+09:00",
+                      "duration_ms":  14815
+                  },
+                  {
+                      "name":  "node syntax check remodel app",
+                      "command":  "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:58:06.4083562+09:00",
+                      "ended_at":  "2026-07-02T00:58:06.9007146+09:00",
+                      "duration_ms":  492
+                  },
+                  {
+                      "name":  "git diff check",
+                      "command":  "git diff --check",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:58:06.9017146+09:00",
+                      "ended_at":  "2026-07-02T00:58:09.3149072+09:00",
+                      "duration_ms":  2413
+                  },
+                  {
+                      "name":  "protected path status",
+                      "command":  "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:58:09.3154653+09:00",
+                      "ended_at":  "2026-07-02T00:58:12.2927365+09:00",
+                      "duration_ms":  2977
+                  },
+                  {
+                      "name":  "browser CDP condition detail validation",
+                      "command":  "uvicorn + Chrome CDP /ui/remodel/condition?demo=reference narrow viewport",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:58:12.3196639+09:00",
+                      "ended_at":  "2026-07-02T00:58:45.2587108+09:00",
+                      "duration_ms":  32939
+                  }
+              ]
+}

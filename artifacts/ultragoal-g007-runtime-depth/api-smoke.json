@@ -1,0 +1,234 @@
+{
+  "demoSummary": {
+    "bodyBytes": 119,
+    "contentType": "application/json",
+    "endedAt": "2026-06-28T23:44:14.360927+00:00",
+    "jsonKeys": [
+      "available",
+      "change_pct",
+      "code",
+      "date",
+      "mode",
+      "name",
+      "src"
+    ],
+    "jsonStatus": null,
+    "method": "GET",
+    "path": "/sim/demo?src=min&mode=latest",
+    "startedAt": "2026-06-28T23:44:14.164919+00:00",
+    "statusCode": 200,
+    "summary": "date=20250509; code=256940; name=킵스파마; change_pct=29.98; src=min; mode=latest; available=True",
+    "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+  },
+  "failures": [],
+  "generatedAt": "2026-06-28T23:44:14.477195+00:00",
+  "readOnly": true,
+  "rows": [
+    {
+      "bodyBytes": 55,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:13.289721+00:00",
+      "jsonKeys": [
+        "api_version",
+        "module",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/bt/health",
+      "startedAt": "2026-06-28T23:44:13.205516+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; module=backtest_api; api_version=1",
+      "url": "http://127.0.0.1:8776/bt/health"
+    },
+    {
+      "bodyBytes": 10770,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:13.310214+00:00",
+      "jsonKeys": [
+        "count",
+        "items",
+        "kind",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/bt/strategies?kind=buy",
+      "startedAt": "2026-06-28T23:44:13.289787+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; items[88]; count=88; kind=buy",
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+    },
+    {
+      "bodyBytes": 4705,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:13.340009+00:00",
+      "jsonKeys": [
+        "count",
+        "items",
+        "kind",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/bt/strategies?kind=sell",
+      "startedAt": "2026-06-28T23:44:13.310291+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; items[36]; count=36; kind=sell",
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+    },
+    {
+      "bodyBytes": 57495,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:13.344647+00:00",
+      "jsonKeys": [
+        "count",
+        "jobs"
+      ],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/bt/jobs",
+      "startedAt": "2026-06-28T23:44:13.340162+00:00",
+      "statusCode": 200,
+      "summary": "jobs[25]; count=25",
+      "url": "http://127.0.0.1:8776/bt/jobs"
+    },
+    {
+      "bodyBytes": 145,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.059387+00:00",
+      "jsonKeys": [
+        "min",
+        "tick"
+      ],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/bt/data_range",
+      "startedAt": "2026-06-28T23:44:13.344724+00:00",
+      "statusCode": 200,
+      "summary": "tick{3}; min{3}",
+      "url": "http://127.0.0.1:8776/bt/data_range"
+    },
+    {
+      "bodyBytes": 240000,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.124850+00:00",
+      "jsonKeys": [],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/bt/result?job_id=__demo__",
+      "startedAt": "2026-06-28T23:44:14.059448+00:00",
+      "statusCode": 200,
+      "summary": "{\"available\":true,\"is_demo\":true,\"job_id\":\"\",\"status\":\"success\",\"evidence_id\":\"demo:__demo__\",\"source_type\":\"demo\",\"cond",
+      "url": "http://127.0.0.1:8776/bt/result?job_id=__demo__"
+    },
+    {
+      "bodyBytes": 273,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.146358+00:00",
+      "jsonKeys": [
+        "job_id",
+        "montecarlo"
+      ],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "startedAt": "2026-06-28T23:44:14.125241+00:00",
+      "statusCode": 200,
+      "summary": "job_id=__demo__; montecarlo{8}",
+      "url": "http://127.0.0.1:8776/bt/analysis/montecarlo?job_id=__demo__&n=2000"
+    },
+    {
+      "bodyBytes": 57,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.161284+00:00",
+      "jsonKeys": [
+        "api_version",
+        "module",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/sim/health",
+      "startedAt": "2026-06-28T23:44:14.146440+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; module=simulation_api; api_version=1",
+      "url": "http://127.0.0.1:8776/sim/health"
+    },
+    {
+      "bodyBytes": 41,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.164848+00:00",
+      "jsonKeys": [
+        "count",
+        "days",
+        "src"
+      ],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/sim/days?src=min",
+      "startedAt": "2026-06-28T23:44:14.161355+00:00",
+      "statusCode": 200,
+      "summary": "days[1]; count=1; src=min",
+      "url": "http://127.0.0.1:8776/sim/days?src=min"
+    },
+    {
+      "bodyBytes": 119,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.360927+00:00",
+      "jsonKeys": [
+        "available",
+        "change_pct",
+        "code",
+        "date",
+        "mode",
+        "name",
+        "src"
+      ],
+      "jsonStatus": null,
+      "method": "GET",
+      "path": "/sim/demo?src=min&mode=latest",
+      "startedAt": "2026-06-28T23:44:14.164919+00:00",
+      "statusCode": 200,
+      "summary": "date=20250509; code=256940; name=킵스파마; change_pct=29.98; src=min; mode=latest; available=True",
+      "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+    },
+    {
+      "bodyBytes": 10770,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.367597+00:00",
+      "jsonKeys": [
+        "count",
+        "items",
+        "kind",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/bt/strategies?kind=buy",
+      "startedAt": "2026-06-28T23:44:14.361032+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; items[88]; count=88; kind=buy",
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+    },
+    {
+      "bodyBytes": 4705,
+      "contentType": "application/json",
+      "endedAt": "2026-06-28T23:44:14.382921+00:00",
+      "jsonKeys": [
+        "count",
+        "items",
+        "kind",
+        "status"
+      ],
+      "jsonStatus": "ok",
+      "method": "GET",
+      "path": "/bt/strategies?kind=sell",
+      "startedAt": "2026-06-28T23:44:14.367656+00:00",
+      "statusCode": 200,
+      "summary": "status=ok; items[36]; count=36; kind=sell",
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+    }
+  ],
+  "status": "PASS"
+}

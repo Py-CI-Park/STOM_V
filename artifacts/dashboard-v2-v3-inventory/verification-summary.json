@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "status": "passed",
+  "inventoryItems": 81,
+  "gateStatus": "passed",
+  "gateFailures": [],
+  "commands": [
+    "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json --out artifacts/dashboard-v2-v3-inventory/gate-result.json",
+    "python -m py_compile scripts/verify_dashboard_inventory_gate.py",
+    "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+    "git diff --check"
+  ],
+  "artifacts": [
+    "artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json",
+    "artifacts/dashboard-v2-v3-inventory/gate-result.json",
+    "artifacts/dashboard-v2-v3-inventory/cli-replay.json"
+  ],
+  "failures": []
+}

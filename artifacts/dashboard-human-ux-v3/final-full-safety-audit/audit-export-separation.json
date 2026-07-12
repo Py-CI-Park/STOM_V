@@ -1,0 +1,12 @@
+{
+  "checks": {
+    "auditExportSeparationCopyVisible": true,
+    "auditPageHasAppendOnlyDecisionLedger": true,
+    "conditionApprovalGateVisible": true,
+    "noAutoApprovalModalOnLoad": true
+  },
+  "generatedAt": "2026-06-30T13:12:13.413862+00:00",
+  "kind": "dashboard-audit-export-separation",
+  "schemaVersion": 1,
+  "status": "PASS"
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G007",
+  "kind": "final-full-evidence-verification-report",
+  "status": "PASS",
+  "summary": {
+    "pytest": "939 passed",
+    "humanUxStatus": "PASS",
+    "meanV3Score": 96.89,
+    "meanNamedV3V2Delta": 21.72,
+    "categoryFloorStatus": "PASS",
+    "visualGateStatus": "PASS",
+    "visualGateAverage": 100.0,
+    "v2v3CompareStatus": "PASS",
+    "v2v3CompareAverage": 100.0,
+    "safetyAuditStatus": "PASS",
+    "safetyAuditAverage": 100.0,
+    "browserEvidenceVerdict": "passed",
+    "browserEvidenceActions": 8
+  },
+  "commands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard*.py tests/unit/dashboard -q",
+    "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-evidence --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche final --min-v3-score 90 --min-delta 15",
+    "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-visual-gate --min-page-score 95 --min-average-score 97 --timeout-ms 60000",
+    "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-v2-v3-compare --timeout-ms 60000",
+    "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-safety-audit --timeout-ms 60000",
+    "git diff --check",
+    "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+  ],
+  "artifactRefs": {
+    "humanUx": "artifacts\\dashboard-human-ux-v3\\final-full-evidence\\scorecard.json",
+    "categoryFloor": "artifacts\\dashboard-human-ux-v3\\final-full-evidence\\category-floor-check.json",
+    "visualGate": "artifacts\\dashboard-human-ux-v3\\final-full-visual-gate\\scorecard.json",
+    "v2v3Compare": "artifacts\\dashboard-human-ux-v3\\final-full-v2-v3-compare\\compare-scorecard.json",
+    "safetyAudit": "artifacts\\dashboard-human-ux-v3\\final-full-safety-audit\\safety-scorecard.json",
+    "browserEvidence": "artifacts\\dashboard-human-ux-v3\\final-full-browser-evidence.json",
+    "slopCleaner": "artifacts\\dashboard-human-ux-v3\\final-full-ai-slop-cleaner-report.txt"
+  },
+  "categoryFloor": {
+    "status": "PASS",
+    "floors": {
+      "taskOrientation": 80,
+      "visualHierarchy": 75,
+      "chartHeatmapReadability": 80,
+      "workflowQuality": 80,
+      "cognitiveLoad": 70,
+      "safetyHierarchy": 90,
+      "accessibilityResponsive": 80,
+      "v2PreservationEvidence": 90
+    },
+    "minCategoryScores": {
+      "accessibilityResponsive": 100.0,
+      "chartHeatmapReadability": 90.0,
+      "cognitiveLoad": 73.75,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 91.0,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 83.0,
+      "workflowQuality": 100.0
+    },
+    "meanCategoryScores": {
+      "accessibilityResponsive": 100.0,
+      "chartHeatmapReadability": 98.75,
+      "cognitiveLoad": 92.78125,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 93.4375,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 95.04166666666667,
+      "workflowQuality": 100.0
+    },
+    "failures": [],
+    "scorecard": "artifacts\\dashboard-human-ux-v3\\final-full-evidence\\scorecard.json"
+  },
+  "blockers": []
+}

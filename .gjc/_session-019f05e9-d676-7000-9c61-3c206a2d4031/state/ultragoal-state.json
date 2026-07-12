@@ -1,0 +1,93 @@
+{
+  "skill": "ultragoal",
+  "status": "complete",
+  "current_phase": "complete",
+  "active": false,
+  "goals": [
+    {
+      "id": "G001",
+      "title": "Tranche 0 human UX rubric baseline",
+      "status": "complete"
+    },
+    {
+      "id": "G002",
+      "title": "Shared IA and Backtest redesign",
+      "status": "complete"
+    },
+    {
+      "id": "G003",
+      "title": "Chart Replay redesign",
+      "status": "complete"
+    },
+    {
+      "id": "G004",
+      "title": "Lab and Condition redesign",
+      "status": "complete"
+    },
+    {
+      "id": "G005",
+      "title": "Workbench and History redesign",
+      "status": "complete"
+    },
+    {
+      "id": "G006",
+      "title": "Process and Audit polish",
+      "status": "complete"
+    },
+    {
+      "id": "G007",
+      "title": "Final full evidence gate",
+      "status": "complete"
+    }
+  ],
+  "counts": {
+    "pending": 0,
+    "active": 0,
+    "complete": 7,
+    "failed": 0,
+    "blocked": 0,
+    "review_blocked": 0,
+    "superseded": 0
+  },
+  "ledger_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f05e9-d676-7000-9c61-3c206a2d4031\\ultragoal\\ledger.jsonl",
+  "brief_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f05e9-d676-7000-9c61-3c206a2d4031\\ultragoal\\brief.md",
+  "goals_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f05e9-d676-7000-9c61-3c206a2d4031\\ultragoal\\goals.json",
+  "version": 2,
+  "updated_at": "2026-06-30T20:42:24.885Z",
+  "receipt": {
+    "version": 1,
+    "skill": "ultragoal",
+    "owner": "gjc-runtime",
+    "command": "gjc ultragoal (reconcile)",
+    "state_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\state\\sessions\\019f05e9-d676-7000-9c61-3c206a2d4031\\skill-active-state.json",
+    "storage_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\state\\sessions\\019f05e9-d676-7000-9c61-3c206a2d4031\\ultragoal-state.json",
+    "mutated_at": "2026-06-30T20:42:24.885Z",
+    "fresh_until": "2026-06-30T21:12:24.885Z",
+    "status": "fresh",
+    "mutation_id": "ultragoal:reconcile:2026-06-30T20:42:24.885Z",
+    "verb": "reconcile",
+    "from_phase": "complete",
+    "to_phase": "complete",
+    "forced": true,
+    "content_sha256": {
+      "algorithm": "sha256",
+      "value": "083a9823d953aa89147a86a98aba03b334562396c546fef18256733d07d372c4",
+      "covered_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f05e9-d676-7000-9c61-3c206a2d4031\\state\\ultragoal-state.json",
+      "computed_at": "2026-06-30T20:42:24.899Z"
+    }
+  },
+  "session_id": "019f05e9-d676-7000-9c61-3c206a2d4031",
+  "gjc_objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+  "latestLedgerEvent": {
+    "event": "goal_checkpointed",
+    "goalId": "G007",
+    "timestamp": "2026-06-30T13:37:55.826Z",
+    "evidence": "G007 final full evidence gate complete: all required goals G001-G006 complete before final gate; final full human UX rubric PASS mean V3 96.89 and named V3-V2 delta 21.72; category floor check PASS; dashboard tests 939 passed; visual gate PASS 100.0; V2/V3 compare PASS 100.0; safety audit PASS 100.0; browser transcript passed across 8 V3 routes; git diff check passed; protected runtime paths clean; architect review 155-G007FinalArchitect CLEAR/APPROVE; executor QA 156-G007FinalQa passed."
+  },
+  "nudge_budget": 10,
+  "nudge_count": 0,
+  "nudge_remaining": 10,
+  "nudge_goal_id": "G007",
+  "nudge_target_kind": "final_aggregate_receipt",
+  "state_revision": 123
+}

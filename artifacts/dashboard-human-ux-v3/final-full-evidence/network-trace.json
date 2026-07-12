@@ -1,0 +1,3395 @@
+{
+  "captures": [
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/process"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/evolution/process",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_index"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records/detail?campaign=theta_star"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/evolution/records",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/workbench"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/evolution/workbench",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/regime_report"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/revival_registry"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/portfolio_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/decisions"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/evolution/verdict",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/backtest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/data_range"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/jobs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/backtest",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/process"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/evolution/process",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_index"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records/detail?campaign=theta_star"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/evolution/records",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/workbench"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/evolution/workbench",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/regime_report"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/revival_registry"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/portfolio_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/decisions"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/evolution/verdict",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/backtest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/data_range"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/jobs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/backtest",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "condition",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S01",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/process"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/evolution/process",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "process",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S02",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_index"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_records/detail?campaign=theta_star"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/evolution/records",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "history",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S03",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "lab",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S04",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/workbench"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/evolution/workbench",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "workbench",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S05",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/regime_report"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/revival_registry"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/portfolio_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/decisions"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/evolution/verdict",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "audit",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S06",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/backtest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/data_range"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/jobs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/backtest",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "backtest",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S07",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "page": "chart_replay",
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "scenarioId": "UX-S08",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    }
+  ],
+  "generatedAt": "2026-06-30T13:25:02.539411+00:00"
+}

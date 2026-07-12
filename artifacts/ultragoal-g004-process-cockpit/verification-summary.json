@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G004",
+  "title": "Process monitoring cockpit rebuild",
+  "generatedAt": "2026-06-29T18:02:09.594974+00:00",
+  "commands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 25 passed",
+    "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css ai_strategy_loop/dashboard/frontend/remodel/src/data.js tests/unit/test_dashboard_remodel_static.py => PASS"
+  ],
+  "browserUrls": {
+    "reference": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+    "live": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2"
+  },
+  "browserFacts": {
+    "reference": {
+      "mode": "reference",
+      "state": "REFERENCE/DEMO",
+      "requiredFields": [
+        "kpis",
+        "nodes",
+        "logs",
+        "runs",
+        "queue",
+        "workers",
+        "contracts"
+      ],
+      "dataSourceKeys": [
+        "runs",
+        "kpis",
+        "nodes",
+        "logs",
+        "queue",
+        "workers",
+        "contracts"
+      ],
+      "runSelectorOptions": [
+        "RUN_20250519_143015_A1B2C3 · RUNNING · Autopsy",
+        "RUN_20250519_141002_Z9Y8X7 · ARCHIVE · Scoring"
+      ],
+      "selectedRunValue": "RUN_20250519_141002_Z9Y8X7",
+      "drilldown": "NodeScoringStatus완료Items10Time0.76sRequired fields7/7",
+      "nodeIds": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "nodeStatuses": [
+        "완료",
+        "완료",
+        "완료",
+        "진행 중",
+        "대기"
+      ],
+      "proofText": {
+        "queue": true,
+        "workers": true,
+        "contract": true,
+        "stateMatrix": true,
+        "loadingFallback": true,
+        "referenceHonest": true,
+        "backendStatus": false,
+        "livePayload": false,
+        "negativeGenAbsent": true,
+        "idleNoRunningGeneration": true,
+        "liveContractsNotForcedOk": true
+      },
+      "safety": [
+        {
+          "text": "No Live Order",
+          "present": true
+        },
+        {
+          "text": "No Broker Login",
+          "present": true
+        },
+        {
+          "text": "No Account Trading",
+          "present": true
+        },
+        {
+          "text": "Human Approval Gate",
+          "present": true
+        },
+        {
+          "text": "Append-Only Audit",
+          "present": true
+        },
+        {
+          "text": "연구 전용",
+          "present": true
+        }
+      ]
+    },
+    "live": {
+      "mode": "live",
+      "state": "LIVE",
+      "requiredFields": [
+        "kpis",
+        "nodes",
+        "logs",
+        "runs",
+        "queue",
+        "workers",
+        "contracts"
+      ],
+      "dataSourceKeys": [
+        "runs",
+        "kpis",
+        "nodes",
+        "logs",
+        "queue",
+        "workers",
+        "contracts"
+      ],
+      "runSelectorOptions": [
+        "R-250518-1421-7XQ9 · IDLE · idle"
+      ],
+      "selectedRunValue": "R-250518-1421-7XQ9",
+      "nodeIds": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "nodeStatuses": [
+        "대기",
+        "대기",
+        "대기",
+        "대기",
+        "대기"
+      ],
+      "contractText": "경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeUNKNOWN≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitUNKNOWN≤2sScoring → Autopsyscore, rank, gate_reason, top_nUNKNOWN≤3sAutopsy → Repeatinsights, risk_flags, next_jobsPENDING≤3s",
+      "queueText": "큐대기실행완료오류상태generation1000IDLEbacktest0000IDLEautopsy0000IDLE",
+      "proofText": {
+        "queue": true,
+        "workers": true,
+        "contract": true,
+        "stateMatrix": true,
+        "loadingFallback": true,
+        "referenceHonest": false,
+        "backendStatus": true,
+        "livePayload": true,
+        "negativeGenAbsent": true,
+        "idleNoRunningGeneration": true,
+        "liveContractsNotForcedOk": true
+      },
+      "safety": [
+        {
+          "text": "No Live Order",
+          "present": true
+        },
+        {
+          "text": "No Broker Login",
+          "present": true
+        },
+        {
+          "text": "No Account Trading",
+          "present": true
+        },
+        {
+          "text": "Human Approval Gate",
+          "present": true
+        },
+        {
+          "text": "Append-Only Audit",
+          "present": true
+        },
+        {
+          "text": "연구 전용",
+          "present": true
+        }
+      ]
+    },
+    "modalOpen": true,
+    "modalContainsPayloadSource": true
+  },
+  "passCriteria": {
+    "referenceRequiredFieldsPresent": true,
+    "referenceVisibleDataSourcesPresent": true,
+    "referenceHonestlyLabeled": true,
+    "runSelectorChangesSelectedRun": true,
+    "liveRequiredFieldsPresent": true,
+    "liveVisibleDataSourcesPresent": true,
+    "liveBackendStatusDrivesDom": true,
+    "negativeGenerationGuard": true,
+    "idleNoRunningGeneration": true,
+    "liveContractsNotForcedOk": true,
+    "nodesClickable": true,
+    "safetyLabelsPresent": true,
+    "screenshotsNonUniform": true
+  },
+  "verdict": "passed",
+  "allPass": true
+}

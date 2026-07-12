@@ -10,6 +10,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
@@ -49,7 +50,7 @@ def test_prompts_route_returns_seeded_prompt_heads(monkeypatch, tmp_path: Path) 
     finally:
         st.close()
 
-    resp = TestClient(create_app()).get("/prompts?run_id=promptRun&gen_no=1")
+    resp = authorized_dashboard_client(create_app()).get("/prompts?run_id=promptRun&gen_no=1")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -89,7 +90,7 @@ def test_prompts_route_empty_reason(monkeypatch, tmp_path: Path) -> None:
     finally:
         st.close()
 
-    resp = TestClient(create_app()).get("/prompts?run_id=noPromptRun")
+    resp = authorized_dashboard_client(create_app()).get("/prompts?run_id=noPromptRun")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -107,7 +108,7 @@ def test_prompts_route_missing_run_id_returns_error(monkeypatch, tmp_path: Path)
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    resp = TestClient(create_app()).get("/prompts")
+    resp = authorized_dashboard_client(create_app()).get("/prompts")
 
     assert resp.status_code == 200
     assert resp.json() == {"error": "run_id required", "prompts": []}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-human-ux-g004-verification-report",
+  "goalId": "G004",
+  "scope": "Lab + Condition redesign",
+  "status": "passed",
+  "summary": {
+    "focusedPytest": "34 passed",
+    "humanUxRubric": "PASS",
+    "meanV3Score": 96.9,
+    "meanNamedV3V2Delta": 7.99,
+    "v2V3Compare": "PASS average 100.0",
+    "safetyAudit": "PASS average 100.0",
+    "protectedRuntimePaths": "clean"
+  },
+  "commands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+    "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche b --pages condition,lab --min-v3-score 82 --min-delta 5",
+    "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare --timeout-ms 60000",
+    "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit --timeout-ms 60000",
+    "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py scripts/verify_dashboard_human_ux_rubric.py tests/unit/test_dashboard_human_ux_rubric.py artifacts/dashboard-human-ux-v3/storyboards/storyboards.json",
+    "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+  ],
+  "artifactRefs": [
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/scorecard.json",
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-condition-evidence.json",
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-condition-viewport.png",
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-viewport.png",
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare/compare-scorecard.json",
+    "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit/safety-scorecard.json"
+  ],
+  "blockers": []
+}

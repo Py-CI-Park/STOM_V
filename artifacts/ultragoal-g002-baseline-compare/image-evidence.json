@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-v2-v3-image-evidence",
+  "generatedAt": "2026-06-29T13:37:37.566897+00:00",
+  "status": "PASS",
+  "totalImages": 17,
+  "requirements": [
+    "exists",
+    "non-empty",
+    "valid dimensions",
+    "non-uniform pixels"
+  ],
+  "images": [
+    {
+      "id": "side-by-side-contact-sheet",
+      "path": "artifacts/ultragoal-g002-baseline-compare/side-by-side-contact-sheet.png",
+      "exists": true,
+      "sizeBytes": 830975,
+      "width": 768,
+      "height": 2000,
+      "sha256": "9c68ba60d1f08ca96cd6eede55e386abd33049dcf2821c9ea594aa6a80b7c8bc",
+      "sampleUniqueColors": 1359,
+      "nonUniform": true
+    },
+    {
+      "id": "01_condition_ai-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/01_condition_ai-v2.png",
+      "exists": true,
+      "sizeBytes": 157737,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "ff53ae70c04c4385a0288561b6e684534739b3d13bf5f046f56c2a38680073bc",
+      "sampleUniqueColors": 503,
+      "nonUniform": true
+    },
+    {
+      "id": "01_condition_ai-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/01_condition_ai-v3.png",
+      "exists": true,
+      "sizeBytes": 635689,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "92854081b001218855aec1152a405135397dfd9c9d507526edd3bedfae5b358d",
+      "sampleUniqueColors": 1568,
+      "nonUniform": true
+    },
+    {
+      "id": "02_process-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/02_process-v2.png",
+      "exists": true,
+      "sizeBytes": 235777,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "3785fc93e7e150afaf5c05356877c895eaac10dcd54643793ed5feb3b906ca1b",
+      "sampleUniqueColors": 723,
+      "nonUniform": true
+    },
+    {
+      "id": "02_process-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/02_process-v3.png",
+      "exists": true,
+      "sizeBytes": 452087,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "356ce1f32ec9a15dadacee83ab2b6457228f75b95844b198438b1e71d851c027",
+      "sampleUniqueColors": 1341,
+      "nonUniform": true
+    },
+    {
+      "id": "03_history-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/03_history-v2.png",
+      "exists": true,
+      "sizeBytes": 136403,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "d0a71af2ab5a63052313025fd45b63a652cb2bf93361a97800b154723cd1dac1",
+      "sampleUniqueColors": 416,
+      "nonUniform": true
+    },
+    {
+      "id": "03_history-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/03_history-v3.png",
+      "exists": true,
+      "sizeBytes": 580114,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f52ea61c716023352e434ad27aa186a8c98fcd7e0faa75a686af9497d8fe0bcf",
+      "sampleUniqueColors": 1570,
+      "nonUniform": true
+    },
+    {
+      "id": "04_lab-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/04_lab-v2.png",
+      "exists": true,
+      "sizeBytes": 180016,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a31275a1a593807272be03e80bbc799b88febc1661b4efb036cd70cd54eae3fe",
+      "sampleUniqueColors": 590,
+      "nonUniform": true
+    },
+    {
+      "id": "04_lab-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/04_lab-v3.png",
+      "exists": true,
+      "sizeBytes": 547453,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "019df29bdcf35f5f4f8dbf3c8de9a5d7ca7f90b9c209ae45e31eaf566ff1471b",
+      "sampleUniqueColors": 1756,
+      "nonUniform": true
+    },
+    {
+      "id": "05_workbench-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/05_workbench-v2.png",
+      "exists": true,
+      "sizeBytes": 178854,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "5e56e0c126e2a2a5ee9dc530f9fcbd0f66d34da99bcd0ffeb566c5fe3596c237",
+      "sampleUniqueColors": 577,
+      "nonUniform": true
+    },
+    {
+      "id": "05_workbench-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/05_workbench-v3.png",
+      "exists": true,
+      "sizeBytes": 512935,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a16a439eeb97eae681620c06c1a2dd116a46b1697600ca6a453c36bde1d950d6",
+      "sampleUniqueColors": 1634,
+      "nonUniform": true
+    },
+    {
+      "id": "06_decision_audit-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/06_decision_audit-v2.png",
+      "exists": true,
+      "sizeBytes": 176593,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "12e28047c75ab49ac75e16b32c6f50586077a7b9844f22213723a270ab63b707",
+      "sampleUniqueColors": 608,
+      "nonUniform": true
+    },
+    {
+      "id": "06_decision_audit-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/06_decision_audit-v3.png",
+      "exists": true,
+      "sizeBytes": 495874,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "59dbf58cda2a4fa0a800b83da6cd3c82b1557dcf2017636e916ca172eda6fed0",
+      "sampleUniqueColors": 1421,
+      "nonUniform": true
+    },
+    {
+      "id": "07_backtest-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/07_backtest-v2.png",
+      "exists": true,
+      "sizeBytes": 106620,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "1f36265923d46f49a821dd793c712d7752a006d3c647c98bd30ffa36d665cf04",
+      "sampleUniqueColors": 351,
+      "nonUniform": true
+    },
+    {
+      "id": "07_backtest-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/07_backtest-v3.png",
+      "exists": true,
+      "sizeBytes": 593752,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "897bc905711ddcdef3f4daf60887548da6296de67dc6606703bcf00f7525fd96",
+      "sampleUniqueColors": 1348,
+      "nonUniform": true
+    },
+    {
+      "id": "08_chart_replay-v2",
+      "path": "artifacts/ultragoal-g002-baseline-compare/08_chart_replay-v2.png",
+      "exists": true,
+      "sizeBytes": 139152,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "0280735261b8a7e5114163bab81eeee66f6f33df07d68cf84c82f963cb41d5d9",
+      "sampleUniqueColors": 500,
+      "nonUniform": true
+    },
+    {
+      "id": "08_chart_replay-v3",
+      "path": "artifacts/ultragoal-g002-baseline-compare/08_chart_replay-v3.png",
+      "exists": true,
+      "sizeBytes": 584817,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "19e3b9d6be6122e82ace5ca1b06eb5e20074f160d05b76b7af95cd8517a0a9a2",
+      "sampleUniqueColors": 1468,
+      "nonUniform": true
+    }
+  ],
+  "failures": []
+}

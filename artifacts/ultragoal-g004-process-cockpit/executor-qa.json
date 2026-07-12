@@ -1,0 +1,331 @@
+{
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "evidence": "Final executor QA agent 113-G004ExecutorQaFinal passed. Browser transcript proves reference/demo honesty, live /status DOM binding, run selector changing drilldown, clickable node modal with payload_source, all seven required fields/data-source keys, neutral idle live state, no negative generation text, live contracts UNKNOWN/PENDING instead of forced OK, non-uniform screenshots, and safety/no forbidden controls.",
+  "e2eCommands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 25 passed",
+    "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css ai_strategy_loop/dashboard/frontend/remodel/src/data.js tests/unit/test_dashboard_remodel_static.py => PASS",
+    "browser automation reference + live Process routes; transcript browser-transcript.json",
+    "PIL screenshot metadata validation; image-evidence.json"
+  ],
+  "redTeamCommands": [
+    "reference masquerading as live check => passed",
+    "live idle active-Generation check => passed",
+    "negative generation regex check => passed",
+    "live contracts forced-OK check => passed",
+    "run selector drilldown change check => passed",
+    "forbidden live-order/broker/account/export control scan => passed"
+  ],
+  "artifactRefs": [
+    {
+      "id": "browser-run",
+      "kind": "browser-automation",
+      "path": "artifacts/ultragoal-g004-process-cockpit/browser-transcript.json",
+      "description": "Browser transcript for reference and live Process page, run-selector change, node modal click, DOM facts, and screenshot paths.",
+      "tool": "browser"
+    },
+    {
+      "id": "process-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g004-process-cockpit/process-cockpit.png",
+      "description": "Reference/demo Process cockpit screenshot after run selector change."
+    },
+    {
+      "id": "modal-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g004-process-cockpit/process-node-modal.png",
+      "description": "Process node drilldown modal screenshot with payload_source and required-field proof."
+    },
+    {
+      "id": "live-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g004-process-cockpit/process-cockpit-live.png",
+      "description": "Live /status-derived Process cockpit screenshot with neutral idle state and non-forced contracts."
+    },
+    {
+      "id": "image-evidence",
+      "kind": "test-report",
+      "path": "artifacts/ultragoal-g004-process-cockpit/image-evidence.json",
+      "description": "PIL metadata proving all screenshots exist, match hashes, have valid dimensions, and are non-uniform."
+    },
+    {
+      "id": "verification-summary",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g004-process-cockpit/verification-summary.json",
+      "description": "G004 focused command/browser/screenshot pass criteria summary with allPass=true."
+    },
+    {
+      "id": "cleanup-report",
+      "kind": "cleanup-review-report",
+      "path": "artifacts/ultragoal-g004-process-cockpit/ai-slop-cleanup-report.md",
+      "description": "AI slop cleanup report with zero blocking and zero advisory findings after final fixes."
+    },
+    {
+      "id": "architect-review",
+      "kind": "architect-review-report",
+      "path": "artifacts/ultragoal-g004-process-cockpit/architect-review.json",
+      "description": "Final architect review: CLEAR/CLEAR/CLEAR APPROVE, blockers []."
+    },
+    {
+      "id": "executor-qa",
+      "kind": "executor-qa-report",
+      "path": "artifacts/ultragoal-g004-process-cockpit/executor-qa.json",
+      "description": "Final executor QA/red-team matrix: passed/passed/passed, blockers []."
+    },
+    {
+      "id": "update-log",
+      "kind": "implementation-log",
+      "path": "docs/update_log/2026-06-29_ultragoal_g004_process_cockpit.md",
+      "description": "Dated implementation and verification log for G004."
+    }
+  ],
+  "contractCoverage": [
+    {
+      "id": "contract-payload-cockpit",
+      "contractRef": "G004 objective: payload-driven Process cockpit",
+      "obligation": "Render run selector, current state, phase nodes, logs, queues/workers, contracts, required-field proof, and state matrix from Process payload.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-reference-web",
+        "surface-live-web",
+        "surface-focused-tests"
+      ],
+      "adversarialCaseRefs": [
+        "case-required-fields",
+        "case-selector"
+      ]
+    },
+    {
+      "id": "contract-reference-honesty",
+      "contractRef": "G004 objective: reference/demo must not pass as live",
+      "obligation": "Reference/demo route must be visibly fixture/static and not live.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-reference-web"
+      ],
+      "adversarialCaseRefs": [
+        "case-reference-honesty"
+      ]
+    },
+    {
+      "id": "contract-live-status",
+      "contractRef": "G004 objective: live Process payload",
+      "obligation": "Live route must bind Process DOM to backend /status payload rather than static fixture only.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-live-web"
+      ],
+      "adversarialCaseRefs": [
+        "case-live-binding",
+        "case-idle-neutral",
+        "case-negative-generation",
+        "case-contract-health"
+      ]
+    },
+    {
+      "id": "contract-node-drilldown",
+      "contractRef": "G004 objective: node drilldown",
+      "obligation": "Phase nodes must be clickable and expose node details, payload source, malformed count, and required fields.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-modal-web"
+      ],
+      "adversarialCaseRefs": [
+        "case-node-modal"
+      ]
+    },
+    {
+      "id": "contract-safety",
+      "contractRef": "Original dashboard safety constraints",
+      "obligation": "No live order, broker login, account trading, hidden export; Human Approval Gate, Append-Only Audit, research-only labels remain.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-reference-web",
+        "surface-live-web",
+        "surface-focused-tests"
+      ],
+      "adversarialCaseRefs": [
+        "case-forbidden-controls"
+      ]
+    },
+    {
+      "id": "contract-cli-out-of-scope",
+      "contractRef": "CLI surface",
+      "obligation": "G004 ships browser dashboard Process UI only; no CLI behavior changed.",
+      "status": "not_applicable",
+      "reason": "No CLI user-facing behavior is part of G004."
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "id": "surface-reference-web",
+      "contractRef": "Reference/demo Process route",
+      "surface": "web",
+      "invocation": "Browser automation at /ui/remodel/process?demo=reference&g004=final2 with run-selector change and screenshot",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "process-screenshot"
+      ]
+    },
+    {
+      "id": "surface-live-web",
+      "contractRef": "Live Process route",
+      "surface": "web",
+      "invocation": "Browser automation at /ui/remodel/process?backend=http://127.0.0.1:8777&g004=live-final2",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "live-screenshot"
+      ]
+    },
+    {
+      "id": "surface-modal-web",
+      "contractRef": "Process node drilldown modal",
+      "surface": "web",
+      "invocation": "Browser dispatched click on [data-process-node] and captured open modal",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "modal-screenshot"
+      ]
+    },
+    {
+      "id": "surface-screenshots",
+      "contractRef": "G004 web visual evidence",
+      "surface": "web",
+      "invocation": "PIL metadata/hash/non-uniform scan over three screenshots",
+      "verdict": "passed",
+      "artifactRefs": [
+        "image-evidence",
+        "process-screenshot",
+        "modal-screenshot",
+        "live-screenshot"
+      ]
+    },
+    {
+      "id": "surface-focused-tests",
+      "contractRef": "G004 static/source regression",
+      "surface": "api/package",
+      "invocation": "node --check; focused pytest dashboard static + route parity; git diff --check",
+      "verdict": "passed",
+      "artifactRefs": [
+        "verification-summary",
+        "cleanup-report",
+        "architect-review",
+        "executor-qa"
+      ]
+    },
+    {
+      "id": "surface-cli-out-of-scope",
+      "contractRef": "CLI surface",
+      "surface": "cli",
+      "status": "not_applicable",
+      "reason": "G004 has no CLI-facing behavior."
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-required-fields",
+      "contractRef": "G004 required-field DOM proof",
+      "scenario": "A required Process payload section is missing or only implied by fixture text.",
+      "expectedBehavior": "DOM/transcript expose kpis,nodes,logs,runs,queue,workers,contracts as data-process-required and data-source-key entries.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "verification-summary"
+      ]
+    },
+    {
+      "id": "case-selector",
+      "contractRef": "G004 run selector",
+      "scenario": "Run selector is cosmetic and does not change selected run/drilldown.",
+      "expectedBehavior": "Changing selector updates selectedRunValue and drilldown to Scoring/ARCHIVE run in browser transcript.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "process-screenshot"
+      ]
+    },
+    {
+      "id": "case-reference-honesty",
+      "contractRef": "G004 reference/demo honesty",
+      "scenario": "Reference/demo route masquerades as live monitoring.",
+      "expectedBehavior": "State is REFERENCE/DEMO and stale/provenance text says reference/demo honest fixture not live.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "process-screenshot"
+      ]
+    },
+    {
+      "id": "case-live-binding",
+      "contractRef": "G004 live /status binding",
+      "scenario": "Live Process continues to render static DATA.process fixture only.",
+      "expectedBehavior": "Live facts show state LIVE, backend-derived process payload, backend /status process monitor, and live run selector.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "live-screenshot"
+      ]
+    },
+    {
+      "id": "case-idle-neutral",
+      "contractRef": "G004 idle live state",
+      "scenario": "Idle live status falsely shows Generation active or queue running.",
+      "expectedBehavior": "All live node statuses are 대기 and generation queue running count is 0.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "verification-summary"
+      ]
+    },
+    {
+      "id": "case-negative-generation",
+      "contractRef": "G004 negative generation guard",
+      "scenario": "Backend current_gen=-1 or max=0 renders Gen -1 or negative Process counters.",
+      "expectedBehavior": "Shell and Process display clamped non-negative values; transcript proof negativeGenAbsent=true.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "verification-summary"
+      ]
+    },
+    {
+      "id": "case-contract-health",
+      "contractRef": "G004 contract health honesty",
+      "scenario": "Live route contracts are greenwashed to OK without backend evidence.",
+      "expectedBehavior": "Synthetic live contract rows are UNKNOWN/PENDING unless backend contracts are supplied.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "live-screenshot"
+      ]
+    },
+    {
+      "id": "case-node-modal",
+      "contractRef": "G004 node modal",
+      "scenario": "Phase nodes render but do not open payload-source drilldown.",
+      "expectedBehavior": "Click opens modal with payload_source, malformed count, and 7 required fields.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "modal-screenshot"
+      ]
+    },
+    {
+      "id": "case-forbidden-controls",
+      "contractRef": "Dashboard safety constraints",
+      "scenario": "Process rebuild adds live order, broker login, account trading, or hidden export controls.",
+      "expectedBehavior": "Forbidden controls absent and safety labels present.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "verification-summary"
+      ]
+    }
+  ],
+  "blockers": []
+}

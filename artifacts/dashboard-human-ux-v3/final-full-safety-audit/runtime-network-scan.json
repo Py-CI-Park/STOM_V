@@ -1,0 +1,27 @@
+{
+  "allowedWebSocketPaths": [
+    "/ws"
+  ],
+  "findings": [],
+  "forbiddenRuntimePaths": [
+    "/bt/run",
+    "/bt/strategy/validate",
+    "/bt/strategy/delete",
+    "/bt/extract_vars",
+    "/bt/job/cancel",
+    "/bt/job/meta",
+    "/bt/portfolio",
+    "/bt/ws_job",
+    "/sim/ws",
+    "/order",
+    "/orders",
+    "/broker/login",
+    "/account/trade",
+    "/live_order"
+  ],
+  "generatedAt": "2026-06-30T13:12:13.413807+00:00",
+  "kind": "dashboard-runtime-network-safety-scan",
+  "readOnly": true,
+  "schemaVersion": 1,
+  "status": "PASS"
+}

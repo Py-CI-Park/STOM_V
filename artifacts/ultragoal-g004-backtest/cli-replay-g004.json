@@ -1,0 +1,1 @@
+{"schemaVersion":1,"kind":"cli-replay","replaySafe":true,"command":["bun","-e","console.log(\"g004-backtest-adapter-ok\")"],"recordedStdout":"g004-backtest-adapter-ok\n"}

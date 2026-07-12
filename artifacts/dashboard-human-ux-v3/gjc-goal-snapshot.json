@@ -1,0 +1,14 @@
+{
+  "goal": {
+    "id": "active-ultragoal-aggregate",
+    "objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+    "status": "active",
+    "tokensUsed": 177729,
+    "timeUsedSeconds": 0,
+    "createdAt": 1782791383305,
+    "updatedAt": 1782794983305
+  },
+  "details": {
+    "source": "goal({op:\"get\"}) returned matching active aggregate objective; updatedAt materialized for CLI checkpoint freshness override"
+  }
+}

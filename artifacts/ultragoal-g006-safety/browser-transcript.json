@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "url": "http://127.0.0.1:8776/ui/remodel/audit",
+  "capturedAt": "2026-06-27T16:16:01.149Z",
+  "pages": [
+    {
+      "key": "audit",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "screenshot": "artifacts/ultragoal-g006-safety/audit-page.png",
+      "markers": {
+        "appendOnly": true,
+        "recordDecision": true,
+        "finalApprovalSeparated": true,
+        "decisions": true
+      },
+      "forbiddenControls": []
+    },
+    {
+      "key": "settings",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "screenshot": "artifacts/ultragoal-g006-safety/settings-modal.png",
+      "markers": {
+        "configSpec": true,
+        "gptAuth": true,
+        "safeProbe": true,
+        "startButton": true
+      },
+      "buttons": [
+        {
+          "text": "Dark",
+          "disabled": false
+        },
+        {
+          "text": "Light",
+          "disabled": false
+        },
+        {
+          "text": "적용",
+          "disabled": false
+        },
+        {
+          "text": "↻",
+          "disabled": false
+        },
+        {
+          "text": "🧬\n조건식 AI\nLIVE",
+          "disabled": false
+        },
+        {
+          "text": "📊\n백테스트\nBT",
+          "disabled": false
+        },
+        {
+          "text": "📈\n차트 리플레이\nSIM",
+          "disabled": false
+        },
+        {
+          "text": "🏠\n조건식 AI\nHOME",
+          "disabled": false
+        },
+        {
+          "text": "🗺️\n프로세스\nFLOW",
+          "disabled": false
+        },
+        {
+          "text": "IDX\n히스토리\nHISTORY",
+          "disabled": false
+        },
+        {
+          "text": "🔬\n연구실\nLAB",
+          "disabled": false
+        },
+        {
+          "text": "📊\n분석 워크벤치\nWORK",
+          "disabled": false
+        },
+        {
+          "text": "⚖️\n결정 감사\nAUDIT",
+          "disabled": false
+        },
+        {
+          "text": "▸ 시작",
+          "disabled": false
+        },
+        {
+          "text": "◼ 정지",
+          "disabled": true
+        },
+        {
+          "text": "기록",
+          "disabled": false
+        },
+        {
+          "text": "닫기",
+          "disabled": false
+        },
+        {
+          "text": "GPT 5.5 xhigh 테스트",
+          "disabled": false
+        },
+        {
+          "text": "MIN 풀세션(15시까지)",
+          "disabled": false
+        },
+        {
+          "text": "Autopsy Feedback",
+          "disabled": false
+        },
+        {
+          "text": "분산매매 프롬프트",
+          "disabled": false
+        },
+        {
+          "text": "분산 적합도 보상",
+          "disabled": false
+        },
+        {
+          "text": "거래대금 유동성 게이트 강제",
+          "disabled": false
+        },
+        {
+          "text": "MDD 제어 강화(매도)",
+          "disabled": false
+        },
+        {
+          "text": "청산 효율 환류(매도)",
+          "disabled": false
+        },
+        {
+          "text": "MDD-only 시 매수 동결",
+          "disabled": false
+        },
+        {
+          "text": "시초 5분 시간대 세분(부검)",
+          "disabled": false
+        },
+        {
+          "text": "진입 시간 분산 유도(매수)",
+          "disabled": false
+        },
+        {
+          "text": "필터 범주 게이트 강제(매수)",
+          "disabled": false
+        },
+        {
+          "text": "분류축 유도 생성(매수)",
+          "disabled": false
+        },
+        {
+          "text": "5분 시간x시총 생성(매수)",
+          "disabled": false
+        },
+        {
+          "text": "Sparse-positive prompt",
+          "disabled": false
+        },
+        {
+          "text": "계산예산 프롬프트 지침",
+          "disabled": false
+        },
+        {
+          "text": "매도 계산예산 가드(PRE-SAVE)",
+          "disabled": false
+        },
+        {
+          "text": "v5.0 리포트 원리 어휘",
+          "disabled": false
+        },
+        {
+          "text": "부검 분위수 임계 환류(R1)",
+          "disabled": false
+        },
+        {
+          "text": "반사실 필터 환류(R2)",
+          "disabled": false
+        },
+        {
+          "text": "few-shot 샘플 주입",
+          "disabled": false
+        },
+        {
+          "text": "프롬프트 DB 영속화",
+          "disabled": false
+        },
+        {
+          "text": "백테 시계열 DB 영속화",
+          "disabled": false
+        },
+        {
+          "text": "가정 추적(채택/기각)",
+          "disabled": false
+        },
+        {
+          "text": "취소",
+          "disabled": false
+        },
+        {
+          "text": "진화 시작",
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T16:16:01.151Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "Decision audit remodel page loaded with append-only/final approval separation labels"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T16:16:01.151Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g006-safety/audit-page.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T16:16:01.151Z",
+      "selector": "button:has-text(\"시작\")",
+      "verdict": "passed",
+      "result": "Opened SettingsModal without starting evolution"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T16:16:01.151Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g006-safety/settings-modal.png",
+      "verdict": "passed"
+    }
+  ]
+}

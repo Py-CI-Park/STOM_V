@@ -1,0 +1,66 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasSurface": true,
+  "sharedCursor": "shared",
+  "timelineCount": 1,
+  "signalEventCount": 3,
+  "tradeEventCount": 1,
+  "positionEventCount": 1,
+  "selectedDetail": true,
+  "backtestHandoff": true,
+  "handoffSource": "bt-result-localStorage-event",
+  "streamAutoOpened": false,
+  "cursor": {
+    "bars": [
+      {
+        "t": "090000",
+        "code": "005930",
+        "c": 71000
+      },
+      {
+        "t": "093000",
+        "code": "005930",
+        "c": 71400
+      }
+    ],
+    "signals": [
+      {
+        "time": "093000",
+        "signal": "BUY",
+        "stock": "005930",
+        "price": 71400
+      }
+    ],
+    "trades": [],
+    "positions": [],
+    "logs": [
+      "manual probe"
+    ],
+    "selectedIndex": 1,
+    "selectedTime": "093000",
+    "selectedCode": "005930",
+    "selectedBar": {
+      "t": "093000",
+      "code": "005930",
+      "c": 71400
+    },
+    "hasSignals": true,
+    "hasTrades": false,
+    "emptyText": "No signal/trade data for selected replay cursor."
+  },
+  "handoff": {
+    "source": "bt-result-localStorage-event",
+    "date": "20250516",
+    "code": "005930",
+    "buy": "B",
+    "sell": "S",
+    "src": "min",
+    "selectedIndex": 1,
+    "prefillReady": true,
+    "reason": "Backtest result handoff can prefill replay preflight."
+  },
+  "emptySignals": true,
+  "emptyTrades": true,
+  "orderedBeforeChart": true
+}

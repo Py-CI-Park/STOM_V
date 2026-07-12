@@ -1,0 +1,181 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect 86-G001ArchitectReview inspected compare-scorecard, route-version-matrix, and inventory gate. V2 default routes remain v2, explicit V3 routes remain v3-remodel, unknown remodel route fails closed as 404, inventory has 81 items, and there are no failures or blockers.",
+    "commands": [
+      "agent://86-G001ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 87-G001ExecutorQa inspected all G001 artifacts and red-teamed missing routes, failed statuses, asset mixing, route masking, and weak inventory coverage; blockers empty.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g001-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-recheck-g001-v2-v3-compare/route-version-matrix.json --out artifacts/ultragoal-recheck-g001-inventory/gate-result.json"
+    ],
+    "redTeamCommands": [
+      "agent://87-G001ExecutorQa"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-recheck-g001-quality/browser-transcript.json",
+        "description": "Playwright-backed V2/V3 route capture transcript for eight dashboard route pairs."
+      },
+      {
+        "id": "route-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/side-by-side-contact-sheet.png",
+        "description": "Non-uniform screenshot contact sheet showing V2 and V3 route captures."
+      },
+      {
+        "id": "compare-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 route compare scorecard with 100.0 average and failures []."
+      },
+      {
+        "id": "route-matrix",
+        "kind": "api-package-test-report",
+        "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/route-version-matrix.json",
+        "description": "Route/version matrix proving V2 default and explicit V3 ownership."
+      },
+      {
+        "id": "inventory-gate",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-recheck-g001-inventory/gate-result.json",
+        "description": "Inventory gate result with 81 items and zero failures."
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-recheck-g001-quality/cli-replay.json",
+        "description": "Read-only inventory verifier replay receipt."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-recheck-g001-quality/adversarial-report.txt",
+        "description": "Route masking, asset mixing, missing route, and inventory weakness red-team report."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "g001-v2-default",
+        "contractRef": "G001 objective: V2 default routes preserved",
+        "obligation": "V2 canonical routes remain V2 and load only V2 bundle assets.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-route-matrix"
+        ],
+        "adversarialCaseRefs": [
+          "case-asset-mixing",
+          "case-route-masking"
+        ]
+      },
+      {
+        "id": "g001-v3-explicit",
+        "contractRef": "G001 objective: explicit V3 routes available",
+        "obligation": "Explicit V3 remodel routes return v3-remodel, no-store HTML, and V3 assets only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-route-matrix"
+        ],
+        "adversarialCaseRefs": [
+          "case-asset-mixing"
+        ]
+      },
+      {
+        "id": "g001-inventory",
+        "contractRef": "G001 objective: inventory coverage complete",
+        "obligation": "Inventory gate covers routes, sections, controls, functions, APIs, assets, cache policy, and safety classes.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-inventory"
+        ],
+        "adversarialCaseRefs": [
+          "case-weak-inventory"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-route-matrix",
+        "contractRef": "V2/V3 route ownership",
+        "surface": "web",
+        "invocation": "Playwright-backed V2/V3 compare verifier against http://127.0.0.1:8770 and http://127.0.0.1:8776.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "route-contact-sheet",
+          "compare-scorecard",
+          "route-matrix"
+        ]
+      },
+      {
+        "id": "surface-inventory",
+        "contractRef": "Stable dashboard inventory gate",
+        "surface": "api/package",
+        "invocation": "Read-only inventory verifier over v2-v3-inventory.json and route-version-matrix.json.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "inventory-gate",
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-asset-mixing",
+        "contractRef": "V2/V3 assets must not mix",
+        "scenario": "Search matrix rows for V2 pages loading V3 assets or V3 pages loading V2 bundle assets.",
+        "expectedBehavior": "No forbidden asset appears in any row.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "route-matrix",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-route-masking",
+        "contractRef": "Unknown routes fail closed",
+        "scenario": "Unknown remodel route should not be masked by a V2/V3 shell.",
+        "expectedBehavior": "404 PASS row exists for unknown remodel route.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "route-matrix",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-weak-inventory",
+        "contractRef": "Inventory must not be shallow",
+        "scenario": "Check item count, pages, item types, safety classes, and failures.",
+        "expectedBehavior": "81 items, required page/type/safety coverage, failures 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "inventory-gate",
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Verification-only recheck; no product edits. Full G001 route and inventory checks ran cleanly, architect and executor QA blockers empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g001-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-recheck-g001-v2-v3-compare/route-version-matrix.json --out artifacts/ultragoal-recheck-g001-inventory/gate-result.json"
+    ],
+    "blockers": []
+  }
+}

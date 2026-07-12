@@ -7,8 +7,6 @@ import sys
 import json
 from pathlib import Path
 
-from fastapi.testclient import TestClient
-
 PROJECT_ROOT = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -18,6 +16,7 @@ from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import to_loop_state  # noqa: E402
+from .security_test_client import authorized_dashboard_client  # noqa: E402
 
 
 def _summary() -> dict[str, str | int]:
@@ -263,7 +262,7 @@ def test_status_route_normalizes_legacy_current_state_observability_fields(
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", current_state)
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    response = TestClient(create_app()).get("/status")
+    response = authorized_dashboard_client(create_app()).get("/status")
 
     assert response.status_code == 200
     latest = response.json()["latest"]
@@ -320,7 +319,7 @@ def test_status_route_normalizes_legacy_current_state_timeout_fields(
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     monkeypatch.setattr(dashboard_app.time, "time", lambda: 1010.0)
 
-    response = TestClient(create_app()).get("/status")
+    response = authorized_dashboard_client(create_app()).get("/status")
 
     assert response.status_code == 200
     latest = response.json()["latest"]

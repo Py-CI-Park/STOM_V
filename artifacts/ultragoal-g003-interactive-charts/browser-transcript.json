@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "goalId": "G003",
+  "startedAt": "2026-06-29T14:02:09.165Z",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "actions": [
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:10.794Z",
+      "route": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 7,
+        "chartBoxes": 6,
+        "activeDatum": 6,
+        "firstAria": "KPI sparkline · T+20 · Series: 47.22 · source=compact KPI series",
+        "sourceLabels": [
+          "latest · Fitness Score 추이 0.861",
+          "latest · Profit 추이 21.21",
+          "latest · W1(Gen132) 30.40 · W2(Gen129) 28.44 · Human Ref 23.04 · Buy&Hold 5.889"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "Fitness Score 추이 · T+26 · Series: 0.590 · source=reference fixture",
+        "activeText": "Fitness Score 추이 · T+26 · Series: 0.590 · source=reference fixture",
+        "keyboardHome": "Fitness Score 추이 · T+1 · Series: 0.468 · source=reference fixture",
+        "keyboardRight": "Fitness Score 추이 · T+2 · Series: 0.478 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\condition.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:12.144Z",
+      "route": "process",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 0,
+        "chartBoxes": 0,
+        "activeDatum": 0,
+        "firstAria": "",
+        "sourceLabels": [],
+        "emptyStates": 0
+      },
+      "hover": {
+        "skipped": true
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\process.png",
+      "verdict": "not_applicable"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:13.860Z",
+      "route": "history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 6,
+        "chartBoxes": 6,
+        "activeDatum": 6,
+        "firstAria": "PnL · T+18 · Series: 23.18 · source=reference fixture",
+        "sourceLabels": [
+          "latest · PnL 23.18",
+          "latest · 실행 수 추이 31.72",
+          "latest · 게이트 통과율 추이 54.14"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "PnL · T+10 · Series: 12.45 · source=reference fixture",
+        "activeText": "PnL · T+10 · Series: 12.45 · source=reference fixture",
+        "keyboardHome": "PnL · T+1 · Series: 9.379 · source=reference fixture",
+        "keyboardRight": "PnL · T+2 · Series: 10.54 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\history.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:15.862Z",
+      "route": "lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 2,
+        "chartBoxes": 2,
+        "activeDatum": 2,
+        "firstAria": "누적 수익률 · T+80 · Series: 23.32 · source=reference fixture",
+        "sourceLabels": [
+          "latest · 누적 수익률 23.32",
+          "latest · Ret 20D vs Score 밀도 0.205"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "누적 수익률 · T+41 · Series: 12.83 · source=reference fixture",
+        "activeText": "누적 수익률 · T+41 · Series: 12.83 · source=reference fixture",
+        "keyboardHome": "누적 수익률 · T+1 · Series: 0.448 · source=reference fixture",
+        "keyboardRight": "누적 수익률 · T+2 · Series: -0.108 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\lab.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:17.927Z",
+      "route": "workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 9,
+        "chartBoxes": 4,
+        "activeDatum": 4,
+        "firstAria": "KPI sparkline · T+20 · Series: 3.031 · source=compact KPI series",
+        "sourceLabels": [
+          "latest · 누적 수익률 50.27",
+          "latest · IC 시계열 0.205",
+          "latest · 리스크-수익 산점도 0.861"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "누적 수익률 · T+46 · Series: 21.82 · source=reference fixture",
+        "activeText": "누적 수익률 · T+46 · Series: 21.82 · source=reference fixture",
+        "keyboardHome": "누적 수익률 · T+1 · Series: 1.214 · source=reference fixture",
+        "keyboardRight": "누적 수익률 · T+2 · Series: 2.015 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\workbench.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:19.382Z",
+      "route": "audit",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 8,
+        "chartBoxes": 1,
+        "activeDatum": 1,
+        "firstAria": "KPI sparkline · T+12 · Series: 13.35 · source=compact KPI series",
+        "sourceLabels": [
+          "latest · OOS Sharpe 비교 23.32"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "OOS Sharpe 비교 · T+41 · Series: 12.83 · source=reference fixture",
+        "activeText": "OOS Sharpe 비교 · T+41 · Series: 12.83 · source=reference fixture",
+        "keyboardHome": "OOS Sharpe 비교 · T+1 · Series: 0.448 · source=reference fixture",
+        "keyboardRight": "OOS Sharpe 비교 · T+2 · Series: -0.108 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\audit.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:20.950Z",
+      "route": "backtest",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 2,
+        "chartBoxes": 1,
+        "activeDatum": 1,
+        "firstAria": "KPI sparkline · T+28 · Series: 31.72 · source=compact KPI series",
+        "sourceLabels": [
+          "latest · 에쿼티 곡선 23.32"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "에쿼티 곡선 · T+41 · Series: 12.83 · source=reference fixture",
+        "activeText": "에쿼티 곡선 · T+41 · Series: 12.83 · source=reference fixture",
+        "keyboardHome": "에쿼티 곡선 · T+1 · Series: 0.448 · source=reference fixture",
+        "keyboardRight": "에쿼티 곡선 · T+2 · Series: -0.108 · source=reference fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\backtest.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate-and-chart-probe",
+      "timestamp": "2026-06-29T14:02:22.645Z",
+      "route": "chart_replay",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference&g003=evidence",
+      "selector": ".interactive-chart[data-chart-id]",
+      "chartData": {
+        "charts": 3,
+        "chartBoxes": 3,
+        "activeDatum": 3,
+        "firstAria": "리플레이 차트 005930 · bar-48 · Close: 79838 · source=reference replay fixture",
+        "sourceLabels": [
+          "latest · 리플레이 차트 005930 · bar-48 · Close: 79838 · source=reference replay fixture",
+          "latest · 리플레이 차트 000660 · bar-48 · Close: 208705 · source=reference replay fixture",
+          "latest · 리플레이 차트 373220 · bar-48 · Close: 398129 · source=reference replay fixture"
+        ],
+        "emptyStates": 0
+      },
+      "hover": {
+        "visibleTooltip": true,
+        "tooltipText": "리플레이 차트 005930 · bar-25 · Close: 78736 · source=reference replay fixture",
+        "activeText": "리플레이 차트 005930 · bar-25 · Close: 78736 · source=reference replay fixture",
+        "keyboardHome": "리플레이 차트 005930 · bar-1 · Close: 76854 · source=reference replay fixture",
+        "keyboardRight": "리플레이 차트 005930 · bar-2 · Close: 76990 · source=reference replay fixture"
+      },
+      "screenshotPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g003-interactive-charts\\chart_replay.png",
+      "verdict": "passed"
+    }
+  ],
+  "finishedAt": "2026-06-29T14:02:22.645Z",
+  "verdict": "passed"
+}

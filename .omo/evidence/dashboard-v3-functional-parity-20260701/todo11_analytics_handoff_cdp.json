@@ -1,0 +1,67 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasSurface": true,
+  "endpointCount": 3,
+  "conditionHandoff": true,
+  "replayHandoff": true,
+  "disabledReason": "ready",
+  "backtestRoute": "/ui/remodel/backtest",
+  "replayRoute": "/ui/remodel/chart-replay",
+  "ready": {
+    "run_id": "runP",
+    "gen_no": 0,
+    "buy": "B",
+    "sell": "S",
+    "date": "20250516",
+    "code": "005930",
+    "job_id": "J10235",
+    "ready": true,
+    "source_status": "ready",
+    "disabledReason": ""
+  },
+  "condition": {
+    "route": "/ui/remodel/backtest",
+    "run_id": "runP",
+    "gen_no": 0,
+    "payload": {
+      "buy": "B",
+      "sell": "S",
+      "start": 20220101,
+      "end": 20250516,
+      "timeframe": "min",
+      "engines": 8,
+      "mode": "backtest"
+    },
+    "prefillOnly": true,
+    "disabledReason": ""
+  },
+  "replay": {
+    "route": "/ui/remodel/chart-replay",
+    "job_id": "J10235",
+    "payload": {
+      "action": "start",
+      "date": 20250516,
+      "src": "min",
+      "codes": [
+        "005930"
+      ],
+      "speed": 1,
+      "agg_sec": 10,
+      "buy": "B",
+      "sell": "S"
+    },
+    "prefillOnly": true,
+    "disabledReason": ""
+  },
+  "missing": {
+    "ok": false,
+    "reasons": [
+      "run_id required",
+      "gen_no required"
+    ],
+    "disabledReason": "Incomplete context disables handoff actions."
+  },
+  "setItemCalls": [],
+  "websocketOpened": false
+}

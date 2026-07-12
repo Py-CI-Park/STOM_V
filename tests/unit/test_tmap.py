@@ -21,6 +21,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
@@ -299,7 +300,7 @@ class TestRoutes:
         st.close()
         from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
-        return TestClient(create_app())
+        return authorized_dashboard_client(create_app())
 
     def test_tmap_map_route(self, client) -> None:
         body = client.get("/tmap_map", params={"run_id": "runP"}).json()

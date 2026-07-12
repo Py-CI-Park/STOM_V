@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G004",
+  "title": "Chart replay full parity",
+  "status": "verification-passed-before-review",
+  "commands": [
+    "pytest tests/unit/dashboard/test_simulation_ws.py tests/unit/dashboard/test_simulation_replay.py tests/unit/dashboard/test_sim_phase8_perf.py tests/unit/dashboard/test_sim_phase7_labels.py tests/unit/dashboard/test_sim_phase7_charts.py tests/unit/dashboard/test_sim_phase7_backend.py tests/unit/dashboard/test_sim_phase6_1.py tests/unit/dashboard/test_sim_multichart.py tests/unit/dashboard/test_sim_frontend_phase6.py -q -> 131 passed, 2 skipped",
+    "python -m py_compile ai_strategy_loop/dashboard/app.py ai_strategy_loop/dashboard/simulation_api.py -> passed",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js -> passed",
+    "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q -> 10 passed",
+    "git diff --check -> passed",
+    "direct simulation endpoint smoke -> 8/8 returned 200"
+  ],
+  "artifactRefs": [
+    "artifacts/ultragoal-g004-replay/browser-transcript.json",
+    "artifacts/ultragoal-g004-replay/replay-live-data.png",
+    "artifacts/ultragoal-g004-replay/api-smoke.json"
+  ],
+  "notes": [
+    "G004 used user-approved wt-dev DB usage via hardlinks for one min day, one tick day, and code_info.db in the remodel worktree runtime _database for visual/API evidence.",
+    "/ui/remodel/chart-replay stayed in remodel namespace and loaded production SimulationTab with quick start, stock inventory, minimap, variable watch, indicator controls, playback controls, and live chart surface."
+  ]
+}

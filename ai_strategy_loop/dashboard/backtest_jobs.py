@@ -24,6 +24,11 @@ import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+
+from ai_strategy_loop.dashboard._windows_process_job import (
+    WindowsProcessJob,
+    attach_process_job,
+)
 from ai_strategy_loop.controller.telemetry import dashboard_telemetry
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로. CWD 무관.
@@ -280,7 +285,8 @@ class BacktestJobManager:
         self._lock = threading.RLock()
         self._records: Dict[str, BacktestJobRecord] = {}
         self._queue: List[str] = []
-        self._proc: Optional[subprocess.Popen] = None
+        self._proc: Optional[subprocess.Popen[str]] = None
+        self._process_job: WindowsProcessJob | None = None
         self._current_job: Optional[str] = None
         self._worker: Optional[threading.Thread] = None
         self._cancel_requested: set[str] = set()
@@ -354,28 +360,20 @@ class BacktestJobManager:
                 return {"status": "error", "message": "job_id 없음", "job_id": job_id}
             if record.status in ("success", "no_trades", "error", "timeout", "cancelled"):
                 return {"status": "error", "message": f"이미 종료된 잡({record.status})", "job_id": job_id}
+            already_requested = job_id in self._cancel_requested
             self._cancel_requested.add(job_id)
             if job_id in self._queue:
                 self._queue.remove(job_id)
-                record.status = "cancelled"
-                record.phase = "cancelled"
-                record.finished_at = _now()
-                record.message = "큐에서 취소됨"
-                self._persist(record)
-                _telemetry(
-                    "error",
-                    record,
-                    stage="cancelled",
-                    message="queued job cancelled",
-                    percent=0.0,
-                )
+                self._finalize_cancel_without_process(record, "큐에서 취소됨")
                 return {"status": "ok", "job_id": job_id, "cancelled": "queued"}
             running_proc = self._proc if self._current_job == job_id else None
+            if already_requested:
+                return {"status": "ok", "job_id": job_id, "cancelled": "requested"}
         # 실행 중인 프로세스 회수는 락 밖에서(긴 wait 회피).
         if running_proc is not None:
             self._hard_stop(running_proc)
             return {"status": "ok", "job_id": job_id, "cancelled": "running"}
-        return {"status": "ok", "job_id": job_id, "cancelled": "noop"}
+        return {"status": "ok", "job_id": job_id, "cancelled": "requested"}
 
     def result_csv_path(self, job_id: str) -> Optional[str]:
         """완료된 잡의 결과 CSV 경로(분석 재계산용). 미완료/없음이면 None."""
@@ -420,6 +418,22 @@ class BacktestJobManager:
             }
 
     # ----------------------------------------------------------------- worker
+    def _finalize_cancel_without_process(self, record: BacktestJobRecord, message: str) -> None:
+        with self._lock:
+            record.status = "cancelled"
+            record.phase = "cancelled"
+            record.finished_at = _now()
+            record.message = message
+            self._cancel_requested.discard(record.job_id)
+            self._persist(record)
+            _telemetry(
+                "error",
+                record,
+                stage="cancelled",
+                message=message,
+                percent=0.0,
+            )
+
     def _ensure_worker(self) -> None:
         if self._worker is not None and self._worker.is_alive():
             return
@@ -441,22 +455,30 @@ class BacktestJobManager:
                 self._run_one(record)
             except Exception as exc:  # noqa: BLE001 - 잡 단위 실패는 레코드로 표준화.
                 with self._lock:
-                    record.status = "error"
-                    record.phase = "error"
-                    record.message = f"job runner failed: {exc}"
-                    record.finished_at = _now()
-                    self._persist(record)
-                    _telemetry(
-                        "error",
-                        record,
-                        stage="error",
-                        message=record.message,
-                        percent=0.0,
-                    )
+                    if job_id in self._cancel_requested:
+                        self._finalize_cancel_without_process(record, "잡 실행 준비 중 취소됨")
+                    else:
+                        record.status = "error"
+                        record.phase = "error"
+                        record.message = f"job runner failed: {exc}"
+                        record.finished_at = _now()
+                        self._persist(record)
+                        _telemetry(
+                            "error",
+                            record,
+                            stage="error",
+                            message=record.message,
+                            percent=0.0,
+                        )
             finally:
                 with self._lock:
+                    process_job = self._process_job
                     self._current_job = None
                     self._proc = None
+                    self._process_job = None
+                if process_job is not None:
+                    process_job.terminate()
+                    process_job.close()
 
     def _run_one(self, record: BacktestJobRecord) -> None:
         spec = BacktestJobSpec(**record.spec)
@@ -475,6 +497,9 @@ class BacktestJobManager:
 
         run_start = _now()
         with self._lock:
+            if record.job_id in self._cancel_requested:
+                self._finalize_cancel_without_process(record, "프로세스 시작 전 취소됨")
+                return
             record.status = "running"
             record.phase = "running"
             record.started_at = run_start
@@ -506,6 +531,11 @@ class BacktestJobManager:
             return
 
         stdout_buf: List[str] = []
+        with self._lock:
+            if record.job_id in self._cancel_requested:
+                log_fh.close()
+                self._finalize_cancel_without_process(record, "프로세스 시작 전 취소됨")
+                return
         try:
             proc = subprocess.Popen(
                 cmd, cwd=str(REPO_ROOT), env=env,
@@ -515,22 +545,30 @@ class BacktestJobManager:
         except Exception as exc:  # noqa: BLE001 - spawn 실패도 레코드로 표준화.
             log_fh.close()
             with self._lock:
-                record.status = "error"
-                record.message = f"서브프로세스 기동 실패: {exc}"
-                record.finished_at = _now()
-                self._persist(record)
-                _telemetry(
-                    "error",
-                    record,
-                    stage="error",
-                    message=record.message,
-                    percent=0.0,
-                )
+                if record.job_id in self._cancel_requested:
+                    self._finalize_cancel_without_process(record, "프로세스 시작 중 취소됨")
+                else:
+                    record.status = "error"
+                    record.message = f"서브프로세스 기동 실패: {exc}"
+                    record.finished_at = _now()
+                    self._persist(record)
+                    _telemetry(
+                        "error",
+                        record,
+                        stage="error",
+                        message=record.message,
+                        percent=0.0,
+                    )
             return
 
+        process_job = attach_process_job(proc.pid)
         with self._lock:
             self._proc = proc
+            self._process_job = process_job
             record.pid = proc.pid
+            cancel_after_spawn = record.job_id in self._cancel_requested
+        if cancel_after_spawn:
+            self._hard_stop(proc)
 
         deadline = run_start + spec.timeout + self._deadline_grace
         # 워치독: --quiet CLI 는 종료 시점까지 stdout 을 전혀 내지 않으므로
@@ -538,7 +576,9 @@ class BacktestJobManager:
         #   않는다(첫 read 에서 블록 — 2026-06-12 실측). 출력과 무관하게
         #   데드라인에 트리 전체를 회수하는 독립 타이머가 필요하다.
         watchdog = threading.Timer(
-            max(1.0, deadline - _now()), self._hard_stop, args=(proc,)
+            max(1.0, deadline - _now()),
+            self._hard_stop,
+            args=(proc,),
         )
         watchdog.daemon = True
         watchdog.start()
@@ -585,7 +625,7 @@ class BacktestJobManager:
             record.csv_path = csv_path
             record.metrics = metrics
             record.progress = 1.0
-            if cancelled:
+            if cancelled or record.job_id in self._cancel_requested:
                 record.status = "cancelled"
                 record.phase = "cancelled"
                 record.message = "실행 중 취소됨"
@@ -649,7 +689,12 @@ class BacktestJobManager:
                 )
 
     # ----------------------------------------------------------- process kill
-    def _hard_stop(self, proc: subprocess.Popen, *, grace: float = 10.0) -> bool:
+    def _hard_stop(
+        self,
+        proc: subprocess.Popen[str],
+        *,
+        grace: float = 10.0,
+    ) -> bool:
         """프로세스 **트리 전체**를 강제 회수한다(자식 우선, 그 다음 부모).
 
         부모만 죽이면 CLI 가 spawn 한 엔진/BackTest 자식들이 상속받은 stdout
@@ -658,22 +703,49 @@ class BacktestJobManager:
         후속 잡이 pending 에 갇힌다(2026-06-12 실측). 트리 킬로 파이프의 모든
         보유자를 정리해야 읽기 루프가 풀린다.
         """
-        if proc.poll() is not None:
-            return False
+        with self._lock:
+            process_job = self._process_job if self._proc is proc else None
+        if process_job is not None and process_job.terminate():
+            if proc.poll() is None:
+                try:
+                    proc.wait(timeout=grace)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+            return True
+
+        had_children = False
         try:
             import psutil  # noqa: PLC0415 - 킬 경로에서만 필요(콜드 임포트 회피).
 
-            try:
-                children = psutil.Process(proc.pid).children(recursive=True)
-            except psutil.Error:
-                children = []
+            descendants: List[psutil.Process] = []
+            descendant_pids: set[int] = set()
+            parent_pids = {proc.pid}
+            candidates = list(psutil.process_iter(["pid", "ppid"]))
+            while parent_pids:
+                next_parent_pids: set[int] = set()
+                for candidate in candidates:
+                    if candidate.pid not in descendant_pids and candidate.info["ppid"] in parent_pids:
+                        descendants.append(candidate)
+                        descendant_pids.add(candidate.pid)
+                        next_parent_pids.add(candidate.pid)
+                parent_pids = next_parent_pids
+            children = list(reversed(descendants))
+            had_children = bool(children)
             for child in children:
                 try:
                     child.kill()
                 except psutil.Error:
                     pass
+            if children:
+                try:
+                    psutil.wait_procs(children, timeout=grace)
+                except psutil.Error:
+                    pass
         except ImportError:
             pass  # psutil 부재 시 부모 단독 킬로 폴백(파이프 잔류 위험은 워치독이 보완).
+        if proc.poll() is not None:
+            return had_children
         try:
             proc.terminate()
             try:
@@ -782,15 +854,15 @@ def _is_no_trades(returncode: int, payload: Dict[str, Any]) -> bool:
 
 
 # 모듈 레벨 싱글톤 — API 라우트가 공유한다(app.py 추가 수정 없이 import 만으로 연결).
-_MANAGER: Optional[BacktestJobManager] = None
-_MANAGER_LOCK = threading.Lock()
+_manager: Optional[BacktestJobManager] = None
+_manager_lock = threading.Lock()
 
 
 def get_job_manager() -> BacktestJobManager:
     """프로세스 전역 잡 매니저 싱글톤을 반환한다(지연 초기화)."""
-    global _MANAGER
-    if _MANAGER is None:
-        with _MANAGER_LOCK:
-            if _MANAGER is None:
-                _MANAGER = BacktestJobManager()
-    return _MANAGER
+    global _manager
+    if _manager is None:
+        with _manager_lock:
+            if _manager is None:
+                _manager = BacktestJobManager()
+    return _manager

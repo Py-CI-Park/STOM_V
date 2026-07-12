@@ -6,11 +6,12 @@
   "description": "Phase14 — Vite/esbuild 빌드 워크스페이스(served frontend/ 바깥). 산출물 ../frontend/bundle/{stom-ui.js,app.js} 커밋.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node build-app.mjs",
+    "build": "npm run runtime-jsx && vite build && node build-app.mjs",
     "build:lib": "vite build",
     "build:app": "node build-app.mjs",
-    "harness": "node track-z-harness.mjs",
-    "typecheck": "tsc --noEmit",
+    "harness": "npm run runtime-jsx && node track-z-harness.mjs",
+    "runtime-jsx": "node runtime-jsx-check.mjs",
+    "typecheck": "tsc --noEmit && npm run runtime-jsx",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "g003-image-evidence",
+  "generatedAt": "2026-06-29T14:02:44.964590+00:00",
+  "status": "PASS",
+  "totalImages": 8,
+  "images": [
+    {
+      "id": "audit",
+      "path": "artifacts/ultragoal-g003-interactive-charts/audit.png",
+      "exists": true,
+      "sizeBytes": 407641,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "3490369f799fbdbbd25a02e228184bfe5266f3239c98e9e6d1eafb111a2ccec1",
+      "sampleUniqueColors": 1076,
+      "nonUniform": true
+    },
+    {
+      "id": "backtest",
+      "path": "artifacts/ultragoal-g003-interactive-charts/backtest.png",
+      "exists": true,
+      "sizeBytes": 358640,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "fa55fe3ee82733ffe9088cebbe7ad53a428c66cff3f322513c401209156c8288",
+      "sampleUniqueColors": 1087,
+      "nonUniform": true
+    },
+    {
+      "id": "chart_replay",
+      "path": "artifacts/ultragoal-g003-interactive-charts/chart_replay.png",
+      "exists": true,
+      "sizeBytes": 359178,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "356573f00e9488b1405cb4dc5084263ad7ea910c7a76025aa74170c3830c2d89",
+      "sampleUniqueColors": 1157,
+      "nonUniform": true
+    },
+    {
+      "id": "condition",
+      "path": "artifacts/ultragoal-g003-interactive-charts/condition.png",
+      "exists": true,
+      "sizeBytes": 562364,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "17b4d89fa6b0014809c1abe52c06a0ea77c358ef380569b4e3cfb29325436304",
+      "sampleUniqueColors": 1344,
+      "nonUniform": true
+    },
+    {
+      "id": "history",
+      "path": "artifacts/ultragoal-g003-interactive-charts/history.png",
+      "exists": true,
+      "sizeBytes": 563558,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "39c20732a7cc80e2c7d5620d49ad7de4d29f29d7c99b47f11ac69c6ba9aa2eec",
+      "sampleUniqueColors": 1599,
+      "nonUniform": true
+    },
+    {
+      "id": "lab",
+      "path": "artifacts/ultragoal-g003-interactive-charts/lab.png",
+      "exists": true,
+      "sizeBytes": 498203,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "c7bbd4d12f7e0974244121621b58e37a122e906740e3b9ee8363aa6bc16de103",
+      "sampleUniqueColors": 1635,
+      "nonUniform": true
+    },
+    {
+      "id": "process",
+      "path": "artifacts/ultragoal-g003-interactive-charts/process.png",
+      "exists": true,
+      "sizeBytes": 423212,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a98d6a83f1fb2f06f08ff05bb1dfde560c51aa0a0c4b3722ce155313aa0a4409",
+      "sampleUniqueColors": 1309,
+      "nonUniform": true
+    },
+    {
+      "id": "workbench",
+      "path": "artifacts/ultragoal-g003-interactive-charts/workbench.png",
+      "exists": true,
+      "sizeBytes": 469722,
+      "width": 1920,
+      "height": 1080,
+      "sha256": "173bb1b7eee3114f544c14c1c5e81cc939e2b958f417328dac9c15c6408daad8",
+      "sampleUniqueColors": 1632,
+      "nonUniform": true
+    }
+  ],
+  "failures": []
+}

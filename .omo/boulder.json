@@ -2,39 +2,6 @@
   "schema_version": 2,
   "active_work_id": null,
   "works": {
-    "lattice-rereview-rank03-r2-boundary-20260707": {
-      "work_id": "lattice-rereview-rank03-r2-boundary-20260707",
-      "active_plan": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
-      "plan_name": "lattice-rereview-rank03-r2-boundary-20260707",
-      "session_ids": [
-        "codex:lattice-rereview-rank03-r2-boundary-20260707",
-        "ulw-loop:20260708_rank03_r2_closeout_loop_v2"
-      ],
-      "status": "completed_selected_oos_closeout",
-      "started_at": "2026-07-07T21:04:14+09:00",
-      "ended_at": "2026-07-07T22:32:26+09:00",
-      "duration_ms": 1366000,
-      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
-      "duration_human": "22.8m",
-      "latest_handoff": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
-      "latest_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
-      "latest_round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json",
-      "summary": {
-        "selected_oos_candidate": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
-        "selected_oos_classification": "survivor",
-        "selected_oos_profit": 554624.0,
-        "selected_oos_mdd": 5.24,
-        "selected_oos_trades": 80,
-        "selected_oos_daily": 2.2,
-        "gate_passed": true,
-        "survivor_seed_id": "plan_d_rank03_r2_oos_20260708_01",
-        "r3_opened": false,
-        "portfolio_generated": false,
-        "next_recommended_action": "lattice_condition_generation_v2_redesign_plan_not_unbounded_plan_d_loop"
-      },
-      "latest_full_analysis": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
-      "latest_boundary_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_boundary_receipt_20260708.json"
-    },
     "condition-research-rereview-20260603": {
       "work_id": "condition-research-rereview-20260603",
       "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
@@ -419,6 +386,89 @@
       "duration_human": "13.1m",
       "worktree_path": null,
       "requested_range": "13~16 F1~F4"
+    },
+    "dashboard-v3-functional-parity-20260701": {
+      "work_id": "dashboard-v3-functional-parity-20260701",
+      "active_plan": ".omo/plans/dashboard-v3-functional-parity-20260701.md",
+      "plan_name": "dashboard-v3-functional-parity-20260701",
+      "session_ids": [
+        "codex:dashboard-v3-functional-parity-20260701"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-01T23:00:09.3801563+09:00",
+      "ended_at": "2026-07-02T02:10:19.0612507+09:00",
+      "duration_ms": 11409681,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v3-desktop-visual-polish-20260702": {
+      "work_id": "dashboard-v3-desktop-visual-polish-20260702",
+      "active_plan": ".omo/plans/dashboard-v3-desktop-visual-polish-20260702.md",
+      "plan_name": "dashboard-v3-desktop-visual-polish-20260702",
+      "session_ids": [
+        "codex:dashboard-v3-desktop-visual-polish-20260702"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-02T13:25:00+09:00",
+      "ended_at": "2026-07-02T14:24:05.9910826+09:00",
+      "duration_ms": 3545991,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v4-remodel-research-handoff-20260704": {
+      "work_id": "dashboard-v4-remodel-research-handoff-20260704",
+      "active_plan": ".omo/plans/dashboard-v4-remodel-research-handoff-20260704.md",
+      "plan_name": "dashboard-v4-remodel-research-handoff-20260704",
+      "session_ids": [
+        "codex:dashboard-v4-remodel-research-handoff-20260704"
+      ],
+      "status": "completed",
+      "started_at": "2026-07-04T11:17:13.9886335+09:00",
+      "ended_at": "2026-07-04T11:23:10.2529690+09:00",
+      "duration_ms": 356264,
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "dashboard-v4-hardening-to-95": {
+      "work_id": "dashboard-v4-hardening-to-95",
+      "active_plan": ".omo/plans/dashboard-v4-hardening-to-95.md",
+      "plan_name": "dashboard-v4-hardening-to-95",
+      "session_ids": [
+        "codex:019f48a4-b8b1-7580-b458-a09e20c2a0f6"
+      ],
+      "status": "active",
+      "started_at": "2026-07-11T00:00:00+09:00",
+      "worktree_path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+    },
+    "lattice-rereview-rank03-r2-boundary-20260707": {
+      "work_id": "lattice-rereview-rank03-r2-boundary-20260707",
+      "active_plan": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
+      "plan_name": "lattice-rereview-rank03-r2-boundary-20260707",
+      "session_ids": [
+        "codex:lattice-rereview-rank03-r2-boundary-20260707",
+        "ulw-loop:20260708_rank03_r2_closeout_loop_v2"
+      ],
+      "status": "completed_selected_oos_closeout",
+      "started_at": "2026-07-07T21:04:14+09:00",
+      "ended_at": "2026-07-07T22:32:26+09:00",
+      "duration_ms": 1366000,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "duration_human": "22.8m",
+      "latest_handoff": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+      "latest_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
+      "latest_round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json",
+      "summary": {
+        "selected_oos_candidate": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+        "selected_oos_classification": "survivor",
+        "selected_oos_profit": 554624.0,
+        "selected_oos_mdd": 5.24,
+        "selected_oos_trades": 80,
+        "selected_oos_daily": 2.2,
+        "gate_passed": true,
+        "survivor_seed_id": "plan_d_rank03_r2_oos_20260708_01",
+        "r3_opened": false,
+        "portfolio_generated": false,
+        "next_recommended_action": "lattice_condition_generation_v2_redesign_plan_not_unbounded_plan_d_loop"
+      },
+      "latest_full_analysis": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "latest_boundary_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_boundary_receipt_20260708.json"
     },
     "ai-loop-full-next-execution-20260703-t0-t3": {
       "work_id": "ai-loop-full-next-execution-20260703-t0-t3",

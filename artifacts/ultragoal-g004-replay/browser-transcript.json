@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+  "capturedAt": "2026-06-27T15:43:48.454Z",
+  "route": "/ui/remodel/chart-replay",
+  "title": "STOM AI · 조건식 AI 연구 대시보드 · Remodel",
+  "clickedQuick": true,
+  "clickedPlay": false,
+  "state": {
+    "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+    "activeTab": "simulation",
+    "body": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📈 차트 리플레이\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n차트 리플레이 · 차트 리플레이·수동 신호 검토\n비소유: 실거래 주문·전략 DB 쓰기\nsimulation\nROUTE\nSIM\nOWNER\n차트 리플레이\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n차트 시뮬레이션\n일일 min DB 리플레이 · 엔진 정합 신호 오버레이\n● connected · api v1\n빠른 시작\n⚡ 최근 거래일\n⚡ 최대 상승일\n최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. · 최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.\n버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.\n리플레이 설정\n시간단위\n틱\n분봉\n날짜 (1일)\n— 선택 —\n2025-05-09\n매수 조건식 (신호 오버레이)\n— 없음 —\n20250715_Study\n20250715_Study_B_2\n20250720_Study_B\n20250720_Study_B_2\nAutoResearchBaselineCompare_20260418_T6\nAutoResearchInspect_20260418_T6\nAuto_B_Generalize_aggressive_top2_single_round_1773392300\nAuto_B_Generalize_balanced_top1_multi_round_1773392368\nAuto_B_Generalize_control_aggressive_top1_single_round_1773392228\nAuto_B_MergedPilot_1773391663\nAuto_B_Pilot01\nAuto_B_PilotSlice01\nAuto_B_TestRun_20260315\nC_S_3_B_902_Min\nC_T_900_920_STUDY_B\nC_T_900_920_U2_B\nC_T_900_920_U2_B_FS\nC_T_902_905_U3_B\nMin_B_Study_250824\nMin_B_Study_250831\nMin_B_Study_250907\nMin_B_Study_251225\nMin_B_Study_251227\nMin_B_Study_251227_Filter\nMin_B_Study_251227_Filtered\nMin_B_Study_251227_Filtered2\nMin_B_Study_251227_ICOS_Filtered\nMin_B_Study_251229\nResearchTest_Tick_B_090000_092800_Wide_20260419\nTest_Min_B_20250713_2\nTick_B_902\nTick_B_902_905\nTick_B_902_905_2\nTick_B_902_905_Study\nTick_B_902_905_Study_2\nTick_B_902_905_Update\nTick_B_902_905_Update_2\nTick_B_902_905_Update_2_Study\nTick_B_902_Study\nTick_B_902_Study_2\nTick_B_902_Update\nTick_B_902_Update_2\nTick_B_902_v2_Study\nTick_B_905\nTick_B_905910_Study\nTick_B_905_915_LT\nTick_B_905_Study\nTick_B_905_Update\nTick_B_910\nTick_B_910_930_RB\nTick_B_930_Dev\nWideV1Final_B_20260425\nWideV1IterationV2_20260423__cand005\nWideV1IterationV3_20260423__cand001\nWideV1IterationV5CheckpointSmoke_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand002\nWideV1IterationV5Recovery_20260425__cand003\nWideV1IterationV5Recovery_20260425__cand004\nWideV1IterationV5Recovery_20260425__cand005\nWideV1IterationV5Recovery_20260425__cand006\nWideV1IterationV5Recovery_20260425__cand007\nWideV1IterationV5Recovery_20260425__cand008\nWideV1IterationV5Recovery_20260425__cand009\nWideV1IterationV5Recovery_20260425__cand010\nWideV1IterationV5Recovery_20260425__cand011\nWideV1IterationV5Recovery_20260425__cand012\nWideV1IterationV5Recovery_20260425__cand013\nWideV1IterationV5Recovery_20260425__cand014\nWideV1IterationV5Recovery_20260425__cand015\nWideV1IterationV5Recovery_20260425__cand016\nWideV1IterationV5Recovery_20260425__cand017\nWideV1IterationV5_20260424__cand001\nWideV1IterationV5_20260424__cand002\nWideV1IterationV5_20260424__cand003\nWideV1IterationV5_20260424__cand004\nWideV1IterationV5_20260424__cand005\nWideV1IterationV5_20260424__cand006\nWideV1IterationV5_20260424__cand008\nWideV1RetentionCand5_20260422__cand003\nWideV2Final_B_20260428\nWideV2V5DirectV4ShortfallRecovery_20260428__round001__cand007\nWideV2V5NextSeedRecoverySmoke_20260428__round001__cand003\nWideV2V5NextSeedRecoverySmoke_20260428__round002__cand003\nWideV2V5RecoverySmoke_20260428__round001__cand003\n__AUTO_TMP__Auto_B_Pilot01_1773230899792\n__AUTO_TMP__Auto_B_Pilot01_1773231079685\n__AUTO_TMP__Auto_B_PilotSlice01_1773231391970\n매도 조건식\n— 없음 —\n20250715_Study_S\n20250715_Study_S_2\n20250720_Study_S\n20250720_Study_S_2\nC_S_3_S_902_Min\nC_T_900_920_STUDY_S\nC_T_900_920_U2_S\nC_T_900_920_U2_S_FS\nC_T_902_905_U3_S\nMin_S_Study_250824\nMin_S_Study_250831\nMin_S_Study_250907\nMin_S_Study_251225\nMin_S_Study_251226\nMin_S_Study_251227\nMin_S_Study_251227_Filtered\nResearchTest_Tick_S_090000_092800_Wide_20260419\nTest_Min_S_20250713_2\nTick_S_902\nTick_S_902_905\nTick_S_902_905_2\nTick_S_902_905_Study\nTick_S_902_905_Update\nTick_S_902_905_Update_2\nTick_S_902_905_Update_2_Study\nTick_S_902_Study\nTick_S_902_Update\nTick_S_902_v2_Study\nTick_S_905\nTick_S_905910_Study\nTick_S_905_915_LT\nTick_S_905_Study\nTick_S_905_Update\nTick_S_910\nTick_S_910_930_RB\nTick_S_930_Dev\n종목 선택 (최대 10 · 등락순)1/10 선택\n256940\n킵스파마\n+29.98%\n014970\n삼륭물산\n+29.96%\n377480\n마음AI\n+29.71%\n010770\n평화홀딩스\n+21.02%\n225190\nLK삼양\n+16.06%\n355390\n크라우드웍스\n+15.47%\n285130\nSK케미칼\n+14.34%\n251270\n넷마블\n+14.13%\n448280\n에코아이\n+13.89%\n439580\n블루엠텍\n+11.33%\n053300\n한국정보인증\n+11.21%\n082740\n한화엔진\n+10.41%\n122870\n와이지엔터테인먼트\n+10.07%\n046970\n우리로\n+9.61%\n000050\n경방\n+8.57%\n240550\n동방메디컬\n+8.33%\n079550\nLIG디펜스앤에어로스페이스\n+7.79%\n090080\n평화산업\n+7.66%\n047560\n이스트소프트\n+7.37%\n042940\n상지건설\n+5.76%\n047810\n한국항공우주\n+5.55%\n161890\n한국콜마\n+5.53%\n071970\nHD현대마린엔진\n+5.43%\n200130\n콜마비앤에이치\n+5.23%\n008970\nKBI동양철관\n+4.71%\n128940\n한미약품\n+4.62%\n000150\n두산\n+4.54%\n226590\n엠디바이스\n+4.44%\n033500\n동성화인텍\n+4.31%\n278470\n에이피알\n+4.17%\n304100\n솔트룩스\n+4.08%\n041190\n우리기술투자\n+3.91%\n272210\n한화시스템\n+3.76%\n000880\n한화\n+3.70%\n007660\n이수페타시스\n+3.40%\n257720\n실리콘투\n+3.27%\n456010\n아이씨티케이\n+2.93%\n003230\n삼양식품\n+2.37%\n014160\n대영포장\n+2.26%\n062970\n한국첨단소재\n+1.72%\n448900\n한국피아이엠\n+1.51%\n083650\n비에이치아이\n+1.47%\n094480\n갤럭시아머니트리\n+1.41%\n009830\n한화솔루션\n+1.40%\n064260\n다날\n+1.04%\n328130\n루닛\n+0.97%\n389470\n인벤티지랩\n+0.95%\n036930\n주성엔지니어링\n+0.59%\n394800\n쓰리빌리언\n+0.29%\n006340\n대원전선\n+0.18%\n010120\nLS ELECTRIC\n0.00%\n207760\n미스터블루\n-0.06%\n112610\n씨에스윈드\n-0.12%\n382150\n온코크로스\n-0.15%\n115500\n케이씨에스\n-0.18%\n489790\n한화비전\n-0.32%\n053580\n웹케시\n-0.45%\n098460\n고영\n-0.52%\n042700\n한미반도체\n-1.27%\n010620\n010620\n-1.60%\n141080\n리가켐바이오\n-1.69%\n459510\n나우로보틱스\n-1.69%\n059210\n메타바이오메드\n-2.08%\n021040\n대호특수강\n-2.26%\n242040\n나무기술\n-2.50%\n063170\n서울옥션\n-2.57%\n430690\n한싹\n-2.81%\n163730\n핑거\n-2.98%\n013580\n계룡건설\n-3.92%\n002630\n오리엔트바이오\n-4.13%\n389140\n포바이포\n-4.28%\n011790\nSKC\n-4.54%\n011080\n형지I&C\n-7.03%\n065500\n오리엔트정공\n-7.58%\n417180\n핑거스토리\n-8.44%\n011780\n금호석유화학\n-10.28%\n020710\n시공테크\n-13.63%\n289010\n아이스크림에듀\n-19.64%\n215090\n솔디펜스\n-20.00%\n시장 미니맵\n1/10 선택 · 등락순\n킵스파마\n+29.98%\n삼륭물산\n+29.96%\n마음AI\n+29.71%\n평화홀딩스\n+21.02%\nLK삼양\n+16.06%\n크라우드웍스\n+15.47%\nSK케미칼\n+14.34%\n넷마블\n+14.13%\n에코아이\n+13.89%\n블루엠텍\n+11.33%\n한국정보인증\n+11.21%\n한화엔진\n+10.41%\n와이지엔터테인먼트\n+10.07%\n우리로\n+9.61%\n경방\n+8.57%\n동방메디컬\n+8.33%\nLIG디펜스앤에어로스페이스\n+7.79%\n평화산업\n+7.66%\n이스트소프트\n+7.37%\n상지건설\n+5.76%\n한국항공우주\n+5.55%\n한국콜마\n+5.53%\nHD현대마린엔진\n+5.43%\n콜마비앤에이치\n+5.23%\nKBI동양철관\n+4.71%\n한미약품\n+4.62%\n두산\n+4.54%\n엠디바이스\n+4.44%\n동성화인텍\n+4.31%\n에이피알\n+4.17%\n솔트룩스\n+4.08%\n우리기술투자\n+3.91%\n한화시스템\n+3.76%\n한화\n+3.70%\n이수페타시스\n+3.40%\n실리콘투\n+3.27%\n아이씨티케이\n+2.93%\n삼양식품\n+2.37%\n대영포장\n+2.26%\n한국첨단소재\n+1.72%\n한국피아이엠\n+1.51%\n비에이치아이\n+1.47%\n갤럭시아머니트리\n+1.41%\n한화솔루션\n+1.40%\n다날\n+1.04%\n루닛\n+0.97%\n인벤티지랩\n+0.95%\n주성엔지니어링\n+0.59%\n쓰리빌리언\n+0.29%\n대원전선\n+0.18%\nLS ELECTRIC\n0.00%\n미스터블루\n-0.06%\n씨에스윈드\n-0.12%\n온코크로스\n-0.15%\n케이씨에스\n-0.18%\n한화비전\n-0.32%\n웹케시\n-0.45%\n고영\n-0.52%\n한미반도체\n-1.27%\n010620\n-1.60%\n리가켐바이오\n-1.69%\n나우로보틱스\n-1.69%\n메타바이오메드\n-2.08%\n대호특수강\n-2.26%\n나무기술\n-2.50%\n서울옥션\n-2.57%\n한싹\n-2.81%\n핑거\n-2.98%\n계룡건설\n-3.92%\n오리엔트바이오\n-4.13%\n포바이포\n-4.28%\nSKC\n-4.54%\n형지I&C\n-7.03%\n오리엔트정공\n-7.58%\n핑거스토리\n-8.44%\n금호석유화학\n-10.28%\n시공테크\n-13.63%\n아이스크림에듀\n-19.64%\n솔디펜스\n-20.00%\n지표 라이브\n현재 시각 기준\n종목\t현재가\t등락%\t강도\tVWAP\tMA5\tMA20\tMA60\t호가불균형\n256940\t9,850\t+0.10\t12\t9,841\t—\t—\t—\t0.26\n변수 워치\n임계 초기화\n변수\t현재값\t조건\t임계값\n현재가\t9,850\t\n≥\n≤\n\t\n등락율\t0.1\t\n≥\n≤\n\t\n체결강도\t12\t\n≥\n≤\n\t\nVWAP\t9,841\t\n≥\n≤\n\t\nMA5\t—\t\n≥\n≤\n\t\nMA20\t—\t\n≥\n≤\n\t\nMA60\t—\t\n≥\n≤\n\t\n순매수수량\t69\t\n≥\n≤\n\t\n호가불균형\t0.26\t\n≥\n≤\n\t\n매수총잔량\t423\t\n≥\n≤\n\t\n매도총잔량\t1,603\t\n≥\n≤\n\t\n임계는 현재 프레임 값과의 단순 비교다. 조건식 엔진 정합 매매 신호는 위 매수/매도 조건식 선택 시 차트에 오버레이된다.\n⏸ 일시정지\n⏹ 정지\n1x\n5x\n20x\n60x\n240x\n초고속\n⏱ 20x 페이싱\n09:01:00 · 2/377\n엔진\nⓘ\n라이브\nLWC\nSVG\n지표\n가격\nMA\nEMA\nVWAP\n볼린저\nVWAP밴드\n모멘텀\nRSI\nMACD\n흐름\n체결강도\n호가\n오더플로우\n거래량MA\n체결강도MA\n256940 · 킵스파마\n라이브\n+0.10%\n9,850\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+    "markers": {
+      "route": true,
+      "connected": true,
+      "hasDay": false,
+      "hasStock": true,
+      "playback": true,
+      "speed": true,
+      "signalOverlay": true,
+      "chart": true,
+      "diagnostics": true
+    },
+    "forbiddenControls": 0,
+    "forbiddenTextControls": []
+  },
+  "responses": [
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/sim/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/sim/days?src=min",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "screenshots": [
+    "artifacts/ultragoal-g004-replay/replay-live-data.png"
+  ],
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T15:45:00Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "SimulationTab loaded under remodel route"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:45:02Z",
+      "selector": "button:has-text(\"최근 거래일\")",
+      "verdict": "passed",
+      "result": "quick-start selected available fixture DB day/stock"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:45:04Z",
+      "selector": "button:has-text(\"재생\")",
+      "verdict": "not_applicable",
+      "result": "playback button disabled/unavailable"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T15:45:07Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g004-replay/replay-live-data.png",
+      "verdict": "passed"
+    }
+  ]
+}

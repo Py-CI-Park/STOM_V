@@ -1,0 +1,13 @@
+AI SLOP CLEANUP REPORT — G001 route/version ownership
+
+Scope inspected: ai_strategy_loop/dashboard/app.py, tests/unit/test_dashboard_route_parity.py, tests/unit/test_dashboard_remodel_baseline_contract.py, and G001 route/browser evidence artifacts.
+
+Blocking findings: 0
+Advisory findings: 0
+
+Checks:
+- No fallback-like masking: unknown evolution/remodel routes return 404 instead of redirecting to a shell.
+- No hidden persistence: selector uses request query/profile only; browser evidence shows empty storage/cookie and default-after-selector returns V2.
+- No boundary violation: no live order, broker login, account trading, or final approval path was added.
+- No unnecessary new abstraction: selector helpers are local to create_app and remain explicit.
+- Tests/evidence cover V2 default, V3 explicit selector, hard remodel routes, aliases, and adversarial 404/persistence cases.

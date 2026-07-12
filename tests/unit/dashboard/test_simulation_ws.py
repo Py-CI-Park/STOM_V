@@ -28,6 +28,7 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.dashboard import replay_engine as RE  # noqa: E402
 from ai_strategy_loop.dashboard import simulation_api as SA  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 _MIN_COLS = [
     "현재가", "시가", "고가", "저가", "등락율", "당일거래대금",
@@ -81,7 +82,7 @@ def ws_client_rest(monkeypatch, tmp_path):
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     SA._GATE.release()
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 @pytest.fixture
@@ -103,7 +104,7 @@ def ws_client(monkeypatch, tmp_path):
     SA._GATE.release()
 
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 class TestWsReplaySession:
@@ -387,14 +388,19 @@ class TestPacingSchedule:
         # 10초 간격.
         assert SA._bar_gap_seconds(90000, 90010) == 10.0
 
-    def test_bar_gap_guards_reverse_and_same_slot(self):
-        assert SA._bar_gap_seconds(90100, 90000) == 0.0   # 역행 → 0.
-        assert SA._bar_gap_seconds(90000, 90000) == 0.0   # 동일 슬롯 → 0.
+    def test_bar_gap_rejects_reverse_and_same_slot(self):
+        with pytest.raises(RE.ReplayTimelineError):
+            SA._bar_gap_seconds(90100, 90000)
+        with pytest.raises(RE.ReplayTimelineError):
+            SA._bar_gap_seconds(90000, 90000)
 
-    def test_bar_gap_clamps_large_gap(self):
-        # 점심시간 등 큰 간격은 상한으로 클램프(과대 대기 방지).
+    def test_bar_gap_preserves_market_gap_elapsed_time(self):
         gap = SA._bar_gap_seconds(113000, 130000)  # 1h30m.
-        assert gap == float(SA._MAX_BAR_GAP_SEC)
+        assert gap == 5_400.0
+
+    def test_hms_rejects_malformed_clock_value(self):
+        with pytest.raises(RE.ReplayTimelineError):
+            SA._hms_to_seconds(96000)
 
     def test_schedule_min_1x_is_one_minute_each(self):
         # 1분봉 1x → 첫 frame 0, 이후 매 frame 60초(1min=1분 체감).

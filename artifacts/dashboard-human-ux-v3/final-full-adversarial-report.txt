@@ -1,0 +1,11 @@
+G007 FINAL ADVERSARIAL / FAILURE-MODE REPORT
+Status: PASS
+
+Covered scenarios:
+1. Route regression: V2 default routes must not load remodel assets, and explicit V3 remodel routes must not load V2 bundle assets. Evidence: final-full-v2-v3-compare/compare-scorecard.json PASS 100.0.
+2. Safety bypass: page load must not trigger live order, broker login, account trading, hidden export, POST mutation, auto /sim/ws, or auto /bt/ws_job. Evidence: final-full-safety-audit/safety-scorecard.json PASS 100.0 and final-full-browser-evidence.json forbiddenCount 0.
+3. UX regression: each V3 page must satisfy total >=90, named V3-V2 delta >=15 mean, and no category below floor. Evidence: final-full-evidence/scorecard.json PASS, category-floor-check.json PASS.
+4. Visual regression: all eight explicit V3 pages must have required/safety text and non-blank screenshots with current baseline parity. Evidence: final-full-visual-gate/scorecard.json PASS 100.0.
+5. Selector/storyboard regression: final browser transcript navigated all eight V3 routes and asserted task/primary-canvas/page-specific selectors. Evidence: final-full-browser-evidence.json actions=8, verdict=passed.
+
+Blockers: none.

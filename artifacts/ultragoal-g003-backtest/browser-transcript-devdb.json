@@ -146,5 +146,45 @@
   "screenshots": [
     "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
     "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png"
+  ],
+  "tool": "browser",
+  "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T15:15:30Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "remained under /ui/remodel/backtest and production BacktestTab workbench loaded"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:15:32Z",
+      "selector": "button:has-text(\"조건식 편집\")",
+      "verdict": "passed",
+      "result": "edit tab showed buy/sell editors, populated libraries, variables, sweep builder, and BackFinder section"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T15:15:33Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:15:34Z",
+      "selector": "button:has-text(\"결과 분석\")",
+      "verdict": "passed",
+      "result": "result tab showed result library, labelled demo empty-state, charts, GUI parity, evo, overlay, and portfolio sections"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T15:15:36Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png",
+      "verdict": "passed"
+    }
   ]
 }

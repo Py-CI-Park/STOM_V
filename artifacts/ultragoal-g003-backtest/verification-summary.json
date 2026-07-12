@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "title": "Backtest full parity",
+  "status": "verification-passed-before-review",
+  "commands": [
+    "pytest tests/unit/dashboard/test_backtest_api_crud.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/dashboard/test_backtest_ws_job.py tests/unit/dashboard/test_backtest_analysis.py tests/unit/dashboard/test_backtest_report.py tests/unit/dashboard/test_backtest_evo_portfolio.py tests/unit/dashboard/test_backtest_phase4.py tests/unit/dashboard/test_backtest_phase5.py tests/unit/dashboard/test_p13_bt_sweep_builder.py tests/unit/dashboard/test_p13_bt_overlay_split.py tests/unit/dashboard/test_backtest_result_identity.py -q -> 225 passed, 1 skipped",
+    "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q -> 10 passed",
+    "python -m py_compile ai_strategy_loop/dashboard/app.py ai_strategy_loop/dashboard/backtest_api.py -> passed",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js -> passed",
+    "git diff --check -> passed",
+    "direct endpoint smoke on 127.0.0.1:8776 -> 9/9 strategy/validate/self_vars/backfinder/job/compare/overlay/portfolio/report checks returned 200"
+  ],
+  "artifactRefs": [
+    "artifacts/ultragoal-g003-backtest/browser-transcript-devdb.json",
+    "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+    "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png",
+    "artifacts/ultragoal-g003-backtest/api-smoke.json",
+    "artifacts/ultragoal-g003-backtest/api-smoke.json"
+  ],
+  "apiSmokeAllOk": true,
+  "notes": [
+    "/ui/remodel/backtest remains under remodel route while production BacktestTab is active.",
+    "Dev strategy DB was referenced only through STOM_WEBBT_STRATEGY_DB for evidence, matching user-approved DB usage.",
+    "No G003 source edits were required beyond the G002 production shell because the production BacktestTab and /bt/* API were already complete; G003 closes by parity evidence and tests.",
+    "A small tick backtest runtime job was submitted for lifecycle evidence; it ended with status=error but produced an available result object that compare/portfolio/report endpoints handled without 5xx. Existing fixture/unit tests cover successful result parsing and ws_job lifecycle."
+  ]
+}

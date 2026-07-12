@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "verification-summary",
+  "commands": [
+    {
+      "command": [
+        "pytest",
+        "tests/unit/test_dashboard_remodel_baseline_contract.py",
+        "-q"
+      ],
+      "status": "passed",
+      "summary": "4 passed"
+    },
+    {
+      "command": [
+        "pytest",
+        "tests/unit/test_dashboard_remodel_baseline_contract.py",
+        "tests/unit/test_dashboard_remodel_static.py",
+        "-q"
+      ],
+      "status": "passed",
+      "summary": "9 passed"
+    },
+    {
+      "command": [
+        "pytest",
+        "tests/unit/test_dashboard*",
+        "-q"
+      ],
+      "status": "passed",
+      "summary": "329 passed"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "status": "passed",
+      "summary": "no output"
+    }
+  ],
+  "artifacts": [
+    "artifacts/ultragoal-g001-baseline/evolution.png",
+    "artifacts/ultragoal-g001-baseline/backtest.png",
+    "artifacts/ultragoal-g001-baseline/chart-replay.png",
+    "artifacts/ultragoal-g001-baseline/remodel.png",
+    "artifacts/ultragoal-g001-baseline/browser-transcript.json"
+  ],
+  "verdict": "passed"
+}

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "g003-interactive-chart-verification-summary",
+  "generatedAt": "2026-06-29T14:41:47.234644+00:00",
+  "status": "PASS",
+  "commands": [
+    {
+      "command": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "status": "PASS",
+      "stdout": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q",
+      "status": "PASS",
+      "stdout": "24 passed in 10.10s"
+    },
+    {
+      "command": "browser automation over 8 V3 routes with hover + keyboard chart probes",
+      "status": "PASSED",
+      "routes": [
+        {
+          "route": "condition",
+          "charts": 7,
+          "verdict": "passed"
+        },
+        {
+          "route": "process",
+          "charts": 0,
+          "verdict": "not_applicable"
+        },
+        {
+          "route": "history",
+          "charts": 6,
+          "verdict": "passed"
+        },
+        {
+          "route": "lab",
+          "charts": 2,
+          "verdict": "passed"
+        },
+        {
+          "route": "workbench",
+          "charts": 9,
+          "verdict": "passed"
+        },
+        {
+          "route": "audit",
+          "charts": 8,
+          "verdict": "passed"
+        },
+        {
+          "route": "backtest",
+          "charts": 2,
+          "verdict": "passed"
+        },
+        {
+          "route": "chart_replay",
+          "charts": 3,
+          "verdict": "passed"
+        }
+      ]
+    },
+    {
+      "command": "browser tool current probe over reference legend/state badges plus live fallback condition/replay provenance",
+      "status": "PASS",
+      "artifact": "artifacts/ultragoal-g003-interactive-charts/current-live-probe.json"
+    },
+    {
+      "command": "Pillow screenshot evidence scan for G003 browser captures",
+      "status": "PASS",
+      "totalImages": 8
+    },
+    {
+      "command": "python artifact consistency validator for G003 transcript/images/probe",
+      "status": "PASS",
+      "stdout": "missing=[] transcript=passed summary=PASS image=PASS probe=PASS"
+    },
+    {
+      "command": "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py docs/update_log/2026-06-29_ultragoal_g003_interactive_chart_primitives.md artifacts/ultragoal-g003-interactive-charts",
+      "status": "PASS",
+      "stdout": ""
+    }
+  ],
+  "assertions": {
+    "conditionHoverTooltip": true,
+    "chartReplayHoverTooltip": true,
+    "keyboardNavigationRoutes": [
+      "condition",
+      "history",
+      "lab",
+      "workbench",
+      "audit",
+      "backtest",
+      "chart_replay"
+    ],
+    "totalInteractiveCharts": 37,
+    "nonUniformScreenshots": 8,
+    "legendHighlightCondition": true,
+    "stateBadgesCondition": [
+      "status=CURRENT",
+      "run_id=R-250518-1421-7XQ9",
+      "freshness=reference-static",
+      "malformed=0"
+    ],
+    "liveFallbackProvenance": true,
+    "replayFallbackProvenance": true
+  },
+  "artifactRefs": [
+    "artifacts/ultragoal-g003-interactive-charts/browser-transcript.json",
+    "artifacts/ultragoal-g003-interactive-charts/current-live-probe.json",
+    "artifacts/ultragoal-g003-interactive-charts/image-evidence.json"
+  ]
+}

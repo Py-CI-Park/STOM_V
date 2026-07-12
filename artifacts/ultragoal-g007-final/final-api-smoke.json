@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "kind": "api-smoke",
+  "baseUrl": "http://127.0.0.1:8776",
+  "readOnly": true,
+  "rows": [
+    {
+      "path": "/health",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 36,
+      "elapsedMs": 81.2
+    },
+    {
+      "path": "/status",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 2048,
+      "elapsedMs": 24.1
+    },
+    {
+      "path": "/runs",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 63,
+      "elapsedMs": 54.4
+    },
+    {
+      "path": "/bt/health",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 55,
+      "elapsedMs": 4.1
+    },
+    {
+      "path": "/bt/jobs",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 2048,
+      "elapsedMs": 19.8
+    },
+    {
+      "path": "/bt/strategies?kind=buy",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 2048,
+      "elapsedMs": 11.3
+    },
+    {
+      "path": "/bt/strategies?kind=sell",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 2048,
+      "elapsedMs": 21.3
+    },
+    {
+      "path": "/bt/data_range",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 145,
+      "elapsedMs": 1140.2
+    },
+    {
+      "path": "/sim/health",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 57,
+      "elapsedMs": 3.9
+    },
+    {
+      "path": "/sim/days?src=min",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 41,
+      "elapsedMs": 21.7
+    },
+    {
+      "path": "/sim/demo?src=min&mode=latest",
+      "status": 200,
+      "ok": true,
+      "bytesSampled": 119,
+      "elapsedMs": 376.5
+    }
+  ],
+  "allOk": true,
+  "note": "Read-only final smoke; live order/broker/account/export and WebSocket start paths are intentionally not invoked."
+}

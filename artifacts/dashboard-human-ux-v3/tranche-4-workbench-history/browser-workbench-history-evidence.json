@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "generatedAt": "2026-06-30T11:57:29.744Z",
+  "actions": [
+    {
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "page": "history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "ts": 1782820648501,
+      "timestampMs": 1782820648501,
+      "timestamp": "2026-06-30T11:57:28.501Z"
+    },
+    {
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-history-viewport.png",
+      "page": "history",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-history-viewport.png",
+      "ts": 1782820648730,
+      "timestampMs": 1782820648730,
+      "timestamp": "2026-06-30T11:57:28.730Z"
+    },
+    {
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "page": "workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "ts": 1782820649511,
+      "timestampMs": 1782820649511,
+      "timestamp": "2026-06-30T11:57:29.511Z"
+    },
+    {
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-workbench-viewport.png",
+      "page": "workbench",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-workbench-viewport.png",
+      "ts": 1782820649744,
+      "timestampMs": 1782820649744,
+      "timestamp": "2026-06-30T11:57:29.744Z"
+    }
+  ],
+  "pages": [
+    {
+      "page": "history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-history-viewport.png",
+      "selectors": {
+        "[data-ux-task-header=\"history\"]": true,
+        "[data-ux-primary-canvas=\"history\"]": true,
+        "[data-safety-boundary=\"history\"]": true,
+        "[data-history-step=\"find\"]": true,
+        "[data-history-step=\"inspect\"]": true,
+        "[data-history-step=\"compare\"]": true,
+        "[data-history-step=\"lineage\"]": true,
+        "[data-ux-evidence-drawer=\"history\"]": true
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n히스토리 · 찾기/상세/비교/Lineage가 한 흐름인 V3\n\n기록 테이블과 작은 비교 카드 과밀을 줄이고, 선택 RUN의 ResultDetail과 Compare canvas를 먼저 보여줍니다.\n\npurpose\nRun archive · ResultDetail · Compare · Research Records · Lineage\nstate\nREFERENCE · 18 archived runs\nprimary-action\nRUN 선택 후 Compare 확인\nrisk\nread-only history · export remains human-gated\nmode\nREFERENCE · reference/demo inert\nCompare 보기\nNo Live Order\n실거래 주문 없음\nNo Broker Login\n브로커 로그인 없음\nNo Account Trading\n계좌/자산 연동 없음\nResearch Only\n연구 전용\nHuman Approval Gate\n수동 승인 게이트\nAppend-Only Audit\n불변 감사\nHistory is read-only · Export request remains human-gated · Lineage/provenance visible\n히스토리 요약\n최신 실행\n18\n성공 12 / 실패 6\n게이트 통과\n232\n통과율 34.1%\n게이트 실패\n448\n실패율 65.9%\n프로모션 후보\n27\n스코어 > 0.75\n총 생성\n3642\n중복 제외 2,811\n라벨 캠페인\n86\n라벨 적용 64/86\n라인리지 검색\nCMPN_TrendBreak_001\nRUN 60 · GEN 260\nCMPN_MR_Momentum_004\nRUN 77 · GEN 303\nCMPN_QualityCore_002\n",
+      "primaryRect": {
+        "x": 14,
+        "y": 1432,
+        "w": 1412,
+        "h": 2136
+      },
+      "heatmapCells": 0,
+      "heatmapValues": 0,
+      "chartCount": 2,
+      "forbiddenLiveControls": 0,
+      "manualGateCount": 8,
+      "safetyText": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit"
+      ]
+    },
+    {
+      "page": "workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-workbench-viewport.png",
+      "selectors": {
+        "[data-ux-task-header=\"workbench\"]": true,
+        "[data-ux-primary-canvas=\"workbench\"]": true,
+        "[data-safety-boundary=\"workbench\"]": true,
+        "[data-workbench-step=\"select\"]": true,
+        "[data-workbench-step=\"compare\"]": true,
+        "[data-workbench-step=\"handoff\"]": true,
+        "[data-workbench-candidate]": true,
+        "[data-ux-evidence-drawer=\"workbench\"]": true
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n분석 워크벤치 · 후보 선택과 리뷰 handoff가 먼저 보이는 V3\n\n카드 과밀을 줄이고 Hall of Fame 후보 선택 → 비교 → 리뷰 큐 handoff를 한 primary canvas로 묶습니다.\n\npurpose\nHall of Fame 후보 · evidence compare · History Compare · Backtest Result Review · 리뷰 큐\nstate\nREFERENCE · selected G-0018\nprimary-action\n후보 비교 후 리뷰 큐 전달\nrisk\nanalysis-only · no approval/export authority\nmode\nREFERENCE · reference/demo inert\n리뷰 handoff 확인\nNo Live Order\n실거래 주문 없음\nNo Broker Login\n브로커 로그인 없음\nNo Account Trading\n계좌/자산 연동 없음\nResearch Only\n연구 전용\nHuman Approval Gate\n수동 승인 게이트\nAppend-Only Audit\n불변 감사\nWorkbench cannot export · Review queue is manual-gated · Research-only candidate analysis\n분석 컨텍스트\nActive Run\n127\nGeneration\nG-0018\nHistory Compare\nready\nBacktest Result Review\nready\n리뷰 대기\n3\n증거 노트\nIC 상승 구간에서 수익률 개선 일관 확인\n산업 중립화 후에도 IC 유지\n거래비용 0.15% 가정 시 성과 견고\nHoldout 첫 하락 구간 일부 발생\n조건군 복잡도 증가에 따른 해석 난이도 상승\n분석",
+      "primaryRect": {
+        "x": 14,
+        "y": 1517,
+        "w": 1412,
+        "h": 2185
+      },
+      "heatmapCells": 192,
+      "heatmapValues": 192,
+      "chartCount": 2,
+      "forbiddenLiveControls": 0,
+      "manualGateCount": 6,
+      "safetyText": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit"
+      ]
+    }
+  ]
+}

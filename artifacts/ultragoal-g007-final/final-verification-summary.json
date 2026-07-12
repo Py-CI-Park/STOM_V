@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G007",
+  "generatedAt": "2026-06-28T03:02:00+00:00",
+  "verdict": "passed-with-noted-non-gating-repo-unit-failures",
+  "commands": [
+    {
+      "command": "pytest tests/unit/ -q",
+      "status": "failed",
+      "summary": "3442 passed, 20 skipped, 10 failed in unrelated non-dashboard baseline tests: backtest constructor/protocol legacy expectations, seed DB stockbuy table, tick probe window expectation, jisu cleanup index. Recorded for transparency; not used as the dashboard remodel closure gate."
+    },
+    {
+      "command": "pytest tests/unit/test_dashboard*.py tests/unit/dashboard/ -q",
+      "status": "passed",
+      "summary": "907 passed, 18 skipped"
+    },
+    {
+      "command": "python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_remodel_visual_gate.py tests/unit/test_dashboard_remodel_static.py",
+      "status": "passed"
+    },
+    {
+      "command": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "status": "passed"
+    },
+    {
+      "command": "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g007-final/visual-gate --min-page-score 95 --min-average-score 97",
+      "status": "passed",
+      "summary": "averageCorrectedTotalScore 97.93; failures []"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "status": "passed"
+    },
+    {
+      "command": "git status --short -- protected runtime paths",
+      "status": "passed",
+      "summary": "no protected runtime path changes"
+    },
+    {
+      "command": "browser E2E 8 remodel routes + settings/inspector/approval modals",
+      "status": "passed"
+    },
+    {
+      "command": "final read-only API smoke",
+      "status": "passed",
+      "summary": "11/11 HTTP OK; no live order/broker/account/export/ws-start paths invoked"
+    }
+  ],
+  "artifactRefs": {
+    "browserE2E": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\final-browser-e2e.json",
+    "screenshotStats": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\final-screenshot-stats.json",
+    "apiSmoke": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\final-api-smoke.json",
+    "visualGateScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\scorecard.json",
+    "visualGateManifest": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\visual-gate-manifest.json",
+    "visualGateContactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\side-by-side-contact-sheet.png",
+    "g004BacktestEvidence": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-backtest\\browser-evidence.json",
+    "g005ReplayEvidence": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-replay\\browser-evidence.json",
+    "g006QualityGate": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\quality-gate-g006.json"
+  }
+}

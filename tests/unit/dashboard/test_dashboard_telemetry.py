@@ -37,6 +37,7 @@ from ai_strategy_loop.dashboard.backtest_jobs import (  # noqa: E402
     BacktestJobManager,
     BacktestJobSpec,
 )
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 class _FakeLoopState:
@@ -182,7 +183,7 @@ def test_to_loop_state_and_status_attach_bounded_telemetry(monkeypatch, tmp_path
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", current_state)
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    response = TestClient(create_app()).get("/status")
+    response = authorized_dashboard_client(create_app()).get("/status")
 
     assert response.status_code == 200
     latest = response.json()["latest"]

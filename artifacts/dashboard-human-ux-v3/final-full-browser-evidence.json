@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "baseUrl": "http://127.0.0.1:8776",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "startedAt": "2026-06-30T13:27:45.738Z",
+  "finishedAt": "2026-06-30T13:27:46.714Z",
+  "actions": [
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"condition\"], [data-ux-primary-canvas=\"condition\"]",
+      "routeId": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"condition\"]": true,
+        "[data-ux-primary-canvas=\"condition\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:45.738Z",
+      "timestampMs": 1782826065738,
+      "durationMs": 225
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"process\"], [data-ux-primary-canvas=\"process\"], [data-process-step=\"contracts\"]",
+      "routeId": "process",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"process\"]": true,
+        "[data-ux-primary-canvas=\"process\"]": true,
+        "[data-process-step=\"contracts\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:45.888Z",
+      "timestampMs": 1782826065888,
+      "durationMs": 150
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"history\"], [data-ux-primary-canvas=\"history\"]",
+      "routeId": "history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"history\"]": true,
+        "[data-ux-primary-canvas=\"history\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.032Z",
+      "timestampMs": 1782826066032,
+      "durationMs": 144
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"lab\"], [data-ux-primary-canvas=\"lab\"]",
+      "routeId": "lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"lab\"]": true,
+        "[data-ux-primary-canvas=\"lab\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.169Z",
+      "timestampMs": 1782826066169,
+      "durationMs": 137
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"workbench\"], [data-ux-primary-canvas=\"workbench\"]",
+      "routeId": "workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"workbench\"]": true,
+        "[data-ux-primary-canvas=\"workbench\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.316Z",
+      "timestampMs": 1782826066316,
+      "durationMs": 147
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"audit\"], [data-ux-primary-canvas=\"audit\"], [data-audit-step=\"ledger\"]",
+      "routeId": "audit",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"audit\"]": true,
+        "[data-ux-primary-canvas=\"audit\"]": true,
+        "[data-audit-step=\"ledger\"]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.454Z",
+      "timestampMs": 1782826066454,
+      "durationMs": 138
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"backtest\"], [data-ux-primary-canvas=\"backtest\"], [data-backtest-step=\"edit\"], [data-backtest-validation-status]",
+      "routeId": "backtest",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"backtest\"]": true,
+        "[data-ux-primary-canvas=\"backtest\"]": true,
+        "[data-backtest-step=\"edit\"]": true,
+        "[data-backtest-validation-status]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.598Z",
+      "timestampMs": 1782826066598,
+      "durationMs": 144
+    },
+    {
+      "type": "navigate-and-assert-selectors",
+      "selector": "[data-ux-task-header=\"chart_replay\"], [data-ux-primary-canvas=\"chart_replay\"], [data-replay-step=\"manual-start\"], [data-replay-signal-log]",
+      "routeId": "chart_replay",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "selectorResults": {
+        "[data-ux-task-header=\"chart_replay\"]": true,
+        "[data-ux-primary-canvas=\"chart_replay\"]": true,
+        "[data-replay-step=\"manual-start\"]": true,
+        "[data-replay-signal-log]": true
+      },
+      "timestamp": "2026-06-30T13:27:46.712Z",
+      "timestampMs": 1782826066712,
+      "durationMs": 114
+    }
+  ],
+  "networkSummary": {
+    "requestCount": 32,
+    "forbiddenCount": 0
+  },
+  "artifactRefs": [
+    "artifacts/dashboard-human-ux-v3/final-full-visual-gate/side-by-side-contact-sheet.png",
+    "artifacts/dashboard-human-ux-v3/final-full-evidence/side-by-side-contact-sheet.png"
+  ],
+  "verdict": "passed"
+}

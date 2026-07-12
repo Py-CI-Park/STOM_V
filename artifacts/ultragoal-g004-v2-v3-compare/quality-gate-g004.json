@@ -1,0 +1,270 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "blockers": [],
+    "codeStatus": "CLEAR",
+    "commands": [
+      "agent://76-G004ArchitectReview"
+    ],
+    "evidence": "Architect review 76-G004ArchitectReview approved G004: app route/cache ownership is sound, compare verifier thresholds V2/V3 assets/headers/safety, compare-scorecard PASS average 100.0, route matrix PASS, forbidden-network scan PASS, V3 reference visual PASS average 97.93, no blockers.",
+    "productStatus": "CLEAR",
+    "recommendation": "APPROVE"
+  },
+  "executorQa": {
+    "adversarialCases": [
+      {
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot",
+          "v3-reference-screenshot",
+          "compare-scorecard"
+        ],
+        "contractRef": "All required G004 artifacts exist and parse/render",
+        "expectedBehavior": "QA blocks completion if JSON cannot parse or screenshots/contact sheets are blank/unreadable.",
+        "id": "case-missing-artifacts",
+        "scenario": "Assigned artifacts are missing, unreadable, or blank.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "compare-scorecard",
+          "v3-reference-scorecard"
+        ],
+        "contractRef": "Page >=95 and average >=97 thresholds",
+        "expectedBehavior": "Verifier exits nonzero and scorecard status FAIL. Current evidence has compare average 100.0 and V3 reference average 97.93.",
+        "id": "case-score-threshold",
+        "scenario": "A page or average falls below the approved threshold.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "route-version-matrix",
+          "compare-scorecard"
+        ],
+        "contractRef": "V2/V3 asset/header separation",
+        "expectedBehavior": "Route matrix records violations and fails. Current route matrix is PASS with violations empty.",
+        "id": "case-asset-header-cross-contamination",
+        "scenario": "V2 accidentally loads remodel assets or V3 loads V2 bundle/cache semantics.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "forbidden-network-scan",
+          "adversarial-report"
+        ],
+        "contractRef": "No forbidden live/order/broker/account/export endpoints on V3 load",
+        "expectedBehavior": "Forbidden-network scan fails. Current V3 findings are empty; V2 /sim/ws is explicitly legacy-observed only.",
+        "id": "case-forbidden-network",
+        "scenario": "V3 auto-opens /bt/run, /bt/ws_job, /sim/ws, broker/account/order paths.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "route-version-matrix",
+          "adversarial-report"
+        ],
+        "contractRef": "Unknown remodel route fail-closed",
+        "expectedBehavior": "Route matrix expects and observes 404 with no scripts.",
+        "id": "case-unknown-route",
+        "scenario": "Unknown /ui/remodel/* path masks broken links with a V2/V3 shell.",
+        "verdict": "passed"
+      }
+    ],
+    "artifactRefs": [
+      {
+        "description": "Valid browser automation transcript with monotonic route navigation/assertion actions for all V2/V3 page pairs, route matrix, forbidden scan, and V3 visual gate.",
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\browser-transcript.json"
+      },
+      {
+        "description": "Non-uniform contact sheet showing V2 default left and explicit V3 right for all eight pages.",
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\side-by-side-contact-sheet.png"
+      },
+      {
+        "description": "Non-uniform reference/current V3 visual parity contact sheet from the reference visual gate.",
+        "id": "v3-reference-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v3-reference-visual\\side-by-side-contact-sheet.png"
+      },
+      {
+        "description": "Safe deterministic CLI replay receipt for G004.",
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\cli-replay.json"
+      },
+      {
+        "description": "Boundary and failure-mode report for unknown routes, cache ownership, asset contamination, forbidden network, and V2 legacy observation classification.",
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\adversarial-report.txt"
+      },
+      {
+        "description": "V2/V3 compare scorecard status PASS, averageCorrectedTotalScore 100.0, page scores >=95, failures empty.",
+        "id": "compare-scorecard",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\compare-scorecard.json"
+      },
+      {
+        "description": "Route/version ownership matrix covering V2 default, forced V2, V3 query preview, hard remodel, and unknown 404.",
+        "id": "route-version-matrix",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\route-version-matrix.json"
+      },
+      {
+        "description": "Forbidden network scan status PASS with V3 findings empty and V2 /sim/ws recorded as legacy observation.",
+        "id": "forbidden-network-scan",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\forbidden-network-scan.json"
+      },
+      {
+        "description": "V3 reference visual gate status PASS, averageCorrectedTotalScore 97.93.",
+        "id": "v3-reference-scorecard",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v3-reference-visual\\scorecard.json"
+      }
+    ],
+    "blockers": [],
+    "contractCoverage": [
+      {
+        "adversarialCaseRefs": [
+          "case-missing-artifacts"
+        ],
+        "contractRef": "G004 objective: capture all required pages",
+        "id": "contract-eight-pages",
+        "obligation": "All eight dashboard page pairs are covered by V2/V3 compare rows and DOM inventory rows.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-compare",
+          "surface-web-reference"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-asset-header-cross-contamination",
+          "case-unknown-route"
+        ],
+        "contractRef": "Approved plan route/version ownership matrix",
+        "id": "contract-v2-v3-selectability",
+        "obligation": "V2 default remains V2 and explicit V3 remains V3 with no asset/header cross-contamination.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-compare"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-score-threshold"
+        ],
+        "contractRef": "G004 threshold: page >=95 and average >=97",
+        "id": "contract-score-thresholds",
+        "obligation": "Compare gate and reference visual gate fail below thresholds and current evidence is above thresholds.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-compare",
+          "surface-web-reference",
+          "surface-cli"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-forbidden-network"
+        ],
+        "contractRef": "Research-only local-only safety boundary",
+        "id": "contract-safety-network",
+        "obligation": "V3 load does not auto-open forbidden live/order/broker/account/export or streaming endpoints.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-compare"
+        ]
+      },
+      {
+        "contractRef": "Live trading/broker/account operations",
+        "id": "contract-live-order-out-of-scope",
+        "obligation": "Live order, broker login, account trading, and production export execution are intentionally outside G004 and remain forbidden.",
+        "reason": "G004 verifies absence/forbidden status only; it does not implement trading, broker, account, or export execution.",
+        "status": "not_applicable"
+      }
+    ],
+    "e2eCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v3-reference-visual --min-page-score 95 --min-average-score 97",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q"
+    ],
+    "e2eStatus": "passed",
+    "evidence": "Executor QA 77-G004ExecutorQa passed: eight page pairs covered, V2/V3 asset and header separation verified, all compare rows scored 100.0, V3 reference visual average 97.93, screenshots/contact sheets non-uniform, V3 forbidden network scan PASS, unknown remodel route 404 fail-closed covered.",
+    "redTeamCommands": [
+      "agent://77-G004ExecutorQa",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_remodel_visual_gate.py && git diff --check"
+    ],
+    "redTeamStatus": "passed",
+    "status": "passed",
+    "surfaceEvidence": [
+      {
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot",
+          "compare-scorecard",
+          "route-version-matrix",
+          "forbidden-network-scan"
+        ],
+        "contractRef": "V2/V3 browser route comparison",
+        "id": "surface-web-compare",
+        "invocation": "Playwright captured V2 8770 and V3 8776 routes through verify_dashboard_v2_v3_compare.py.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "browser-run",
+          "v3-reference-screenshot",
+          "v3-reference-scorecard"
+        ],
+        "contractRef": "V3 zip/reference visual parity gate",
+        "id": "surface-web-reference",
+        "invocation": "Playwright captured V3 reference routes through verify_dashboard_remodel_visual_gate.py.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "cli-replay",
+          "compare-scorecard"
+        ],
+        "contractRef": "Verifier command replay/static checks",
+        "id": "surface-cli",
+        "invocation": "Focused pytest/static checks and deterministic CLI replay for the verifier/story.",
+        "surface": "cli",
+        "verdict": "passed"
+      },
+      {
+        "contractRef": "API/package surface outside G004",
+        "id": "surface-api-package-out-of-scope",
+        "reason": "G004 compares web/DOM/network load behavior; API depth is covered by G005/G006.",
+        "status": "not_applicable",
+        "surface": "api"
+      },
+      {
+        "contractRef": "Algorithm/math surface outside G004",
+        "id": "surface-algorithm-out-of-scope",
+        "reason": "G004 has no trading algorithm/math change; scoring formulas are verifier rules evidenced by compare-scorecard.",
+        "status": "not_applicable",
+        "surface": "algorithm"
+      }
+    ]
+  },
+  "iteration": {
+    "blockers": [],
+    "evidence": "AI slop cleanup report has zero blocking findings. After fixes, full G004 verification was rerun cleanly: compare scorecard PASS average 100.0, V3 reference visual PASS average 97.93, focused tests 29 passed, py_compile/node --check/git diff --check passed, architect and executor QA reviews approved with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v3-reference-visual --min-page-score 95 --min-average-score 97",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_remodel_visual_gate.py && git diff --check"
+    ],
+    "status": "passed"
+  }
+}

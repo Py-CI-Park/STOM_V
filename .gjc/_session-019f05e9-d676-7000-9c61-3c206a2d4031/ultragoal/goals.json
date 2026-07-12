@@ -1,0 +1,286 @@
+{
+  "version": 1,
+  "brief": "Approved pending plan: C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md\nExecution scope: Tranche 0 only. Preserve V2 as default. V3 remains explicit/selectable via /ui/remodel/* or dashboard_version=v3. No default cutover, live order, broker login, account trading, hidden production export, protected runtime writes, or unapproved mutating calls. The new human-centered rubric complements existing safety/route/visual gates.\n\n@goal: Tranche 0 human UX rubric baseline\nAdd a read-only dashboard human UX verifier, capture current V2/current explicit V3 baseline, create machine-checkable Condition/Backtest/Chart Replay storyboards, and document selector/marker preservation. Exit criteria: valid JSON/contact sheet/storyboards; zero route/safety hard failures; Backtest/Replay storyboards map steps to selectors, safety assertions, and rubric observations. Do not redesign UI in this tranche.",
+  "gjcGoalMode": "aggregate",
+  "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+  "goals": [
+    {
+      "id": "G001",
+      "title": "Tranche 0 human UX rubric baseline",
+      "objective": "Add a read-only dashboard human UX verifier, capture current V2/current explicit V3 baseline, create machine-checkable Condition/Backtest/Chart Replay storyboards, and document selector/marker preservation. Exit criteria: valid JSON/contact sheet/storyboards; zero route/safety hard failures; Backtest/Replay storyboards map steps to selectors, safety assertions, and rubric observations. Do not redesign UI in this tranche.",
+      "status": "complete",
+      "createdAt": "2026-06-30T04:09:48.319Z",
+      "updatedAt": "2026-06-30T04:49:55.829Z",
+      "startedAt": "2026-06-30T04:10:17.008Z",
+      "completedAt": "2026-06-30T04:49:55.829Z",
+      "evidence": "Tranche 0 complete: read-only human UX verifier added, Condition/Backtest/Chart Replay storyboards created, V2/V3 baseline scorecard/network/contact-sheet/browser-transcript artifacts generated; py_compile, focused pytest (31 passed), browser verifier PASS, diff check, protected-path check, final architect CLEAR/APPROVE, final QA passed.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "9927ab94-a149-4237-ab76-d21730f92437",
+        "verifiedAt": "2026-06-30T04:49:55.829Z",
+        "goalId": "G001",
+        "receiptKind": "final-aggregate",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "4a54f5f8feb4a47331fbbe1e3d6161a7efc9c9a510c6d8a541f1bf298f61ec28",
+        "gjcGoalSnapshotHash": "c43d62f15f0ee1ed01af5ccac14cef7cd59fe29a37f67e3244fbce36b13de6ac",
+        "planGeneration": "1724b806b6c862c789b960665e04b95759623fe8cfb73d10994b5d87b84934ca",
+        "basis": {
+          "planHashBeforeCheckpoint": "10abf1147c33bee302e6ea0c40e314c42453507cdb3a99b6e983a09e244bcb26",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "656f6b8b-9329-4741-aa45-e070ddbf6055",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T04:49:55.829Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G001"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "b92647fb54e91489f5fa826841d0b7d8dd95d6b917bf371e5ab52182e9b58c00"
+        },
+        "checkpointLedgerEventId": "e8cfb83b-fe51-4b46-bc0b-a09d30b30795"
+      }
+    },
+    {
+      "id": "G002",
+      "title": "Shared IA and Backtest redesign",
+      "objective": "Continue after completed Tranche 0 from the approved Ralplan plan. Implement shared explicit-V3 UX information-architecture primitives plus Backtest-first redesign only: task frame selectors, compact safety strip, evidence/contract drawer pattern, Backtest select/edit/validate/gated-run/analyze flow with large buy/sell condition editors, validation status, manual-gated run/save/delete controls, readable result chart, and preserved V2 default/V3 explicit route/safety/provenance/contract markers. Do not start Chart Replay until Backtest passes its tranche gate.",
+      "status": "complete",
+      "createdAt": "2026-06-30T07:01:54.646Z",
+      "updatedAt": "2026-06-30T07:47:11.072Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved next Ultragoal tranche from pending-approval.md after Tranche 0 final aggregate completion; Tranche 0 artifacts and human UX verifier are available under artifacts/dashboard-human-ux-v3.",
+        "rationale": "The original aggregate objective includes later accepted/appended stories; this appends the next bounded tranche without replanning."
+      },
+      "startedAt": "2026-06-30T07:02:07.489Z",
+      "completedAt": "2026-06-30T07:47:11.072Z",
+      "evidence": "G002 complete: shared V3 UX IA primitives and Backtest-first redesign implemented only; Backtest task frame, compact safety strip, evidence/contract drawer, select/edit/validate/gated-run/analyze flow, large buy/sell condition editors, validation status, manual-gated controls, readable result chart, V2 default/V3 explicit route preservation, and no Chart Replay scope creep verified. Evidence: artifacts/dashboard-human-ux-v3/tranche-1-verification-report.json and tranche-1-quality-gate.json.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "9140b97f-d518-4966-b00c-3cd4879306c5",
+        "verifiedAt": "2026-06-30T07:47:11.072Z",
+        "goalId": "G002",
+        "receiptKind": "final-aggregate",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "2a3b52cb37d9487ce029cc806e351164d6f9359c99949336491dfb176c3eb8ee",
+        "gjcGoalSnapshotHash": "6d45bae01bbd64f6dc5aef605ed73f493da46dd853bef3cda876ba4f9d1afdc5",
+        "planGeneration": "32e9752aa0e31edf49ac271b7834d7058eff23676aa1201d9a291ca8a30668a5",
+        "basis": {
+          "planHashBeforeCheckpoint": "299ed4f0ba868b43abe8605faf1c583672bb105d8ec24bbcbcd5771c7a7ddfef",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "59c8cc9b-f94d-4dfb-82d9-65bc51903a5e",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T07:47:11.072Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G001",
+            "G002"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "c56bdc42951e8c06734538070edf306880535935800d5ade58bd2ae0d06d2fa7"
+        },
+        "checkpointLedgerEventId": "2f4a2125-8671-4ac1-aad0-91d0908a92ea"
+      }
+    },
+    {
+      "id": "G003",
+      "title": "Chart Replay redesign",
+      "objective": "Continue from completed G001/G002 and implement Chart Replay redesign only. Restore V2-like quick-start/date/symbol/strategy/playback/timeline intuition inside explicit V3: add data-replay selectors, compact task frame, primary candle chart, selected bar narrative, synchronized signal log, sticky playback controls/timeline, compact safety strip, and collapsed API/WS evidence drawer. Preserve V2 default, V3 explicit routing, no auto /sim/ws, no live order/broker/account behavior, and verify with the Tranche 0 human UX rubric plus compare/safety gates. Do not start Lab/Condition until Chart Replay passes its tranche gate.",
+      "status": "complete",
+      "createdAt": "2026-06-30T10:50:09.062Z",
+      "updatedAt": "2026-06-30T11:22:44.227Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved all remaining tranches after G001/G002; pending plan identifies Chart Replay as high-risk UX page and user specifically requested remaining page execution.",
+        "rationale": "Appending separate goals keeps every remaining tranche auditable and checkpointed under the original aggregate objective."
+      },
+      "startedAt": "2026-06-30T10:51:14.254Z",
+      "completedAt": "2026-06-30T11:22:44.227Z",
+      "evidence": "G003 complete: Chart Replay V3 redesign implements quick-start/date/symbol/strategy/playback/timeline flow, data-replay selectors, primary candle chart, selected-bar/signal-log synchronization, compact safety strip, collapsed API/WS evidence drawer, no auto /sim/ws, V2 default and V3 explicit routing preserved. Evidence: artifacts/dashboard-human-ux-v3/tranche-2-replay-verification-report.json and tranche-2-replay-quality-gate.json.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "176a328d-dc41-43c5-b88b-e0c3d4922cb6",
+        "verifiedAt": "2026-06-30T11:22:44.227Z",
+        "goalId": "G003",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "af6dc6c4c667b7c654740210a14f17becae70170498faf4b67b2aa9cb1ba167e",
+        "gjcGoalSnapshotHash": "cdcc3dc7d27fa29ebfc09cf42b3e270a605bd219893c7f5f807670a27fb084cc",
+        "planGeneration": "d26253ec3a0e5ec6e7fa70b92843b93da738229fc424a21f91aa1380d22baa7a",
+        "basis": {
+          "planHashBeforeCheckpoint": "07847e15567a0dfba15b454292d921c8782bd7786cd94570ede1115d928165f9",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "fe593dce-fb9e-488f-9197-1f570dbeebf0",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T11:22:44.227Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G003"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "a54be3ea60497531f717da118df045a3cce4f0b61412814b09c7ce864b741015"
+        },
+        "checkpointLedgerEventId": "719f4338-078b-4d3e-bfd2-11ce5127566d"
+      }
+    },
+    {
+      "id": "G004",
+      "title": "Lab and Condition redesign",
+      "objective": "After Chart Replay is complete, redesign Lab and Condition explicit V3 pages. Lab must provide large readable heatmaps with axes, scale, selected-cell narrative, tooltip/active value, holdout interpretation, and reduced tiny-text/panel clutter. Condition must provide a first-fold task header, primary run/candidate canvas, large readable primary charts, clear candidate quality/provenance, and export/audit separation. Preserve V2 default, V3 explicit routing, safety/provenance/contract markers, and verify touched pages with the Tranche 0 human UX rubric plus compare/safety gates.",
+      "status": "complete",
+      "createdAt": "2026-06-30T10:50:20.211Z",
+      "updatedAt": "2026-06-30T11:49:33.055Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved all remaining tranches after G001/G002; pending plan lists Lab heatmap and Condition card/chart deficiencies.",
+        "rationale": "Lab and Condition share chart/heatmap/candidate information-design risks and should be checkpointed as one bounded tranche."
+      },
+      "startedAt": "2026-06-30T11:22:44.308Z",
+      "completedAt": "2026-06-30T11:49:33.055Z",
+      "evidence": "G004 Lab + Condition redesign complete: task-first Condition current-generation/BEST-candidate canvas, large evidence charts, export/audit separation, task-first Lab readable Edge Ratio heatmap with values/legend/selected-cell narrative, importance, Holdout proof, compact safety, evidence drawer. Verification: node --check pass; focused pytest 34 passed; human UX PASS mean V3 96.9 delta 7.99; V2/V3 compare PASS 100.0; safety audit PASS 100.0; browser artifacts and final architect/QA reviews clean.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "41a5c36a-6f6d-4dc4-90bf-fc7d7006b914",
+        "verifiedAt": "2026-06-30T11:49:33.055Z",
+        "goalId": "G004",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "1a3d8e9649dcb3b64ee73c4e24e6a77f301639e43396da28acf66ad2c0bdcf06",
+        "gjcGoalSnapshotHash": "4e09499a58b0f518bd46aae30fc4e3d93d0df2d5f8771d2fb02a079fdb645c4f",
+        "planGeneration": "bfd1a95bd99c89720cddf04bd81eec83bb6f189ba16b3fdb27fd0ffe1a8acf15",
+        "basis": {
+          "planHashBeforeCheckpoint": "3cb4355e05e6921aa0cbc5bce3819df07dcba4b4f69a2d416331d70c7d416f11",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "249f5450-e108-4616-ad61-20e76bc006c9",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T11:49:33.055Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G004"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "57e1ef189dcafbe372002c298588c9025d3d3b1640a5678c19586a6648c17994"
+        },
+        "checkpointLedgerEventId": "3c34dfa8-8f57-454f-b4b5-3f9cda8b0add"
+      }
+    },
+    {
+      "id": "G005",
+      "title": "Workbench and History redesign",
+      "objective": "After Lab/Condition is complete, redesign Workbench and History explicit V3 pages. Workbench must become a candidate-selection funnel with primary candidate comparison, review handoff, and evidence drawer. History must become a find/inspect/compare flow with one primary comparison canvas, visible lineage/provenance, and reduced comparison clutter. Preserve V2 default, V3 explicit routing, safety/provenance/contract markers, and verify touched pages with the Tranche 0 human UX rubric plus compare/safety gates.",
+      "status": "complete",
+      "createdAt": "2026-06-30T10:50:31.149Z",
+      "updatedAt": "2026-06-30T12:03:16.649Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved all remaining tranches after G001/G002; pending plan lists Workbench candidate-priority and History comparison-clutter deficiencies.",
+        "rationale": "Workbench and History are adjacent candidate/result investigation surfaces and can be improved as one bounded tranche."
+      },
+      "startedAt": "2026-06-30T11:49:33.125Z",
+      "completedAt": "2026-06-30T12:03:16.649Z",
+      "evidence": "G005 Workbench + History redesign complete: History is now find/inspect/compare/lineage task-first flow with primary comparison canvas and evidence drawer; Workbench is now Hall of Fame candidate selection funnel with selected-candidate comparison, review handoff, and evidence drawer. Verification: node --check pass; focused pytest 35 passed; human UX PASS mean V3 96.58 delta 28.11; V2/V3 compare PASS 100.0; safety audit PASS 100.0; browser artifacts and final architect/QA reviews clean.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "42ac5993-c5c3-473c-8c92-c6af163c1680",
+        "verifiedAt": "2026-06-30T12:03:16.649Z",
+        "goalId": "G005",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "a24d10ffad84234e066c76a5f443a1e854df94ebbdd8f6ae4f5a17b7f3d0560d",
+        "gjcGoalSnapshotHash": "f3ef62be0cc75b86ea71c707272d9c1d9e28d954430ae1013f1260237282bc1a",
+        "planGeneration": "f25c2b87421a9199433bde8d3fa434caa6a7e6050097cb3973c1523a0a529996",
+        "basis": {
+          "planHashBeforeCheckpoint": "692eaa3ada3fb03e5156de0489145c43df9a110eef7ff304c3af5809537ceaac",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "874b52cd-489b-4bb8-8b44-919de1c541df",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T12:03:16.649Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G005"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "d10a459808599fd9e69fb9fc9f19157261a47f01fcc71e88f9d81fc5c283d08a"
+        },
+        "checkpointLedgerEventId": "2e2c927d-d649-471a-8bc0-d929393edf89"
+      }
+    },
+    {
+      "id": "G006",
+      "title": "Process and Audit polish",
+      "objective": "After Workbench/History is complete, polish Process and Audit explicit V3 pages. Process should retain its payload-driven cockpit while applying task-frame selectors, hierarchy, and progressive evidence drawer. Audit should remain audit-specialized with a clear decision funnel and append-only evidence. Reduce equal-weight evidence clutter while preserving required DOM markers, V2 default, V3 explicit routing, and safety/provenance/contract markers. Verify touched pages with the Tranche 0 human UX rubric plus compare/safety gates.",
+      "status": "complete",
+      "createdAt": "2026-06-30T10:50:41.474Z",
+      "updatedAt": "2026-06-30T12:45:45.452Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved all remaining tranches after G001/G002; pending plan lists Process evidence clutter and Audit heaviness as remaining deficiencies.",
+        "rationale": "Process and Audit are governance/monitoring surfaces and should be polished after primary user workflows."
+      },
+      "startedAt": "2026-06-30T12:03:16.719Z",
+      "completedAt": "2026-06-30T12:45:45.452Z",
+      "evidence": "G006 Process/Audit polish complete: Process keeps payload-driven cockpit with task frame, compact safety strip, step selectors and evidence drawer; Audit now shows OOS evidence -> Human Decision -> Append-Only Ledger decision funnel with mode-honest env copy and evidence drawer. Verification report artifacts/dashboard-human-ux-v3/tranche-5-process-audit-verification-report.json; quality gate artifacts/dashboard-human-ux-v3/tranche-5-process-audit-quality-gate.json; final reviews 153-G006ProcessAuditArchClear and 154-G006ProcessAuditQaClear.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "601d4e78-2ed8-4f51-8a62-1e49638d5693",
+        "verifiedAt": "2026-06-30T12:45:45.452Z",
+        "goalId": "G006",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "2b1de26783b9b719fe01b603d986d825307f9a665d4b18805edc239083584505",
+        "gjcGoalSnapshotHash": "3a18de216ef50bfb9ad06b839a922a5255d9eaa1cda57260ec52b84fc0830c61",
+        "planGeneration": "9aa323bd6f61ed5c953b0a8558e1c04da87e7b1389f524b7ccf1469680baff5d",
+        "basis": {
+          "planHashBeforeCheckpoint": "0e367fae6f5fa2846f8ec30cfc19ece31db4b6d921d5bf3361ff95c8b663f16d",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "1a44105e-6e87-421b-8d4f-56930261083d",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T12:45:45.452Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G006"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "b35fe91ae9f74b204392be96b139da94cefa716dc2214de78a75e9080f019b72"
+        },
+        "checkpointLedgerEventId": "cef816ea-b428-4b10-bff1-87fbdac19410"
+      }
+    },
+    {
+      "id": "G007",
+      "title": "Final full evidence gate",
+      "objective": "After G003-G006 are complete, run the final full V3 UX/UI maturity evidence gate across all eight pages. Verify V3 total >=90, no category <70, and mean V3-V2 delta >=15 in named human UX categories, plus existing dashboard tests, visual gate, V2/V3 compare, safety audit, diff check, protected-path check, browser evidence, and review lanes. Do not mark the aggregate complete until no incomplete, blocked, or review_blocked goals remain and final aggregate receipt is created.",
+      "status": "complete",
+      "createdAt": "2026-06-30T10:51:04.150Z",
+      "updatedAt": "2026-06-30T13:37:55.760Z",
+      "steering": {
+        "kind": "add_subgoal",
+        "evidence": "User approved all remaining tranches after G001/G002; pending plan requires final full evidence pass after page tranches.",
+        "rationale": "A separate final gate prevents per-page passes from being mistaken for whole-V3 completion."
+      },
+      "startedAt": "2026-06-30T12:45:45.511Z",
+      "completedAt": "2026-06-30T13:37:55.760Z",
+      "evidence": "G007 final full evidence gate complete: all required goals G001-G006 complete before final gate; final full human UX rubric PASS mean V3 96.89 and named V3-V2 delta 21.72; category floor check PASS; dashboard tests 939 passed; visual gate PASS 100.0; V2/V3 compare PASS 100.0; safety audit PASS 100.0; browser transcript passed across 8 V3 routes; git diff check passed; protected runtime paths clean; architect review 155-G007FinalArchitect CLEAR/APPROVE; executor QA 156-G007FinalQa passed.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "28e2ce69-df68-40c0-b342-c6caf77df7a5",
+        "verifiedAt": "2026-06-30T13:37:55.760Z",
+        "goalId": "G007",
+        "receiptKind": "final-aggregate",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "3c4716d02f7d1e2233bb095dcfd834d4d5557faaca68161426cdfc23d203c5ba",
+        "gjcGoalSnapshotHash": "347530136e9d74eb04838f8df93a7a26ae82810ef8478c58ca286799f6380ccf",
+        "planGeneration": "5d45c2b572996815b566d1a373531be2c102edb158a49e48a594b202c19173b1",
+        "basis": {
+          "planHashBeforeCheckpoint": "34d4404b5968564257ac4a007f14506441869e77c03c571ef035fa39de5e7feb",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "ab07076c-d61c-4b16-a03a-af83b9692968",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-30T13:37:55.760Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G001",
+            "G002",
+            "G003",
+            "G004",
+            "G005",
+            "G006",
+            "G007"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "f5bc4c15d96bc2ab83a568d6551dded84c8e7f9b08f2da8e0445530d79566870"
+        },
+        "checkpointLedgerEventId": "a3205586-6669-4919-bd97-f4eecceb914a"
+      }
+    }
+  ],
+  "createdAt": "2026-06-30T04:09:48.319Z",
+  "updatedAt": "2026-06-30T13:37:55.760Z",
+  "state_revision": 88
+}

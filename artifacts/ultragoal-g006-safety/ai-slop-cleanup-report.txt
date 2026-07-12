@@ -1,0 +1,6 @@
+AI SLOP CLEANUP REPORT
+Goal: G006 Decision audit settings and safety completion
+Scope: no new G006 product-source edits; verified existing production safety/settings/audit paths plus G002 remodel shell.
+Blocking findings: 0
+Advisory findings: 0
+Result: passed/no-op for active story changed source; source and DOM safety scans are captured separately.

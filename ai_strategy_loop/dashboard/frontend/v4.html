@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STOM V4 · graph-first research terminal (preview)</title>
+
+  <link rel="stylesheet" href="/ui/styles.css?v=20260624u002" />
+  <link rel="stylesheet" href="/ui/v4.css?v=20260705b" />
+  <script src="/ui/vendor-react.js?v=20260603a"></script>
+  <script src="/ui/vendor-react-dom.js?v=20260603a"></script>
+  <!-- 캔들차트 엔진(Replay 탭). 부재 시 SVG 폴백. -->
+  <script src="/ui/vendor-lightweight-charts.js?v=20260612a"></script>
+  <!-- V4 프리뷰: V2 운영 화면(app.js 의 App)은 그대로 두고, App 자동 마운트를 끄고
+       window.DashboardV4Shell 을 직접 마운트한다(lab/pro/verdict.html 패턴).
+       같은 컴파일 번들(bundle/app.js)·단일 React 공유. stom-ui.js(모듈)가 window.fmt* 를 먼저 세팅. -->
+  <script type="module" src="/ui/bundle/stom-ui.js?v=f41f5701"></script>
+  <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
+</head>
+<body>
+  <!-- V4 는 opt-in 프리뷰. V2 운영 대시보드로 돌아가는 링크를 항상 제공한다. -->
+  <div style="padding:8px 16px 0;font-family:'IBM Plex Sans',system-ui,sans-serif;">
+    <a href="/ui/" style="color:#7ab;font-size:12px;">← V2 운영 대시보드로</a>
+  </div>
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      STOM V4 로딩 중… (지속 시 <b>Ctrl+Shift+R</b>)
+    </div>
+  </div>
+
+  <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. DOMContentLoaded 에서 DashboardV4Shell 마운트. -->
+  <script defer src="/ui/bundle/app.js?v=443d9ca0"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      ReactDOM.createRoot(document.getElementById("root"))
+        .render(React.createElement(window.DashboardV4Shell, { baseUrl: window.location.origin }));
+    });
+  </script>
+</body>
+</html>

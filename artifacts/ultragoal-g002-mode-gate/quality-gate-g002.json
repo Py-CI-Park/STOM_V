@@ -1,0 +1,234 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 40-G002ArchitectReviewClean approved G002 after absolute-path screenshot fix. It verified app.js reference/demo/live gate, live-only localStorage/fetch/WebSocket/reconnect timers, debug flags, all-reference-route inert evidence, browser transcript, readable screenshot, static tests, and no safety regression. G003+ visual/API parity remains out of scope.",
+    "commands": [
+      "architect review subagent 40-G002ArchitectReviewClean"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 41-G002ExecutorQaClean passed. Browser probes showed reference and all 8 reference routes had zero fetch/ws/timer/storage side effects; demo mode was inert/readonly with DEMO fixture status; live mode still used /health, /status, /runs, /ws and localStorage get. Parent ran focused pytest, node --check, git diff --check, and browser probes.",
+    "e2eCommands": [
+      "browser automation probe for reference/demo/live modes on http://127.0.0.1:8776"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "executor QA subagent 41-G002ExecutorQaClean"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g002-mode-gate/browser-transcript.json",
+        "description": "Automation transcript with reference/demo/live navigation, probes, screenshot capture, monotonic action sequence, and passed verdict",
+        "tool": "browser",
+        "surface": "web",
+        "transcript": "navigate/evaluate/probe/screenshot actions for reference, demo, live, and all reference routes"
+      },
+      {
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g002-reference/g002-reference-condition.png",
+        "description": "Non-uniform 1920px-wide reference-mode dashboard screenshot with safety footer and REFERENCE mode badge"
+      },
+      {
+        "id": "browser-probe-json",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-g002-mode-gate/browser-evidence.json",
+        "description": "Structured browser probe evidence for reference, demo, live, and all 8 reference routes"
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-g002-mode-gate/cli-replay-g002.json",
+        "description": "Replay-safe CLI receipt for G002 mode-gate checkpoint"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-reference-inert",
+        "contractRef": "G002 objective: ?demo=reference fail-closed mode",
+        "obligation": "Reference mode disables REST/fetch, WebSocket construction, reconnect timers, localStorage read/write, and mutations while preserving frozen fixture values.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference"
+        ],
+        "adversarialCaseRefs": [
+          "case-reference-side-effects",
+          "case-route-query"
+        ]
+      },
+      {
+        "id": "contract-demo-inert",
+        "contractRef": "G002 objective: demo/fixture/static mode",
+        "obligation": "Demo aliases use fixture/static data, no backend/WS/timers/storage side effects, visible DEMO/fixture state, and readonly backend URL.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-demo"
+        ],
+        "adversarialCaseRefs": [
+          "case-demo-live-leak"
+        ]
+      },
+      {
+        "id": "contract-live-preserved",
+        "contractRef": "G002 objective: live mode remains real local backend bridge",
+        "obligation": "Live mode preserves localStorage base URL, /health, /status, /runs, /ws, writable backend input, and visible backend state.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-live"
+        ],
+        "adversarialCaseRefs": [
+          "case-live-disabled"
+        ]
+      },
+      {
+        "id": "contract-determinism-safety",
+        "contractRef": "G002 objective: remove nondeterminism and preserve safety",
+        "obligation": "Math.random is removed from reference rendering, debug flags exist, static tests cover guards, and forbidden live/broker/account/export controls are absent.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-randomness",
+          "case-forbidden-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-reference",
+        "contractRef": "Reference mode browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/{condition,process,history,lab,workbench,audit,backtest,chart-replay}?demo=reference with probe wrappers installed before document scripts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-web-demo",
+        "contractRef": "Demo/fixture mode browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/condition?demo=fixture with probe wrappers installed before document scripts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-web-live",
+        "contractRef": "Live mode browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/condition and observed real local REST/WS/localStorage probes",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-cli-static",
+        "contractRef": "Static source/test contract surface",
+        "surface": "cli",
+        "invocation": "Focused pytest/node/diff checks plus replay-safe CLI receipt",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-reference-side-effects",
+        "contractRef": "Reference fail-closed side effects",
+        "scenario": "Reference mode accidentally performs backend fetch, WebSocket construction, reconnect timer scheduling, or localStorage access on initial render or route load.",
+        "expectedBehavior": "All probe arrays remain empty for condition/process/history/lab/workbench/audit/backtest/chart-replay reference URLs.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-route-query",
+        "contractRef": "Reference route persistence",
+        "scenario": "Route navigation drops ?demo=reference and re-enables live backend effects.",
+        "expectedBehavior": "pushRouteFromState preserves window.location.search and every reference route remains inert.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-demo-live-leak",
+        "contractRef": "Demo aliases must not behave like live",
+        "scenario": "?demo=fixture is treated as live, allowing network/WS/storage and writable backend input.",
+        "expectedBehavior": "Demo mode uses fixture state, readonly backend input, zero backend/WS/timer/storage probes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-live-disabled",
+        "contractRef": "Live bridge preservation",
+        "scenario": "Mode gate breaks live backend integration and leaves live mode static/inert.",
+        "expectedBehavior": "Live mode probes /health, /status, /runs, /ws and localStorage get; backend input remains writable.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-randomness",
+        "contractRef": "Reference determinism",
+        "scenario": "Random lineage values change captures between runs.",
+        "expectedBehavior": "Math.random is absent and deterministicLineageValue is used.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-forbidden-controls",
+        "contractRef": "Safety contract",
+        "scenario": "Live order, broker login, account trading/connect, hidden export, automatic export, or mutable audit controls are introduced while adding mode gates.",
+        "expectedBehavior": "Static safety tests and source review find no forbidden control markers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial G002 architect/QA found only a missing screenshot artifact path. The screenshot was copied into the remodel worktree, browser evidence was expanded with all 8 reference routes, and clean architect 40 plus QA 41 reran with blockers empty. Parent reran focused tests, node syntax check, git diff --check, and browser probes.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "browser probes for reference/demo/live/all reference routes",
+      "architect review 40-G002ArchitectReviewClean",
+      "executor QA 41-G002ExecutorQaClean"
+    ],
+    "blockers": []
+  }
+}

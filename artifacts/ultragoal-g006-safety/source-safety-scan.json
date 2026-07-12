@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "g006-source-safety-scan",
+  "capturedAt": "2026-06-27T16:17:27Z",
+  "files": {
+    "backend_app": "ai_strategy_loop/dashboard/app.py",
+    "production_app": "ai_strategy_loop/dashboard/frontend/app.jsx",
+    "decision_page": "ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx",
+    "settings_modal": "ai_strategy_loop/dashboard/frontend/settings.jsx",
+    "approval_dialog": "ai_strategy_loop/dashboard/frontend/cards.jsx",
+    "remodel_index": "ai_strategy_loop/dashboard/frontend/remodel/index.html",
+    "remodel_static_preview": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "remodel_bootstrap": "ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js"
+  },
+  "requiredMarkerResults": {
+    "backend_app": {
+      "@app.get(\"/config/spec\")": true,
+      "@app.get(\"/gpt_auth/status\")": true,
+      "@app.post(\"/gpt_auth/test\")": true,
+      "@app.get(\"/decisions\")": true,
+      "@app.post(\"/record_decision\")": true,
+      "dest_strategy_db": true,
+      "PRODUCTION_STRATEGY_DB": true
+    },
+    "production_app": {
+      "action: \"final_approval\"": true,
+      "setApprovalOpen(false)": true,
+      "운영 export/final approval은 연구 확인 화면과 분리된 별도 승인 절차입니다.": true
+    },
+    "decision_page": {
+      "/record_decision": true,
+      "append-only": true,
+      "final_approval": true,
+      "승인·내보내기": true,
+      "결정 이력 로드 실패": true
+    },
+    "settings_modal": {
+      "LIVE /config/spec": true,
+      "GPT 5.5 xhigh 테스트": true,
+      "진화 시작, 내보내기, 주문 없이 로컬 GPT OAuth 프록시 응답만 점검합니다.": true
+    },
+    "approval_dialog": {
+      "final_approval": true,
+      "record_decision": true,
+      "승인": true
+    },
+    "remodel_index": {
+      "remodel-bootstrap.js": true,
+      "/ui/bundle/app.js": true
+    },
+    "remodel_static_preview": {
+      "백엔드 미연결 · 정적 프리뷰": true,
+      "Append-Only": true,
+      "Human Approval Gate": true
+    },
+    "remodel_bootstrap": {
+      "STOM_REMODEL_MODE": true,
+      "/ui/remodel": true,
+      "CANONICAL_REMAP": true,
+      "ROUTE_TO_STATE": true,
+      "patchHistoryMethod": true
+    }
+  },
+  "forbiddenMarkerResults": {
+    "backend_app": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "production_app": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "decision_page": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "settings_modal": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "approval_dialog": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "remodel_index": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "remodel_static_preview": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    },
+    "remodel_bootstrap": {
+      "data-action=\"live-order\"": false,
+      "data-action=\"broker-login\"": false,
+      "data-action=\"account-trade\"": false,
+      "주문 실행": false,
+      "계좌 로그인": false,
+      "브로커 로그인 버튼": false,
+      "자동 프로덕션 Export": false
+    }
+  },
+  "assertions": {
+    "allRequiredMarkersPresent": true,
+    "noForbiddenControlsInSource": true,
+    "staticPreviewHasNoFinalApprovalAction": true,
+    "productionFinalApprovalIsDialogPathOnly": true,
+    "decisionAuditIsRecordOnly": true,
+    "settingsGptProbeIsSafe": true
+  }
+}

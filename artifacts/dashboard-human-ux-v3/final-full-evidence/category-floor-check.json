@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "floors": {
+    "taskOrientation": 80,
+    "visualHierarchy": 75,
+    "chartHeatmapReadability": 80,
+    "workflowQuality": 80,
+    "cognitiveLoad": 70,
+    "safetyHierarchy": 90,
+    "accessibilityResponsive": 80,
+    "v2PreservationEvidence": 90
+  },
+  "minCategoryScores": {
+    "accessibilityResponsive": 100.0,
+    "chartHeatmapReadability": 90.0,
+    "cognitiveLoad": 73.75,
+    "safetyHierarchy": 100.0,
+    "taskOrientation": 91.0,
+    "v2PreservationEvidence": 100.0,
+    "visualHierarchy": 83.0,
+    "workflowQuality": 100.0
+  },
+  "meanCategoryScores": {
+    "accessibilityResponsive": 100.0,
+    "chartHeatmapReadability": 98.75,
+    "cognitiveLoad": 92.78125,
+    "safetyHierarchy": 100.0,
+    "taskOrientation": 93.4375,
+    "v2PreservationEvidence": 100.0,
+    "visualHierarchy": 95.04166666666667,
+    "workflowQuality": 100.0
+  },
+  "failures": [],
+  "scorecard": "artifacts\\dashboard-human-ux-v3\\final-full-evidence\\scorecard.json"
+}

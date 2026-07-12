@@ -30,6 +30,7 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.dashboard import replay_engine as RE  # noqa: E402
 from ai_strategy_loop.dashboard import simulation_api as SA  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 _MIN_COLS = [
     "현재가", "시가", "고가", "저가", "등락율", "당일거래대금",
@@ -92,18 +93,33 @@ class TestMaxCodesContract:
 
 
 class TestWsStartClampsToTen:
-    def test_ws_meta_reports_ten_codes_when_eleven_requested(self, db_dir_12):
+    def test_ws_meta_reports_ten_codes_when_ten_requested(self, db_dir_12):
         _, codes = db_dir_12
         from ai_strategy_loop.dashboard.app import create_app
 
-        client = TestClient(create_app())
+        client = authorized_dashboard_client(create_app())
+        with client.websocket_connect("/sim/ws") as ws:
+            ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                          "codes": codes[:RE.MAX_CODES], "speed": 240, "agg_sec": 10})
+            meta = ws.receive_json()
+            assert meta["type"] == "meta"
+            assert len(meta["codes"]) == RE.MAX_CODES
+
+    def test_ws_start_rejects_more_than_ten_codes(self, db_dir_12):
+        # W1-A 보안 강화 — ReplayStartControl(codes max_length=MAX_CODES, strict=True)
+        # 가 프로토콜 경계에서 상한 초과 요청을 검증 오류로 거부한다(과거의 서버측
+        # 묵시적 클램프[:MAX_CODES] 대신 명시적 거부).
+        _, codes = db_dir_12
+        assert len(codes) > RE.MAX_CODES
+        from ai_strategy_loop.dashboard.app import create_app
+
+        client = authorized_dashboard_client(create_app())
         with client.websocket_connect("/sim/ws") as ws:
             ws.send_json({"action": "start", "date": 20250102, "src": "min",
                           "codes": codes, "speed": 240, "agg_sec": 10})
-            meta = ws.receive_json()
-            assert meta["type"] == "meta"
-            # 11~12번째 종목은 잘려 10종목만 meta 에 실린다.
-            assert len(meta["codes"]) == RE.MAX_CODES
+            resp = ws.receive_json()
+            assert resp["type"] == "error"
+            assert resp["code"] == "invalid_message"
 
 
 class TestFootprintDerivation:

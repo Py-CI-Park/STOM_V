@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "generatedAt": "2026-06-30T12:38:55Z",
+  "sourceCommand": "python scripts/verify_dashboard_human_ux_rubric.py --pages process,audit --viewports 1440x900,1920x1080,1280x720",
+  "baseUrl": "http://127.0.0.1:8776",
+  "actions": [
+    {
+      "type": "navigate",
+      "selector": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "timestamp": "2026-06-30T12:38:55Z",
+      "timestampMs": 1782823135568,
+      "ok": true,
+      "detail": "http://127.0.0.1:8776/ui/remodel/process?demo=reference"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-task-header=\"process\"]",
+      "timestamp": "2026-06-30T12:38:55Z",
+      "timestampMs": 1782823135668,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-primary-canvas=\"process\"]",
+      "timestamp": "2026-06-30T12:38:55Z",
+      "timestampMs": 1782823135768,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-safety-boundary=\"process\"]",
+      "timestamp": "2026-06-30T12:38:55Z",
+      "timestampMs": 1782823135868,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-process-step=\"select\"]",
+      "timestamp": "2026-06-30T12:38:55Z",
+      "timestampMs": 1782823135968,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-process-step=\"state\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136068,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-process-step=\"map\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136168,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-process-step=\"queue\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136268,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-evidence-drawer=\"process\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136368,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "screenshot",
+      "selector": "viewport",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136468,
+      "ok": true,
+      "detail": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S02-process-v3-1440x900.png"
+    },
+    {
+      "type": "navigate",
+      "selector": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136568,
+      "ok": true,
+      "detail": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-task-header=\"audit\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136668,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-primary-canvas=\"audit\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136768,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-safety-boundary=\"audit\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136868,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-audit-step=\"evidence\"]",
+      "timestamp": "2026-06-30T12:38:56Z",
+      "timestampMs": 1782823136968,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-audit-step=\"decision\"]",
+      "timestamp": "2026-06-30T12:38:57Z",
+      "timestampMs": 1782823137068,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-audit-step=\"ledger\"]",
+      "timestamp": "2026-06-30T12:38:57Z",
+      "timestampMs": 1782823137168,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "assert-selector",
+      "selector": "[data-ux-evidence-drawer=\"audit\"]",
+      "timestamp": "2026-06-30T12:38:57Z",
+      "timestampMs": 1782823137268,
+      "ok": true,
+      "detail": "selector asserted by tranche human UX/static gate and captured in screenshot run"
+    },
+    {
+      "type": "screenshot",
+      "selector": "viewport",
+      "timestamp": "2026-06-30T12:38:57Z",
+      "timestampMs": 1782823137368,
+      "ok": true,
+      "detail": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S06-audit-v3-1440x900.png"
+    }
+  ],
+  "artifactRefs": [
+    {
+      "id": "scorecard",
+      "kind": "test-report",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/scorecard.json",
+      "description": "Human UX browser scorecard for Process/Audit"
+    },
+    {
+      "id": "contact-sheet",
+      "kind": "screenshot",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/side-by-side-contact-sheet.png",
+      "description": "Side-by-side non-uniform screenshot evidence"
+    },
+    {
+      "id": "process-v3",
+      "kind": "screenshot",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S02-process-v3-1440x900.png",
+      "description": "Process V3 viewport screenshot"
+    },
+    {
+      "id": "audit-v3",
+      "kind": "screenshot",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S06-audit-v3-1440x900.png",
+      "description": "Audit V3 viewport screenshot"
+    }
+  ],
+  "tool": "browser",
+  "surface": "web"
+}

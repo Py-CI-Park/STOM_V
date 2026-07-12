@@ -1,0 +1,385 @@
+{
+  "actions": [
+    {
+      "assertion": "route matrix 01_condition_ai v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": "2026-06-28T23:52:24Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 01_condition_ai v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.001000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 02_process v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/process",
+      "timestamp": "2026-06-28T23:52:24.002000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 02_process v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.003000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 03_history v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/records",
+      "timestamp": "2026-06-28T23:52:24.004000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 03_history v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.005000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 04_lab v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/lab",
+      "timestamp": "2026-06-28T23:52:24.006000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 04_lab v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.007000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 05_workbench v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "timestamp": "2026-06-28T23:52:24.008000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 05_workbench v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.009000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 06_decision_audit v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/verdict",
+      "timestamp": "2026-06-28T23:52:24.010000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 06_decision_audit v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.011000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 07_backtest v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/backtest",
+      "timestamp": "2026-06-28T23:52:24.012000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 07_backtest v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.013000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 08_chart_replay v2 status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/chart-replay",
+      "timestamp": "2026-06-28T23:52:24.014000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix 08_chart_replay v3-remodel status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "timestamp": "2026-06-28T23:52:24.015000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix None None status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": "2026-06-28T23:52:24.016000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix None None status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution?dashboard_version=v2",
+      "timestamp": "2026-06-28T23:52:24.017000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix None None status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/evolution?dashboard_version=v3",
+      "timestamp": "2026-06-28T23:52:24.018000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix None None status=PASS statusCode=200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/condition",
+      "timestamp": "2026-06-28T23:52:24.019000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "route matrix None None status=PASS statusCode=404",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/not-a-real-dashboard-route",
+      "timestamp": "2026-06-28T23:52:24.020000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "visual 01_condition_ai_overview score=98.3 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\01_condition_ai_overview.png",
+      "timestamp": "2026-06-28T23:52:24.021000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 02_process score=98.41 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\02_process.png",
+      "timestamp": "2026-06-28T23:52:24.022000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 03_history score=98.05 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\03_history.png",
+      "timestamp": "2026-06-28T23:52:24.023000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 04_lab score=97.71 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\04_lab.png",
+      "timestamp": "2026-06-28T23:52:24.024000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 05_workbench score=97.99 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\05_workbench.png",
+      "timestamp": "2026-06-28T23:52:24.025000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 06_decision_audit score=98.23 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\06_decision_audit.png",
+      "timestamp": "2026-06-28T23:52:24.026000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 07_backtest score=97.36 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\07_backtest.png",
+      "timestamp": "2026-06-28T23:52:24.027000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "visual 08_chart_replay score=97.38 status=200",
+      "selector": "screenshot",
+      "status": "passed",
+      "target": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\08_chart_replay.png",
+      "timestamp": "2026-06-28T23:52:24.028000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "timestamp": "2026-06-28T23:52:24.029000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "backtest text score 100.0 missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "timestamp": "2026-06-28T23:52:24.030000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "timestamp": "2026-06-28T23:52:24.031000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "chart_replay text score 100.0 missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "timestamp": "2026-06-28T23:52:24.032000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2_condition loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": "2026-06-28T23:52:24.033000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_condition",
+      "timestamp": "2026-06-28T23:52:24.034000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2_backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/backtest",
+      "timestamp": "2026-06-28T23:52:24.035000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_backtest",
+      "timestamp": "2026-06-28T23:52:24.036000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2_chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/chart-replay",
+      "timestamp": "2026-06-28T23:52:24.037000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_chart_replay",
+      "timestamp": "2026-06-28T23:52:24.038000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_condition loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/condition",
+      "timestamp": "2026-06-28T23:52:24.039000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_condition",
+      "timestamp": "2026-06-28T23:52:24.040000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_audit loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/audit",
+      "timestamp": "2026-06-28T23:52:24.041000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_audit",
+      "timestamp": "2026-06-28T23:52:24.042000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "timestamp": "2026-06-28T23:52:24.043000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_backtest",
+      "timestamp": "2026-06-28T23:52:24.044000Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "timestamp": "2026-06-28T23:52:24.045000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_chart_replay",
+      "timestamp": "2026-06-28T23:52:24.046000Z",
+      "type": "assert"
+    }
+  ],
+  "endedAt": "2026-06-28T23:52:24.047000Z",
+  "kind": "browser-automation",
+  "schemaVersion": 1,
+  "startedAt": "2026-06-28T23:52:24Z",
+  "surface": "web",
+  "tool": "g007-final-aggregate-transcript",
+  "verdict": "passed"
+}

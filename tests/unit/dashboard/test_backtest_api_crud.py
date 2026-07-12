@@ -20,6 +20,7 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def _make_strategy_db(path: Path) -> None:
@@ -43,10 +44,11 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     db_path = tmp_path / "strategy.db"
     _make_strategy_db(db_path)
     monkeypatch.setenv("STOM_WEBBT_STRATEGY_DB", str(db_path))
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRATEGY_WRITE", "1")
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 # ----------------------------------------------------------------- list/get

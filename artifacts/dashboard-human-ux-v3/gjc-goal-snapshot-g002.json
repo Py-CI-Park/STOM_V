@@ -1,0 +1,18 @@
+{
+  "goal": {
+    "id": "active-ultragoal-aggregate",
+    "objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+    "status": "active",
+    "tokensUsed": 538767,
+    "timeUsedSeconds": 0,
+    "createdAt": 1782802014459,
+    "updatedAt": 1782805614459
+  },
+  "status": "active",
+  "updatedAt": 1782805614459,
+  "details": {
+    "source": "goal({op:\"get\"}) returned matching active aggregate objective and active status immediately before G002 checkpoint; tokensUsed observed as 538767.",
+    "goalToolObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+    "goalToolStatus": "active"
+  }
+}

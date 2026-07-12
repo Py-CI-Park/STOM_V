@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G004",
+  "reference": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+    "mode": "reference",
+    "contracts": 24,
+    "matrixRows": 24,
+    "fetchCalls": [],
+    "wsCalls": [],
+    "timeoutDelays": [],
+    "storageGets": [],
+    "storageSets": [],
+    "matrixPresent": true,
+    "inertPresent": true,
+    "mutatingGatePresent": true,
+    "safetyCards": 6,
+    "screenshot": "artifacts/ultragoal-g004-backtest/g004-backtest-reference.png"
+  },
+  "live": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+    "mode": "live",
+    "contracts": 24,
+    "matrixRows": 24,
+    "fetchCalls": [
+      "/bt/health",
+      "/bt/strategies?kind=buy",
+      "/bt/strategies?kind=sell",
+      "/bt/data_range",
+      "/bt/jobs",
+      "/bt/result?job_id=__demo__",
+      "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "/bt/strategy?kind=sell&name=20250715_Study_S",
+      "/bt/legacy/self_vars?kind=sell&name=20250715_Study_S",
+      "/bt/backfinder/preflight?kind=sell&name=20250715_Study_S",
+      "/bt/strategy?kind=buy&name=20250715_Study",
+      "/bt/legacy/self_vars?kind=buy&name=20250715_Study",
+      "/bt/backfinder/preflight?kind=buy&name=20250715_Study",
+      "/bt/job?job_id=20260628_013524_기존매수_24442",
+      "/bt/report?job_id=20260628_013524_기존매수_24442",
+      "/bt/overlay?job_ids=...",
+      "/bt/compare?job_a=...&job_b=..."
+    ],
+    "liveErrors": [],
+    "okRows": 14,
+    "manualGatedRows": 8,
+    "notUsedRows": 2,
+    "notUsedReasons": [
+      "/bt/ws_job?job_id= is user-gated long-lived stream, not opened automatically",
+      "/bt/evo_gens?run_id= was not used because /bt/jobs did not return a run_id"
+    ],
+    "reportRow": "LIVE OK HTML report 5612 chars",
+    "wsCalls": ["/ws shell state only; /bt/ws_job not opened automatically"],
+    "storageGets": ["stom_remodel_base_url"],
+    "storageSets": [],
+    "matrixPresent": true,
+    "liveModePresent": true,
+    "notAutoRunPresent": true,
+    "safetyCards": 6,
+    "screenshot": "artifacts/ultragoal-g004-backtest/g004-backtest-live.png"
+  },
+  "verification": {
+    "pytest": "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q => 19 passed",
+    "nodeCheck": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js => passed",
+    "diffCheck": "git diff --check => passed"
+  },
+  "allPassed": true
+}

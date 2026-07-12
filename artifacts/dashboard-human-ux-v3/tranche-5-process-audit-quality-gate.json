@@ -1,0 +1,209 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G006 final architect rereview agent://153-G006ProcessAuditArchClear: Process payload-driven cockpit and Audit decision funnel satisfy G006; V2 default/V3 explicit routing and safety/provenance/contract markers preserved; blockers empty.",
+    "commands": [
+      "agent://153-G006ProcessAuditArchClear"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "G006 final QA rereview agent://154-G006ProcessAuditQaClear plus leader-run browser human UX, compare, safety, focused pytest, JS parse, diff, and protected-path checks. Browser evidence JSON includes actions with type/selector/timestamp/timestampMs and screenshot refs.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages process,audit --min-v3-score 82 --min-delta 3",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q"
+    ],
+    "redTeamCommands": [
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-5-process-audit-safety-audit --timeout-ms 60000",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-5-process-audit-v2-v3-compare --timeout-ms 60000"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g006-browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/browser-process-audit-evidence.json",
+        "description": "Browser automation transcript for Process/Audit selectors with timestamps and screenshot refs; tool=playwright via verify_dashboard_human_ux_rubric.py",
+        "tool": "playwright"
+      },
+      {
+        "id": "g006-process-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S02-process-v3-1440x900.png",
+        "description": "Non-uniform Process V3 viewport screenshot"
+      },
+      {
+        "id": "g006-audit-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/screenshots/UX-S06-audit-v3-1440x900.png",
+        "description": "Non-uniform Audit V3 viewport screenshot"
+      },
+      {
+        "id": "g006-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit/scorecard.json",
+        "description": "Human UX rubric scorecard: PASS, mean V3 93.02, mean named delta 21.44"
+      },
+      {
+        "id": "g006-safety",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit-safety-audit/safety-scorecard.json",
+        "description": "Safety audit scorecard: PASS, average safety 100.0"
+      },
+      {
+        "id": "g006-compare",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit-v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 compare scorecard: PASS, average corrected total 100.0"
+      },
+      {
+        "id": "g006-adversarial",
+        "kind": "failure-mode-test",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit-verification-report.json",
+        "description": "Verification report covering unsafe mutation, route/default, safety, and UX gate outcomes"
+      },
+      {
+        "id": "g006-slop-cleaner",
+        "kind": "code-review-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-5-process-audit-ai-slop-cleaner-report.txt",
+        "description": "AI slop cleanup report with zero blocking findings"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g006-process",
+        "contractRef": "G006 Process should retain payload-driven cockpit while applying task-frame selectors, hierarchy, and progressive evidence drawer",
+        "obligation": "Run selector, state, process map, logs, queue/workers/contracts, required fields, and evidence drawer remain visible and read-only",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-g006-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-g006-selector-loss",
+          "case-g006-unsafe-mutation"
+        ]
+      },
+      {
+        "id": "contract-g006-audit",
+        "contractRef": "G006 Audit should remain audit-specialized with clear decision funnel and append-only evidence",
+        "obligation": "OOS evidence, Human Decision, PROMOTE checklist, decision history, Append-Only Ledger, and export/audit separation remain visible",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-g006-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-g006-audit-env",
+          "case-g006-unsafe-mutation"
+        ]
+      },
+      {
+        "id": "contract-g006-out-of-scope",
+        "contractRef": "G007 final whole-dashboard gate",
+        "obligation": "Whole-dashboard final scoring intentionally deferred until G007",
+        "status": "not_applicable",
+        "reason": "G006 covers Process/Audit only; G007 is a separate pending required goal"
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-g006-web",
+        "contractRef": "G006 Process/Audit explicit V3 web UI",
+        "surface": "web",
+        "invocation": "Human UX browser verifier against http://127.0.0.1:8776 /ui/remodel/process?demo=reference and /ui/remodel/audit?demo=reference at 1440x900,1920x1080,1280x720",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-browser-run",
+          "g006-process-screenshot",
+          "g006-audit-screenshot",
+          "g006-scorecard"
+        ]
+      },
+      {
+        "id": "surface-g006-safety",
+        "contractRef": "G006 safety/default route boundary",
+        "surface": "web",
+        "invocation": "Safety audit and V2/V3 compare over running dashboard on 127.0.0.1:8776",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-browser-run",
+          "g006-process-screenshot",
+          "g006-audit-screenshot",
+          "g006-safety",
+          "g006-compare"
+        ]
+      },
+      {
+        "id": "surface-g006-cli",
+        "contractRef": "No standalone CLI surface for this story",
+        "surface": "cli",
+        "status": "not_applicable",
+        "reason": "G006 ships a web dashboard UI change; CLI commands are verification surfaces only, not product behavior"
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-g006-selector-loss",
+        "contractRef": "G006 required selectors",
+        "scenario": "Process/Audit task headers, primary canvases, safety strips, step selectors, and evidence drawers could be missing after refactor",
+        "expectedBehavior": "Static tests and browser evidence prove selectors are present",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-browser-run",
+          "g006-scorecard"
+        ]
+      },
+      {
+        "id": "case-g006-unsafe-mutation",
+        "contractRef": "No page-load mutation/live-order/broker/account behavior",
+        "scenario": "V3 process/audit page load might trigger unsafe mutating calls or forbidden DOM/action markers",
+        "expectedBehavior": "Safety audit shows PASS, averageSafetyScore 100.0, no failures",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-safety"
+        ]
+      },
+      {
+        "id": "case-g006-audit-env",
+        "contractRef": "Audit safety marker and mode honesty",
+        "scenario": "Audit page may hide dev/reference safety text or misrepresent live/reference environment",
+        "expectedBehavior": "Visible copy states reference baseline dev/reference and current env live/read-only/reference; safety audit PASS",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-safety",
+          "g006-adversarial"
+        ]
+      },
+      {
+        "id": "case-g006-scope-creep",
+        "contractRef": "Do not start G007 or unrelated page tranches inside G006",
+        "scenario": "Implementation might modify unrelated pages or claim whole-dashboard completion",
+        "expectedBehavior": "QA review confirms no scope creep beyond Process/Audit polish",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g006-adversarial"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT passed with zero blocking findings; verification rerun after cleanup/text adjustment; final architect and QA rereviews are clean; full G006 loop rerun with JS parse, focused pytest, human UX, compare, safety, diff, protected-path checks.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages process,audit --min-v3-score 82 --min-delta 3",
+      "python scripts/verify_dashboard_v2_v3_compare.py ...",
+      "python scripts/verify_dashboard_safety_audit.py ...",
+      "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py",
+      "git status --short -- protected runtime paths"
+    ],
+    "blockers": []
+  }
+}
