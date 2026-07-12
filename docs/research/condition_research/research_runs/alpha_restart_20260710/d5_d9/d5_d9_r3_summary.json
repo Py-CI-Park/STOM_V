@@ -1,0 +1,69 @@
+{
+ "kind": "d5_d9_r3",
+ "generated": "2026-07-12T14:09:26.896274+00:00",
+ "preregistration": "2026-07-12_d5_d9_transition_onset_preregistration.md (§14 봉인)",
+ "parity_gate_pass": true,
+ "overlap": {
+  "surge_n_keys": 31738,
+  "primary_window": 30,
+  "cap": 0.5,
+  "per_window": {
+   "0": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 3650,
+     "rate": 0.03144247749493905
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 226,
+     "rate": 0.03270149037765881
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 3424,
+     "rate": 0.03136277868356935
+    }
+   },
+   "30": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 73688,
+     "rate": 0.6347762415471422
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 3881,
+     "rate": 0.561568513963247
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 69807,
+     "rate": 0.6394104823492773
+    }
+   },
+   "60": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 98645,
+     "rate": 0.8497652582159625
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 5540,
+     "rate": 0.8016206048328751
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 93105,
+     "rate": 0.852812940810083
+    }
+   }
+  },
+  "primary_pooled_rate": 0.6347762415471422,
+  "gate_pass": false
+ },
+ "proceed_to_judgment": false,
+ "halt_reason": "겹침률 0.6348 >0.50(§8 kill-3)",
+ "judgment": null
+}
