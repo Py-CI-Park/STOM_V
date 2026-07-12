@@ -17,8 +17,8 @@
 - CL-D4에서 CL-D 설계 문서를 한국어로 커밋한다. 커밋 후 최신 HEAD가 이 핸드오프가 가리키는 정본 상태다.
 
 ## 4. 완료 / 잠금 단계
-- 완료(이번 실행): CL-D0, CL-D1, CL-D2, CL-D3, CL-D4. 상태 = `awaiting_CL_R01_R06_approval`.
-- 잠금: CL-R01..CL-R10. 각 단계는 정확한 승인 문구가 기록되기 전에는 열리지 않는다(fail-closed).
+- 완료(이번 실행): CL-D0~CL-D4 설계. 이후 승인 하에 CL-R01~CL-R06(코드 통합)과 CL-R07(제한 폐루프 프로세스 증명, 2026-07-12) 완료. §11 종료 기록 참조.
+- 잠금: CL-R08~CL-R10. 각 단계는 정확한 승인 문구가 기록되기 전에는 열리지 않는다(fail-closed). CL-R09는 추가로 2026-07-11 이후 20 거래일 데이터 대기.
 
 ## 5. 정확한 다음 명령 (exact next command)
 - 설계 재개/검토: `docs/research/condition_research/generated_conditions/lattice_v3_design_20260709/lattice_v3_next_command_20260709.md` 참조(design-only).
@@ -67,3 +67,13 @@ cli/condition_generator.py
 
 ## 10. 기대 효과
 방향·근거·검증·중단 기준이 연결된 연구 시스템 확보. 수익 전략 탄생은 보장하지 않으며, 성능/인간비교/live 승인은 분리 보고·별도 승인 대상이다.
+
+## 11. CL-R07 프로세스 증명 종료 기록 (2026-07-12)
+- 상태: **GO_PROCESS_PROOF (건전)** — architect 재검증(26-ClR07ReReview) APPROVE_WITH_NITS(productStatus CLEAR).
+- 실행: 재인증된 `gpt_auth`/`gpt-5.6-terra`+`reasoning_effort=high` 자율 생성 + 공식 `stom_backtest.py`(격리 min 데이터 단일종목 007660, 5거래일). run#6: learning_chain_ok=true, ablation_valid=true(계약 정합 parent/candidate 2×2), pack provider_calls=3 / official eval=9, raw gen 24 / backtest 9, ~14분. **수익(성과)은 판정 기준 아님 — 프로세스 증명 전용.**
+- 정본 결과 문서: `docs/update_log/2026-07-12_cl_r07_bounded_mini_loop_GO.md`.
+- 증거: `.omo/evidence/task-14-ai-condition-loop-canonical-rebuild-20260711/{cl_r07_SOUND_GO_summary.json, cl_r07_SOUND_GO_rereview.json, cl_r07_GO_architect_review.json, G002-quality-gate.json, clr07_official_run_6/}`.
+- 모델 기본값 변경: `ai_strategy_loop/config.py` model=`gpt-5.6-terra`, reasoning_effort=`high` (커밋 `85717edd`). 하네스: `ai_strategy_loop/scripts/run_canonical_mini_loop_official.py`.
+- ultragoal G002: 런타임 complete 게이트(architecture/product/code 전부 CLEAR + APPROVE)를 재검증(APPROVE_WITH_NITS·WATCH)이 충족하지 못해 **강제 complete하지 않음**(부정직 방지). WATCH 근원(MEDIUM-2 control gating)이 **동결 driver 내부**라 오너 "이대로 유지" 결정과 충돌 — 프로세스 증명 자체는 달성.
+- 이월 nit(다음 non-frozen 개정): (1) control 결과 GO 게이팅, (2) propose_pack `_generate` try/except, (3) `reasoning_effort` payload 전송 또는 주장 삭제, (4) 동결 manifest fake 표기 주석.
+- 하류: CL-R08/R09/R10 잠금 유지(정확 승인 문구 필요; R09는 20 거래일 신규 데이터 대기).
