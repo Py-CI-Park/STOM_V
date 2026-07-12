@@ -82,7 +82,6 @@ def test_ast_fingerprint_returns_full_sha256_hex():
         'abs(체결강도)',
         '체결강도[0] > 1',
         '체결강도.foo',
-        '체결강도 + 1 > 100',
         'lambda x: x',
         '[x for x in range(1)]',
     ],
@@ -90,6 +89,31 @@ def test_ast_fingerprint_returns_full_sha256_hex():
 def test_ast_fingerprint_rejects_forbidden_nodes(expression):
     with pytest.raises(FingerprintError):
         ast_fingerprint(expression, timeframe='min', methodology_version='v1')
+
+
+def test_ast_fingerprint_accepts_arithmetic_and_is_commutative_canonical():
+    """사칙 BinOp 허용(실전 조건식의 스케일/비율 비교) + 가환 연산 정준화."""
+    a = ast_fingerprint('체결강도 + 1 > 100', timeframe='min', methodology_version='v1')
+    b = ast_fingerprint('1 + 체결강도 > 100', timeframe='min', methodology_version='v1')
+    assert a == b
+    # 비가환(sub/div)은 순서가 의미를 가지므로 구분된다.
+    c = ast_fingerprint('체결강도 - 1 > 100', timeframe='min', methodology_version='v1')
+    d = ast_fingerprint('1 - 체결강도 > 100', timeframe='min', methodology_version='v1')
+    assert c != d
+    with pytest.raises(FingerprintError):
+        ast_fingerprint('체결강도 ** 2 > 100', timeframe='min', methodology_version='v1')
+
+
+def test_ast_fingerprint_accepts_statement_form_snippet():
+    """pack_producer가 발행하는 `if 조건: self.Buy()` 문장형 후보를 수용한다."""
+    bare = ast_fingerprint('현재가 > 시가 and 등락율 > 3', timeframe='min', methodology_version='v1')
+    stmt = ast_fingerprint(
+        'if 현재가 > 시가 and 등락율 > 3:\n    self.Buy()',
+        timeframe='min', methodology_version='v1',
+    )
+    assert bare == stmt
+    with pytest.raises(FingerprintError):
+        ast_fingerprint('매수 = True', timeframe='min', methodology_version='v1')
 
 
 def test_ast_fingerprint_rejects_unparseable():
