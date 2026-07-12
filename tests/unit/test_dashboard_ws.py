@@ -78,12 +78,12 @@ class TestHealthAndSpec:
         assert resp.status_code == 200
         body = resp.json()
         assert body["status"] == "ok"
-        assert body["model"] == "gpt-5.6-sol"
-        assert body["reasoning_effort"] == "xhigh"
+        assert body["model"] == "gpt-5.6-terra"
+        assert body["reasoning_effort"] == "high"
         assert body["safe"] is True
         assert body["starts_evolution"] is False
         assert "/chat/completions" in called["url"]
-        assert called["kwargs"]["json"]["model"] == "gpt-5.6-sol"
+        assert called["kwargs"]["json"]["model"] == "gpt-5.6-terra"
 
     def test_status_idle_when_no_state_file(self, client):
         resp = client.get("/status")

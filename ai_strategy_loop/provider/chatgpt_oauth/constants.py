@@ -125,7 +125,7 @@ MODEL_MAPPING = {
 }
 
 # ChatGPT OAuth 사용 시 기본 모델
-DEFAULT_MODEL = "gpt-5.6-sol"
+DEFAULT_MODEL = "gpt-5.6-terra"
 
 # =============================================================================
 # 환경변수 이름
