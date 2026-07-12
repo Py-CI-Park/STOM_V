@@ -522,6 +522,21 @@ def _trade_quant_payload(run_id: str, gen_no: int, fine_time: bool, top_n: int) 
     return out
 
 
+def _research_maturity_payload() -> Dict[str, Any]:
+    """G005 — 연구 프로그램 단계별 성숙도 스코어카드를 즉석 계산한다(읽기 전용·무예외).
+
+    scripts.research_maturity_scorecard.build_scorecard을 지연 import해 호출한다(모듈이
+    아직 없거나 계산이 실패해도 예외를 던지지 않고 status="error"로 흡수한다). state
+    캐시를 두지 않고 매 호출 재계산한다 — 값이 저장소 파일/상태 DB 변화를 즉시 반영한다.
+    """
+    try:
+        from scripts.research_maturity_scorecard import build_scorecard  # noqa: PLC0415
+
+        return build_scorecard(REPO_ROOT)
+    except Exception as exc:  # noqa: BLE001 - 모듈 부재/계산 실패도 error로 흡수(무예외).
+        return {"schema": "research_maturity_v1", "status": "error", "error": str(exc)}
+
+
 def _selector_preview_payload(run_id: str, selector: str) -> Dict[str, Any]:
     """D4 — run 행에 선택기를 진단 적용해 동결 가능 후보를 미리 본다(읽기 전용·무예외).
 
@@ -3410,6 +3425,16 @@ def create_app(
         """
         # top_n 클램프(아키텍트 리뷰 LOW): 음수/초대형 입력 방어 — 이웃 라우트 관례.
         return _trade_quant_payload(run_id, gen_no, fine_time, max(1, min(int(top_n), 50)))
+
+    @app.get("/research_maturity")
+    def research_maturity() -> Dict[str, Any]:
+        """G005 — 연구 프로그램 단계별 성숙도 자동 스코어카드(읽기 전용·무예외).
+
+        scripts.research_maturity_scorecard.build_scorecard을 지연 import해 즉석 계산한다
+        (모듈이 아직 없어도 조기 부팅을 막지 않는다). state 캐시 없음 — 매 호출 재계산.
+        승인/export/엔진 경로 무영향, advisory 전용.
+        """
+        return _research_maturity_payload()
 
     @app.get("/selector_preview")
     def selector_preview(run_id: str = "", selector: str = "sparse_positive_v1") -> Dict[str, Any]:
