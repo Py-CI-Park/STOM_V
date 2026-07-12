@@ -300,6 +300,11 @@ class OfficialEvaluator:
             bootstrap.LOOP_DB_STRATEGY = original_loop_db
             e2e_smoke.bootstrap.LOOP_DB_STRATEGY = original_e2e_loop_db
         payload = _parse_cli_json(proc.stdout)
+        if payload and str(payload.get("message") or "") == "backtest completed without metrics":
+            # Clean zero-trade backtest (engine finished exitcode 0, no CSV produced):
+            # a valid zero-activity measurement, not an infra error. Required so degenerate
+            # ablation off-arms (buy-off/sell-off) yield the 4 metrics for compute_attribution.
+            return {"status": "ok", "profit": 0.0, "mdd": 0.0, "trade_count": 0, "daily_freq": 0.0}
         if proc.returncode != 0 or not payload:
             return {"status": "error", "message": proc.stderr.strip() or proc.stdout.strip() or f"exit:{proc.returncode}"}
         metrics = payload.get("metrics") or {}
