@@ -2794,6 +2794,7 @@ def create_app() -> FastAPI:
         try:
             import requests  # noqa: PLC0415
             from ai_strategy_loop.provider.chatgpt_oauth.constants import (  # noqa: PLC0415
+                DEFAULT_MODEL,
                 PROXY_OPENAI_API_KEY_PLACEHOLDER,
                 get_proxy_base_url,
             )
@@ -2805,7 +2806,7 @@ def create_app() -> FastAPI:
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "gpt-5.5",
+                    "model": DEFAULT_MODEL,
                     "messages": [{"role": "user", "content": "OK"}],
                     "max_tokens": 4,
                     "stream": False,
@@ -2816,7 +2817,7 @@ def create_app() -> FastAPI:
             return {
                 "status": "ok" if ok else "unavailable",
                 "mode": "gpt_auth",
-                "model": "gpt-5.5",
+                "model": DEFAULT_MODEL,
                 "reasoning_effort": "xhigh",
                 "safe": True,
                 "starts_evolution": False,
@@ -2827,7 +2828,7 @@ def create_app() -> FastAPI:
             return {
                 "status": "unavailable",
                 "mode": "gpt_auth",
-                "model": "gpt-5.5",
+                "model": DEFAULT_MODEL,
                 "reasoning_effort": "xhigh",
                 "safe": True,
                 "starts_evolution": False,

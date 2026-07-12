@@ -90,7 +90,7 @@ def test_openrouter_builds_openai_request(capture_post):
 
 
 def test_gpt_auth_builds_openai_request(capture_post):
-    cfg = LoopConfig(provider="gpt_auth")  # model 기본 gpt-5.5
+    cfg = LoopConfig(provider="gpt_auth")  # model 기본 gpt-5.6-sol
     provider = make_provider(cfg)
     result = provider.chat(MESSAGES)
 
@@ -102,7 +102,7 @@ def test_gpt_auth_builds_openai_request(capture_post):
 
     assert len(capture_post) == 1
     sent = capture_post[0]["json"]
-    assert sent["model"] == "gpt-5.5"
+    assert sent["model"] == "gpt-5.6-sol"
     assert sent["messages"] == MESSAGES
     # gpt_auth 는 로컬 프록시 엔드포인트로 POST 한다.
     assert capture_post[0]["url"].endswith("/v1/chat/completions")

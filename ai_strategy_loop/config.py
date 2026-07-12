@@ -19,7 +19,7 @@ class LoopConfig:
 
     # --- provider 레이어 (US-002에서 사용) ---
     provider: str = "gpt_auth"  # gpt_auth | openrouter | codex_proxy
-    model: str = "gpt-5.5"
+    model: str = "gpt-5.6-sol"
     reasoning_effort: str = "xhigh"  # xhigh | high | medium | low; provider may capability-gate
     base_url: Optional[str] = None  # None이면 provider 기본값 사용
     api_key: Optional[str] = None  # None이면 provider별 env에서 로드

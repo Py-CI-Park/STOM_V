@@ -72,6 +72,9 @@ TOKEN_REFRESH_MARGIN_SECONDS = 300  # 5분
 # OpenAI Chat Completions 모델명 -> ChatGPT Codex 호환 모델명
 MODEL_MAPPING = {
     "gpt-5.5": "gpt-5.5",
+    "gpt-5.6-luna": "gpt-5.6-luna",
+    "gpt-5.6-sol": "gpt-5.6-sol",
+    "gpt-5.6-terra": "gpt-5.6-terra",
     "gpt-5.5-mini": "gpt-5.5-mini",
     "gpt-5.4": "gpt-5.4",
     "gpt-5.4-mini": "gpt-5.4-mini",
@@ -84,6 +87,9 @@ MODEL_MAPPING = {
     "gpt-5.1-codex-mini": "gpt-5.1-codex-mini",
     # Codex CLI 표기 -> bare codex 모델명 정규화
     "openai-codex/gpt-5.5": "gpt-5.5",
+    "openai-codex/gpt-5.6-luna": "gpt-5.6-luna",
+    "openai-codex/gpt-5.6-sol": "gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra": "gpt-5.6-terra",
     "openai-codex/gpt-5.5-mini": "gpt-5.5-mini",
     "openai-codex/gpt-5.4": "gpt-5.4",
     "openai-codex/gpt-5.4-mini": "gpt-5.4-mini",
@@ -119,7 +125,7 @@ MODEL_MAPPING = {
 }
 
 # ChatGPT OAuth 사용 시 기본 모델
-DEFAULT_MODEL = "gpt-5.5"
+DEFAULT_MODEL = "gpt-5.6-sol"
 
 # =============================================================================
 # 환경변수 이름

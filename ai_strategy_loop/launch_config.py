@@ -202,9 +202,9 @@ def config_field_specs() -> List[Dict[str, Any]]:
         },
         {
             "name": "model", "label": "Model", "type": "select",
-            "choices": ["gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
+            "choices": ["gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
             "default": d.model,
-            "help": "기본 GPT 5.5. xhigh는 별도 reasoning_effort 필드로 표시하며, provider가 지원하지 않으면 상태 배지로 fallback을 알린다.",
+            "help": "기본 GPT 5.6-sol. xhigh는 별도 reasoning_effort 필드로 표시하며, provider가 지원하지 않으면 상태 배지로 fallback을 알린다.",
         },
         {
             "name": "reasoning_effort", "label": "Reasoning effort", "type": "select",

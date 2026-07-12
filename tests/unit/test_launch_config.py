@@ -169,7 +169,7 @@ class TestConfigFieldSpecs:
                     f"select field {s['name']} missing choices"
     def test_phase3_defaults_and_help_explain_user_feedback(self):
         specs = {s["name"]: s for s in config_field_specs()}
-        assert specs["model"]["default"] == "gpt-5.5"
+        assert specs["model"]["default"] == "gpt-5.6-sol"
         assert specs["reasoning_effort"]["default"] == "xhigh"
         assert specs["mdd_cap"]["default"] == 40.0
         assert specs["mdd_cap"]["max"] == 40.0
