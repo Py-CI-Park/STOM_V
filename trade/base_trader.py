@@ -281,16 +281,9 @@ class BaseTrader:
                     self._create_order(
                         주문구분, 종목코드, 종목명, 정정가격, 미체결수량, '', now(), False, 정정횟수, None
                     )
-                elif self.market_gubun < 9:
-                    self._create_order(
-                        f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 원주문번호, now(), False, 정정횟수, None
-                    )
                 else:
                     self._create_order(
-                        f'{주문구분}_CANCEL', 종목코드, 종목코드, 원주문가격, 미체결수량, 원주문번호, now(), False, 0, None
-                    )
-                    self._create_order(
-                        주문구분, 종목코드, 종목코드, 정정가격, 미체결수량, '', now(), False, 정정횟수, None
+                        f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 원주문번호, now(), False, 정정횟수, None
                     )
 
     def _get_chejan_last_value(self, code, gubun):
@@ -560,16 +553,17 @@ class BaseTrader:
                 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
             )
 
-    def _check_order_error(self, 주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
+    def _check_order_error(self, 주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량):
         """주문 오류 및 실패 알림을 전송합니다."""
         if 주문번호 == 0:
-            if 'Traceback' in 응답메시지:
-                self.windowQ.put((UI_NUM['시스템로그'], 응답메시지))
-            else:
-                주문구분기록 = f'{주문구분}실패' if self.market_gubun < 6 else f'{주문구분}_FAIL'
-                self.windowQ.put((
-                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분기록}] {종목명} | {주문가격} | {주문수량} | {응답메시지}'
-                ))
+            if 주문구분 in ('매수', '매도', 'BUY_LONG', 'SELL_SHORT', 'SELL_LONG', 'BUY_SHORT'):
+                self._put_order_complete(f'{주문구분}_CANCEL', 종목코드)
+
+            주문구분기록 = f'{주문구분}실패' if self.market_gubun < 6 else f'{주문구분}_FAIL'
+            self.windowQ.put((
+                UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분기록}] {종목명} | {주문가격} | {주문수량} | {응답메시지}'
+            ))
+
             return False
         return True
 

@@ -61,7 +61,7 @@ class FutureOsTrader(BaseTrader):
 
             """def order_future_oversea(self, 종목코드, 주문구분, 주문가격, 주문수량, 주문유형):"""
             주문번호, 응답메시지 = self.ls.order_future_oversea(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
-            if self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
+            if self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량):
                 index = self._get_index()
                 if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
@@ -85,31 +85,43 @@ class FutureOsTrader(BaseTrader):
             """def order_modify_future_oversea(self, 종목코드, 원주문번호, 주문구분, 주문가격, 주문수량, 주문유형):"""
             주문유형 = self.dict_set['매수주문유형' if 주문구분 in ('BUY_LONG_MODIFY', 'SELL_SHORT_MODIFY') else '매도주문유형']
             주문번호, 응답메시지 = self.ls.order_modify_future_oversea(종목코드, 원주문번호, 주문구분, 주문가격, 주문수량, 주문유형)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         elif 'CANCEL' in 주문구분:
             """def order_cancel_future_oversea(self, 종목코드, 원주문번호):"""
             주문번호, 응답메시지 = self.ls.order_cancel_future_oversea(종목코드, 원주문번호)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
 
     @error_decorator
     def _convert_order_data(self, data):
         """주문체결 데이터를 변환합니다."""
-        body = data['body']
-        if body is None:
+        body = data.get('body', {})
+        tr_cd = body.get('tr_cd')
+        체결유형 = body.get('ordr_ccd')
+        if tr_cd is None or 체결유형 is None:
             return
 
-        체결유형 = body['ordr_ccd']
-        if 체결유형 in ('1', '2', '3'):
-            체결구분 = LsRestData.선물주문체결코드[체결유형]
-            종목코드 = body['is_cd']
-            체결수량 = int(body['ccls_q'])
-            체결가격 = float(body['ccls_prc'])
-            체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
-            주문번호 = body['ordr_no']
-            self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+        if tr_cd == 'T03':
+            if 체결유형 == '1':
+                체결구분 = LsRestData.선물주문체결코드[체결유형]
+                종목코드 = body['is_cd']
+                체결수량 = int(body['ccls_q'])
+                체결가격 = float(body['ccls_prc'])
+                체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
+                주문번호 = body['ordr_no']
+                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+
+        elif tr_cd == 'T02':
+            if 체결유형 in ('2', '3'):
+                체결구분 = LsRestData.선물주문체결코드[체결유형]
+                종목코드 = body['is_cd']
+                체결수량 = int(body['ordr_q'])
+                체결가격 = float(body['ordr_prc'])
+                체결시간 = f"{self.str_today}{int(int(body['ordr_tm']) / 1000)}"
+                주문번호 = body['ordr_no']
+                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
     def _get_modify_price(self, 현재가, 정정호가, 종목코드):
         """매수 정정 가격을 반환합니다."""

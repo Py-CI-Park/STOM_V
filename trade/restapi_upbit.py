@@ -99,7 +99,7 @@ class UpbitRestAPI:
         ret = self._get(url)
         return int(float(ret[0]['balance']))
 
-    def order_coin(self, 종목코드='', 주문구분='', 주문유형='', 주문금액=0, 주문수량=0):
+    def order_coin(self, 종목코드, 주문구분, 주문유형, 주문가격, 주문수량):
         """주문을 전송합니다."""
         url = 'https://api.upbit.com/v1/orders'
         data = {
@@ -108,23 +108,38 @@ class UpbitRestAPI:
             'ord_type': self.주문유형[주문유형][주문구분]
         }
 
-        if 주문구분 == '매수' or '지정가' in 주문유형:
-            data['price'] = str(주문금액)
-
-        if 주문수량 > 0 and (주문구분 == '매도' or '지정가' in 주문유형):
+        if '시장가' in 주문유형:
+            if 주문구분 == '매수':
+                data['price'] = str(int(주문가격 * 주문수량))
+            else:
+                data['volume'] = str(주문수량)
+        else:
+            data['price'] = str(주문가격)
             data['volume'] = str(주문수량)
 
         주문조건 = self.주문조건.get(주문유형)
         if 주문조건:
             data['time_in_force'] = 주문조건
 
-        return self._post(url, data)
+        data = self._post(url, data)
+        if 'uuid' in data:
+            return data['uuid'], ''
+        elif 'error' in data:
+            return 0, data['error']['message']
+        else:
+            return 0, str(data)
 
     def order_cancel(self, od_no):
         """주문을 취소합니다."""
         url = 'https://api.upbit.com/v1/order'
         data = {'uuid': od_no}
-        return self._delete(url, data)
+        data = self._delete(url, data)
+        if 'uuid' in data:
+            return data['uuid'], ''
+        elif 'error' in data:
+            return 0, data['error']['message']
+        else:
+            return 0, str(data)
 
 
 class UpbitWebSocketReceiver(QThread):
