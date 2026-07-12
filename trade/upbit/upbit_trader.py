@@ -44,13 +44,6 @@ class UpbitTrader(BaseTrader):
             yesugm = self.upbit.get_balances()
         self._set_yesugm_and_noti(yesugm)
 
-    def _check_error(self, ret):
-        """에러를 확인합니다."""
-        if ret.__class__ == dict and list(ret)[0] == 'error':
-            self.windowQ.put((UI_NUM['시스템로그'], f"오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
-            return False
-        return True
-
     @error_decorator
     def _send_order(self, data):
         """주문을 전송합니다."""
@@ -68,41 +61,33 @@ class UpbitTrader(BaseTrader):
                 주문유형 = '시장가'
             else:
                 주문유형 = self.dict_set[f'{주문구분}주문유형'] if 수동주문유형 is None else 수동주문유형
-            주문금액 = int(주문가격 * 주문수량)
 
-            """def order_coin(self, 종목코드='', 주문구분코드='', 주문유형='', 주문금액=0, 주문수량=0):"""
-            ret = self.upbit.order_coin(종목코드=종목코드, 주문구분=주문구분, 주문유형=주문유형, 주문금액=주문금액, 주문수량=주문수량)
-            if ret is not None:
-                if self._check_error(ret):
-                    index = self._get_index()
-                    if 주문구분 == '매수':
-                        self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
-                        add_time = self.dict_set['매수취소시간초']
-                    else:
-                        add_time = self.dict_set['매도취소시간초']
+            """def order_coin(self, 종목코드, 주문구분, 주문유형, 주문가격, 주문수량):"""
+            주문번호, 응답메시지 = self.upbit.order_coin(종목코드, 주문구분, 주문유형, 주문가격, 주문수량)
+            if self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량):
+                index = self._get_index()
+                if 주문구분 == '매수':
+                    self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
+                    add_time = self.dict_set['매수취소시간초']
+                else:
+                    add_time = self.dict_set['매도취소시간초']
 
-                    self.dict_order[주문구분][종목코드] = [
-                        timedelta_sec(add_time), 정정횟수, 주문가격, 주문수량, get_hogaunit_coin(주문가격)
-                    ]
+                self.dict_order[주문구분][종목코드] = [
+                    timedelta_sec(add_time), 정정횟수, 주문가격, 주문수량, get_hogaunit_coin(주문가격)
+                ]
 
-                    self._update_chegeollist(
-                        index, 종목코드, 종목명, f'{주문구분}접수', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, ret['uuid']
-                    )
+                self._update_chegeollist(
+                    index, 종목코드, 종목명, f'{주문구분}접수', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, 주문번호
+                )
 
-                    self.windowQ.put((
-                        UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
-                    ))
-            else:
-                self._put_order_complete(f'{주문구분}취소', 종목코드)
-                self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'))
+                self.windowQ.put((
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
+                ))
 
         elif 주문구분 in ('매수취소', '매도취소'):
             """def order_cancel(self, od_no):"""
-            ret = self.upbit.order_cancel(원주문번호)
-            if ret is None:
-                self.windowQ.put((
-                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'
-                ))
+            주문번호, 응답메시지 = self.upbit.order_cancel(원주문번호)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
 

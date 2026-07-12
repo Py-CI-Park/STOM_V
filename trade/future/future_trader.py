@@ -67,7 +67,7 @@ class FutureTrader(BaseTrader):
             else:
                 주문번호, 응답메시지 = self.ls.order_future_night(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
 
-            if self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
+            if self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량):
                 index = self._get_index()
                 if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
@@ -97,7 +97,7 @@ class FutureTrader(BaseTrader):
                 주문번호, 응답메시지 = self.ls.order_modify_future(종목코드, 원주문번호, 주문가격, 주문수량, 주문유형)
             else:
                 주문번호, 응답메시지 = self.ls.order_modify_future_night(종목코드, 원주문번호, 주문가격, 주문수량, 주문유형)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         elif 'CANCEL' in 주문구분:
             """
@@ -108,18 +108,18 @@ class FutureTrader(BaseTrader):
                 주문번호, 응답메시지 = self.ls.order_cancel_future(종목코드, 원주문번호, 주문수량)
             else:
                 주문번호, 응답메시지 = self.ls.order_cancel_future_night(종목코드, 원주문번호, 주문수량)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
 
     @error_decorator
     def _convert_order_data(self, data):
         """주문체결 데이터를 변환합니다."""
-        body = data['body']
-        if body is None:
+        body = data.get('body', {})
+        tr_cd = body.get('tr_cd')
+        if tr_cd is None:
             return
 
-        tr_cd = body['tr_cd']
         if tr_cd in ('C01', 'C02'):
             체결유형 = '1'
             체결구분 = LsRestData.선물주문체결코드[체결유형]
