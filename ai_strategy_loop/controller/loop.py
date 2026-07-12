@@ -852,6 +852,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # v5.0 리포트 원리 어휘 주입 — build_messages가 kind별 어휘 블록을 추가한다.
             #   getattr 기본 False라 구버전 config도 무영향(byte-동일, 하위호환).
             report_principles_enabled=getattr(config, "report_principles_enabled", False),
+            # 차트술사 구조론 핵심 원리 주입(A-2) — 기본 OFF, getattr로 구버전 config 무영향.
+            structure_principles_prompt_enabled=getattr(config, "structure_principles_prompt_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).

@@ -32,6 +32,11 @@ _FULL_STOM_SOURCE_ASSETS = (
     ("variables_reference", _ASSET_DIR / "variables_reference.md"),
     ("forbidden", _ASSET_DIR / "forbidden.md"),
     ("examples", _ASSET_DIR / "examples.md"),
+    # A-2(2026-07-12): 차트술사 구조론 3종 — 연구 Context Pack에 전문 포함.
+    #   principles/constraints의 수치 임계값은 문서 자체가 '무근거 가설'로 명시한다.
+    ("principles", _ASSET_DIR / "principles.md"),
+    ("constraints_checklist", _ASSET_DIR / "constraints_checklist.md"),
+    ("idiom_dictionary", _ASSET_DIR / "idiom_dictionary.md"),
 )
 MAX_RESEARCH_CONTEXT_PACK_TOKENS = 250_000
 
@@ -293,6 +298,39 @@ def _report_principles_lines(kind: str) -> List[str]:
         "- 시총별 동적 청산: 소형(시가총액<5000)일수록 손절/익절/트레일링/최대보유를 타이트하게, 대형은 느슨하게.",
         "- 세력이탈은 **스칼라 항**으로: 초당매도수량>초당매수수량*배수, 체결강도 약화, 수익률<0 동반 시 가중 청산.",
         "- 트레일링: 최고수익률 >= 시작값 이후 (최고수익률-폭) 이탈 시 청산 — MFE 반납(시드 실측 2.1%p)을 줄인다.",
+    ]
+
+
+def _structure_principles_lines(kind: str) -> List[str]:
+    """Default-OFF 차트술사 구조론 핵심 원리 (A-2 — principles.md P0~P15 + CSC 정제).
+
+    principles.md 전문은 연구 Context Pack(_FULL_STOM_SOURCE_ASSETS)이 보유하고,
+    이 블록은 루프 생성 프롬프트용 정제판이다. 문서 원칙 그대로: **모든 수치
+    임계값은 무근거 가설이며 부검/분위수 피드백으로 데이터에서 보정해야 한다.**
+    """
+    common = [
+        "",
+        "차트술사 구조론 핵심 원리(구조 문맥 필수 — 수치 임계값은 무근거 가설, 부검 분위수로 보정):",
+        "- 해석 순서 고정: 체결 → 거래량 → 종가 → 박스 → 도지 → 기능선 → 지지/저항 전환 → 시나리오.",
+        "- 박스/추세 이분법: 지금이 박스 안(하단 지지 매수)인지, 돌파 추세(상단 종가 돌파 매수)인지, "
+        "돌파 후 눌림(리테스트 지지 매수)인지 **한 국면을 명시적으로 선택**해 조건식에 구조 참조"
+        "(최고현재가/최저현재가 기반 상단·하단, 전봉 고저)를 넣어라 — 구조 없는 모멘텀 추격 금지(CSC-03).",
+        "- 종가 우선: 돌파/이탈 판정 좌변은 현재가(min=1분봉 종가) — 장중 고가 스파이크 단독 판정 금지(CSC-02).",
+        "- 사건거래대금: 돌파 매수는 평균 대비 거래대금/거래량 급증 확인을 반드시 동반하라 — "
+        "거래량 없는 돌파 매수는 그 자체로 위반(CSC-06).",
+        "- 갭은 기능선과 함께: 갭 등락율 단독 매수 금지 — 갭이 어떤 기준선을 넘었는지 비교를 동반하라(CSC-05).",
+    ]
+    if kind == "buy":
+        return common + [
+            "- 눌림매매 구조(순서 고정): 기준 박스 존재 → 거래량 동반 돌파 → 조정(거래량 감소) → "
+            "이전 저항의 지지 전환 확인 → 진입. 기회는 돌파 순간보다 돌파 이후 되돌림에서 생긴다.",
+            "- 모든 진입은 가설이다: 진입 근거(지지선/기준선)를 조건식에 남겨 매도측이 근거 상실을 판정할 수 있게 하라.",
+        ]
+    return common + [
+        "- 실패의 정의 = 진입 근거의 상실(가격 하락이 아님): 근거 지지선을 종가 기준 이탈하면 청산 — "
+        "근거가 깨졌는데 새 이유를 붙여 보유를 연장하지 마라(CSC-04).",
+        "- 매도식에는 구조 무효화 분기(하단/매수가 기준 이탈)와 손절+익절 경로가 반드시 짝으로 존재해야 한다(CSC-07).",
+        "- 익절은 고정 퍼센트가 아니라 다음 기능선 도달/돌파 실패 기준을 우선 고려하라(트레일링과 병행).",
     ]
 
 
@@ -906,6 +944,7 @@ def build_messages(
     sparse_positive_prompt_enabled: bool = False,
     exec_budget_prompt_enabled: bool = False,
     report_principles_enabled: bool = False,
+    structure_principles_prompt_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[List[str]] = None,
     segment_avoid_lines: Optional[List[str]] = None,
@@ -1019,6 +1058,10 @@ def build_messages(
     #   OFF(기본)면 미추가 → 출력 byte-동일(하위호환).
     if report_principles_enabled:
         user_lines += _report_principles_lines(kind)
+    # 차트술사 구조론 핵심 원리(A-2 — principles.md/constraints_checklist.md 정제 블록).
+    #   OFF(기본)면 미추가 → 출력 byte-동일(하위호환). 전문은 연구 Context Pack이 보유.
+    if structure_principles_prompt_enabled:
+        user_lines += _structure_principles_lines(kind)
 
     # P2 GA crossover(최우선 지침): 두 부모를 받으면 결합 지침을 먼저 둔다.
     #   crossover와 단일 base_code(mutation)는 상호 배타 — crossover면 base_code 무시.

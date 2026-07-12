@@ -56,6 +56,8 @@ _COMMON_DISCOVERY: Final[dict[str, PresetValue]] = {
     "exec_budget_prompt_enabled": True,
     "sell_exec_budget_guard_enabled": True,
     "report_principles_enabled": True,
+    # A-2: 차트술사 구조론 핵심 원리 블록 — 연구 프리셋에서만 ON(전역 기본 OFF 유지).
+    "structure_principles_prompt_enabled": True,
     "prompt_logging_enabled": True,
     # P3 환류 토글 ON (전역 LoopConfig 기본값은 OFF 유지 — 연구 경로에서만 켠다).
     #   "실행→분석→불필요 구간 제거/임계 제안/가정 판정→재생성" 폐루프를 활성화한다.

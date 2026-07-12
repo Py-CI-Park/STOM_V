@@ -486,6 +486,13 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "(시총=억, 금액=백만원) 명시. 기본 OFF.",
         },
         {
+            "name": "structure_principles_prompt_enabled", "label": "차트술사 구조론 원리", "type": "bool",
+            "default": d.structure_principles_prompt_enabled,
+            "help": "켜면 차트술사 구조론 핵심 원리(박스/추세 이분법·종가 우선·사건거래대금·"
+                    "눌림 구조·진입근거 상실 청산 — CSC 핵심)를 프롬프트에 추가한다. "
+                    "수치 임계값은 무근거 가설로 명시하고 부검 분위수 보정을 지시. 기본 OFF.",
+        },
+        {
             "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
             "default": d.quantile_feedback_enabled,
             "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "
