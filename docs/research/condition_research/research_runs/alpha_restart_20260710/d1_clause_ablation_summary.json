@@ -1,0 +1,2396 @@
+{
+ "kind": "d1_clause_ablation_summary",
+ "generated": "2026-07-12T10:38:38.054303+00:00",
+ "preregistration": "2026-07-12_d1_clause_ablation_preregistration.md (56564cba)",
+ "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+ "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+ "window": "2022-03-23~2023-12-31 (발견창, 측정창=2개 연도)",
+ "contamination_label": "본 결과의 절 집합(RR8_12 매수식)은 2024 선정창을 포함해 튜닝된 역사적 산물이다(창-지위 원장 §2 v4 계열). 따라서 발견되는 절 효과는 이 시드 계보(rr8_12_turnover_min_902_1.5, buy_sha 348c5181…)에 조건부인 진단이며, (a) 새 전략 성능 주장이 아니고, (b) 절의 보편적 유효성 주장이 아니며, (c) 다른 출구를 쓰면 지도가 달라진다(L3 는 RR8_12 출구 조건부).",
+ "bank_meta": {
+  "n_onsets_total": 863446,
+  "n_labeled": 862932,
+  "n_2022": 363287,
+  "n_2023": 499645
+ },
+ "consolidate": {
+  "n_parts": 437,
+  "n_onsets": 863446,
+  "n_labeled": 862932,
+  "bank_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\stats_map\\onset_l3_bank.parquet",
+  "bits_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\stats_map\\d1_onset_clause_bits.parquet"
+ },
+ "determinism_vs_npz": {
+  "n_days": 437,
+  "n_off_mismatch": 0,
+  "n_l3_mismatch": 0,
+  "max_l3_abs_err": 0.0,
+  "determinism_pass": true
+ },
+ "gate": {
+  "gate_pass": true,
+  "local_def_parity": {
+   "시가등락율": {
+    "n": 1000,
+    "max_abs_err": 0.0,
+    "n_nonfinite": 0,
+    "pass": true
+   },
+   "시가대비등락율": {
+    "n": 1000,
+    "max_abs_err": 0.0,
+    "n_nonfinite": 0,
+    "pass": true
+   },
+   "VI아래5호가": {
+    "n": 1000,
+    "max_abs_err": 0.0,
+    "n_nonfinite": 0,
+    "pass": true
+   }
+  },
+  "n1_delay_parity": {
+   "symbol": "초당거래대금N1",
+   "n": 1000,
+   "max_abs_err": 0.0,
+   "pass": true
+  },
+  "p3_reproduction": {
+   "n_onsets": 100,
+   "n_clauses": 39,
+   "n_pairs": 3900,
+   "n_agree": 3900,
+   "agreement_pct": 100.0,
+   "n_mismatch": 0,
+   "pass": true
+  },
+  "qualified": {
+   "qualified_nums": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38
+   ],
+   "n_qualified": 38,
+   "fdr_denominator": 38,
+   "sealed_cap": 39,
+   "u_promoted": [
+    10,
+    12,
+    13,
+    19,
+    20,
+    36
+   ],
+   "u_held_excluded": [],
+   "pure_dup_merged_out": [
+    39
+   ],
+   "pure_dup_pairs": [
+    [
+     15,
+     39
+    ]
+   ],
+   "symbol_parity_pass": {
+    "시가등락율": true,
+    "시가대비등락율": true,
+    "VI아래5호가": true,
+    "초당거래대금N1": true
+   },
+   "base_m_count": 33
+  }
+ },
+ "judgment": {
+  "per_clause": {
+   "1": {
+    "num": 1,
+    "text": "1 < 초당순매수금액 < 1000",
+    "cat": "quote_qty",
+    "tier": "M-namespace",
+    "family": "초당순매수금액",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 373112,
+    "n_unsat": 489820,
+    "year_counts": {
+     "2022": {
+      "sat": 156845,
+      "unsat": 206442
+     },
+     "2023": {
+      "sat": 216267,
+      "unsat": 283378
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.931762,
+    "mean_unsat_pp": -1.065713,
+    "delta_pp": 0.133951,
+    "ci_low_pp": 0.125539,
+    "ci_high_pp": 0.1434,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.012767,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.1215,
+      "sign": 1,
+      "n_sat": 156845,
+      "n_unsat": 206442
+     },
+     "2023": {
+      "delta_pp": 0.1429,
+      "sign": 1,
+      "n_sat": 216267,
+      "n_unsat": 283378
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "load_bearing"
+   },
+   "2": {
+    "num": 2,
+    "text": "고저평균대비등락율 > 0",
+    "cat": "change_band",
+    "tier": "M-direct",
+    "family": "고저평균대비등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 512139,
+    "n_unsat": 350793,
+    "year_counts": {
+     "2022": {
+      "sat": 210712,
+      "unsat": 152575
+     },
+     "2023": {
+      "sat": 301427,
+      "unsat": 198218
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.983952,
+    "mean_unsat_pp": -1.042606,
+    "delta_pp": 0.058654,
+    "ci_low_pp": 0.043581,
+    "ci_high_pp": 0.074896,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.022384,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0518,
+      "sign": 1,
+      "n_sat": 210712,
+      "n_unsat": 152575
+     },
+     "2023": {
+      "delta_pp": 0.0606,
+      "sign": 1,
+      "n_sat": 301427,
+      "n_unsat": 198218
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "weak_signal"
+   },
+   "3": {
+    "num": 3,
+    "text": "당일거래대금각도(30) < 30",
+    "cat": "surge_value",
+    "tier": "M-derived",
+    "family": "당일거래대금각도(30)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 833569,
+    "n_unsat": 29363,
+    "year_counts": {
+     "2022": {
+      "sat": 354312,
+      "unsat": 8975
+     },
+     "2023": {
+      "sat": 479257,
+      "unsat": 20388
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.008431,
+    "mean_unsat_pp": -0.989754,
+    "delta_pp": -0.018677,
+    "ci_low_pp": -0.074513,
+    "ci_high_pp": 0.035037,
+    "p_one_sided": 0.7325,
+    "p_two_sided": 0.535,
+    "mde_pp": 0.078307,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.09,
+      "sign": 1,
+      "n_sat": 354312,
+      "n_unsat": 8975
+     },
+     "2023": {
+      "delta_pp": -0.0541,
+      "sign": -1,
+      "n_sat": 479257,
+      "n_unsat": 20388
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "4": {
+    "num": 4,
+    "text": "라운드피겨위5호가이내 == False",
+    "cat": "vi_round",
+    "tier": "M-direct",
+    "family": "라운드피겨",
+    "polarity_note": "bare-truthy 제외 가드 → 만족=거짓",
+    "n_sat": 851053,
+    "n_unsat": 11879,
+    "year_counts": {
+     "2022": {
+      "sat": 356902,
+      "unsat": 6385
+     },
+     "2023": {
+      "sat": 494151,
+      "unsat": 5494
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.005758,
+    "mean_unsat_pp": -1.153803,
+    "delta_pp": 0.148045,
+    "ci_low_pp": 0.086958,
+    "ci_high_pp": 0.205624,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.084824,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0871,
+      "sign": 1,
+      "n_sat": 356902,
+      "n_unsat": 6385
+     },
+     "2023": {
+      "delta_pp": 0.1991,
+      "sign": 1,
+      "n_sat": 494151,
+      "n_unsat": 5494
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "load_bearing"
+   },
+   "5": {
+    "num": 5,
+    "text": "시가총액 < 3000",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "시가총액",
+    "polarity_note": "분기 if 시가총액<3000 → 만족=참",
+    "n_sat": 334695,
+    "n_unsat": 528237,
+    "year_counts": {
+     "2022": {
+      "sat": 154067,
+      "unsat": 209220
+     },
+     "2023": {
+      "sat": 180628,
+      "unsat": 319017
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.084338,
+    "mean_unsat_pp": -0.959298,
+    "delta_pp": -0.125039,
+    "ci_low_pp": -0.145751,
+    "ci_high_pp": -0.103586,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.03014,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.1402,
+      "sign": -1,
+      "n_sat": 154067,
+      "n_unsat": 209220
+     },
+     "2023": {
+      "delta_pp": -0.1055,
+      "sign": -1,
+      "n_sat": 180628,
+      "n_unsat": 319017
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "6": {
+    "num": 6,
+    "text": "시분초 < 90200",
+    "cat": "time_gate",
+    "tier": "M-namespace",
+    "family": "시분초",
+    "polarity_note": "분기·재확인 → 만족=참",
+    "n_sat": 40745,
+    "n_unsat": 822187,
+    "year_counts": {
+     "2022": {
+      "sat": 17194,
+      "unsat": 346093
+     },
+     "2023": {
+      "sat": 23551,
+      "unsat": 476094
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.06232,
+    "mean_unsat_pp": -1.005094,
+    "delta_pp": -0.057226,
+    "ci_low_pp": -0.087536,
+    "ci_high_pp": -0.027646,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.04281,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0413,
+      "sign": -1,
+      "n_sat": 17194,
+      "n_unsat": 346093
+     },
+     "2023": {
+      "delta_pp": -0.0687,
+      "sign": -1,
+      "n_sat": 23551,
+      "n_unsat": 476094
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "none"
+   },
+   "7": {
+    "num": 7,
+    "text": "전일동시간비 > 0",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "전일동시간비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 860700,
+    "n_unsat": 2232,
+    "year_counts": {
+     "2022": {
+      "sat": 362553,
+      "unsat": 734
+     },
+     "2023": {
+      "sat": 498147,
+      "unsat": 1498
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.007766,
+    "mean_unsat_pp": -1.019359,
+    "delta_pp": 0.011594,
+    "ci_low_pp": -0.161103,
+    "ci_high_pp": 0.178741,
+    "p_one_sided": 0.415,
+    "p_two_sided": 0.83,
+    "mde_pp": 0.242924,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.305,
+      "sign": 1,
+      "n_sat": 362553,
+      "n_unsat": 734
+     },
+     "2023": {
+      "delta_pp": -0.1217,
+      "sign": -1,
+      "n_sat": 498147,
+      "n_unsat": 1498
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "8": {
+    "num": 8,
+    "text": "체결강도 <= 300",
+    "cat": "exec_strength",
+    "tier": "M-direct",
+    "family": "체결강도",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 848147,
+    "n_unsat": 14785,
+    "year_counts": {
+     "2022": {
+      "sat": 356650,
+      "unsat": 6637
+     },
+     "2023": {
+      "sat": 491497,
+      "unsat": 8148
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.007454,
+    "mean_unsat_pp": -1.027422,
+    "delta_pp": 0.019968,
+    "ci_low_pp": -0.033013,
+    "ci_high_pp": 0.073949,
+    "p_one_sided": 0.235,
+    "p_two_sided": 0.47,
+    "mde_pp": 0.076458,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0867,
+      "sign": 1,
+      "n_sat": 356650,
+      "n_unsat": 6637
+     },
+     "2023": {
+      "delta_pp": -0.0382,
+      "sign": -1,
+      "n_sat": 491497,
+      "n_unsat": 8148
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "9": {
+    "num": 9,
+    "text": "체결강도 >= 70",
+    "cat": "exec_strength",
+    "tier": "M-direct",
+    "family": "체결강도",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 756831,
+    "n_unsat": 106101,
+    "year_counts": {
+     "2022": {
+      "sat": 315092,
+      "unsat": 48195
+     },
+     "2023": {
+      "sat": 441739,
+      "unsat": 57906
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.002864,
+    "mean_unsat_pp": -1.042976,
+    "delta_pp": 0.040112,
+    "ci_low_pp": 0.018067,
+    "ci_high_pp": 0.063142,
+    "p_one_sided": 0.0025,
+    "p_two_sided": 0.005,
+    "mde_pp": 0.03222,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0109,
+      "sign": 1,
+      "n_sat": 315092,
+      "n_unsat": 48195
+     },
+     "2023": {
+      "delta_pp": 0.0587,
+      "sign": 1,
+      "n_sat": 441739,
+      "n_unsat": 57906
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "none"
+   },
+   "10": {
+    "num": 10,
+    "text": "현재가 < VI아래5호가",
+    "cat": "vi_round",
+    "tier": "U-hold",
+    "family": "VI 상대가",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 859814,
+    "n_unsat": 3118,
+    "year_counts": {
+     "2022": {
+      "sat": 361665,
+      "unsat": 1622
+     },
+     "2023": {
+      "sat": 498149,
+      "unsat": 1496
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.007146,
+    "mean_unsat_pp": -1.186953,
+    "delta_pp": 0.179807,
+    "ci_low_pp": 0.065181,
+    "ci_high_pp": 0.302399,
+    "p_one_sided": 0.0025,
+    "p_two_sided": 0.005,
+    "mde_pp": 0.169566,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.1863,
+      "sign": 1,
+      "n_sat": 361665,
+      "n_unsat": 1622
+     },
+     "2023": {
+      "delta_pp": 0.1569,
+      "sign": 1,
+      "n_sat": 498149,
+      "n_unsat": 1496
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "load_bearing"
+   },
+   "11": {
+    "num": 11,
+    "text": "현재가 > 고가 - (고가 - 저가) * 0.2",
+    "cat": "breakout_ma",
+    "tier": "M-direct",
+    "family": "고저 돌파",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 226325,
+    "n_unsat": 636607,
+    "year_counts": {
+     "2022": {
+      "sat": 94061,
+      "unsat": 269226
+     },
+     "2023": {
+      "sat": 132264,
+      "unsat": 367381
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.946733,
+    "mean_unsat_pp": -1.029505,
+    "delta_pp": 0.082772,
+    "ci_low_pp": 0.063629,
+    "ci_high_pp": 0.103788,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.028707,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0964,
+      "sign": 1,
+      "n_sat": 94061,
+      "n_unsat": 269226
+     },
+     "2023": {
+      "delta_pp": 0.0721,
+      "sign": 1,
+      "n_sat": 132264,
+      "n_unsat": 367381
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "weak_signal"
+   },
+   "12": {
+    "num": 12,
+    "text": "0.0 <= 시가등락율 < 8.0",
+    "cat": "change_band",
+    "tier": "U-hold",
+    "family": "시가등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 643983,
+    "n_unsat": 218949,
+    "year_counts": {
+     "2022": {
+      "sat": 274569,
+      "unsat": 88718
+     },
+     "2023": {
+      "sat": 369414,
+      "unsat": 130231
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.001552,
+    "mean_unsat_pp": -1.026162,
+    "delta_pp": 0.024611,
+    "ci_low_pp": -0.000384,
+    "ci_high_pp": 0.049503,
+    "p_one_sided": 0.0275,
+    "p_two_sided": 0.055,
+    "mde_pp": 0.03566,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0361,
+      "sign": 1,
+      "n_sat": 274569,
+      "n_unsat": 88718
+     },
+     "2023": {
+      "delta_pp": 0.0194,
+      "sign": 1,
+      "n_sat": 369414,
+      "n_unsat": 130231
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "none"
+   },
+   "13": {
+    "num": 13,
+    "text": "0.5 <= 시가대비등락율 < 6.0",
+    "cat": "change_band",
+    "tier": "U-hold",
+    "family": "시가대비등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 426308,
+    "n_unsat": 436624,
+    "year_counts": {
+     "2022": {
+      "sat": 177422,
+      "unsat": 185865
+     },
+     "2023": {
+      "sat": 248886,
+      "unsat": 250759
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.964652,
+    "mean_unsat_pp": -1.04992,
+    "delta_pp": 0.085268,
+    "ci_low_pp": 0.066446,
+    "ci_high_pp": 0.10342,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.026429,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0766,
+      "sign": 1,
+      "n_sat": 177422,
+      "n_unsat": 185865
+     },
+     "2023": {
+      "delta_pp": 0.0903,
+      "sign": 1,
+      "n_sat": 248886,
+      "n_unsat": 250759
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "weak_signal"
+   },
+   "14": {
+    "num": 14,
+    "text": "1.0 < 등락율 <= 8.0",
+    "cat": "change_band",
+    "tier": "M-direct",
+    "family": "등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 546613,
+    "n_unsat": 316319,
+    "year_counts": {
+     "2022": {
+      "sat": 228472,
+      "unsat": 134815
+     },
+     "2023": {
+      "sat": 318141,
+      "unsat": 181504
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.975442,
+    "mean_unsat_pp": -1.063705,
+    "delta_pp": 0.088263,
+    "ci_low_pp": 0.071457,
+    "ci_high_pp": 0.104651,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.023727,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0963,
+      "sign": 1,
+      "n_sat": 228472,
+      "n_unsat": 134815
+     },
+     "2023": {
+      "delta_pp": 0.0813,
+      "sign": 1,
+      "n_sat": 318141,
+      "n_unsat": 181504
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "weak_signal"
+   },
+   "15": {
+    "num": 15,
+    "text": "1.5 < 회전율",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "회전율",
+    "polarity_note": "not(P)→만족=P (#39 와 순수 중복)",
+    "n_sat": 485199,
+    "n_unsat": 377733,
+    "year_counts": {
+     "2022": {
+      "sat": 199714,
+      "unsat": 163573
+     },
+     "2023": {
+      "sat": 285485,
+      "unsat": 214160
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.060274,
+    "mean_unsat_pp": -0.940387,
+    "delta_pp": -0.119887,
+    "ci_low_pp": -0.140629,
+    "ci_high_pp": -0.100861,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.028427,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.1528,
+      "sign": -1,
+      "n_sat": 199714,
+      "n_unsat": 163573
+     },
+     "2023": {
+      "delta_pp": -0.0987,
+      "sign": -1,
+      "n_sat": 285485,
+      "n_unsat": 214160
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "16": {
+    "num": 16,
+    "text": "1000 < 현재가 <= 30000",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "현재가 대역",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 537976,
+    "n_unsat": 324956,
+    "year_counts": {
+     "2022": {
+      "sat": 237053,
+      "unsat": 126234
+     },
+     "2023": {
+      "sat": 300923,
+      "unsat": 198722
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.058242,
+    "mean_unsat_pp": -0.924281,
+    "delta_pp": -0.133961,
+    "ci_low_pp": -0.155218,
+    "ci_high_pp": -0.113776,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.029624,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.1614,
+      "sign": -1,
+      "n_sat": 237053,
+      "n_unsat": 126234
+     },
+     "2023": {
+      "delta_pp": -0.1089,
+      "sign": -1,
+      "n_sat": 300923,
+      "n_unsat": 198722
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "17": {
+    "num": 17,
+    "text": "1000 < 현재가 <= 50000",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "현재가 대역",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 654229,
+    "n_unsat": 208703,
+    "year_counts": {
+     "2022": {
+      "sat": 279952,
+      "unsat": 83335
+     },
+     "2023": {
+      "sat": 374277,
+      "unsat": 125368
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.034969,
+    "mean_unsat_pp": -0.922614,
+    "delta_pp": -0.112355,
+    "ci_low_pp": -0.134358,
+    "ci_high_pp": -0.088629,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.032688,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.1229,
+      "sign": -1,
+      "n_sat": 279952,
+      "n_unsat": 83335
+     },
+     "2023": {
+      "delta_pp": -0.1015,
+      "sign": -1,
+      "n_sat": 374277,
+      "n_unsat": 125368
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "18": {
+    "num": 18,
+    "text": "2.0 < 등락율 <= 15.0",
+    "cat": "change_band",
+    "tier": "M-direct",
+    "family": "등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 538510,
+    "n_unsat": 324422,
+    "year_counts": {
+     "2022": {
+      "sat": 219373,
+      "unsat": 143914
+     },
+     "2023": {
+      "sat": 319137,
+      "unsat": 180508
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.00951,
+    "mean_unsat_pp": -1.004951,
+    "delta_pp": -0.004559,
+    "ci_low_pp": -0.023251,
+    "ci_high_pp": 0.011629,
+    "p_one_sided": 0.73,
+    "p_two_sided": 0.54,
+    "mde_pp": 0.024932,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0256,
+      "sign": -1,
+      "n_sat": 219373,
+      "n_unsat": 143914
+     },
+     "2023": {
+      "delta_pp": 0.0064,
+      "sign": 1,
+      "n_sat": 319137,
+      "n_unsat": 180508
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "19": {
+    "num": 19,
+    "text": "2.0 <= 시가등락율 < 4.0",
+    "cat": "change_band",
+    "tier": "U-hold",
+    "family": "시가등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 189463,
+    "n_unsat": 673469,
+    "year_counts": {
+     "2022": {
+      "sat": 79501,
+      "unsat": 283786
+     },
+     "2023": {
+      "sat": 109962,
+      "unsat": 389683
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.993119,
+    "mean_unsat_pp": -1.011925,
+    "delta_pp": 0.018805,
+    "ci_low_pp": -0.008193,
+    "ci_high_pp": 0.043614,
+    "p_one_sided": 0.09,
+    "p_two_sided": 0.18,
+    "mde_pp": 0.037032,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0361,
+      "sign": 1,
+      "n_sat": 79501,
+      "n_unsat": 283786
+     },
+     "2023": {
+      "delta_pp": 0.0061,
+      "sign": 1,
+      "n_sat": 109962,
+      "n_unsat": 389683
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "20": {
+    "num": 20,
+    "text": "3.0 <= 시가대비등락율 < 8.0",
+    "cat": "change_band",
+    "tier": "U-hold",
+    "family": "시가대비등락율",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 184261,
+    "n_unsat": 678671,
+    "year_counts": {
+     "2022": {
+      "sat": 69304,
+      "unsat": 293983
+     },
+     "2023": {
+      "sat": 114957,
+      "unsat": 384688
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.995512,
+    "mean_unsat_pp": -1.011131,
+    "delta_pp": 0.015619,
+    "ci_low_pp": -0.008037,
+    "ci_high_pp": 0.039488,
+    "p_one_sided": 0.085,
+    "p_two_sided": 0.17,
+    "mde_pp": 0.033972,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0091,
+      "sign": -1,
+      "n_sat": 69304,
+      "n_unsat": 293983
+     },
+     "2023": {
+      "delta_pp": 0.0241,
+      "sign": 1,
+      "n_sat": 114957,
+      "n_unsat": 384688
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "21": {
+    "num": 21,
+    "text": "90200 <= 시분초 < 90700",
+    "cat": "time_gate",
+    "tier": "M-namespace",
+    "family": "시분초",
+    "polarity_note": "분기 → 만족=참",
+    "n_sat": 142367,
+    "n_unsat": 720565,
+    "year_counts": {
+     "2022": {
+      "sat": 59906,
+      "unsat": 303381
+     },
+     "2023": {
+      "sat": 82461,
+      "unsat": 417184
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.991837,
+    "mean_unsat_pp": -1.010949,
+    "delta_pp": 0.019112,
+    "ci_low_pp": 0.00093,
+    "ci_high_pp": 0.037713,
+    "p_one_sided": 0.0175,
+    "p_two_sided": 0.035,
+    "mde_pp": 0.026293,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0038,
+      "sign": -1,
+      "n_sat": 59906,
+      "n_unsat": 303381
+     },
+     "2023": {
+      "delta_pp": 0.0357,
+      "sign": 1,
+      "n_sat": 82461,
+      "n_unsat": 417184
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "none"
+   },
+   "22": {
+    "num": 22,
+    "text": "관심종목 == 1",
+    "cat": "time_gate",
+    "tier": "M-direct",
+    "family": "관심종목",
+    "polarity_note": "not(P)→만족=P (유니버스 조건부 §4.1)",
+    "n_sat": 862932,
+    "n_unsat": 0,
+    "year_counts": {
+     "2022": {
+      "sat": 363287,
+      "unsat": 0
+     },
+     "2023": {
+      "sat": 499645,
+      "unsat": 0
+     }
+    },
+    "floor_pass": false,
+    "mean_sat_pp": -1.007796,
+    "mean_unsat_pp": null,
+    "delta_pp": null,
+    "ci_low_pp": null,
+    "ci_high_pp": null,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": null,
+    "year_delta": {
+     "2022": {
+      "delta_pp": null,
+      "sign": 0,
+      "n_sat": 363287,
+      "n_unsat": 0
+     },
+     "2023": {
+      "delta_pp": null,
+      "sign": 0,
+      "n_sat": 499645,
+      "n_unsat": 0
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false
+   },
+   "23": {
+    "num": 23,
+    "text": "누적초당매도수량(30)*1.0 < 누적초당매수수량(30)*1.0",
+    "cat": "quote_qty",
+    "tier": "M-derived",
+    "family": "누적초당(30) 비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 390362,
+    "n_unsat": 472570,
+    "year_counts": {
+     "2022": {
+      "sat": 165011,
+      "unsat": 198276
+     },
+     "2023": {
+      "sat": 225351,
+      "unsat": 274294
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.97039,
+    "mean_unsat_pp": -1.038695,
+    "delta_pp": 0.068305,
+    "ci_low_pp": 0.058883,
+    "ci_high_pp": 0.078105,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.01374,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0646,
+      "sign": 1,
+      "n_sat": 165011,
+      "n_unsat": 198276
+     },
+     "2023": {
+      "delta_pp": 0.0714,
+      "sign": 1,
+      "n_sat": 225351,
+      "n_unsat": 274294
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "weak_signal"
+   },
+   "24": {
+    "num": 24,
+    "text": "누적초당매수수량(30)*0.5 < 누적초당매도수량(30)*1.0",
+    "cat": "quote_qty",
+    "tier": "M-derived",
+    "family": "누적초당(30) 비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 644332,
+    "n_unsat": 218600,
+    "year_counts": {
+     "2022": {
+      "sat": 266432,
+      "unsat": 96855
+     },
+     "2023": {
+      "sat": 377900,
+      "unsat": 121745
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.029412,
+    "mean_unsat_pp": -0.944082,
+    "delta_pp": -0.08533,
+    "ci_low_pp": -0.096619,
+    "ci_high_pp": -0.074172,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.016045,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0885,
+      "sign": -1,
+      "n_sat": 266432,
+      "n_unsat": 96855
+     },
+     "2023": {
+      "delta_pp": -0.087,
+      "sign": -1,
+      "n_sat": 377900,
+      "n_unsat": 121745
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "none"
+   },
+   "25": {
+    "num": 25,
+    "text": "당일거래대금 > 5 * 100",
+    "cat": "surge_value",
+    "tier": "M-direct",
+    "family": "당일거래대금(수준)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 862215,
+    "n_unsat": 717,
+    "year_counts": {
+     "2022": {
+      "sat": 362937,
+      "unsat": 350
+     },
+     "2023": {
+      "sat": 499278,
+      "unsat": 367
+     }
+    },
+    "floor_pass": false,
+    "mean_sat_pp": -1.007946,
+    "mean_unsat_pp": -0.827355,
+    "delta_pp": -0.180591,
+    "ci_low_pp": -0.375739,
+    "ci_high_pp": 0.003629,
+    "p_one_sided": 0.97,
+    "p_two_sided": 0.06,
+    "mde_pp": 0.271176,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.233,
+      "sign": -1,
+      "n_sat": 362937,
+      "n_unsat": 350
+     },
+     "2023": {
+      "delta_pp": -0.1407,
+      "sign": -1,
+      "n_sat": 499278,
+      "n_unsat": 367
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false
+   },
+   "26": {
+    "num": 26,
+    "text": "당일거래대금 > 50 * 100",
+    "cat": "surge_value",
+    "tier": "M-direct",
+    "family": "당일거래대금(수준)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 676756,
+    "n_unsat": 186176,
+    "year_counts": {
+     "2022": {
+      "sat": 273275,
+      "unsat": 90012
+     },
+     "2023": {
+      "sat": 403481,
+      "unsat": 96164
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.00808,
+    "mean_unsat_pp": -1.006764,
+    "delta_pp": -0.001316,
+    "ci_low_pp": -0.01939,
+    "ci_high_pp": 0.020053,
+    "p_one_sided": 0.56,
+    "p_two_sided": 0.88,
+    "mde_pp": 0.028194,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0214,
+      "sign": -1,
+      "n_sat": 273275,
+      "n_unsat": 90012
+     },
+     "2023": {
+      "delta_pp": 0.0047,
+      "sign": 1,
+      "n_sat": 403481,
+      "n_unsat": 96164
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "27": {
+    "num": 27,
+    "text": "당일거래대금각도(30) > 10",
+    "cat": "surge_value",
+    "tier": "M-derived",
+    "family": "당일거래대금각도(30)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 158691,
+    "n_unsat": 704241,
+    "year_counts": {
+     "2022": {
+      "sat": 54506,
+      "unsat": 308781
+     },
+     "2023": {
+      "sat": 104185,
+      "unsat": 395460
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.007816,
+    "mean_unsat_pp": -1.007791,
+    "delta_pp": -2.4e-05,
+    "ci_low_pp": -0.021587,
+    "ci_high_pp": 0.024345,
+    "p_one_sided": 0.4975,
+    "p_two_sided": 0.995,
+    "mde_pp": 0.032833,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0459,
+      "sign": -1,
+      "n_sat": 54506,
+      "n_unsat": 308781
+     },
+     "2023": {
+      "delta_pp": 0.0143,
+      "sign": 1,
+      "n_sat": 104185,
+      "n_unsat": 395460
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "28": {
+    "num": 28,
+    "text": "당일거래대금각도(30) > 5",
+    "cat": "surge_value",
+    "tier": "M-derived",
+    "family": "당일거래대금각도(30)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 316995,
+    "n_unsat": 545937,
+    "year_counts": {
+     "2022": {
+      "sat": 114867,
+      "unsat": 248420
+     },
+     "2023": {
+      "sat": 202128,
+      "unsat": 297517
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.00595,
+    "mean_unsat_pp": -1.008868,
+    "delta_pp": 0.002918,
+    "ci_low_pp": -0.012283,
+    "ci_high_pp": 0.019174,
+    "p_one_sided": 0.3825,
+    "p_two_sided": 0.765,
+    "mde_pp": 0.022485,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.014,
+      "sign": -1,
+      "n_sat": 114867,
+      "n_unsat": 248420
+     },
+     "2023": {
+      "delta_pp": 0.0022,
+      "sign": 1,
+      "n_sat": 202128,
+      "n_unsat": 297517
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "29": {
+    "num": 29,
+    "text": "매도총잔량*0.1 < 매수총잔량*1.0",
+    "cat": "quote_qty",
+    "tier": "M-direct",
+    "family": "잔량비(매도총/매수총)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 859245,
+    "n_unsat": 3687,
+    "year_counts": {
+     "2022": {
+      "sat": 362222,
+      "unsat": 1065
+     },
+     "2023": {
+      "sat": 497023,
+      "unsat": 2622
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.008511,
+    "mean_unsat_pp": -0.841117,
+    "delta_pp": -0.167394,
+    "ci_low_pp": -0.274274,
+    "ci_high_pp": -0.074847,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.142552,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0366,
+      "sign": -1,
+      "n_sat": 362222,
+      "n_unsat": 1065
+     },
+     "2023": {
+      "delta_pp": -0.2064,
+      "sign": -1,
+      "n_sat": 497023,
+      "n_unsat": 2622
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "30": {
+    "num": 30,
+    "text": "매도총잔량 < 매수총잔량*2.0",
+    "cat": "quote_qty",
+    "tier": "M-direct",
+    "family": "잔량비(매도총/매수총)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 654556,
+    "n_unsat": 208376,
+    "year_counts": {
+     "2022": {
+      "sat": 280420,
+      "unsat": 82867
+     },
+     "2023": {
+      "sat": 374136,
+      "unsat": 125509
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.009613,
+    "mean_unsat_pp": -1.002088,
+    "delta_pp": -0.007525,
+    "ci_low_pp": -0.022357,
+    "ci_high_pp": 0.0066,
+    "p_one_sided": 0.8425,
+    "p_two_sided": 0.315,
+    "mde_pp": 0.020699,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0124,
+      "sign": -1,
+      "n_sat": 280420,
+      "n_unsat": 82867
+     },
+     "2023": {
+      "delta_pp": -0.0002,
+      "sign": -1,
+      "n_sat": 374136,
+      "n_unsat": 125509
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "31": {
+    "num": 31,
+    "text": "매도총잔량 > 매수총잔량*0.1",
+    "cat": "quote_qty",
+    "tier": "M-direct",
+    "family": "잔량비(매도총/매수총)",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 860810,
+    "n_unsat": 2122,
+    "year_counts": {
+     "2022": {
+      "sat": 362841,
+      "unsat": 446
+     },
+     "2023": {
+      "sat": 497969,
+      "unsat": 1676
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.008382,
+    "mean_unsat_pp": -0.770169,
+    "delta_pp": -0.238213,
+    "ci_low_pp": -0.321848,
+    "ci_high_pp": -0.155426,
+    "p_one_sided": 1.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.11896,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0538,
+      "sign": -1,
+      "n_sat": 362841,
+      "n_unsat": 446
+     },
+     "2023": {
+      "delta_pp": -0.267,
+      "sign": -1,
+      "n_sat": 497969,
+      "n_unsat": 1676
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "counter_productive"
+   },
+   "32": {
+    "num": 32,
+    "text": "전일비 > 0",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "전일비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 861287,
+    "n_unsat": 1645,
+    "year_counts": {
+     "2022": {
+      "sat": 362725,
+      "unsat": 562
+     },
+     "2023": {
+      "sat": 498562,
+      "unsat": 1083
+     }
+    },
+    "floor_pass": false,
+    "mean_sat_pp": -1.007623,
+    "mean_unsat_pp": -1.098459,
+    "delta_pp": 0.090837,
+    "ci_low_pp": -0.105222,
+    "ci_high_pp": 0.288942,
+    "p_one_sided": 0.165,
+    "p_two_sided": 0.33,
+    "mde_pp": 0.281752,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.409,
+      "sign": 1,
+      "n_sat": 362725,
+      "n_unsat": 562
+     },
+     "2023": {
+      "delta_pp": -0.0651,
+      "sign": -1,
+      "n_sat": 498562,
+      "n_unsat": 1083
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false
+   },
+   "33": {
+    "num": 33,
+    "text": "전일비 > 5",
+    "cat": "cap_price",
+    "tier": "M-direct",
+    "family": "전일비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 797666,
+    "n_unsat": 65266,
+    "year_counts": {
+     "2022": {
+      "sat": 335973,
+      "unsat": 27314
+     },
+     "2023": {
+      "sat": 461693,
+      "unsat": 37952
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.009715,
+    "mean_unsat_pp": -0.984341,
+    "delta_pp": -0.025375,
+    "ci_low_pp": -0.056813,
+    "ci_high_pp": 0.003683,
+    "p_one_sided": 0.955,
+    "p_two_sided": 0.09,
+    "mde_pp": 0.043243,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0301,
+      "sign": -1,
+      "n_sat": 335973,
+      "n_unsat": 27314
+     },
+     "2023": {
+      "delta_pp": -0.0216,
+      "sign": -1,
+      "n_sat": 461693,
+      "n_unsat": 37952
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "34": {
+    "num": 34,
+    "text": "초당거래대금 / 초당거래대금평균(30) > 2.0",
+    "cat": "surge_value",
+    "tier": "M-derived",
+    "family": "초당거래대금비",
+    "polarity_note": "not(P)→만족=P; 분모<=0 미충족",
+    "n_sat": 755002,
+    "n_unsat": 107930,
+    "year_counts": {
+     "2022": {
+      "sat": 312016,
+      "unsat": 51271
+     },
+     "2023": {
+      "sat": 442986,
+      "unsat": 56659
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.008544,
+    "mean_unsat_pp": -1.00256,
+    "delta_pp": -0.005984,
+    "ci_low_pp": -0.017031,
+    "ci_high_pp": 0.004361,
+    "p_one_sided": 0.885,
+    "p_two_sided": 0.23,
+    "mde_pp": 0.015291,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0161,
+      "sign": -1,
+      "n_sat": 312016,
+      "n_unsat": 51271
+     },
+     "2023": {
+      "delta_pp": -0.0061,
+      "sign": -1,
+      "n_sat": 442986,
+      "n_unsat": 56659
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": true,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "35": {
+    "num": 35,
+    "text": "초당거래대금 / 초당거래대금평균(30) > 2.5",
+    "cat": "surge_value",
+    "tier": "M-derived",
+    "family": "초당거래대금비",
+    "polarity_note": "not(P)→만족=P; 분모<=0 미충족",
+    "n_sat": 606264,
+    "n_unsat": 256668,
+    "year_counts": {
+     "2022": {
+      "sat": 254616,
+      "unsat": 108671
+     },
+     "2023": {
+      "sat": 351648,
+      "unsat": 147997
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -1.006978,
+    "mean_unsat_pp": -1.009728,
+    "delta_pp": 0.00275,
+    "ci_low_pp": -0.003831,
+    "ci_high_pp": 0.010175,
+    "p_one_sided": 0.23,
+    "p_two_sided": 0.46,
+    "mde_pp": 0.010012,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.002,
+      "sign": 1,
+      "n_sat": 254616,
+      "n_unsat": 108671
+     },
+     "2023": {
+      "delta_pp": 0.0028,
+      "sign": 1,
+      "n_sat": 351648,
+      "n_unsat": 147997
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false,
+    "classification": "none"
+   },
+   "36": {
+    "num": 36,
+    "text": "초당거래대금 > 초당거래대금N(1) * 1.0",
+    "cat": "surge_value",
+    "tier": "U-hold",
+    "family": "초당거래대금비",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 860960,
+    "n_unsat": 1972,
+    "year_counts": {
+     "2022": {
+      "sat": 362341,
+      "unsat": 946
+     },
+     "2023": {
+      "sat": 498619,
+      "unsat": 1026
+     }
+    },
+    "floor_pass": false,
+    "mean_sat_pp": -1.007792,
+    "mean_unsat_pp": -1.009561,
+    "delta_pp": 0.001769,
+    "ci_low_pp": -0.054497,
+    "ci_high_pp": 0.059623,
+    "p_one_sided": 0.4925,
+    "p_two_sided": 0.985,
+    "mde_pp": 0.081574,
+    "year_delta": {
+     "2022": {
+      "delta_pp": -0.0255,
+      "sign": -1,
+      "n_sat": 362341,
+      "n_unsat": 946
+     },
+     "2023": {
+      "delta_pp": 0.0182,
+      "sign": 1,
+      "n_sat": 498619,
+      "n_unsat": 1026
+     }
+    },
+    "both_year_positive": false,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": false
+   },
+   "37": {
+    "num": 37,
+    "text": "초당매수수량 > 매도총잔량*0.2",
+    "cat": "quote_qty",
+    "tier": "M-direct",
+    "family": "초당매수수량 vs 매도총잔량",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 57585,
+    "n_unsat": 805347,
+    "year_counts": {
+     "2022": {
+      "sat": 14550,
+      "unsat": 348737
+     },
+     "2023": {
+      "sat": 43035,
+      "unsat": 456610
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.827327,
+    "mean_unsat_pp": -1.0207,
+    "delta_pp": 0.193373,
+    "ci_low_pp": 0.165711,
+    "ci_high_pp": 0.219132,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.038186,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.1141,
+      "sign": 1,
+      "n_sat": 14550,
+      "n_unsat": 348737
+     },
+     "2023": {
+      "delta_pp": 0.2048,
+      "sign": 1,
+      "n_sat": 43035,
+      "n_unsat": 456610
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "load_bearing"
+   },
+   "38": {
+    "num": 38,
+    "text": "초당매수수량 > 매도총잔량*0.3",
+    "cat": "quote_qty",
+    "tier": "M-direct",
+    "family": "초당매수수량 vs 매도총잔량",
+    "polarity_note": "not(P)→만족=P",
+    "n_sat": 35021,
+    "n_unsat": 827911,
+    "year_counts": {
+     "2022": {
+      "sat": 8154,
+      "unsat": 355133
+     },
+     "2023": {
+      "sat": 26867,
+      "unsat": 472778
+     }
+    },
+    "floor_pass": true,
+    "mean_sat_pp": -0.818282,
+    "mean_unsat_pp": -1.015812,
+    "delta_pp": 0.197531,
+    "ci_low_pp": 0.164974,
+    "ci_high_pp": 0.228658,
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mde_pp": 0.045522,
+    "year_delta": {
+     "2022": {
+      "delta_pp": 0.0939,
+      "sign": 1,
+      "n_sat": 8154,
+      "n_unsat": 355133
+     },
+     "2023": {
+      "delta_pp": 0.2117,
+      "sign": 1,
+      "n_sat": 26867,
+      "n_unsat": 472778
+     }
+    },
+    "both_year_positive": true,
+    "both_year_negative": false,
+    "n_boot": 400,
+    "seed": 20260712,
+    "fdr_survive": true,
+    "classification": "load_bearing"
+   }
+  },
+  "qualified_nums": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   38
+  ],
+  "floor_pass_nums": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   23,
+   24,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   33,
+   34,
+   35,
+   37,
+   38
+  ],
+  "inconclusive_nums": [
+   22,
+   25,
+   32,
+   36
+  ],
+  "fdr_denominator": 34,
+  "fdr_q": 0.1,
+  "load_bearing_nums": [
+   1,
+   4,
+   10,
+   37,
+   38
+  ],
+  "counter_productive_nums": [
+   5,
+   15,
+   16,
+   17,
+   29,
+   31
+  ],
+  "weak_signal_nums": [
+   2,
+   11,
+   13,
+   14,
+   23
+  ],
+  "family_result": {
+   "초당순매수금액": {
+    "eligible_clauses": [
+     1
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": true,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "고저평균대비등락율": {
+    "eligible_clauses": [
+     2
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "당일거래대금각도(30)": {
+    "eligible_clauses": [
+     3,
+     27,
+     28
+    ],
+    "any_fdr_survive": false,
+    "same_sign": false,
+    "sign": 0,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "라운드피겨": {
+    "eligible_clauses": [
+     4
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": true,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "시가총액": {
+    "eligible_clauses": [
+     5
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": true,
+    "sig_positive_family": false
+   },
+   "시분초": {
+    "eligible_clauses": [
+     6,
+     21
+    ],
+    "any_fdr_survive": true,
+    "same_sign": false,
+    "sign": 0,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "전일동시간비": {
+    "eligible_clauses": [
+     7
+    ],
+    "any_fdr_survive": false,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "체결강도": {
+    "eligible_clauses": [
+     8,
+     9
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "VI 상대가": {
+    "eligible_clauses": [
+     10
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": true,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "고저 돌파": {
+    "eligible_clauses": [
+     11
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "시가등락율": {
+    "eligible_clauses": [
+     12,
+     19
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "시가대비등락율": {
+    "eligible_clauses": [
+     13,
+     20
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": true
+   },
+   "등락율": {
+    "eligible_clauses": [
+     14,
+     18
+    ],
+    "any_fdr_survive": true,
+    "same_sign": false,
+    "sign": 0,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "회전율": {
+    "eligible_clauses": [
+     15
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": true,
+    "sig_positive_family": false
+   },
+   "현재가 대역": {
+    "eligible_clauses": [
+     16,
+     17
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": true,
+    "sig_positive_family": false
+   },
+   "누적초당(30) 비": {
+    "eligible_clauses": [
+     23,
+     24
+    ],
+    "any_fdr_survive": true,
+    "same_sign": false,
+    "sign": 0,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "당일거래대금(수준)": {
+    "eligible_clauses": [
+     26
+    ],
+    "any_fdr_survive": false,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "잔량비(매도총/매수총)": {
+    "eligible_clauses": [
+     29,
+     30,
+     31
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": true,
+    "sig_positive_family": false
+   },
+   "전일비": {
+    "eligible_clauses": [
+     33
+    ],
+    "any_fdr_survive": false,
+    "same_sign": true,
+    "sign": -1,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "초당거래대금비": {
+    "eligible_clauses": [
+     34,
+     35
+    ],
+    "any_fdr_survive": false,
+    "same_sign": false,
+    "sign": 0,
+    "load_bearing_family": false,
+    "counter_family": false,
+    "sig_positive_family": false
+   },
+   "초당매수수량 vs 매도총잔량": {
+    "eligible_clauses": [
+     37,
+     38
+    ],
+    "any_fdr_survive": true,
+    "same_sign": true,
+    "sign": 1,
+    "load_bearing_family": true,
+    "counter_family": false,
+    "sig_positive_family": true
+   }
+  },
+  "load_bearing_families": [
+   "초당순매수금액",
+   "라운드피겨",
+   "VI 상대가",
+   "초당매수수량 vs 매도총잔량"
+  ],
+  "sig_positive_families": [
+   "초당순매수금액",
+   "고저평균대비등락율",
+   "라운드피겨",
+   "체결강도",
+   "VI 상대가",
+   "고저 돌파",
+   "시가등락율",
+   "시가대비등락율",
+   "초당매수수량 vs 매도총잔량"
+  ],
+  "n_load_bearing": 5,
+  "n_counter_productive": 6,
+  "n_weak_signal": 5,
+  "sanity_anchor_tripped": false,
+  "kill1_all_zero_survivors": false
+ },
+ "spot_reproduction": {
+  "spot_days": [
+   "20220816",
+   "20230821"
+  ],
+  "per_day": [
+   {
+    "day": "20220816",
+    "n_paired": 2102,
+    "net_max_abs_err": 0.0,
+    "exit_match_rate": 1.0,
+    "pass": true
+   },
+   {
+    "day": "20230821",
+    "n_paired": 2076,
+    "net_max_abs_err": 0.0,
+    "exit_match_rate": 1.0,
+    "pass": true
+   }
+  ],
+  "reproduction_pass": true
+ }
+}
