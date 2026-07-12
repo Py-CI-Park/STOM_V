@@ -265,3 +265,38 @@ Broad-Grid 재실행/축 확장 · tick 격자 반복 · full-period 선별 후�
 ## 15. 3부 결론
 
 pull 반영으로 이 워크트리는 "V4 대시보드 + CL-R07 연구 통합" 완성 상태(BRANCH_FLOW P3)가 됐고, 실시간 연동 구조(루프→current_state→WS→8탭, research_observability 계약)는 **실재하며 체계적으로 검증되어 있다**. 그러나 전수 검사의 결론은 강화된다: **보이는 것(대시보드 95점)과 증명된 것(수익 증거 0건, 연구 계약 테스트 10건 파손, 환류 파이프 파편화) 사이의 격차가 이 시스템의 현재 병목이다.** 다음 손은 화면이 아니라 §14 P0-8(테스트 수리)과 P0 배선 작업, 그리고 CL-R08이다.
+
+---
+
+# 제4부 (v4 증보) — P0 실행 성과 기록 (브랜치 `feature/audit-p0-execution-20260712`)
+
+> 2026-07-12, 병합 HEAD(`13b855d3`) 위 새 브랜치에서 보고서 P0 항목을 실제 개발·검증한 기록. 승인 잠금 단계(CL-R08~R10)는 실행하지 않았다.
+
+## 16. 완료 항목 (커밋·검증 포함)
+
+| 항목 | 커밋 | 내용 | 검증 |
+|---|---|---|---|
+| **A-1 연구 계약 테스트 10건 수리** | `10b3ef82` | 근본 원인 = pack_producer(문장형 후보)와 condition_fingerprint(식형 전용 문법)의 **계약 불일치**. ①지문 파서에 문장형 STOM 스니펫(`if 조건: self.Buy()`) 조건 추출 지원(if/elif test OR-결합) ②사칙 BinOp 문법 허용(가환 연산 정준 정렬 — `a*b`=`b*a` 동일 지문) ③validate_b_only가 추출 조건식만 스코프 검사. 기존 식형 지문 전부 불변(이전엔 에러였던 입력만 신규 수용). +스키마 v11 정합, probe는 discovery 하드 정책의 유효 warm 창(92800) 미러로 계약 정정 | 대상 스위트 158 passed |
+| **A-2 구조론 자산 배선** | `967d0124` | `principles/constraints_checklist/idiom_dictionary` 3종을 연구 Context Pack(`_FULL_STOM_SOURCE_ASSETS`)에 전문 포함 + `structure_principles_prompt_enabled` 토글(기본 OFF, OFF=byte-동일)로 박스/추세 이분법·종가 우선·사건거래대금·눌림 구조·진입근거 상실 청산(CSC-02~07 핵심) 정제 블록을 매수/매도 프롬프트에 주입. generator/loop/state/launch_config 전 계층 배선 | 신규 계약 테스트 3종 + 관련 233 passed |
+| **A-3 정본 연구 프로파일 + 게이트 배선** | `904b660e` | ①`principle_gate_enabled`를 run_loop→generate_strategy로 **실배선**(선언만 있고 루프가 안 읽던 상태 해소) ②`research_presets._COMMON_DISCOVERY`에 정본 ON-세트 승격: principle_gate·**evidence_ledger**(P0-3/A-7 전반부)·mdd_control·exit_edge·dispersion(프롬프트+graded)·meta_seed·structure_principles — 전역 기본값은 전부 OFF 유지(불변식 4) | 신규 계약 테스트: 정본 ON-세트 20키, 프리셋 키=LoopConfig 선언 필드 전수, 루프 배선 소스 가드 — 65 passed |
+| **A-6 few-shot 골드 시드 우선** | `08f9caa4` | **정정 발견**: 운영 strategy.db에 인간 전략 본문 102 buy/47 sell 존재(Tick_902 패밀리·C_T_900_920·CSS_V7·Min_Study) — v2 보고서의 "reference 시드 부재"는 과대평가였고 실제 결함은 seed_db few-shot이 **테이블 선착순 k개**를 뽑아 골드가 선발되지 않던 것. 결정론 랭킹(골드 exact → 패밀리 prefix → 기타) + `__AUTO_TMP__` 배제로 교정. reference 17 스크린샷의 성능 스펙은 `_report_pattern_lines`(常時)에 기반영 확인(payoff≥1.25·MDD 3~7%·6~12종목) | 신규 테스트 2종 + exemplar/few_shot 스위트 20 passed |
+| **A-8 위생** | `.gitignore` 커밋 | `.gjc/_session-*/`·`.gjc.local-backup-*/` gitignore, 낡은 frontend 로컬 빌드 stash 폐기(병합본 포함 확인 후) | — |
+
+## 17. 최종 게이트 실측
+
+| 게이트 | 결과 |
+|---|---|
+| `pytest tests/unit/` 전수 (13분50초) | **7 failed / 4,458 passed / 1 skipped — 신규 실패 0. failed 7 = 전부 known spawn/UI 계약.** P-13(연구 계약 10건 파손) 해소, **불변식 #6 결정론 baseline 복원** |
+| `verify_nonrelease_sync.py` | 전체 통과 |
+| `pre_commit_check.py` | Syntax/Secrets PASS. print 지적 2건은 병합 유입 `cli/commands/research.py`의 CLI JSON 출력(이 브랜치 무관, 체커 휴리스틱 오탐 성격 — 기존 부채로 기록) |
+
+## 18. 잔여 (정직 보고)
+
+- **A-4 매도/리스크 ablation 캠페인**: 미실행 — 실 provider + 공식 엔진 실행이 필요한 연구 run(R07 하네스 재사용). 코드 준비는 완료 상태이므로 다음 세션에서 격리 min subset으로 실행.
+- **A-5 백파인더 밴드 배선**(`to_band_seeds` → `band_generation_enabled`): 미착수.
+- **A-7 envelope 수렴**: evidence_ledger 프리셋 ON(원장 축적 시작 조건)까지 완료. segment/feature 환류의 envelope 경유 이관은 미착수.
+- CL-R08~R10: 승인 문구 잠금 유지(실행 안 함).
+
+## 19. 4부 결론
+
+이 브랜치는 보고서가 지적한 **"배선 부채"의 즉시 실행 가능분을 전부 청산**했다: 깨져 있던 결정론 baseline 복원(P-13), 도메인 지식 3종의 두 프롬프트 lane 주입(P-3), 정본 연구 프로파일 확립과 잠자던 게이트/원장 토글의 연구 lane 상시화(P-4·P-5 전반부), 골드 시드의 few-shot 실효화(P-6 절반). 다음 정본 연구 run은 `research_presets`(tick_late/min_full) 프리셋으로 곧바로 "구조론 주입 + CSC 게이트 + 증거 원장 + 골드 few-shot"이 켜진 상태에서 돈다. 남은 임계 경로는 A-4/A-5 → `I approve CL-R08 bounded min performance only`다.
