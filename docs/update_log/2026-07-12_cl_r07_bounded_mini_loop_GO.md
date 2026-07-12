@@ -70,3 +70,10 @@ architect(25-ClR07GoReview) BLOCK 지적을 오너 결정(“이대로=pack 유�
 - **LOW-2**: `reasoning_effort=high`는 config 선언값이나 provider payload로 실제 전송되지 않음 → 이번 실행은 모델 기본 추론을 사용(투명 고지).
 
 **결론:** CL-R07 프로세스 증명 = **건전하게 완료**(오너의 pack 의미 결정 기준). 수익은 애초에 기준 아님. 하류(CL-R08/R09/R10)는 각 정확한 승인 문구 확보 전까지 잠금 유지.
+
+## 재검증 (architect 26-ClR07ReReview): APPROVE_WITH_NITS — 건전 GO 인정
+증거: `.omo/evidence/task-14-.../cl_r07_SOUND_GO_rereview.json`. productStatus CLEAR, architecture/code WATCH.
+- HIGH-2 **RESOLVED**(ablation 계약 정합; 테스트 + run#6 strategy_code.sqlite로 검증: A/C=parent 매수, B/D=candidate 매수, A/B=parent 매도, C/D=candidate 매도), MEDIUM-1 **RESOLVED**(엔진 exitcode 기반), HIGH-1 **RESOLVED**(pack 결정 + raw 24/9 공개 → soundness blocker 아님).
+- **주장 금지(architect 명시)**: 수익/성과, raw 호출 3회 예산, control-gated 검증, high 추론 강제 — 이번 증명은 이 중 어떤 것도 주장하지 않음.
+- 이월 nit(다음 non-frozen 개정): control 결과 GO 게이팅, `_generate` try/except, reasoning_effort 전송 또는 주장 삭제, manifest fake 표기 주석.
+- **최종 결론: run#6는 오너의 pack 의미 결정 하에서 건전한 CL-R07 프로세스 증명으로 인정됨.**
