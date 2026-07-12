@@ -17,6 +17,12 @@ class BinanceTrader(BaseTrader):
 
         super().__init__(qlist, dict_set, market_infos)
 
+        self.지정가코드 = {
+            '지정가': 'GTC',
+            '지정가IOC': 'IOC',
+            '지정가FOK': 'FOK'
+        }
+
         if not self.dict_set['모의투자']:
             import binance
             from trade.restapi_binance import BinanceWebSocketTrader
@@ -50,26 +56,28 @@ class BinanceTrader(BaseTrader):
         주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형 = data
         매도수구분, 포지션 = 주문구분.split('_')[:2]
         self._order_time_log(시그널시간)
-        if 'CANCEL' not in 주문구분:
-            ret = None
-            if 수동주문유형 == '시장가' or (수동주문유형 is None and self.dict_set['매수주문유형'] == '시장가') or 잔고청산:
+
+        ret = {}
+        if 주문구분 in ('BUY_LONG', 'SELL_SHORT', 'SELL_LONG', 'BUY_SHORT'):
+            if 잔고청산:
+                주문유형 = '시장가'
+            else:
+                if 수동주문유형 is None:
+                    주문유형 = self.dict_set['매수주문유형' if 주문구분 in ('BUY_LONG', 'SELL_SHORT') else '매도주문유형']
+                else:
+                    주문유형 = 수동주문유형
+
+            if '시장가' in 주문유형:
                 ret = self.binance.futures_create_order(
                     symbol=종목코드, side=매도수구분, type='MARKET', quantity=주문수량
                 )
-            elif 수동주문유형 == '지정가' or (수동주문유형 is None and self.dict_set['매수주문유형'] == '지정가'):
+            else:
+                지정가코드 = self.지정가코드[주문유형]
                 ret = self.binance.futures_create_order(
-                    symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='GTC', quantity=주문수량
-                )
-            elif 수동주문유형 == '지정가IOC' or (수동주문유형 is None and self.dict_set['매수주문유형'] == '지정가IOC'):
-                ret = self.binance.futures_create_order(
-                    symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='IOC', quantity=주문수량
-                )
-            elif 수동주문유형 == '지정가FOK' or (수동주문유형 is None and self.dict_set['매수주문유형'] == '지정가FOK'):
-                ret = self.binance.futures_create_order(
-                    symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='FOK', quantity=주문수량
+                    symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce=지정가코드, quantity=주문수량
                 )
 
-            if ret is not None:
+            if 'orderId' in ret:
                 if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
                     add_time = self.dict_set['매수취소시간초']
@@ -86,21 +94,24 @@ class BinanceTrader(BaseTrader):
                 # noinspection PyUnresolvedReferences
                 orderId = int(ret['orderId'])
                 index = self._get_index()
-                self._update_chegeollist(index, 종목코드, 종목명, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, orderId)
+                self._update_chegeollist(index, 종목코드, 종목명, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, index[:14],
+                                         주문가격, orderId)
                 self.windowQ.put((
                     UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량}'
                 ))
             else:
                 self._put_order_complete(f'{주문구분}_CANCEL', 종목코드)
-                self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'))
-        else:
+
+        elif 'MODIFY' in 주문구분:
+            ret = self.binance.futures_modify_order(symbol=종목코드, side=매도수구분, quantity=주문수량, price=주문가격)
+
+        elif 'CANCEL' in 주문구분:
             ret = self.binance.futures_cancel_order(symbol=종목코드, orderId=원주문번호)
-            if ret is not None:
-                self.dict_pos[종목코드] = 포지션
-            else:
-                self.windowQ.put((
-                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
-                ))
+
+        if 'orderId' not in ret:
+            self.windowQ.put((
+                UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
+            ))
 
         self.order_time = timedelta_sec(0.2)
 

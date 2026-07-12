@@ -59,7 +59,7 @@ class StockTrader(BaseTrader):
 
             """def order_stock(self, 종목코드, 주문구분, 주문수량, 주문가격, 호가유형):"""
             주문번호, 응답메시지 = self.ls.order_stock(종목코드, 주문구분, 주문수량, 주문가격, 주문유형)
-            if self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
+            if self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량):
                 index = self._get_index()
                 if 주문구분 == '매수':
                     self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
@@ -83,23 +83,23 @@ class StockTrader(BaseTrader):
             """def order_modify_stock(self, 종목코드, 원주문번호, 주문수량, 주문가격, 호가유형):"""
             주문유형 = self.dict_set[f'{주문구분[:2]}주문유형']
             주문번호, 응답메시지 = self.ls.order_modify_stock(종목코드, 원주문번호, 주문수량, 주문가격, 주문유형)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         elif 주문구분 in ('매수취소', '매도취소'):
             """def order_cancel_stock(self, 종목코드, 원주문번호, 주문수량):"""
             주문번호, 응답메시지 = self.ls.order_cancel_stock(종목코드, 원주문번호, 주문수량)
-            self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
+            self._check_order_error(주문번호, 응답메시지, 종목코드, 종목명, 주문구분, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
 
     @error_decorator
     def _convert_order_data(self, data):
         """주문체결 데이터를 변환합니다."""
-        body = data['body']
-        if body is None:
+        body = data.get('body', {})
+        체결유형 = body.get('ordxctptncode')
+        if 체결유형 is None:
             return
 
-        체결유형 = body['ordxctptncode']
         if 체결유형 in ('11', '12', '13'):
             매매구분 = body['bnstp']
             주문구분 = LsRestData.국내주식주문체결코드[매매구분]
