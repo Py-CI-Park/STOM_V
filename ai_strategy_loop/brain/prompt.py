@@ -37,6 +37,8 @@ _FULL_STOM_SOURCE_ASSETS = (
     ("principles", _ASSET_DIR / "principles.md"),
     ("constraints_checklist", _ASSET_DIR / "constraints_checklist.md"),
     ("idiom_dictionary", _ASSET_DIR / "idiom_dictionary.md"),
+    # G1(2026-07-12): 복합 조건식 구조 예제집 — AND/OR/국면 분기/구조론 국면/다단 청산.
+    ("composite_examples", _ASSET_DIR / "composite_examples.md"),
 )
 MAX_RESEARCH_CONTEXT_PACK_TOKENS = 250_000
 
