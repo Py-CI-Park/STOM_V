@@ -15,7 +15,7 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 20, 2026-06-29)
+## 2. 현재 사이클 상태 (사이클 21, 2026-07-12)
 
 | 지표 | 값 |
 |---|---|
@@ -26,7 +26,7 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 | 재발 방지 액션 | 5/5 적용 + V3.34 `database_check` local seed 구조 대응 테스트 보정 |
 | CRITICAL drift baseline | 0 (strict 모드) |
 | 사용자 시각 검증 사이클 | 7회 (사이클 15 B1 이후 V3.33/V3.34는 자동 게이트 기준, 사용자 직접 확인 대기) |
-| V3 lane 버전 | V3.34 (`25680a83`, upstream `c3db5f9c`) |
+| V3 lane 버전 | V3.35 (`c6ac10b2`, upstream `9d24b635`) |
 | stom.py 활성 상태 | 사이클 15 B1 정상 종료 (2026-06-11, traceback 0건·exit 0) |
 
 ### 미해결 사용자 잔여 작업 (선행 핸드오프 §3 기준)
@@ -218,6 +218,19 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 21 (2026-07-12): V3.35 흡수 (tail 4건 포함)
+
+- 사용자 선택: "최신 업스트림 확인하고 반영, 3U/3U_C까지, pyd→py 재검토, 2* 시리즈는 계획서만"
+- 실행 결과:
+  - wt-3 formal `c6ac10b2` (`STOM V3.35`, upstream `9d24b635`) — parity 일치, py_compile 통과, pyd 보존
+  - wt-3u pyd-free `2fb212e2`, 통합 게이트 8/8 PASS (pytest 49, attr critical=0 warn=0)
+  - V3U 보정 0건 (순수 overlay) — trade/* 11개는 worker 내부, set_dialog_etc는 기존 attr만 참조
+  - tail 4건 포함: ordxctptncode 방어, PR#38, 해외선물 체결/정정취소 분리, 수신 처리 간소화
+- 발견 신규 결함: 0건
+- lane 버전: V3.34 → **V3.35**
+- 상세: docs/update_log/2026-07-12_v3u_v335_pyd_free_update.md
+- 다음: 3U_C `git merge STOM_Version_3U`로 따라잡기 + 2* 시리즈 상세 계획서
 
 ### 사이클 20 (2026-06-29): 3U_C lane V3.34 흡수 (cross-link)
 
