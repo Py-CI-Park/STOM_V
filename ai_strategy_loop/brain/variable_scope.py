@@ -82,16 +82,18 @@ _COMMON_SCALARS = frozenset({
 })
 
 # --- 매도전략 전용 잔고종목 스칼라 (forbidden.md (a): 매수에서는 금지) ---
-#   G2(2026-07-12) 오탐 교정: '매도수량'과 '강제청산'은 엔진 공식 검증기
-#   backtest/back_code_test.py exec env(671-672행)가 매도 문맥 이름으로 직접
-#   제공한다 — 운영 strategy.db 인간 매도전략 실측에서 각 29건이 이 가드에만
-#   거부되던 오탐. 검증기 env가 진실 공급원이므로 sell 스코프에 추가한다.
-#   (반면 '매수수량'은 검증기 env에도 없어 GUI 라이브 전용 이름 — 미추가,
-#   'VI아래5호가'는 엔진 정의처 불명 — 미추가. 근거: G2 감사 보고서.)
+#   G2(2026-07-12) 진실 공급원 확정: 이 가드의 계약은 **백테 엔진 exec env**
+#   (backengine_* Strategy 스코프)다 — 저장 시점 검증기(back_code_test.py)는
+#   GUI 라이브 이름까지 포함한 superset env라 진실 공급원이 아니다(아키텍트
+#   리뷰 5-G2ArchitectReview 판정). '매도수량'/'강제청산'/'매수수량'은 GUI
+#   라이브 전용 이름으로 어떤 backengine sell exec env에도 없어 **미추가**
+#   (추가하면 NameError→BackStop 무신호→타임아웃 홀 재개방). 인간 운영
+#   전략의 self.Sell(종목코드, 종목명, 매도수량, 강제청산) 시그니처는 루프
+#   정규형(bare self.Sell())과 호스트 환경이 다른 것이지 가드 오탐이 아니다.
+#   근거: docs/update_log/2026-07-12_g2_gate_false_reject_audit_report.md.
 _SELL_ONLY_SCALARS = frozenset({
     "수익금", "수익률", "매수가", "보유수량", "보유시간",
     "분할매수횟수", "분할매도횟수", "최고수익률", "최저수익률",
-    "매도수량", "강제청산",
 })
 
 # --- 정규 상태/실행 이름 (항상 허용) ---

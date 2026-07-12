@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-12T13:40:22+00:00",
+  "generated_at": "2026-07-12T18:20:31+00:00",
   "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
   "excluded_auto_tmp": {
     "buy": 3,
@@ -21,10 +21,12 @@
   "checks": {
     "variable_scope": {
       "evaluated": 197,
-      "rejected": 47,
-      "reject_rate": 0.238579,
+      "rejected": 72,
+      "reject_rate": 0.365482,
       "reason_distribution": {
         "매수수량": 34,
+        "강제청산": 29,
+        "매도수량": 29,
         "VI아래5호가": 12,
         "분당거래대금": 8,
         "분당거래대금N": 7,
@@ -459,7 +461,18 @@
           "kind": "sell",
           "timeframe": "tick",
           "reasons": [
-            "RSI"
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
           ]
         },
         {
@@ -471,7 +484,18 @@
             "MACDS",
             "MACDS_N",
             "MACD_N",
-            "RSI"
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
           ]
         },
         {
@@ -479,7 +503,18 @@
           "kind": "sell",
           "timeframe": "tick",
           "reasons": [
-            "RSI"
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
           ]
         },
         {
@@ -491,7 +526,207 @@
             "MACDS",
             "MACDS_N",
             "MACD_N",
-            "RSI"
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_MASTER_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_MASTER_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_S_3_S_902_Min",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_STUDY_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_S_FS",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_902_905_U3_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250824",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250831",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250907",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251225",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251226",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251227_Filtered",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Test_Min_S_20250713_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
           ]
         },
         {
@@ -1254,13 +1489,21 @@
   },
   "summary": {
     "strategies_total": 146,
-    "strategies_rejected_by_any_check": 85,
-    "rejected_by_any_rate": 0.582192,
+    "strategies_rejected_by_any_check": 103,
+    "rejected_by_any_rate": 0.705479,
     "top_reject_reasons_by_check": {
       "variable_scope": [
         [
           "매수수량",
           34
+        ],
+        [
+          "강제청산",
+          29
+        ],
+        [
+          "매도수량",
+          29
         ],
         [
           "VI아래5호가",
@@ -1269,14 +1512,6 @@
         [
           "분당거래대금",
           8
-        ],
-        [
-          "분당거래대금N",
-          7
-        ],
-        [
-          "분당매도수량",
-          7
         ]
       ],
       "token_check": [

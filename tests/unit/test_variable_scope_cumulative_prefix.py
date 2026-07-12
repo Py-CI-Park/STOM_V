@@ -113,3 +113,21 @@ def test_common_var_still_accepted_for_both_timeframes():
     ok_min, offending_min = check_variable_scope(COMMON_VAR_BUY, "min")
     assert ok_min is True, f"min에서 공통변수(현재가)가 거부됨: {offending_min}"
     assert offending_min == []
+
+
+def test_gui_live_only_names_rejected_in_both_kinds_and_timeframes():
+    """G2 아키텍트 판정 회귀 가드: GUI 라이브 전용 이름은 루프 스코프에서 항상 거부.
+
+    진실 공급원 = 백테 엔진 exec env(backengine_* Strategy 스코프). 저장 시점
+    검증기(back_code_test.py)의 superset env를 근거로 매도수량/강제청산을
+    sell 스코프에 허용하면 NameError→타임아웃 홀이 재개방된다 — 양 kind·양
+    timeframe 전부 거부를 고정한다(매수수량 포함).
+    """
+    from ai_strategy_loop.brain.variable_scope import check_variable_scope
+
+    for name in ("매도수량", "강제청산", "매수수량"):
+        code = f"if {name}:\n    매도 = True\nif 매도:\n    self.Sell()"
+        for tf in ("tick", "min"):
+            for kind in ("buy", "sell"):
+                ok, offending = check_variable_scope(code, tf, kind)
+                assert not ok and name in offending, (name, tf, kind, offending)
