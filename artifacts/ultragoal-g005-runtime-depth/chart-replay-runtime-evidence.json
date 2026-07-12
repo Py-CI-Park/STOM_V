@@ -1,0 +1,281 @@
+{
+  "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 데이터 소스 (Tick/Min)\n소스 유형\nTick\n데이터 소스\nSTOM Tick DB (Local)\n서버 시간\n2025-05-27 14:23:18\n지연 시간\n23 ms\n2 사용 가능 일자\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n사용 가능 일수: 23일\n3 종목 리스트\n코드\t종목명\t최근가\t변동률\n005930\t삼성전자\t78600\t-0.25%\n000660\tSK하이닉스\t203000\t+1.35%\n373220\tLG에너지솔루션\t382500\t-1.04%\nLIVE READ-ONLY REPLAY MODE\n실거래/주문 기능 없음 · 과거 틱/분 데이터 재생 · /sim/ws는 자동 연결하지 않고 사용자 시작으로만 동작\nLIVE read adapter\nReplay API/WS Contract Matrix\nLIVE mode: ReplayAdapter probes safe REST reads only; /sim/ws stays user-gated/manual and exposes start, pause, resume, speed, seek, stop plus meta, bars, history, done, error protocol.\nEvidence settled\nEndpoint / action / message\tMethod / type\tMode behavior\tLive evidence/status\tOwner / reason / recovery\n/sim/health\t\nGET · REST endpoint\treference/demo inert fixture · live safe read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/days?src=min|tick\t\nGET · REST endpoint\treference/demo inert fixture · live safe min-days read on Chart Replay page load\t\nLIVE OK\ndays, count, src\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/demo?src=min&mode=latest\t\nGET · REST endpoint\treference/demo inert fixture · live safe demo discovery read on Chart Replay page load\t\nLIVE OK\ndate, code, name, change_pct\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/stocks?date=&src=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date is discovered\t\nLIVE OK\nstocks, count, date, src\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/bt/strategies?kind=buy\t\nGET · REST endpoint\treference/demo inert fixture · live safe buy strategy read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET · REST endpoint\treference/demo inert fixture · live safe sell strategy read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/signals?date=&src=&code=&buy=&sell=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date/code and buy/sell names are discovered\t\nLIVE OK\nstatus error\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/sim/ws\t\nWS · WS endpoint\treference/demo inert fixture · live-only W",
+  "consoleErrors": [],
+  "contracts": [
+    {
+      "endpoint": "/sim/health",
+      "id": "sim-health",
+      "kind": "REST endpoint",
+      "livePath": "/sim/health",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Chart Replay page load",
+      "owner": "ReplayAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/sim/days?src=min|tick",
+      "id": "sim-days-min",
+      "kind": "REST endpoint",
+      "livePath": "/sim/days?src=min",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe min-days read on Chart Replay page load",
+      "owner": "ReplayAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/sim/demo?src=min&mode=latest",
+      "id": "sim-demo-latest",
+      "kind": "REST endpoint",
+      "livePath": "/sim/demo?src=min&mode=latest",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe demo discovery read on Chart Replay page load",
+      "owner": "ReplayAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/sim/stocks?date=&src=",
+      "id": "sim-stocks",
+      "kind": "REST endpoint",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live conditional read only after demo date is discovered",
+      "owner": "ReplayAdapter.discoveryEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/strategies?kind=buy",
+      "id": "bt-replay-strategies-buy",
+      "kind": "REST endpoint",
+      "livePath": "/bt/strategies?kind=buy",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe buy strategy read on Chart Replay page load",
+      "owner": "ReplayAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/strategies?kind=sell",
+      "id": "bt-replay-strategies-sell",
+      "kind": "REST endpoint",
+      "livePath": "/bt/strategies?kind=sell",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe sell strategy read on Chart Replay page load",
+      "owner": "ReplayAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/sim/signals?date=&src=&code=&buy=&sell=",
+      "id": "sim-signals",
+      "kind": "REST endpoint",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live conditional read only after demo date/code and buy/sell names are discovered",
+      "owner": "ReplayAdapter.discoveryEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/sim/ws",
+      "id": "sim-ws",
+      "kind": "WS endpoint",
+      "method": "WS",
+      "modeBehavior": "reference/demo inert fixture · live-only WebSocket never auto-opened; user-gated manual start",
+      "owner": "Manual researcher action",
+      "reason": "Long-lived replay stream must not auto-open from page load."
+    },
+    {
+      "endpoint": "start",
+      "id": "ws-action-start",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Starts a replay stream; explicit user action required."
+    },
+    {
+      "endpoint": "pause",
+      "id": "ws-action-pause",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Pauses an existing replay stream only after manual connection."
+    },
+    {
+      "endpoint": "resume",
+      "id": "ws-action-resume",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Resumes an existing replay stream only after manual connection."
+    },
+    {
+      "endpoint": "speed",
+      "id": "ws-action-speed",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Changes replay speed on a manual session only."
+    },
+    {
+      "endpoint": "seek",
+      "id": "ws-action-seek",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Moves replay cursor on a manual session only."
+    },
+    {
+      "endpoint": "stop",
+      "id": "ws-action-stop",
+      "kind": "WS action",
+      "method": "ACTION",
+      "modeBehavior": "reference/demo inert fixture · live user-gated /sim/ws action",
+      "owner": "Manual researcher action",
+      "reason": "Stops a manual replay session; no hidden stream control."
+    },
+    {
+      "endpoint": "meta",
+      "id": "ws-message-meta",
+      "kind": "WS message",
+      "method": "MESSAGE",
+      "modeBehavior": "reference/demo inert fixture · live protocol message documented; no fake stream success",
+      "owner": "ReplayAdapter.protocolMatrix",
+      "reason": "Server metadata frame expected after manual /sim/ws start."
+    },
+    {
+      "endpoint": "bars",
+      "id": "ws-message-bars",
+      "kind": "WS message",
+      "method": "MESSAGE",
+      "modeBehavior": "reference/demo inert fixture · live protocol message documented; no fake stream success",
+      "owner": "ReplayAdapter.protocolMatrix",
+      "reason": "Bar batch frame expected during manual replay."
+    },
+    {
+      "endpoint": "history",
+      "id": "ws-message-history",
+      "kind": "WS message",
+      "method": "MESSAGE",
+      "modeBehavior": "reference/demo inert fixture · live protocol message documented; no fake stream success",
+      "owner": "ReplayAdapter.protocolMatrix",
+      "reason": "History/bootstrap frame expected during manual replay."
+    },
+    {
+      "endpoint": "done",
+      "id": "ws-message-done",
+      "kind": "WS message",
+      "method": "MESSAGE",
+      "modeBehavior": "reference/demo inert fixture · live protocol message documented; no fake stream success",
+      "owner": "ReplayAdapter.protocolMatrix",
+      "reason": "Terminal completion frame for manual replay."
+    },
+    {
+      "endpoint": "error",
+      "id": "ws-message-error",
+      "kind": "WS message",
+      "method": "MESSAGE",
+      "modeBehavior": "reference/demo inert fixture · live protocol message documented; no fake stream success",
+      "owner": "ReplayAdapter.protocolMatrix",
+      "reason": "Visible recovery path: show server error, keep chart fixture, and allow manual retry."
+    }
+  ],
+  "headers": {
+    "cache-control": "no-store, max-age=0, must-revalidate",
+    "x-stom-dashboard-version": "v3-remodel"
+  },
+  "imageMetrics": {
+    "available": true,
+    "lumaStddev": 19.25,
+    "nonUniform": true,
+    "size": [
+      1920,
+      1080
+    ],
+    "status": "PASS"
+  },
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/ui/remodel/chart-replay",
+      "resourceType": "document"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/health",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/days?src=min",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/demo?src=min&mode=latest",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/status",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/runs",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/stocks?date=20250509&src=min",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/signals?date=20250509&src=min&code=256940&buy=20250715_Study&sell=20250715_Study_S",
+      "resourceType": "fetch"
+    }
+  ],
+  "routeId": "chart_replay",
+  "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\chart-replay-live-depth.png",
+  "statusCode": 200,
+  "textScore": {
+    "missing": [],
+    "score": 100.0
+  },
+  "title": "STOM AI · 조건식 AI 연구 대시보드",
+  "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+  "websockets": [
+    "ws://127.0.0.1:8776/ws"
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect 99-G002ArchitectReview approved G002: source/tests/artifacts show V2 remains default, V3 remodel is explicit/selectable, all eight pages have V2/V3 inventory, unknown remodel links 404 fail-closed, and static remodel assets load.",
+    "commands": [
+      "architect review agent 99-G002ArchitectReview; persisted artifacts/ultragoal-g002-baseline-compare/architect-review.json"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 100-G002ExecutorQa passed after primary route/image evidence was added: 8 browser pages PASS, V2/V3 route separation PASS, forbidden network scan PASS, inventory gate PASS, unknown remodel 404 PASS, 17 screenshots/contact sheet exist and are non-uniform.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g002-baseline-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-g002-baseline-compare/route-version-matrix.json --out artifacts/ultragoal-g002-baseline-compare/inventory-gate-result.json",
+      "pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_static.py -q"
+    ],
+    "redTeamCommands": [
+      "forbidden network scan embedded in scripts/verify_dashboard_v2_v3_compare.py: /bt/run,/bt/ws_job,/sim/ws,/order,/orders,/broker/login,/account/trade,/live_order all findings []",
+      "unknown route adversarial probe: /ui/remodel/not-a-real-dashboard-route -> 404, scripts [], status PASS in route-version-matrix.json",
+      "image evidence probe: 17 PNG artifacts exist, are non-empty, have valid dimensions, and non-uniform pixels in image-evidence.json"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g002-baseline-compare/browser-transcript.json",
+        "description": "Valid Playwright automation transcript with 8 V2/V3 navigation actions, screenshots, and unknown-route 404 probe",
+        "tool": "browser"
+      },
+      {
+        "id": "browser-manifest",
+        "kind": "browser-automation-manifest",
+        "path": "artifacts/ultragoal-g002-baseline-compare/manifest.json",
+        "description": "Playwright compare manifest with eight V2/V3 browser routes and screenshot artifact map",
+        "tool": "browser"
+      },
+      {
+        "id": "compare-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/compare-scorecard.json",
+        "description": "Strict V2/V3 scorecard: average corrected score 100.0, eight rows PASS, no failures"
+      },
+      {
+        "id": "contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g002-baseline-compare/side-by-side-contact-sheet.png",
+        "description": "Non-uniform V2/V3 side-by-side screenshot contact sheet"
+      },
+      {
+        "id": "image-evidence",
+        "kind": "property-test-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/image-evidence.json",
+        "description": "Metadata proving 17 PNG screenshots/contact sheet exist, are non-empty, valid dimensioned, and non-uniform"
+      },
+      {
+        "id": "route-version-matrix",
+        "kind": "black-box-api-receipt",
+        "path": "artifacts/ultragoal-g002-baseline-compare/route-version-matrix.json",
+        "description": "Route identity, headers, expected/forbidden assets, and unknown remodel 404 probe"
+      },
+      {
+        "id": "inventory-gate",
+        "kind": "api-package-test-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/inventory-gate-result.json",
+        "description": "Inventory gate passed with 81 route/function/section/button/chart/table/safety items and zero failures"
+      },
+      {
+        "id": "forbidden-network",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-g002-baseline-compare/forbidden-network-scan.json",
+        "description": "Forbidden live/trading/order/broker/backtest mutation network scan with findings []"
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/verification-summary.json",
+        "description": "Focused command replay summary for strict compare, inventory gate, pytest, py_compile, and diff check"
+      },
+      {
+        "id": "cleanup-report",
+        "kind": "cleanup-review-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/ai-slop-cleanup-report.md",
+        "description": "AI slop cleanup report with zero blocking/advisory findings for scoped G002 files"
+      },
+      {
+        "id": "architect-review",
+        "kind": "architect-review-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/architect-review.json",
+        "description": "Normalized architect review: CLEAR/CLEAR/CLEAR APPROVE, blockers []"
+      },
+      {
+        "id": "executor-qa",
+        "kind": "executor-qa-report",
+        "path": "artifacts/ultragoal-g002-baseline-compare/executor-qa.json",
+        "description": "Normalized executor QA matrix: passed/passed/passed, blockers []"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-v2-default",
+        "contractRef": "G002 objective: V2 default routes remain usable/default",
+        "obligation": "V2 route family serves V2 bundle, has V2 dashboard header, and does not load remodel bundle by default.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-routes",
+          "surface-route-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-v2-remodel-leak"
+        ]
+      },
+      {
+        "id": "contract-v3-explicit",
+        "contractRef": "G002 objective: V3 explicit/selectable routes",
+        "obligation": "V3 remodel requires explicit query or /ui/remodel path and serves V3 remodel assets.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-routes",
+          "surface-route-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-v3-v2-fallback"
+        ]
+      },
+      {
+        "id": "contract-eight-pages",
+        "contractRef": "G002 objective: capture condition/process/history/lab/workbench/audit/backtest/chart replay",
+        "obligation": "All eight pages have V2/V3 browser captures, route map rows, screenshots, and inventory coverage.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-routes",
+          "surface-screenshots",
+          "surface-inventory-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-or-blank-image"
+        ]
+      },
+      {
+        "id": "contract-unknown-route",
+        "contractRef": "G002 objective: unknown remodel routes fail closed",
+        "obligation": "Unknown /ui/remodel/* path returns 404, no shell scripts, no masked V2/V3 fallback.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-route-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-unknown-route-shell"
+        ]
+      },
+      {
+        "id": "contract-safety-labels",
+        "contractRef": "Original brief constraints: no live order/broker/account/export; Human Approval Gate/Append-Only Audit/research-only/local-only retained",
+        "obligation": "V3 page captures contain safety text and forbidden live/trading network calls are absent.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-network-api",
+          "surface-inventory-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-forbidden-network",
+          "case-safety-label-drop"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-routes",
+        "contractRef": "Eight V2/V3 dashboard web routes",
+        "surface": "web",
+        "invocation": "Playwright browser capture via verify_dashboard_v2_v3_compare.py against http://127.0.0.1:8770 and http://127.0.0.1:8776",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "compare-scorecard",
+          "contact-sheet"
+        ]
+      },
+      {
+        "id": "surface-screenshots",
+        "contractRef": "Screenshot/contact-sheet visual evidence",
+        "surface": "web",
+        "invocation": "Pillow metadata inspection over manifest screenshot paths and contact sheet",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "contact-sheet"
+        ]
+      },
+      {
+        "id": "surface-route-api",
+        "contractRef": "Route headers/assets and unknown-route behavior",
+        "surface": "api/package",
+        "invocation": "Route matrix generated by browser route probes and static asset checks",
+        "verdict": "passed",
+        "artifactRefs": [
+          "route-version-matrix",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-inventory-api",
+        "contractRef": "Inventory gate",
+        "surface": "api/package",
+        "invocation": "verify_dashboard_inventory_gate.py with v2-v3-inventory.json and route-version-matrix.json",
+        "verdict": "passed",
+        "artifactRefs": [
+          "inventory-gate"
+        ]
+      },
+      {
+        "id": "surface-network-api",
+        "contractRef": "Forbidden network/read-only safety",
+        "surface": "api/package",
+        "invocation": "Forbidden network scan from V2/V3 compare browser session",
+        "verdict": "passed",
+        "artifactRefs": [
+          "forbidden-network",
+          "compare-scorecard"
+        ]
+      },
+      {
+        "id": "surface-focused-unit-tests",
+        "contractRef": "Route/static regression tests",
+        "surface": "api/package",
+        "invocation": "pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_static.py -q",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-cli-out-of-scope",
+        "contractRef": "CLI user-facing surface",
+        "surface": "cli",
+        "status": "not_applicable",
+        "reason": "G002 ships web/dashboard route inventory and safety evidence; no user-facing CLI contract is introduced or changed.",
+        "artifactRefs": []
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-v2-remodel-leak",
+        "contractRef": "V2 default remains V2",
+        "scenario": "V2 route silently serves/remodel app or loads /ui/remodel/src/app.js",
+        "expectedBehavior": "V2 header/version and V2 bundle only; remodel asset forbidden.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "compare-scorecard",
+          "route-version-matrix"
+        ]
+      },
+      {
+        "id": "case-v3-v2-fallback",
+        "contractRef": "V3 explicit/selectable",
+        "scenario": "Explicit V3 route falls back to V2 bundle or header",
+        "expectedBehavior": "V3-remodel header/version and remodel app/data assets only; V2 bundle forbidden.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "compare-scorecard",
+          "route-version-matrix"
+        ]
+      },
+      {
+        "id": "case-unknown-route-shell",
+        "contractRef": "Unknown remodel route fail-closed",
+        "scenario": "Unknown /ui/remodel/not-a-real-dashboard-route returns a V2/V3 shell and masks broken links",
+        "expectedBehavior": "HTTP 404, no shell scripts, no violations.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "route-version-matrix"
+        ]
+      },
+      {
+        "id": "case-missing-or-blank-image",
+        "contractRef": "Screenshot/contact-sheet evidence",
+        "scenario": "Screenshot/contact sheet path is missing, empty, invalid, or visually uniform",
+        "expectedBehavior": "All PNGs exist, non-empty, valid dimensions, non-uniform.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "image-evidence",
+          "contact-sheet"
+        ]
+      },
+      {
+        "id": "case-forbidden-network",
+        "contractRef": "No live order/broker/account/export/mutating network calls",
+        "scenario": "Browser page load calls /bt/run, /bt/ws_job, /sim/ws, /order, /broker/login, /account/trade, /live_order",
+        "expectedBehavior": "Findings array remains empty.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "forbidden-network",
+          "compare-scorecard"
+        ]
+      },
+      {
+        "id": "case-safety-label-drop",
+        "contractRef": "Safety/provenance labels preserved",
+        "scenario": "V3 page loses Human Approval Gate, Append-Only Audit, research-only/local-only, or no-live-order labels",
+        "expectedBehavior": "v3SafetyText scores 100 and inventory safety classes present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "compare-scorecard",
+          "inventory-gate"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT for G002 has zero blocking findings. After resolving QA evidence gaps, full focused verification was rerun/validated: strict V2/V3 compare PASS average 100.0, inventory gate passed 81 items/0 failures, 23 focused tests passed, py_compile passed, diff check passed, architect and executor QA blockers [].",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g002-baseline-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-g002-baseline-compare/route-version-matrix.json --out artifacts/ultragoal-g002-baseline-compare/inventory-gate-result.json",
+      "pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_static.py -q",
+      "python -m py_compile ai_strategy_loop/dashboard/app.py",
+      "git diff --check -- ai_strategy_loop/dashboard/app.py tests/unit/test_dashboard_route_parity.py docs/update_log/2026-06-29_ultragoal_g002_v2_v3_inventory.md artifacts/ultragoal-g002-baseline-compare"
+    ],
+    "blockers": []
+  }
+}

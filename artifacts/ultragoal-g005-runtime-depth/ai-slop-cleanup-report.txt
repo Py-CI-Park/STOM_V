@@ -1,0 +1,5 @@
+AI SLOP CLEANUP REPORT — G005
+Scope: scripts/verify_dashboard_runtime_depth.py and G005 runtime evidence artifacts.
+Blocking findings: 0
+Advisory findings: 0
+Notes: verifier performs real Playwright page loads plus read-only API smoke; mutating/streaming endpoints are represented as manual-gated contract rows rather than fake success. wt-dev strategy DB is used only through the documented read-only strategy-list surface.

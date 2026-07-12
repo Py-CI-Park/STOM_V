@@ -1,0 +1,8 @@
+G003 adversarial inventory report
+
+PASS: stable_id uniqueness enforced.
+PASS: required pages shell/condition/process/history/lab/workbench/audit/backtest/chart_replay enforced.
+PASS: required item types route/section/button/form/modal/function/api_endpoint/data_field/network_call/asset/cache_policy/safety_boundary enforced.
+PASS: required stable IDs for Start/Stop, Append-Only Audit, Backtest manual gate, Chart Replay WS manual gate, V2 default route, V3 explicit route, and V3 preview link are present.
+PASS: manual_gated, human_gate, and append_only safety classifications present.
+PASS: route matrix linked with 0 failures.

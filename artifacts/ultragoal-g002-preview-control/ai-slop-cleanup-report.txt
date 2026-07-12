@@ -1,0 +1,6 @@
+AI SLOP CLEANUP REPORT — G002 V2 preview control
+
+Blocking findings: 0
+Advisory findings: 0
+
+The preview control is a single non-persistent anchor. It does not introduce localStorage/cookie/session state, broker/login/live-order controls, or hidden export authority. The bundle was rebuilt through webui-build instead of hand-editing generated output. Tests cover source and bundle markers plus selector behavior.

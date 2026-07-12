@@ -1,0 +1,283 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 11-G003ArchitectReview2 corrected: /ui/remodel/backtest is served through remodel shell with production bundle/BacktestTab, canonical routes preserved, browser transcript shows edit/result parity markers with no forbidden controls, api-smoke allOk=true and focused tests passed.",
+    "commands": [
+      "architect subagent 11-G003ArchitectReview2 read-only review"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 12-G003ExecutorQa2 passed: browser transcript stayed on /ui/remodel/backtest with production BacktestTab edit/result controls, no forbidden markers, direct API smoke allOk=true, and focused backtest tests reported 225 passed/1 skipped. The __demo__ result is explicitly labelled 예시 데이터 and does not replace production controls.",
+    "e2eCommands": [
+      "browser automation via artifacts/ultragoal-g003-backtest/browser-transcript-devdb.json"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team subagent 12-G003ExecutorQa2"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g003-backtest/browser-transcript-devdb.json",
+        "description": "Browser automation transcript for /ui/remodel/backtest edit/result states, markers, responses, and screenshots.",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:15:30Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "remained under /ui/remodel/backtest and production BacktestTab workbench loaded"
+          },
+          {
+            "type": "click",
+            "timestamp": "2026-06-27T15:15:32Z",
+            "selector": "button:has-text(\"조건식 편집\")",
+            "verdict": "passed",
+            "result": "edit tab showed buy/sell editors, populated libraries, variables, sweep builder, and BackFinder section"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:15:33Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "click",
+            "timestamp": "2026-06-27T15:15:34Z",
+            "selector": "button:has-text(\"결과 분석\")",
+            "verdict": "passed",
+            "result": "result tab showed result library, labelled demo empty-state, charts, GUI parity, evo, overlay, and portfolio sections"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:15:36Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "edit-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+        "description": "Non-uniform screenshot showing production backtest run controls, editors, libraries, and BackFinder section."
+      },
+      {
+        "id": "result-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png",
+        "description": "Non-uniform screenshot showing labelled 예시 데이터 and full result/analysis controls."
+      },
+      {
+        "id": "api-smoke",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g003-backtest/api-smoke.json",
+        "description": "Direct API smoke and focused test summary for G003 backtest parity endpoints."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g003-backtest/verification-summary.json",
+        "description": "Leader-run commands and evidence summary."
+      },
+      {
+        "id": "ai-slop-cleanup",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g003-backtest/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking findings."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-backtest-route",
+        "contractRef": "Approved G003 /ui/remodel/backtest production BacktestTab route",
+        "obligation": "Render production BacktestTab under remodel namespace without route escape or static prototype fallback.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-edit",
+          "surface-browser-result"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-escape",
+          "case-static-fallback"
+        ]
+      },
+      {
+        "id": "contract-edit-crud",
+        "contractRef": "Approved G003 strategy CRUD/editor/library/variables/self.vars/BackFinder",
+        "obligation": "Expose strategy editors, populated libraries, variables/self.vars/sweep builder, and BackFinder preflight backed by /bt/* APIs.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-edit",
+          "surface-api-smoke"
+        ],
+        "adversarialCaseRefs": [
+          "case-api-coverage"
+        ]
+      },
+      {
+        "id": "contract-result-analysis",
+        "contractRef": "Approved G003 result library and analysis parity",
+        "obligation": "Expose result library, job lifecycle, metrics, equity, distribution, heatmap, underwater, MAE/MFE, orderflow, GUI parity, evo, overlay, portfolio, and report surfaces.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-result",
+          "surface-api-smoke"
+        ],
+        "adversarialCaseRefs": [
+          "case-labelled-demo"
+        ]
+      },
+      {
+        "id": "contract-ws-tests",
+        "contractRef": "Approved G003 /bt/ws_job and job lifecycle",
+        "obligation": "Preserve websocket job lifecycle and run/job/cancel/meta contracts.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-focused-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-api-coverage"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Approved G003 safety boundary",
+        "obligation": "No live order, broker login, account trading, hidden final_approval, or automatic production export controls.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-edit",
+          "surface-browser-result"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser-edit",
+        "contractRef": "/ui/remodel/backtest edit tab",
+        "surface": "web",
+        "invocation": "Browser navigated to /ui/remodel/backtest, clicked 조건식 편집, captured markers and screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "edit-screenshot"
+        ]
+      },
+      {
+        "id": "surface-browser-result",
+        "contractRef": "/ui/remodel/backtest result tab",
+        "surface": "web",
+        "invocation": "Browser clicked 결과 분석, captured result markers and screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "result-screenshot"
+        ]
+      },
+      {
+        "id": "surface-api-smoke",
+        "contractRef": "/bt/* API smoke",
+        "surface": "api",
+        "invocation": "Direct server smoke on 127.0.0.1:8776 covered strategy get/validate, self.vars, BackFinder, job, compare, overlay, portfolio, and report with 200 responses.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "surface-focused-tests",
+        "contractRef": "Backtest unit/integration contract tests",
+        "surface": "api",
+        "invocation": "Focused pytest suite covering CRUD/jobs/ws_job/analysis/report/evo/portfolio/phase4/phase5/sweep/overlay/result identity.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-escape",
+        "contractRef": "/ui/remodel/backtest namespace boundary",
+        "scenario": "Route escapes from remodel backtest to legacy/static prototype surface.",
+        "expectedBehavior": "URL remains /ui/remodel/backtest and canonical pushes are remapped to remodel namespace.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-static-fallback",
+        "contractRef": "Production bootstrap",
+        "scenario": "Missing bootstrap source or static prototype fallback.",
+        "expectedBehavior": "index loads remodel-bootstrap and production /ui/bundle/app.js, not remodel/src/app.js.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-labelled-demo",
+        "contractRef": "Demo empty-state safety",
+        "scenario": "Synthetic/demo result hides production result controls or appears unlabelled.",
+        "expectedBehavior": "Demo is labelled 예시 데이터 and production controls remain visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "result-screenshot"
+        ]
+      },
+      {
+        "id": "case-api-coverage",
+        "contractRef": "/bt/* endpoint coverage",
+        "scenario": "API 404/5xx or incomplete endpoint parity for required backtest operations.",
+        "expectedBehavior": "Browser and direct smoke endpoints return 200; focused tests cover deeper API/WS families.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-unsafe-controls",
+        "contractRef": "Safety forbidden controls",
+        "scenario": "Hidden live order, broker login, account trading, final approval, or production export controls appear in backtest route.",
+        "expectedBehavior": "No forbidden controls in transcript/source review.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI slop cleanup report found zero blocking findings; targeted verification, browser evidence, direct API smoke, architect review, and executor QA/red-team were rerun cleanly after the initial QA blocker about synthetic-only result evidence was resolved with explicit API smoke and labelled-empty-state assessment.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest focused backtest suite -> 225 passed, 1 skipped",
+      "pytest remodel baseline/static -> 10 passed",
+      "python -m py_compile app.py backtest_api.py",
+      "node --check remodel-bootstrap.js",
+      "git diff --check",
+      "browser automation transcript + direct endpoint smoke + architect review 11 + executor QA 12"
+    ],
+    "blockers": []
+  }
+}

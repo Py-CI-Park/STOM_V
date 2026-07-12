@@ -1,0 +1,24 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasPanel": true,
+  "payload": {
+    "action": "start",
+    "date": 20250516,
+    "src": "min",
+    "codes": [
+      "005930"
+    ],
+    "speed": 1,
+    "agg_sec": 10,
+    "buy": "BreakOut_v2",
+    "sell": "BreakOut_Exit_v1"
+  },
+  "payloadShape": true,
+  "invalidOk": false,
+  "invalidReasons": [
+    "date must be YYYYMMDD"
+  ],
+  "startGate": "manual-required",
+  "inertStartButtons": 2
+}

@@ -1,0 +1,29 @@
+{
+  "allowedWebSocketPaths": [
+    "/ws"
+  ],
+  "findings": [],
+  "forbiddenUrlPatterns": [
+    "/bt/run",
+    "/bt/ws_job",
+    "/sim/ws",
+    "/order",
+    "/orders",
+    "/broker/login",
+    "/account/trade",
+    "/live_order"
+  ],
+  "generatedAt": "2026-06-28T22:44:14.592458+00:00",
+  "legacyV2Observations": [
+    {
+      "classification": "legacy_v2_observation_not_v3_blocker",
+      "method": "WEBSOCKET",
+      "reason": "forbidden_websocket:/sim/ws",
+      "routeId": "08_chart_replay",
+      "url": "ws://127.0.0.1:8770/sim/ws",
+      "version": "v2"
+    }
+  ],
+  "readOnly": true,
+  "status": "PASS"
+}

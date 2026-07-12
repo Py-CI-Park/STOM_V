@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "combined final recheck",
+  "baseUrls": {
+    "v2": "http://127.0.0.1:8770",
+    "v3": "http://127.0.0.1:8776"
+  },
+  "startedAt": "2026-06-29T05:44:00.000Z",
+  "finishedAt": "2026-06-29T05:46:00.000Z",
+  "actions": [
+    {
+      "timestamp": "2026-06-29T05:44:05.000Z",
+      "type": "api-smoke",
+      "selector": "/bt/* and /sim/*",
+      "url": "http://127.0.0.1:8776",
+      "result": "runtime-depth PASS backtest=24 chartReplay=19"
+    },
+    {
+      "timestamp": "2026-06-29T05:44:50.000Z",
+      "type": "safety-audit",
+      "selector": "V2/V3 DOM and network",
+      "url": "http://127.0.0.1:8770,http://127.0.0.1:8776",
+      "result": "safety PASS average=100.0"
+    },
+    {
+      "timestamp": "2026-06-29T05:45:30.000Z",
+      "type": "visual-route-compare",
+      "selector": "body",
+      "target": "8 V2/V3 page pairs",
+      "path": "artifacts/ultragoal-recheck-g003-v2-v3-compare-final/side-by-side-contact-sheet.png",
+      "result": "compare PASS average=100.0"
+    },
+    {
+      "timestamp": "2026-06-29T05:46:00.000Z",
+      "type": "assert-final",
+      "selector": "final-recheck-scorecard",
+      "path": "artifacts/ultragoal-recheck-final/final-recheck-scorecard.json",
+      "result": "PASS"
+    }
+  ],
+  "artifacts": [
+    "artifacts/ultragoal-recheck-final/final-recheck-scorecard.json",
+    "artifacts/ultragoal-recheck-final/verification-summary.json",
+    "artifacts/ultragoal-recheck-g003-v2-v3-compare-final/side-by-side-contact-sheet.png"
+  ],
+  "verdict": "passed"
+}

@@ -1,0 +1,208 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect 90-G003ArchitectReview inspected final scorecard, verification summary, runtime depth, safety audit, and layout audit. All gates PASS; V2/V3 function average 100, visual 97.93, graph/runtime/safety 100, blockers empty.",
+    "commands": [
+      "agent://90-G003ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 91-G003ExecutorQa red-teamed final scorecard consistency, runtime depth, safety, layout counts, and failure leakage; blockers empty.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-runtime-depth",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-safety-audit",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-v2-v3-compare-final --min-page-score 95 --min-average-score 97",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q"
+    ],
+    "redTeamCommands": [
+      "agent://91-G003ExecutorQa"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-recheck-g003-quality/browser-transcript.json",
+        "description": "Final recheck browser/API/visual transcript."
+      },
+      {
+        "id": "final-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-recheck-g003-v2-v3-compare-final/side-by-side-contact-sheet.png",
+        "description": "Non-uniform V2/V3 final route comparison contact sheet."
+      },
+      {
+        "id": "final-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-recheck-final/final-recheck-scorecard.json",
+        "description": "Final recheck scorecard PASS."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-recheck-final/verification-summary.json",
+        "description": "Final verification command summary with all PASS."
+      },
+      {
+        "id": "runtime-depth",
+        "kind": "api-package-test-report",
+        "path": "artifacts/ultragoal-recheck-g003-runtime-depth/runtime-depth-scorecard.json",
+        "description": "Backtest/chart replay runtime depth PASS."
+      },
+      {
+        "id": "safety-audit",
+        "kind": "api-package-test-report",
+        "path": "artifacts/ultragoal-recheck-g003-safety-audit/safety-scorecard.json",
+        "description": "Safety audit PASS average 100."
+      },
+      {
+        "id": "layout-audit",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-recheck-g002-graph-layout/layout-audit.json",
+        "description": "Graph layout audit PASS 77 items failures 0."
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-recheck-g003-quality/cli-replay.json",
+        "description": "Safe CLI replay receipt."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-recheck-g003-quality/adversarial-report.txt",
+        "description": "Final red-team/adversarial summary."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "g003-runtime",
+        "contractRef": "G003 objective: runtime depth checks",
+        "obligation": "Backtest and chart replay runtime behavior must pass API/runtime depth coverage without unsafe auto actions.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-runtime"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-trading"
+        ]
+      },
+      {
+        "id": "g003-final-score",
+        "contractRef": "G003 objective: final score table",
+        "obligation": "Final scorecard must aggregate route, visual, graph layout, runtime, safety, inventory, and focused checks.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-final"
+        ],
+        "adversarialCaseRefs": [
+          "case-failure-leakage"
+        ]
+      },
+      {
+        "id": "g003-safety",
+        "contractRef": "G003 objective: safety audit",
+        "obligation": "No live order, broker login, account trading, hidden export, or unsafe runtime network behavior.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-trading"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-final",
+        "contractRef": "Final scorecard and visual route comparison",
+        "surface": "web",
+        "invocation": "Final V2/V3 visual route compare and final scorecard generation.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "final-contact-sheet",
+          "final-scorecard",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-runtime",
+        "contractRef": "Backtest and chart replay runtime API depth",
+        "surface": "api/package",
+        "invocation": "Runtime depth verifier against /bt/* and /sim/* read/manual-gated contracts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "runtime-depth"
+        ]
+      },
+      {
+        "id": "surface-safety",
+        "contractRef": "Safety and audit boundaries",
+        "surface": "api/package",
+        "invocation": "Source, DOM, runtime-network, audit/export separation safety verifier.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-audit"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-failure-leakage",
+        "contractRef": "No hidden failures in final closure",
+        "scenario": "Cross-check final scorecard, verification summary, runtime/safety/layout artifacts for failures or contradictions.",
+        "expectedBehavior": "All status PASS and failures [].",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-scorecard",
+          "verification-summary",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-unsafe-trading",
+        "contractRef": "No unsafe trading behavior",
+        "scenario": "Inspect runtime and safety artifacts for unsafe auto contracts, live order, broker login, account trading, hidden export.",
+        "expectedBehavior": "No unsafe behavior and all safety categories 100.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "runtime-depth",
+          "safety-audit",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-layout-regression",
+        "contractRef": "Graphs remain usable after CSS fix",
+        "scenario": "Check final graph layout audit counts and failures.",
+        "expectedBehavior": "77 items, failures [].",
+        "verdict": "passed",
+        "artifactRefs": [
+          "layout-audit",
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Full final recheck reran after CSS graph sizing fix: route/function compare, visual gate, layout audit, runtime depth, safety audit, focused tests, static checks, diff/protected path checks, architect review, and executor QA are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-runtime-depth",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-safety-audit",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-recheck-g003-v2-v3-compare-final --min-page-score 95 --min-average-score 97",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/bundle/app.js && node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ... && git diff --check"
+    ],
+    "blockers": []
+  }
+}

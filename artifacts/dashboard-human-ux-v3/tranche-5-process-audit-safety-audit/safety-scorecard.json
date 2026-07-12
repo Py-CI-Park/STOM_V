@@ -1,0 +1,17 @@
+{
+  "averageSafetyScore": 100.0,
+  "failures": [],
+  "generatedAt": "2026-06-30T12:37:28.752543+00:00",
+  "kind": "dashboard-safety-audit-scorecard",
+  "schemaVersion": 1,
+  "scores": {
+    "auditExportSeparation": 100.0,
+    "domSafety": 100.0,
+    "runtimeNetwork": 100.0,
+    "sourceSafety": 100.0,
+    "visualEvidence": 100.0
+  },
+  "status": "PASS",
+  "v2BaseUrl": "http://127.0.0.1:8776",
+  "v3BaseUrl": "http://127.0.0.1:8776"
+}

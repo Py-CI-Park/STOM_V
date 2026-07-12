@@ -1,0 +1,66 @@
+﻿{
+    "task":  "TODO 05 - Backtest Job Progress And Result Parity",
+    "event":  "task-evidence-refreshed",
+    "status":  "passed",
+    "started_at":  "2026-07-02T00:09:24.1920842+09:00",
+    "ended_at":  "2026-07-02T00:10:49.4482289+09:00",
+    "duration_ms":  85256,
+    "worktree":  "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel",
+    "branch":  "feature/dashboard-remodel-20260626",
+    "head":  "887c3591161e95b2d828112266dc9d34a749adab",
+    "evidence":  [
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo05_backtest_job_progress.log",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo05_backtest_job_progress_narrow.png",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo05_backtest_job_progress_cdp.json"
+                 ],
+    "steps":  [
+                  {
+                      "name":  "backtest job progress tests pass 1",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_backtest_job_progress.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:09:24.2108853+09:00",
+                      "ended_at":  "2026-07-02T00:09:39.2861928+09:00",
+                      "duration_ms":  15075
+                  },
+                  {
+                      "name":  "backtest job progress tests pass 2 flaky probe",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_backtest_job_progress.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:09:39.3019424+09:00",
+                      "ended_at":  "2026-07-02T00:09:49.2416723+09:00",
+                      "duration_ms":  9940
+                  },
+                  {
+                      "name":  "backend backtest ws/job contract tests",
+                      "command":  "python -m pytest tests/unit/dashboard/test_backtest_ws_job.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:09:49.2416723+09:00",
+                      "ended_at":  "2026-07-02T00:10:15.3790569+09:00",
+                      "duration_ms":  26137
+                  },
+                  {
+                      "name":  "node syntax check remodel app",
+                      "command":  "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:10:15.3790569+09:00",
+                      "ended_at":  "2026-07-02T00:10:16.6549472+09:00",
+                      "duration_ms":  1276
+                  },
+                  {
+                      "name":  "git diff check",
+                      "command":  "$ErrorActionPreference = \"Continue\"; git diff --check; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; exit 0",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:10:16.6564530+09:00",
+                      "ended_at":  "2026-07-02T00:10:17.5941206+09:00",
+                      "duration_ms":  938
+                  },
+                  {
+                      "name":  "protected path status",
+                      "command":  "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:10:17.5941206+09:00",
+                      "ended_at":  "2026-07-02T00:10:20.4691754+09:00",
+                      "duration_ms":  2875
+                  }
+              ]
+}

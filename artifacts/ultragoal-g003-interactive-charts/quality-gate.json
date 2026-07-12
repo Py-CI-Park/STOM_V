@@ -1,0 +1,339 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final read-only re-review inspected only the requested files. app.js centralizes chart provenance/state badges (lines 342-360), defaulting live fixture charts to source=fixture fallback, freshness=stale-fixture-fallback, status=STALE/FALLBACK; replay candles explicitly use source=fixture fallback · sim probe not driving chart and stale-replay-fixture-fallback (lines 1309-1352). current-live-probe.json confirms condition and replay live fallback ARIA/state badges (lines 33-56). Legend highlight, hover/keyboard, ARIA, and active datum handlers remain in app.js lines 464-543; CSS affordances remain in theme.css lines 262-286; static markers remain in tests/unit/test_dashboard_remodel_static.py lines 89-173 and safety tests in lines 176-230, 429-458. verification-summary.json reports PASS with liveFallbackProvenance/replayFallbackProvenance true; browser transcript records 37 interactive charts and replay candlestick hover/keyboard probes; image evidence reports 8 non-uniform screenshots. Durable architect artifact persisted: run_id=019f13d4-fda2-7000-a14d-f098c2dafb9f, stage=architect, stage_n=3, sha256=b2db2391d7f34da83d12b571411285dacd68fa10ab3c874efa9aa38034f63f7f.",
+    "commands": [
+      "architect review agent 105-G003ArchitectReview3; persisted artifacts/ultragoal-g003-interactive-charts/architect-review.json",
+      "read/search inspections over the nine user-specified files only",
+      "gjc ralplan --write --stage architect --stage_n 3 --artifact '<full review markdown>' --json",
+      "No project-wide build/test/lint/format gates run; no gjc ultragoal or goal calls"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Read-only QA over the assigned files confirms G003 evidence remains sufficient after the fallback provenance fix. `current-live-probe.json` status is PASS and includes `condition_live_fallback` with `status=STALE/FALLBACK`, `freshness=stale-fixture-fallback`, and ARIA text `source=fixture fallback · backend not driving chart`; it also includes `chart_replay_live_fallback` with `status=STALE/FALLBACK`, `freshness=stale-replay-fixture-fallback`, and ARIA text `source=fixture fallback · sim probe not driving chart`. `verification-summary.json` is PASS, records 37 interactive charts, 8 non-uniform screenshots, passing hover/keyboard coverage, and `liveFallbackProvenance`/`replayFallbackProvenance` true. Source inspection confirms live default mode derives STALE/FALLBACK from stale/fallback provenance and replay candlesticks use the sim-probe fallback label in live mode. Static tests lock the provenance, interaction, legend, CSS, and safety markers. No blockers found.",
+    "e2eCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 24 passed in 9.33s",
+      "browser automation over 8 V3 routes with hover + keyboard chart probes; transcript browser-transcript.json",
+      "browser current probe over condition legend/state badges and live fallback condition/replay provenance; artifact current-live-probe.json",
+      "Pillow screenshot evidence scan for 8 G003 browser captures; artifact image-evidence.json",
+      "python artifact consistency validators for transcript/images/probe => PASS",
+      "git diff --check over assigned G003 files/artifacts => PASS"
+    ],
+    "redTeamCommands": [
+      "legend-static red-team: current-live-probe condition route shows legendActive true, highlightedElements 56, dimmedElements 168",
+      "live fallback red-team: condition_live_fallback shows STALE/FALLBACK and source=fixture fallback · backend not driving chart",
+      "replay fallback red-team: chart_replay_live_fallback shows STALE/FALLBACK and source=fixture fallback · sim probe not driving chart",
+      "keyboard/non-hover red-team: browser-transcript records keyboardHome/keyboardRight and activeText on all chart-bearing routes",
+      "safety red-team: static tests and cleanup report confirm no live order/broker/account/export affordances added"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g003-interactive-charts/browser-transcript.json",
+        "description": "Valid browser automation transcript over eight V3 routes with hover/keyboard chart probes and screenshot paths",
+        "tool": "browser"
+      },
+      {
+        "id": "current-probe",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g003-interactive-charts/current-live-probe.json",
+        "description": "Current browser probe proving legend highlight, state badges, and live fallback provenance for condition and chart replay",
+        "tool": "browser"
+      },
+      {
+        "id": "condition-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-interactive-charts/condition.png",
+        "description": "Non-uniform condition page screenshot from browser transcript"
+      },
+      {
+        "id": "replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-interactive-charts/chart_replay.png",
+        "description": "Non-uniform chart replay page screenshot from browser transcript"
+      },
+      {
+        "id": "image-evidence",
+        "kind": "property-test-report",
+        "path": "artifacts/ultragoal-g003-interactive-charts/image-evidence.json",
+        "description": "Metadata proving 8 PNG route screenshots exist, are valid-dimensioned, and non-uniform"
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g003-interactive-charts/verification-summary.json",
+        "description": "Focused command, browser, screenshot, fallback-provenance, and diff-check summary with status PASS"
+      },
+      {
+        "id": "cleanup-report",
+        "kind": "cleanup-review-report",
+        "path": "artifacts/ultragoal-g003-interactive-charts/ai-slop-cleanup-report.md",
+        "description": "AI slop cleanup report with zero blocking/advisory findings after legend/provenance fixes"
+      },
+      {
+        "id": "architect-review",
+        "kind": "architect-review-report",
+        "path": "artifacts/ultragoal-g003-interactive-charts/architect-review.json",
+        "description": "Final architect review: CLEAR/CLEAR/CLEAR APPROVE, blockers []"
+      },
+      {
+        "id": "executor-qa",
+        "kind": "executor-qa-report",
+        "path": "artifacts/ultragoal-g003-interactive-charts/executor-qa.json",
+        "description": "Final executor QA matrix: passed/passed/passed, blockers []"
+      },
+      {
+        "id": "update-log",
+        "kind": "implementation-log",
+        "path": "docs/update_log/2026-06-29_ultragoal_g003_interactive_chart_primitives.md",
+        "description": "Dated implementation and verification log for G003"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-interactive-primitives",
+        "contractRef": "G003 objective: interactive chart primitives",
+        "obligation": "Charts expose nearest-datum hover, tooltip, crosshair, keyboard Home/End/Arrow navigation, ARIA/live active values, and no static-poster behavior.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-routes",
+          "surface-current-probe"
+        ],
+        "adversarialCaseRefs": [
+          "case-keyboard-nonhover"
+        ]
+      },
+      {
+        "id": "contract-legend-highlight",
+        "contractRef": "G003 objective: legend highlight",
+        "obligation": "Multi-series legends highlight selected series and dim peers through hover/focus/click with accessible state.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-current-probe"
+        ],
+        "adversarialCaseRefs": [
+          "case-static-legend"
+        ]
+      },
+      {
+        "id": "contract-provenance-state",
+        "contractRef": "G003 objective: source/run/freshness/malformed/stale labels",
+        "obligation": "Charts expose source, run_id, freshness, status, malformed counts, and honest fallback/stale labels instead of fake live ownership.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-current-probe",
+          "surface-focused-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-live-condition-fallback",
+          "case-live-replay-fallback",
+          "case-malformed-empty"
+        ]
+      },
+      {
+        "id": "contract-route-coverage",
+        "contractRef": "G003 objective: required chart surfaces",
+        "obligation": "Condition, history, lab, workbench, audit, backtest, chart replay and quality/profit/equity/fitness chart sets use the primitives; process chart count is deferred to G004.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-routes",
+          "surface-screenshots"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-coverage"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Original brief safety constraints",
+        "obligation": "No live order, broker login, account trading, hidden export, or unsafe page-load WebSocket/action mutation introduced by G003.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-focused-tests",
+          "surface-cleanup"
+        ],
+        "adversarialCaseRefs": [
+          "case-safety-controls"
+        ]
+      },
+      {
+        "id": "contract-cli-out-of-scope",
+        "contractRef": "CLI user-facing surface",
+        "obligation": "G003 changes browser dashboard chart primitives only; no CLI contract is introduced or changed.",
+        "status": "not_applicable",
+        "reason": "No CLI surface is in this story."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser-routes",
+        "contractRef": "G003 browser route surfaces",
+        "surface": "web",
+        "invocation": "Browser automation transcript over condition/process/history/lab/workbench/audit/backtest/chart_replay on http://127.0.0.1:8776",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "condition-screenshot",
+          "replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-current-probe",
+        "contractRef": "G003 live interaction/provenance probes",
+        "surface": "web",
+        "invocation": "Browser current probe over condition legend/state badges plus live fallback condition/replay routes",
+        "verdict": "passed",
+        "artifactRefs": [
+          "current-probe",
+          "condition-screenshot",
+          "replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-screenshots",
+        "contractRef": "G003 visual evidence",
+        "surface": "web",
+        "invocation": "Pillow metadata scan over eight browser screenshots",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "image-evidence",
+          "condition-screenshot",
+          "replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-focused-tests",
+        "contractRef": "G003 static/unit regression",
+        "surface": "api/package",
+        "invocation": "node --check app.js; python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q; git diff --check",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-cleanup",
+        "contractRef": "G003 cleanup and safety review",
+        "surface": "api/package",
+        "invocation": "AI slop cleanup report and final architect/executor reviews over scoped files",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "cleanup-report",
+          "architect-review",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "surface-cli-out-of-scope",
+        "contractRef": "CLI surface",
+        "surface": "cli",
+        "status": "not_applicable",
+        "reason": "G003 has no CLI-facing behavior; focused checks are recorded as test-report artifacts."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-static-legend",
+        "contractRef": "G003 legend highlight",
+        "scenario": "Legend remains cosmetic and static while chart series do not change.",
+        "expectedBehavior": "Legend interaction creates active legend state, highlighted selected series, dimmed peers, and active datum text.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "current-probe"
+        ]
+      },
+      {
+        "id": "case-live-condition-fallback",
+        "contractRef": "G003 condition live fallback provenance",
+        "scenario": "Default live condition charts are fixture-driven but claim backend/live/current ownership.",
+        "expectedBehavior": "Badges/ARIA state STALE/FALLBACK, stale-fixture-fallback, source=fixture fallback · backend not driving chart.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "current-probe",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-live-replay-fallback",
+        "contractRef": "G003 replay fallback provenance",
+        "scenario": "Chart replay fixture candles claim sim read-only payload ownership before sim payload drives the chart.",
+        "expectedBehavior": "Badges/ARIA state STALE/FALLBACK, stale-replay-fixture-fallback, source=fixture fallback · sim probe not driving chart.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "current-probe",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-keyboard-nonhover",
+        "contractRef": "G003 accessibility",
+        "scenario": "Chart values only appear on mouse hover.",
+        "expectedBehavior": "Keyboard Home/End/Arrow navigation and aria-live active values expose the same data without hover.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run"
+        ]
+      },
+      {
+        "id": "case-malformed-empty",
+        "contractRef": "G003 malformed/empty states",
+        "scenario": "Malformed/missing data silently draws fake geometry.",
+        "expectedBehavior": "Malformed counts and chart-empty role=status with source/run/freshness/status are present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "case-route-coverage",
+        "contractRef": "G003 required route coverage",
+        "scenario": "Only one chart surface gains interaction while other required charts remain poster SVGs.",
+        "expectedBehavior": "37 charts across required chart-bearing routes are registered interactive charts; process not_applicable is documented for G004.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-safety-controls",
+        "contractRef": "Original brief safety constraints",
+        "scenario": "Interactive chart work adds broker/order/account/export controls or fake live success.",
+        "expectedBehavior": "Forbidden controls remain absent and safety labels/tests pass.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "cleanup-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial G003 reviews found missing legend highlight and misleading live fallback provenance; implementation was fixed, focused verification fully reran, final architect 105 and executor QA 106 passed with blockers empty, and cleanup report was refreshed.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 24 passed in 9.33s",
+      "browser current probe over condition legend/state badges and live fallback condition/replay provenance",
+      "python artifact consistency validators => PASS",
+      "git diff --check over assigned G003 files/artifacts => PASS",
+      "architect review agent 105-G003ArchitectReview3 => CLEAR/CLEAR/CLEAR APPROVE",
+      "executor QA agent 106-G003ExecutorQa3 => passed/passed/passed"
+    ],
+    "blockers": []
+  }
+}

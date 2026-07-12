@@ -21,6 +21,7 @@ if PROJECT_ROOT not in sys.path:
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from .security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 @pytest.fixture
@@ -34,14 +35,15 @@ def isolated_state(monkeypatch, tmp_path):
 
 
 @pytest.fixture
-def client(isolated_state):
+def client(isolated_state, monkeypatch):
     """대시보드 TestClient. create_app으로 새 앱을 만들어 매니저를 격리한다."""
     from fastapi.testclient import TestClient
 
     from ai_strategy_loop.dashboard.app import create_app
 
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_PROVIDER_TEST", "1")
     app = create_app()
-    return TestClient(app)
+    return authorized_dashboard_client(app)
 
 
 class TestHealthAndSpec:
@@ -51,6 +53,12 @@ class TestHealthAndSpec:
         body = resp.json()
         assert body["status"] == "ok"
         assert body["contract_version"] == C.CONTRACT_VERSION
+
+    def test_favicon_returns_svg(self, client):
+        resp = client.get("/favicon.ico")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"].startswith("image/svg+xml")
+        assert "<svg" in resp.text
 
     def test_config_spec_returns_fields(self, client):
         resp = client.get("/config/spec")
@@ -227,7 +235,7 @@ class TestUnknownControl:
             ws.send_text(json.dumps({"action": "frobnicate"}))
             reply = ws.receive_json()
             assert reply["status"] == "error"
-            assert "unknown action" in reply["message"]
+            assert reply["code"] == "invalid_message"
 
 
 class TestHardStopReapsChild:
@@ -261,10 +269,7 @@ class TestHardStopReapsChild:
 class TestFinalApprovalDestIsServerControlled:
     """HIGH-3: final_approval은 클라이언트 dest_strategy_db를 무시하고 운영 경로로만 export."""
 
-    def test_malicious_dest_is_ignored(self, client, monkeypatch):
-        import ai_strategy_loop.dashboard.app as appmod
-        from ai_strategy_loop.controller.export import PRODUCTION_STRATEGY_DB
-
+    def test_legacy_client_winner_and_dest_fields_are_rejected(self, client, monkeypatch):
         captured = {}
 
         def _fake_export(winner_buy, winner_sell, dest, user_buy, user_sell, **kw):
@@ -286,9 +291,8 @@ class TestFinalApprovalDestIsServerControlled:
                 "dest_strategy_db": "C:/evil/attacker.db",  # 악의적 목적지.
             }))
             reply = ws.receive_json()
-            assert reply["action"] == "final_approval"
-            assert reply["status"] == "ok"
+            assert reply["status"] == "error"
+            assert reply["code"] == "invalid_message"
 
         # 클라이언트가 준 악성 경로가 아니라 운영 상수 경로로 export 되어야 한다.
-        assert captured["dest"] == str(PRODUCTION_STRATEGY_DB)
-        assert captured["dest"] != "C:/evil/attacker.db"
+        assert captured == {}

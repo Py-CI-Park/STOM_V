@@ -5,11 +5,11 @@
 //   dep under the gitignored webui-build/node_modules, never served). If jsdom cannot host
 //   the index path, the pytest wrapper falls back to skip + the Playwright harness variant.
 //
-//   PR-6 FLIP: V2/V3/V4 now load the REAL DEFAULT served artifact frontend/bundle/app.js (the
-//     committed esbuild bundle written by `node build-app.mjs`), NOT the transient .track-z pilot.
-//     This makes the harness the load-bearing safety proof for the flip: it proves the artifact the
-//     browser actually downloads renders all 7 tabs + 3 standalone pages, 0 errors, single React.
-//     V1 keeps a transient pilot build (a clean single-React/no-require MECHANISM proof of the
+//   W3: V1-V7 load a freshly generated transient production-entry bundle. This closes the stale
+//     committed-bundle false green while leaving tracked npm-free artifacts untouched.
+//     The disposable production build proves writer parity; this harness proves current-source
+//     rendering, zero captured errors, and one React identity without regenerating bundle/app.js.
+//     V1 also keeps its clean single-React/no-require MECHANISM proof of the
 //     alias-to-shim entry — it asserts DemoBadge/LivePending republish, independent of the served
 //     file's freshness).
 //
@@ -38,7 +38,7 @@
 //   V1 && V2 && V3 && V4 pass. Any host-unavailability is reported as {"hostError": ...}
 //   (exit 3) so the wrapper can skip rather than fail.
 
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 import esbuild from "esbuild";
 import { readFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -51,10 +51,10 @@ mkdirSync(TRACK_Z, { recursive: true });
 
 const read = (p) => readFileSync(p, "utf8");
 
-// PR-6 FLIP: V2/V3/V4 load the REAL DEFAULT served artifact (committed by `node build-app.mjs`),
-//   proving the file the browser downloads renders. V1 still uses a transient pilot build below
-//   as a clean alias-to-shim MECHANISM proof. (Build the served bundle first with build-app.mjs.)
-const SERVED_APP = resolve(FE, "bundle/app.js");
+// W3: all sections load a fresh transient build of the production entry graph. Reading the
+// committed app.js here allowed changed JSX to hide behind a stale artifact and falsely green.
+// A separate disposable `npm run build` proves the production writer without tracked outputs.
+const SERVED_APP = resolve(TRACK_Z, "app.pilot.js");
 
 // --- Build the transient pilot the V1 mechanism proof needs (idempotent; gitignored) ---
 // Pilot bundle (same options as build-app.mjs default bundle path).
@@ -66,7 +66,7 @@ const reactFlowEntry = resolve(__dirname, "node_modules/@xyflow/react/dist/esm/i
 const dagreEntry = resolve(__dirname, "node_modules/dagre/index.js");
 await esbuild.build({
   entryPoints: [resolve(__dirname, "src/track-z-entry.pilot.js")],
-  outfile: resolve(TRACK_Z, "app.pilot.js"),
+  outfile: SERVED_APP,
   bundle: true, format: "iife", platform: "browser", target: "es2018",
   jsx: "transform", jsxFactory: "React.createElement", jsxFragment: "React.Fragment",
   minify: false, sourcemap: false, loader: { ".jsx": "jsx" },
@@ -236,12 +236,16 @@ const RIX_HARNESS_ROWS = [
 function makeDom(opts = {}) {
   const STATE = opts.state || IDLE_STATE;
   const domUrl = opts.url || `http://localhost${opts.path || "/ui/"}`;
+  const errs = [];
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on("jsdomError", (error) => {
+    errs.push("jsdom.error: " + String((error && error.stack) || error));
+  });
   const dom = new JSDOM(
     "<!DOCTYPE html><html><body><div id=root></div></body></html>",
-    { runScripts: "dangerously", pretendToBeVisual: true, url: domUrl },
+    { runScripts: "dangerously", pretendToBeVisual: true, url: domUrl, virtualConsole },
   );
   const { window } = dom;
-  const errs = [];
   window.addEventListener("error", (e) => errs.push("window.error: " + ((e.error && e.error.stack) || e.message)));
   // Capture console.error into `errs` only — do NOT forward to the real process stdout/
   //   stderr, so the harness's single JSON result on stdout stays parseable by the wrapper.
@@ -253,6 +257,30 @@ function makeDom(opts = {}) {
   window.cancelAnimationFrame = window.cancelAnimationFrame || ((id) => clearTimeout(id));
   window.scrollTo = window.scrollTo || (() => {});
   if (!window.ResizeObserver) window.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  // jsdom has no Canvas implementation. Install an observable 2D context instead of allowing
+  // jsdom's virtual console to print a runtime error that the old harness falsely ignored.
+  window.__HARNESS_CANVAS_EVENTS__ = [];
+  window.HTMLCanvasElement.prototype.getContext = function getContext(kind) {
+    if (kind !== "2d") return null;
+    const events = window.__HARNESS_CANVAS_EVENTS__;
+    const gradient = { addColorStop: (...args) => events.push(["addColorStop", ...args]) };
+    const base = {
+      canvas: this,
+      createLinearGradient: (...args) => { events.push(["createLinearGradient", ...args]); return gradient; },
+      createRadialGradient: (...args) => { events.push(["createRadialGradient", ...args]); return gradient; },
+      createPattern: (...args) => { events.push(["createPattern", ...args]); return {}; },
+      measureText: (text) => ({ width: String(text).length * 6 }),
+      getImageData: () => ({ data: new window.Uint8ClampedArray([1, 0, 0, 255]) }),
+      isPointInPath: () => false,
+    };
+    return new Proxy(base, {
+      get(target, property) {
+        if (property in target) return target[property];
+        return (...args) => events.push([String(property), ...args]);
+      },
+    });
+  };
+  if (opts.injectJsdomError) virtualConsole.emit("jsdomError", new Error("fault-injected jsdom error"));
   // jsdom has no fetch/WebSocket; the served :8770 app does. The App's useBackend() calls
   //   GET /health → /config/spec → /status → opens a WS. We emulate a real backend: /health ok,
   //   /status returns the CONTRACT-VALID STATE (idle or running) so the App renders its REAL shell
@@ -290,16 +318,21 @@ function makeDom(opts = {}) {
     if (u.includes("/verdict")) return jsonResp({ entries: [], count: 0, status: "unavailable" });
     return jsonResp({});
   };
-  window.fetch = opts.fetch || window.fetch || defaultFetch;
-  if (!window.WebSocket) {
-    // Connect successfully (wsStatus -> "open") but deliver no messages: state stays the
-    //   contract-valid /status payload. This avoids the demo-simulator fallback path.
-    window.WebSocket = class {
-      constructor() { this.readyState = 1; setTimeout(() => { if (typeof this.onopen === "function") this.onopen({}); }, 0); }
-      send() {} close() { this.readyState = 3; }
-      addEventListener() {} removeEventListener() {}
-    };
-  }
+  // ALWAYS install the mocks (2026-07-04): jsdom DOES implement WebSocket (and may grow fetch),
+  //   so the old `window.fetch ||` / `if (!window.WebSocket)` guards let the REAL implementations
+  //   through — a live localhost server (e.g. a dashboard on :80, the jsdom default port) would
+  //   then push its REAL state frames over ws://localhost/ws and OVERWRITE the harness fixture
+  //   via setState (observed: V4_RUNNING_STATE clobbered by an idle frame → marker asserts
+  //   failed only while a server happened to listen on :80). Unconditional mocks make the
+  //   harness deterministic and environment-independent.
+  window.fetch = opts.fetch || defaultFetch;
+  // Connect successfully (wsStatus -> "open") but deliver no messages: state stays the
+  //   contract-valid /status payload. This avoids the demo-simulator fallback path.
+  window.WebSocket = class {
+    constructor() { this.readyState = 1; setTimeout(() => { if (typeof this.onopen === "function") this.onopen({}); }, 0); }
+    send() {} close() { this.readyState = 3; }
+    addEventListener() {} removeEventListener() {}
+  };
   if (!window.localStorage) {
     const store = {};
     window.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; }, clear: () => { for (const k in store) delete store[k]; } };
@@ -312,8 +345,24 @@ function makeDom(opts = {}) {
   if (opts.noAutoMount) window.__STOM_NO_AUTO_MOUNT__ = true;
   return { dom, window, errs };
 }
+if (process.argv.includes("--probe-jsdom-error")) {
+  const { errs } = makeDom({ injectJsdomError: true });
+  const report = { probe: "jsdom-error", pass: errs.length === 0, errorCount: errs.length, errors: errs };
+  process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+  process.exit(report.pass ? 0 : 1);
+}
 const inject = (window, code) => { const s = window.document.createElement("script"); s.textContent = code; window.document.body.appendChild(s); };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// waitFor — 고정 대기 flake 방지: 조건이 참이 될 때까지 step 간격 폴링(상한 tries).
+//   pytest 하위 subprocess 처럼 느린 호스트에서 state-반영 렌더(fetch 체인 후 setState)가
+//   고정 450/900ms 를 넘겨 마커 miss 로 오탐되는 것을 막는다. 조건 충족 시 즉시 반환.
+async function waitFor(cond, tries = 10, step = 300) {
+  for (let i = 0; i < tries; i++) {
+    if (cond()) return true;
+    await wait(step);
+  }
+  return cond();
+}
 
 // ---------------------------------------------------------------- V1: pilot
 async function runV1() {
@@ -447,6 +496,14 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectNoIframe, e
   inject(window, read(SERVED_APP));  // auto-mounts App at the preset tab (real served artifact)
   await wait(900);  // useBackend fetch chain + WS open + per-route on-demand fetches settle
   const root = window.document.getElementById("root");
+  // settle polling — 느린 호스트(pytest 하위 subprocess)에서 on-demand fetch 렌더가 900ms 를
+  //   넘겨 마커 miss 로 오탐되는 flake 방지. 기대 마커가 나타날 때까지 추가 폴링.
+  await waitFor(() => {
+    const html = root.innerHTML;
+    if (expectRecordsIndex && !(html.includes("Governed Research Index") && html.includes("Alpha Doc"))) return false;
+    if (expectProcessLive && !(root.querySelector(".process-live-strip") && html.includes("[gen2] scored graded=1.2"))) return false;
+    return html.trim().length > 0;
+  });
   const rootHtml = root.innerHTML;
   const rootNonEmpty = rootHtml.trim().length > 0;
   // ErrorBoundary fallback marker (app.jsx:705 "대시보드 렌더 오류") = a caught render throw.
@@ -505,8 +562,46 @@ const V4_PAGES = [
   { page: "pro", global: "ProPage" },
   { page: "verdict", global: "VerdictPanel" },
 ];
-async function runPageOnce({ page, global: globalName }) {
-  const { window, errs } = makeDom({ state: IDLE_STATE, noAutoMount: true });
+// V4 opt-in dashboard shell (/ui/v4.html → window.DashboardV4Shell) + its 6 tabs. Separate array
+//   from V4_PAGES (the 3 legacy standalone HTML pages) so each gate asserts its own contract.
+//   Reuses runPageOnce (noAutoMount + name-mount) with per-tab ?tab= url + backend state.
+// V4_RUNNING_STATE — RUNNING_STATE + condition_discovery page_data. The ported wt-dev research
+//   observability grid (Research Pack/Branch Tree · Candidate Pack · Prompt Receipts ·
+//   Promotion Blockers) renders only when page_data.condition_discovery exists; this fixture
+//   drives it so the V7 running gate proves the grid actually renders (field shapes mirror
+//   panels-analysis.jsx reads: branch_tree=[{step,output}], required_fields/blockers=strings).
+const V4_RUNNING_STATE = JSON.parse(JSON.stringify(RUNNING_STATE));
+V4_RUNNING_STATE.page_data = {
+  condition_discovery: {
+    preset: "fast",
+    policy: { label: "fast-discovery", purpose: "빠른 탐색" },
+    hard_gates: { mdd: { cap: 40 }, minimum_daily_trades: { min: 0.5 } },
+    time_window: {},
+    research_observability: {
+      mode_authority: { generation_allowed: true, process: "process-research", preset: "fast" },
+      context_pack_health: { status: "ok", required_fields: ["run_id", "gen_no"] },
+      branch_tree: [{ step: "seed_context", output: "6 sections" }],
+      candidate_pack: { required_fields: ["candidates"] },
+      analysis_cards: { required_fields: ["root_cause"] },
+      prompt_receipts: { required_fields: ["prompt_id"] },
+      promotion_blockers: { blockers: ["fresh_holdout_oos_pending"] },
+    },
+  },
+};
+const V4_DASHBOARD_PAGES = [
+  { page: "v4shell", global: "DashboardV4Shell" }, // Research Live (default tab), idle
+  { page: "v4shell-running", global: "DashboardV4Shell", state: V4_RUNNING_STATE,
+    needles: ["research-observability-grid", "research allowed"] }, // Research Live + observability grid
+  { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // BacktestTab
+  { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // SimulationTab (keep-alive shell)
+  { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // ResearchHeatmap + ResearchLab
+  { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // ResearchPro + RunCompare + HoF
+  { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // VerdictPanel + safety strip
+  { page: "v4-context", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=context" }, // AIContextPanel view
+  { page: "v4-history", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=history" }, // ResearchRecords + governed index
+];
+async function runPageOnce({ page, global: globalName, state, path, needles }) {
+  const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
@@ -528,16 +623,34 @@ async function runPageOnce({ page, global: globalName }) {
     mountError = "window." + globalName + " is not a function";
   }
   const root = window.document.getElementById("root");
+  // Optional content needles: prove named surfaces actually rendered (not just non-empty root).
+  //   State-driven surfaces render after the fetch chain settles — poll instead of a fixed wait.
+  if (needles && needles.length) {
+    await waitFor(() => needles.every((n) => root.innerHTML.includes(n)));
+  }
   const rootHtml = root.innerHTML;
   const rootNonEmpty = rootHtml.trim().length > 0;
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
+  const missingNeedles = (needles || []).filter((n) => !rootHtml.includes(n));
+  const canvasDrawEvents = window.__HARNESS_CANVAS_EVENTS__.length;
+  const canvasRequired = page === "v4shell" || page === "v4shell-running";
   const pass = componentIsFn && !mountError && errs.length === 0 && rootNonEmpty
-    && !boundaryTripped && dynReq.length === 0;
+    && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0
+    && (!canvasRequired || canvasDrawEvents > 0);
   return {
     page, global: globalName, pass, componentIsFunction: componentIsFn, mountError,
     rootNonEmpty, rootHtmlLen: rootHtml.length, errorBoundaryTripped: boundaryTripped,
+    ...(needles ? {
+      missingNeedles,
+      // needle miss 진단: 데모 폴백/대기상태 여부 — pytest 하위 실행에서만 실패하는
+      //   원인을 분리하기 위한 관찰 필드(단정에는 미사용).
+      demoDetected: rootHtml.includes("데모 모드") || rootHtml.includes("DEMO"),
+      discoveryWaiting: rootHtml.includes("실시간 데이터 대기"),
+      wsBadge: (rootHtml.match(/백엔드 연결됨|재연결|connecting|데모 모드/) || [null])[0],
+    } : {}),
+    canvasRequired, canvasDrawEvents,
     dynamicRequireErrors: dynReq, errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }
@@ -550,6 +663,19 @@ async function runV4() {
     if (!r.pass) allPass = false;
   }
   return { name: "V4_standalone_pages", pass: allPass, pages };
+}
+
+// V7: V4 opt-in dashboard shell (/ui/v4.html → window.DashboardV4Shell) + its 6 tabs. Separate
+//   gate from V4 (the 3 legacy standalone pages). Reuses runPageOnce with per-tab ?tab= url + state.
+async function runV7() {
+  const pages = {};
+  let allPass = true;
+  for (const spec of V4_DASHBOARD_PAGES) {
+    const r = await runPageOnce(spec);  // serial: each gets a clean jsdom (isolated errs)
+    pages[spec.page] = r;
+    if (!r.pass) allPass = false;
+  }
+  return { name: "V7_v4_dashboard_shell", pass: allPass, pages };
 }
 
 // ---------------------------------------------------------------- V5: governed records behavior
@@ -812,9 +938,10 @@ try {
   const v4 = await runV4();
   const v5 = await runV5();
   const v6 = await runV6();
+  const v7 = await runV7();
   const result = {
-    host: "node+jsdom", v1, v2, v3, v4, v5, v6,
-    allPass: v1.pass && v2.pass && v3.pass && v4.pass && v5.pass && v6.pass,
+    host: "node+jsdom", v1, v2, v3, v4, v5, v6, v7,
+    allPass: v1.pass && v2.pass && v3.pass && v4.pass && v5.pass && v6.pass && v7.pass,
   };
   process.stdout.write(asciiSafe(JSON.stringify(result, null, 2)) + "\n");
   process.exit(result.allPass ? 0 : 1);

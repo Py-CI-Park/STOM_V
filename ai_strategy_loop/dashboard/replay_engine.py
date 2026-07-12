@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -511,6 +512,24 @@ def _attach_bollinger(bars: List[Dict[str, Any]]) -> None:
             bar["bb_low"] = None
 
 
+@dataclass(frozen=True, slots=True)
+class ReplayTimelineError(Exception):
+    timestamp: int
+    reason: str
+
+    def __str__(self) -> str:
+        return f"invalid replay timestamp {self.timestamp}: {self.reason}"
+
+
+def hms_to_seconds(hms: int) -> int:
+    if type(hms) is not int:
+        raise ReplayTimelineError(timestamp=0, reason="timestamp must be an integer")
+    hour, minute, second = hms // 10_000, (hms // 100) % 100, hms % 100
+    if hms < 0 or hour > 23 or minute > 59 or second > 59:
+        raise ReplayTimelineError(timestamp=hms, reason="timestamp must be valid HHMMSS")
+    return hour * 3_600 + minute * 60 + second
+
+
 class ReplayData:
     """리플레이 1세션의 메모리 자료구조 — 코드별 시계열 + 병합된 시간축.
 
@@ -533,7 +552,22 @@ class ReplayData:
         self.src = src
         self.codes = codes
         self.frames = frames
-        self.session_range = session_range
+        timestamps = [frame["t"] for frame in frames]
+        seconds = [hms_to_seconds(timestamp) for timestamp in timestamps]
+        for index, (previous, current) in enumerate(zip(seconds, seconds[1:]), start=1):
+            if current <= previous:
+                raise ReplayTimelineError(
+                    timestamp=timestamps[index],
+                    reason="timeline must be strictly increasing",
+                )
+        self._elapsed_seconds = [value - seconds[0] for value in seconds] if seconds else []
+        actual_range = (timestamps[0], timestamps[-1]) if timestamps else (0, 0)
+        if session_range != actual_range:
+            raise ReplayTimelineError(
+                timestamp=actual_range[0],
+                reason="session range does not match replay frames",
+            )
+        self.session_range = actual_range
 
     @property
     def bars_total(self) -> int:
@@ -541,6 +575,7 @@ class ReplayData:
 
     def seek_index(self, hms: int) -> int:
         """t(HHMMSS) 이상인 첫 frame 인덱스를 이진 탐색한다(없으면 끝)."""
+        hms_to_seconds(hms)
         lo, hi = 0, len(self.frames)
         while lo < hi:
             mid = (lo + hi) // 2
@@ -549,6 +584,11 @@ class ReplayData:
             else:
                 hi = mid
         return lo
+
+    def elapsed_seconds_at(self, index: int) -> int:
+        if type(index) is not int or index < 0 or index >= self.bars_total:
+            raise IndexError(index)
+        return self._elapsed_seconds[index]
 
 
 def load_replay(

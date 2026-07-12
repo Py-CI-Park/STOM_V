@@ -1,0 +1,129 @@
+{
+  "render_mode": "inline set_content, chromium headless",
+  "captured_at": "2026-06-27 01:15:58",
+  "viewport": "1920x1080",
+  "results": [
+    {
+      "id": "01_condition_ai_overview",
+      "label": "조건식 AI / 조건식 AI",
+      "screenshot": "/mnt/data/stom-dashboard-captures/01_condition_ai_overview.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/01_condition_ai_overview_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 2493,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "02_process",
+      "label": "조건식 AI / 프로세스",
+      "screenshot": "/mnt/data/stom-dashboard-captures/02_process.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/02_process_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1617,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "03_history",
+      "label": "조건식 AI / 히스토리",
+      "screenshot": "/mnt/data/stom-dashboard-captures/03_history.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/03_history_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 2008,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "04_lab",
+      "label": "조건식 AI / 연구실",
+      "screenshot": "/mnt/data/stom-dashboard-captures/04_lab.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/04_lab_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1579,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "05_workbench",
+      "label": "조건식 AI / 분석 워크벤치",
+      "screenshot": "/mnt/data/stom-dashboard-captures/05_workbench.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/05_workbench_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1641,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "06_decision_audit",
+      "label": "조건식 AI / 결정 감사",
+      "screenshot": "/mnt/data/stom-dashboard-captures/06_decision_audit.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/06_decision_audit_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1857,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "07_backtest",
+      "label": "백테스트",
+      "screenshot": "/mnt/data/stom-dashboard-captures/07_backtest.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/07_backtest_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1485,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "08_chart_replay",
+      "label": "차트 리플레이",
+      "screenshot": "/mnt/data/stom-dashboard-captures/08_chart_replay.png",
+      "full_screenshot": "/mnt/data/stom-dashboard-captures/08_chart_replay_full.png",
+      "missing_required_text": [],
+      "dimensions": {
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 2127,
+        "title": "STOM AI · 조건식 AI 연구 대시보드"
+      },
+      "status": "PASS"
+    }
+  ],
+  "console_events": [],
+  "page_errors": []
+}

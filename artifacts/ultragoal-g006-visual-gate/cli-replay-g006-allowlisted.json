@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "console.log(\"ultragoal-g006-visual-gate-ok\")"
+  ],
+  "recordedStdout": "ultragoal-g006-visual-gate-ok\n"
+}

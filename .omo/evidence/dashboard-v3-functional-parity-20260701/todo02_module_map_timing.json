@@ -1,0 +1,179 @@
+﻿{
+    "event":  "task-evidence",
+    "plan":  ".omo/plans/dashboard-v3-functional-parity-20260701.md",
+    "task":  "TODO 02 - Remodel Build Boundary And Module Map",
+    "session_id":  "codex:dashboard-v3-functional-parity-20260701",
+    "started_at":  "2026-07-01T23:19:37.7760453+09:00",
+    "ended_at":  "2026-07-01T23:20:22.2716081+09:00",
+    "duration_ms":  44496,
+    "duration_human":  "44.5s",
+    "step_timings":  [
+                         {
+                             "name":  "module map test pass 1",
+                             "command":  "python -m pytest tests/unit/test_dashboard_remodel_module_map.py -q",
+                             "started_at":  "2026-07-01T23:19:37.8032179+09:00",
+                             "ended_at":  "2026-07-01T23:19:42.5011175+09:00",
+                             "duration_ms":  4698,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "module map test pass 2 flaky probe",
+                             "command":  "python -m pytest tests/unit/test_dashboard_remodel_module_map.py -q",
+                             "started_at":  "2026-07-01T23:19:42.5244906+09:00",
+                             "ended_at":  "2026-07-01T23:19:47.3751942+09:00",
+                             "duration_ms":  4851,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "node syntax check remodel app",
+                             "command":  "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                             "started_at":  "2026-07-01T23:19:47.3762025+09:00",
+                             "ended_at":  "2026-07-01T23:19:47.7363628+09:00",
+                             "duration_ms":  360,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "remodel bundle static contract tests",
+                             "command":  "python -m pytest tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_bundle_is_present tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_zip_prototype_is_the_active_entrypoint tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_has_g003_adapter_controller_seams -q",
+                             "started_at":  "2026-07-01T23:19:47.7378711+09:00",
+                             "ended_at":  "2026-07-01T23:19:57.5322858+09:00",
+                             "duration_ms":  9794,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "git diff check",
+                             "command":  "git diff --check",
+                             "started_at":  "2026-07-01T23:19:57.5332911+09:00",
+                             "ended_at":  "2026-07-01T23:19:58.5195725+09:00",
+                             "duration_ms":  986,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "changed file pure loc check",
+                             "command":  "pure LOC for app.js and test_dashboard_remodel_module_map.py",
+                             "started_at":  "2026-07-01T23:19:58.5206459+09:00",
+                             "ended_at":  "2026-07-01T23:19:58.6457483+09:00",
+                             "duration_ms":  125,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "protected runtime path status",
+                             "command":  "git status --short -- _database _database_v3k_shadow _log backup \u0027*.db\u0027 backtest/graph .omx/reports \u0027v3k_settings*.json\u0027",
+                             "started_at":  "2026-07-01T23:19:58.6478897+09:00",
+                             "ended_at":  "2026-07-01T23:19:59.7049085+09:00",
+                             "duration_ms":  1057,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "manual qa server start",
+                             "command":  "Start-Process -WindowStyle Hidden python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8778",
+                             "started_at":  "2026-07-01T23:20:03.9493469+09:00",
+                             "ended_at":  "2026-07-01T23:20:20.4968233+09:00",
+                             "duration_ms":  16547,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "manual qa curl served module map",
+                             "command":  "curl.exe -i http://127.0.0.1:8778/ui/remodel/src/app.js",
+                             "started_at":  "2026-07-01T23:20:20.5000234+09:00",
+                             "ended_at":  "2026-07-01T23:20:21.2868112+09:00",
+                             "duration_ms":  787,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         },
+                         {
+                             "name":  "adversarial malformed route curl",
+                             "command":  "curl.exe -i http://127.0.0.1:8778/ui/remodel/unknown",
+                             "started_at":  "2026-07-01T23:20:21.2887553+09:00",
+                             "ended_at":  "2026-07-01T23:20:21.9092454+09:00",
+                             "duration_ms":  620,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                         }
+                     ],
+    "commands":  [
+                     "python -m pytest tests/unit/test_dashboard_remodel_module_map.py -q",
+                     "python -m pytest tests/unit/test_dashboard_remodel_module_map.py -q",
+                     "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                     "python -m pytest tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_bundle_is_present tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_zip_prototype_is_the_active_entrypoint tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_has_g003_adapter_controller_seams -q",
+                     "git diff --check",
+                     "pure LOC for app.js and test_dashboard_remodel_module_map.py",
+                     "git status --short -- _database _database_v3k_shadow _log backup \u0027*.db\u0027 backtest/graph .omx/reports \u0027v3k_settings*.json\u0027",
+                     "Start-Process -WindowStyle Hidden python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8778",
+                     "curl.exe -i http://127.0.0.1:8778/ui/remodel/src/app.js",
+                     "curl.exe -i http://127.0.0.1:8778/ui/remodel/unknown"
+                 ],
+    "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log",
+    "manual_qa":  {
+                      "channel":  "HTTP curl",
+                      "url":  "http://127.0.0.1:8778/ui/remodel/src/app.js",
+                      "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_module_map.log"
+                  },
+    "adversarial_classes":  [
+                                {
+                                    "class":  "malformed input",
+                                    "status":  "probed",
+                                    "observable":  "curl /ui/remodel/unknown returned HTTP 404"
+                                },
+                                {
+                                    "class":  "prompt injection",
+                                    "status":  "not_applicable",
+                                    "reason":  "TODO 02 has no LLM or prompt input surface"
+                                },
+                                {
+                                    "class":  "cancel/resume",
+                                    "status":  "not_applicable",
+                                    "reason":  "module map change has no resumable user operation"
+                                },
+                                {
+                                    "class":  "stale state",
+                                    "status":  "probed",
+                                    "observable":  "served /ui/remodel/src/app.js contained window.RemodelModuleMap export"
+                                },
+                                {
+                                    "class":  "dirty worktree",
+                                    "status":  "probed",
+                                    "observable":  "git diff --check and protected path status captured after edits"
+                                },
+                                {
+                                    "class":  "hung or long commands",
+                                    "status":  "probed",
+                                    "observable":  "pytest, node --check, and curl readiness completed within bounded waits"
+                                },
+                                {
+                                    "class":  "flaky tests",
+                                    "status":  "probed",
+                                    "observable":  "new module map test passed twice consecutively"
+                                },
+                                {
+                                    "class":  "misleading success output",
+                                    "status":  "probed",
+                                    "observable":  "external command exit codes captured in log for every command"
+                                },
+                                {
+                                    "class":  "repeated interruptions",
+                                    "status":  "not_applicable",
+                                    "reason":  "no interruption or resume occurred during this checkbox"
+                                }
+                            ],
+    "cleanup":  [
+                    {
+                        "resource":  "uvicorn:8778",
+                        "action":  "Stop-Process -Force",
+                        "pid":  114968,
+                        "started_at":  "2026-07-01T23:20:21.9123169+09:00",
+                        "ended_at":  "2026-07-01T23:20:22.2699691+09:00",
+                        "duration_ms":  358,
+                        "status":  "stopped",
+                        "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo02_server_stderr.log"
+                    }
+                ]
+}

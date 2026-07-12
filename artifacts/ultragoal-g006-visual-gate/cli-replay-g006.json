@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('artifacts/ultragoal-g006-visual-gate/scorecard.json','utf8')); if(j.status!=='PASS'||j.averageCorrectedTotalScore<97) process.exit(1); console.log('ultragoal-g006-visual-gate-ok '+j.averageCorrectedTotalScore)"
+  ],
+  "recordedStdout": "ultragoal-g006-visual-gate-ok 97.93\n"
+}

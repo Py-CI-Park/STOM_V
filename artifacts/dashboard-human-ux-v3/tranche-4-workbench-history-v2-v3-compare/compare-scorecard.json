@@ -1,0 +1,842 @@
+{
+  "averageCorrectedTotalScore": 100.0,
+  "baseUrls": {
+    "v2": "http://127.0.0.1:8776",
+    "v3": "http://127.0.0.1:8776"
+  },
+  "basis": "V2 default routes versus explicit V3 remodel routes captured with Playwright at 1920x1080; scores assert selectable version ownership, DOM/feature inventory coverage, V3 safety text, no forbidden network calls, and non-uniform visual evidence.",
+  "failures": [],
+  "generatedAt": "2026-06-30T11:56:35.175677+00:00",
+  "kind": "dashboard-v2-v3-compare-scorecard",
+  "rows": [
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "01_condition_ai",
+      "inventoryCoverage": {
+        "byPage": {
+          "condition": 9,
+          "shell": 8
+        },
+        "itemCount": 17,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "condition",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_theme",
+            "stom_active_evolution_tab",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "01_condition_ai",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "01_condition_ai",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution",
+      "v3Route": "/ui/remodel/condition?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "02_process",
+      "inventoryCoverage": {
+        "byPage": {
+          "process": 8,
+          "shell": 8
+        },
+        "itemCount": 16,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "process",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "02_process",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution/process",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "02_process",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution/process",
+      "v3Route": "/ui/remodel/process?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "03_history",
+      "inventoryCoverage": {
+        "byPage": {
+          "history": 8,
+          "shell": 8
+        },
+        "itemCount": 16,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "history",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "03_history",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution/records",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "03_history",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution/records",
+      "v3Route": "/ui/remodel/history?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "04_lab",
+      "inventoryCoverage": {
+        "byPage": {
+          "lab": 8,
+          "shell": 8
+        },
+        "itemCount": 16,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "lab",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "04_lab",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "04_lab",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution/lab",
+      "v3Route": "/ui/remodel/lab?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "05_workbench",
+      "inventoryCoverage": {
+        "byPage": {
+          "shell": 8,
+          "workbench": 8
+        },
+        "itemCount": 16,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "workbench",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "05_workbench",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution/workbench",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "05_workbench",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution/workbench",
+      "v3Route": "/ui/remodel/workbench?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "06_decision_audit",
+      "inventoryCoverage": {
+        "byPage": {
+          "audit": 10,
+          "shell": 8
+        },
+        "itemCount": 18,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "audit",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "06_decision_audit",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/evolution/verdict",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "06_decision_audit",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/evolution/verdict",
+      "v3Route": "/ui/remodel/audit?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "07_backtest",
+      "inventoryCoverage": {
+        "byPage": {
+          "backtest": 11,
+          "shell": 8
+        },
+        "itemCount": 19,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "backtest",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "07_backtest",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/backtest",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "07_backtest",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/backtest",
+      "v3Route": "/ui/remodel/backtest?demo=reference"
+    },
+    {
+      "forbiddenFindings": [],
+      "hardFailures": [],
+      "id": "08_chart_replay",
+      "inventoryCoverage": {
+        "byPage": {
+          "chart_replay": 11,
+          "shell": 8
+        },
+        "itemCount": 19,
+        "missingPages": [],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "missing": {
+        "v2RequiredText": [],
+        "v3RequiredText": [],
+        "v3SafetyText": []
+      },
+      "page": "chart_replay",
+      "routeMatrix": {
+        "v2": {
+          "cacheControl": "no-cache",
+          "expectedAsset": "/ui/bundle/app.js",
+          "forbiddenAsset": "/ui/remodel/src/app.js",
+          "headerVersion": "v2",
+          "localStorageKeys": [
+            "stom.sim.demoSeen.v1",
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom_base_url"
+          ],
+          "routeId": "08_chart_replay",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+            "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+            "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+            "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 자율 진화 대시보드",
+          "url": "http://127.0.0.1:8776/ui/chart-replay",
+          "version": "v2",
+          "violations": []
+        },
+        "v3": {
+          "cacheControl": "no-store, max-age=0, must-revalidate",
+          "expectedAsset": "/ui/remodel/src/app.js",
+          "forbiddenAsset": "/ui/bundle/app.js",
+          "headerVersion": "v3-remodel",
+          "localStorageKeys": [
+            "stom_base_url",
+            "stom_evo_gate_engine",
+            "stom_evo_strategy",
+            "stom_evo_historynav",
+            "stom_evo_live",
+            "stom_evo_analysis",
+            "stom_active_evolution_tab",
+            "stom_theme",
+            "stom_evo_researchnav",
+            "stom_active_tab",
+            "stom_evo_genanalytics",
+            "stom_evo_verdict",
+            "stom.sim.demoSeen.v1"
+          ],
+          "routeId": "08_chart_replay",
+          "scripts": [
+            "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+            "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+          ],
+          "status": "PASS",
+          "statusCode": 200,
+          "title": "STOM AI · 조건식 AI 연구 대시보드",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+          "version": "v3-remodel",
+          "violations": []
+        }
+      },
+      "scores": {
+        "inventoryCoverage": 100.0,
+        "safetyNetworkDom": 100.0,
+        "screenshotEvidence": 100.0,
+        "totalCorrectedScore": 100.0,
+        "v2Identity": 100.0,
+        "v2RequiredText": 100.0,
+        "v3Identity": 100.0,
+        "v3RequiredText": 100.0,
+        "v3SafetyText": 100.0
+      },
+      "status": "PASS",
+      "v2Route": "/ui/chart-replay",
+      "v3Route": "/ui/remodel/chart-replay?demo=reference"
+    }
+  ],
+  "schemaVersion": 1,
+  "scoreDocumentation": {
+    "totalCorrectedScore": "0.18 V2 identity + 0.10 V2 text + 0.22 V3 identity + 0.18 V3 text + 0.14 V3 safety + 0.10 inventory + 0.05 safety/network + 0.03 screenshot; hard failures cap below threshold.",
+    "v2Identity": "V2 route returns x-stom-dashboard-version=v2, loads /ui/bundle/app.js, and does not load V3 remodel assets.",
+    "v3Identity": "Explicit V3 route returns x-stom-dashboard-version=v3-remodel, no-store HTML, loads /ui/remodel/src/app.js, and does not load V2 bundle."
+  },
+  "status": "PASS",
+  "thresholds": {
+    "minAverageScore": 97.0,
+    "minPageScore": 95.0
+  }
+}

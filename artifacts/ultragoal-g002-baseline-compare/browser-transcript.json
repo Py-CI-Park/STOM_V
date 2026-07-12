@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "playwright",
+  "goalId": "G002",
+  "server": "V2 http://127.0.0.1:8770 and V3 http://127.0.0.1:8776",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "source": "scripts/verify_dashboard_v2_v3_compare.py",
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:06Z",
+      "url": "http://127.0.0.1:8770/ui/evolution",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "01_condition_ai v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:07Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/01_condition_ai-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:08Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "01_condition_ai v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:09Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/01_condition_ai-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:10Z",
+      "url": "http://127.0.0.1:8770/ui/evolution/process",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "02_process v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:11Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/02_process-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:12Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "02_process v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:13Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/02_process-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:14Z",
+      "url": "http://127.0.0.1:8770/ui/evolution/records",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "03_history v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:15Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/03_history-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:16Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "03_history v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:17Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/03_history-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:18Z",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "04_lab v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:19Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/04_lab-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:20Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "04_lab v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:21Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/04_lab-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:22Z",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "05_workbench v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:23Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/05_workbench-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:24Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "05_workbench v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:25Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/05_workbench-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:26Z",
+      "url": "http://127.0.0.1:8770/ui/evolution/verdict",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "06_decision_audit v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:27Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/06_decision_audit-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:28Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "06_decision_audit v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:29Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/06_decision_audit-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:30Z",
+      "url": "http://127.0.0.1:8770/ui/backtest",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "07_backtest v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:31Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/07_backtest-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:32Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "07_backtest v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:33Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/07_backtest-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:34Z",
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "08_chart_replay v2 statusCode=200 headerVersion=v2 expectedAsset=/ui/bundle/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:35Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/08_chart_replay-v2.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:36Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "08_chart_replay v3 statusCode=200 headerVersion=v3-remodel expectedAsset=/ui/remodel/src/app.js violations=[]"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-29T13:29:37Z",
+      "path": "artifacts/ultragoal-g002-baseline-compare/08_chart_replay-v3.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-29T13:29:38Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/not-a-real-dashboard-route",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "unknown remodel route returned statusCode=404 with scripts=[]"
+    }
+  ],
+  "verdict": "passed",
+  "artifactRefs": [
+    "artifacts/ultragoal-g002-baseline-compare/compare-scorecard.json",
+    "artifacts/ultragoal-g002-baseline-compare/route-version-matrix.json",
+    "artifacts/ultragoal-g002-baseline-compare/image-evidence.json"
+  ]
+}

@@ -1,0 +1,179 @@
+﻿{
+    "event":  "task-evidence",
+    "plan":  ".omo/plans/dashboard-v3-functional-parity-20260701.md",
+    "task":  "TODO 01 - Baseline Lock And Evidence Setup",
+    "session_id":  "codex:dashboard-v3-functional-parity-20260701",
+    "started_at":  "2026-07-01T23:10:16.1784708+09:00",
+    "ended_at":  "2026-07-01T23:11:46.0677463+09:00",
+    "duration_ms":  89889,
+    "duration_human":  "1.5m",
+    "step_timings":  [
+                         {
+                             "name":  "git status short branch",
+                             "command":  "git status --short --branch",
+                             "started_at":  "2026-07-01T23:10:16.2044337+09:00",
+                             "ended_at":  "2026-07-01T23:10:17.4631777+09:00",
+                             "duration_ms":  1259,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "git rev-parse HEAD",
+                             "command":  "git rev-parse HEAD",
+                             "started_at":  "2026-07-01T23:10:17.4931293+09:00",
+                             "ended_at":  "2026-07-01T23:10:17.9561935+09:00",
+                             "duration_ms":  463,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "git log one line",
+                             "command":  "git log -1 --oneline",
+                             "started_at":  "2026-07-01T23:10:17.9577593+09:00",
+                             "ended_at":  "2026-07-01T23:10:18.5709687+09:00",
+                             "duration_ms":  613,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "baseline pytest pass 1",
+                             "command":  "python -m pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+                             "started_at":  "2026-07-01T23:10:18.5719680+09:00",
+                             "ended_at":  "2026-07-01T23:11:03.6126636+09:00",
+                             "duration_ms":  45041,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "baseline pytest pass 2 flaky probe",
+                             "command":  "python -m pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+                             "started_at":  "2026-07-01T23:11:03.6136756+09:00",
+                             "ended_at":  "2026-07-01T23:11:24.5456796+09:00",
+                             "duration_ms":  20932,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "git diff check",
+                             "command":  "git diff --check",
+                             "started_at":  "2026-07-01T23:11:24.5473027+09:00",
+                             "ended_at":  "2026-07-01T23:11:26.1037300+09:00",
+                             "duration_ms":  1556,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "protected runtime path status",
+                             "command":  "git status --short -- _database _database_v3k_shadow _log backup \u0027*.db\u0027 backtest/graph .omx/reports \u0027v3k_settings*.json\u0027",
+                             "started_at":  "2026-07-01T23:11:26.1047364+09:00",
+                             "ended_at":  "2026-07-01T23:11:27.5815330+09:00",
+                             "duration_ms":  1477,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "manual qa server start",
+                             "command":  "Start-Process -WindowStyle Hidden python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8778",
+                             "started_at":  "2026-07-01T23:11:32.0663331+09:00",
+                             "ended_at":  "2026-07-01T23:11:44.5095075+09:00",
+                             "duration_ms":  12443,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "manual qa curl remodel backtest",
+                             "command":  "curl.exe -i http://127.0.0.1:8778/ui/remodel/backtest?demo=reference",
+                             "started_at":  "2026-07-01T23:11:44.5136625+09:00",
+                             "ended_at":  "2026-07-01T23:11:44.7790387+09:00",
+                             "duration_ms":  265,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         },
+                         {
+                             "name":  "adversarial malformed route curl",
+                             "command":  "curl.exe -i http://127.0.0.1:8778/ui/remodel/unknown",
+                             "started_at":  "2026-07-01T23:11:44.7804566+09:00",
+                             "ended_at":  "2026-07-01T23:11:45.0220776+09:00",
+                             "duration_ms":  242,
+                             "status":  "passed",
+                             "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                         }
+                     ],
+    "commands":  [
+                     "git status --short --branch",
+                     "git rev-parse HEAD",
+                     "git log -1 --oneline",
+                     "python -m pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+                     "python -m pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+                     "git diff --check",
+                     "git status --short -- _database _database_v3k_shadow _log backup \u0027*.db\u0027 backtest/graph .omx/reports \u0027v3k_settings*.json\u0027",
+                     "Start-Process -WindowStyle Hidden python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8778",
+                     "curl.exe -i http://127.0.0.1:8778/ui/remodel/backtest?demo=reference",
+                     "curl.exe -i http://127.0.0.1:8778/ui/remodel/unknown"
+                 ],
+    "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log",
+    "manual_qa":  {
+                      "channel":  "HTTP curl",
+                      "url":  "http://127.0.0.1:8778/ui/remodel/backtest?demo=reference",
+                      "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_baseline.log"
+                  },
+    "adversarial_classes":  [
+                                {
+                                    "class":  "malformed input",
+                                    "status":  "probed",
+                                    "observable":  "curl /ui/remodel/unknown returned HTTP 404"
+                                },
+                                {
+                                    "class":  "prompt injection",
+                                    "status":  "not_applicable",
+                                    "reason":  "TODO 01 has no LLM or prompt input surface"
+                                },
+                                {
+                                    "class":  "cancel/resume",
+                                    "status":  "not_applicable",
+                                    "reason":  "TODO 01 performs no resumable user operation"
+                                },
+                                {
+                                    "class":  "stale state",
+                                    "status":  "probed",
+                                    "observable":  "git rev-parse HEAD returned 887c3591161e95b2d828112266dc9d34a749adab"
+                                },
+                                {
+                                    "class":  "dirty worktree",
+                                    "status":  "probed",
+                                    "observable":  "git status captured known untracked .omo files and protected path status separately"
+                                },
+                                {
+                                    "class":  "hung or long commands",
+                                    "status":  "probed",
+                                    "observable":  "pytest, curl, and server readiness all completed within bounded command waits"
+                                },
+                                {
+                                    "class":  "flaky tests",
+                                    "status":  "probed",
+                                    "observable":  "targeted pytest baseline suite passed twice consecutively"
+                                },
+                                {
+                                    "class":  "misleading success output",
+                                    "status":  "probed",
+                                    "observable":  "external command exit codes captured in log for every command"
+                                },
+                                {
+                                    "class":  "repeated interruptions",
+                                    "status":  "not_applicable",
+                                    "reason":  "no interruption or resume occurred during this checkbox"
+                                }
+                            ],
+    "cleanup":  [
+                    {
+                        "resource":  "uvicorn:8778",
+                        "action":  "Stop-Process -Force",
+                        "pid":  101152,
+                        "started_at":  "2026-07-01T23:11:45.0242316+09:00",
+                        "ended_at":  "2026-07-01T23:11:45.3983801+09:00",
+                        "duration_ms":  374,
+                        "status":  "stopped",
+                        "artifact":  ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo01_server_stderr.log"
+                    }
+                ]
+}

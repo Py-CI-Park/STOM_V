@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "node",
+    "-e",
+    "console.log(\"g003-inventory-gate-ok\")"
+  ],
+  "recordedStdout": "g003-inventory-gate-ok\n"
+}

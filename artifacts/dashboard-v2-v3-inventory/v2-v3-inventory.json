@@ -1,0 +1,3443 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-v2-v3-inventory",
+  "goalId": "G003",
+  "generatedFrom": "approved pending plan V2/V3 selectable rollout",
+  "items": [
+    {
+      "stable_id": "dash.shell.route.v2_default.v1",
+      "page": "shell",
+      "route": "/ui/evolution",
+      "item_type": "route",
+      "label": "V2 default canonical dashboard",
+      "owner": "Dashboard routing",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/index.html"
+      ],
+      "dom_selectors": [
+        "script[src*=\"/ui/bundle/app.js\"]"
+      ],
+      "endpoint_action": "GET /ui/evolution",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/index.html"
+        ]
+      },
+      "v3_evidence": {
+        "status": "not_applicable",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/index.html"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.route.v3_remodel_explicit.v1",
+      "page": "shell",
+      "route": "/ui/remodel/condition",
+      "item_type": "route",
+      "label": "V3 explicit remodel route",
+      "owner": "Dashboard routing",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/index.html"
+      ],
+      "dom_selectors": [
+        "script[src*=\"/ui/remodel/src/app.js\"]"
+      ],
+      "endpoint_action": "GET /ui/remodel/condition",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "not_applicable",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/index.html"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/index.html"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.selector.v3_preview_link.v1",
+      "page": "shell",
+      "route": "/ui/evolution?dashboard_version=v3",
+      "item_type": "button",
+      "label": "Passive V3 Preview link",
+      "owner": "Dashboard routing",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/app.jsx",
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+      ],
+      "dom_selectors": [
+        "[data-dashboard-preview=\"v3\"]"
+      ],
+      "endpoint_action": "anchor href ?dashboard_version=v3",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/app.jsx",
+          "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/app.jsx",
+          "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+        ]
+      },
+      "parity_status": "improved",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.form.backend_base_url.v1",
+      "page": "shell",
+      "route": "/ui/evolution",
+      "item_type": "form",
+      "label": "Backend Base URL control",
+      "owner": "Dashboard connection",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/app.jsx",
+        "ai_strategy_loop/dashboard/frontend/conn-backend.jsx"
+      ],
+      "dom_selectors": [
+        ".toolbar-input"
+      ],
+      "endpoint_action": "same-origin REST base URL setting",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/app.jsx",
+          "ai_strategy_loop/dashboard/frontend/conn-backend.jsx"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/app.jsx",
+          "ai_strategy_loop/dashboard/frontend/conn-backend.jsx"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.asset.v2_bundle.v1",
+      "page": "shell",
+      "route": "/ui/evolution",
+      "item_type": "asset",
+      "label": "V2 compiled bundle",
+      "owner": "Dashboard frontend",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+      ],
+      "dom_selectors": [
+        "script[src*=\"/ui/bundle/app.js\"]"
+      ],
+      "endpoint_action": "GET /ui/bundle/app.js",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/bundle/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.asset.v3_bundle.v1",
+      "page": "shell",
+      "route": "/ui/remodel/condition",
+      "item_type": "asset",
+      "label": "V3 remodel bundle",
+      "owner": "Dashboard frontend",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "script[src*=\"/ui/remodel/src/app.js\"]"
+      ],
+      "endpoint_action": "GET /ui/remodel/src/app.js",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "not_applicable",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.cache.v3_no_store.v1",
+      "page": "shell",
+      "route": "/ui/remodel/condition",
+      "item_type": "cache_policy",
+      "label": "V3 no-store HTML",
+      "owner": "Dashboard routing",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py"
+      ],
+      "dom_selectors": [
+        "header:Cache-Control"
+      ],
+      "endpoint_action": "HTML no-store/no-cache",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "not_applicable",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.shell.safety.no_live_order.v1",
+      "page": "shell",
+      "route": "all",
+      "item_type": "safety_boundary",
+      "label": "No live order / broker / account boundary",
+      "owner": "Safety",
+      "source_refs": [
+        "tests/unit/test_dashboard_remodel_baseline_contract.py",
+        "ai_strategy_loop/AGENTS.md"
+      ],
+      "dom_selectors": [
+        "text/실거래/주문 기능 없음"
+      ],
+      "endpoint_action": "forbidden source/DOM scan",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "no_live_order",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "tests/unit/test_dashboard_remodel_baseline_contract.py",
+          "ai_strategy_loop/AGENTS.md"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "tests/unit/test_dashboard_remodel_baseline_contract.py",
+          "ai_strategy_loop/AGENTS.md"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.route.v2_v3.v1",
+      "page": "condition",
+      "route": "/ui/evolution",
+      "item_type": "route",
+      "label": "조건식 AI V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"condition\"]",
+        "조건식 AI"
+      ],
+      "endpoint_action": "GET /ui/evolution + GET /ui/remodel/condition",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.section.1.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "section",
+      "label": "현재 세대 라이브 상태",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "현재 세대 라이브 상태"
+      ],
+      "endpoint_action": "render 현재 세대 라이브 상태",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.section.2.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "section",
+      "label": "활성 전략",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "활성 전략"
+      ],
+      "endpoint_action": "render 활성 전략",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.section.3.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "section",
+      "label": "세대 테이블",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "세대 테이블"
+      ],
+      "endpoint_action": "render 세대 테이블",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.section.4.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "section",
+      "label": "전략 인스펙터",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "전략 인스펙터"
+      ],
+      "endpoint_action": "render 전략 인스펙터",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.api.read_matrix.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "api_endpoint",
+      "label": "조건식 AI read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "조건식 AI provenance"
+      ],
+      "endpoint_action": "/health,/status,/runs,/ws",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.data.primary_fields.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "data_field",
+      "label": "조건식 AI primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "현재 세대 라이브 상태",
+        "활성 전략",
+        "세대 테이블",
+        "전략 인스펙터"
+      ],
+      "endpoint_action": "fields for 조건식 AI",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.network.safe_reads.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "network_call",
+      "label": "조건식 AI safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/health,/status,/runs,/ws"
+      ],
+      "endpoint_action": "/health,/status,/runs,/ws",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.route.v2_v3.v1",
+      "page": "process",
+      "route": "/ui/evolution/process",
+      "item_type": "route",
+      "label": "프로세스 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"process\"]",
+        "프로세스"
+      ],
+      "endpoint_action": "GET /ui/evolution/process + GET /ui/remodel/process",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.section.1.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "section",
+      "label": "프로세스 맵",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "프로세스 맵"
+      ],
+      "endpoint_action": "render 프로세스 맵",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.section.2.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "section",
+      "label": "상세 프로세스",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "상세 프로세스"
+      ],
+      "endpoint_action": "render 상세 프로세스",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.section.3.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "section",
+      "label": "로그",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "로그"
+      ],
+      "endpoint_action": "render 로그",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.section.4.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "section",
+      "label": "카탈로그",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "카탈로그"
+      ],
+      "endpoint_action": "render 카탈로그",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.api.read_matrix.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "api_endpoint",
+      "label": "프로세스 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "프로세스 provenance"
+      ],
+      "endpoint_action": "/status,/runs",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.data.primary_fields.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "data_field",
+      "label": "프로세스 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "프로세스 맵",
+        "상세 프로세스",
+        "로그",
+        "카탈로그"
+      ],
+      "endpoint_action": "fields for 프로세스",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.process.network.safe_reads.v1",
+      "page": "process",
+      "route": "/ui/remodel/process",
+      "item_type": "network_call",
+      "label": "프로세스 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/status,/runs"
+      ],
+      "endpoint_action": "/status,/runs",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.route.v2_v3.v1",
+      "page": "history",
+      "route": "/ui/evolution/records",
+      "item_type": "route",
+      "label": "히스토리 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"history\"]",
+        "히스토리"
+      ],
+      "endpoint_action": "GET /ui/evolution/records + GET /ui/remodel/history",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.section.1.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "section",
+      "label": "실행 히스토리",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "실행 히스토리"
+      ],
+      "endpoint_action": "render 실행 히스토리",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.section.2.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "section",
+      "label": "Research Records",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Research Records"
+      ],
+      "endpoint_action": "render Research Records",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.section.3.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "section",
+      "label": "ResultDetail",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "ResultDetail"
+      ],
+      "endpoint_action": "render ResultDetail",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.section.4.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "section",
+      "label": "Compare",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Compare"
+      ],
+      "endpoint_action": "render Compare",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.api.read_matrix.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "api_endpoint",
+      "label": "히스토리 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "히스토리 provenance"
+      ],
+      "endpoint_action": "/runs,/bt/evo_gens,/bt/result",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.data.primary_fields.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "data_field",
+      "label": "히스토리 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "실행 히스토리",
+        "Research Records",
+        "ResultDetail",
+        "Compare"
+      ],
+      "endpoint_action": "fields for 히스토리",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.history.network.safe_reads.v1",
+      "page": "history",
+      "route": "/ui/remodel/history",
+      "item_type": "network_call",
+      "label": "히스토리 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/runs,/bt/evo_gens,/bt/result"
+      ],
+      "endpoint_action": "/runs,/bt/evo_gens,/bt/result",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.route.v2_v3.v1",
+      "page": "lab",
+      "route": "/ui/evolution/lab",
+      "item_type": "route",
+      "label": "연구실 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"lab\"]",
+        "연구실"
+      ],
+      "endpoint_action": "GET /ui/evolution/lab + GET /ui/remodel/lab",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.section.1.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "section",
+      "label": "Edge Ratio",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Edge Ratio"
+      ],
+      "endpoint_action": "render Edge Ratio",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.section.2.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "section",
+      "label": "변수 중요도",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "변수 중요도"
+      ],
+      "endpoint_action": "render 변수 중요도",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.section.3.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "section",
+      "label": "상관관계",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "상관관계"
+      ],
+      "endpoint_action": "render 상관관계",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.section.4.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "section",
+      "label": "홀드아웃",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "홀드아웃"
+      ],
+      "endpoint_action": "render 홀드아웃",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.api.read_matrix.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "api_endpoint",
+      "label": "연구실 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "연구실 provenance"
+      ],
+      "endpoint_action": "/runs,/variable_correlation",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.data.primary_fields.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "data_field",
+      "label": "연구실 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Edge Ratio",
+        "변수 중요도",
+        "상관관계",
+        "홀드아웃"
+      ],
+      "endpoint_action": "fields for 연구실",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.lab.network.safe_reads.v1",
+      "page": "lab",
+      "route": "/ui/remodel/lab",
+      "item_type": "network_call",
+      "label": "연구실 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/runs,/variable_correlation"
+      ],
+      "endpoint_action": "/runs,/variable_correlation",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.route.v2_v3.v1",
+      "page": "workbench",
+      "route": "/ui/evolution/workbench",
+      "item_type": "route",
+      "label": "분석 워크벤치 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"workbench\"]",
+        "분석 워크벤치"
+      ],
+      "endpoint_action": "GET /ui/evolution/workbench + GET /ui/remodel/workbench",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.section.1.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "section",
+      "label": "후보 비교",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "후보 비교"
+      ],
+      "endpoint_action": "render 후보 비교",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.section.2.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "section",
+      "label": "Heatmap",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Heatmap"
+      ],
+      "endpoint_action": "render Heatmap",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.section.3.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "section",
+      "label": "Risk",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Risk"
+      ],
+      "endpoint_action": "render Risk",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.section.4.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "section",
+      "label": "Review Queue",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Review Queue"
+      ],
+      "endpoint_action": "render Review Queue",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.api.read_matrix.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "api_endpoint",
+      "label": "분석 워크벤치 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "분석 워크벤치 provenance"
+      ],
+      "endpoint_action": "/runs,/hall_of_fame,/equity_curves",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.data.primary_fields.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "data_field",
+      "label": "분석 워크벤치 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "후보 비교",
+        "Heatmap",
+        "Risk",
+        "Review Queue"
+      ],
+      "endpoint_action": "fields for 분석 워크벤치",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.workbench.network.safe_reads.v1",
+      "page": "workbench",
+      "route": "/ui/remodel/workbench",
+      "item_type": "network_call",
+      "label": "분석 워크벤치 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/runs,/hall_of_fame,/equity_curves"
+      ],
+      "endpoint_action": "/runs,/hall_of_fame,/equity_curves",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.route.v2_v3.v1",
+      "page": "audit",
+      "route": "/ui/evolution/verdict",
+      "item_type": "route",
+      "label": "결정 감사 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"audit\"]",
+        "결정 감사"
+      ],
+      "endpoint_action": "GET /ui/evolution/verdict + GET /ui/remodel/audit",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.section.1.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "section",
+      "label": "Append-Only Ledger",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Append-Only Ledger"
+      ],
+      "endpoint_action": "render Append-Only Ledger",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.section.2.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "section",
+      "label": "PROMOTE Checklist",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "PROMOTE Checklist"
+      ],
+      "endpoint_action": "render PROMOTE Checklist",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.section.3.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "section",
+      "label": "Decision Form",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Decision Form"
+      ],
+      "endpoint_action": "render Decision Form",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.section.4.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "section",
+      "label": "Audit Metadata",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Audit Metadata"
+      ],
+      "endpoint_action": "render Audit Metadata",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.api.read_matrix.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "api_endpoint",
+      "label": "결정 감사 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "결정 감사 provenance"
+      ],
+      "endpoint_action": "/decisions,/record_decision",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.data.primary_fields.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "data_field",
+      "label": "결정 감사 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Append-Only Ledger",
+        "PROMOTE Checklist",
+        "Decision Form",
+        "Audit Metadata"
+      ],
+      "endpoint_action": "fields for 결정 감사",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.network.safe_reads.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "network_call",
+      "label": "결정 감사 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/decisions,/record_decision"
+      ],
+      "endpoint_action": "/decisions,/record_decision",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.route.v2_v3.v1",
+      "page": "backtest",
+      "route": "/ui/backtest",
+      "item_type": "route",
+      "label": "백테스트 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"backtest\"]",
+        "백테스트"
+      ],
+      "endpoint_action": "GET /ui/backtest + GET /ui/remodel/backtest",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.section.1.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "section",
+      "label": "전략 선택",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "전략 선택"
+      ],
+      "endpoint_action": "render 전략 선택",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.section.2.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "section",
+      "label": "에디터",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "에디터"
+      ],
+      "endpoint_action": "render 에디터",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.section.3.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "section",
+      "label": "Jobs",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Jobs"
+      ],
+      "endpoint_action": "render Jobs",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.section.4.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "section",
+      "label": "Results",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Results"
+      ],
+      "endpoint_action": "render Results",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.section.5.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "section",
+      "label": "Report",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Report"
+      ],
+      "endpoint_action": "render Report",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.api.read_matrix.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "api_endpoint",
+      "label": "백테스트 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "백테스트 provenance"
+      ],
+      "endpoint_action": "/bt/health,/bt/run,/bt/jobs,/bt/result,/bt/report",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.data.primary_fields.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "data_field",
+      "label": "백테스트 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "전략 선택",
+        "에디터",
+        "Jobs",
+        "Results",
+        "Report"
+      ],
+      "endpoint_action": "fields for 백테스트",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.network.safe_reads.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "network_call",
+      "label": "백테스트 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/bt/health,/bt/run,/bt/jobs,/bt/result,/bt/report"
+      ],
+      "endpoint_action": "/bt/health,/bt/run,/bt/jobs,/bt/result,/bt/report",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.route.v2_v3.v1",
+      "page": "chart_replay",
+      "route": "/ui/chart-replay",
+      "item_type": "route",
+      "label": "차트 리플레이 V2/V3 route pair",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/app.py",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "[data-page=\"chart_replay\"]",
+        "차트 리플레이"
+      ],
+      "endpoint_action": "GET /ui/chart-replay + GET /ui/remodel/chart-replay",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/app.py",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.section.1.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "section",
+      "label": "Days",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Days"
+      ],
+      "endpoint_action": "render Days",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.section.2.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "section",
+      "label": "Stocks",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Stocks"
+      ],
+      "endpoint_action": "render Stocks",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.section.3.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "section",
+      "label": "Playback",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Playback"
+      ],
+      "endpoint_action": "render Playback",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.section.4.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "section",
+      "label": "Candles",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Candles"
+      ],
+      "endpoint_action": "render Candles",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.section.5.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "section",
+      "label": "Signals",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Signals"
+      ],
+      "endpoint_action": "render Signals",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.api.read_matrix.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "api_endpoint",
+      "label": "차트 리플레이 read API matrix",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "차트 리플레이 provenance"
+      ],
+      "endpoint_action": "/sim/health,/sim/days,/sim/demo,/sim/ws",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.data.primary_fields.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "data_field",
+      "label": "차트 리플레이 primary data fields",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Days",
+        "Stocks",
+        "Playback",
+        "Candles",
+        "Signals"
+      ],
+      "endpoint_action": "fields for 차트 리플레이",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.network.safe_reads.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "network_call",
+      "label": "차트 리플레이 safe local reads",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "/sim/health,/sim/days,/sim/demo,/sim/ws"
+      ],
+      "endpoint_action": "/sim/health,/sim/days,/sim/demo,/sim/ws",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.condition.button.start_stop.v1",
+      "page": "condition",
+      "route": "/ui/remodel/condition",
+      "item_type": "button",
+      "label": "Start/Stop loop controls",
+      "owner": "Quant-Research",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Start ▶",
+        "Stop ■"
+      ],
+      "endpoint_action": "/ws action start/stop human-visible controls",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "manual_gated"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.section.append_only_ledger.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "section",
+      "label": "Append-Only Audit ledger",
+      "owner": "Audit",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Append-Only Audit",
+        "불변 감사 로그"
+      ],
+      "endpoint_action": "append-only decision records",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "append_only",
+        "human_gate"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.audit.modal.human_approval.v1",
+      "page": "audit",
+      "route": "/ui/remodel/audit",
+      "item_type": "modal",
+      "label": "Human Approval Gate modal",
+      "owner": "Audit",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Human Approval Gate",
+        "승인 후 Export"
+      ],
+      "endpoint_action": "manual human export approval only",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "human_gate",
+        "manual_gated"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.api.run.manual_gate.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "function",
+      "label": "Backtest run manual gate",
+      "owner": "Backtest",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+        "ai_strategy_loop/dashboard/backtest_api.py"
+      ],
+      "dom_selectors": [
+        "백테스트 실행",
+        "MANUAL-GATED"
+      ],
+      "endpoint_action": "POST /bt/run manual-gated only",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "manual_gated"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+          "ai_strategy_loop/dashboard/backtest_api.py"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+          "ai_strategy_loop/dashboard/backtest_api.py"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.backtest.modal.report_preview.v1",
+      "page": "backtest",
+      "route": "/ui/remodel/backtest",
+      "item_type": "modal",
+      "label": "Backtest report preview",
+      "owner": "Backtest",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "Report",
+        "HTML/text report"
+      ],
+      "endpoint_action": "GET /bt/report read-only preview",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "read_only"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.ws.sim_ws.manual_gate.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "function",
+      "label": "/sim/ws manual replay gate",
+      "owner": "Replay",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+        "ai_strategy_loop/dashboard/simulation_api.py"
+      ],
+      "dom_selectors": [
+        "/sim/ws",
+        "USER-GATED"
+      ],
+      "endpoint_action": "WebSocket /sim/ws start/pause/resume/seek/stop user-gated",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "manual_gated"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+          "ai_strategy_loop/dashboard/simulation_api.py"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+          "ai_strategy_loop/dashboard/simulation_api.py"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    },
+    {
+      "stable_id": "dash.chart_replay.button.playback_controls.v1",
+      "page": "chart_replay",
+      "route": "/ui/remodel/chart-replay",
+      "item_type": "button",
+      "label": "Replay playback controls",
+      "owner": "Replay",
+      "source_refs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+      ],
+      "dom_selectors": [
+        "재생",
+        "일시정지",
+        "정지"
+      ],
+      "endpoint_action": "manual replay controls only",
+      "safety_classification": [
+        "local_only",
+        "research_only",
+        "manual_gated"
+      ],
+      "v2_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "v3_evidence": {
+        "status": "covered",
+        "refs": [
+          "ai_strategy_loop/dashboard/frontend/remodel/src/app.js"
+        ]
+      },
+      "parity_status": "covered",
+      "failure_rules": [
+        "missing selector/source/evidence fails inventory gate",
+        "unsafe mutation without manual or human gate fails inventory gate"
+      ],
+      "closure_evidence": [
+        "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+        "artifacts/ultragoal-g002-preview-control/browser-transcript.json"
+      ]
+    }
+  ]
+}

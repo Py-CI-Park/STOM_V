@@ -1,0 +1,69 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://149-G005WorkbenchHistArch reviewed target-worktree source and artifacts: History find/inspect/compare/lineage flow with primary compare canvas and evidence drawer; Workbench Hall-of-Fame candidate selection, selected-candidate comparison, review handoff, primary compare grid, evidence drawer, browser transcript+screenshot, V2/V3 compare PASS, safety PASS.",
+    "commands": [
+      "architect review: agent://149-G005WorkbenchHistArch"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://150-G005WorkbenchHistQa inspected source, static tests, scorecards, browser transcript, and screenshots. It found no blockers: required History/Workbench selectors present, browser evidence proves reference GUI execution, forbidden live controls count is zero, safety markers visible, compare/safety/UX scorecards pass.",
+    "e2eCommands": [
+      "browser evidence captured for /ui/remodel/history?demo=reference and /ui/remodel/workbench?demo=reference",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages workbench,history --min-v3-score 82 --min-delta 5"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team: agent://150-G005WorkbenchHistQa",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-safety-audit --timeout-ms 60000"
+    ],
+    "artifactRefs": [
+      {"id":"workbench-history-ux-scorecard","kind":"test-report","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/scorecard.json","description":"Human UX Workbench/History scorecard PASS, mean V3 score 96.58 and mean named delta 28.11."},
+      {"id":"workbench-history-browser-run","kind":"browser-automation-report","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-workbench-history-evidence.json","description":"Browser automation transcript with navigate/screenshot actions, timestamps, selectors, safety text, manual gates, charts/heatmap values, and forbiddenLiveControls 0."},
+      {"id":"history-screenshot","kind":"screenshot","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-history-viewport.png","description":"Non-uniform screenshot evidence for the History V3 find/inspect/compare/lineage surface."},
+      {"id":"workbench-screenshot","kind":"screenshot","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history/browser-workbench-viewport.png","description":"Non-uniform screenshot evidence for the Workbench V3 candidate funnel surface."},
+      {"id":"workbench-history-compare","kind":"route-compare-test-report","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-v2-v3-compare/compare-scorecard.json","description":"V2/V3 compare PASS, average corrected total 100.0."},
+      {"id":"workbench-history-safety","kind":"safety-test-report","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-safety-audit/safety-scorecard.json","description":"Safety audit PASS, average safety score 100.0."},
+      {"id":"workbench-history-verification-report","kind":"test-report","path":"artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-verification-report.json","description":"G005 verification summary with commands, artifacts, and clean review ids."}
+    ],
+    "contractCoverage": [
+      {"id":"contract-history-flow","contractRef":"G005 History redesign","obligation":"Expose find/inspect/compare/lineage flow with one primary comparison canvas and visible lineage/provenance.","status":"covered","surfaceEvidenceRefs":["surface-web-history"],"adversarialCaseRefs":["case-history-clutter", "case-route-regression"]},
+      {"id":"contract-workbench-funnel","contractRef":"G005 Workbench redesign","obligation":"Expose candidate selection funnel with Hall of Fame selection, primary comparison, review handoff, and evidence drawer.","status":"covered","surfaceEvidenceRefs":["surface-web-workbench"],"adversarialCaseRefs":["case-workbench-export-authority"]},
+      {"id":"contract-g005-safety","contractRef":"G005 dashboard safety","obligation":"Preserve no live order, no broker login, no account trading, manual gates, V2 default, and explicit V3 routing.","status":"covered","surfaceEvidenceRefs":["surface-web-history", "surface-web-workbench", "surface-safety-audit"],"adversarialCaseRefs":["case-live-controls", "case-route-regression"]}
+    ],
+    "surfaceEvidence": [
+      {"id":"surface-web-history","contractRef":"G005 History web surface","surface":"web","invocation":"Browser opened http://127.0.0.1:8776/ui/remodel/history?demo=reference, evaluated required selectors, and saved screenshot.","verdict":"passed","artifactRefs":["workbench-history-browser-run", "history-screenshot"]},
+      {"id":"surface-web-workbench","contractRef":"G005 Workbench web surface","surface":"web","invocation":"Browser opened http://127.0.0.1:8776/ui/remodel/workbench?demo=reference, evaluated required selectors and saved screenshot.","verdict":"passed","artifactRefs":["workbench-history-browser-run", "workbench-screenshot"]},
+      {"id":"surface-ux-rubric","contractRef":"G005 human UX rubric","surface":"api/package","invocation":"python scripts/verify_dashboard_human_ux_rubric.py --pages workbench,history --min-v3-score 82 --min-delta 5","verdict":"passed","artifactRefs":["workbench-history-ux-scorecard"]},
+      {"id":"surface-v2-v3-compare","contractRef":"V2 default / V3 explicit route contract","surface":"api/package","invocation":"python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-v2-v3-compare --timeout-ms 60000","verdict":"passed","artifactRefs":["workbench-history-compare"]},
+      {"id":"surface-safety-audit","contractRef":"Dashboard safety contract","surface":"api/package","invocation":"python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-safety-audit --timeout-ms 60000","verdict":"passed","artifactRefs":["workbench-history-safety"]}
+    ],
+    "adversarialCases": [
+      {"id":"case-history-clutter","contractRef":"G005 History flow","scenario":"History remains a cluttered archive table without find/inspect/compare/lineage priority.","expectedBehavior":"Browser evidence shows task header, primary canvas, find/inspect/compare/lineage selectors, visible ResultDetail/Compare/Lineage text, and chart evidence.","verdict":"passed","artifactRefs":["workbench-history-browser-run", "history-screenshot"]},
+      {"id":"case-workbench-export-authority","contractRef":"G005 Workbench funnel","scenario":"Workbench suggests it can approve/export instead of handing off to review queue.","expectedBehavior":"Workbench states no approval/export authority, uses manual-gated review handoff, and safety audit passes.","verdict":"passed","artifactRefs":["workbench-history-browser-run", "workbench-history-safety"]},
+      {"id":"case-live-controls","contractRef":"G005 forbidden live controls","scenario":"History/Workbench UI exposes live order, broker login, or account trade controls.","expectedBehavior":"Forbidden live controls count is zero and safety markers remain visible.","verdict":"passed","artifactRefs":["workbench-history-browser-run", "workbench-history-safety"]},
+      {"id":"case-route-regression","contractRef":"V2/V3 route identity","scenario":"V2 loads V3 assets or explicit V3 loads V2 assets.","expectedBehavior":"Compare gate reports route/assets clean and no hard failures.","verdict":"passed","artifactRefs":["workbench-history-compare"]}
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Compare-gate text regressions were corrected by restoring required legacy labels while preserving the new task-first IA. Source syntax, focused tests, G005 human UX gate, V2/V3 compare, safety audit, browser transcript/screenshots, diff check, protected-path check, and final reviews are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages workbench,history --min-v3-score 82 --min-delta 5",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-4-workbench-history-safety-audit --timeout-ms 60000"
+    ],
+    "blockers": []
+  }
+}

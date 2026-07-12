@@ -1,0 +1,5 @@
+Approved pending plan: C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md
+Execution scope: Tranche 0 only. Preserve V2 as default. V3 remains explicit/selectable via /ui/remodel/* or dashboard_version=v3. No default cutover, live order, broker login, account trading, hidden production export, protected runtime writes, or unapproved mutating calls. The new human-centered rubric complements existing safety/route/visual gates.
+
+@goal: Tranche 0 human UX rubric baseline
+Add a read-only dashboard human UX verifier, capture current V2/current explicit V3 baseline, create machine-checkable Condition/Backtest/Chart Replay storyboards, and document selector/marker preservation. Exit criteria: valid JSON/contact sheet/storyboards; zero route/safety hard failures; Backtest/Replay storyboards map steps to selectors, safety assertions, and rubric observations. Do not redesign UI in this tranche.

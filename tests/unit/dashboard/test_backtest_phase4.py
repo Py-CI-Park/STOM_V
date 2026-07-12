@@ -30,6 +30,7 @@ from ai_strategy_loop.dashboard.backtest_jobs import (  # noqa: E402
     BacktestJobSpec,
     default_command_builder,
 )
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def _make_strategy_db(path: Path) -> None:
@@ -66,8 +67,9 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     monkeypatch.setenv("STOM_WEBBT_STRATEGY_DB", str(db_path))
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRATEGY_WRITE", "1")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _spec(**kw):
@@ -140,13 +142,14 @@ def test_job_meta_route(client: TestClient):
     assert r.status_code == 200
     assert r.json()["status"] == "error"
 
-    # tags 타입 검증.
+    # tags 타입 검증 — Pydantic 모델(JobMetaPayload)이 FastAPI 계층에서 422 로 거부.
     rb = client.post("/bt/job/meta", json={"job_id": "x", "tags": "문자열"})
-    assert rb.json()["status"] == "error"
+    assert rb.status_code == 422
+    assert "tags" in rb.text
 
-    # job_id 누락.
+    # job_id 누락 — Pydantic 필수 필드 위반으로 422.
     rc = client.post("/bt/job/meta", json={"favorite": True})
-    assert rc.json()["status"] == "error"
+    assert rc.status_code == 422
 
 
 # --------------------------------------------------------------- optimize mode

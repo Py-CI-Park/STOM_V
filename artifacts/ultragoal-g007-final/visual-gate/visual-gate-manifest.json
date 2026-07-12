@@ -1,0 +1,68 @@
+{
+  "artifacts": {
+    "api-live-evidence.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\api-live-evidence.json",
+    "dom-safety-scan.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\dom-safety-scan.json",
+    "modal-coverage.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\modal-coverage.json",
+    "scorecard.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\scorecard.json",
+    "side-by-side-contact-sheet.png": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\side-by-side-contact-sheet.png",
+    "source-safety-scan.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\source-safety-scan.json",
+    "visual-gate-manifest.json": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\visual-gate-manifest.json"
+  },
+  "baseUrl": "http://127.0.0.1:8776",
+  "captureArtifacts": {
+    "01_condition_ai_overview": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\01_condition_ai_overview.png",
+    "02_process": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\02_process.png",
+    "03_history": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\03_history.png",
+    "04_lab": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\04_lab.png",
+    "05_workbench": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\05_workbench.png",
+    "06_decision_audit": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\06_decision_audit.png",
+    "07_backtest": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\07_backtest.png",
+    "08_chart_replay": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\visual-gate\\08_chart_replay.png"
+  },
+  "generatedAt": "2026-06-28T02:59:41.205102+00:00",
+  "readOnly": true,
+  "routes": [
+    {
+      "id": "01_condition_ai_overview",
+      "path": "/ui/remodel/condition?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\01_condition_ai_overview.png"
+    },
+    {
+      "id": "02_process",
+      "path": "/ui/remodel/process?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\02_process.png"
+    },
+    {
+      "id": "03_history",
+      "path": "/ui/remodel/history?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\03_history.png"
+    },
+    {
+      "id": "04_lab",
+      "path": "/ui/remodel/lab?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\04_lab.png"
+    },
+    {
+      "id": "05_workbench",
+      "path": "/ui/remodel/workbench?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\05_workbench.png"
+    },
+    {
+      "id": "06_decision_audit",
+      "path": "/ui/remodel/audit?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\06_decision_audit.png"
+    },
+    {
+      "id": "07_backtest",
+      "path": "/ui/remodel/backtest?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\07_backtest.png"
+    },
+    {
+      "id": "08_chart_replay",
+      "path": "/ui/remodel/chart-replay?demo=reference",
+      "reference": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\ai_strategy_loop\\dashboard\\frontend\\remodel\\docs\\captures\\08_chart_replay.png"
+    }
+  ],
+  "status": "PASS",
+  "viewport": "1920x1080"
+}

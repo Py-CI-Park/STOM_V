@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-06-29T18:46:35.075Z",
+  "verdict": "passed",
+  "requestCount": 38,
+  "websocketCount": 0,
+  "referenceForbidden": 0,
+  "mutating": 0,
+  "forbiddenWs": 0,
+  "liveUnsafe": 0,
+  "liveBackendQueryEvidence": true,
+  "referenceShellInert": true,
+  "referenceManualDisabled": true,
+  "safetyLabelsOnEveryRoute": true,
+  "forbiddenTextAny": false,
+  "screenshotsNonUniform": true,
+  "passCriteria": {
+    "referenceNoBackendFetchOrWs": true,
+    "noMutatingRequests": true,
+    "noAutoSimOrBtWebsocket": true,
+    "liveNoUnsafeMutationOrExport": true,
+    "liveBackendQueryHonored": true,
+    "referenceShellShowsInert": true,
+    "inertManualControlsDisabled": true,
+    "safetyLabelsOnEveryRoute": true,
+    "forbiddenAffordancesAbsent": true,
+    "screenshotsNonUniform": true
+  }
+}

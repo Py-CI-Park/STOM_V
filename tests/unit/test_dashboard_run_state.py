@@ -33,6 +33,7 @@ from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.dashboard.app import _run_state_payload  # noqa: E402
+from .security_test_client import authorized_dashboard_client  # noqa: E402
 
 FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 
@@ -71,6 +72,7 @@ def seeded_run_db(monkeypatch, tmp_path):
         status="ok", score=1.2, gate_passed=True, reason="ok",
         trade_count=30, mdd=8.0, profit=50000.0, total_profit_pct=5.0,
     )
+    st.finish_run("reframe1")
     st.close()
     return {"db": db}
 
@@ -161,13 +163,12 @@ class TestRunStatePayloadEmpty:
 # =====================================================================
 class TestRunStateRoute:
     def test_route_returns_run(self, monkeypatch, tmp_path, seeded_run_db):
-        from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
 
         monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
         monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/run_state?run_id=reframe1")
         assert resp.status_code == 200
         body = resp.json()
@@ -177,25 +178,23 @@ class TestRunStateRoute:
         assert body["winner"]["gen"] == 0
 
     def test_route_missing_run_id_returns_idle(self, monkeypatch, tmp_path, seeded_run_db):
-        from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
 
         monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
         monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/run_state")
         assert resp.status_code == 200
         assert resp.json()["status"] == "idle"
 
     def test_route_unknown_run_returns_idle(self, monkeypatch, tmp_path, seeded_run_db):
-        from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
 
         monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
         monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/run_state?run_id=zzz")
         assert resp.status_code == 200
         assert resp.json()["status"] == "idle"
@@ -206,23 +205,21 @@ class TestRunStateRoute:
 # =====================================================================
 class TestExistingRoutesUnchanged:
     def test_status_still_ok(self, monkeypatch, tmp_path):
-        from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
 
         monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
         monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/status")
         assert resp.status_code == 200
         assert "status" in resp.json()
 
     def test_runs_still_ok(self, monkeypatch, tmp_path):
-        from fastapi.testclient import TestClient
         from ai_strategy_loop.dashboard.app import create_app
 
         monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
         monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/runs")
         assert resp.status_code == 200
         assert "runs" in resp.json()

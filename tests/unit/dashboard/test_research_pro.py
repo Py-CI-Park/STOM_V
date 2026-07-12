@@ -155,14 +155,14 @@ class TestResearchProSource:
 # ----------------------------------------------------------- REST 읽기 계약
 @pytest.fixture
 def client(monkeypatch, tmp_path):
-    from fastapi.testclient import TestClient
     from ai_strategy_loop.dashboard.app import create_app
+    from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]
 
     db = tmp_path / "loop_runs.db"
     monkeypatch.setattr(S, "LOOP_RUNS_DB", db)
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _seed_run(tmp_path: Path) -> None:

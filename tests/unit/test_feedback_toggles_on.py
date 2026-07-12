@@ -50,13 +50,17 @@ _FEEDBACK_TOGGLES = (
 # ---------------------------------------------------------------------------
 # 픽스처: 강한 분리 피처(시가총액·체결강도) + 잡음 피처(회전율, win/lose 동일분포).
 # ---------------------------------------------------------------------------
-def _make_csv(path: Path, rows: list) -> str:
+def _make_csv(
+    path: Path,
+    rows: list[tuple[float, int, int, int, int]],
+) -> str:
     """rows: [(수익률, 수익금, 시가총액, 체결강도, 회전율)]"""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8-sig", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=[
             "종목명", "매수시간", "매도시간", "수익률", "수익금",
             "B_시가총액", "B_체결강도", "B_회전율",
+            "S_사후진단누수", "R_결과누수",
         ])
         w.writeheader()
         for i, (pct, krw, cap, strength, turnover) in enumerate(rows):
@@ -65,6 +69,8 @@ def _make_csv(path: Path, rows: list) -> str:
                 "매도시간": f"202301{(i % 28) + 1:02d}090300",
                 "수익률": pct, "수익금": krw,
                 "B_시가총액": cap, "B_체결강도": strength, "B_회전율": turnover,
+                "S_사후진단누수": strength * 100,
+                "R_결과누수": pct * 100,
             })
     return str(path)
 
@@ -179,6 +185,19 @@ def test_build_feature_importance_lines_emits_segment_hint(tmp_path) -> None:
     assert "상단" in joined  # 승자가 체결강도 높음 → 상단 우선.
 
 
+def test_generation_feature_hints_exclude_sell_and_result_columns(tmp_path) -> None:
+    # Given: a trade CSV containing valid B_* inputs plus predictive S_*/R_* outcomes.
+    lines = build_feature_importance_lines(_segmented_csv(tmp_path), min_cell=20)
+
+    # When: the feedback text that can enter the next BUY prompt is assembled.
+    joined = "\n".join(lines)
+
+    # Then: only buy-time inputs can become generation hints.
+    assert "체결강도" in joined
+    assert "사후진단누수" not in joined
+    assert "결과누수" not in joined
+
+
 def test_build_feature_importance_lines_graceful_on_bad_input(tmp_path) -> None:
     assert build_feature_importance_lines("") == []
     assert build_feature_importance_lines(str(tmp_path / "missing.csv")) == []
@@ -269,9 +288,9 @@ def test_build_feature_hints_on_missing_csv_returns_none(tmp_path) -> None:
     assert L._build_feature_hints(cfg, missing) is None
 
 
-def _capture_hint_kwargs(monkeypatch) -> dict:
+def _capture_hint_kwargs(monkeypatch) -> dict[str, object]:
     """brain.generate_strategy를 대체해 kind별 feature_hint_lines kwargs를 캡처한다."""
-    captured: dict = {}
+    captured: dict[str, object] = {}
 
     def _fake_generate_strategy(provider, kind, name, db, **kw):
         captured[kind] = kw.get("feature_hint_lines")

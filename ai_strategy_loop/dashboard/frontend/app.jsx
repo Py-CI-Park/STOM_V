@@ -259,6 +259,9 @@ function App() {
     { label: "status", value: state.status || "—" },
     { label: "run", value: selectedRun ? "archive" : "LIVE" },
   ];
+  const currentDashboardPath = (typeof window !== "undefined" && window.location && window.location.pathname) || "/ui/evolution";
+  const v3PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v3`;
+  const v4PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v4`;
 
   return (
     <div className="stom-app-shell">
@@ -284,6 +287,18 @@ function App() {
 
           <div className="stom-shell-controls">
             <ThemeToggle theme={theme} onChange={setTheme} />
+            <a className="btn ghost sm mono"
+               data-dashboard-preview="v3"
+               href={v3PreviewHref}
+               title="V2 기본 화면은 유지하고 현재 경로를 V3 리모델 프리뷰로 1회 열기">
+              V3 Preview
+            </a>
+            <a className="btn ghost sm mono"
+               data-dashboard-preview="v4"
+               href={v4PreviewHref}
+               title="V2 기본 화면은 유지하고 V4 graph-first 프리뷰를 1회 열기">
+              V4 Preview
+            </a>
             <BaseUrlControl
               value={pendingBase}
               onChange={setPendingBase}
@@ -518,6 +533,29 @@ function App() {
         baseUrl={baseUrl}
       />
 
+      <section
+        data-safety-boundary="v2-research-only"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: 10,
+          marginTop: 18,
+        }}
+      >
+        {[
+          ["실거래/주문 기능 없음", "No Live Order"],
+          ["브로커 로그인 없음", "No Broker Login"],
+          ["계좌/자산 연동 없음", "No Account Trading"],
+          ["연구 전용", "Research Only"],
+          ["Human Approval Gate", "승인 후 Export"],
+          ["Append-Only Audit", "불변 감사 로그"],
+        ].map(([title, detail]) => (
+          <div key={title} className="panel" style={{ padding: "10px 12px" }}>
+            <b>{title}</b>
+            <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 4 }}>{detail}</div>
+          </div>
+        ))}
+      </section>
       {/* Footer */}
       <footer style={{ marginTop: 24, padding: "12px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 10.5, fontFamily: "var(--mono)" }}>
         STOM AI · STATE_CONTRACT v{state.contract_version ?? 1} · last_update {fmtTime(state.updated_at)}

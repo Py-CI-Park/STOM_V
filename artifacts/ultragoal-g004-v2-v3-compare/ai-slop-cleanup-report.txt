@@ -1,0 +1,5 @@
+AI SLOP CLEANUP REPORT — G004
+Scope: ai_strategy_loop/dashboard/app.py; scripts/verify_dashboard_v2_v3_compare.py; scripts/verify_dashboard_remodel_visual_gate.py artifacts.
+Blocking findings: 0
+Advisory findings: 0
+Checks: no fixture-only success path; verifier captures live browser routes, DOM, network, route headers, assets, and screenshots. The V2 /sim/ws legacy observation is explicitly classified instead of masked.

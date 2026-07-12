@@ -1,0 +1,33 @@
+{
+  "averageRuntimeDepthScore": 100.0,
+  "baseUrl": "http://127.0.0.1:8776",
+  "coverage": {
+    "backtest": {
+      "contractCount": 24,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    },
+    "chartReplay": {
+      "contractCount": 19,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    }
+  },
+  "failures": [],
+  "generatedAt": "2026-06-28T23:01:03.355899+00:00",
+  "kind": "dashboard-runtime-depth-scorecard",
+  "schemaVersion": 1,
+  "scores": {
+    "apiSmoke": 100.0,
+    "backtest": 100.0,
+    "chartReplay": 100.0,
+    "safety": 100.0
+  },
+  "status": "PASS"
+}

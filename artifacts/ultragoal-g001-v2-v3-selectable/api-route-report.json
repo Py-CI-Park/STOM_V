@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "api-package-test-report",
+  "goalId": "G001",
+  "source": "fastapi TestClient route-version-matrix",
+  "routeMatrix": "artifacts/ultragoal-g001-v2-v3-selectable/route-version-matrix.json",
+  "summary": {
+    "rows": 50,
+    "failures": 0,
+    "v2DefaultRoutes": 9,
+    "v3HardRoutes": 13,
+    "aliasRoutes": 8,
+    "persistenceChecks": 9
+  },
+  "verdict": "passed"
+}

@@ -1,0 +1,354 @@
+{
+  "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 시스템 상태\nAPI Health\nOK\nData Pack\nKRX + US\nDemo Mode\nON\nUptime\n3d 14h\n2 마켓 요약\n지표\t현재가\t등락률\nKOSPI\t2,610.42\t+0.58%\nKOSDAQ\t859.12\t+0.74%\nUSD/KRW\t1,349.20\t-0.22%\n최근 백테스트\nID\t전략명\t상태\t수익률\n#10235\tBreakOut_v2\t\n실행중\t—\n#10234\tBreakOut_v2\t\n완료\t+23.41%\n#10233\tRSI_MA_Cross\t\n완료\t+12.88%\n#10232\tMeanRev_1h\t\n완료\t-3.21%\nLIVE READ-ONLY MODE\n본 시스템은 연구/백테스트 용도이며 실거래 주문을 전송하지 않습니다. /bt/* mutating endpoints are not auto-invoked.\nLIVE read adapter\nBacktest API Contract Matrix\nLIVE mode: BacktestAdapter may call safe GET/read endpoints only; mutating POST endpoints stay manual-gated/not-auto-invoked.\nEvidence settled\nEndpoint\tMethod\tMode behavior\tLive evidence/status\tAction owner / reason\n/bt/health\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=buy\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategy?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/strategy/validate\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nValidation accepts user-authored strategy text; manual gate required.\n\tManual researcher action\nValidation accepts user-authored strategy text; manual gate required.\n\n/bt/strategy\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nMutates strategy storage; never auto-run from remodel load.\n\tManual researcher action\nMutates strategy storage; never auto-run from remodel load.\n\n/bt/strategy/delete\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nDeletes strategy storage; destructive and manual-gated.\n\tManual researcher action\nDeletes strategy storage; destructive and manual-gated.\n\n/bt/extract_vars\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nReads submitted code body; user action only, no automatic payload fabrication.\n\tManual researcher action\nReads submitted code body; user action only, no automatic payload fabrication.\n\n/bt/legacy/self_vars?kind=&name=\t\nGET\treference/d",
+  "consoleErrors": [],
+  "contracts": [
+    {
+      "endpoint": "/bt/health",
+      "id": "bt-health",
+      "livePath": "/bt/health",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/strategies?kind=buy",
+      "id": "bt-strategies-buy",
+      "livePath": "/bt/strategies?kind=buy",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/strategies?kind=sell",
+      "id": "bt-strategies-sell",
+      "livePath": "/bt/strategies?kind=sell",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/strategy?kind=&name=",
+      "id": "bt-strategy-detail",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only after a strategy name is discovered",
+      "owner": "BacktestAdapter.strategyDetailEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/strategy/validate",
+      "id": "bt-strategy-validate",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Validation accepts user-authored strategy text; manual gate required."
+    },
+    {
+      "endpoint": "/bt/strategy",
+      "id": "bt-strategy-save",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Mutates strategy storage; never auto-run from remodel load."
+    },
+    {
+      "endpoint": "/bt/strategy/delete",
+      "id": "bt-strategy-delete",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Deletes strategy storage; destructive and manual-gated."
+    },
+    {
+      "endpoint": "/bt/extract_vars",
+      "id": "bt-extract-vars",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Reads submitted code body; user action only, no automatic payload fabrication."
+    },
+    {
+      "endpoint": "/bt/legacy/self_vars?kind=&name=",
+      "id": "bt-legacy-self-vars",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only after a strategy name is discovered",
+      "owner": "BacktestAdapter.strategyDetailEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/backfinder/preflight?kind=&name=",
+      "id": "bt-backfinder-preflight",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only after a strategy name is discovered",
+      "owner": "BacktestAdapter.strategyDetailEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/data_range",
+      "id": "bt-data-range",
+      "livePath": "/bt/data_range",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/run",
+      "id": "bt-run",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Starts a backtest job; run creation must be explicit."
+    },
+    {
+      "endpoint": "/bt/jobs",
+      "id": "bt-jobs",
+      "livePath": "/bt/jobs",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/job?job_id=",
+      "id": "bt-job",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only when an existing job_id is available",
+      "owner": "BacktestAdapter.jobEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/job/cancel",
+      "id": "bt-job-cancel",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Cancels active work; destructive and manual-gated."
+    },
+    {
+      "endpoint": "/bt/job/meta",
+      "id": "bt-job-meta",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Mutates job metadata; not auto-invoked."
+    },
+    {
+      "endpoint": "/bt/ws_job?job_id=",
+      "id": "bt-ws-job",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live WS/read stream not opened automatically",
+      "owner": "Manual live observer action",
+      "reason": "WebSocket/job stream is live-only and user-gated to avoid hidden long-lived connections."
+    },
+    {
+      "endpoint": "/bt/result?job_id=__demo__",
+      "id": "bt-result-demo",
+      "livePath": "/bt/result?job_id=__demo__",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe demo read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/evo_gens?run_id=",
+      "id": "bt-evo-gens",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only when an existing run_id is available",
+      "owner": "BacktestAdapter.jobEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "id": "bt-montecarlo-demo",
+      "livePath": "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live safe demo analysis read on Backtest page load",
+      "owner": "BacktestAdapter.readOnlyProbe",
+      "safeAuto": true
+    },
+    {
+      "endpoint": "/bt/compare?job_a=&job_b=",
+      "id": "bt-compare",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only when two existing job ids are available",
+      "owner": "BacktestAdapter.jobEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/overlay?job_ids=",
+      "id": "bt-overlay",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only when existing job ids are available",
+      "owner": "BacktestAdapter.jobEvidence",
+      "safeAuto": "conditional"
+    },
+    {
+      "endpoint": "/bt/portfolio",
+      "id": "bt-portfolio",
+      "method": "POST",
+      "modeBehavior": "reference/demo inert fixture · live not auto-invoked",
+      "owner": "Manual researcher action",
+      "reason": "Portfolio construction is a mutating/action endpoint; manual gate required."
+    },
+    {
+      "endpoint": "/bt/report?job_id=",
+      "id": "bt-report",
+      "method": "GET",
+      "modeBehavior": "reference/demo inert fixture · live optional read only when an existing job_id is available",
+      "owner": "BacktestAdapter.jobEvidence",
+      "safeAuto": "conditional"
+    }
+  ],
+  "headers": {
+    "cache-control": "no-store, max-age=0, must-revalidate",
+    "x-stom-dashboard-version": "v3-remodel"
+  },
+  "imageMetrics": {
+    "available": true,
+    "lumaStddev": 18.34,
+    "nonUniform": true,
+    "size": [
+      1920,
+      1080
+    ],
+    "status": "PASS"
+  },
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/ui/remodel/backtest",
+      "resourceType": "document"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "method": "GET",
+      "path": "/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/health",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/data_range",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/jobs",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/result?job_id=__demo__",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategy?kind=sell&name=20250715_Study_S",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/legacy/self_vars?kind=sell&name=20250715_Study_S",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/backfinder/preflight?kind=sell&name=20250715_Study_S",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/status",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/runs",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategy?kind=buy&name=20250715_Study",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/legacy/self_vars?kind=buy&name=20250715_Study",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/backfinder/preflight?kind=buy&name=20250715_Study",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/job?job_id=20260629_084440_20250715Study_80307",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/report?job_id=20260629_084440_20250715Study_80307",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/overlay?job_ids=20260629_084440_20250715Study_80307,20260629_084410_20250715Study_50646,20260629_083723_20250715Study_43698",
+      "resourceType": "fetch"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/compare?job_a=20260629_084440_20250715Study_80307&job_b=20260629_084410_20250715Study_50646",
+      "resourceType": "fetch"
+    }
+  ],
+  "routeId": "backtest",
+  "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-runtime-depth\\backtest-live-depth.png",
+  "statusCode": 200,
+  "textScore": {
+    "missing": [],
+    "score": 100.0
+  },
+  "title": "STOM AI · 조건식 AI 연구 대시보드",
+  "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+  "websockets": [
+    "ws://127.0.0.1:8776/ws"
+  ]
+}

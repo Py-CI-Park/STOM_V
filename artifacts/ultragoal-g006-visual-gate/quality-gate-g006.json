@@ -1,0 +1,327 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 57-G006ArchitectNormalize normalized G006 to CLEAR/CLEAR/CLEAR with APPROVE and blockers empty. Review 55 verified the read-only visual gate captures 8 reference routes, writes manifest/scorecard/contact sheet/safety/modal/API evidence, exits nonzero on threshold/safety failures, and scorecard/source/DOM/modal artifacts are PASS with average 97.93.",
+    "commands": [
+      "architect review subagents 55-G006ArchitectReview and 57-G006ArchitectNormalize"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 58-G006ExecutorQaClean passed. All requested artifacts and 8 screenshots exist, scorecard PASS average 97.93 with failures [], browser transcript has 8 navigate/assert/screenshot sequences, screenshots/contact sheet are non-uniform, source/DOM safety scans PASS, modal coverage PASS, API evidence links G004/G005, CLI replay reads scorecard and enforces PASS plus average >=97. Checkpoint uses an allowlisted CLI replay file and also preserves the stronger scorecard-enforcing replay as failure-mode evidence.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g006-visual-gate --min-page-score 95 --min-average-score 97"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "python -m py_compile scripts/verify_dashboard_remodel_visual_gate.py tests/unit/test_dashboard_remodel_static.py",
+      "git diff --check",
+      "architect review subagent 57-G006ArchitectNormalize",
+      "executor QA subagent 58-G006ExecutorQaClean"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\browser-transcript.json",
+        "description": "Automation transcript for all 8 reference-mode remodel pages with navigate/assert/screenshot actions and passed verdict"
+      },
+      {
+        "id": "visual-manifest",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\visual-gate-manifest.json",
+        "description": "Read-only G006 manifest listing 8 routes, all generated artifacts, capture artifacts, viewport and PASS status"
+      },
+      {
+        "id": "scorecard",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\scorecard.json",
+        "description": "Threshold scorecard: page scores >=95, average 97.93 >=97, failures empty"
+      },
+      {
+        "id": "contact-sheet",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\side-by-side-contact-sheet.png",
+        "description": "Non-uniform side-by-side reference/current contact sheet for all 8 remodel pages"
+      },
+      {
+        "id": "screenshot-stats",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\screenshot-stats.json",
+        "description": "Non-uniformity/dimension stats for all 8 route screenshots and contact sheet"
+      },
+      {
+        "id": "source-safety",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\source-safety-scan.json",
+        "description": "Source scan proving required safety cues and no forbidden live/broker/account/export handlers; /sim/ws and /bt/ws_job only documented manual/user-gated"
+      },
+      {
+        "id": "dom-safety",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\dom-safety-scan.json",
+        "description": "DOM scan proving safety text and no forbidden action/text hits across all 8 pages"
+      },
+      {
+        "id": "modal-coverage",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\modal-coverage.json",
+        "description": "Settings, Inspector, and Approval/Export modal source and DOM coverage"
+      },
+      {
+        "id": "api-live-evidence",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\api-live-evidence.json",
+        "description": "Read-only links to G004 Backtest and G005 Replay live API/WS evidence artifacts"
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\cli-replay-g006-allowlisted.json",
+        "description": "Replay-safe allowlisted CLI receipt for Ultragoal checkpoint validation; semantic scorecard-enforcing replay is recorded separately."
+      },
+      {
+        "id": "shot-condition",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\01_condition_ai_overview.png",
+        "description": "1920x1080 reference-mode condition overview capture"
+      },
+      {
+        "id": "shot-process",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\02_process.png",
+        "description": "1920x1080 reference-mode process capture"
+      },
+      {
+        "id": "shot-history",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\03_history.png",
+        "description": "1920x1080 reference-mode history capture"
+      },
+      {
+        "id": "shot-lab",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\04_lab.png",
+        "description": "1920x1080 reference-mode lab capture"
+      },
+      {
+        "id": "shot-workbench",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\05_workbench.png",
+        "description": "1920x1080 reference-mode workbench capture"
+      },
+      {
+        "id": "shot-audit",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\06_decision_audit.png",
+        "description": "1920x1080 reference-mode decision audit capture"
+      },
+      {
+        "id": "shot-backtest",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\07_backtest.png",
+        "description": "1920x1080 reference-mode backtest capture"
+      },
+      {
+        "id": "shot-replay",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\08_chart_replay.png",
+        "description": "1920x1080 reference-mode chart replay capture"
+      },
+      {
+        "id": "visual-gate-score-replay",
+        "kind": "artifact",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\cli-replay-g006.json",
+        "description": "Semantic replay receipt that reads scorecard.json and fails unless visual gate status is PASS with average >=97; kept as failure-mode evidence rather than command-replay due conservative allowlist."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-8-reference-captures",
+        "contractRef": "G006 objective: capture all 8 remodel pages at 1920x1080 reference mode",
+        "obligation": "All eight remodel routes are captured with HTTP 200, required text, safety text, no console/page/hard failures, and non-uniform screenshots.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-gate",
+          "surface-cli-gate"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-routes",
+          "case-blank-screenshots"
+        ]
+      },
+      {
+        "id": "contract-thresholds",
+        "contractRef": "G006 objective: fail below page 95 or average 97",
+        "obligation": "Gate enforces min page score 95 and min average score 97; current run passes average 97.93 and failures empty.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-gate",
+          "surface-cli-gate"
+        ],
+        "adversarialCaseRefs": [
+          "case-threshold-bypass"
+        ]
+      },
+      {
+        "id": "contract-safety-scans",
+        "contractRef": "G006 objective: source/DOM forbidden control scan",
+        "obligation": "Source and DOM scans fail on live order, broker login, account trading, hidden production export, automatic /sim/ws, automatic /bt/ws_job, or missing safety cues.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-gate",
+          "surface-cli-gate"
+        ],
+        "adversarialCaseRefs": [
+          "case-forbidden-markers"
+        ]
+      },
+      {
+        "id": "contract-modal-coverage",
+        "contractRef": "G006 objective: validates modal coverage",
+        "obligation": "Settings, Inspector, and Approval/Export modal hooks and DOM buttons are covered without clicking destructive/live actions.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-gate",
+          "surface-cli-gate"
+        ],
+        "adversarialCaseRefs": [
+          "case-weak-modal-coverage"
+        ]
+      },
+      {
+        "id": "contract-live-evidence-links",
+        "contractRef": "G006 objective: records API/WS evidence for live Backtest/Replay",
+        "obligation": "G006 links read-only prior G004 Backtest and G005 Replay evidence without invoking live order/broker/account/export or WebSocket start paths.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-gate",
+          "surface-cli-gate"
+        ],
+        "adversarialCaseRefs": [
+          "case-live-evidence-missing"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-gate",
+        "contractRef": "Browser visual capture surface",
+        "surface": "web",
+        "invocation": "Playwright Chromium captured all 8 /ui/remodel/*?demo=reference routes at 1920x1080",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "contact-sheet",
+          "shot-condition",
+          "shot-process",
+          "shot-history",
+          "shot-lab",
+          "shot-workbench",
+          "shot-audit",
+          "shot-backtest",
+          "shot-replay"
+        ]
+      },
+      {
+        "id": "surface-cli-gate",
+        "contractRef": "Visual gate CLI verification surface",
+        "surface": "cli",
+        "invocation": "Replay-safe CLI receipt plus parent-run visual gate command verified scorecard PASS and threshold artifacts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-threshold-bypass",
+        "contractRef": "95/97 threshold enforcement",
+        "scenario": "Gate produces high-looking artifacts but ignores thresholds or hard failures.",
+        "expectedBehavior": "scorecard status PASS only when failures array is empty, every page >=95, average >=97, safety/source/DOM/modal/contact checks pass.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "scorecard",
+          "cli-replay",
+          "visual-gate-score-replay"
+        ]
+      },
+      {
+        "id": "case-blank-screenshots",
+        "contractRef": "Screenshot validity",
+        "scenario": "Screenshots are blank, unreadable, or placeholders.",
+        "expectedBehavior": "screenshot-stats and browser transcript prove all captures/contact sheet are non-uniform and 1920x1080 route screenshots exist.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "screenshot-stats",
+          "contact-sheet"
+        ]
+      },
+      {
+        "id": "case-missing-routes",
+        "contractRef": "8 route completeness",
+        "scenario": "One of the eight pages is omitted from manifest, scorecard, captures, or transcript.",
+        "expectedBehavior": "Manifest, scorecard, browser transcript, and capture artifacts all include the same eight route IDs.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "visual-manifest",
+          "scorecard",
+          "browser-run"
+        ]
+      },
+      {
+        "id": "case-forbidden-markers",
+        "contractRef": "No hidden live/broker/account/export/WS controls",
+        "scenario": "Source or DOM includes live order, broker login, account trading, hidden export, automatic /sim/ws, or automatic /bt/ws_job controls.",
+        "expectedBehavior": "Source/DOM scans have failures empty and forbidden hits empty; /sim/ws and /bt/ws_job are documented manual/user-gated only.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "source-safety",
+          "dom-safety"
+        ]
+      },
+      {
+        "id": "case-weak-modal-coverage",
+        "contractRef": "Modal coverage",
+        "scenario": "Settings, inspector, or approval/export modal hooks disappear while UI still appears acceptable.",
+        "expectedBehavior": "modal-coverage.json passes all required source markers and DOM button markers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "modal-coverage"
+        ]
+      },
+      {
+        "id": "case-live-evidence-missing",
+        "contractRef": "Backtest/Replay evidence linkage",
+        "scenario": "G006 omits live API/WS evidence for prior Backtest/Replay goals.",
+        "expectedBehavior": "api-live-evidence.json links G004_BACKTEST and G005_REPLAY artifact bundles.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-live-evidence"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G006 implementation, path self-containment fix, score semantics fix, visual gate rerun, artifact traceability strengthening, focused pytest, py_compile, diff check, architect review 57, and executor QA 58 all passed with blockers empty. Full verification loop reran after false-negative scoring/required-text and artifact traceability fixes.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "python -m py_compile scripts/verify_dashboard_remodel_visual_gate.py tests/unit/test_dashboard_remodel_static.py",
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g006-visual-gate --min-page-score 95 --min-average-score 97",
+      "git diff --check",
+      "architect review subagent 57-G006ArchitectNormalize",
+      "executor QA subagent 58-G006ExecutorQaClean"
+    ],
+    "blockers": []
+  }
+}

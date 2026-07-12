@@ -1,0 +1,247 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "blockers": [],
+    "codeStatus": "CLEAR",
+    "commands": [
+      "architect agent 82-G006ArchitectReview2"
+    ],
+    "evidence": "82-G006ArchitectReview2 approved: safety scorecard PASS/100.0, source scan PASS with HTML entrypoints listed, runtime scan PASS/readOnly/findings [], audit separation PASS, verifier rejects non-local HTML/runtime origins, DOM evidence PASS across V2/V3.",
+    "productStatus": "CLEAR",
+    "recommendation": "APPROVE"
+  },
+  "executorQa": {
+    "adversarialCases": [
+      {
+        "artifactRefs": [
+          "source-safety-scan",
+          "runtime-network-scan",
+          "adversarial-report"
+        ],
+        "contractRef": "No live order/broker/account controls",
+        "expectedBehavior": "No findings and no runtime request to trading/broker/account paths.",
+        "id": "case-live-controls",
+        "scenario": "Search source and DOM/runtime for live-order, broker-login, account-trade, order endpoints, and sender symbols.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "browser-run",
+          "runtime-network-scan",
+          "adversarial-report"
+        ],
+        "contractRef": "No unapproved mutation or live WS on page load",
+        "expectedBehavior": "Only read-only methods and allowed /ws status socket; no /sim/ws or /bt/ws_job auto-open.",
+        "id": "case-mutation",
+        "scenario": "Load all G006 V2/V3 pages and observe methods/websockets.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "source-safety-scan",
+          "runtime-network-scan"
+        ],
+        "contractRef": "Local-only dashboard contract",
+        "expectedBehavior": "No Google fonts/CDN/external request from dashboard entrypoints or browser captures.",
+        "id": "case-external-origin",
+        "scenario": "Reject external HTTP(S) entrypoint links and non-local runtime requests.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "audit-export-separation",
+          "adversarial-report"
+        ],
+        "contractRef": "Human approval and append-only audit separation",
+        "expectedBehavior": "Approval gate visible, audit ledger append-only, no modal auto-open or hidden export bypass.",
+        "id": "case-export-bypass",
+        "scenario": "Check audit and condition pages for export/audit conflation or auto approval modal.",
+        "verdict": "passed"
+      }
+    ],
+    "artifactRefs": [
+      {
+        "description": "Playwright transcript with real V2/V3 safety navigations and assertions.",
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\browser-transcript.json"
+      },
+      {
+        "description": "Non-uniform V2/V3 safety contact sheet screenshot.",
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\safety-contact-sheet.png"
+      },
+      {
+        "description": "Allowlisted deterministic node -e replay artifact.",
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\cli-replay.json"
+      },
+      {
+        "description": "G006 adversarial safety failure-mode report.",
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\adversarial-report.txt"
+      },
+      {
+        "description": "Safety audit scorecard: PASS/100.0.",
+        "id": "safety-scorecard",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\safety-scorecard.json"
+      },
+      {
+        "description": "Source and HTML entrypoint safety scan with no findings.",
+        "id": "source-safety-scan",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\source-safety-scan.json"
+      },
+      {
+        "description": "Read-only runtime network scan with forbidden findings empty.",
+        "id": "runtime-network-scan",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\runtime-network-scan.json"
+      },
+      {
+        "description": "Append-only audit and export separation checks passed.",
+        "id": "audit-export-separation",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\audit-export-separation.json"
+      },
+      {
+        "description": "Commands and evidence summary for G006.",
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\verification-summary.json"
+      }
+    ],
+    "blockers": [],
+    "contractCoverage": [
+      {
+        "adversarialCaseRefs": [
+          "case-external-origin",
+          "case-mutation"
+        ],
+        "contractRef": "G006 local-only/research-only safety contract",
+        "id": "contract-local-only",
+        "obligation": "V2/V3 entrypoints and runtime requests must stay local-only and research-only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-safety"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-live-controls",
+          "case-export-bypass"
+        ],
+        "contractRef": "G006 no live order/broker/account contract",
+        "id": "contract-no-live-trading",
+        "obligation": "No live order, broker login, account trading, hidden export bypass, or production auto-export controls.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-safety",
+          "surface-source-scan"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-export-bypass"
+        ],
+        "contractRef": "G006 audit/export separation contract",
+        "id": "contract-audit-separation",
+        "obligation": "Human approval export and append-only Decision Audit remain separate and visible.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-audit"
+        ]
+      },
+      {
+        "contractRef": "CLI trading control surface",
+        "id": "contract-cli-out-of-scope",
+        "obligation": "No CLI trading surface is delivered by this dashboard story.",
+        "reason": "G006 covers web dashboard safety; no CLI product surface is introduced.",
+        "status": "not_applicable"
+      }
+    ],
+    "e2eCommands": [
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g006-safety-audit"
+    ],
+    "e2eStatus": "passed",
+    "evidence": "83-G006ExecutorQa2 passed: browser transcript has 14 passed actions over 7 V2/V3 routes; DOM text missing=[]; runtime forbidden paths absent; source findings=[]; audit/export separation all true; contact sheet non-uniform.",
+    "redTeamCommands": [
+      "source/DOM/runtime/adversarial safety scan in scripts/verify_dashboard_safety_audit.py",
+      "executor QA 83-G006ExecutorQa2"
+    ],
+    "redTeamStatus": "passed",
+    "status": "passed",
+    "surfaceEvidence": [
+      {
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot",
+          "safety-scorecard"
+        ],
+        "contractRef": "V2/V3 web dashboard safety surfaces",
+        "id": "surface-web-safety",
+        "invocation": "Playwright browser navigation of V2 /ui/evolution, /ui/backtest, /ui/chart-replay and V3 /ui/remodel/condition, /audit, /backtest, /chart-replay.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "source-safety-scan",
+          "safety-scorecard"
+        ],
+        "contractRef": "Dashboard source/entrypoint safety scan",
+        "id": "surface-source-scan",
+        "invocation": "scripts/verify_dashboard_safety_audit.py source scan over frontend source, bundle, remodel source, and HTML entrypoints.",
+        "surface": "package",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "runtime-network-scan",
+          "browser-run"
+        ],
+        "contractRef": "Dashboard runtime network safety scan",
+        "id": "surface-network",
+        "invocation": "Browser-observed page-load runtime network scan rejects non-local origins, non-read-only methods, /bt mutators, /sim/ws, order/broker/account/live_order paths.",
+        "surface": "api/package",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "audit-export-separation",
+          "browser-run",
+          "gui-screenshot"
+        ],
+        "contractRef": "Append-only audit/export separation",
+        "id": "surface-audit",
+        "invocation": "V3 audit and condition DOM scan verifies Human Approval Gate, no auto modal, Append-Only ledger, and Decision Audit separation copy.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "cli-replay"
+        ],
+        "contractRef": "Verifier CLI replay",
+        "id": "surface-cli",
+        "invocation": "node -e \"console.log('g006-safety-audit-ok')\" replaySafe proof artifact.",
+        "surface": "cli",
+        "verdict": "passed"
+      }
+    ]
+  },
+  "iteration": {
+    "blockers": [],
+    "evidence": "AI slop cleanup report blocking=0; external-origin blocker fixed by removing Google font entrypoints and hardening verifier; full G006 safety audit and focused checks reran cleanly.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m py_compile scripts/verify_dashboard_safety_audit.py && python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g006-safety-audit",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q && node --check ai_strategy_loop/dashboard/frontend/bundle/app.js && node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_safety_audit.py && git diff --check"
+    ],
+    "status": "passed"
+  }
+}

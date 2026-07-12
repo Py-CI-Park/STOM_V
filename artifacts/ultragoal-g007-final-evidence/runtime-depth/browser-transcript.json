@@ -1,0 +1,41 @@
+{
+  "actions": [
+    {
+      "assertion": "backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8778/ui/remodel/backtest",
+      "timestamp": "2026-06-29T19:44:00.000Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "backtest text score 100.0 missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "timestamp": "2026-06-29T19:44:00.001Z",
+      "type": "assert"
+    },
+    {
+      "assertion": "chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8778/ui/remodel/chart-replay",
+      "timestamp": "2026-06-29T19:44:00.002Z",
+      "type": "navigate"
+    },
+    {
+      "assertion": "chart_replay text score 100.0 missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "timestamp": "2026-06-29T19:44:00.003Z",
+      "type": "assert"
+    }
+  ],
+  "endedAt": "2026-06-29T19:44:07.603013+00:00",
+  "kind": "browser-automation",
+  "schemaVersion": 1,
+  "startedAt": "2026-06-29T19:44:00.334642+00:00",
+  "surface": "web",
+  "tool": "playwright+verify_dashboard_runtime_depth",
+  "verdict": "passed"
+}

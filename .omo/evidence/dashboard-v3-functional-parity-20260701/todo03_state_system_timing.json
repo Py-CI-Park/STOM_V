@@ -1,0 +1,74 @@
+﻿{
+    "task":  "TODO 03 - Unified UX System For Functional States",
+    "event":  "task-evidence-refreshed",
+    "status":  "passed",
+    "started_at":  "2026-07-01T23:40:53.8585197+09:00",
+    "ended_at":  "2026-07-01T23:42:38.4549785+09:00",
+    "duration_ms":  104596,
+    "worktree":  "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel",
+    "branch":  "feature/dashboard-remodel-20260626",
+    "head":  "887c3591161e95b2d828112266dc9d34a749adab",
+    "evidence":  [
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo03_state_system.log",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo03_backtest_desktop.png",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo03_backtest_narrow.png"
+                 ],
+    "steps":  [
+                  {
+                      "name":  "state system tests",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_state_system.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:40:53.8850933+09:00",
+                      "ended_at":  "2026-07-01T23:41:04.3447811+09:00",
+                      "duration_ms":  10460
+                  },
+                  {
+                      "name":  "state system tests repeat",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_state_system.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:04.3616077+09:00",
+                      "ended_at":  "2026-07-01T23:41:15.9865748+09:00",
+                      "duration_ms":  11625
+                  },
+                  {
+                      "name":  "module map regression",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_module_map.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:15.9865748+09:00",
+                      "ended_at":  "2026-07-01T23:41:27.2332045+09:00",
+                      "duration_ms":  11247
+                  },
+                  {
+                      "name":  "targeted remodel static tests",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g003_provenance_and_live_payload_state tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_safety_cues_and_forbidden_controls tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g006_eight_page_ux_sweep_panels -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:27.2342125+09:00",
+                      "ended_at":  "2026-07-01T23:41:44.1166496+09:00",
+                      "duration_ms":  16882
+                  },
+                  {
+                      "name":  "node syntax check",
+                      "command":  "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:44.1171871+09:00",
+                      "ended_at":  "2026-07-01T23:41:46.1442529+09:00",
+                      "duration_ms":  2027
+                  },
+                  {
+                      "name":  "git diff check",
+                      "command":  "$ErrorActionPreference = \"Continue\"; git diff --check; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; exit 0",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:46.1442529+09:00",
+                      "ended_at":  "2026-07-01T23:41:47.5705030+09:00",
+                      "duration_ms":  1426
+                  },
+                  {
+                      "name":  "protected path status",
+                      "command":  "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-01T23:41:47.5705030+09:00",
+                      "ended_at":  "2026-07-01T23:41:50.6225495+09:00",
+                      "duration_ms":  3052
+                  }
+              ]
+}

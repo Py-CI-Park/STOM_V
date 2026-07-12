@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "createdAt": "2026-06-27T14:24:00Z",
+  "server": "uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8774",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "actions": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8774/ui/evolution",
+      "result": "title STOM AI · 조건식 자율 진화 대시보드; screenshot evolution.png",
+      "timestampMs": 0,
+      "selector": "document",
+      "type": "navigate",
+      "verdict": "passed",
+      "timestamp": "2026-06-27T14:24:00Z"
+    },
+    {
+      "step": 2,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8774/ui/backtest",
+      "result": "title STOM AI · 조건식 자율 진화 대시보드; screenshot backtest.png",
+      "timestampMs": 1000,
+      "selector": "document",
+      "type": "navigate",
+      "verdict": "passed",
+      "timestamp": "2026-06-27T14:24:01Z"
+    },
+    {
+      "step": 3,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8774/ui/chart-replay",
+      "result": "title STOM AI · 조건식 자율 진화 대시보드; screenshot chart-replay.png",
+      "timestampMs": 2000,
+      "selector": "document",
+      "type": "navigate",
+      "verdict": "passed",
+      "timestamp": "2026-06-27T14:24:02Z"
+    },
+    {
+      "step": 4,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8774/ui/remodel/",
+      "result": "title STOM AI · 조건식 AI 연구 대시보드; screenshot remodel.png",
+      "timestampMs": 3000,
+      "selector": "document",
+      "type": "navigate",
+      "verdict": "passed",
+      "timestamp": "2026-06-27T14:24:03Z"
+    }
+  ],
+  "screenshots": [
+    "artifacts/ultragoal-g001-baseline/evolution.png",
+    "artifacts/ultragoal-g001-baseline/backtest.png",
+    "artifacts/ultragoal-g001-baseline/chart-replay.png",
+    "artifacts/ultragoal-g001-baseline/remodel.png"
+  ],
+  "verdict": "passed",
+  "tool": "browser"
+}

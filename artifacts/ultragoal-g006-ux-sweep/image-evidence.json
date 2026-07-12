@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "tool": "browser",
+  "generatedAt": "2026-06-29T19:08:14.239Z",
+  "screenshots": [
+    {
+      "pageId": "condition",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\condition-interaction.png",
+      "bytes": 1252891,
+      "sha256": "6feeba03bab6b7122c834a2ee2b3c32bdf5bbc06da2a5e7b359803b58aa42ae8"
+    },
+    {
+      "pageId": "process",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\process-interaction.png",
+      "bytes": 728162,
+      "sha256": "b917f2037c8427463a0425a631fb078c0aff2608263ada2502f69d85b95e9da0"
+    },
+    {
+      "pageId": "history",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\history-interaction.png",
+      "bytes": 989358,
+      "sha256": "1b6963d70efb91be6391c59f8703717c0f56b3cb270bf602d772da86f51795a1"
+    },
+    {
+      "pageId": "lab",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\lab-interaction.png",
+      "bytes": 764990,
+      "sha256": "8e26d9dec112e834f7d5bbc6b3f91477ebc3e35d0550b75ae6b2303ca4616769"
+    },
+    {
+      "pageId": "workbench",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\workbench-interaction.png",
+      "bytes": 827985,
+      "sha256": "245a725eb83d21fda4ab444e867c1a0839e922f5d926169118da257d6ca4c64d"
+    },
+    {
+      "pageId": "audit",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\audit-interaction.png",
+      "bytes": 797840,
+      "sha256": "eb91d0b3c035ee223f2e336986eb669117533e57117b01ec1ef4cc93b41da1b2"
+    },
+    {
+      "pageId": "backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\backtest-interaction.png",
+      "bytes": 1162789,
+      "sha256": "9fb096e11ad30bcd042b143d9a3692d4cf2ad9dd6e394ca25c4a492b5f58a4a5"
+    },
+    {
+      "pageId": "replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\replay-interaction.png",
+      "bytes": 1242958,
+      "sha256": "5dbbc906a4f1a32b3aecf6fcb74e21f220eab1955af7cef69a658fc93885a6f0"
+    }
+  ],
+  "allNonUniform": true
+}

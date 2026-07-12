@@ -1,0 +1,262 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review subagent 5-G001ArchitectReview approved G001 baseline guard tests/docs/screenshots. It found G001 correctly limited to route inventory, mock/static inventory, production source/API baseline, and safety guards without claiming full parity.",
+    "commands": [
+      "architect review subagent 5-G001ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA subagent 6-G001ExecutorQa validated browser transcript, screenshot refs, baseline verification summary, route separation, static preview scope, production contract source presence, forbidden action guards, safety cues, and no parity overclaim.",
+    "e2eCommands": [
+      "browser automation via browser tool on /ui/evolution, /ui/backtest, /ui/chart-replay, /ui/remodel/"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "pytest tests/unit/test_dashboard* -q",
+      "git diff --check"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g001-baseline/browser-transcript.json",
+        "description": "Valid browser automation transcript produced by browser tool with navigation actions, route URLs, titles, and screenshot refs",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8774/",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:24:00Z",
+            "url": "http://127.0.0.1:8774/ui/evolution",
+            "selector": "document",
+            "verdict": "passed"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:24:01Z",
+            "path": "artifacts/ultragoal-g001-baseline/evolution.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:24:02Z",
+            "url": "http://127.0.0.1:8774/ui/backtest",
+            "selector": "document",
+            "verdict": "passed"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:24:03Z",
+            "path": "artifacts/ultragoal-g001-baseline/backtest.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:24:04Z",
+            "url": "http://127.0.0.1:8774/ui/chart-replay",
+            "selector": "document",
+            "verdict": "passed"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:24:05Z",
+            "path": "artifacts/ultragoal-g001-baseline/chart-replay.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:24:06Z",
+            "url": "http://127.0.0.1:8774/ui/remodel/",
+            "selector": "document",
+            "verdict": "passed"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:24:07Z",
+            "path": "artifacts/ultragoal-g001-baseline/remodel.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g001-baseline/baseline-contact-sheet.png",
+        "description": "Non-uniform contact sheet assembled from browser-captured route screenshots for /ui/evolution, /ui/backtest, /ui/chart-replay, and /ui/remodel/"
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g001-baseline/verification-summary.json",
+        "description": "Focused command verification summary for G001"
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g001-baseline/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking findings"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g001-route-baseline",
+        "contractRef": "G001 objective route inventory",
+        "obligation": "Canonical /ui/evolution, /ui/backtest, and /ui/chart-replay remain separate from /ui/remodel and render baseline pages.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-routes"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-separation"
+        ]
+      },
+      {
+        "id": "contract-g001-remodel-baseline",
+        "contractRef": "G001 objective remodel baseline",
+        "obligation": "Current /ui/remodel/ root is documented and tested as static preview with explicit backend fallback bridge.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-remodel"
+        ],
+        "adversarialCaseRefs": [
+          "case-static-preview-explicit"
+        ]
+      },
+      {
+        "id": "contract-g001-production-sources",
+        "contractRef": "G001 objective production contract inventory",
+        "obligation": "Production backtest/replay component files and critical /bt, /sim route markers are present for later parity work.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-source"
+        ],
+        "adversarialCaseRefs": [
+          "case-production-contract-presence"
+        ]
+      },
+      {
+        "id": "contract-g001-safety",
+        "contractRef": "Global safety constraints",
+        "obligation": "Baseline source guard excludes live-order, broker-login, account controls, automatic export, and hidden final_approval markers while retaining safety cues.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-forbidden-actions"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-routes",
+        "contractRef": "canonical route baseline",
+        "surface": "web",
+        "invocation": "Browser navigated to /ui/evolution, /ui/backtest, /ui/chart-replay at 127.0.0.1:8774 and captured screenshots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-web-remodel",
+        "contractRef": "remodel root baseline",
+        "surface": "web",
+        "invocation": "Browser navigated to /ui/remodel/ at 127.0.0.1:8774 and captured screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-api-source",
+        "contractRef": "production source/API inventory",
+        "surface": "api",
+        "invocation": "Unit tests inspected source files and route markers for backtest_api.py and simulation_api.py.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-source-safety",
+        "contractRef": "safety source guard",
+        "surface": "package",
+        "invocation": "Unit tests scanned remodel source blobs for forbidden action markers and required safety cues.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-separation",
+        "contractRef": "canonical route preservation",
+        "scenario": "Canonical routes accidentally serve remodel static files or route escape into remodel during baseline.",
+        "expectedBehavior": "Canonical routes return 200 and do not contain frontend/remodel markers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-static-preview-explicit",
+        "contractRef": "remodel preview baseline",
+        "scenario": "Remodel root hides static preview status or opens repeated websocket calls when backend unavailable.",
+        "expectedBehavior": "Source includes explicit static preview fallback and only connects WS after health success.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-production-contract-presence",
+        "contractRef": "future parity sources",
+        "scenario": "Backtest/replay production component or route marker is missing before migration begins.",
+        "expectedBehavior": "Required source files and API markers exist.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-forbidden-actions",
+        "contractRef": "safety constraints",
+        "scenario": "Remodel source contains hidden live-order, broker-login, account, automatic export, or final_approval action marker.",
+        "expectedBehavior": "Forbidden markers absent and safety cues present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT: zero blocking findings. Focused verification rerun after cleanup/review: 9 passed for baseline+static tests, 329 passed for dashboard test glob, git diff --check passed. Architect and executor QA blockers are empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "pytest tests/unit/test_dashboard* -q",
+      "git diff --check"
+    ],
+    "blockers": []
+  }
+}

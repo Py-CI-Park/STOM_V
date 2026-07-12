@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G005",
+  "actions": [
+    {
+      "timestamp": "2026-06-28T02:09:00Z",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "result": "loaded reference chart replay"
+    },
+    {
+      "timestamp": "2026-06-28T02:09:06Z",
+      "type": "assert",
+      "selector": "Replay API/WS Contract Matrix",
+      "result": "19 contracts present, all INERT, zero fetch/ws/timer/storage"
+    },
+    {
+      "timestamp": "2026-06-28T02:09:08Z",
+      "type": "screenshot",
+      "selector": "body",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-reference.png",
+      "result": "non-uniform chart replay reference screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:09:12Z",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "result": "loaded live chart replay"
+    },
+    {
+      "timestamp": "2026-06-28T02:09:18Z",
+      "type": "assert",
+      "selector": "ReplayAdapter",
+      "result": "safe REST reads completed; /sim/ws not auto-opened; matrix shows USER-GATED actions/messages"
+    },
+    {
+      "timestamp": "2026-06-28T02:09:20Z",
+      "type": "screenshot",
+      "selector": "body",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-live.png",
+      "result": "non-uniform chart replay live screenshot saved"
+    }
+  ],
+  "artifactRefs": [
+    "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-reference.png",
+    "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-live.png"
+  ],
+  "verdict": "passed"
+}

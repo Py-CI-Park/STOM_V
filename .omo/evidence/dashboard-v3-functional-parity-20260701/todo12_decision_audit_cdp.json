@@ -1,0 +1,62 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasSurface": true,
+  "contractCount": 2,
+  "decisionsEndpoint": "/decisions",
+  "recordEndpoint": "/record_decision",
+  "manualGate": "manual-confirm-required",
+  "approvalBoundary": "separate-route",
+  "disabledReason": "ready",
+  "payloadAttribute": "{\"verdict\":\"hold\",\"note\":\"run_id=R-250518-1421-7XQ9 gen_no=136 strategy=MeanRev_Adaptive_v9 requires additional OOS validation\"}",
+  "emptyState": true,
+  "draft": {
+    "run_id": "runP",
+    "gen_no": 0,
+    "strategy": "StratA",
+    "verdict": "hold",
+    "note": "Manual audit note run_id=runP gen_no=0 strategy=StratA",
+    "evidence": [
+      "/strategy_code?run=&gen=",
+      "/backtest_detail?run_id=&gen_no=",
+      "/decisions"
+    ],
+    "latest_decision_count": 0,
+    "status": "ready",
+    "ready": true,
+    "missing": [],
+    "disabledReason": ""
+  },
+  "payload": {
+    "verdict": "hold",
+    "note": "Manual audit note run_id=runP gen_no=0 strategy=StratA"
+  },
+  "valid": {
+    "ok": true,
+    "errors": [],
+    "disabledReason": ""
+  },
+  "invalid": {
+    "ok": false,
+    "errors": [
+      "verdict must be promote, complement, hold, or reject",
+      "note is required",
+      "context note is required"
+    ],
+    "disabledReason": "verdict must be promote, complement, hold, or reject; note is required; context note is required"
+  },
+  "cancel": {
+    "status": "cancelled",
+    "detail": "Manual confirmation cancelled."
+  },
+  "inert": {
+    "status": "inert",
+    "detail": "Reference/demo mode never posts record_decision."
+  },
+  "validationStatus": {
+    "status": "validation-error",
+    "detail": "verdict must be promote, complement, hold, or reject; note is required; context note is required"
+  },
+  "decisionFetchCalls": [],
+  "websocketOpened": false
+}

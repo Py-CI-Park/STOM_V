@@ -1,0 +1,47 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasPanel": true,
+  "wsPath": "/bt/ws_job?job_id=J10235",
+  "panelWsPath": "/bt/ws_job?job_id=J10235",
+  "running": {
+    "job_id": "J1",
+    "status": "running",
+    "phase": "running",
+    "progress": 0.4,
+    "terminal": false,
+    "message": "",
+    "elapsed": 0,
+    "log_tail": []
+  },
+  "terminal": {
+    "job_id": "J2",
+    "status": "success",
+    "phase": "done",
+    "progress": 1,
+    "terminal": true,
+    "message": "",
+    "elapsed": 0,
+    "log_tail": []
+  },
+  "missing": {
+    "job_id": "",
+    "status": "missing-job",
+    "phase": "error",
+    "progress": 0,
+    "terminal": true,
+    "message": "job_id is required",
+    "log_tail": []
+  },
+  "unknown": {
+    "job_id": "nope",
+    "status": "unknown-job",
+    "phase": "error",
+    "progress": 0,
+    "terminal": true,
+    "message": "job_id not found",
+    "log_tail": []
+  },
+  "streamAutoOpened": false,
+  "inertButtons": 2
+}

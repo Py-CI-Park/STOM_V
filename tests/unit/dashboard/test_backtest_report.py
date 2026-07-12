@@ -29,6 +29,7 @@ from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_jobs as J  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_report as R  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 # --------------------------------------------------------------------- fixtures
@@ -88,10 +89,10 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     monkeypatch.setattr(S, "LOOP_RUNS_DB", tmp_path / "loop_runs.db")
     # 잡 매니저 싱글톤을 테스트 격리 디렉토리로 교체(영속 충돌 방지).
-    monkeypatch.setattr(J, "_MANAGER", None)
+    monkeypatch.setattr(J, "_manager", None)
     monkeypatch.setattr(J, "_JOBS_DIR", tmp_path / "webbt_jobs")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _seed_job(tmp_path: Path, csv_path: str, status: str = "success") -> str:
@@ -119,7 +120,7 @@ def _seed_job(tmp_path: Path, csv_path: str, status: str = "success") -> str:
 
 
 # --------------------------------------------------------------- render_report
-def _full_payload() -> dict:
+def _full_payload():
     return {
         "meta": {"title": "리포트<X>", "buy": "B", "sell": "S", "period": "20230101~20230131",
                  "generated_at": "2026-06-12 00:00:00", "source": "job:t", "trade_count": 2},

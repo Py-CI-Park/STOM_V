@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-29T19:08:14.239Z",
+  "verdict": "passed",
+  "pages": [
+    {
+      "pageId": "condition",
+      "chartCount": 7,
+      "tableCount": 2,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "process",
+      "chartCount": 0,
+      "tableCount": 3,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": false,
+        "activeDatumChanged": false,
+        "tooltipVisible": false,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": true
+    },
+    {
+      "pageId": "history",
+      "chartCount": 6,
+      "tableCount": 1,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "PnL · T+12 · Series: 13.35 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "lab",
+      "chartCount": 2,
+      "tableCount": 0,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "누적 수익률 · T+50 · Series: 17.14 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "workbench",
+      "chartCount": 9,
+      "tableCount": 1,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "audit",
+      "chartCount": 8,
+      "tableCount": 4,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "backtest",
+      "chartCount": 2,
+      "tableCount": 3,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false
+    },
+    {
+      "pageId": "replay",
+      "chartCount": 3,
+      "tableCount": 5,
+      "uxPanelPresent": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "pageStatesVisible": true,
+      "requiredWorkflowVisible": true,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "리플레이 차트 005930 · bar-30 · Close: 79100 · source=reference replay fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-replay-static · status=CURRENT"
+      },
+      "processModalPresent": false
+    }
+  ],
+  "screenshotCount": 8,
+  "screenshotsNonUniform": true
+}

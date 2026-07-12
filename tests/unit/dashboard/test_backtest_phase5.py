@@ -34,6 +34,7 @@ from ai_strategy_loop.dashboard.backtest_jobs import (  # noqa: E402
     BacktestJobSpec,
     default_command_builder,
 )
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def _make_strategy_db(path: Path) -> None:
@@ -55,7 +56,7 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _spec(**kw):

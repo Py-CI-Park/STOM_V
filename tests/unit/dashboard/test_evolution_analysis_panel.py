@@ -26,6 +26,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
@@ -91,7 +92,7 @@ def client(monkeypatch, tmp_path):
     monkeypatch.setattr(S, "LOOP_RUNS_DB", db)
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _seed_run(tmp_path: Path) -> None:

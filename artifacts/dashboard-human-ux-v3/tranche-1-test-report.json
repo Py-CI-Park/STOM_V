@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "generatedAt": "2026-06-30T07:46:12.122227+00:00",
+  "commands": [
+    {
+      "command": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "status": "passed",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "status": "passed",
+      "stdout": "32 passed in 24.31s"
+    },
+    {
+      "command": "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py",
+      "status": "passed",
+      "stdout": ""
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\"",
+      "status": "passed",
+      "stdout": ""
+    }
+  ]
+}

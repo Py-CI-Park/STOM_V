@@ -1,0 +1,533 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "surface": "web",
+  "page": "process",
+  "url": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2",
+  "actions": [
+    {
+      "index": 1,
+      "type": "navigate",
+      "at": 1782756038766,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference",
+      "timestamp": "2026-06-29T17:00:01Z",
+      "selector": "reference"
+    },
+    {
+      "index": 2,
+      "type": "collect-dom-facts",
+      "at": 1782756038769,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference-before-select",
+      "summary": {
+        "state": "REFERENCE/DEMO",
+        "selected": "RUN_20250519_143015_A1B2C3",
+        "runOptions": [
+          "RUN_20250519_143015_A1B2C3 · RUNNING · Autopsy",
+          "RUN_20250519_141002_Z9Y8X7 · ARCHIVE · Scoring"
+        ]
+      },
+      "timestamp": "2026-06-29T17:00:02Z",
+      "selector": "reference-before-select"
+    },
+    {
+      "index": 3,
+      "type": "change",
+      "at": 1782756038775,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference-run-selector",
+      "selector": "[data-process-run-selector]",
+      "value": "RUN_20250519_141002_Z9Y8X7",
+      "timestamp": "2026-06-29T17:00:03Z"
+    },
+    {
+      "index": 4,
+      "type": "collect-dom-facts",
+      "at": 1782756038885,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference-after-select",
+      "summary": {
+        "selected": "RUN_20250519_141002_Z9Y8X7",
+        "drilldown": "NodeScoringStatus완료Items10Time0.76sRequired fields7/7"
+      },
+      "timestamp": "2026-06-29T17:00:04Z",
+      "selector": "reference-after-select"
+    },
+    {
+      "index": 5,
+      "type": "screenshot",
+      "at": 1782756039469,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-cockpit.png",
+      "timestamp": "2026-06-29T17:00:05Z",
+      "selector": "reference"
+    },
+    {
+      "index": 6,
+      "type": "dispatch-click",
+      "at": 1782756039471,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference",
+      "selector": "[data-process-node]",
+      "opened": true,
+      "timestamp": "2026-06-29T17:00:06Z"
+    },
+    {
+      "index": 7,
+      "type": "collect-modal-facts",
+      "at": 1782756039486,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference",
+      "summary": {
+        "open": true,
+        "requiredCount": 7,
+        "containsPayloadSource": true
+      },
+      "timestamp": "2026-06-29T17:00:07Z",
+      "selector": "reference"
+    },
+    {
+      "index": 8,
+      "type": "screenshot",
+      "at": 1782756039997,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+      "label": "reference-modal",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-node-modal.png",
+      "timestamp": "2026-06-29T17:00:08Z",
+      "selector": "reference-modal"
+    },
+    {
+      "index": 9,
+      "type": "navigate",
+      "at": 1782756040783,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2",
+      "label": "live",
+      "timestamp": "2026-06-29T17:00:09Z",
+      "selector": "live"
+    },
+    {
+      "index": 10,
+      "type": "collect-dom-facts",
+      "at": 1782756040786,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2",
+      "label": "live",
+      "summary": {
+        "state": "LIVE",
+        "nodeStatuses": [
+          "대기",
+          "대기",
+          "대기",
+          "대기",
+          "대기"
+        ],
+        "negativeGenAbsent": true,
+        "idleNoRunningGeneration": true,
+        "liveContractsNotForcedOk": true
+      },
+      "timestamp": "2026-06-29T17:00:10Z",
+      "selector": "live"
+    },
+    {
+      "index": 11,
+      "type": "screenshot",
+      "at": 1782756041335,
+      "url": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2",
+      "label": "live",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-cockpit-live.png",
+      "timestamp": "2026-06-29T17:00:11Z",
+      "selector": "live"
+    }
+  ],
+  "facts": {
+    "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+    "title": "STOM AI · 조건식 AI 연구 대시보드",
+    "mode": "reference",
+    "headerText": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          REFERENCE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status running\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode REFERENCEContract REST + WebSocket (Local)Approval Human G",
+    "state": "REFERENCE/DEMO",
+    "stateText": "state REFERENCE/DEMOsource=reference fixture/static process payloadrun_id=RUN_20250519_141002_Z9Y8X7phase=Scoringfreshness=2025-05-19T14:10:02+09:00stale=reference/demo honest fixture · not livemissing=0malformed=0",
+    "requiredFields": [
+      "kpis",
+      "nodes",
+      "logs",
+      "runs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "runSelectorOptions": [
+      "RUN_20250519_143015_A1B2C3 · RUNNING · Autopsy",
+      "RUN_20250519_141002_Z9Y8X7 · ARCHIVE · Scoring"
+    ],
+    "selectedRunValue": "RUN_20250519_141002_Z9Y8X7",
+    "dataSourceKeys": [
+      "runs",
+      "kpis",
+      "nodes",
+      "logs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "nodeIds": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "nodeStatuses": [
+      "완료",
+      "완료",
+      "완료",
+      "진행 중",
+      "대기"
+    ],
+    "drilldown": "NodeScoringStatus완료Items10Time0.76sRequired fields7/7",
+    "nodeRects": [
+      {
+        "text": "1 완료Generation아이디어/가설 생성items32time1.32s",
+        "x": 338,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "2 완료Backtest시뮬레이터 검증items32time3.28s",
+        "x": 502,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "3 완료Scoring다중 지표 랭킹items10time0.76s",
+        "x": 666,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "4 진행 중Autopsy성과 원인 분석items4/10time1.46s",
+        "x": 830,
+        "y": 717,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "5 대기Repeat인사이트 반영items10timeETA 00:00:48",
+        "x": 994,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      }
+    ],
+    "contractText": "경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeOK≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitOK≤2sScoring → Autopsyscore, rank, gate_reason, top_nOK≤3sAutopsy → Repeatinsights, risk_flags, next_jobsPENDING≤3s",
+    "queueText": "큐대기실행완료오류상태generation00320IDLEbacktest00320IDLEautopsy6400RUNNING",
+    "proofText": {
+      "queue": true,
+      "workers": true,
+      "contract": true,
+      "stateMatrix": true,
+      "loadingFallback": true,
+      "referenceHonest": true,
+      "backendStatus": false,
+      "livePayload": false,
+      "negativeGenAbsent": true,
+      "idleNoRunningGeneration": true,
+      "liveContractsNotForcedOk": true
+    },
+    "safety": [
+      {
+        "text": "No Live Order",
+        "present": true
+      },
+      {
+        "text": "No Broker Login",
+        "present": true
+      },
+      {
+        "text": "No Account Trading",
+        "present": true
+      },
+      {
+        "text": "Human Approval Gate",
+        "present": true
+      },
+      {
+        "text": "Append-Only Audit",
+        "present": true
+      },
+      {
+        "text": "연구 전용",
+        "present": true
+      }
+    ],
+    "bodySample": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          REFERENCE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status running\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode REFERENCEContract REST + WebSocket (Local)Approval Human Gate RequiredAudit Append-Only\n      \n      조건식 AI백테스트차트 리플레이\n        LIVEARCHIVE\n        Gen 137 / 목표 20068.5%\n        Provider STOM-AI Engine v2.3.1TF 1Drun_id R-250518-1421-7XQ9\n        ⚙ 설정Start ▶Stop ■\n      \n      조건식 AI프로세스히스토리연구실분석 워크벤치결정 감사\n      실행 선택 (Run Selector)RUN_20250519_143015_A1B2C3 · RUNNING · AutopsyRUN_20250519_141002_Z9Y8X7 · ARCHIVE · ScoringARCHIVE100%reference fixture · process monitor프로세스 메뉴▣ 프로세스 맵□ 실행 목록□ 노드 카탈로그□ 경계 계약□ 큐/워커□ 상태/오류안전 & 거버넌스⚠ 연구 전용🚫 실거래 연동 없음🛡 Human Approval Gate🧾 Append-Only Audit🔌 로컬 REST + WebSocket · read-only monitor\n      프로세스 provenance · source: reference fixture/static data · mode: REFERENCE · backend: http://127.0.0.1:9200 · loop pending/fallbackFixture/staticnodeCount: 5 · activeNodes: 1 · logCount: 7\n      state REFERENCE/DEMOsource=reference fixture/static process payloadrun_id=RUN_20250519_141002_Z9Y8X7phase=Scoringfreshness=2025-05-19T14:10:02+09:00stale=reference/demo honest fixture · not livemissing=0malformed=0\n      kpispayload oknodespayload oklogspayload okrunspayload okqueuepayload okworkerspayload okcontractspayload ok\n      처리량24.7 items/min평균 단계 시간1.84s실패 건수0건캐시 적중률78.3%큐 깊이3활성 워커8 / 16메모리2.31GB · 36%CPU23.7%\n      프로세스 맵 (payload-driven)노드 JSON 보기1 완료Generation아이디어/가설 생성items32time1.32s2 완료Backtest시뮬레이터 검증items32time3.28s3 완료Scoring다중 지표 랭킹items10time0.76s4 진행 중Autopsy성과 원인 분석items4/10time1.46s5 대기Repeat인사이트 반영items10timeETA 00:00:48\n      \n        현재 상태 / Node DrilldownNodeScoringStatus완료Items10Time0.76sRequired fields7/7\n        단계 설명1. Generation아이디어/가설 생성 · 완료2. Backtest시뮬레이터 검증 · 완료3. Scoring다중 지표 랭킹 · 완료4. Autopsy성과 원인 분석 · 진행 중5. Repeat인사이트 반영 · 대기\n        라이브 로그 / Error State14:32:18 INFO [Engine] Autopsy 전략 4/10 분석 시작\n14:32:17 INFO [Engine] 피처 중요도 계산 완료\n14:32:16 INFO [Engine] 민감도 분석 수행 중\n14:32:15 INFO [Engine] 상위 10개 전략 선별 완료\n14:32:14 INFO [Engine] 32/32 백테스트 완료\n14:32:13 INFO [Engine] 32개 전략 아이디어 생성 완료\n14:32:12 INFO [Engine] 데이터 로드 완료 rows=1,245,678\n      \n      \n        큐 상태 (Queue) payload: queue큐대기실행완료오류상태generation00320IDLEbacktest00320IDLEautopsy6400RUNNING\n        워커 상태 (Workers) payload: workers워커노드상태HeartbeatItemworker-01Autopsyrunning14:32:18S137-0321worker-02Autopsyrunning14:32:16S137-0330worker-08Backtestidle14:32:15ready\n        경계 계약 (Route Boundary Contract) payload: contracts경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeOK≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitOK≤2sScoring → Autopsyscore, rank, gate_reason, top_nO"
+  },
+  "referenceFacts": {
+    "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g004=final2",
+    "title": "STOM AI · 조건식 AI 연구 대시보드",
+    "mode": "reference",
+    "headerText": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          REFERENCE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status running\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode REFERENCEContract REST + WebSocket (Local)Approval Human G",
+    "state": "REFERENCE/DEMO",
+    "stateText": "state REFERENCE/DEMOsource=reference fixture/static process payloadrun_id=RUN_20250519_141002_Z9Y8X7phase=Scoringfreshness=2025-05-19T14:10:02+09:00stale=reference/demo honest fixture · not livemissing=0malformed=0",
+    "requiredFields": [
+      "kpis",
+      "nodes",
+      "logs",
+      "runs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "runSelectorOptions": [
+      "RUN_20250519_143015_A1B2C3 · RUNNING · Autopsy",
+      "RUN_20250519_141002_Z9Y8X7 · ARCHIVE · Scoring"
+    ],
+    "selectedRunValue": "RUN_20250519_141002_Z9Y8X7",
+    "dataSourceKeys": [
+      "runs",
+      "kpis",
+      "nodes",
+      "logs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "nodeIds": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "nodeStatuses": [
+      "완료",
+      "완료",
+      "완료",
+      "진행 중",
+      "대기"
+    ],
+    "drilldown": "NodeScoringStatus완료Items10Time0.76sRequired fields7/7",
+    "nodeRects": [
+      {
+        "text": "1 완료Generation아이디어/가설 생성items32time1.32s",
+        "x": 338,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "2 완료Backtest시뮬레이터 검증items32time3.28s",
+        "x": 502,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "3 완료Scoring다중 지표 랭킹items10time0.76s",
+        "x": 666,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "4 진행 중Autopsy성과 원인 분석items4/10time1.46s",
+        "x": 830,
+        "y": 717,
+        "width": 172,
+        "height": 200
+      },
+      {
+        "text": "5 대기Repeat인사이트 반영items10timeETA 00:00:48",
+        "x": 994,
+        "y": 741,
+        "width": 172,
+        "height": 200
+      }
+    ],
+    "contractText": "경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeOK≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitOK≤2sScoring → Autopsyscore, rank, gate_reason, top_nOK≤3sAutopsy → Repeatinsights, risk_flags, next_jobsPENDING≤3s",
+    "queueText": "큐대기실행완료오류상태generation00320IDLEbacktest00320IDLEautopsy6400RUNNING",
+    "proofText": {
+      "queue": true,
+      "workers": true,
+      "contract": true,
+      "stateMatrix": true,
+      "loadingFallback": true,
+      "referenceHonest": true,
+      "backendStatus": false,
+      "livePayload": false,
+      "negativeGenAbsent": true,
+      "idleNoRunningGeneration": true,
+      "liveContractsNotForcedOk": true
+    },
+    "safety": [
+      {
+        "text": "No Live Order",
+        "present": true
+      },
+      {
+        "text": "No Broker Login",
+        "present": true
+      },
+      {
+        "text": "No Account Trading",
+        "present": true
+      },
+      {
+        "text": "Human Approval Gate",
+        "present": true
+      },
+      {
+        "text": "Append-Only Audit",
+        "present": true
+      },
+      {
+        "text": "연구 전용",
+        "present": true
+      }
+    ],
+    "bodySample": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          REFERENCE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status running\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode REFERENCEContract REST + WebSocket (Local)Approval Human Gate RequiredAudit Append-Only\n      \n      조건식 AI백테스트차트 리플레이\n        LIVEARCHIVE\n        Gen 137 / 목표 20068.5%\n        Provider STOM-AI Engine v2.3.1TF 1Drun_id R-250518-1421-7XQ9\n        ⚙ 설정Start ▶Stop ■\n      \n      조건식 AI프로세스히스토리연구실분석 워크벤치결정 감사\n      실행 선택 (Run Selector)RUN_20250519_143015_A1B2C3 · RUNNING · AutopsyRUN_20250519_141002_Z9Y8X7 · ARCHIVE · ScoringARCHIVE100%reference fixture · process monitor프로세스 메뉴▣ 프로세스 맵□ 실행 목록□ 노드 카탈로그□ 경계 계약□ 큐/워커□ 상태/오류안전 & 거버넌스⚠ 연구 전용🚫 실거래 연동 없음🛡 Human Approval Gate🧾 Append-Only Audit🔌 로컬 REST + WebSocket · read-only monitor\n      프로세스 provenance · source: reference fixture/static data · mode: REFERENCE · backend: http://127.0.0.1:9200 · loop pending/fallbackFixture/staticnodeCount: 5 · activeNodes: 1 · logCount: 7\n      state REFERENCE/DEMOsource=reference fixture/static process payloadrun_id=RUN_20250519_141002_Z9Y8X7phase=Scoringfreshness=2025-05-19T14:10:02+09:00stale=reference/demo honest fixture · not livemissing=0malformed=0\n      kpispayload oknodespayload oklogspayload okrunspayload okqueuepayload okworkerspayload okcontractspayload ok\n      처리량24.7 items/min평균 단계 시간1.84s실패 건수0건캐시 적중률78.3%큐 깊이3활성 워커8 / 16메모리2.31GB · 36%CPU23.7%\n      프로세스 맵 (payload-driven)노드 JSON 보기1 완료Generation아이디어/가설 생성items32time1.32s2 완료Backtest시뮬레이터 검증items32time3.28s3 완료Scoring다중 지표 랭킹items10time0.76s4 진행 중Autopsy성과 원인 분석items4/10time1.46s5 대기Repeat인사이트 반영items10timeETA 00:00:48\n      \n        현재 상태 / Node DrilldownNodeScoringStatus완료Items10Time0.76sRequired fields7/7\n        단계 설명1. Generation아이디어/가설 생성 · 완료2. Backtest시뮬레이터 검증 · 완료3. Scoring다중 지표 랭킹 · 완료4. Autopsy성과 원인 분석 · 진행 중5. Repeat인사이트 반영 · 대기\n        라이브 로그 / Error State14:32:18 INFO [Engine] Autopsy 전략 4/10 분석 시작\n14:32:17 INFO [Engine] 피처 중요도 계산 완료\n14:32:16 INFO [Engine] 민감도 분석 수행 중\n14:32:15 INFO [Engine] 상위 10개 전략 선별 완료\n14:32:14 INFO [Engine] 32/32 백테스트 완료\n14:32:13 INFO [Engine] 32개 전략 아이디어 생성 완료\n14:32:12 INFO [Engine] 데이터 로드 완료 rows=1,245,678\n      \n      \n        큐 상태 (Queue) payload: queue큐대기실행완료오류상태generation00320IDLEbacktest00320IDLEautopsy6400RUNNING\n        워커 상태 (Workers) payload: workers워커노드상태HeartbeatItemworker-01Autopsyrunning14:32:18S137-0321worker-02Autopsyrunning14:32:16S137-0330worker-08Backtestidle14:32:15ready\n        경계 계약 (Route Boundary Contract) payload: contracts경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeOK≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitOK≤2sScoring → Autopsyscore, rank, gate_reason, top_nO"
+  },
+  "liveFacts": {
+    "url": "http://127.0.0.1:8777/ui/remodel/process?backend=http%3A%2F%2F127.0.0.1%3A8777&g004=live-final2",
+    "title": "STOM AI · 조건식 AI 연구 대시보드",
+    "mode": "live",
+    "headerText": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          LIVE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status idle\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode LIVEContract REST + WebSocket (Local)Approval Human Gate RequiredA",
+    "state": "LIVE",
+    "stateText": "state LIVEsource=backend-derived process payloadrun_id=R-250518-1421-7XQ9phase=idlefreshness=2026-06-29T18:00:40.129Zstale=live payloadmissing=0malformed=0",
+    "requiredFields": [
+      "kpis",
+      "nodes",
+      "logs",
+      "runs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "runSelectorOptions": [
+      "R-250518-1421-7XQ9 · IDLE · idle"
+    ],
+    "selectedRunValue": "R-250518-1421-7XQ9",
+    "dataSourceKeys": [
+      "runs",
+      "kpis",
+      "nodes",
+      "logs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "nodeIds": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "nodeStatuses": [
+      "대기",
+      "대기",
+      "대기",
+      "대기",
+      "대기"
+    ],
+    "drilldown": "NodeGenerationStatus대기Items0TimeliveRequired fields7/7",
+    "nodeRects": [
+      {
+        "text": "1 대기Generationbackend /status generationsitems0timelive",
+        "x": 338,
+        "y": 751,
+        "width": 172,
+        "height": 224
+      },
+      {
+        "text": "2 대기Backtestlatest checkpoint validationitems0timelive",
+        "x": 502,
+        "y": 751,
+        "width": 172,
+        "height": 224
+      },
+      {
+        "text": "3 대기Scoringgate and score aggregationitems0timelive",
+        "x": 666,
+        "y": 751,
+        "width": 172,
+        "height": 224
+      },
+      {
+        "text": "4 대기Autopsyrisk/autopsy monitoritems0timelive",
+        "x": 830,
+        "y": 727,
+        "width": 172,
+        "height": 224
+      },
+      {
+        "text": "5 대기Repeatnext generation schedulingitems1timepending",
+        "x": 994,
+        "y": 751,
+        "width": 172,
+        "height": 224
+      }
+    ],
+    "contractText": "경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeUNKNOWN≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitUNKNOWN≤2sScoring → Autopsyscore, rank, gate_reason, top_nUNKNOWN≤3sAutopsy → Repeatinsights, risk_flags, next_jobsPENDING≤3s",
+    "queueText": "큐대기실행완료오류상태generation1000IDLEbacktest0000IDLEautopsy0000IDLE",
+    "proofText": {
+      "queue": true,
+      "workers": true,
+      "contract": true,
+      "stateMatrix": true,
+      "loadingFallback": true,
+      "referenceHonest": false,
+      "backendStatus": true,
+      "livePayload": true,
+      "negativeGenAbsent": true,
+      "idleNoRunningGeneration": true,
+      "liveContractsNotForcedOk": true
+    },
+    "safety": [
+      {
+        "text": "No Live Order",
+        "present": true
+      },
+      {
+        "text": "No Broker Login",
+        "present": true
+      },
+      {
+        "text": "No Account Trading",
+        "present": true
+      },
+      {
+        "text": "Human Approval Gate",
+        "present": true
+      },
+      {
+        "text": "Append-Only Audit",
+        "present": true
+      },
+      {
+        "text": "연구 전용",
+        "present": true
+      }
+    ],
+    "bodySample": "\n  \n      \n        ✺STOM AI · 조건식 AI 연구 대시보드\n        \n          Backend Base URL\n          재연결\n          LIVE mode\n          REST UP\n          WebSocket 연결됨\n          Run Status idle\n          테마 ◐\n        \n        \n          경계선 내 조건식 엔진 · 연구 전용\n          Route Owner Quant-Research\n          Boundary local-only\n        \n      \n      \n        Route Owner Quant-ResearchBoundary local-only · research-only · no live orderEnv devMode LIVEContract REST + WebSocket (Local)Approval Human Gate RequiredAudit Append-Only\n      \n      조건식 AI백테스트차트 리플레이\n        LIVEARCHIVE\n        Gen 0 / 목표 10.0%\n        Provider STOM-AI Engine v2.3.1TF 1Drun_id R-250518-1421-7XQ9\n        ⚙ 설정Start ▶Stop ■\n      \n      조건식 AI프로세스히스토리연구실분석 워크벤치결정 감사\n      실행 선택 (Run Selector)R-250518-1421-7XQ9 · IDLE · idleIDLE0%backend /status process monitor프로세스 메뉴▣ 프로세스 맵□ 실행 목록□ 노드 카탈로그□ 경계 계약□ 큐/워커□ 상태/오류안전 & 거버넌스⚠ 연구 전용🚫 실거래 연동 없음🛡 Human Approval Gate🧾 Append-Only Audit🔌 로컬 REST + WebSocket · read-only monitor\n      프로세스 provenance · source: backend-derived live payload · mode: LIVE · backend: http://127.0.0.1:8777 · loop payload storedLive payloadnodeCount: 5 · activeNodes: 0 · logCount: 5\n      state LIVEsource=backend-derived process payloadrun_id=R-250518-1421-7XQ9phase=idlefreshness=2026-06-29T18:00:40.129Zstale=live payloadmissing=0malformed=0\n      kpispayload oknodespayload oklogspayload okrunspayload okqueuepayload okworkerspayload okcontractspayload ok\n      현재 세대0 / 1진행률0%게이트 통과0실패/거부0전략 수0상태idle프로바이더STOM-AI Engine v2.3.1TF1D\n      프로세스 맵 (payload-driven)노드 JSON 보기1 대기Generationbackend /status generationsitems0timelive2 대기Backtestlatest checkpoint validationitems0timelive3 대기Scoringgate and score aggregationitems0timelive4 대기Autopsyrisk/autopsy monitoritems0timelive5 대기Repeatnext generation schedulingitems1timepending\n      \n        현재 상태 / Node DrilldownNodeGenerationStatus대기Items0TimeliveRequired fields7/7\n        단계 설명1. Generationbackend /status generations · 대기2. Backtestlatest checkpoint validation · 대기3. Scoringgate and score aggregation · 대기4. Autopsyrisk/autopsy monitor · 대기5. Repeatnext generation scheduling · 대기\n        라이브 로그 / Error State2026-06-29T18:00:40.129Z INFO [Process] idle\n2026-06-29T18:00:40.129Z INFO [Process] run_id=R-250518-1421-7XQ9\n2026-06-29T18:00:40.129Z INFO [Process] current_gen=0 max_gen=1\n2026-06-29T18:00:40.129Z INFO [Process] gate_passed=0 failed=0\n2026-06-29T18:00:40.129Z INFO [Process] provider=STOM-AI Engine v2.3.1 tf=1D\n      \n      \n        큐 상태 (Queue) payload: queue큐대기실행완료오류상태generation1000IDLEbacktest0000IDLEautopsy0000IDLE\n        워커 상태 (Workers) payload: workers워커노드상태HeartbeatItemloop-statusLoopidle18:00:40R-250518-1421-7XQ9generation-cacheGenerationwaiting18:00:400 gensgate-counterScoringwaiting18:00:400 passed\n        경계 계약 (Route Boundary Contract) payload: contracts경로필수 필드상태SLAGeneration → Backteststrategy_id, buy_code, sell_code, universeUNKNOWN≤5sBacktest → Scoringjob_id, equity, trades, mdd, profitUNKNOWN≤2sScoring → A"
+  },
+  "modalFacts": {
+    "open": true,
+    "text": "Process Node · Generation닫기node_id1titleGenerationstatus완료items32time1.32sdesc아이디어/가설 생성payload_sourcereference fixture/static process payloadmalformed0kpispayload oknodespayload oklogspayload okrunspayload okqueuepayload okworkerspayload okcontractspayload ok",
+    "requiredFields": [
+      "kpis",
+      "nodes",
+      "logs",
+      "runs",
+      "queue",
+      "workers",
+      "contracts"
+    ],
+    "containsPayloadSource": true
+  },
+  "verdict": "passed",
+  "tool": "browser"
+}

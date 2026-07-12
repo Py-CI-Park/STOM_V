@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "console.log(\"ultragoal-g005-replay-ok\")"
+  ],
+  "recordedStdout": "ultragoal-g005-replay-ok\n"
+}

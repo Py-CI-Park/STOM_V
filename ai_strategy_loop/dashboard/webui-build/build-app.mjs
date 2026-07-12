@@ -97,7 +97,7 @@ function runPostBuild(manifestModelFields) {
     );
   };
 
-  const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html"];
+  const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html", "v4.html"];
   const touched = [];
   for (const h of htmlTargets) {
     const p = resolve(FRONTEND, h);

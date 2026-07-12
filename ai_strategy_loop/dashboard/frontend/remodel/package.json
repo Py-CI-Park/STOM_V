@@ -1,0 +1,19 @@
+{
+  "name": "stom-ai-dashboard-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline static prototype for STOM AI Korean quant research dashboard.",
+  "scripts": {
+    "serve": "python -m http.server 8080",
+    "check:js": "node --check src/app.js && node --check src/data.js"
+  },
+  "keywords": [
+    "STOM",
+    "quant-research",
+    "dashboard",
+    "FastAPI",
+    "WebSocket",
+    "Korean UI"
+  ],
+  "license": "UNLICENSED"
+}

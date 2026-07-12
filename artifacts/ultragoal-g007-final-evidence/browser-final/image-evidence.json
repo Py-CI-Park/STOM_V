@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "tool": "browser",
+  "generatedAt": "2026-06-29T19:46:59.595Z",
+  "screenshots": [
+    {
+      "pageId": "condition",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\condition.png",
+      "bytes": 1252891,
+      "sha256": "6feeba03bab6b7122c834a2ee2b3c32bdf5bbc06da2a5e7b359803b58aa42ae8"
+    },
+    {
+      "pageId": "process",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\process.png",
+      "bytes": 728162,
+      "sha256": "b917f2037c8427463a0425a631fb078c0aff2608263ada2502f69d85b95e9da0"
+    },
+    {
+      "pageId": "history",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\history.png",
+      "bytes": 987655,
+      "sha256": "e61362e67ea34a02d2b32102ee6ae39f92a79fb0dfc441f5ce80f42e3a4ebe3a"
+    },
+    {
+      "pageId": "lab",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\lab.png",
+      "bytes": 765141,
+      "sha256": "3aa7f3bd1f21ee096ada9041047cdb731483dc38aeb2a38934f8deeaff3a36c8"
+    },
+    {
+      "pageId": "workbench",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\workbench.png",
+      "bytes": 827985,
+      "sha256": "245a725eb83d21fda4ab444e867c1a0839e922f5d926169118da257d6ca4c64d"
+    },
+    {
+      "pageId": "audit",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\audit.png",
+      "bytes": 797840,
+      "sha256": "eb91d0b3c035ee223f2e336986eb669117533e57117b01ec1ef4cc93b41da1b2"
+    },
+    {
+      "pageId": "backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\backtest.png",
+      "bytes": 1110822,
+      "sha256": "d9cb866b3abd8e47714fe3360dc7c820991f635d7f88cb6432cefb2ecf35be51"
+    },
+    {
+      "pageId": "replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\replay.png",
+      "bytes": 1242160,
+      "sha256": "228b10cd0529de1021251063ee383abc91c451f3c9b37ddbaa63318c2e516769"
+    },
+    {
+      "pageId": "live-backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\live-backtest.png",
+      "bytes": 1149664,
+      "sha256": "3ee725044cef8298dc1fc3eec16a583a855ff4aa83ac96f154615c9d8459e6d3"
+    },
+    {
+      "pageId": "live-replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\live-replay.png",
+      "bytes": 1237370,
+      "sha256": "a3a25de361e43a68979cbbf4267dbe9ed2d043ec9fb76554ee0e43209b8e0e95"
+    }
+  ],
+  "allNonUniform": true
+}

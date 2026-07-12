@@ -1,0 +1,259 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 13-G004ArchitectReview: /ui/remodel/chart-replay is served by remodel shell with production SimulationTab, canonical routes preserved, /sim health/days/demo/stocks/signals/ws contracts present, read-only DB access, browser/API evidence clean, no forbidden controls.",
+    "commands": [
+      "architect subagent 13-G004ArchitectReview read-only review"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 14-G004ExecutorQa passed: browser evidence showed /ui/remodel/chart-replay activeTab=simulation, connected API, quick-start selected fixture DB day/stock, playback pause/stop, seek/speed, engines, indicators, variable watch, chart and diagnostics; direct WS check received meta/bars/history after seek; API smoke allOk=true; no unsafe controls.",
+    "e2eCommands": [
+      "browser automation via artifacts/ultragoal-g004-replay/browser-transcript.json"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team subagent 14-G004ExecutorQa route/static/data/playback/ws/safety checks"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g004-replay/browser-transcript.json",
+        "description": "Browser automation transcript for /ui/remodel/chart-replay quick-start playback and screenshot.",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:45:00Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "SimulationTab loaded under remodel route"
+          },
+          {
+            "type": "click",
+            "timestamp": "2026-06-27T15:45:02Z",
+            "selector": "button:has-text(\"최근 거래일\")",
+            "verdict": "passed",
+            "result": "quick-start selected fixture DB day/stock and autoplayed replay"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:45:07Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g004-replay/replay-live-data.png",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g004-replay/replay-live-data.png",
+        "description": "Non-uniform screenshot with selected stock list, minimap, live indicators, variable watch, playback controls, and chart."
+      },
+      {
+        "id": "api-smoke",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g004-replay/api-smoke.json",
+        "description": "REST API smoke covering /sim health/days/demo/stocks/signals with approved DB hardlinks."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g004-replay/verification-summary.json",
+        "description": "Leader-run commands and simulation test summary."
+      },
+      {
+        "id": "ai-slop-cleanup",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g004-replay/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking findings."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-route",
+        "contractRef": "Approved G004 /ui/remodel/chart-replay route",
+        "obligation": "Render production SimulationTab under remodel namespace without route escape/static prototype fallback.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-escape",
+          "case-static-fallback"
+        ]
+      },
+      {
+        "id": "contract-api",
+        "contractRef": "Approved G004 /sim REST APIs",
+        "obligation": "health/days/demo/stocks/signals respond without 404/5xx and support fixture DB evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-empty-data",
+          "case-api-404-5xx"
+        ]
+      },
+      {
+        "id": "contract-playback",
+        "contractRef": "Approved G004 playback and WS",
+        "obligation": "Expose playback controls, seek/speed, chart engines, indicators, variable watch, diagnostics, and /sim/ws behavior.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-disabled-playback",
+          "case-ws-seek-speed"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Approved G004 safety boundary",
+        "obligation": "No live trading/broker/account/hidden export controls.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser",
+        "contractRef": "/ui/remodel/chart-replay browser UI",
+        "surface": "web",
+        "invocation": "Browser navigated to /ui/remodel/chart-replay, clicked 최근 거래일 quick-start, captured live data screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-api",
+        "contractRef": "/sim REST API",
+        "surface": "api",
+        "invocation": "Direct smoke covered /sim health/days/demo/stocks/signals with HTTP 200 responses.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "Simulation unit/integration tests",
+        "surface": "api",
+        "invocation": "Focused simulation pytest suite covered replay, WS, labels, charts, backend, keepalive, multichart, frontend phase6.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-escape",
+        "contractRef": "Remodel namespace",
+        "scenario": "Route escapes to /ui/chart-replay or static prototype during quick-start.",
+        "expectedBehavior": "Path remains /ui/remodel/chart-replay and activeTab=simulation.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-static-fallback",
+        "contractRef": "Production SimulationTab",
+        "scenario": "Static reviewed prototype is used instead of production SimulationTab.",
+        "expectedBehavior": "Production controls, stock inventory, minimap, indicator table, variable watch, and chart are visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "case-empty-data",
+        "contractRef": "Fixture DB evidence",
+        "scenario": "Empty data masks missing replay functionality.",
+        "expectedBehavior": "Fixture DB hardlinks expose one min day and one tick day, demo/stocks return real codes/names.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke",
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-disabled-playback",
+        "contractRef": "Playback controls",
+        "scenario": "Playback remains disabled after quick-start.",
+        "expectedBehavior": "Quick-start selects stock and exposes pause/stop, speed, seek, chart, and variable watch.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-ws-seek-speed",
+        "contractRef": "/sim/ws",
+        "scenario": "WS start/speed/seek fails.",
+        "expectedBehavior": "Focused tests and QA direct WS evidence cover meta/bars/history after seek.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-unsafe-controls",
+        "contractRef": "Safety forbidden controls",
+        "scenario": "Hidden live trading/broker/account/final approval/export controls appear.",
+        "expectedBehavior": "Forbidden DOM controls absent; only non-owner explanatory text may mention 실거래 주문.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-api-404-5xx",
+        "contractRef": "/sim REST API",
+        "scenario": "Required simulation endpoints return 404/5xx.",
+        "expectedBehavior": "health/days/demo/stocks/signals return HTTP 200 with structured payloads.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI slop cleanup report found zero blocking findings. Targeted verification, browser quick-start/playback evidence, REST API smoke, architect review, and executor QA/red-team passed.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest focused simulation suite -> 131 passed, 2 skipped",
+      "python -m py_compile app.py simulation_api.py",
+      "node --check remodel-bootstrap.js",
+      "pytest remodel baseline/static -> 10 passed",
+      "git diff --check",
+      "browser automation + direct simulation API smoke + architect review 13 + executor QA 14"
+    ],
+    "blockers": []
+  }
+}

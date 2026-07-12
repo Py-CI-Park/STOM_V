@@ -1,0 +1,26 @@
+{
+  "run_id": "019f085a-a4a8-7000-8563-69a62c41c0b8",
+  "skill": "ralplan",
+  "active": true,
+  "current_phase": "architect",
+  "version": 2,
+  "updated_at": "2026-06-27T09:17:08.896Z",
+  "receipt": {
+    "version": 1,
+    "skill": "ralplan",
+    "owner": "gjc-runtime",
+    "command": "gjc ralplan persist-run-id",
+    "state_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\state\\sessions\\019f085a-a4a8-7000-8563-69a62c41c0b8\\skill-active-state.json",
+    "storage_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\state\\sessions\\019f085a-a4a8-7000-8563-69a62c41c0b8\\ralplan-state.json",
+    "mutated_at": "2026-06-27T09:17:08.897Z",
+    "fresh_until": "2026-06-27T09:47:08.897Z",
+    "status": "fresh",
+    "mutation_id": "ralplan:2026-06-27T09:17:08.897Z",
+    "content_sha256": {
+      "algorithm": "sha256",
+      "value": "5bd9936a82e6a60668c05e05fd76b8cdd6bc7deb91ddc5f925c664a34385c84e",
+      "covered_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f085a-a4a8-7000-8563-69a62c41c0b8\\state\\ralplan-state.json",
+      "computed_at": "2026-06-27T09:17:08.897Z"
+    }
+  }
+}

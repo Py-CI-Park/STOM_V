@@ -1,0 +1,241 @@
+{
+  "generatedAt": "2026-06-27T22:54:27.953330+00:00",
+  "basis": "Reference captures under ai_strategy_loop/dashboard/frontend/remodel/docs/captures versus current 8776 captures under artifacts/runtime/zip-parity-current at 1920x1080.",
+  "importantCorrection": "The previous 100/100 was entrypoint/function-presence/safety verification. Capture-to-capture visual parity is not 100; the corrected average is lower because live backend state changes visible values and the static prototype differs from production feature depth on backtest/replay.",
+  "averageVisualCaptureScore": 71.5,
+  "averageStructureScore": 89.9,
+  "averageFunctionalParityScore": 79.8,
+  "averageCorrectedTotalScore": 79.6,
+  "rows": [
+    {
+      "page": "조건식 AI",
+      "id": "01_condition_ai_overview",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/01_condition_ai_overview.png",
+      "current": "artifacts/runtime/zip-parity-current/01_condition_ai_overview.png",
+      "diff": "artifacts/runtime/zip-parity-compare/01_condition_ai_overview_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 94.3,
+      "rmseSimilarity": 83.7,
+      "dhashSimilarity": 89.1,
+      "edgeIoU": 26.3,
+      "histogramCosine": 99.6,
+      "weightedVisualParityScore": 72.3,
+      "meanAbsPixelDelta": 14.49,
+      "rmsPixelDelta": 41.54,
+      "structureScore": 92,
+      "functionalParityScore": 84,
+      "totalCorrectedScore": 81.5,
+      "differenceSummary": "상단/탭/3-column 카드 구조는 일치. 차이는 백엔드 실시간 값(8776, idle, Gen -1, 0.0%)이 참조 더미값(9200, running, Gen 137, 68.5%)을 덮어쓴 데서 크게 발생.",
+      "improvement": "기준 캡처 모드 고정/데모 스냅샷 잠금 토글을 두면 90점대 가능"
+    },
+    {
+      "page": "프로세스",
+      "id": "02_process",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/02_process.png",
+      "current": "artifacts/runtime/zip-parity-current/02_process.png",
+      "diff": "artifacts/runtime/zip-parity-compare/02_process_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 95.3,
+      "rmseSimilarity": 84.8,
+      "dhashSimilarity": 82.8,
+      "edgeIoU": 26.9,
+      "histogramCosine": 100.0,
+      "weightedVisualParityScore": 71.6,
+      "meanAbsPixelDelta": 11.88,
+      "rmsPixelDelta": 38.8,
+      "structureScore": 90,
+      "functionalParityScore": 82,
+      "totalCorrectedScore": 80.1,
+      "differenceSummary": "페이지 골격은 일치. 참조 대비 상단 런 상태와 일부 로그/메타 값이 달라 텍스트 edge 차이가 큼.",
+      "improvement": "캡처용 fixture 상태와 viewport 스크롤 위치 고정"
+    },
+    {
+      "page": "히스토리",
+      "id": "03_history",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/03_history.png",
+      "current": "artifacts/runtime/zip-parity-current/03_history.png",
+      "diff": "artifacts/runtime/zip-parity-compare/03_history_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 93.4,
+      "rmseSimilarity": 81.9,
+      "dhashSimilarity": 84.4,
+      "edgeIoU": 23.4,
+      "histogramCosine": 99.8,
+      "weightedVisualParityScore": 70.0,
+      "meanAbsPixelDelta": 16.71,
+      "rmsPixelDelta": 46.08,
+      "structureScore": 90,
+      "functionalParityScore": 82,
+      "totalCorrectedScore": 79.4,
+      "differenceSummary": "표/차트/사이드 패널 배치는 유사하나 run 목록이 live/fallback 데이터와 랜덤성 일부 영향을 받아 다름.",
+      "improvement": "히스토리 rows를 capture fixture로 고정"
+    },
+    {
+      "page": "연구실",
+      "id": "04_lab",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/04_lab.png",
+      "current": "artifacts/runtime/zip-parity-current/04_lab.png",
+      "diff": "artifacts/runtime/zip-parity-compare/04_lab_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 93.6,
+      "rmseSimilarity": 82.8,
+      "dhashSimilarity": 85.9,
+      "edgeIoU": 30.1,
+      "histogramCosine": 100.0,
+      "weightedVisualParityScore": 72.4,
+      "meanAbsPixelDelta": 16.32,
+      "rmsPixelDelta": 43.98,
+      "structureScore": 92,
+      "functionalParityScore": 82,
+      "totalCorrectedScore": 81.2,
+      "differenceSummary": "히트맵·중요도·검증 요약 구성은 비교적 가장 가까움.",
+      "improvement": "사이드 진행률/경고/텍스트 fixture 고정"
+    },
+    {
+      "page": "분석 워크벤치",
+      "id": "05_workbench",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/05_workbench.png",
+      "current": "artifacts/runtime/zip-parity-current/05_workbench.png",
+      "diff": "artifacts/runtime/zip-parity-compare/05_workbench_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 93.6,
+      "rmseSimilarity": 83.0,
+      "dhashSimilarity": 84.4,
+      "edgeIoU": 28.8,
+      "histogramCosine": 99.9,
+      "weightedVisualParityScore": 71.7,
+      "meanAbsPixelDelta": 16.41,
+      "rmsPixelDelta": 43.24,
+      "structureScore": 90,
+      "functionalParityScore": 82,
+      "totalCorrectedScore": 80.2,
+      "differenceSummary": "후보 카드/월별 히트맵/상세 차트 구성은 유지. 텍스트·후보값 차이 존재.",
+      "improvement": "후보 데이터 fixture freeze"
+    },
+    {
+      "page": "결정 감사",
+      "id": "06_decision_audit",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/06_decision_audit.png",
+      "current": "artifacts/runtime/zip-parity-current/06_decision_audit.png",
+      "diff": "artifacts/runtime/zip-parity-compare/06_decision_audit_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 94.4,
+      "rmseSimilarity": 83.9,
+      "dhashSimilarity": 89.1,
+      "edgeIoU": 24.6,
+      "histogramCosine": 99.9,
+      "weightedVisualParityScore": 71.9,
+      "meanAbsPixelDelta": 14.18,
+      "rmsPixelDelta": 41.14,
+      "structureScore": 90,
+      "functionalParityScore": 84,
+      "totalCorrectedScore": 80.7,
+      "differenceSummary": "감사 레이아웃/append-only 문구/결정 입력은 일치. 표·체크리스트 값 차이 존재.",
+      "improvement": "감사 ledger fixture freeze"
+    },
+    {
+      "page": "백테스트",
+      "id": "07_backtest",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/07_backtest.png",
+      "current": "artifacts/runtime/zip-parity-current/07_backtest.png",
+      "diff": "artifacts/runtime/zip-parity-compare/07_backtest_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 94.3,
+      "rmseSimilarity": 83.3,
+      "dhashSimilarity": 87.5,
+      "edgeIoU": 24.7,
+      "histogramCosine": 99.9,
+      "weightedVisualParityScore": 71.5,
+      "meanAbsPixelDelta": 14.57,
+      "rmsPixelDelta": 42.46,
+      "structureScore": 88,
+      "functionalParityScore": 72,
+      "totalCorrectedScore": 77.4,
+      "differenceSummary": "압축파일의 백테스트 정적 구성이 반영됨. 다만 기존 production 백테스트의 실제 실행 폼과는 UI 밀도/동작 깊이가 다름.",
+      "improvement": "정적 prototype을 유지할지 production 기능형 컴포넌트를 zip 스타일로 재스킨할지 결정 필요"
+    },
+    {
+      "page": "차트 리플레이",
+      "id": "08_chart_replay",
+      "reference": "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/08_chart_replay.png",
+      "current": "artifacts/runtime/zip-parity-current/08_chart_replay.png",
+      "diff": "artifacts/runtime/zip-parity-compare/08_chart_replay_diff_x4.png",
+      "refSize": [
+        1920,
+        1080
+      ],
+      "currentSize": [
+        1920,
+        1080
+      ],
+      "pixelSimilarity": 94.8,
+      "rmseSimilarity": 85.1,
+      "dhashSimilarity": 82.8,
+      "edgeIoU": 22.3,
+      "histogramCosine": 99.8,
+      "weightedVisualParityScore": 70.2,
+      "meanAbsPixelDelta": 13.31,
+      "rmsPixelDelta": 37.96,
+      "structureScore": 87,
+      "functionalParityScore": 70,
+      "totalCorrectedScore": 76.0,
+      "differenceSummary": "차트 리플레이 구획은 반영. reference/current 모두 정적 데모형이며 기존 production replay 대비 기능형 조작 깊이는 낮음.",
+      "improvement": "실제 /sim API 상태와 zip 스타일 차트 UI 결합 필요"
+    }
+  ],
+  "artifacts": {
+    "jsonMetricReport": "artifacts/runtime/zip-parity-compare/visual-parity-report.json",
+    "sideBySideContactSheet": "artifacts/runtime/zip-parity-compare/side-by-side-contact-sheet.png",
+    "currentCapturesDir": "artifacts/runtime/zip-parity-current/",
+    "diffDir": "artifacts/runtime/zip-parity-compare/"
+  }
+}

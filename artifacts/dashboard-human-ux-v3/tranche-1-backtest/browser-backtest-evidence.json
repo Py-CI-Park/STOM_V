@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+  "title": "STOM AI · 조건식 AI 연구 대시보드",
+  "timestamp": "2026-06-30T07:25:54.470Z",
+  "viewport": {
+    "w": 1440,
+    "h": 900
+  },
+  "selectorRects": {
+    "[data-ux-task-header=\"backtest\"]": {
+      "x": 14,
+      "y": 269,
+      "w": 1412,
+      "h": 383,
+      "text": "Task-first V3 백테스트 · 조건식 편집과 검증을 먼저 보여주는 V3 V2의 큰 조건식 편집 장점을 계승하고, 안전/계약 증거는 접힌 drawer로 내려 작업 흐름을 방해하지 않습니다. purpose 조건식 선택·편집·검증·수동 실행·결과 분석 state DEMO / REFERENCE INERT MODE · reference/demo inert · no backend mutation primary-action 조건식 "
+    },
+    "[data-safety-boundary=\"backtest\"]": {
+      "x": 14,
+      "y": 662,
+      "w": 1412,
+      "h": 67,
+      "text": "No Live Order 실거래 주문 없음 No Broker Login 브로커 로그인 없음 No Account Trading 계좌/자산 연동 없음 Research Only 연구 전용 Human Approval Gate 수동 승인 게이트 Append-Only Audit 불변 감사 /bt/* mutating endpoints are not auto-invoked · manual-gated and never page-load tri"
+    },
+    "[data-ux-primary-canvas=\"backtest\"]": {
+      "x": 14,
+      "y": 795,
+      "w": 1412,
+      "h": 2127,
+      "text": "1 SELECT 전략과 데이터 범위 매수 전략 BreakOut_v2 (v1.4) 매도 전략 BreakOut_Exit_v1 (v1.2) 시작일 종료일 Timeframe 1분(1m) Tick Engine Count 설정 저장 Reference/demo inert 3 VALIDATE 검증 상태 Validation PASS · syntax/local vars resolved Manual Gate INERT · reference/dem"
+    },
+    "[data-backtest-step=\"select\"]": {
+      "x": 27,
+      "y": 808,
+      "w": 1386,
+      "h": 304,
+      "text": "1 SELECT 전략과 데이터 범위 매수 전략 BreakOut_v2 (v1.4) 매도 전략 BreakOut_Exit_v1 (v1.2) 시작일 종료일 Timeframe 1분(1m) Tick Engine Count 설정 저장 Reference/demo inert"
+    },
+    "[data-backtest-step=\"edit\"]": {
+      "x": 27,
+      "y": 1361,
+      "w": 1386,
+      "h": 419,
+      "text": "2 EDIT 매수/매도 조건식 · V2보다 큰 1차 작업 영역 매수 조건식 · Long Entry 매도 조건식 · Exit/Short 저장 삭제 저장/삭제는 human-gated · reference/demo에서는 inert"
+    },
+    "[data-backtest-step=\"validate\"]": {
+      "x": 27,
+      "y": 1122,
+      "w": 1386,
+      "h": 227,
+      "text": "3 VALIDATE 검증 상태 Validation PASS · syntax/local vars resolved Manual Gate INERT · reference/demo disabled Run Preview #10235 BreakOut_v2 · 1m · 10,000,000 bars Result Path validate → gated run → analyze → evidence drawer 검증 변수 추출"
+    },
+    "[data-backtest-step=\"gated-run\"]": {
+      "x": 27,
+      "y": 1792,
+      "w": 1386,
+      "h": 243,
+      "text": "4 Gated Run Preview Reference/demo inert Job #10235 BreakOut_v2 Progress 63.4% Bars 6,342,112 / 10,000,000 Gate 수동 실행 전 대기 백테스트 실행 검토 작업 취소"
+    },
+    "[data-backtest-step=\"analyze\"]": {
+      "x": 27,
+      "y": 2045,
+      "w": 1386,
+      "h": 864,
+      "text": "주요 지표 PROFIT +23.41% ANN +11.23% SHARPE 1.87 SORTINO 2.45 MDD -14.42% drawdown guard WIN 56.73% PF 1.86 TRADES 312 에쿼티 곡선 · primary result 에쿼티 곡선 +23.41% status=CURRENT run_id=R-250518-1421-7XQ9 freshness=reference-static malformed=0 23.74 "
+    },
+    "[data-ux-evidence-drawer=\"backtest\"]": {
+      "x": 14,
+      "y": 2932,
+      "w": 1412,
+      "h": 51,
+      "text": "Backtest API Contract Matrix / UX proof / 안전 GET 증거 열기 contract markers preserved"
+    },
+    "[data-backtest-condition=\"buy\"]": {
+      "x": 40,
+      "y": 1450,
+      "w": 675,
+      "h": 280,
+      "text": "//@version=5 indicator(\"BreakOut_v2 - Long Entry\", overlay=true) fastLen = input.int(20, \"Fast Length\") slowLen = input.int(60, \"Slow Length\") atr = ta.atr(14) longCond = ta.crossover(ta.sma(close, fastLen), ta.sma(close, slowLen)) volumeGa"
+    },
+    "[data-backtest-condition=\"sell\"]": {
+      "x": 725,
+      "y": 1450,
+      "w": 675,
+      "h": 280,
+      "text": "//@version=5 indicator(\"BreakOut_v2 - Exit\", overlay=true) trailAtr = ta.atr(14) * 1.8 trailStop = ta.highest(high, 10) - trailAtr profitLock = close < ta.sma(close, 20) exitCond = close < trailStop or profitLock"
+    },
+    "[data-backtest-validation-status]": {
+      "x": 40,
+      "y": 1187,
+      "w": 1360,
+      "h": 112,
+      "text": "Validation PASS · syntax/local vars resolved Manual Gate INERT · reference/demo disabled Run Preview #10235 BreakOut_v2 · 1m · 10,000,000 bars Result Path validate → gated run → analyze → evidence drawer"
+    }
+  },
+  "conditionEditorCount": 2,
+  "forbiddenLiveControls": 0,
+  "nonReadonlyButtons": [
+    "테마 ◐",
+    "조건식 AI",
+    "백테스트",
+    "차트 리플레이",
+    "LIVE",
+    "ARCHIVE"
+  ],
+  "bodySample": "✺ STOM AI · 조건식 AI 연구 대시보드 Backend Base URL 재연결 REFERENCE mode REST INERT WebSocket 정적 fixture Run Status reference 테마 ◐ 경계선 내 조건식 엔진 · 연구 전용 Route Owner Quant-Research Boundary local-only Route Owner Quant-Research Boundary local-only · research-only · no live order Env dev Mode REFERENCE Contract REST + WebSocket (Local) Approval Human Gate Required Audit Append-Only 조건식 AI 백테스트 차트 리플레이 LIVE ARCHIVE Gen 137 / 목표 200 68.5% Provider STOM-AI Engine v2.3.1 TF 1D run_id R-250518-1421-7XQ9 ⚙ 설정 Start ▶ Stop ■ Task-first V3 백테스트 · 조건식 편집과 검증을 먼저 보여주는 V3 V2의 큰 조건식 편집 장점을 계승하고, 안전/계약 증거는 접힌 drawer로 내려 작업 흐름을 방해하지 않습니다. purpose 조건식 선택·편집·검증·수동 실행·결과 분석 state DEMO / REFERENCE INERT MODE · reference/demo inert · no backend mutation primary-action 조건식 검증 후 수동 실행 검토 risk no live order · no page-load POST · manual-gated /bt/* mode REFERENCE · reference/demo inert 검증 상태 확인 No Live Order 실거래 주문 없음 No Broker Login 브로커 로그인 없음 No Account Trading 계좌/자산 연동 없음 Research Only 연구 전용 Human Approval Gate 수동 승인 게이트 Append-Only Audit 불변 감사 /bt/* mutating endpoints are not auto-invoked · manual-gated and never page-load triggered 지원 흐름: 실행 파라미터 · 최적화 · WFO · 스윕 · 조건식 편집 · 결과 분석 · 독립 HTML 보고서 1 SELECT 전략과 데이터 범위 매수 전략 BreakOut_v2 (v1.4) 매도 전략 BreakOut_Exit_v1 (v1.2) 시작일 종료일 Timeframe 1분(1m) Tick Engine Count 설정 저장 Reference/demo inert 3 VALIDATE 검증 상태 Validation PASS · syntax/local vars resolved Manual Gate INERT · reference/demo disabled Run Preview #10235 BreakOut_v2 · 1m · 10,000,000 bars Result Path validate → gated run → analyze → evidence drawer 검증 변수 추출 2 EDIT 매수/매도 조건식 · V2보다 큰 1차 작업 영역 매수 조건식 · Long Entry 매도 조건식 · Exit/Short 저장 삭제 저장/삭제는 human-gated · reference/demo에서는 inert 4 Gated Run Preview Reference/demo inert Job #10235 BreakOut_v2 Progress 63.4% Bars 6,342,112 / 10,000,000 Gate 수동 실행 전 대기 백테스트 실행 검토 작업 취소 주요 지표 PROFIT +23.41% ANN +11.23% SHARPE 1.87 SORTINO 2.45 MDD -14.42% drawdown guard WIN 56.73% PF 1.86 TRADES 312 에쿼티 곡선 · primary result 에쿼티 곡선 +23.41% status=CURRENT run_id=R",
+  "tool": "browser",
+  "surface": "web",
+  "screenshotPath": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+  "actions": [
+    {
+      "timestamp": "2026-06-30T07:25:50.000Z",
+      "type": "navigate",
+      "selector": "document",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "waitUntil": "networkidle2"
+    },
+    {
+      "timestamp": "2026-06-30T07:25:54.000Z",
+      "type": "evaluate",
+      "selector": "[data-ux-primary-canvas=\"backtest\"]",
+      "description": "Capture required G002 Backtest selectors and forbidden live controls"
+    },
+    {
+      "timestamp": "2026-06-30T07:25:55.000Z",
+      "type": "screenshot",
+      "selector": "body",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+      "fullPage": false
+    }
+  ]
+}

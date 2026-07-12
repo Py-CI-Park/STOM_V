@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "surface": "web",
+  "page": "g006-eight-page-ux-sweep",
+  "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g006=sweep2",
+  "generatedAt": "2026-06-29T19:08:14.239Z",
+  "actions": [
+    {
+      "timestamp": "2026-06-29T19:08:00.121Z",
+      "index": 1,
+      "type": "route-ux-interaction",
+      "label": "condition",
+      "selector": "[data-ux-page=\"condition\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "condition",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 7,
+        "tableCount": 2,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · condition\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\n5 charts + heatmap · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: empty generation table · Loading: loading live loop · Stale: stale fallback · Malformed: malformed generation row · Error: network error banner\nWorkflow\ninspect generation → compare charts → review winner → human-gated export\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visible",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "condition",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\condition-interaction.png",
+        "bytes": 1252891,
+        "sha256": "6feeba03bab6b7122c834a2ee2b3c32bdf5bbc06da2a5e7b359803b58aa42ae8"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:01.996Z",
+      "index": 2,
+      "type": "route-ux-interaction",
+      "label": "process",
+      "selector": "[data-ux-page=\"process\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "process",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 0,
+        "tableCount": 3,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · process\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nprocess map + 0/optional charts · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: empty nodes/logs · Loading: loading process payload · Stale: stale /status · Malformed: malformed process field · Error: network error with fixture retained\nWorkflow\nselect run → inspect node → verify logs/queues/workers/contracts\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visible",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": false,
+          "activeDatumChanged": false,
+          "tooltipVisible": false,
+          "ariaLiveText": ""
+        },
+        "processModal": "Process Node · Generation\n닫기\nnode_id\n1\ntitle\nGeneration\nstatus\n완료\nitems\n32\ntime\n1.32s\ndesc\n아이디어/가설 생성\npayload_source\nreference fixture/static process payload\nmalformed\n0\nkpispayload ok\nnodespayload ok\nlogspayload ok\nrunspayload ok\nqueuepayl",
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "process",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\process-interaction.png",
+        "bytes": 728162,
+        "sha256": "b917f2037c8427463a0425a631fb078c0aff2608263ada2502f69d85b95e9da0"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:04.061Z",
+      "index": 3,
+      "type": "route-ux-interaction",
+      "label": "history",
+      "selector": "[data-ux-page=\"history\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/history?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "history",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 6,
+        "tableCount": 1,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · history\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\n4 archive charts · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no run records · Loading: loading archive · Stale: stale archive snapshot · Malformed: malformed run row · Error: compare unavailable\nWorkflow\nfilter archive → select run → compare result detail → request gated export\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visible",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "PnL · T+12 · Series: 13.35 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "history",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\history-interaction.png",
+        "bytes": 989358,
+        "sha256": "1b6963d70efb91be6391c59f8703717c0f56b3cb270bf602d772da86f51795a1"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:05.992Z",
+      "index": 4,
+      "type": "route-ux-interaction",
+      "label": "lab",
+      "selector": "[data-ux-page=\"lab\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/lab?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "lab",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 2,
+        "tableCount": 0,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · lab\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nheatmap + scatter/quality charts · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no experiment output · Loading: loading research pack · Stale: stale factor snapshot · Malformed: malformed heatmap cell · Error: validation failure\nWorkflow\nread criteria → inspect factor heatmap → validate combinations → package context\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visi",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "누적 수익률 · T+50 · Series: 17.14 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "lab",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\lab-interaction.png",
+        "bytes": 764990,
+        "sha256": "8e26d9dec112e834f7d5bbc6b3f91477ebc3e35d0550b75ae6b2303ca4616769"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:08.037Z",
+      "index": 5,
+      "type": "route-ux-interaction",
+      "label": "workbench",
+      "selector": "[data-ux-page=\"workbench\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/workbench?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "workbench",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 9,
+        "tableCount": 1,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · workbench\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nheatmap + 4 compare charts · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no selected candidate · Loading: loading evidence pack · Stale: stale candidate score · Malformed: malformed metric · Error: review queue blocked\nWorkflow\nselect candidate → compare exposure/performance → hand off to review queue\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visible",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "workbench",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\workbench-interaction.png",
+        "bytes": 827985,
+        "sha256": "245a725eb83d21fda4ab444e867c1a0839e922f5d926169118da257d6ca4c64d"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:10.008Z",
+      "index": 6,
+      "type": "route-ux-interaction",
+      "label": "audit",
+      "selector": "[data-ux-page=\"audit\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "audit",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 8,
+        "tableCount": 4,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · audit\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nOOS chart + sparklines · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no decision rows · Loading: loading ledger · Stale: stale hash chain · Malformed: malformed ledger row · Error: note validation error\nWorkflow\nreview evidence → choose decision → require note → append-only ledger record\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visible",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "audit",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\audit-interaction.png",
+        "bytes": 797840,
+        "sha256": "eb91d0b3c035ee223f2e336986eb669117533e57117b01ec1ef4cc93b41da1b2"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:12.121Z",
+      "index": 7,
+      "type": "route-ux-interaction",
+      "label": "backtest",
+      "selector": "[data-ux-page=\"backtest\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "backtest",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 2,
+        "tableCount": 3,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · backtest\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nequity + report comparison charts · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no jobs/results · Loading: loading safe GET probes · Stale: stale result fixture · Malformed: malformed metric row · Error: manual POST rejected\nWorkflow\nconfigure read-only parameters → inspect safe job/result probes → compare/report manually\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover ",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "backtest",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\backtest-interaction.png",
+        "bytes": 1162789,
+        "sha256": "9fb096e11ad30bcd042b143d9a3692d4cf2ad9dd6e394ca25c4a492b5f58a4a5"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:08:14.239Z",
+      "index": 8,
+      "type": "route-ux-interaction",
+      "label": "replay",
+      "selector": "[data-ux-page=\"replay\"]",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g006=sweep2",
+      "facts": {
+        "pageId": "replay",
+        "mode": "reference",
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "chartCount": 3,
+        "tableCount": 5,
+        "uxPanelPresent": true,
+        "uxPanelText": "G006 UX/UI sweep · replay\nlayout/interaction/state proof\nLayout\nresponsive grid · no horizontal overflow target\nCharts\nOHLCV candles + signal tables · tooltip/crosshair/focus or accessible equivalent\nStates\nEmpty: no bars/signals · Loading: loading safe REST probes · Stale: stale replay fixture · Malformed: malformed candle · Error: /sim/ws manual retry error\nWorkflow\nselect historical replay → inspect OHLCV/crosshair → user-gated /sim/ws controls\nProvenance\nREFERENCE · reference/demo fixture, inert actions disabled\nAccessibility\nkeyboard focus · aria-live active datum · non-hover values visib",
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "viewportWidth": 1440,
+        "scrollWidth": 1440,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "리플레이 차트 005930 · bar-30 · Close: 79100 · source=reference replay fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-replay-static · status=CURRENT"
+        },
+        "processModal": null,
+        "pageStatesVisible": true,
+        "requiredWorkflowVisible": true
+      },
+      "screenshot": {
+        "pageId": "replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-ux-sweep\\replay-interaction.png",
+        "bytes": 1242958,
+        "sha256": "5dbbc906a4f1a32b3aecf6fcb74e21f220eab1955af7cef69a658fc93885a6f0"
+      }
+    }
+  ]
+}

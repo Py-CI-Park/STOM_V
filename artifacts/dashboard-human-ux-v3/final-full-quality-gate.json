@@ -1,0 +1,313 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://155-G007FinalArchitect: CLEAR/CLEAR/CLEAR APPROVE. Review covered final verification report, human UX/category floors, visual gate, V2/V3 route preservation, safety/provenance/contracts, and changed source/test/verifier surfaces. No blockers.",
+    "commands": [
+      "agent://155-G007FinalArchitect"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://156-G007FinalQa: passed/passed/passed. QA red-team verified final report PASS, human UX all 8 pages/3 viewports, category floors, V2/V3 route split, no page-load mutating/live behavior, browser transcript validity, non-uniform screenshots/contact sheets, and fresh artifact refs.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_dashboard*.py tests/unit/dashboard -q -> 939 passed",
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-evidence --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche final --min-v3-score 90 --min-delta 15 -> PASS",
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-visual-gate --min-page-score 95 --min-average-score 97 --timeout-ms 60000 -> PASS 100.0",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-v2-v3-compare --timeout-ms 60000 -> PASS 100.0",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-safety-audit --timeout-ms 60000 -> PASS 100.0",
+      "Browser automation transcript final-full-browser-evidence.json -> 8 route selector assertions, forbiddenCount 0"
+    ],
+    "redTeamCommands": [
+      "agent://156-G007FinalQa adversarial artifact review",
+      "final-full-adversarial-report.txt scenarios: route regression, safety bypass, UX regression, visual regression, selector/storyboard regression",
+      "git diff --check -> pass",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\" -> clean"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-final",
+        "kind": "browser-automation",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-browser-evidence.json",
+        "description": "Browser automation transcript with 8 V3 route navigation/assertion actions, selector results, timestamps, and forbidden network count 0."
+      },
+      {
+        "id": "visual-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-visual-gate/side-by-side-contact-sheet.png",
+        "description": "Non-uniform final V3 visual gate screenshot contact sheet."
+      },
+      {
+        "id": "human-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-evidence/side-by-side-contact-sheet.png",
+        "description": "Non-uniform V2/V3 human UX side-by-side contact sheet."
+      },
+      {
+        "id": "human-ux-scorecard",
+        "kind": "property-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-evidence/scorecard.json",
+        "description": "Human-centered UX rubric scorecard across 8 pages and 3 viewports: PASS, mean V3 96.89, named delta 21.72."
+      },
+      {
+        "id": "category-floor-check",
+        "kind": "algorithm-boundary-report",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-evidence/category-floor-check.json",
+        "description": "Category floor boundary/invariant check: PASS, no category under floor."
+      },
+      {
+        "id": "visual-gate-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-visual-gate/scorecard.json",
+        "description": "Final visual gate report: PASS 100.0, 8 V3 routes, no console/page errors."
+      },
+      {
+        "id": "v2-v3-compare",
+        "kind": "api-package-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-v2-v3-compare/compare-scorecard.json",
+        "description": "V2 default versus explicit V3 route/package/asset comparison: PASS 100.0."
+      },
+      {
+        "id": "safety-audit",
+        "kind": "black-box-api-receipt",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-safety-audit/safety-scorecard.json",
+        "description": "Black-box safety audit: PASS 100.0, no forbidden page-load live/mutating behavior."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-adversarial-report.txt",
+        "description": "Final adversarial/failure-mode report covering route, safety, UX, visual, and selector regressions."
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-cli-replay.json",
+        "description": "Allowlisted node -e CLI replay artifact for Ultragoal CLI evidence shape."
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/final-full-ai-slop-cleaner-report.txt",
+        "description": "AI slop cleanup report: PASS, blocking findings 0."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-human-ux",
+        "contractRef": "G007 objective: V3 total >=90, no category <70, mean V3-V2 delta >=15 in named human UX categories",
+        "obligation": "All eight explicit V3 pages must satisfy final human-centered UX thresholds across configured viewports.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-v3",
+          "surface-algorithm-rubric"
+        ],
+        "adversarialCaseRefs": [
+          "case-ux-regression"
+        ]
+      },
+      {
+        "id": "contract-v2-default",
+        "contractRef": "Original brief: preserve V2 as default and V3 explicit routing",
+        "obligation": "V2 routes must retain V2 bundle/default identity; V3 remodel must remain explicitly selected.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-v2-v3",
+          "surface-api-compare"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-collision"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Original brief: preserve safety/provenance/contract markers; no live order/broker/account/export/mutating behavior",
+        "obligation": "Page load must not trigger forbidden network/mutation and UI must expose safety/provenance markers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-v3",
+          "surface-api-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-safety-bypass"
+        ]
+      },
+      {
+        "id": "contract-visual",
+        "contractRef": "G007 objective: visual gate and browser evidence",
+        "obligation": "All eight V3 pages must produce non-uniform screenshots, pass visual gate, and expose storyboard selectors.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-v3"
+        ],
+        "adversarialCaseRefs": [
+          "case-visual-regression",
+          "case-selector-regression"
+        ]
+      },
+      {
+        "id": "contract-out-of-scope-live-trading",
+        "contractRef": "Live trading/broker/account execution",
+        "obligation": "Live trading execution remains intentionally outside this story.",
+        "status": "not_applicable",
+        "reason": "The approved plan is a dashboard UX/UI maturity gate only; live order/broker/account behavior must remain absent."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-v3",
+        "contractRef": "Explicit V3 remodel web GUI",
+        "surface": "web",
+        "invocation": "Browser automation navigated all eight /ui/remodel/*?demo=reference routes and asserted task/primary-canvas/page selectors.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-final",
+          "visual-contact-sheet",
+          "human-contact-sheet"
+        ]
+      },
+      {
+        "id": "surface-web-v2-v3",
+        "contractRef": "V2 default and V3 explicit route ownership",
+        "surface": "web",
+        "invocation": "V2/V3 compare gate captured default V2 routes and explicit V3 remodel routes at http://127.0.0.1:8776.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "v2-v3-compare",
+          "browser-final",
+          "visual-contact-sheet"
+        ]
+      },
+      {
+        "id": "surface-api-compare",
+        "contractRef": "Route/asset/API package identity",
+        "surface": "api/package",
+        "invocation": "V2/V3 compare scorecard inspected route version matrix, asset ownership, required text, and forbidden-network scan.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "v2-v3-compare"
+        ]
+      },
+      {
+        "id": "surface-api-safety",
+        "contractRef": "Safety/read-only runtime network behavior",
+        "surface": "api/package",
+        "invocation": "Safety audit inspected runtime network, DOM safety, source safety, and audit/export separation.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-audit"
+        ]
+      },
+      {
+        "id": "surface-algorithm-rubric",
+        "contractRef": "Human UX scoring/category invariants",
+        "surface": "algorithm/math",
+        "invocation": "Human UX rubric and category-floor invariant checks scored all pages/viewports.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "human-ux-scorecard",
+          "category-floor-check"
+        ]
+      },
+      {
+        "id": "surface-cli",
+        "contractRef": "CLI replay smoke evidence for quality gate artifact shape",
+        "surface": "cli",
+        "invocation": "Allowlisted node -e console.log replay produced recorded stdout g007-cli-ok.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "surface-native-out-of-scope",
+        "contractRef": "Native/desktop/TUI surface",
+        "surface": "native",
+        "status": "not_applicable",
+        "reason": "This story ships a web dashboard surface only; native desktop/TUI automation is outside scope."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-collision",
+        "contractRef": "V2 default and V3 explicit route separation",
+        "scenario": "V2 route accidentally serves remodel asset or V3 route accidentally serves V2 bundle.",
+        "expectedBehavior": "V2 stays on /ui/bundle/app.js; V3 stays on /ui/remodel/src/app.js; no forbidden asset violations.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "v2-v3-compare",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-safety-bypass",
+        "contractRef": "No forbidden page-load live/mutating behavior",
+        "scenario": "Page load attempts /order, /broker/login, /account/trade, /live_order, /bt/run, /bt/ws_job, or auto /sim/ws.",
+        "expectedBehavior": "Forbidden network/mutation count remains zero; safety audit passes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-audit",
+          "browser-final",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-ux-regression",
+        "contractRef": "Human-centered UX thresholds",
+        "scenario": "A V3 page or category falls below final thresholds despite prior per-page tranches.",
+        "expectedBehavior": "Mean V3 >=90, mean named delta >=15, no category floor failures.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "human-ux-scorecard",
+          "category-floor-check",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-visual-regression",
+        "contractRef": "Visual gate and non-uniform screenshot evidence",
+        "scenario": "A V3 route is blank, lacks required/safety text, has console/page errors, or drifts from accepted capture baseline.",
+        "expectedBehavior": "Visual gate passes 100.0 with no failures and non-uniform screenshots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "visual-gate-scorecard",
+          "visual-contact-sheet",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-selector-regression",
+        "contractRef": "Storyboard selectors for all V3 task-first pages",
+        "scenario": "A route lacks task frame, primary canvas, or page-specific critical selector.",
+        "expectedBehavior": "Browser transcript actions assert selectors true for all eight routes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-final",
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Final G007 full rerun clean: ai-slop-cleaner report blocking findings 0; node check, 939 dashboard tests, human UX rubric, category floors, visual gate, V2/V3 compare, safety audit, browser evidence, git diff check, protected path check, architect review, and executor QA/red-team all passed. Full rerun completed after the last source/reference-capture changes.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard*.py tests/unit/dashboard -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-evidence --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche final --min-v3-score 90 --min-delta 15",
+      "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-visual-gate --min-page-score 95 --min-average-score 97 --timeout-ms 60000",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/final-full-safety-audit --timeout-ms 60000",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+    ],
+    "blockers": []
+  }
+}

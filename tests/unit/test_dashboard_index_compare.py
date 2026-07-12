@@ -14,6 +14,7 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def test_index_compare_reports_missing_local_source(monkeypatch, tmp_path: Path) -> None:
@@ -22,7 +23,7 @@ def test_index_compare_reports_missing_local_source(monkeypatch, tmp_path: Path)
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
 
     response = client.get("/index_compare", params={"run_id": "missing_run"})
 

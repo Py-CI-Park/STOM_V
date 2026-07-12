@@ -10,18 +10,21 @@
       "timestamp": "2026-06-30T11:12:10.364Z",
       "action": "navigate",
       "selector": "body",
-      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "type": "navigate"
     },
     {
       "timestamp": "2026-06-30T11:12:10.365Z",
       "action": "evaluate",
-      "selector": "[data-ux-task-header=\"chart_replay\"],[data-ux-primary-canvas=\"chart_replay\"],[data-replay-quick-start],[data-replay-step=\"source\"],[data-replay-step=\"strategy\"],[data-replay-step=\"preview\"],[data-replay-step=\"manual-start\"],[data-replay-step=\"investigate\"],[data-replay-playback-sticky],[data-replay-selected-bar],[data-replay-signal-log],[data-ux-evidence-drawer=\"chart_replay\"],[data-safety-boundary=\"chart_replay\"]"
+      "selector": "[data-ux-task-header=\"chart_replay\"],[data-ux-primary-canvas=\"chart_replay\"],[data-replay-quick-start],[data-replay-step=\"source\"],[data-replay-step=\"strategy\"],[data-replay-step=\"preview\"],[data-replay-step=\"manual-start\"],[data-replay-step=\"investigate\"],[data-replay-playback-sticky],[data-replay-selected-bar],[data-replay-signal-log],[data-ux-evidence-drawer=\"chart_replay\"],[data-safety-boundary=\"chart_replay\"]",
+      "type": "evaluate"
     },
     {
       "timestamp": "2026-06-30T11:12:10.642Z",
       "action": "screenshot",
       "selector": "[data-ux-primary-canvas=\"chart_replay\"]",
-      "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-viewport.png"
+      "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-viewport.png",
+      "type": "screenshot"
     }
   ],
   "selectors": {

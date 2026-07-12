@@ -1,0 +1,9 @@
+G005 adversarial/failure-mode report
+Verdict: passed
+- Backtest runtime coverage: 24 contracts, missing endpoints/actions=[], unsafeAutoContracts=[]
+- Chart replay runtime coverage: 19 contracts, missing endpoints/actions=[], unsafeAutoContracts=[]
+- Manual-gated backtest mutations include strategy validate/save/delete, extract_vars, run, job cancel/meta, portfolio, and ws_job; none is safeAuto.
+- Manual-gated replay /sim/ws actions include start, pause, resume, speed, seek, stop, and protocol messages meta/bars/history/done/error; no /sim/ws auto-open was observed.
+- API smoke used read-only GETs only and returned status=PASS with 12 rows; strategy list used wt-dev strategy DB and returned ok/counts.
+- Forbidden runtime scan status=PASS findings=0; forbidden paths include trading/order/broker/account/live and mutation/WS paths.
+- Browser screenshots are non-uniform and show live read-only matrix evidence for both backtest and chart replay.

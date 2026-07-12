@@ -101,12 +101,12 @@ function WinnerCard({ winner, onApprove, onViewCode }) {
         )}
         <button className="btn primary lg" style={{ width: "100%", justifyContent: "center" }}
                 onClick={onApprove}>
-          <span>실전 전략으로 승인 · 내보내기</span>
+          <span>연구 산출물 승인 · Export</span>
           <span style={{ fontSize: 12, opacity: 0.8 }}>→</span>
         </button>
         <p style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" }}>
-          승인 시 운영용 <span className="mono" style={{ color: "var(--ink-1)" }}>strategy.db</span>로 export됩니다.
-          취소할 수 없으니 신중히 진행하세요.
+          Human Approval Gate 통과 후 연구 결과로만 export됩니다.
+          실거래/주문/계좌/브로커 연동은 없습니다.
         </p>
       </div>
     </div>
@@ -158,12 +158,12 @@ function MergedBestWinnerCard({ best, winner, onApprove, onViewCode }) {
         )}
         <button className="btn primary lg" style={{ width: "100%", justifyContent: "center" }}
                 onClick={onApprove}>
-          <span>실전 전략으로 승인 · 내보내기</span>
+          <span>연구 산출물 승인 · Export</span>
           <span style={{ fontSize: 12, opacity: 0.8 }}>→</span>
         </button>
         <p style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" }}>
-          승인 시 운영용 <span className="mono" style={{ color: "var(--ink-1)" }}>strategy.db</span>로 export됩니다.
-          취소할 수 없으니 신중히 진행하세요.
+          Human Approval Gate 통과 후 연구 결과로만 export됩니다.
+          실거래/주문/계좌/브로커 연동은 없습니다.
         </p>
       </div>
     </div>
@@ -213,15 +213,15 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-hd">
           <h2>
-            실전 전략 승인 · 내보내기
+            연구 산출물 승인 · Export
             <span className="sub">gen_{String(winner.gen).padStart(2, "0")} · score {fmtScore(winner.score)}</span>
           </h2>
           <button className="btn ghost sm" onClick={onClose}>닫기</button>
         </div>
         <div className="modal-bd-content">
           <div className="alert-danger" style={{ marginBottom: 18 }}>
-            <strong>⚠ 운영 DB 변경 작업</strong> — 이 우승 전략을 운영용 <span className="mono">strategy.db</span>에
-            <span className="mono"> live-deploy gate</span>로 내보냅니다. 실거래 자동매매에서 즉시 사용 가능하게 됩니다.
+            <strong>⚠ Human Approval Gate</strong> — 이 우승 전략은 연구 산출물로만 export됩니다.
+            실거래 주문, 브로커 로그인, 계좌/자산 연동, 자동매매 배포는 수행하지 않습니다.
           </div>
 
           {/* P2 결정 동선 크로스링크: 내보내기 승인(WS final_approval)과 운용 결정 기록
@@ -240,19 +240,19 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
           </div>
 
           <div className="group">
-            <div className="group-title">운영 DB 저장명 — 사용자 지정</div>
+            <div className="group-title">연구 Export 저장명 — 사용자 지정</div>
             <div className="field-row">
               <div className="field">
                 <label>매수 전략 이름</label>
                 <input className="input" value={userBuy} onChange={e => setUserBuy(e.target.value)}
                        placeholder="예: VWAP_MOMENTUM_v3" />
-                <span className="help">운영 시스템에서 이 이름으로 참조됩니다</span>
+                <span className="help">연구 결과와 감사 기록에서 이 이름으로 참조됩니다</span>
               </div>
               <div className="field">
                 <label>매도 전략 이름</label>
                 <input className="input" value={userSell} onChange={e => setUserSell(e.target.value)}
                        placeholder="예: ATR_TRAILING_v3" />
-                <span className="help">중복 시 덮어쓰기 됩니다</span>
+                <span className="help">중복 시 연구 Export 후보명이 갱신됩니다</span>
               </div>
             </div>
           </div>

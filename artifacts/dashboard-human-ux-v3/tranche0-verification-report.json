@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "generatedAt": "2026-06-30T04:46:02.303324+00:00",
+  "commands": [
+    {
+      "command": "python -m py_compile scripts/verify_dashboard_human_ux_rubric.py",
+      "status": "passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q",
+      "status": "passed",
+      "stdoutSummary": "31 passed in 8.21s"
+    },
+    {
+      "command": "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/baseline-current --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche baseline",
+      "status": "passed",
+      "stdoutSummary": "Dashboard human UX rubric PASS; Mean V3 score 93.92; Mean named V3-V2 delta 17.56"
+    },
+    {
+      "command": "git diff --check -- scripts/verify_dashboard_human_ux_rubric.py tests/unit/test_dashboard_human_ux_rubric.py artifacts/dashboard-human-ux-v3/storyboards/storyboards.json",
+      "status": "passed",
+      "stdoutSummary": "no output"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\"",
+      "status": "passed",
+      "stdoutSummary": "no output"
+    }
+  ],
+  "scorecardSummary": {
+    "status": "PASS",
+    "meanV3Score": 93.92,
+    "meanNamedDelta": 17.56,
+    "hardFailures": [],
+    "thresholdFailures": [],
+    "storyboardValidationStatus": "PASS"
+  }
+}

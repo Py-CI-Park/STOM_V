@@ -1,0 +1,271 @@
+{
+  "failures": [],
+  "generatedAt": "2026-06-28T22:44:34.602660+00:00",
+  "rows": [
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "inspector",
+        "approval",
+        "approval",
+        "inspector"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "01_condition_ai_overview",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "02_process",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "03_history",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "04_lab",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "05_workbench",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "06_decision_audit",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "07_backtest",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    },
+    {
+      "dataActions": [
+        "reconnect",
+        "theme",
+        "settings",
+        "start",
+        "stop"
+      ],
+      "failures": [],
+      "forbiddenActionHits": [],
+      "forbiddenTextHits": [],
+      "id": "08_chart_replay",
+      "missingRequiredSafetyText": [],
+      "safetyCueHits": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit",
+        "research-only",
+        "local-only",
+        "실거래/주문 기능 없음",
+        "브로커 로그인 없음",
+        "계좌/자산 연동 없음",
+        "연구 전용",
+        "Human Gate Required",
+        "Append-Only"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

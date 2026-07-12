@@ -1,0 +1,13 @@
+G006 adversarial safety report
+
+Status: PASS
+
+Attempted failure modes:
+1. Legacy production/live-deploy copy reintroduced in V2 approval cards or bundle: source-safety-scan findings empty after replacing old operating DB/live-deploy wording.
+2. Hidden live order/broker/account controls in source or DOM: forbidden data-action and endpoint marker scans found no live-order, broker-login, account-trade, replay-live-order, broker/account/trade/order endpoints, or sender symbols.
+3. Unsafe page-load network behavior: runtime-network-scan observed no non-read-only methods, no /bt/run, /bt/ws_job, /sim/ws, order, broker, account, or live_order requests; only /ws is allowed as a dashboard status WebSocket.
+4. Audit/export conflation: audit-export-separation proves the Decision Audit page keeps final Export approval separate from append-only Human Decision ledger flow.
+5. External-origin/local-only leakage: strict verifier rejects non-local entrypoint links and non-local runtime requests; Google font entrypoints were removed and rerun passed.
+6. Visual proof weakness: safety-contact-sheet.png contains V2 and V3 non-uniform screenshots, and browser-transcript.json records real browser navigation/assertions.
+
+Conclusion: no G006 blocker remains.

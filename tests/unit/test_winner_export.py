@@ -7,9 +7,11 @@
   (d) dest가 루프 DB와 동일하면 거부한다 (안전 단언).
 """
 
+import hashlib
 import os
 import sqlite3
 import sys
+from pathlib import Path
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
@@ -137,3 +139,34 @@ def test_export_errors_on_missing_strategy(tmp_path):
 
     res = export_winner("NOPE_buy", "NOPE_sell", dest_db, "UB", "US", loop_db=loop_db)
     assert res["status"] == "error"
+
+
+def test_export_rolls_back_buy_when_sell_write_fails(tmp_path):
+    loop_db = str(tmp_path / "loop_strategies.db")
+    dest_db = str(tmp_path / "production_strategy.db")
+    buy_ns, sell_ns = "AILOOP_atomic_g0_buy", "AILOOP_atomic_g0_sell"
+    _make_loop_db(loop_db, buy_ns, sell_ns, "new-buy", "new-sell")
+
+    connection = sqlite3.connect(dest_db)
+    try:
+        connection.execute('CREATE TABLE stockbuy ("index" TEXT, "전략코드" TEXT)')
+        connection.execute('CREATE TABLE stocksell ("index" TEXT, "전략코드" TEXT)')
+        connection.execute('INSERT INTO stockbuy VALUES (?, ?)', ("UB", "old-buy"))
+        connection.execute('INSERT INTO stocksell VALUES (?, ?)', ("US", "old-sell"))
+        connection.execute(
+            "CREATE TRIGGER force_sell_failure BEFORE UPDATE ON stocksell "
+            "BEGIN SELECT RAISE(ABORT, 'forced sell failure'); END"
+        )
+        connection.commit()
+    finally:
+        connection.close()
+    before_hash = hashlib.sha256(Path(dest_db).read_bytes()).hexdigest()
+
+    result = export_winner(buy_ns, sell_ns, dest_db, "UB", "US", loop_db=loop_db)
+
+    after_hash = hashlib.sha256(Path(dest_db).read_bytes()).hexdigest()
+    assert result["status"] == "error"
+    assert "forced sell failure" in result["message"]
+    assert _read_strategy(dest_db, "stockbuy", "UB") == "old-buy"
+    assert _read_strategy(dest_db, "stocksell", "US") == "old-sell"
+    assert after_hash == before_hash

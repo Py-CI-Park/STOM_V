@@ -1,0 +1,80 @@
+{
+  "viewports": [
+    {
+      "viewport": "1440",
+      "scrollWidth": 1425,
+      "workflowSteps": 6,
+      "activeStep": "overview",
+      "contextChips": 4,
+      "runGen": "run/genR-250518-1421-7XQ9 / gen 136",
+      "strategy": "strategyMeanRev_Adaptive_v9",
+      "symbolDate": "symbol/date005930 / 20250516",
+      "decision": "decisionCOMPLEMENT",
+      "fetchCalls": [],
+      "websocketOpened": false
+    },
+    {
+      "viewport": "1280",
+      "scrollWidth": 1265,
+      "workflowSteps": 6,
+      "activeStep": "overview",
+      "contextChips": 4,
+      "runGen": "run/genR-250518-1421-7XQ9 / gen 136",
+      "strategy": "strategyMeanRev_Adaptive_v9",
+      "symbolDate": "symbol/date005930 / 20250516",
+      "decision": "decisionCOMPLEMENT",
+      "fetchCalls": [],
+      "websocketOpened": false
+    },
+    {
+      "viewport": "390",
+      "scrollWidth": 390,
+      "workflowSteps": 6,
+      "activeStep": "overview",
+      "contextChips": 4,
+      "runGen": "run/genR-250518-1421-7XQ9 / gen 136",
+      "strategy": "strategyMeanRev_Adaptive_v9",
+      "symbolDate": "symbol/date005930 / 20250516",
+      "decision": "decisionCOMPLEMENT",
+      "fetchCalls": [],
+      "websocketOpened": false
+    }
+  ],
+  "navigation": {
+    "backtest": {
+      "id": "backtest",
+      "path": "/ui/remodel/backtest",
+      "active": "backtest",
+      "rail": 6,
+      "chips": 4,
+      "scrollWidth": 390
+    },
+    "replay": {
+      "id": "replay",
+      "path": "/ui/remodel/chart-replay",
+      "active": "replay",
+      "rail": 6,
+      "chips": 4,
+      "scrollWidth": 390
+    },
+    "audit": {
+      "id": "audit",
+      "path": "/ui/remodel/audit",
+      "active": "audit",
+      "rail": 6,
+      "chips": 4,
+      "scrollWidth": 390
+    },
+    "settingsModal": true,
+    "finalPath": "/ui/remodel/audit",
+    "scrollWidth": 390
+  },
+  "stress": {
+    "scrollWidth": 390,
+    "contextChips": 4,
+    "longStrategyVisible": true,
+    "longErrorVisible": true,
+    "denseTableColumns": 36,
+    "emptyTablePresent": true
+  }
+}

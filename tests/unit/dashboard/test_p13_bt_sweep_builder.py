@@ -35,6 +35,7 @@ FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_api as api  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def _read_front(name: str) -> str:
@@ -62,7 +63,7 @@ def client(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 # ============================================================ 프론트 정적 가드
@@ -267,14 +268,17 @@ class TestRunRouteInlineSweepSpec:
         client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
 
     def test_empty_sweep_spec_rejected(self, client):
+        # W1-A 보안 강화 — sweep_spec 은 이제 스키마 레벨(SweepSpecPayload.name
+        # min_length=1)에서 검증되어 422 로 거부된다(과거의 앱 레벨 커스텀
+        # status=="error" 응답 대신 FastAPI/pydantic 검증 오류).
         r = client.post("/bt/run", json={
             "buy": "기존매수", "sell": "기존매도", "start": 20250407, "end": 20250409,
             "mode": "sweep", "sweep_action": "param",
             "sweep_spec": [{"name": "", "min": 1, "max": 3, "step": 1}],  # 변수명 빈 행만.
         })
-        body = r.json()
-        assert body["status"] == "error"
-        assert "스윕 스펙" in body["message"] or "변수" in body["message"]
+        assert r.status_code == 422
+        detail = r.json()["detail"]
+        assert any(err.get("loc", [])[-1] == "name" for err in detail)
 
     def test_file_path_takes_precedence_over_spec_when_both(self, client):
         # 파일 경로가 직접 오면 그 경로가 우선(폴백 유지) — allowlist 밖 경로는 거부된다.

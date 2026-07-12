@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-29T19:46:59.595Z",
+  "verdict": "passed",
+  "routeCount": 10,
+  "requestCount": 63,
+  "websocketCount": 2,
+  "referenceForbidden": 0,
+  "mutating": 0,
+  "forbiddenWs": 0,
+  "liveUnsafe": 0,
+  "screenshotsNonUniform": true,
+  "routes": [
+    {
+      "pageId": "condition",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 7,
+      "tableCount": 2,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "process",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 0,
+      "tableCount": 3,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": false,
+        "activeDatumChanged": false,
+        "tooltipVisible": false,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": true,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "history",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 6,
+      "tableCount": 1,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "PnL · T+13 · Series: 12.97 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "lab",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 2,
+      "tableCount": 0,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "누적 수익률 · T+56 · Series: 17.15 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "workbench",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 9,
+      "tableCount": 1,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "audit",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 8,
+      "tableCount": 4,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "backtest",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 2,
+      "tableCount": 3,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "replay",
+      "mode": "reference",
+      "liveBackend": false,
+      "baseInput": "http://127.0.0.1:9200",
+      "chartCount": 3,
+      "tableCount": 5,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=reference replay fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-replay-static · status=CURRENT"
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "live-backtest",
+      "mode": "live",
+      "liveBackend": true,
+      "baseInput": "http://127.0.0.1:8777",
+      "chartCount": 2,
+      "tableCount": 3,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": false,
+        "tooltipVisible": true,
+        "ariaLiveText": ""
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    },
+    {
+      "pageId": "live-replay",
+      "mode": "live",
+      "liveBackend": true,
+      "baseInput": "http://127.0.0.1:8777",
+      "chartCount": 3,
+      "tableCount": 5,
+      "uxPanelPresent": true,
+      "pageStatesVisible": true,
+      "safetyLabels": true,
+      "horizontalOverflow": false,
+      "chartInteraction": {
+        "attempted": true,
+        "activeDatumChanged": true,
+        "tooltipVisible": true,
+        "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=fixture fallback · sim probe not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-replay-fixture-fall"
+      },
+      "processModalPresent": false,
+      "forbiddenVisibleText": []
+    }
+  ]
+}

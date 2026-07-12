@@ -28,17 +28,19 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 
 import asyncio  # noqa: E402
 import difflib  # noqa: E402
+import hashlib  # noqa: E402
 import json  # noqa: E402
 import os  # noqa: E402
+import sqlite3  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
-from typing import Any, Dict, List, Optional  # noqa: E402
+from collections.abc import Callable  # noqa: E402
+from typing import Any, Dict, List, Optional, assert_never  # noqa: E402
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
-from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import HTMLResponse, RedirectResponse  # noqa: E402
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect  # noqa: E402
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
@@ -55,6 +57,22 @@ from ai_strategy_loop.controller.telemetry import (  # noqa: E402
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
 from ai_strategy_loop.dashboard.backtest_api import backtest_router  # noqa: E402
 from ai_strategy_loop.dashboard.simulation_api import simulation_router  # noqa: E402
+from ai_strategy_loop.dashboard.security import (  # noqa: E402
+    MAX_WEBSOCKET_MESSAGE_CHARS,
+    Capability,
+    DashboardSecurity,
+    close_websocket_failure,
+    is_loopback_http_url,
+)
+from ai_strategy_loop.dashboard.security_controls import (  # noqa: E402
+    CONTROL_PAYLOAD_ADAPTER,
+    ControlPayload,
+    DecisionRecordPayload,
+    FinalApprovalControl,
+    LoopStartControl,
+    LoopStopControl,
+    control_capability,
+)
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -64,20 +82,21 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   해석해 CWD와 무관하게 동작한다. 이 디렉토리를 /ui 하위에 마운트해 같은 origin에서
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
+_REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+_DASHBOARD_FAVICON_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
+    "<circle cx='32' cy='32' r='28' fill='#081624'/>"
+    "<circle cx='32' cy='32' r='16' fill='#0fb5ff'/>"
+    "</svg>"
+)
 
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
 
-# 대시보드는 로컬 전용(서버는 127.0.0.1 바인드)이다. CORS를 와일드카드로 열면
-#   임의 origin 페이지가 사용자의 로컬 대시보드 API를 호출할 수 있으므로
-#   명시적 localhost allowlist로 제한한다(allow_credentials=False 유지).
-_DASHBOARD_PORT = 8770
-_ALLOWED_ORIGINS = [
-    f"http://localhost:{_DASHBOARD_PORT}",
-    f"http://127.0.0.1:{_DASHBOARD_PORT}",
-    "http://localhost",
-    "http://127.0.0.1",
-]
+# W1-A 이후: CORS allowlist 미들웨어는 제거됨. DashboardSecurity.authorize_http 의
+#   strict same-origin(Origin == 서빙 host) 검사가 cross-origin 요청을 4403/403 으로
+#   차단하므로 CORS allowlist 는 무효(vestigial)였다. same-origin 브라우저 요청은
+#   CORS 헤더 없이도 동일 출처 정책으로 허용된다.
 _PROMPT_HEAD_CHARS = 240
 
 
@@ -201,7 +220,11 @@ def _with_observability_defaults(payload: Dict[str, Any]) -> Dict[str, Any]:
         config = config_from_dict({})
 
     status = str(payload.get("status") or "")
-    current_gen = int(payload.get("current_gen") or -1)
+    raw_current_gen = payload.get("current_gen")
+    try:
+        current_gen = int(raw_current_gen) if raw_current_gen is not None else -1
+    except (TypeError, ValueError):
+        current_gen = -1
     max_generations = int(payload.get("max_generations") or 0)
     phase = str(latest.get("phase") or "")
     bt_timeframe = str(payload.get("bt_timeframe") or getattr(config, "bt_timeframe", "") or "")
@@ -1391,8 +1414,7 @@ def _run_state_payload(run_id: str) -> Dict[str, Any]:
         이는 lineage._summarize_run의 우승 선택 규칙과 동일하나, to_loop_state가
         소비하는 평탄 키(best_gen/best_score/best_buy/best_sell, winner_*)로 만든다.
       - runs.config_json에서 LoopConfig를 복원해 provider/bt_timeframe/active_config를 채운다.
-      - to_loop_state(summary, gens, config=cfg, status='complete', current_gen=len-1)로 빌드.
-    status='complete'는 과거 run의 정적 스냅샷이라는 의미다(라이브 진행이 아님).
+      - runs.status와 실제 마지막 gen_no를 보존해 정적 DB 스냅샷으로 빌드한다.
 
     DB 부재/없는 run/조회 실패는 idle_state로 표준화한다(무예외 — 대시보드가 빈 상태 표시).
     엔진/하드게이트/CSV 무수정. 추가 백테 0회(DB 조회만).
@@ -1462,11 +1484,22 @@ def _run_state_payload(run_id: str) -> Dict[str, Any]:
     }
 
     try:
+        run_status = str((run_row or {}).get("status") or "complete")
+        current_gen = max((int(g.get("gen_no", -1)) for g in gens), default=-1)
         snapshot = to_loop_state(
-            summary, gens, config=cfg, status="complete",
-            current_gen=(len(gens) - 1 if gens else -1),
-        )
-        return snapshot.model_dump()
+            summary, gens, config=cfg, status=run_status, current_gen=current_gen,
+        ).model_dump()
+        persisted_times = [
+            value
+            for value in (
+                (run_row or {}).get("started_at"),
+                (run_row or {}).get("finished_at"),
+                *(g.get("created_at") for g in gens),
+            )
+            if value is not None
+        ]
+        snapshot["updated_at"] = max((float(value) for value in persisted_times), default=0.0)
+        return snapshot
     except Exception:  # noqa: BLE001 - 빌드 실패도 idle로 표준화(무예외 계약).
         return C.idle_state().model_dump()
 
@@ -2188,6 +2221,91 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     return out
 
 
+def _canonical_hash(payload: Dict[str, Any]) -> str:
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _approval_binding_payload(
+    review: Dict[str, Any],
+    loop_db: Optional[str],
+) -> Dict[str, Any]:
+    state = _current_state_payload()
+    run_id = str(state.get("run_id") or "")
+    current_gen = int(state.get("current_gen", -1))
+    winner = state.get("winner")
+    if state.get("status") != "complete" or not run_id or current_gen < 0:
+        return {"available": False, "reason": "current_run_not_complete"}
+    if not isinstance(winner, dict):
+        return {"available": False, "reason": "server_winner_missing"}
+    winner_gen = int(winner.get("gen", -1))
+    winner_buy = str(winner.get("buy_name") or "")
+    winner_sell = str(winner.get("sell_name") or "")
+    generations = state.get("generations") or []
+    generation = next(
+        (
+            row
+            for row in generations
+            if isinstance(row, dict) and int(row.get("gen_no", -1)) == winner_gen
+        ),
+        None,
+    )
+    if not isinstance(generation, dict):
+        return {"available": False, "reason": "winner_generation_missing"}
+    if not bool(generation.get("gate_passed")) or generation.get("status") != "ok":
+        return {"available": False, "reason": "hard_gates_not_passed"}
+    if not winner_buy or not winner_sell:
+        return {"available": False, "reason": "server_winner_names_missing"}
+    checklist = review.get("promote_checklist")
+    if not isinstance(checklist, list) or not checklist:
+        return {"available": False, "reason": "frozen_review_missing"}
+    if any(
+        not isinstance(item, dict) or item.get("status") != "pass"
+        for item in checklist
+    ):
+        return {"available": False, "reason": "frozen_review_incomplete"}
+
+    source_db = loop_db
+    if source_db is None:
+        import ai_strategy_loop.bootstrap as bootstrap  # noqa: PLC0415
+
+        source_db = str(bootstrap.LOOP_DB_STRATEGY)
+    from ai_strategy_loop.controller.export import _read_strategy_code  # noqa: PLC0415
+
+    try:
+        buy_code = _read_strategy_code(source_db, winner_buy, "buy")
+        sell_code = _read_strategy_code(source_db, winner_sell, "sell")
+    except (KeyError, sqlite3.Error) as exc:
+        return {"available": False, "reason": "winner_code_unavailable", "message": str(exc)}
+
+    review_hash = _canonical_hash(review)
+    buy_code_hash = hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
+    sell_code_hash = hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
+    evidence = {
+        "run_id": run_id,
+        "current_gen": current_gen,
+        "winner_gen": winner_gen,
+        "winner_buy": winner_buy,
+        "winner_sell": winner_sell,
+        "winner_score": winner.get("score"),
+        "gate_passed": True,
+        "review_hash": review_hash,
+        "buy_code_hash": buy_code_hash,
+        "sell_code_hash": sell_code_hash,
+    }
+    return {
+        "available": True,
+        **evidence,
+        "evidence_hash": _canonical_hash(evidence),
+    }
+
+
 def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
     """과업2(2026-06-12) — 복수 run의 최신 ok 세대를 균등 가중 결합해 포트폴리오 리포트.
 
@@ -2410,14 +2528,18 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
     return out
 
 
-DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+_DEFAULT_DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+
+
+def _decisions_file() -> str:
+    return os.environ.get("STOM_DASHBOARD_DECISIONS_FILE") or _DEFAULT_DECISIONS_FILE
 
 
 def _decisions_payload() -> Dict[str, Any]:
     """F3/P-D(2026-06-11) — V6 운용 결정 이력(append-only jsonl) 읽기. 무예외."""
     out: Dict[str, Any] = {"decisions": []}
     try:
-        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+        with open(_decisions_file(), encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if line:
@@ -2454,8 +2576,9 @@ def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
             pass
         record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
                   "candidate": candidate}
-        os.makedirs(os.path.dirname(DECISIONS_FILE), exist_ok=True)
-        with open(DECISIONS_FILE, "a", encoding="utf-8") as fh:
+        decisions_file = _decisions_file()
+        os.makedirs(os.path.dirname(decisions_file), exist_ok=True)
+        with open(decisions_file, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
         return {"status": "ok", "recorded": record}
     except Exception as exc:  # noqa: BLE001
@@ -2592,7 +2715,7 @@ def _portfolio_verdict_payload() -> Dict[str, Any]:
     decision_note: Optional[str] = None
     adopted = False
     try:
-        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+        with open(_decisions_file(), encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if not line:
@@ -2639,9 +2762,17 @@ def _portfolio_verdict_payload() -> Dict[str, Any]:
     }
 
 
-def create_app() -> FastAPI:
+def create_app(
+    *,
+    security_boundary: Optional[DashboardSecurity] = None,
+    final_approval_dest_db: Optional[str] = None,
+    final_approval_loop_db: Optional[str] = None,
+    final_review_provider: Optional[Callable[[], Dict[str, Any]]] = None,
+) -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
+    security = security_boundary or DashboardSecurity()
+    review_provider = final_review_provider or _freeze_verdict_payload
 
     @asynccontextmanager
     async def _lifespan(app: FastAPI):
@@ -2654,25 +2785,38 @@ def create_app() -> FastAPI:
         title="STOM AI Strategy Loop Dashboard", version="1.0", lifespan=_lifespan,
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=_ALLOWED_ORIGINS,
-        allow_credentials=False,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
     @app.middleware("http")
     async def _no_cache_html(request, call_next):
         # 2026-06-11 — index.html 브라우저 캐시 박제 방지: HTML 응답은 매 로드마다
         #   재검증(no-cache)시킨다. ETag 304로 비용은 없고, jsx 버전 범프(v=...)가
         #   즉시 반영된다 ("새 기능이 안 보이는 옛 대시보드" 실사고 재발 방지).
         response = await call_next(request)
-        if "text/html" in (response.headers.get("content-type") or ""):
+        if "text/html" in (response.headers.get("content-type") or "") and "cache-control" not in response.headers:
             response.headers["Cache-Control"] = "no-cache"
         return response
 
+    @app.middleware("http")
+    async def _authorize_dashboard(request: Request, call_next):
+        failure = security.authorize_http(request)
+        if failure is None:
+            failure = await security.enforce_http_body_limit(request)
+        if failure is not None:
+            headers = {"WWW-Authenticate": "Session"} if failure.status_code == 401 else None
+            return JSONResponse(
+                status_code=failure.status_code,
+                content={
+                    "status": "error",
+                    "code": failure.code,
+                    "message": failure.message,
+                },
+                headers=headers,
+            )
+        response = await call_next(request)
+        security.issue_bootstrap_cookie(request, response)
+        return response
+
     app.state.loop_manager = manager
+    app.state.dashboard_security = security
     app.include_router(research_router)
     app.include_router(backtest_router)
     app.include_router(simulation_router)
@@ -2690,56 +2834,225 @@ def create_app() -> FastAPI:
         except Exception:  # noqa: BLE001
             return HTMLResponse("<h1>Dashboard frontend not available</h1>", status_code=503)
 
+    def _dashboard_remodel_index_response() -> HTMLResponse:
+        index_path = os.path.join(_REMODEL_FRONTEND_DIR, "index.html")
+        try:
+            with open(index_path, encoding="utf-8") as fh:
+                response = HTMLResponse(fh.read())
+            response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            response.headers["X-STOM-Dashboard-Version"] = "v3-remodel"
+            return response
+        except Exception:  # noqa: BLE001
+            return HTMLResponse("<h1>Dashboard remodel frontend not available</h1>", status_code=503)
+
+    def _dashboard_v4_index_response() -> HTMLResponse:
+        # V4 opt-in 프리뷰: frontend/v4.html(window.DashboardV4Shell 마운트). V2 와 같은 bundle/app.js 공유.
+        index_path = os.path.join(_FRONTEND_DIR, "v4.html")
+        try:
+            with open(index_path, encoding="utf-8") as fh:
+                response = HTMLResponse(fh.read())
+            response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            response.headers["X-STOM-Dashboard-Version"] = "v4-preview"
+            return response
+        except Exception:  # noqa: BLE001
+            return HTMLResponse("<h1>Dashboard V4 frontend not available</h1>", status_code=503)
+
+    def _dashboard_version_from_request(request: Request) -> str:
+        """Return one-response dashboard version selector; never persist in browser state."""
+        selector = (request.query_params.get("dashboard_version") or "").strip().lower()
+        if selector in {"v3", "remodel", "preview"}:
+            return "v3"
+        if selector in {"v2", "legacy", "production"}:
+            return "v2"
+        if selector in {"v4", "v4-preview"}:
+            return "v4"
+
+        profile = (request.query_params.get("dashboard_profile") or "").strip().lower()
+        if profile in {"v3", "remodel", "preview"}:
+            return "v3"
+        if profile in {"v4", "v4-preview"}:
+            return "v4"
+        return "v2"
+
+    def _dashboard_selected_index_response(request: Request) -> HTMLResponse:
+        version = _dashboard_version_from_request(request)
+        if version == "v4":
+            return _dashboard_v4_index_response()
+        if version == "v3":
+            return _dashboard_remodel_index_response()
+        response = _dashboard_index_response()
+        response.headers["X-STOM-Dashboard-Version"] = "v2"
+        return response
+
+    def _redirect_with_query(request: Request, target: str) -> RedirectResponse:
+        query = str(request.url.query or "")
+        if query:
+            target = f"{target}?{query}"
+        return RedirectResponse(url=target, status_code=307)
+
+    def _dashboard_not_found() -> HTMLResponse:
+        return HTMLResponse(
+            """<!doctype html>
+<html lang=\"ko\">
+<head>
+  <meta charset=\"utf-8\" />
+  <title>STOM Dashboard Route Not Found</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background:
+      radial-gradient(circle at 18% 18%, rgba(17, 88, 118, .65), transparent 34%),
+      radial-gradient(circle at 80% 72%, rgba(117, 74, 179, .34), transparent 30%),
+      linear-gradient(135deg, #06131d 0%, #020409 55%, #090b13 100%);
+      color: #d8eefc; font-family: system-ui, sans-serif; }
+    main { width: min(920px, calc(100vw - 48px)); border: 1px solid #1e5d77; border-radius: 22px;
+      background: linear-gradient(135deg, rgba(9, 32, 45, .96), rgba(3, 9, 16, .96));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .45); padding: 30px; display: grid; gap: 20px; }
+    .hero { display: grid; grid-template-columns: 120px 1fr; gap: 22px; align-items: center; }
+    .code { height: 120px; border-radius: 18px; display: grid; place-items: center; font-size: 42px; font-weight: 800;
+      background: conic-gradient(from 180deg, #0fb5ff, #65e6c4, #8c63ff, #0fb5ff); color: #06131d; }
+    h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: .02em; }
+    p { margin: 0; color: #8db6c8; line-height: 1.6; }
+    .badges { display: flex; gap: 10px; flex-wrap: wrap; }
+    .badge { border: 1px solid #2d7290; border-radius: 999px; padding: 7px 11px; background: rgba(10, 48, 65, .72); color: #b9f6e5; font-size: 12px; }
+    .matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .cell { min-height: 74px; border: 1px solid #173d52; border-radius: 14px; padding: 14px; background: rgba(4, 18, 29, .72); }
+    .label { color: #69d6ff; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { margin-top: 8px; color: #f2fbff; font-weight: 700; }
+    code { color: #65e6c4; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class=\"hero\">
+      <div class=\"code\">404</div>
+      <div>
+        <h1>Dashboard route not found</h1>
+        <p>Unknown dashboard routes fail closed with <code>404</code> instead of masking broken links with a V2/V3 shell.</p>
+      </div>
+    </section>
+    <section class=\"badges\">
+      <span class=\"badge\">V2 default preserved</span>
+      <span class=\"badge\">V3 explicit only</span>
+      <span class=\"badge\">No hidden SPA fallback</span>
+      <span class=\"badge\">Research-only boundary</span>
+    </section>
+    <section class=\"matrix\">
+      <div class=\"cell\"><div class=\"label\">route state</div><div class=\"value\">unknown</div></div>
+      <div class=\"cell\"><div class=\"label\">response</div><div class=\"value\">fail-closed 404</div></div>
+      <div class=\"cell\"><div class=\"label\">shell loaded</div><div class=\"value\">none</div></div>
+    </section>
+  </main>
+</body>
+</html>""",
+            status_code=404,
+        )
+
+    @app.get("/ui", response_class=HTMLResponse)
+    def ui_root_no_slash(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/")
+
+    @app.get("/ui/", response_class=HTMLResponse)
+    def ui_root(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
+
+    @app.get("/ui/remodel", response_class=HTMLResponse)
+    def ui_remodel_root_no_slash() -> RedirectResponse:
+        return RedirectResponse(url="/ui/remodel/", status_code=307)
+
+    @app.get("/ui/remodel/", response_class=HTMLResponse)
+    def ui_remodel_root() -> HTMLResponse:
+        return _dashboard_remodel_index_response()
+
+    @app.get("/ui/remodel/{remodel_page}", response_class=HTMLResponse)
+    def ui_remodel_deeplink(remodel_page: str = "condition") -> Any:
+        if remodel_page == "remodel-bootstrap.js":
+            script_path = os.path.join(_REMODEL_FRONTEND_DIR, "remodel-bootstrap.js")
+            try:
+                with open(script_path, encoding="utf-8") as fh:
+                    return Response(fh.read(), media_type="application/javascript")
+            except Exception:  # noqa: BLE001
+                return Response("", media_type="application/javascript", status_code=404)
+        allowed = {
+            "condition", "evolution", "process", "history", "records",
+            "lab", "workbench", "audit", "verdict", "backtest",
+            "chart-replay", "simulation", "settings",
+        }
+        if remodel_page not in allowed:
+            return _dashboard_not_found()
+        return _dashboard_remodel_index_response()
+
+    @app.get("/ui/v4", response_class=HTMLResponse)
+    def ui_v4_root_no_slash(request: Request) -> RedirectResponse:
+        # 쿼리스트링 보존(V2/V3 no-slash 라우트와 동일 규약) — 없으면 ?base=/?tab= 가
+        #   /ui/v4/ 리다이렉트에서 유실돼(예: cross-origin 데이터 연동 ?base=8791) 로컬
+        #   백엔드로 붙는 사고가 난다.
+        return _redirect_with_query(request, "/ui/v4/")
+
+    @app.get("/ui/v4/", response_class=HTMLResponse)
+    def ui_v4_root() -> HTMLResponse:
+        # V4 opt-in 프리뷰 진입점. V2/V3 기본 경로는 불변, 미지 버전은 V2 폴백.
+        return _dashboard_v4_index_response()
+
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
-    def ui_evolution(subtab: str = "overview") -> Any:
+    def ui_evolution(request: Request, subtab: str = "overview") -> Any:
         if subtab == "history":
-            return RedirectResponse(url="/ui/evolution/records", status_code=307)
+            return _redirect_with_query(request, "/ui/evolution/records")
         allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
         if subtab not in allowed:
-            return RedirectResponse(url="/ui/evolution", status_code=307)
-        return _dashboard_index_response()
-
+            return _dashboard_not_found()
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/backtest", response_class=HTMLResponse)
-    def ui_backtest() -> HTMLResponse:
-        return _dashboard_index_response()
+    def ui_backtest(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/chart-replay", response_class=HTMLResponse)
-    def ui_chart_replay() -> HTMLResponse:
-        return _dashboard_index_response()
+    def ui_chart_replay(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/simulation")
-    def ui_simulation_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/chart-replay", status_code=307)
+    def ui_simulation_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/chart-replay")
 
     @app.get("/ui/process")
-    def ui_process_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/process", status_code=307)
+    def ui_process_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/process")
 
     @app.get("/ui/records")
-    def ui_records_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+    def ui_records_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/records")
 
     @app.get("/ui/history")
-    def ui_history_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+    def ui_history_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/records")
 
     @app.get("/ui/lab")
-    def ui_lab_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/lab", status_code=307)
+    def ui_lab_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/lab")
 
     @app.get("/ui/pro")
-    def ui_pro_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/workbench", status_code=307)
+    def ui_pro_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/workbench")
 
     @app.get("/ui/verdict")
-    def ui_verdict_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/verdict", status_code=307)
+    def ui_verdict_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/verdict")
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> Response:
+        return Response(
+            _DASHBOARD_FAVICON_SVG,
+            media_type="image/svg+xml",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
 
     @app.get("/process_flow", response_class=HTMLResponse)
     def process_flow() -> HTMLResponse:
@@ -2799,8 +3112,19 @@ def create_app() -> FastAPI:
                 get_proxy_base_url,
             )
 
+            proxy_base_url = get_proxy_base_url()
+            if not is_loopback_http_url(proxy_base_url):
+                return {
+                    "status": "unavailable",
+                    "mode": "gpt_auth",
+                    "safe": True,
+                    "starts_evolution": False,
+                    "code": "provider_non_loopback_forbidden",
+                    "message": "provider test target must be loopback",
+                }
+
             response = requests.post(
-                f"{get_proxy_base_url()}/chat/completions",
+                f"{proxy_base_url}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {PROXY_OPENAI_API_KEY_PLACEHOLDER}",
                     "Content-Type": "application/json",
@@ -2898,7 +3222,14 @@ def create_app() -> FastAPI:
         결정 카드의 라이브 버전: 동결·DSR/PBO(+쌍둥이 경고)·OOS·플라시보·
         슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
         """
-        return _freeze_verdict_payload()
+        review = review_provider()
+        return {
+            **review,
+            "approval_binding": _approval_binding_payload(
+                review,
+                final_approval_loop_db,
+            ),
+        }
 
     @app.get("/portfolio_sim")
     def portfolio_sim(runs: str = "") -> Dict[str, Any]:
@@ -2946,10 +3277,9 @@ def create_app() -> FastAPI:
         return _decisions_payload()
 
     @app.post("/record_decision")
-    def record_decision(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def record_decision(payload: DecisionRecordPayload) -> Dict[str, Any]:
         """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
-        return _record_decision(str(payload.get("verdict") or ""),
-                                str(payload.get("note") or ""))
+        return _record_decision(payload.verdict, payload.note)
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:
@@ -3353,6 +3683,10 @@ def create_app() -> FastAPI:
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:
+        failure = security.authorize_websocket(websocket, Capability.LOOP_CONTROL)
+        if failure is not None:
+            await close_websocket_failure(websocket, failure)
+            return
         await websocket.accept()
         # 연결 즉시 현재 상태 송신.
         last_sent = _current_state_payload()
@@ -3371,14 +3705,41 @@ def create_app() -> FastAPI:
         push_task = asyncio.create_task(_pusher())
         try:
             while True:
-                # 인바운드 제어 메시지 수신.
                 raw = await websocket.receive_text()
-                try:
-                    msg = json.loads(raw)
-                except (ValueError, TypeError):
-                    await websocket.send_json({"status": "error", "message": "invalid JSON"})
+                if len(raw) > MAX_WEBSOCKET_MESSAGE_CHARS:
+                    await websocket.send_json({
+                        "status": "error",
+                        "code": "payload_too_large",
+                        "message": "control message exceeds the server limit",
+                    })
                     continue
-                result = _handle_control(msg, manager)
+                try:
+                    msg = CONTROL_PAYLOAD_ADAPTER.validate_json(raw)
+                except ValidationError:
+                    await websocket.send_json({
+                        "status": "error",
+                        "code": "invalid_message",
+                        "message": "invalid dashboard control message",
+                    })
+                    continue
+                failure = security.authorize_websocket(
+                    websocket,
+                    control_capability(msg),
+                )
+                if failure is not None:
+                    await websocket.close(
+                        code=failure.websocket_code,
+                        reason=failure.code,
+                    )
+                    return
+                result = _handle_control(
+                    msg,
+                    manager,
+                    security,
+                    final_approval_dest_db,
+                    final_approval_loop_db,
+                    review_provider,
+                )
                 await websocket.send_json(result)
         except WebSocketDisconnect:
             pass
@@ -3402,59 +3763,119 @@ def create_app() -> FastAPI:
     #   않는다(StaticFiles는 /ui/* 만 처리). html=True 로 /ui/ 가 index.html을 서빙.
     #   .jsx 는 StaticFiles 기본 content-type으로 서빙되며 브라우저 fetch+Babel 변환에
     #   문제 없다. 프론트엔드 디렉토리가 없으면 API만으로도 기동되도록 가드한다.
+    # reviewed 리모델 산출물은 딥링크 라우트(/ui/remodel/condition 등)를
+    #   FastAPI 핸들러가 fail-closed로 판정해야 한다. 따라서 /ui/remodel
+    #   전체를 StaticFiles로 마운트하지 않고 정적 하위 디렉터리만 분리해
+    #   딥링크가 정적 파일 404로 오인되지 않게 한다.
+    if os.path.isdir(_REMODEL_FRONTEND_DIR):
+        remodel_static_mounts = {
+            "src": "ui_remodel_src",
+            "styles": "ui_remodel_styles",
+            "docs": "ui_remodel_docs",
+            "data": "ui_remodel_data",
+        }
+        for subdir, mount_name in remodel_static_mounts.items():
+            static_dir = os.path.join(_REMODEL_FRONTEND_DIR, subdir)
+            if os.path.isdir(static_dir):
+                app.mount(
+                    f"/ui/remodel/{subdir}",
+                    StaticFiles(directory=static_dir),
+                    name=mount_name,
+                )
     if os.path.isdir(_FRONTEND_DIR):
         app.mount("/ui", StaticFiles(directory=_FRONTEND_DIR, html=True), name="ui")
 
     return app
 
 
-def _handle_control(msg: Dict[str, Any], manager: LoopProcessManager) -> Dict[str, Any]:
-    """인바운드 제어 메시지를 처리한다 (start | stop | final_approval).
-
-    제어 결과 dict를 반환한다(클라이언트로 에코). 어떤 예외도 흡수해 WS를
-    끊지 않는다.
-    """
-    action = (msg or {}).get("action")
-    try:
-        if action == "start":
-            return {"action": "start", **manager.start(msg.get("config") or {})}
-        if action == "stop":
+def _handle_control(
+    msg: ControlPayload,
+    manager: LoopProcessManager,
+    security: DashboardSecurity,
+    dest_db: Optional[str],
+    loop_db: Optional[str],
+    review_provider: Callable[[], Dict[str, Any]],
+) -> Dict[str, Any]:
+    match msg:
+        case LoopStartControl(config=config):
+            return {"action": "start", **manager.start(dict(config))}
+        case LoopStopControl():
             return {"action": "stop", **manager.stop()}
-        if action == "final_approval":
-            return {"action": "final_approval", **_do_final_approval(msg)}
-        return {"status": "error", "message": f"unknown action: {action!r}"}
-    except Exception as exc:  # noqa: BLE001 - 제어 실패는 WS를 끊지 않는다.
-        return {"status": "error", "action": action, "message": str(exc)}
+        case FinalApprovalControl():
+            return {
+                "action": "final_approval",
+                **_do_final_approval(
+                    msg,
+                    security,
+                    dest_db,
+                    loop_db,
+                    review_provider,
+                ),
+            }
+        case unreachable:
+            assert_never(unreachable)
 
 
-def _do_final_approval(msg: Dict[str, Any]) -> Dict[str, Any]:
-    """final_approval — 우승 전략을 운영 strategy.db로 export (사람 승인 게이트).
-
-    필요 키: buy_name, sell_name (루프 DB 내 namespaced 우승 이름),
-             user_buy, user_sell (운영 DB에 저장할 사람이 정한 이름).
-
-    보안: export 목적지는 클라이언트가 고를 수 없다. 메시지에 dest_strategy_db가
-    들어와도 무시하고 항상 export.PRODUCTION_STRATEGY_DB(결정론적 운영 경로)로만
-    내보낸다(임의 경로 쓰기 방지).
-    """
+def _do_final_approval(
+    msg: FinalApprovalControl,
+    security: DashboardSecurity,
+    dest_db: Optional[str],
+    loop_db: Optional[str],
+    review_provider: Callable[[], Dict[str, Any]],
+) -> Dict[str, Any]:
     from ai_strategy_loop.controller.export import (  # noqa: PLC0415
         PRODUCTION_STRATEGY_DB,
         export_winner,
     )
 
-    buy_name = msg.get("buy_name")
-    sell_name = msg.get("sell_name")
-    user_buy = msg.get("user_buy")
-    user_sell = msg.get("user_sell")
-    if not (buy_name and sell_name and user_buy and user_sell):
+    binding = _approval_binding_payload(review_provider(), loop_db)
+    if not binding.get("available"):
         return {
             "status": "error",
-            "message": "final_approval requires buy_name, sell_name, user_buy, user_sell",
+            "code": "approval_binding_unavailable",
+            "message": str(binding.get("reason") or "approval binding unavailable"),
         }
-    # 클라이언트 제공 dest_strategy_db는 의도적으로 무시한다 — 항상 운영 경로.
-    return export_winner(
-        buy_name, sell_name, str(PRODUCTION_STRATEGY_DB), user_buy, user_sell,
+    supplied = {
+        "run_id": msg.run_id,
+        "current_gen": msg.current_gen,
+        "winner_gen": msg.winner_gen,
+        "review_hash": msg.review_hash,
+        "evidence_hash": msg.evidence_hash,
+        "buy_code_hash": msg.buy_code_hash,
+        "sell_code_hash": msg.sell_code_hash,
+    }
+    if any(binding.get(key) != value for key, value in supplied.items()):
+        return {
+            "status": "error",
+            "code": "stale_approval_binding",
+            "message": "run, winner, review, or code evidence changed",
+        }
+    if not security.claim_final_approval(msg.evidence_hash):
+        return {
+            "status": "error",
+            "code": "approval_already_applied",
+            "message": "this reviewed winner was already exported",
+        }
+    result = export_winner(
+        str(binding["winner_buy"]),
+        str(binding["winner_sell"]),
+        str(dest_db or PRODUCTION_STRATEGY_DB),
+        msg.user_buy,
+        msg.user_sell,
+        loop_db=loop_db,
+        expected_buy_code_hash=msg.buy_code_hash,
+        expected_sell_code_hash=msg.sell_code_hash,
     )
+    if result.get("status") != "ok":
+        security.release_final_approval(msg.evidence_hash)
+        return result
+    return {
+        **result,
+        "run_id": msg.run_id,
+        "current_gen": msg.current_gen,
+        "winner_gen": msg.winner_gen,
+        "evidence_hash": msg.evidence_hash,
+    }
 
 
 # 모듈 레벨 app — uvicorn `ai_strategy_loop.dashboard.app:app` 로도 띄울 수 있다.

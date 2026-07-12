@@ -23,6 +23,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
@@ -81,10 +82,10 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     monkeypatch.setattr(S, "LOOP_RUNS_DB", tmp_path / "loop_runs.db")
-    monkeypatch.setattr(J, "_MANAGER", None)
+    monkeypatch.setattr(J, "_manager", None)
     monkeypatch.setattr(J, "_JOBS_DIR", tmp_path / "webbt_jobs")
     from ai_strategy_loop.dashboard.app import create_app
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def _seed_gen(tmp_path: Path, run_id: str, gen_no: int, *, csv_path=None,
@@ -245,22 +246,21 @@ def test_portfolio_run_gen_items(client: TestClient, tmp_path: Path):
 
 
 def test_portfolio_rejects_too_few(client: TestClient, tmp_path: Path):
+    # 스키마 레벨(_MutationPayload) 이 2~6 개수 경계를 강제 — 위반 시 핸들러 진입 전
+    # 422 로 즉시 거부한다(구버전 200+status:error 바디는 폐지된 계약).
     csv_a = _make_trades_csv(tmp_path / "a.csv", n=10)
     _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
     r = client.post("/bt/portfolio", json={"items": [
         {"job_id": "20260101_000000_JOBA_00001"},
     ]})
-    assert r.status_code == 200
-    body = r.json()
-    assert body["status"] == "error"
-    assert "2~6" in body["message"]
+    assert r.status_code == 422
 
 
 def test_portfolio_rejects_too_many(client: TestClient):
+    # 스키마 레벨 max_length=6 강제 — 초과 시 422.
     items = [{"job_id": f"x{i}"} for i in range(7)]
     r = client.post("/bt/portfolio", json={"items": items})
-    assert r.status_code == 200
-    assert r.json()["status"] == "error"
+    assert r.status_code == 422
 
 
 def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path):
@@ -282,6 +282,6 @@ def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path)
 
 
 def test_portfolio_items_not_list_no_raise(client: TestClient):
+    # 스키마 레벨 타입 검증 — items 가 list 가 아니면 핸들러 진입 전 422.
     r = client.post("/bt/portfolio", json={"items": "nope"})
-    assert r.status_code == 200
-    assert r.json()["status"] == "error"
+    assert r.status_code == 422

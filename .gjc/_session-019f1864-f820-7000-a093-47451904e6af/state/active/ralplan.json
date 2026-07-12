@@ -1,0 +1,32 @@
+{
+  "skill": "ralplan",
+  "phase": "architect",
+  "active": true,
+  "activated_at": "2026-06-30T12:01:28.339Z",
+  "updated_at": "2026-06-30T12:01:28.339Z",
+  "session_id": "019f1864-f820-7000-a093-47451904e6af",
+  "hud": {
+    "version": 1,
+    "summary": "persisted architect stage 1",
+    "chips": [
+      {
+        "label": "stage",
+        "value": "architect",
+        "priority": 10
+      },
+      {
+        "label": "iter",
+        "value": "1",
+        "priority": 30
+      },
+      {
+        "label": "stages",
+        "value": "A",
+        "priority": 35
+      }
+    ],
+    "updated_at": "2026-06-30T12:01:28.334Z"
+  },
+  "source_state_revision": 1,
+  "state_revision": 1
+}

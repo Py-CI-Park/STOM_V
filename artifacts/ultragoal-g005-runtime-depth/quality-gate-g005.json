@@ -1,0 +1,276 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "blockers": [],
+    "codeStatus": "CLEAR",
+    "commands": [
+      "agent://78-G005ArchitectReview"
+    ],
+    "evidence": "Architect review 78-G005ArchitectReview approved G005: V3 backtest matrix preserves /bt/* selectors, strategy library/editor, manual-gated validation/save/delete/run/job/portfolio/ws controls and result/analysis/report/compare/overlay depth; chart replay matrix preserves /sim/* discovery, strategies/signals, playback, candles/signals/logs/minimap, and manual-gated /sim/ws actions; runtime-depth scorecard/api/forbidden/browser evidence passed with no blockers.",
+    "productStatus": "CLEAR",
+    "recommendation": "APPROVE"
+  },
+  "executorQa": {
+    "adversarialCases": [
+      {
+        "artifactRefs": [
+          "backtest-evidence",
+          "replay-evidence",
+          "api-package-report",
+          "forbidden-runtime-scan"
+        ],
+        "contractRef": "No hidden non-GET browser/API requests",
+        "expectedBehavior": "Verifier records non-GET/forbidden paths and fails. Current request logs and API smoke are GET-only.",
+        "id": "case-hidden-non-get",
+        "scenario": "Backtest or chart replay auto-posts run/save/delete/cancel/portfolio or other mutating calls on load.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "replay-evidence",
+          "forbidden-runtime-scan"
+        ],
+        "contractRef": "/sim/ws manual gate",
+        "expectedBehavior": "Forbidden runtime scan fails. Current websocket list only includes /ws dashboard channel, /sim/ws is manual researcher action.",
+        "id": "case-sim-ws-auto-open",
+        "scenario": "Chart replay auto-opens /sim/ws or sends replay actions without user start.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "runtime-scorecard",
+          "backtest-evidence"
+        ],
+        "contractRef": "Backtest mutation manual gates",
+        "expectedBehavior": "Coverage fails unsafeAutoContracts/manual-gate checks. Current unsafeAutoContracts=[], missingManualGateIds=[], missingUserGatedIds=[].",
+        "id": "case-manual-gates",
+        "scenario": "Validate/save/delete/run/cancel/meta/portfolio/ws_job are marked safeAuto or missing reasons.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "api-package-report"
+        ],
+        "contractRef": "Strategy list read-only health",
+        "expectedBehavior": "API smoke fails if strategy list status=error. Current buy count=88 and sell count=36 with status ok.",
+        "id": "case-strategy-discovery-health",
+        "scenario": "Strategy library is a fake/empty fallback instead of read-only wt-dev DB-backed surface.",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "gui-screenshot",
+          "backtest-screenshot",
+          "replay-screenshot"
+        ],
+        "contractRef": "GUI/web evidence must be non-uniform",
+        "expectedBehavior": "QA blocks completion. Current backtest/replay screenshots and contact sheet are non-uniform.",
+        "id": "case-blank-screenshot",
+        "scenario": "Screenshots/contact sheet are blank or placeholder-only.",
+        "verdict": "passed"
+      }
+    ],
+    "artifactRefs": [
+      {
+        "description": "Playwright browser transcript for /ui/remodel/backtest and /ui/remodel/chart-replay live V3 routes with passed assertions.",
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\browser-transcript.json"
+      },
+      {
+        "description": "Non-uniform contact sheet with Backtest V3 and Chart Replay V3 live read-only screenshots.",
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\runtime-depth-contact-sheet.png"
+      },
+      {
+        "description": "Non-uniform Backtest V3 live read-only screenshot.",
+        "id": "backtest-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\backtest-live-depth.png"
+      },
+      {
+        "description": "Non-uniform Chart Replay V3 live read-only screenshot.",
+        "id": "replay-screenshot",
+        "kind": "screenshot",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\chart-replay-live-depth.png"
+      },
+      {
+        "description": "Safe deterministic CLI replay receipt for G005.",
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\cli-replay.json"
+      },
+      {
+        "description": "Boundary/failure-mode report covering manual gates, /sim/ws, safe GETs, strategy DB health, forbidden runtime paths, and screenshots.",
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\adversarial-report.txt"
+      },
+      {
+        "description": "Runtime-depth scorecard PASS averageRuntimeDepthScore 100.0.",
+        "id": "runtime-scorecard",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\runtime-depth-scorecard.json"
+      },
+      {
+        "description": "Read-only API smoke report for backtest/replay safe GET endpoints, strategy list health, jobs, data_range, result, montecarlo, sim health/days/demo.",
+        "id": "api-package-report",
+        "kind": "api-package-test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\api-smoke.json"
+      },
+      {
+        "description": "Forbidden runtime scan PASS with findings empty for mutation/live-order/broker/account paths.",
+        "id": "forbidden-runtime-scan",
+        "kind": "failure-mode-test",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\forbidden-runtime-scan.json"
+      },
+      {
+        "description": "Backtest V3 contract/runtime evidence with 24 contracts and GET-only observed requests.",
+        "id": "backtest-evidence",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\backtest-runtime-evidence.json"
+      },
+      {
+        "description": "Chart replay V3 contract/runtime evidence with 19 contracts and /sim/ws manual gate.",
+        "id": "replay-evidence",
+        "kind": "test-report",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-runtime-depth\\chart-replay-runtime-evidence.json"
+      }
+    ],
+    "blockers": [],
+    "contractCoverage": [
+      {
+        "adversarialCaseRefs": [
+          "case-hidden-non-get",
+          "case-manual-gates"
+        ],
+        "contractRef": "G005 objective: backtest /bt/* depth",
+        "id": "contract-backtest-depth",
+        "obligation": "Backtest preserves selectors, strategy library/editor, validation/save/delete gates, jobs/progress/results/analysis/report/compare/overlay/portfolio.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest",
+          "surface-api-smoke"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-sim-ws-auto-open"
+        ],
+        "contractRef": "G005 objective: chart replay /sim/* depth",
+        "id": "contract-replay-depth",
+        "obligation": "Chart replay preserves days/stocks/strategies/signals, manual-gated /sim/ws actions, playback controls, candles/signals/logs/minimap.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-replay",
+          "surface-api-smoke"
+        ]
+      },
+      {
+        "adversarialCaseRefs": [
+          "case-hidden-non-get",
+          "case-sim-ws-auto-open"
+        ],
+        "contractRef": "Research-only/local-only safety boundary",
+        "id": "contract-no-unsafe-auto-mutation",
+        "obligation": "Mutating and streaming actions remain manual-gated with no unsafe auto invocation.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-backtest",
+          "surface-web-replay",
+          "surface-forbidden-runtime"
+        ]
+      },
+      {
+        "contractRef": "Live order/broker/account execution",
+        "id": "contract-live-trading-out-of-scope",
+        "obligation": "Live trading, broker login, account trading, and production export execution are not part of G005 and remain forbidden.",
+        "reason": "G005 validates absence/manual-gate boundaries and does not implement live trading or broker/account/export execution.",
+        "status": "not_applicable"
+      }
+    ],
+    "e2eCommands": [
+      "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g005-runtime-depth",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q"
+    ],
+    "e2eStatus": "passed",
+    "evidence": "Executor QA 79-G005ExecutorQa passed: backtest has 24 contracts with no missing/manual gate gaps, chart replay has 19 contracts with /sim/ws user-gated, browser transcript covers V3 live backtest and chart replay, API smoke is GET-only and healthy, screenshots are non-uniform, forbidden runtime scan has findings empty.",
+    "redTeamCommands": [
+      "agent://79-G005ExecutorQa",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py && git diff --check"
+    ],
+    "redTeamStatus": "passed",
+    "status": "passed",
+    "surfaceEvidence": [
+      {
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot",
+          "backtest-screenshot",
+          "backtest-evidence",
+          "runtime-scorecard"
+        ],
+        "contractRef": "Backtest V3 live route",
+        "id": "surface-web-backtest",
+        "invocation": "Playwright loaded http://127.0.0.1:8776/ui/remodel/backtest and captured DOM/contracts/requests/screenshot.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot",
+          "replay-screenshot",
+          "replay-evidence",
+          "runtime-scorecard"
+        ],
+        "contractRef": "Chart Replay V3 live route",
+        "id": "surface-web-replay",
+        "invocation": "Playwright loaded http://127.0.0.1:8776/ui/remodel/chart-replay and captured DOM/contracts/requests/screenshot.",
+        "surface": "web",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "api-package-report"
+        ],
+        "contractRef": "Backtest/replay read-only API smoke",
+        "id": "surface-api-smoke",
+        "invocation": "verify_dashboard_runtime_depth.py issued safe read-only GETs to /bt/* and /sim/* endpoints with wt-dev strategy DB for strategy list health.",
+        "surface": "api",
+        "verdict": "passed"
+      },
+      {
+        "artifactRefs": [
+          "runtime-scorecard",
+          "forbidden-runtime-scan",
+          "adversarial-report"
+        ],
+        "contractRef": "Forbidden mutation/live runtime scan",
+        "id": "surface-forbidden-runtime",
+        "invocation": "Browser request/websocket logs were scanned for /bt/run, /bt/ws_job, /sim/ws, order/broker/account/live paths and non-GET requests.",
+        "surface": "api",
+        "verdict": "passed"
+      },
+      {
+        "contractRef": "Algorithm/math outside G005",
+        "id": "surface-algorithm-out-of-scope",
+        "reason": "G005 validates dashboard runtime surface and does not change trading algorithms/math.",
+        "status": "not_applicable",
+        "surface": "algorithm"
+      }
+    ]
+  },
+  "iteration": {
+    "blockers": [],
+    "evidence": "AI slop cleanup report has zero blocking findings. Full G005 verification reran cleanly with runtime-depth scorecard PASS average 100.0, API smoke PASS with strategy list health, forbidden runtime scan PASS, focused tests/static checks passed, architect and executor QA reviews approved with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g005-runtime-depth",
+      "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py && git diff --check"
+    ],
+    "status": "passed"
+  }
+}

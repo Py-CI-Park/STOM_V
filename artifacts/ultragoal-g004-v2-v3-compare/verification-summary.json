@@ -1,0 +1,47 @@
+{
+  "artifactRefs": [
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\compare-scorecard.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\route-version-matrix.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\dom-inventory.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\forbidden-network-scan.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\side-by-side-contact-sheet.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v2-v3-compare\\browser-transcript.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v3-reference-visual\\scorecard.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g004-v3-reference-visual\\side-by-side-contact-sheet.png"
+  ],
+  "commands": [
+    {
+      "command": "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "evidence": "compare-scorecard averageCorrectedTotalScore=100.0 and failures=[]",
+      "status": "passed"
+    },
+    {
+      "command": "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g004-v3-reference-visual --min-page-score 95 --min-average-score 97",
+      "evidence": "v3 reference averageCorrectedTotalScore=97.93 and failures=[]",
+      "status": "passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "evidence": "29 passed",
+      "status": "passed"
+    },
+    {
+      "command": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_remodel_visual_gate.py && git diff --check",
+      "evidence": "no stdout/stderr; exit code 0",
+      "status": "passed"
+    }
+  ],
+  "generatedAt": "2026-06-28T22:46:10.184305+00:00",
+  "goalId": "G004",
+  "kind": "ultragoal-g004-verification-summary",
+  "schemaVersion": 1,
+  "scores": {
+    "forbiddenNetworkStatus": "PASS",
+    "routeMatrixStatus": "PASS",
+    "v2v3Average": 100.0,
+    "v2v3Status": "PASS",
+    "v3ReferenceAverage": 97.93,
+    "v3ReferenceStatus": "PASS"
+  },
+  "status": "passed"
+}

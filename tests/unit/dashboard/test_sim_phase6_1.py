@@ -130,7 +130,11 @@ class TestSeekHistorySnapshot:
         assert len(session.ws.sent) == 1
         msg = session.ws.sent[0]
         assert msg["type"] == "history"
-        assert msg["index"] == 2
+        # W2-A 계약: history 의 index 는 마지막 포함 frame 의 index(cursor-1)이며,
+        # frame_count 가 포함 봉 수(cursor)를 보고한다. seek_index(i)→cursor=i+1 로
+        # index==seek 대상과 일치(제품 UAT 의 replay_history_frames index {0,3} 로 검증).
+        assert msg["index"] == 1
+        assert msg["frame_count"] == 2
         bars = msg["items_by_code"]["000001"]
         assert len(bars) == 2
         # 증분 "bars" 와 동일 스키마 + t(HHMMSS) 부여 — 클라이언트 매핑 재사용 계약.

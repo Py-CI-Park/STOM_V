@@ -1,0 +1,55 @@
+{
+  "artifacts": {
+    "compareScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v2-v3-compare\\compare-scorecard.json",
+    "finalScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\final-scorecard.json",
+    "inventoryGate": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-inventory-gate\\gate-result.json",
+    "routeMatrix": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v2-v3-compare\\route-version-matrix.json",
+    "runtimeContactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-runtime-depth\\runtime-depth-contact-sheet.png",
+    "runtimeScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-runtime-depth\\runtime-depth-scorecard.json",
+    "safetyContactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-safety-audit\\safety-contact-sheet.png",
+    "safetyScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-safety-audit\\safety-scorecard.json",
+    "visualContactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\side-by-side-contact-sheet.png",
+    "visualScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\scorecard.json"
+  },
+  "commands": [
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q && node --check ai_strategy_loop/dashboard/frontend/bundle/app.js && node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_inventory_gate.py scripts/verify_dashboard_remodel_visual_gate.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_safety_audit.py && git diff --check",
+      "evidence": "29 passed; static/compile/diff checks returned zero",
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g007-v2-v3-compare --min-page-score 95 --min-average-score 97",
+      "evidence": "averageCorrectedTotalScore 100.0 failures []",
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g007-v3-reference-visual --min-page-score 95 --min-average-score 97",
+      "evidence": "averageCorrectedTotalScore 97.93 failures []",
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/verify_dashboard_inventory_gate.py --inventory artifacts/dashboard-v2-v3-inventory/v2-v3-inventory.json --route-matrix artifacts/ultragoal-g007-v2-v3-compare/route-version-matrix.json --out artifacts/ultragoal-g007-inventory-gate/gate-result.json",
+      "evidence": "items 81 failures []",
+      "status": "passed"
+    },
+    {
+      "command": "python scripts/verify_dashboard_runtime_depth.py --base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g007-runtime-depth",
+      "evidence": "averageRuntimeDepthScore 100.0 failures []",
+      "status": "PASS"
+    },
+    {
+      "command": "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g007-safety-audit",
+      "evidence": "averageSafetyScore 100.0 failures []",
+      "status": "PASS"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "evidence": "no protected/runtime path output",
+      "status": "PASS"
+    }
+  ],
+  "generatedAt": "2026-06-28T23:46:24.780575+00:00",
+  "kind": "g007-final-verification-summary",
+  "schemaVersion": 1,
+  "status": "PASS"
+}

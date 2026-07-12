@@ -1,0 +1,477 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review 122-G007ArchitectReview returned CLEAR/CLEAR/CLEAR APPROVE with blockers []. G001-G006 are complete, G007 final scorecard is PASS 100/100 with no zero category, and all final gate artifacts are PASS.",
+    "commands": [
+      "architect review agent 122-G007ArchitectReview",
+      "recorded dashboard unit/integration => 607 passed",
+      "recorded visual gate => PASS 97.79",
+      "recorded V2/V3 compare => PASS 100.0",
+      "recorded safety audit => PASS 100.0",
+      "recorded runtime depth => PASS 100.0",
+      "recorded browser-final => passed"
+    ],
+    "blockers": [],
+    "advisoryConcerns": [],
+    "exactEvidence": [
+      "goals.json shows G001-G006 complete and G007 active before checkpoint.",
+      "final-100-scorecard.json status PASS totalScore 100.0 zeroCategories [].",
+      "final report and usage guidance preserve V2 default and explicit/selectable V3.",
+      "browser-final summary verdict passed with mutating/referenceForbidden/forbiddenWs/liveUnsafe all 0.",
+      "visual, compare, safety, runtime, and inventory gate artifacts all PASS."
+    ]
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final executor QA 123-G007ExecutorQa passed/passed/passed. The final documentation typo it noted was fixed before checkpoint. All final gate artifacts are PASS and final browser unsafe counts are zero.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard -q => 607 passed",
+      "python scripts/verify_dashboard_remodel_visual_gate.py ... => PASS average 97.79",
+      "python scripts/verify_dashboard_v2_v3_compare.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_safety_audit.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_runtime_depth.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_inventory_gate.py ... => passed 81 items / 0 failures",
+      "browser final capture => verdict passed",
+      "git diff --check over final files => PASS",
+      "protected path git status => empty"
+    ],
+    "redTeamCommands": [
+      "final zero-category scan => passed",
+      "V2 default/V3 explicit guidance scan => passed",
+      "reference/demo unsafe network scan => passed",
+      "live unsafe network scan => passed",
+      "forbidden WS scan => passed",
+      "protected path scan => passed",
+      "inventory typo correction => passed"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/browser-transcript.json",
+        "description": "Final browser automation transcript covering 8 reference remodel routes plus live backtest/replay network assertions.",
+        "tool": "browser"
+      },
+      {
+        "id": "browser-summary",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/browser-summary.json",
+        "description": "Final browser/network summary: passed, unsafe counts 0."
+      },
+      {
+        "id": "final-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/final-100-scorecard.json",
+        "description": "Final deterministic 100/100 scorecard with no zero category."
+      },
+      {
+        "id": "final-report",
+        "kind": "implementation-log",
+        "path": "artifacts/ultragoal-g007-final-evidence/final-report.md",
+        "description": "Final report listing V2 inherited behavior and V3 improvements."
+      },
+      {
+        "id": "usage-guidance",
+        "kind": "implementation-log",
+        "path": "artifacts/ultragoal-g007-final-evidence/final-usage-guidance.md",
+        "description": "Final V2/V3 usage and safety guidance."
+      },
+      {
+        "id": "completion-audit",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/completion-audit.json",
+        "description": "Aggregate completion audit mapping deliverables to evidence."
+      },
+      {
+        "id": "visual-scorecard",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/visual-gate/scorecard.json",
+        "description": "Visual gate PASS average 97.79."
+      },
+      {
+        "id": "visual-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/visual-gate/side-by-side-contact-sheet.png",
+        "description": "Final eight-route visual contact sheet."
+      },
+      {
+        "id": "v2v3-scorecard",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 compare PASS average 100.0."
+      },
+      {
+        "id": "v2v3-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/v2-v3-compare/side-by-side-contact-sheet.png",
+        "description": "V2/V3 compare side-by-side contact sheet."
+      },
+      {
+        "id": "safety-scorecard",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/safety-audit/safety-scorecard.json",
+        "description": "Safety audit PASS average 100.0."
+      },
+      {
+        "id": "safety-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/safety-audit/safety-contact-sheet.png",
+        "description": "Safety audit contact sheet."
+      },
+      {
+        "id": "runtime-scorecard",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/runtime-depth/runtime-depth-scorecard.json",
+        "description": "Runtime depth PASS average 100.0."
+      },
+      {
+        "id": "runtime-contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/runtime-depth/runtime-depth-contact-sheet.png",
+        "description": "Runtime depth contact sheet."
+      },
+      {
+        "id": "inventory-gate",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/inventory-gate.json",
+        "description": "Inventory gate passed 81 items / 0 failures."
+      },
+      {
+        "id": "cleanup-report",
+        "kind": "cleanup-review-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/ai-slop-cleanup-report.md",
+        "description": "AI slop cleanup report with zero blockers/advisories."
+      },
+      {
+        "id": "architect-review",
+        "kind": "architect-review-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/architect-review.json",
+        "description": "Final architect review CLEAR/CLEAR/CLEAR APPROVE."
+      },
+      {
+        "id": "executor-qa",
+        "kind": "executor-qa-report",
+        "path": "artifacts/ultragoal-g007-final-evidence/executor-qa.json",
+        "description": "Final executor QA passed/passed/passed."
+      },
+      {
+        "id": "update-log",
+        "kind": "implementation-log",
+        "path": "docs/update_log/2026-06-29_ultragoal_g007_final_evidence.md",
+        "description": "Dated G007 verification log."
+      },
+      {
+        "id": "condition-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/condition.png",
+        "description": "Final browser screenshot for condition."
+      },
+      {
+        "id": "process-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/process.png",
+        "description": "Final browser screenshot for process."
+      },
+      {
+        "id": "history-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/history.png",
+        "description": "Final browser screenshot for history."
+      },
+      {
+        "id": "lab-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/lab.png",
+        "description": "Final browser screenshot for lab."
+      },
+      {
+        "id": "workbench-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/workbench.png",
+        "description": "Final browser screenshot for workbench."
+      },
+      {
+        "id": "audit-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/audit.png",
+        "description": "Final browser screenshot for audit."
+      },
+      {
+        "id": "backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/backtest.png",
+        "description": "Final browser screenshot for backtest."
+      },
+      {
+        "id": "replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/replay.png",
+        "description": "Final browser screenshot for replay."
+      },
+      {
+        "id": "live-backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/live-backtest.png",
+        "description": "Final browser screenshot for live-backtest."
+      },
+      {
+        "id": "live-replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g007-final-evidence/browser-final/live-replay.png",
+        "description": "Final browser screenshot for live-replay."
+      }
+    ],
+    "watchNotes": [],
+    "blockers": [],
+    "contractCoverage": [
+      {
+        "id": "contract-all-goals",
+        "contractRef": "Durable ultragoal plan G001-G007",
+        "obligation": "All prior goals must be complete and G007 must provide final evidence before completion.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-final-scorecard",
+          "surface-goal-ledger"
+        ],
+        "adversarialCaseRefs": [
+          "case-incomplete-goals"
+        ]
+      },
+      {
+        "id": "contract-final-score",
+        "contractRef": "G007 deterministic 100/100 scorecard",
+        "obligation": "Final scorecard must be PASS, 100/100, with no zero categories.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-final-scorecard"
+        ],
+        "adversarialCaseRefs": [
+          "case-zero-category"
+        ]
+      },
+      {
+        "id": "contract-final-gates",
+        "contractRef": "G007 unit/integration/browser/network/visual/V2 compare gates",
+        "obligation": "Dashboard tests, visual gate, V2/V3 compare, safety audit, runtime depth, inventory, and browser/network assertions must pass.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-test-gates",
+          "surface-browser-final",
+          "surface-visual-evidence"
+        ],
+        "adversarialCaseRefs": [
+          "case-gate-failure",
+          "case-network-unsafe"
+        ]
+      },
+      {
+        "id": "contract-v2-v3-guidance",
+        "contractRef": "Original V2 default / V3 explicit constraint",
+        "obligation": "Final report and usage guidance must state V2 remains default and V3 is explicit/selectable only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-final-report"
+        ],
+        "adversarialCaseRefs": [
+          "case-v2-default"
+        ]
+      },
+      {
+        "id": "contract-protected-paths",
+        "contractRef": "Protected/runtime path safety",
+        "obligation": "No protected runtime path or DB scratch remains in source status.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-test-gates"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-writes"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-goal-ledger",
+        "contractRef": "G001-G006 completed before G007",
+        "surface": "api/package",
+        "invocation": "Read .gjc ultragoal goals.json and completion audit",
+        "verdict": "passed",
+        "artifactRefs": [
+          "completion-audit",
+          "final-scorecard"
+        ]
+      },
+      {
+        "id": "surface-final-scorecard",
+        "contractRef": "G007 final scorecard",
+        "surface": "api/package",
+        "invocation": "Read final-100-scorecard.json",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-scorecard",
+          "architect-review",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "surface-test-gates",
+        "contractRef": "G007 deterministic command gates",
+        "surface": "api/package",
+        "invocation": "Dashboard pytest suite, visual/compare/safety/runtime/inventory gates, diff/protected path checks",
+        "verdict": "passed",
+        "artifactRefs": [
+          "visual-scorecard",
+          "v2v3-scorecard",
+          "safety-scorecard",
+          "runtime-scorecard",
+          "inventory-gate",
+          "cleanup-report"
+        ]
+      },
+      {
+        "id": "surface-browser-final",
+        "contractRef": "G007 browser/network final",
+        "surface": "web",
+        "invocation": "Browser automation over 8 reference routes plus live backtest/replay",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-summary",
+          "condition-screenshot",
+          "process-screenshot",
+          "history-screenshot",
+          "lab-screenshot",
+          "workbench-screenshot",
+          "audit-screenshot",
+          "backtest-screenshot",
+          "replay-screenshot",
+          "live-backtest-screenshot",
+          "live-replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-visual-evidence",
+        "contractRef": "G007 screenshots/contact sheets",
+        "surface": "web",
+        "invocation": "Visual, compare, safety, runtime, and browser screenshot evidence",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "visual-contact-sheet",
+          "v2v3-contact-sheet",
+          "safety-contact-sheet",
+          "runtime-contact-sheet"
+        ]
+      },
+      {
+        "id": "surface-final-report",
+        "contractRef": "G007 final report/usage guidance",
+        "surface": "api/package",
+        "invocation": "Read final-report.md and final-usage-guidance.md",
+        "verdict": "passed",
+        "artifactRefs": [
+          "completion-audit",
+          "final-scorecard",
+          "final-report",
+          "usage-guidance",
+          "update-log"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-incomplete-goals",
+        "contractRef": "Durable ultragoal plan",
+        "scenario": "A prior goal remains active/pending without evidence.",
+        "expectedBehavior": "Completion audit and goals ledger show G001-G006 complete, G007 active until checkpoint.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "completion-audit"
+        ]
+      },
+      {
+        "id": "case-zero-category",
+        "contractRef": "Final 100 scorecard",
+        "scenario": "Any rubric category scores zero or total score is below 100.",
+        "expectedBehavior": "totalScore 100.0 and zeroCategories [].",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-scorecard"
+        ]
+      },
+      {
+        "id": "case-gate-failure",
+        "contractRef": "Final deterministic gates",
+        "scenario": "Any visual/compare/safety/runtime/inventory/test gate fails.",
+        "expectedBehavior": "All gate artifacts are PASS/passed and final scorecard records them.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-scorecard",
+          "visual-scorecard",
+          "v2v3-scorecard",
+          "safety-scorecard",
+          "runtime-scorecard",
+          "inventory-gate"
+        ]
+      },
+      {
+        "id": "case-network-unsafe",
+        "contractRef": "Safety/network assertions",
+        "scenario": "Reference/demo fetches backend, live sends mutating/export/order/broker/account calls, or forbidden WS opens.",
+        "expectedBehavior": "browser summary referenceForbidden/mutating/forbiddenWs/liveUnsafe all 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-summary",
+          "safety-scorecard"
+        ]
+      },
+      {
+        "id": "case-v2-default",
+        "contractRef": "V2 default preserved",
+        "scenario": "Final guidance promotes V3 default without approval.",
+        "expectedBehavior": "Usage guidance states V2/default routes remain baseline and V3 explicit/selectable only.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "usage-guidance",
+          "v2v3-scorecard"
+        ]
+      },
+      {
+        "id": "case-protected-writes",
+        "contractRef": "Protected path safety",
+        "scenario": "Runtime DB/log/protected path scratch remains in git status.",
+        "expectedBehavior": "Protected path status empty and temporary strategy fixture DB removed.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-report",
+          "completion-audit"
+        ]
+      }
+    ]
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G007 final loop passed: final scorecard 100.0/100, visual 97.79, V2/V3 100.0, safety 100.0, runtime 100.0, browser passed; architect 122 APPROVE; executor 123 passed.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard -q => 607 passed",
+      "python scripts/verify_dashboard_remodel_visual_gate.py ... => PASS average 97.79",
+      "python scripts/verify_dashboard_v2_v3_compare.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_safety_audit.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_runtime_depth.py ... => PASS average 100.0",
+      "python scripts/verify_dashboard_inventory_gate.py ... => passed 81 items / 0 failures",
+      "browser final capture => verdict passed",
+      "git diff --check over final files => PASS",
+      "protected path git status => empty",
+      "architect review 122-G007ArchitectReview => CLEAR/CLEAR/CLEAR APPROVE",
+      "executor QA 123-G007ExecutorQa => passed/passed/passed"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,422 @@
+{
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "evidence": "Final executor QA 121-G006ExecutorQa passed/passed/passed. Visual gate status=PASS average=97.79 failures=[]; browser interaction summary verdict=passed screenshotCount=8 screenshotsNonUniform=True; focused tests 26 passed.",
+  "e2eCommands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js => PASS",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 26 passed",
+    "python scripts/verify_dashboard_remodel_visual_gate.py --base-url http://127.0.0.1:8777 --out artifacts/ultragoal-g006-ux-sweep --min-page-score 95 --min-average-score 97 --timeout-ms 60000 => PASS average 97.79",
+    "browser automation eight-route interaction capture => interaction-summary verdict passed",
+    "git diff --check over G006 files/artifacts => PASS"
+  ],
+  "redTeamCommands": [
+    "eight-page route coverage => passed",
+    "visual score floor min-page 95/min-average 97 => passed",
+    "horizontal overflow check => passed",
+    "page-specific state panel check => passed",
+    "chart tooltip/focus or process modal equivalent => passed",
+    "required safety labels retained => passed",
+    "modal coverage => passed"
+  ],
+  "artifactRefs": [
+    {
+      "id": "browser-run",
+      "kind": "browser-automation",
+      "path": "artifacts/ultragoal-g006-ux-sweep/browser-transcript.json",
+      "description": "Browser transcript covering route UX interaction on all eight remodel pages.",
+      "tool": "browser"
+    },
+    {
+      "id": "scorecard",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/scorecard.json",
+      "description": "Visual gate scorecard: PASS, average 97.79, no failures."
+    },
+    {
+      "id": "visual-gate-manifest",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/visual-gate-manifest.json",
+      "description": "Read-only eight-route visual gate manifest."
+    },
+    {
+      "id": "interaction-summary",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/interaction-summary.json",
+      "description": "Eight-page browser interaction summary: verdict passed."
+    },
+    {
+      "id": "image-evidence",
+      "kind": "test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/image-evidence.json",
+      "description": "Browser screenshot hash/non-uniform evidence for eight interaction captures."
+    },
+    {
+      "id": "dom-safety-scan",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/dom-safety-scan.json",
+      "description": "DOM safety scan: PASS."
+    },
+    {
+      "id": "modal-coverage",
+      "kind": "web-test-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/modal-coverage.json",
+      "description": "Settings/inspector/approval modal coverage: PASS."
+    },
+    {
+      "id": "source-safety-scan",
+      "kind": "source-scan-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/source-safety-scan.json",
+      "description": "Source safety scan from visual gate."
+    },
+    {
+      "id": "contact-sheet",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/side-by-side-contact-sheet.png",
+      "description": "Eight-route reference/current side-by-side contact sheet."
+    },
+    {
+      "id": "condition-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/condition-interaction.png",
+      "description": "Browser interaction screenshot for condition page."
+    },
+    {
+      "id": "process-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/process-interaction.png",
+      "description": "Browser interaction screenshot for process page."
+    },
+    {
+      "id": "history-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/history-interaction.png",
+      "description": "Browser interaction screenshot for history page."
+    },
+    {
+      "id": "lab-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/lab-interaction.png",
+      "description": "Browser interaction screenshot for lab page."
+    },
+    {
+      "id": "workbench-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/workbench-interaction.png",
+      "description": "Browser interaction screenshot for workbench page."
+    },
+    {
+      "id": "audit-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/audit-interaction.png",
+      "description": "Browser interaction screenshot for audit page."
+    },
+    {
+      "id": "backtest-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/backtest-interaction.png",
+      "description": "Browser interaction screenshot for backtest page."
+    },
+    {
+      "id": "replay-interaction-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/replay-interaction.png",
+      "description": "Browser interaction screenshot for replay page."
+    },
+    {
+      "id": "01_condition_ai_overview-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/01_condition_ai_overview.png",
+      "description": "Visual gate screenshot for 01_condition_ai_overview."
+    },
+    {
+      "id": "02_process-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/02_process.png",
+      "description": "Visual gate screenshot for 02_process."
+    },
+    {
+      "id": "03_history-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/03_history.png",
+      "description": "Visual gate screenshot for 03_history."
+    },
+    {
+      "id": "04_lab-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/04_lab.png",
+      "description": "Visual gate screenshot for 04_lab."
+    },
+    {
+      "id": "05_workbench-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/05_workbench.png",
+      "description": "Visual gate screenshot for 05_workbench."
+    },
+    {
+      "id": "06_decision_audit-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/06_decision_audit.png",
+      "description": "Visual gate screenshot for 06_decision_audit."
+    },
+    {
+      "id": "07_backtest-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/07_backtest.png",
+      "description": "Visual gate screenshot for 07_backtest."
+    },
+    {
+      "id": "08_chart_replay-visual-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/ultragoal-g006-ux-sweep/08_chart_replay.png",
+      "description": "Visual gate screenshot for 08_chart_replay."
+    },
+    {
+      "id": "cleanup-report",
+      "kind": "cleanup-review-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/ai-slop-cleanup-report.md",
+      "description": "AI slop cleanup report with zero blockers/advisories."
+    },
+    {
+      "id": "architect-review",
+      "kind": "architect-review-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/architect-review.json",
+      "description": "Final architect review: CLEAR/CLEAR/CLEAR APPROVE."
+    },
+    {
+      "id": "executor-qa",
+      "kind": "executor-qa-report",
+      "path": "artifacts/ultragoal-g006-ux-sweep/executor-qa.json",
+      "description": "Final executor QA: passed/passed/passed."
+    },
+    {
+      "id": "update-log",
+      "kind": "implementation-log",
+      "path": "docs/update_log/2026-06-29_ultragoal_g006_eight_page_ux_sweep.md",
+      "description": "Dated implementation and verification log for G006."
+    }
+  ],
+  "watchNotes": [
+    "Some chart interaction evidence records tooltip-visible accessible-equivalent without aria-live text on condition/workbench/audit/backtest; history/lab/replay have aria-live active datum and process has node modal equivalent."
+  ],
+  "blockers": [],
+  "contractCoverage": [
+    {
+      "id": "contract-eight-pages",
+      "contractRef": "G006 objective: eight-page UX/UI sweep",
+      "obligation": "Condition, process, history, lab, workbench, audit, backtest, and chart replay must each expose readable UX completion proof and retain safety labels.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-browser-interaction",
+        "surface-visual-gate",
+        "surface-focused-tests"
+      ],
+      "adversarialCaseRefs": [
+        "case-route-coverage",
+        "case-state-proof",
+        "case-safety-retained"
+      ]
+    },
+    {
+      "id": "contract-layout-visual",
+      "contractRef": "G006 objective: readable layout/no overlaps/correct graph sizes",
+      "obligation": "Visual gate must pass min page and average thresholds with screenshots/contact sheet and no blank/unreadable screenshots.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-visual-gate",
+        "surface-screenshots"
+      ],
+      "adversarialCaseRefs": [
+        "case-visual-score",
+        "case-horizontal-overflow"
+      ]
+    },
+    {
+      "id": "contract-interaction",
+      "contractRef": "G006 objective: interactive charts or accessible equivalent",
+      "obligation": "Each page must prove chart tooltip/focus interaction or page-appropriate equivalent such as Process node modal.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-browser-interaction"
+      ],
+      "adversarialCaseRefs": [
+        "case-chart-interaction",
+        "case-process-modal"
+      ]
+    },
+    {
+      "id": "contract-state-quality",
+      "contractRef": "G006 objective: empty/loading/stale/error states",
+      "obligation": "Each page must show page-specific Empty/Loading/Stale/Malformed/Error state proof rather than rely on unlabeled fixture success.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-browser-interaction",
+        "surface-focused-tests"
+      ],
+      "adversarialCaseRefs": [
+        "case-state-proof"
+      ]
+    },
+    {
+      "id": "contract-cli-out-of-scope",
+      "contractRef": "CLI surface",
+      "obligation": "G006 ships browser dashboard UX only; no CLI behavior changed.",
+      "status": "not_applicable",
+      "reason": "No CLI user-facing behavior is part of G006."
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "id": "surface-browser-interaction",
+      "contractRef": "G006 eight-page browser interaction",
+      "surface": "web",
+      "invocation": "Browser automation navigated all eight reference remodel routes, exercised chart focus/mousemove or process node click, and captured screenshots",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "interaction-summary",
+        "image-evidence",
+        "condition-interaction-screenshot",
+        "process-interaction-screenshot",
+        "history-interaction-screenshot",
+        "lab-interaction-screenshot",
+        "workbench-interaction-screenshot",
+        "audit-interaction-screenshot",
+        "backtest-interaction-screenshot",
+        "replay-interaction-screenshot"
+      ]
+    },
+    {
+      "id": "surface-visual-gate",
+      "contractRef": "G006 visual score gate",
+      "surface": "web",
+      "invocation": "verify_dashboard_remodel_visual_gate.py over eight /ui/remodel routes at 1920x1080",
+      "verdict": "passed",
+      "artifactRefs": [
+        "scorecard",
+        "visual-gate-manifest",
+        "contact-sheet",
+        "dom-safety-scan",
+        "modal-coverage"
+      ]
+    },
+    {
+      "id": "surface-screenshots",
+      "contractRef": "G006 visual evidence package",
+      "surface": "web",
+      "invocation": "Eight visual-gate screenshots plus eight interaction screenshots and contact sheet",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "image-evidence",
+        "contact-sheet",
+        "01_condition_ai_overview-visual-screenshot",
+        "02_process-visual-screenshot",
+        "03_history-visual-screenshot",
+        "04_lab-visual-screenshot",
+        "05_workbench-visual-screenshot",
+        "06_decision_audit-visual-screenshot",
+        "07_backtest-visual-screenshot",
+        "08_chart_replay-visual-screenshot"
+      ]
+    },
+    {
+      "id": "surface-focused-tests",
+      "contractRef": "G006 source/static regression",
+      "surface": "api/package",
+      "invocation": "node --check; focused pytest dashboard static + route parity; git diff --check",
+      "verdict": "passed",
+      "artifactRefs": [
+        "scorecard",
+        "cleanup-report",
+        "architect-review",
+        "executor-qa"
+      ]
+    },
+    {
+      "id": "surface-cli-out-of-scope",
+      "contractRef": "CLI surface",
+      "surface": "cli",
+      "status": "not_applicable",
+      "reason": "G006 has no CLI-facing behavior."
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-route-coverage",
+      "contractRef": "G006 eight-page scope",
+      "scenario": "One of the required eight pages lacks the UX sweep completion proof.",
+      "expectedBehavior": "interaction-summary pages include all eight page IDs and each has uxPanelPresent true.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "interaction-summary",
+        "browser-run"
+      ]
+    },
+    {
+      "id": "case-visual-score",
+      "contractRef": "G006 visual/layout threshold",
+      "scenario": "A page is blank/unreadable or below visual page threshold.",
+      "expectedBehavior": "scorecard PASS, failures [], all page scores >= 95 and average >= 97.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "scorecard",
+        "contact-sheet"
+      ]
+    },
+    {
+      "id": "case-horizontal-overflow",
+      "contractRef": "G006 no-overlap/no-overflow",
+      "scenario": "A page overflows horizontally at 1440px or visual capture is malformed.",
+      "expectedBehavior": "interaction-summary horizontalOverflow false on all pages and visual gate screenshots non-blank.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "interaction-summary",
+        "image-evidence"
+      ]
+    },
+    {
+      "id": "case-chart-interaction",
+      "contractRef": "G006 interaction depth",
+      "scenario": "Charts remain static with no tooltip/focus/crosshair/accessibility evidence.",
+      "expectedBehavior": "Browser transcript records tooltipVisible or activeDatumChanged for chart pages.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "interaction-summary"
+      ]
+    },
+    {
+      "id": "case-process-modal",
+      "contractRef": "G006 process accessible equivalent",
+      "scenario": "Process page lacks chart but also lacks an equivalent interactive drilldown.",
+      "expectedBehavior": "Process route opens node modal and transcript records processModalPresent true.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run"
+      ]
+    },
+    {
+      "id": "case-state-proof",
+      "contractRef": "G006 failure-state quality",
+      "scenario": "A page lacks explicit empty/loading/stale/malformed/error state proof.",
+      "expectedBehavior": "Every UX sweep panel includes Empty/Loading/Stale/Malformed/Error and interaction-summary pageStatesVisible true.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "browser-run",
+        "interaction-summary"
+      ]
+    },
+    {
+      "id": "case-safety-retained",
+      "contractRef": "Original safety constraints",
+      "scenario": "UX sweep removes safety/governance text or introduces forbidden controls.",
+      "expectedBehavior": "dom-safety-scan PASS and interaction-summary safetyLabels true on all pages.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "dom-safety-scan",
+        "interaction-summary"
+      ]
+    }
+  ]
+}

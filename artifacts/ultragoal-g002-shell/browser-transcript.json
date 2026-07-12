@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "server": "uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8774",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T14:45:00Z",
+      "url": "http://127.0.0.1:8774/ui/remodel/condition",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "remained under /ui/remodel/condition"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T14:45:01Z",
+      "path": "artifacts/ultragoal-g002-shell/condition.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T14:45:02Z",
+      "url": "http://127.0.0.1:8774/ui/remodel/backtest",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "production BacktestTab visible and route stayed /ui/remodel/backtest"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T14:45:03Z",
+      "path": "artifacts/ultragoal-g002-shell/backtest.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T14:45:04Z",
+      "url": "http://127.0.0.1:8774/ui/remodel/chart-replay",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "production SimulationTab visible and route stayed /ui/remodel/chart-replay"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T14:45:05Z",
+      "path": "artifacts/ultragoal-g002-shell/chart-replay.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    },
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T14:45:06Z",
+      "url": "http://127.0.0.1:8774/ui/remodel/process",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "process subpage visible and route stayed /ui/remodel/process"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T14:45:07Z",
+      "path": "artifacts/ultragoal-g002-shell/process.png",
+      "selector": "viewport",
+      "verdict": "passed"
+    }
+  ],
+  "verdict": "passed"
+}

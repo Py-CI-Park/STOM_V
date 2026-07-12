@@ -1,0 +1,54 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasPreflight": true,
+  "payload": {
+    "buy": "BreakOut_v2",
+    "sell": "BreakOut_Exit_v1",
+    "start": 20220101,
+    "end": 20250516,
+    "timeframe": "min",
+    "engines": 8,
+    "mode": "backtest"
+  },
+  "payloadHasRunShape": true,
+  "invalidOk": false,
+  "invalidReasons": [
+    "buy/sell strategy names are required"
+  ],
+  "wfo": {
+    "buy": "BreakOut_v2",
+    "sell": "BreakOut_Exit_v1",
+    "start": 20220101,
+    "end": 20250516,
+    "timeframe": "min",
+    "engines": 8,
+    "mode": "wfo",
+    "train_window_days": 60,
+    "test_window_days": 20,
+    "step_days": 10,
+    "opt_method": "grid",
+    "opt_objective": "tpi"
+  },
+  "sweep": {
+    "buy": "BreakOut_v2",
+    "sell": "BreakOut_Exit_v1",
+    "start": 20220101,
+    "end": 20250516,
+    "timeframe": "min",
+    "engines": 8,
+    "mode": "sweep",
+    "sweep_action": "param",
+    "sweep_spec": [
+      {
+        "name": "fastLen",
+        "min": 10,
+        "max": 30,
+        "step": 5
+      }
+    ]
+  },
+  "preflightTextLength": 156,
+  "confirmGate": "manual-required",
+  "inertButtons": 2
+}
