@@ -31,6 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -343,12 +344,22 @@ def test_committed_bundle_in_sync_with_source() -> None:
     before = {rel: (Path(PROJECT_ROOT) / rel).read_bytes() for rel in targets}
     # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
     #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
-    r = subprocess.run(
-        [node, "build-app.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=240,
-    )
-    assert r.returncode == 0, f"build failed: {r.stderr}"
+    # Windows I/O transient guard: under full-suite load, node writeFileSync on the in-place
+    #   1.9MB bundle/manifest can hit a UNKNOWN/EBUSY handle race (Defender real-time scan of the
+    #   just-written app.js). The build itself is deterministic (proven in isolation and by
+    #   `npm run build`), so retry a crashing subprocess a few times before asserting. A genuine
+    #   non-deterministic build would still fail the byte-stability check below on every attempt.
+    r = None
+    for attempt in range(4):
+        r = subprocess.run(
+            [node, "build-app.mjs"],
+            cwd=str(WEBUI), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=240,
+        )
+        if r.returncode == 0:
+            break
+        time.sleep(1.0 + attempt)
+    assert r is not None and r.returncode == 0, f"build failed after retries: {r.stderr if r else 'no run'}"
     changed = [
         rel for rel in targets
         if (Path(PROJECT_ROOT) / rel).read_bytes() != before[rel]

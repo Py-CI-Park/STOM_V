@@ -22,7 +22,8 @@ import { V4History } from "./v4-history.jsx";
 import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Audit } from "./v4-audit.jsx";
-const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4 } = React;
+import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
+const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
 // V4 IA — 좌측 레일 7뷰(승인 프로토타입). 아이콘은 stroke currentColor 인라인 SVG.
 const V4_TABS = [
@@ -43,6 +44,15 @@ function v4InitialTab() {
     if (t && V4_TAB_KEYS.includes(t)) return t;
   } catch (e) {}
   return "research";
+}
+
+function _nextV4TabKey(keys, current, key) {
+  const index = Math.max(0, keys.indexOf(current));
+  if (key === "Home") return keys[0];
+  if (key === "End") return keys[keys.length - 1];
+  if (key === "ArrowRight") return keys[(index + 1) % keys.length];
+  if (key === "ArrowLeft") return keys[(index - 1 + keys.length) % keys.length];
+  return current;
 }
 
 // BASE 결정: ?base= 1회 오버라이드(wt-dev 실데이터 연동) → localStorage(cross-origin
@@ -100,12 +110,18 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
   const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
   const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
+  const pendingTabFocusRef = useRef_v4("");
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
+  useEffect_v4(() => {
+    if (!pendingTabFocusRef.current) return;
+    document.getElementById("v4-tab-" + pendingTabFocusRef.current)?.focus();
+    pendingTabFocusRef.current = "";
+  }, [activeTab]);
 
   const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
   const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -114,6 +130,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [selectedRun, setSelectedRun] = useState_v4("");
   const [runList, setRunList] = useState_v4([]);
   const [fetchedRunState, setFetchedRunState] = useState_v4(null);
+  const [archiveLoadError, setArchiveLoadError] = useState_v4("");
+  const archiveRequestRef = useRef_v4(0);
 
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
@@ -142,11 +160,21 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   }, [baseUrl, isDemo, liveState.run_id, liveState.status]);
 
   const fetchRunState = useCallback_v4(() => {
-    if (!selectedRun || isDemo || !baseUrl) { setFetchedRunState(null); return; }
+    if (!selectedRun || isDemo || !baseUrl) {
+      setFetchedRunState(null); setArchiveLoadError(""); return;
+    }
+    const requestId = ++archiveRequestRef.current;
     fetch(baseUrl + "/run_state?run_id=" + encodeURIComponent(selectedRun), { signal: AbortSignal.timeout(4000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => setFetchedRunState(j))
-      .catch(() => setFetchedRunState(null));
+      .then(j => {
+        if (requestId !== archiveRequestRef.current) return;
+        setFetchedRunState(j); setArchiveLoadError("");
+      })
+      .catch(e => {
+        if (requestId !== archiveRequestRef.current) return;
+        setFetchedRunState(null);
+        setArchiveLoadError(String(e && e.message ? e.message : e));
+      });
   }, [baseUrl, selectedRun, isDemo]);
   useEffect_v4(() => {
     if (!selectedRun) { setFetchedRunState(null); return; }
@@ -155,8 +183,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     return () => clearInterval(id);
   }, [fetchRunState, selectedRun]);
 
-  const state = (selectedRun && fetchedRunState) ? fetchedRunState : liveState;
-  const running = state.status === "running" || state.status === "stopping";
+  const selectRun = useCallback_v4((runId) => {
+    archiveRequestRef.current += 1;
+    setSelectedRun(runId);
+    setFetchedRunState(null);
+    setArchiveLoadError("");
+  }, []);
+  const display = _resolveReplayDisplayState(selectedRun, fetchedRunState, archiveLoadError, liveState);
+  const state = display.displayState || { status: "archive_unavailable", run_id: selectedRun, current_gen: -1, generations: [] };
+  const running = liveState.status === "running" || liveState.status === "stopping";
   const runId = state.run_id || "";
 
   // ---- 시작/정지/설정 (app.jsx:201-233 패턴) ----
@@ -188,13 +223,20 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const targetScoreRaw = (configSpec.find(f => f.name === "target_score")?.default);
   const targetScore = (targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === undefined) ? 1.0 : Number(targetScoreRaw);
 
-  const selectTab = (key) => {
+  const selectTab = (key, retainFocus = true) => {
+    if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", key);
       window.history.replaceState(null, "", url.pathname + url.search);
     } catch (e) {}
+  };
+  const onTabKeyDown = (event, key) => {
+    const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key);
+    if (next === key && !["Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    selectTab(next);
   };
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
 
@@ -205,15 +247,20 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         <div className="v4-rail-logo" title="STOM V4">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 15 L6 12 L9 13 L13 7 L18 3" stroke="var(--teal)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="18" cy="3" r="1.8" fill="var(--violet)" /></svg>
         </div>
-        {V4_TABS.map(tab => (
-          <button key={tab.key} role="tab" aria-selected={activeTab === tab.key}
-                  className={"v4-rail-item" + (activeTab === tab.key ? " active" : "")}
-                  onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
-            <V4RailIcon name={tab.key} />
-            <span className="v4-ri-label">{tab.label}</span>
-            <i className="v4-ri-dot"></i>
-          </button>
-        ))}
+        <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스">
+          {V4_TABS.map(tab => (
+            <button key={tab.key} id={"v4-tab-" + tab.key} role="tab"
+                    aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
+                    tabIndex={activeTab === tab.key ? 0 : -1}
+                    className={"v4-rail-item" + (activeTab === tab.key ? " active" : "")}
+                    onKeyDown={event => onTabKeyDown(event, tab.key)}
+                    onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
+              <V4RailIcon name={tab.key} />
+              <span className="v4-ri-label">{tab.label}</span>
+              <i className="v4-ri-dot"></i>
+            </button>
+          ))}
+        </div>
         <div className="v4-rail-spacer"></div>
         <a className="v4-rail-item" href="/ui/" title="V2 운영 대시보드로">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
@@ -248,26 +295,45 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
             <span className="mono">{active.hint} · run={selectedRun ? "archive" : "LIVE"}{runId ? " · " + runId : ""}</span>
           </div>
           <V4RunControls
-            running={running} state={state} isDemo={isDemo}
+            running={running} state={liveState} isDemo={isDemo}
             isLive={activeTab === "research"}
             runList={runList} selectedRun={selectedRun}
-            onSelectRun={setSelectedRun} onRefreshRun={fetchRunState}
+            onSelectRun={selectRun} onRefreshRun={fetchRunState}
             onOpenSettings={() => setSettingsOpen(true)} onStop={onStop}
             onGoLive={() => selectTab("research")} />
         </div>
 
         <main className="v4-stage">
+          {display.mode === "archive" && display.error && (
+            <div className="research-empty" role="alert">
+              아카이브 run 로드 실패 · {selectedRun} · {display.error}
+            </div>
+          )}
           {/* Replay keep-alive: 첫 방문 후 hidden 유지(언마운트 금지 — WS·재생 위치 보존) */}
           {replayVisited && (
-            <div style={{ display: activeTab === "replay" ? undefined : "none" }}>
+            <div id="v4-panel-replay" role="tabpanel" aria-labelledby="v4-tab-replay"
+                 hidden={activeTab !== "replay"}
+                 style={{ display: activeTab === "replay" ? undefined : "none" }}
+                 aria-hidden={activeTab !== "replay"}
+                 inert={activeTab === "replay" ? undefined : ""}>
               <ErrorBoundary>
-                <V4Replay baseUrl={baseUrl} wsStatus={wsStatus} />
+                <V4Replay baseUrl={baseUrl} wsStatus={wsStatus} active={activeTab === "replay"} />
               </ErrorBoundary>
             </div>
           )}
+          {!replayVisited && (
+            <div id="v4-panel-replay" role="tabpanel" aria-labelledby="v4-tab-replay"
+                 hidden aria-hidden="true" inert="" />
+          )}
+          {V4_TABS.filter(tab => tab.key !== activeTab && tab.key !== "replay").map(tab => (
+            <div key={tab.key} id={"v4-panel-" + tab.key} role="tabpanel"
+                 aria-labelledby={"v4-tab-" + tab.key} hidden aria-hidden="true" inert="" />
+          ))}
           {activeTab === "replay" ? null : (
-            <ErrorBoundary>
-              {activeTab === "research" ? (
+            <div id={"v4-panel-" + activeTab} role="tabpanel"
+                 aria-labelledby={"v4-tab-" + activeTab}>
+              <ErrorBoundary>
+                {activeTab === "research" ? (
                 <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send}
                                 lastReply={lastReply} onViewCode={onViewCodeByGen}
                                 onOpenSettings={() => setSettingsOpen(true)}
@@ -293,8 +359,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                     </div>
                   )}
                 </div>
-              )}
-            </ErrorBoundary>
+                )}
+              </ErrorBoundary>
+            </div>
           )}
         </main>
       </div>
@@ -312,4 +379,4 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
 Object.assign(window, { DashboardV4Shell });
 // dual-safe ESM export. KEEP on ONE physical line.
-export { DashboardV4Shell };
+export { DashboardV4Shell, _nextV4TabKey };

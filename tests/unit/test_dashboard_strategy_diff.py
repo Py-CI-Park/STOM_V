@@ -15,6 +15,7 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
 def _seed_strategy_db(path: Path) -> None:
@@ -75,7 +76,7 @@ def _seed_run_db(path: Path, snapshot_dir: Path) -> None:
 
 def test_strategy_diff_route_returns_buy_and_sell_diff(monkeypatch, tmp_path: Path) -> None:
     """Given gen0/gen1 codes, When /strategy_diff is called, Then buy/sell unified diffs are returned."""
-    from fastapi.testclient import TestClient
+
 
     import ai_strategy_loop.bootstrap as bootstrap
     from ai_strategy_loop.dashboard.app import create_app
@@ -89,7 +90,7 @@ def test_strategy_diff_route_returns_buy_and_sell_diff(monkeypatch, tmp_path: Pa
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    resp = TestClient(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=1")
+    resp = authorized_dashboard_client(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=1")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -110,7 +111,7 @@ def test_strategy_diff_route_returns_buy_and_sell_diff(monkeypatch, tmp_path: Pa
 
 def test_strategy_diff_gen_zero_has_no_previous_base(monkeypatch, tmp_path: Path) -> None:
     """Given gen0, When previous diff is requested, Then it returns an explicit no-base payload."""
-    from fastapi.testclient import TestClient
+
 
     import ai_strategy_loop.bootstrap as bootstrap
     from ai_strategy_loop.dashboard.app import create_app
@@ -124,7 +125,7 @@ def test_strategy_diff_gen_zero_has_no_previous_base(monkeypatch, tmp_path: Path
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    resp = TestClient(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=0")
+    resp = authorized_dashboard_client(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=0")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -138,14 +139,14 @@ def test_strategy_diff_gen_zero_has_no_previous_base(monkeypatch, tmp_path: Path
 
 def test_strategy_diff_missing_run_reports_status(monkeypatch, tmp_path: Path) -> None:
     """Given missing run_id, When diff is requested, Then payload is explicit and non-404."""
-    from fastapi.testclient import TestClient
+
 
     from ai_strategy_loop.dashboard.app import create_app
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    resp = TestClient(create_app()).get("/strategy_diff?gen_no=1")
+    resp = authorized_dashboard_client(create_app()).get("/strategy_diff?gen_no=1")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -158,7 +159,7 @@ def test_strategy_diff_missing_run_reports_status(monkeypatch, tmp_path: Path) -
 
 def test_strategy_diff_missing_generation_reports_status(monkeypatch, tmp_path: Path) -> None:
     """Given unknown generation, When diff is requested, Then payload reports missing generation."""
-    from fastapi.testclient import TestClient
+
 
     import ai_strategy_loop.bootstrap as bootstrap
     from ai_strategy_loop.dashboard.app import create_app
@@ -172,7 +173,7 @@ def test_strategy_diff_missing_generation_reports_status(monkeypatch, tmp_path: 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    resp = TestClient(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=9")
+    resp = authorized_dashboard_client(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=9")
 
     assert resp.status_code == 200
     body = resp.json()

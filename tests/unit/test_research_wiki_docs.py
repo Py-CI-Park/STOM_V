@@ -13,6 +13,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 
 WIKI_DIR = Path(PROJECT_ROOT) / "docs" / "research" / "condition_research" / "wiki"
@@ -76,7 +77,7 @@ def test_research_wiki_is_discoverable_from_docs_api(monkeypatch, tmp_path: Path
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
 
     response = client.get("/research_docs")
 

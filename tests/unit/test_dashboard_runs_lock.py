@@ -19,6 +19,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
+
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
@@ -59,7 +62,7 @@ def client():
 
     from ai_strategy_loop.dashboard.app import create_app
 
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 class TestRunsEndpoints:

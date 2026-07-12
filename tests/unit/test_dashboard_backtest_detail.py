@@ -28,6 +28,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
+
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
@@ -273,7 +276,7 @@ def client(monkeypatch, tmp_path):
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 class TestBacktestDetailRoute:
@@ -299,7 +302,7 @@ class TestBacktestDetailRoute:
         )
         st.close()
 
-        c = TestClient(create_app())
+        c = authorized_dashboard_client(create_app())
         resp = c.get("/backtest_detail?run_id=runRoute&gen_no=0")
         assert resp.status_code == 200
         body = resp.json()

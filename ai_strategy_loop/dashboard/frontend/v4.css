@@ -8,12 +8,22 @@
 
 /* ============ 앱 프레임: 좌측 레일 + 워크스페이스 ============ */
 .v4-root {
+  --control-dense: 32px;
+  --target-touch: 44px;
+  --focus-width: 2px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   min-height: 100vh;
   background: var(--bg-0);
   color: var(--ink-0);
 }
+.v4-root :where(section, article, aside, div, nav, main, header) { min-width: 0; }
+.v4-root :where(p, li, label, h1, h2, h3, h4) {
+  word-break: keep-all;
+  line-break: strict;
+  overflow-wrap: break-word;
+}
+.v4-root :where(code, pre, .mono, [data-long-id]) { overflow-wrap: anywhere; }
 
 /* ── 좌측 슬림 레일 ── */
 .v4-rail {
@@ -31,6 +41,7 @@
   background: var(--bg-3); border: 1px solid var(--line-2);
   margin-bottom: 10px;
 }
+.v4-rail-tabs { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
 .v4-rail-item {
   width: 58px; padding: 9px 0 7px;
   border-radius: 9px; border: 1px solid transparent;
@@ -243,6 +254,13 @@
 .v4-replay .chart-wrap { min-height: 360px; }
 .v4-lab, .v4-workbench, .v4-history { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
+.v4-history-archive-scroll .panel-bd > div:has(> table) {
+  max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
+}
+.v4-history-archive-scroll table { min-width: 680px; }
+.v4-history-archive-scroll table :where(th, td) {
+  white-space: nowrap; word-break: normal; overflow-wrap: normal;
+}
 /* 명예의 전당/후보 비교 테이블은 수백 행이라 페이지를 통째로 밀어 스캔성을 해쳤다(감사 #2).
    워크벤치 스코프에서만 각 테이블의 '스크롤 래퍼'를 경계 처리해 영역 안에서 세로 스크롤되게
    한다. 공유 컴포넌트 JS/HTML 은 무수정 — 프로 HoF/RunCompare(rp-table)는 :has() 로,
@@ -289,14 +307,62 @@
 .v4-onboarding-steps span { font-size: 11.5px; color: var(--ink-2); line-height: 1.5; }
 
 /* 접근성: 키보드 포커스 가시화 + 모션 최소화 존중 */
-.v4-root :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+.v4-root :focus-visible { outline: var(--focus-width) solid var(--blue); outline-offset: 2px; border-radius: var(--radius-sm); }
 @media (prefers-reduced-motion: reduce) {
   .v4-root *, .v4-root *::before, .v4-root *::after { animation: none !important; transition: none !important; }
 }
 
 /* 반응형: 좁은 폭에서 레일 축소 */
-@media (max-width: 760px) {
-  .v4-rail { width: 56px; }
-  .v4-rail-item { width: 46px; }
+@media (max-width: 768px) {
+  .v4-root { grid-template-columns: minmax(0, 1fr); }
+  .v4-rail {
+    width: 100%; height: auto; min-width: 0;
+    flex-direction: row; align-items: center;
+    padding: var(--space-1); overflow-x: auto;
+  }
+  .v4-rail-logo, .v4-rail-spacer { display: none; }
+  .v4-rail-tabs { flex-direction: row; flex: 0 0 auto; }
+  .v4-rail-item { width: var(--target-touch); min-width: var(--target-touch); min-height: var(--target-touch); padding: var(--space-1); }
   .v4-ri-label { display: none; }
+  .v4-topbar, .v4-controlbar { position: static; padding: var(--space-3); }
+  .v4-topbar, .v4-controlbar, .v4-view-title { align-items: stretch; }
+  .v4-grow { display: none; }
+  .v4-brand, .v4-safety, .v4-base, .v4-runbar, .v4-runsel, .v4-view-title { width: 100%; }
+  .v4-base, .v4-runbar, .v4-runsel { flex-wrap: wrap; }
+  .v4-base .toolbar-input { width: auto; flex: 1 1 160px; min-width: 0; }
+  .v4-view-title { flex-direction: column; gap: var(--space-1); }
+  .v4-view-title span { white-space: normal; overflow: visible; text-overflow: clip; }
+  .v4-research .phase-timeline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+  .v4-research .phase-step {
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-1);
+    gap: var(--space-2);
+  }
+  .v4-research .phase-connector { display: none; }
+  .v4-research .phase-gen-tag { grid-column: 1 / -1; margin-left: 0; }
+  .v4-replay .grid-main { grid-template-columns: minmax(0, 1fr) !important; }
+  .v4-replay .v4-wf-step { flex: 1 1 100%; }
+  .v4-replay .panel-bd:has(> input[type="range"]) > div:first-child > div {
+    flex-wrap: wrap;
+    margin-left: 0 !important;
+  }
+  .v4-replay .panel-bd:has(> input[type="range"]) > div:first-child > span:last-child {
+    margin-left: 0 !important;
+  }
+  .v4-runbar-prog { min-width: 0; flex: 1 1 100%; }
+  .v4-runsel-select { width: 100%; min-width: 0; max-width: 100%; }
+  .v4-stage { padding: var(--space-3) var(--space-3) var(--space-6); }
+  .v4-root :where(button, a.v4-rail-item, input, select) {
+    min-width: var(--target-touch);
+    min-height: var(--target-touch);
+  }
+  .v4-root :where(.hof-scroll, .process-defaults-table-wrap, [data-region="scroll"]) {
+    max-width: 100%; overflow-x: auto;
+  }
 }

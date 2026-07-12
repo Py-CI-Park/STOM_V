@@ -15,6 +15,7 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # noqa: E402
 
 FRONTEND = PROJECT_ROOT / "ai_strategy_loop" / "dashboard" / "frontend"
 
@@ -24,8 +25,6 @@ def _read_front(name: str) -> str:
 
 
 def test_ai_context_pack_endpoint_summarizes_run_without_secret_leak(monkeypatch, tmp_path: Path) -> None:
-    from fastapi.testclient import TestClient
-
     from ai_strategy_loop.dashboard.app import create_app
 
     db = tmp_path / "loop_runs.db"
@@ -69,7 +68,9 @@ def test_ai_context_pack_endpoint_summarizes_run_without_secret_leak(monkeypatch
     finally:
         st.close()
 
-    body = TestClient(create_app()).get("/ai_context_pack?run_id=ctxRun&gen_no=1").json()
+    body = authorized_dashboard_client(create_app()).get(
+        "/ai_context_pack?run_id=ctxRun&gen_no=1",
+    ).json()
     raw = json.dumps(body, ensure_ascii=False)
     context_pack = body["context_pack"]
 
@@ -105,22 +106,18 @@ def test_ai_context_pack_endpoint_summarizes_run_without_secret_leak(monkeypatch
 
 
 def test_ai_context_pack_missing_run_id_returns_error(monkeypatch, tmp_path: Path) -> None:
-    from fastapi.testclient import TestClient
-
     from ai_strategy_loop.dashboard.app import create_app
 
     monkeypatch.setattr(S, "LOOP_RUNS_DB", tmp_path / "loop_runs.db")
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
 
-    body = TestClient(create_app()).get("/ai_context_pack").json()
+    body = authorized_dashboard_client(create_app()).get("/ai_context_pack").json()
 
     assert body["error"] == "run_id required"
 
 
 def test_ai_context_pack_respects_zero_generation(monkeypatch, tmp_path: Path) -> None:
-    from fastapi.testclient import TestClient
-
     from ai_strategy_loop.dashboard.app import create_app
 
     db = tmp_path / "loop_runs.db"
@@ -144,7 +141,9 @@ def test_ai_context_pack_respects_zero_generation(monkeypatch, tmp_path: Path) -
     finally:
         st.close()
 
-    body = TestClient(create_app()).get("/ai_context_pack?run_id=zeroRun&gen_no=0").json()
+    body = authorized_dashboard_client(create_app()).get(
+        "/ai_context_pack?run_id=zeroRun&gen_no=0",
+    ).json()
 
     assert body["gen_no"] == 0
     assert body["strategy_names"]["buy"] == "buy0"

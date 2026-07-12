@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+from tests.unit.security_test_client import authorized_dashboard_client
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -17,7 +17,7 @@ def _text(path: Path) -> str:
 def test_canonical_dashboard_routes_keep_v2_default_and_explicit_v3_selector() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
     for path in ["/ui/", "/ui/evolution", "/ui/evolution/process", "/ui/backtest", "/ui/chart-replay"]:
         response = client.get(path, follow_redirects=False)
         assert response.status_code == 200, path
@@ -53,7 +53,7 @@ def test_v2_default_bundle_exposes_nonpersistent_v3_preview_link() -> None:
 def test_remodel_zip_prototype_root_and_deeplinks_are_scoped() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
     response = client.get("/ui/remodel/")
     assert response.status_code == 200
     assert "STOM AI · 조건식 AI 연구 대시보드" in response.text

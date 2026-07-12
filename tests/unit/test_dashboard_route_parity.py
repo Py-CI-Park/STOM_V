@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 FRONTEND = PROJECT_ROOT / "ai_strategy_loop" / "dashboard" / "frontend"
 
@@ -67,7 +68,7 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
-    return TestClient(create_app())
+    return authorized_dashboard_client(create_app())
 
 
 def test_dashboard_fresh_app_exposes_frontend_called_routes(monkeypatch, tmp_path: Path) -> None:

@@ -5,11 +5,11 @@
 //   dep under the gitignored webui-build/node_modules, never served). If jsdom cannot host
 //   the index path, the pytest wrapper falls back to skip + the Playwright harness variant.
 //
-//   PR-6 FLIP: V2/V3/V4 now load the REAL DEFAULT served artifact frontend/bundle/app.js (the
-//     committed esbuild bundle written by `node build-app.mjs`), NOT the transient .track-z pilot.
-//     This makes the harness the load-bearing safety proof for the flip: it proves the artifact the
-//     browser actually downloads renders all 7 tabs + 3 standalone pages, 0 errors, single React.
-//     V1 keeps a transient pilot build (a clean single-React/no-require MECHANISM proof of the
+//   W3: V1-V7 load a freshly generated transient production-entry bundle. This closes the stale
+//     committed-bundle false green while leaving tracked npm-free artifacts untouched.
+//     The disposable production build proves writer parity; this harness proves current-source
+//     rendering, zero captured errors, and one React identity without regenerating bundle/app.js.
+//     V1 also keeps its clean single-React/no-require MECHANISM proof of the
 //     alias-to-shim entry — it asserts DemoBadge/LivePending republish, independent of the served
 //     file's freshness).
 //
@@ -38,7 +38,7 @@
 //   V1 && V2 && V3 && V4 pass. Any host-unavailability is reported as {"hostError": ...}
 //   (exit 3) so the wrapper can skip rather than fail.
 
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 import esbuild from "esbuild";
 import { readFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -51,10 +51,10 @@ mkdirSync(TRACK_Z, { recursive: true });
 
 const read = (p) => readFileSync(p, "utf8");
 
-// PR-6 FLIP: V2/V3/V4 load the REAL DEFAULT served artifact (committed by `node build-app.mjs`),
-//   proving the file the browser downloads renders. V1 still uses a transient pilot build below
-//   as a clean alias-to-shim MECHANISM proof. (Build the served bundle first with build-app.mjs.)
-const SERVED_APP = resolve(FE, "bundle/app.js");
+// W3: all sections load a fresh transient build of the production entry graph. Reading the
+// committed app.js here allowed changed JSX to hide behind a stale artifact and falsely green.
+// A separate disposable `npm run build` proves the production writer without tracked outputs.
+const SERVED_APP = resolve(TRACK_Z, "app.pilot.js");
 
 // --- Build the transient pilot the V1 mechanism proof needs (idempotent; gitignored) ---
 // Pilot bundle (same options as build-app.mjs default bundle path).
@@ -66,7 +66,7 @@ const reactFlowEntry = resolve(__dirname, "node_modules/@xyflow/react/dist/esm/i
 const dagreEntry = resolve(__dirname, "node_modules/dagre/index.js");
 await esbuild.build({
   entryPoints: [resolve(__dirname, "src/track-z-entry.pilot.js")],
-  outfile: resolve(TRACK_Z, "app.pilot.js"),
+  outfile: SERVED_APP,
   bundle: true, format: "iife", platform: "browser", target: "es2018",
   jsx: "transform", jsxFactory: "React.createElement", jsxFragment: "React.Fragment",
   minify: false, sourcemap: false, loader: { ".jsx": "jsx" },
@@ -236,12 +236,16 @@ const RIX_HARNESS_ROWS = [
 function makeDom(opts = {}) {
   const STATE = opts.state || IDLE_STATE;
   const domUrl = opts.url || `http://localhost${opts.path || "/ui/"}`;
+  const errs = [];
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on("jsdomError", (error) => {
+    errs.push("jsdom.error: " + String((error && error.stack) || error));
+  });
   const dom = new JSDOM(
     "<!DOCTYPE html><html><body><div id=root></div></body></html>",
-    { runScripts: "dangerously", pretendToBeVisual: true, url: domUrl },
+    { runScripts: "dangerously", pretendToBeVisual: true, url: domUrl, virtualConsole },
   );
   const { window } = dom;
-  const errs = [];
   window.addEventListener("error", (e) => errs.push("window.error: " + ((e.error && e.error.stack) || e.message)));
   // Capture console.error into `errs` only — do NOT forward to the real process stdout/
   //   stderr, so the harness's single JSON result on stdout stays parseable by the wrapper.
@@ -253,6 +257,30 @@ function makeDom(opts = {}) {
   window.cancelAnimationFrame = window.cancelAnimationFrame || ((id) => clearTimeout(id));
   window.scrollTo = window.scrollTo || (() => {});
   if (!window.ResizeObserver) window.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  // jsdom has no Canvas implementation. Install an observable 2D context instead of allowing
+  // jsdom's virtual console to print a runtime error that the old harness falsely ignored.
+  window.__HARNESS_CANVAS_EVENTS__ = [];
+  window.HTMLCanvasElement.prototype.getContext = function getContext(kind) {
+    if (kind !== "2d") return null;
+    const events = window.__HARNESS_CANVAS_EVENTS__;
+    const gradient = { addColorStop: (...args) => events.push(["addColorStop", ...args]) };
+    const base = {
+      canvas: this,
+      createLinearGradient: (...args) => { events.push(["createLinearGradient", ...args]); return gradient; },
+      createRadialGradient: (...args) => { events.push(["createRadialGradient", ...args]); return gradient; },
+      createPattern: (...args) => { events.push(["createPattern", ...args]); return {}; },
+      measureText: (text) => ({ width: String(text).length * 6 }),
+      getImageData: () => ({ data: new window.Uint8ClampedArray([1, 0, 0, 255]) }),
+      isPointInPath: () => false,
+    };
+    return new Proxy(base, {
+      get(target, property) {
+        if (property in target) return target[property];
+        return (...args) => events.push([String(property), ...args]);
+      },
+    });
+  };
+  if (opts.injectJsdomError) virtualConsole.emit("jsdomError", new Error("fault-injected jsdom error"));
   // jsdom has no fetch/WebSocket; the served :8770 app does. The App's useBackend() calls
   //   GET /health → /config/spec → /status → opens a WS. We emulate a real backend: /health ok,
   //   /status returns the CONTRACT-VALID STATE (idle or running) so the App renders its REAL shell
@@ -316,6 +344,12 @@ function makeDom(opts = {}) {
   // V4 — disable the index App auto-mount so the standalone page mounts its own root.
   if (opts.noAutoMount) window.__STOM_NO_AUTO_MOUNT__ = true;
   return { dom, window, errs };
+}
+if (process.argv.includes("--probe-jsdom-error")) {
+  const { errs } = makeDom({ injectJsdomError: true });
+  const report = { probe: "jsdom-error", pass: errs.length === 0, errorCount: errs.length, errors: errs };
+  process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+  process.exit(report.pass ? 0 : 1);
 }
 const inject = (window, code) => { const s = window.document.createElement("script"); s.textContent = code; window.document.body.appendChild(s); };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -600,8 +634,11 @@ async function runPageOnce({ page, global: globalName, state, path, needles }) {
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
   const missingNeedles = (needles || []).filter((n) => !rootHtml.includes(n));
+  const canvasDrawEvents = window.__HARNESS_CANVAS_EVENTS__.length;
+  const canvasRequired = page === "v4shell" || page === "v4shell-running";
   const pass = componentIsFn && !mountError && errs.length === 0 && rootNonEmpty
-    && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0;
+    && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0
+    && (!canvasRequired || canvasDrawEvents > 0);
   return {
     page, global: globalName, pass, componentIsFunction: componentIsFn, mountError,
     rootNonEmpty, rootHtmlLen: rootHtml.length, errorBoundaryTripped: boundaryTripped,
@@ -613,6 +650,7 @@ async function runPageOnce({ page, global: globalName, state, path, needles }) {
       discoveryWaiting: rootHtml.includes("실시간 데이터 대기"),
       wsBadge: (rootHtml.match(/백엔드 연결됨|재연결|connecting|데모 모드/) || [null])[0],
     } : {}),
+    canvasRequired, canvasDrawEvents,
     dynamicRequireErrors: dynReq, errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }

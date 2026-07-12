@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -15,16 +16,29 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+from ai_strategy_loop.dashboard import backtest_jobs as backtest_jobs_module  # noqa: E402
 from ai_strategy_loop.dashboard.backtest_jobs import (  # noqa: E402
     BacktestJobManager,
     BacktestJobSpec,
 )
 
 
-def _spec(buy="테스트매수", **kw):
-    base = dict(buy=buy, sell="테스트매도", start=20250407, end=20250409, timeframe="min")
-    base.update(kw)
-    return BacktestJobSpec(**base)
+def _spec(
+    buy: str = "테스트매수",
+    *,
+    start: int = 20250407,
+    end: int = 20250409,
+    timeframe: str = "min",
+    timeout: int = 600,
+) -> BacktestJobSpec:
+    return BacktestJobSpec(
+        buy=buy,
+        sell="테스트매도",
+        start=start,
+        end=end,
+        timeframe=timeframe,
+        timeout=timeout,
+    )
 
 
 def _success_command(csv_path: str):
@@ -85,6 +99,37 @@ def test_submit_and_success(tmp_path: Path):
     assert manager.result_csv_path(job_id) == "backtest/csv/fake.csv"
 
 
+def test_normal_queued_jobs_complete_and_release_slot(tmp_path: Path):
+    first_builder_entered = threading.Event()
+    release_first_builder = threading.Event()
+
+    def queued_success(spec):
+        if spec.buy == "first":
+            first_builder_entered.set()
+            assert release_first_builder.wait(timeout=5.0)
+        return _success_command(f"backtest/csv/{spec.buy}.csv")(spec)
+
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=queued_success,
+    )
+    first_id = manager.submit(_spec("first"))["job_id"]
+    assert first_builder_entered.wait(timeout=5.0)
+    second_id = manager.submit(_spec("second"))["job_id"]
+    worker = manager._worker
+    assert worker is not None
+
+    release_first_builder.set()
+    worker.join(timeout=10.0)
+
+    assert not worker.is_alive()
+    assert manager.get(first_id)["status"] == "success"
+    assert manager.get(second_id)["status"] == "success"
+    assert manager._current_job is None
+    assert manager._proc is None
+    assert manager._queue == []
+
+
 def test_error_job(tmp_path: Path):
     manager = BacktestJobManager(jobs_dir=tmp_path / "jobs", command_builder=_error_command())
     job_id = manager.submit(_spec())["job_id"]
@@ -117,6 +162,168 @@ def test_cancel_queued_job(tmp_path: Path):
     assert manager.get(second)["status"] == "cancelled"
     # 정리: 실행 중인 first 도 취소.
     manager.cancel(first)
+
+
+def test_cancel_before_spawn_prevents_child_and_releases_slot(monkeypatch, tmp_path: Path):
+    builder_entered = threading.Event()
+    release_builder = threading.Event()
+    spawned_commands = []
+    real_popen = backtest_jobs_module.subprocess.Popen
+
+    def gated_builder(spec):
+        if spec.buy == "first":
+            builder_entered.set()
+            assert release_builder.wait(timeout=5.0)
+        return _success_command(f"backtest/csv/{spec.buy}.csv")(spec)
+
+    def tracking_popen(*args, **kwargs):
+        spawned_commands.append(args[0])
+        return real_popen(*args, **kwargs)
+
+    monkeypatch.setattr(backtest_jobs_module.subprocess, "Popen", tracking_popen)
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=gated_builder,
+    )
+    first_id = manager.submit(_spec("first"))["job_id"]
+    assert builder_entered.wait(timeout=5.0)
+    cancel = manager.cancel(first_id)
+    second_id = manager.submit(_spec("second"))["job_id"]
+    worker = manager._worker
+    assert worker is not None
+
+    release_builder.set()
+    worker.join(timeout=10.0)
+
+    assert cancel["cancelled"] == "requested"
+    assert not worker.is_alive()
+    assert manager.get(first_id)["status"] == "cancelled"
+    assert manager.get(second_id)["status"] == "success"
+    assert len(spawned_commands) == 1
+    assert manager._current_job is None
+    assert manager._proc is None
+
+
+def test_cancel_between_running_and_process_registration_stops_child(monkeypatch, tmp_path: Path):
+    spawn_entered = threading.Event()
+    release_spawn = threading.Event()
+    spawned = []
+    real_popen = backtest_jobs_module.subprocess.Popen
+
+    def gated_popen(*args, **kwargs):
+        spawn_entered.set()
+        assert release_spawn.wait(timeout=5.0)
+        proc = real_popen(*args, **kwargs)
+        spawned.append(proc)
+        return proc
+
+    monkeypatch.setattr(backtest_jobs_module.subprocess, "Popen", gated_popen)
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=_slow_command(),
+    )
+    job_id = manager.submit(_spec())["job_id"]
+    worker = manager._worker
+    assert worker is not None
+    assert spawn_entered.wait(timeout=5.0)
+    assert manager.get(job_id)["status"] == "running"
+    assert manager._proc is None
+
+    cancel = manager.cancel(job_id)
+    release_spawn.set()
+    worker.join(timeout=10.0)
+    needed_manual_cleanup = worker.is_alive()
+    if needed_manual_cleanup and spawned:
+        manager._hard_stop(spawned[0], grace=1.0)
+        worker.join(timeout=5.0)
+
+    assert cancel["cancelled"] == "requested"
+    assert not needed_manual_cleanup
+    assert not worker.is_alive()
+    assert manager.get(job_id)["status"] == "cancelled"
+    assert spawned and spawned[0].poll() is not None
+    assert manager._current_job is None
+    assert manager._proc is None
+
+
+def test_repeated_cancel_during_spawn_stops_process_once(monkeypatch, tmp_path: Path):
+    spawn_entered = threading.Event()
+    release_spawn = threading.Event()
+    spawned = []
+    hard_stop_calls = []
+    real_popen = backtest_jobs_module.subprocess.Popen
+    real_hard_stop = BacktestJobManager._hard_stop
+
+    def gated_popen(*args, **kwargs):
+        spawn_entered.set()
+        assert release_spawn.wait(timeout=5.0)
+        proc = real_popen(*args, **kwargs)
+        spawned.append(proc)
+        return proc
+
+    def counting_hard_stop(self, proc, *, grace=10.0):
+        hard_stop_calls.append(proc.pid)
+        return real_hard_stop(self, proc, grace=grace)
+
+    monkeypatch.setattr(backtest_jobs_module.subprocess, "Popen", gated_popen)
+    monkeypatch.setattr(BacktestJobManager, "_hard_stop", counting_hard_stop)
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=_success_command("backtest/csv/misleading-success.csv"),
+    )
+    job_id = manager.submit(_spec())["job_id"]
+    worker = manager._worker
+    assert worker is not None
+    assert spawn_entered.wait(timeout=5.0)
+
+    first_cancel = manager.cancel(job_id)
+    second_cancel = manager.cancel(job_id)
+    release_spawn.set()
+    worker.join(timeout=10.0)
+    needed_manual_cleanup = worker.is_alive()
+    if needed_manual_cleanup and spawned:
+        real_hard_stop(manager, spawned[0], grace=1.0)
+        worker.join(timeout=5.0)
+
+    assert first_cancel["cancelled"] == "requested"
+    assert second_cancel["cancelled"] == "requested"
+    assert not needed_manual_cleanup
+    assert not worker.is_alive()
+    assert manager.get(job_id)["status"] == "cancelled"
+    assert len(hard_stop_calls) == 1
+    assert spawned and spawned[0].poll() is not None
+
+
+def test_cancelled_job_stays_cancelled_when_builder_is_interrupted(tmp_path: Path):
+    builder_entered = threading.Event()
+    release_builder = threading.Event()
+
+    class BuilderInterrupted(RuntimeError):
+        pass
+
+    def interrupted_builder(spec):
+        builder_entered.set()
+        assert release_builder.wait(timeout=5.0)
+        raise BuilderInterrupted
+
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=interrupted_builder,
+    )
+    job_id = manager.submit(_spec())["job_id"]
+    worker = manager._worker
+    assert worker is not None
+    assert builder_entered.wait(timeout=5.0)
+
+    cancel = manager.cancel(job_id)
+    release_builder.set()
+    worker.join(timeout=10.0)
+
+    assert cancel["cancelled"] == "requested"
+    assert not worker.is_alive()
+    assert manager.get(job_id)["status"] == "cancelled"
+    assert manager._current_job is None
+    assert manager._proc is None
 
 
 # --------------------------------------------------------------- validation

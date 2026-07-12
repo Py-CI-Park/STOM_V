@@ -29,6 +29,7 @@ from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import loop as L  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState, to_loop_state  # noqa: E402
+from ai_strategy_loop.fitness.score import FitnessResult, GradedResult  # noqa: E402
 
 
 # =====================================================================
@@ -158,6 +159,126 @@ def _make_state_with_one_gen(tmp_path):
     return st, rid
 
 
+def _run_one_generation_with_snapshots(monkeypatch, tmp_path):
+    snapshots = []
+    monkeypatch.setattr(L, "_make_provider_with_proxy", lambda _cfg: (object(), False))
+    monkeypatch.setattr(
+        L,
+        "_generate_pair",
+        lambda _provider, _cfg, rid, gen, _feedback, **_kwargs: {
+            "status": "ok",
+            "buy_name": f"AILOOP_{rid}_g{gen}_buy",
+            "sell_name": f"AILOOP_{rid}_g{gen}_sell",
+            "tokens": 1,
+        },
+    )
+    monkeypatch.setattr(L.bootstrap, "ensure_loop_db_engine_compat", lambda: None)
+    monkeypatch.setattr(L, "_print_strategy_head", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(L, "_strategy_gist", lambda *_args, **_kwargs: "")
+    monkeypatch.setattr(L, "clear_stop_flag", lambda: None)
+    monkeypatch.setattr(L, "stop_requested", lambda: False)
+    monkeypatch.setattr(L, "publish_loop_state", snapshots.append)
+    monkeypatch.setattr(
+        L,
+        "run_backtest_for",
+        lambda _cfg, _buy, _sell: L.BacktestOutcome(
+            True,
+            "success",
+            "offline.csv",
+            {
+                "cagr": 1.0,
+                "mdd_pct": 5.0,
+                "trade_count": 20,
+                "total_profit_krw": 1000.0,
+            },
+            "ok",
+        ),
+    )
+    fit = FitnessResult(
+        score=0.0,
+        calmar=0.5,
+        uptrend_r2=0.5,
+        gate_passed=False,
+        reason="MDD cap",
+        cagr=1.0,
+        mdd=20.0,
+        trade_count=20,
+        total_profit=1000.0,
+    )
+    graded = GradedResult(
+        graded=0.7,
+        gate_passed=False,
+        composite=0.0,
+        trades_term=1.0,
+        mdd_term=0.5,
+        profit_term=1.0,
+        uptrend_term=0.5,
+        gate_distance="MDD 20 > cap",
+        cagr=1.0,
+        mdd=20.0,
+        trade_count=20,
+        total_profit=1000.0,
+        uptrend_r2=0.5,
+    )
+    monkeypatch.setattr(L, "_score_outcome", lambda _outcome, _cfg: (fit, graded, None))
+
+    config = LoopConfig(
+        provider="openrouter",
+        max_generations=1,
+        bt_engine_mode="cold",
+        cost_cap_generations=100,
+        cost_cap_tokens=None,
+        autopsy_enabled=False,
+        mdd_cap=10.0,
+        min_trades=10,
+    )
+    state = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "snaps"))
+    try:
+        L.run_loop(config, run_id="timing-order", state=state)
+    finally:
+        state.close()
+    return snapshots
+
+
+def test_loop_phase_event_order_is_stable(monkeypatch, tmp_path):
+    # Given: a one-generation offline research loop with all state publishes captured.
+    # When: the loop completes normally.
+    snapshots = _run_one_generation_with_snapshots(monkeypatch, tmp_path)
+
+    # Then: the existing public phase ordering remains the compatibility contract.
+    assert [snapshot.latest.phase for snapshot in snapshots] == [
+        "loop_start",
+        "generate_start",
+        "generate_done",
+        "backtest_start",
+        "backtest_end",
+        "score_start",
+        "score_done",
+        "autopsy_start",
+        "autopsy_done",
+        "generation_done",
+        "complete",
+    ]
+
+
+def test_fresh_run_serializes_not_started_until_generation_exists(monkeypatch, tmp_path):
+    # Given: a fresh one-generation run whose public snapshots are captured.
+    snapshots = _run_one_generation_with_snapshots(monkeypatch, tmp_path)
+    by_phase = {snapshot.latest.phase: snapshot for snapshot in snapshots}
+
+    # When: snapshots cross the first generation boundary.
+    loop_start = by_phase["loop_start"]
+    generate_start = by_phase["generate_start"]
+    complete = by_phase["complete"]
+
+    # Then: -1 remains truthful before generation 0 exists and survives JSON round-trip.
+    assert loop_start.current_gen == -1
+    assert C.LoopState.model_validate_json(loop_start.model_dump_json()).current_gen == -1
+    assert generate_start.current_gen == 0
+    assert "generate" not in generate_start.latest.step_timings
+    assert complete.current_gen == 0
+
+
 class _Clock:
     """monkeypatch용 단조 가짜 시계 — call마다 지정한 시각을 차례로 돌려준다."""
 
@@ -210,7 +331,9 @@ class TestPublishLiveTiming:
         st.close()
         snap = captured["snap"]
         assert snap.latest.step_timings.get("backtest") == 60.0
-        assert timing["timings"]["backtest"] == 60.0
+        timings = timing["timings"]
+        assert isinstance(timings, dict)
+        assert timings["backtest"] == 60.0
 
     def test_gen_t0_persists_across_phases_within_generation(self, monkeypatch, tmp_path):
         st, rid = _make_state_with_one_gen(tmp_path)
@@ -231,6 +354,84 @@ class TestPublishLiveTiming:
         # 세대 시작 시각은 generate_start(500)에서 고정, phase_t0는 backtest_start(520)로 갱신.
         assert snap.latest.gen_started_at == 500.0
         assert snap.latest.phase_started_at == 520.0
+
+    def test_iterate_starts_at_generation_done_and_ends_at_next_generate(
+        self, monkeypatch, tmp_path,
+    ):
+        # Given: autopsy ends at t=110 after starting at t=100.
+        st, rid = _make_state_with_one_gen(tmp_path)
+        snapshots = []
+        monkeypatch.setattr(L, "publish_loop_state", snapshots.append)
+        timing = {"phase_t0": 0.0, "gen_t0": 0.0, "timings": {}}
+
+        for phase, now in (
+            ("autopsy_start", 100.0),
+            ("autopsy_done", 110.0),
+            ("generation_done", 112.0),
+            ("generate_start", 115.0),
+        ):
+            monkeypatch.setattr(L.time, "time", lambda now=now: now)
+            L._publish_live(
+                st,
+                rid,
+                LoopConfig(),
+                status="running",
+                current_gen=0,
+                cumulative_tokens=0,
+                phase=phase,
+                _timing=timing,
+            )
+        st.close()
+
+        # When: generation_done opens the inter-generation iterate phase.
+        generation_done = snapshots[-2]
+
+        # Then: autopsy and iterate each use their own explicit interval.
+        assert generation_done.latest.phase_started_at == 112.0
+        assert generation_done.latest.step_timings == {"autopsy": 10.0}
+        assert snapshots[-1].latest.step_timings == {
+            "autopsy": 10.0,
+            "iterate": 3.0,
+        }
+
+    def test_complete_closes_an_open_iterate_interval(self, monkeypatch, tmp_path):
+        # Given: generation_done opens iterate at t=112.
+        st, rid = _make_state_with_one_gen(tmp_path)
+        captured = {}
+        monkeypatch.setattr(
+            L,
+            "publish_loop_state",
+            lambda snapshot: captured.update(snapshot=snapshot),
+        )
+        timing = {"phase_t0": 0.0, "gen_t0": 0.0, "timings": {}}
+        monkeypatch.setattr(L.time, "time", lambda: 112.0)
+        L._publish_live(
+            st,
+            rid,
+            LoopConfig(),
+            status="running",
+            current_gen=0,
+            cumulative_tokens=0,
+            phase="generation_done",
+            _timing=timing,
+        )
+
+        # When: the run completes at t=120 without another generation.
+        monkeypatch.setattr(L.time, "time", lambda: 120.0)
+        L._publish_live(
+            st,
+            rid,
+            LoopConfig(),
+            status="complete",
+            current_gen=0,
+            cumulative_tokens=0,
+            phase="complete",
+            _timing=timing,
+        )
+        st.close()
+
+        # Then: the terminal event closes iterate without inventing a complete step.
+        assert captured["snapshot"].latest.step_timings == {"iterate": 8.0}
 
     def test_no_timing_context_emits_defaults(self, monkeypatch, tmp_path):
         # _timing 무인자(GA/테스트/기존 호출부) → 진행시간 미발행(0.0/빈 dict, 하위호환).

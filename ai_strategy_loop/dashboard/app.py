@@ -28,17 +28,19 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 
 import asyncio  # noqa: E402
 import difflib  # noqa: E402
+import hashlib  # noqa: E402
 import json  # noqa: E402
 import os  # noqa: E402
+import sqlite3  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
-from typing import Any, Dict, List, Optional  # noqa: E402
+from collections.abc import Callable  # noqa: E402
+from typing import Any, Dict, List, Optional, assert_never  # noqa: E402
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect  # noqa: E402
-from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import HTMLResponse, RedirectResponse, Response  # noqa: E402
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
@@ -55,6 +57,22 @@ from ai_strategy_loop.controller.telemetry import (  # noqa: E402
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
 from ai_strategy_loop.dashboard.backtest_api import backtest_router  # noqa: E402
 from ai_strategy_loop.dashboard.simulation_api import simulation_router  # noqa: E402
+from ai_strategy_loop.dashboard.security import (  # noqa: E402
+    MAX_WEBSOCKET_MESSAGE_CHARS,
+    Capability,
+    DashboardSecurity,
+    close_websocket_failure,
+    is_loopback_http_url,
+)
+from ai_strategy_loop.dashboard.security_controls import (  # noqa: E402
+    CONTROL_PAYLOAD_ADAPTER,
+    ControlPayload,
+    DecisionRecordPayload,
+    FinalApprovalControl,
+    LoopStartControl,
+    LoopStopControl,
+    control_capability,
+)
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -75,28 +93,10 @@ _DASHBOARD_FAVICON_SVG = (
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
 
-# 대시보드는 로컬 전용(서버는 127.0.0.1 바인드)이다. CORS를 와일드카드로 열면
-#   임의 origin 페이지가 사용자의 로컬 대시보드 API를 호출할 수 있으므로
-#   명시적 localhost allowlist로 제한한다(allow_credentials=False 유지).
-_DASHBOARD_PORT = 8770
-_ALLOWED_ORIGINS = [
-    f"http://localhost:{_DASHBOARD_PORT}",
-    f"http://127.0.0.1:{_DASHBOARD_PORT}",
-    "http://localhost",
-    "http://127.0.0.1",
-]
-
-
-def _allowed_origins() -> list:
-    """기본 allowlist + env 옵트인 확장(STOM_DASHBOARD_ALLOWED_ORIGINS, 콤마 구분).
-
-    기본값은 불변(8770 localhost 전용 — 임의 origin 페이지의 로컬 API 호출 차단 정책 유지).
-    다른 포트에서 서빙되는 프론트(예: V4 프리뷰 8790)가 이 백엔드 데이터를 읽어야 할 때만
-    env 로 명시 확장한다. http(s) origin 형식만 수용, 후행 슬래시 제거.
-    """
-    extra = os.environ.get("STOM_DASHBOARD_ALLOWED_ORIGINS", "")
-    extras = [o.strip().rstrip("/") for o in extra.split(",") if o.strip().startswith("http")]
-    return [*_ALLOWED_ORIGINS, *extras]
+# W1-A 이후: CORS allowlist 미들웨어는 제거됨. DashboardSecurity.authorize_http 의
+#   strict same-origin(Origin == 서빙 host) 검사가 cross-origin 요청을 4403/403 으로
+#   차단하므로 CORS allowlist 는 무효(vestigial)였다. same-origin 브라우저 요청은
+#   CORS 헤더 없이도 동일 출처 정책으로 허용된다.
 _PROMPT_HEAD_CHARS = 240
 
 
@@ -220,7 +220,11 @@ def _with_observability_defaults(payload: Dict[str, Any]) -> Dict[str, Any]:
         config = config_from_dict({})
 
     status = str(payload.get("status") or "")
-    current_gen = int(payload.get("current_gen") or -1)
+    raw_current_gen = payload.get("current_gen")
+    try:
+        current_gen = int(raw_current_gen) if raw_current_gen is not None else -1
+    except (TypeError, ValueError):
+        current_gen = -1
     max_generations = int(payload.get("max_generations") or 0)
     phase = str(latest.get("phase") or "")
     bt_timeframe = str(payload.get("bt_timeframe") or getattr(config, "bt_timeframe", "") or "")
@@ -1410,8 +1414,7 @@ def _run_state_payload(run_id: str) -> Dict[str, Any]:
         이는 lineage._summarize_run의 우승 선택 규칙과 동일하나, to_loop_state가
         소비하는 평탄 키(best_gen/best_score/best_buy/best_sell, winner_*)로 만든다.
       - runs.config_json에서 LoopConfig를 복원해 provider/bt_timeframe/active_config를 채운다.
-      - to_loop_state(summary, gens, config=cfg, status='complete', current_gen=len-1)로 빌드.
-    status='complete'는 과거 run의 정적 스냅샷이라는 의미다(라이브 진행이 아님).
+      - runs.status와 실제 마지막 gen_no를 보존해 정적 DB 스냅샷으로 빌드한다.
 
     DB 부재/없는 run/조회 실패는 idle_state로 표준화한다(무예외 — 대시보드가 빈 상태 표시).
     엔진/하드게이트/CSV 무수정. 추가 백테 0회(DB 조회만).
@@ -1481,11 +1484,22 @@ def _run_state_payload(run_id: str) -> Dict[str, Any]:
     }
 
     try:
+        run_status = str((run_row or {}).get("status") or "complete")
+        current_gen = max((int(g.get("gen_no", -1)) for g in gens), default=-1)
         snapshot = to_loop_state(
-            summary, gens, config=cfg, status="complete",
-            current_gen=(len(gens) - 1 if gens else -1),
-        )
-        return snapshot.model_dump()
+            summary, gens, config=cfg, status=run_status, current_gen=current_gen,
+        ).model_dump()
+        persisted_times = [
+            value
+            for value in (
+                (run_row or {}).get("started_at"),
+                (run_row or {}).get("finished_at"),
+                *(g.get("created_at") for g in gens),
+            )
+            if value is not None
+        ]
+        snapshot["updated_at"] = max((float(value) for value in persisted_times), default=0.0)
+        return snapshot
     except Exception:  # noqa: BLE001 - 빌드 실패도 idle로 표준화(무예외 계약).
         return C.idle_state().model_dump()
 
@@ -2207,6 +2221,91 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     return out
 
 
+def _canonical_hash(payload: Dict[str, Any]) -> str:
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _approval_binding_payload(
+    review: Dict[str, Any],
+    loop_db: Optional[str],
+) -> Dict[str, Any]:
+    state = _current_state_payload()
+    run_id = str(state.get("run_id") or "")
+    current_gen = int(state.get("current_gen", -1))
+    winner = state.get("winner")
+    if state.get("status") != "complete" or not run_id or current_gen < 0:
+        return {"available": False, "reason": "current_run_not_complete"}
+    if not isinstance(winner, dict):
+        return {"available": False, "reason": "server_winner_missing"}
+    winner_gen = int(winner.get("gen", -1))
+    winner_buy = str(winner.get("buy_name") or "")
+    winner_sell = str(winner.get("sell_name") or "")
+    generations = state.get("generations") or []
+    generation = next(
+        (
+            row
+            for row in generations
+            if isinstance(row, dict) and int(row.get("gen_no", -1)) == winner_gen
+        ),
+        None,
+    )
+    if not isinstance(generation, dict):
+        return {"available": False, "reason": "winner_generation_missing"}
+    if not bool(generation.get("gate_passed")) or generation.get("status") != "ok":
+        return {"available": False, "reason": "hard_gates_not_passed"}
+    if not winner_buy or not winner_sell:
+        return {"available": False, "reason": "server_winner_names_missing"}
+    checklist = review.get("promote_checklist")
+    if not isinstance(checklist, list) or not checklist:
+        return {"available": False, "reason": "frozen_review_missing"}
+    if any(
+        not isinstance(item, dict) or item.get("status") != "pass"
+        for item in checklist
+    ):
+        return {"available": False, "reason": "frozen_review_incomplete"}
+
+    source_db = loop_db
+    if source_db is None:
+        import ai_strategy_loop.bootstrap as bootstrap  # noqa: PLC0415
+
+        source_db = str(bootstrap.LOOP_DB_STRATEGY)
+    from ai_strategy_loop.controller.export import _read_strategy_code  # noqa: PLC0415
+
+    try:
+        buy_code = _read_strategy_code(source_db, winner_buy, "buy")
+        sell_code = _read_strategy_code(source_db, winner_sell, "sell")
+    except (KeyError, sqlite3.Error) as exc:
+        return {"available": False, "reason": "winner_code_unavailable", "message": str(exc)}
+
+    review_hash = _canonical_hash(review)
+    buy_code_hash = hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
+    sell_code_hash = hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
+    evidence = {
+        "run_id": run_id,
+        "current_gen": current_gen,
+        "winner_gen": winner_gen,
+        "winner_buy": winner_buy,
+        "winner_sell": winner_sell,
+        "winner_score": winner.get("score"),
+        "gate_passed": True,
+        "review_hash": review_hash,
+        "buy_code_hash": buy_code_hash,
+        "sell_code_hash": sell_code_hash,
+    }
+    return {
+        "available": True,
+        **evidence,
+        "evidence_hash": _canonical_hash(evidence),
+    }
+
+
 def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
     """과업2(2026-06-12) — 복수 run의 최신 ok 세대를 균등 가중 결합해 포트폴리오 리포트.
 
@@ -2429,14 +2528,18 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
     return out
 
 
-DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+_DEFAULT_DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+
+
+def _decisions_file() -> str:
+    return os.environ.get("STOM_DASHBOARD_DECISIONS_FILE") or _DEFAULT_DECISIONS_FILE
 
 
 def _decisions_payload() -> Dict[str, Any]:
     """F3/P-D(2026-06-11) — V6 운용 결정 이력(append-only jsonl) 읽기. 무예외."""
     out: Dict[str, Any] = {"decisions": []}
     try:
-        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+        with open(_decisions_file(), encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if line:
@@ -2473,8 +2576,9 @@ def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
             pass
         record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
                   "candidate": candidate}
-        os.makedirs(os.path.dirname(DECISIONS_FILE), exist_ok=True)
-        with open(DECISIONS_FILE, "a", encoding="utf-8") as fh:
+        decisions_file = _decisions_file()
+        os.makedirs(os.path.dirname(decisions_file), exist_ok=True)
+        with open(decisions_file, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
         return {"status": "ok", "recorded": record}
     except Exception as exc:  # noqa: BLE001
@@ -2611,7 +2715,7 @@ def _portfolio_verdict_payload() -> Dict[str, Any]:
     decision_note: Optional[str] = None
     adopted = False
     try:
-        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+        with open(_decisions_file(), encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if not line:
@@ -2658,9 +2762,17 @@ def _portfolio_verdict_payload() -> Dict[str, Any]:
     }
 
 
-def create_app() -> FastAPI:
+def create_app(
+    *,
+    security_boundary: Optional[DashboardSecurity] = None,
+    final_approval_dest_db: Optional[str] = None,
+    final_approval_loop_db: Optional[str] = None,
+    final_review_provider: Optional[Callable[[], Dict[str, Any]]] = None,
+) -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
+    security = security_boundary or DashboardSecurity()
+    review_provider = final_review_provider or _freeze_verdict_payload
 
     @asynccontextmanager
     async def _lifespan(app: FastAPI):
@@ -2673,14 +2785,6 @@ def create_app() -> FastAPI:
         title="STOM AI Strategy Loop Dashboard", version="1.0", lifespan=_lifespan,
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=_allowed_origins(),
-        allow_credentials=False,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
     @app.middleware("http")
     async def _no_cache_html(request, call_next):
         # 2026-06-11 — index.html 브라우저 캐시 박제 방지: HTML 응답은 매 로드마다
@@ -2691,7 +2795,28 @@ def create_app() -> FastAPI:
             response.headers["Cache-Control"] = "no-cache"
         return response
 
+    @app.middleware("http")
+    async def _authorize_dashboard(request: Request, call_next):
+        failure = security.authorize_http(request)
+        if failure is None:
+            failure = await security.enforce_http_body_limit(request)
+        if failure is not None:
+            headers = {"WWW-Authenticate": "Session"} if failure.status_code == 401 else None
+            return JSONResponse(
+                status_code=failure.status_code,
+                content={
+                    "status": "error",
+                    "code": failure.code,
+                    "message": failure.message,
+                },
+                headers=headers,
+            )
+        response = await call_next(request)
+        security.issue_bootstrap_cookie(request, response)
+        return response
+
     app.state.loop_manager = manager
+    app.state.dashboard_security = security
     app.include_router(research_router)
     app.include_router(backtest_router)
     app.include_router(simulation_router)
@@ -2986,8 +3111,19 @@ def create_app() -> FastAPI:
                 get_proxy_base_url,
             )
 
+            proxy_base_url = get_proxy_base_url()
+            if not is_loopback_http_url(proxy_base_url):
+                return {
+                    "status": "unavailable",
+                    "mode": "gpt_auth",
+                    "safe": True,
+                    "starts_evolution": False,
+                    "code": "provider_non_loopback_forbidden",
+                    "message": "provider test target must be loopback",
+                }
+
             response = requests.post(
-                f"{get_proxy_base_url()}/chat/completions",
+                f"{proxy_base_url}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {PROXY_OPENAI_API_KEY_PLACEHOLDER}",
                     "Content-Type": "application/json",
@@ -3085,7 +3221,14 @@ def create_app() -> FastAPI:
         결정 카드의 라이브 버전: 동결·DSR/PBO(+쌍둥이 경고)·OOS·플라시보·
         슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
         """
-        return _freeze_verdict_payload()
+        review = review_provider()
+        return {
+            **review,
+            "approval_binding": _approval_binding_payload(
+                review,
+                final_approval_loop_db,
+            ),
+        }
 
     @app.get("/portfolio_sim")
     def portfolio_sim(runs: str = "") -> Dict[str, Any]:
@@ -3133,10 +3276,9 @@ def create_app() -> FastAPI:
         return _decisions_payload()
 
     @app.post("/record_decision")
-    def record_decision(payload: Dict[str, Any]) -> Dict[str, Any]:
+    def record_decision(payload: DecisionRecordPayload) -> Dict[str, Any]:
         """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
-        return _record_decision(str(payload.get("verdict") or ""),
-                                str(payload.get("note") or ""))
+        return _record_decision(payload.verdict, payload.note)
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:
@@ -3540,6 +3682,10 @@ def create_app() -> FastAPI:
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:
+        failure = security.authorize_websocket(websocket, Capability.LOOP_CONTROL)
+        if failure is not None:
+            await close_websocket_failure(websocket, failure)
+            return
         await websocket.accept()
         # 연결 즉시 현재 상태 송신.
         last_sent = _current_state_payload()
@@ -3558,14 +3704,41 @@ def create_app() -> FastAPI:
         push_task = asyncio.create_task(_pusher())
         try:
             while True:
-                # 인바운드 제어 메시지 수신.
                 raw = await websocket.receive_text()
-                try:
-                    msg = json.loads(raw)
-                except (ValueError, TypeError):
-                    await websocket.send_json({"status": "error", "message": "invalid JSON"})
+                if len(raw) > MAX_WEBSOCKET_MESSAGE_CHARS:
+                    await websocket.send_json({
+                        "status": "error",
+                        "code": "payload_too_large",
+                        "message": "control message exceeds the server limit",
+                    })
                     continue
-                result = _handle_control(msg, manager)
+                try:
+                    msg = CONTROL_PAYLOAD_ADAPTER.validate_json(raw)
+                except ValidationError:
+                    await websocket.send_json({
+                        "status": "error",
+                        "code": "invalid_message",
+                        "message": "invalid dashboard control message",
+                    })
+                    continue
+                failure = security.authorize_websocket(
+                    websocket,
+                    control_capability(msg),
+                )
+                if failure is not None:
+                    await websocket.close(
+                        code=failure.websocket_code,
+                        reason=failure.code,
+                    )
+                    return
+                result = _handle_control(
+                    msg,
+                    manager,
+                    security,
+                    final_approval_dest_db,
+                    final_approval_loop_db,
+                    review_provider,
+                )
                 await websocket.send_json(result)
         except WebSocketDisconnect:
             pass
@@ -3614,53 +3787,94 @@ def create_app() -> FastAPI:
     return app
 
 
-def _handle_control(msg: Dict[str, Any], manager: LoopProcessManager) -> Dict[str, Any]:
-    """인바운드 제어 메시지를 처리한다 (start | stop | final_approval).
-
-    제어 결과 dict를 반환한다(클라이언트로 에코). 어떤 예외도 흡수해 WS를
-    끊지 않는다.
-    """
-    action = (msg or {}).get("action")
-    try:
-        if action == "start":
-            return {"action": "start", **manager.start(msg.get("config") or {})}
-        if action == "stop":
+def _handle_control(
+    msg: ControlPayload,
+    manager: LoopProcessManager,
+    security: DashboardSecurity,
+    dest_db: Optional[str],
+    loop_db: Optional[str],
+    review_provider: Callable[[], Dict[str, Any]],
+) -> Dict[str, Any]:
+    match msg:
+        case LoopStartControl(config=config):
+            return {"action": "start", **manager.start(dict(config))}
+        case LoopStopControl():
             return {"action": "stop", **manager.stop()}
-        if action == "final_approval":
-            return {"action": "final_approval", **_do_final_approval(msg)}
-        return {"status": "error", "message": f"unknown action: {action!r}"}
-    except Exception as exc:  # noqa: BLE001 - 제어 실패는 WS를 끊지 않는다.
-        return {"status": "error", "action": action, "message": str(exc)}
+        case FinalApprovalControl():
+            return {
+                "action": "final_approval",
+                **_do_final_approval(
+                    msg,
+                    security,
+                    dest_db,
+                    loop_db,
+                    review_provider,
+                ),
+            }
+        case unreachable:
+            assert_never(unreachable)
 
 
-def _do_final_approval(msg: Dict[str, Any]) -> Dict[str, Any]:
-    """final_approval — 우승 전략을 운영 strategy.db로 export (사람 승인 게이트).
-
-    필요 키: buy_name, sell_name (루프 DB 내 namespaced 우승 이름),
-             user_buy, user_sell (운영 DB에 저장할 사람이 정한 이름).
-
-    보안: export 목적지는 클라이언트가 고를 수 없다. 메시지에 dest_strategy_db가
-    들어와도 무시하고 항상 export.PRODUCTION_STRATEGY_DB(결정론적 운영 경로)로만
-    내보낸다(임의 경로 쓰기 방지).
-    """
+def _do_final_approval(
+    msg: FinalApprovalControl,
+    security: DashboardSecurity,
+    dest_db: Optional[str],
+    loop_db: Optional[str],
+    review_provider: Callable[[], Dict[str, Any]],
+) -> Dict[str, Any]:
     from ai_strategy_loop.controller.export import (  # noqa: PLC0415
         PRODUCTION_STRATEGY_DB,
         export_winner,
     )
 
-    buy_name = msg.get("buy_name")
-    sell_name = msg.get("sell_name")
-    user_buy = msg.get("user_buy")
-    user_sell = msg.get("user_sell")
-    if not (buy_name and sell_name and user_buy and user_sell):
+    binding = _approval_binding_payload(review_provider(), loop_db)
+    if not binding.get("available"):
         return {
             "status": "error",
-            "message": "final_approval requires buy_name, sell_name, user_buy, user_sell",
+            "code": "approval_binding_unavailable",
+            "message": str(binding.get("reason") or "approval binding unavailable"),
         }
-    # 클라이언트 제공 dest_strategy_db는 의도적으로 무시한다 — 항상 운영 경로.
-    return export_winner(
-        buy_name, sell_name, str(PRODUCTION_STRATEGY_DB), user_buy, user_sell,
+    supplied = {
+        "run_id": msg.run_id,
+        "current_gen": msg.current_gen,
+        "winner_gen": msg.winner_gen,
+        "review_hash": msg.review_hash,
+        "evidence_hash": msg.evidence_hash,
+        "buy_code_hash": msg.buy_code_hash,
+        "sell_code_hash": msg.sell_code_hash,
+    }
+    if any(binding.get(key) != value for key, value in supplied.items()):
+        return {
+            "status": "error",
+            "code": "stale_approval_binding",
+            "message": "run, winner, review, or code evidence changed",
+        }
+    if not security.claim_final_approval(msg.evidence_hash):
+        return {
+            "status": "error",
+            "code": "approval_already_applied",
+            "message": "this reviewed winner was already exported",
+        }
+    result = export_winner(
+        str(binding["winner_buy"]),
+        str(binding["winner_sell"]),
+        str(dest_db or PRODUCTION_STRATEGY_DB),
+        msg.user_buy,
+        msg.user_sell,
+        loop_db=loop_db,
+        expected_buy_code_hash=msg.buy_code_hash,
+        expected_sell_code_hash=msg.sell_code_hash,
     )
+    if result.get("status") != "ok":
+        security.release_final_approval(msg.evidence_hash)
+        return result
+    return {
+        **result,
+        "run_id": msg.run_id,
+        "current_gen": msg.current_gen,
+        "winner_gen": msg.winner_gen,
+        "evidence_hash": msg.evidence_hash,
+    }
 
 
 # 모듈 레벨 app — uvicorn `ai_strategy_loop.dashboard.app:app` 로도 띄울 수 있다.

@@ -12,11 +12,12 @@ import { SimOverlayChart, SimSignalLog } from "./simulation-charts.jsx";
 import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals, _simRenderBudget, _simRenderBars } from "./sim-tab-utils.jsx";
 import { SimControlBar, SimPresetBar, SimMarketMinimap, SimPlaybackBar, SimViewBar } from "./sim-tab-controls.jsx";
 import { SimChartByEngine, SimIndicatorTable, SimLearningPanel, SimVariableWatch } from "./sim-tab-panels.jsx";
+import { _bindReplayKeydown, _isReplayEditableTarget, _exactReplayTimestamp } from "./replay-lifecycle.jsx";
 
 // ===========================================================================
 // 탭 루트 — 컨트롤 + WS 리플레이 상태머신 + 차트 그리드 + 체결 로그.
 // ===========================================================================
-function SimulationTab({ baseUrl, wsStatus }) {
+function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -273,16 +274,9 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const changeSpeed = (sp) => { setSpeed(sp); _wsSend({ action: "speed", value: sp }); };
 
 
-  // seek 슬라이더는 frame 인덱스 기준 — 서버 seek 은 t(HHMMSS) 이므로 인덱스→t 변환이 필요.
-  //   meta 만으로는 frame t 목록을 모르므로, 누적 수신된 bar 의 t 를 참조하거나(앞쪽)
-  //   세션 범위 선형 보간으로 근사한다(뒤쪽 미수신 구간). 단순·실용 우선.
   const seekByIndex = (idx) => {
     setCursor(idx);
-    const range = meta && meta.session_range;
-    if (!range || range[1] <= range[0] || !meta.bars_total) return;
-    const frac = meta.bars_total > 1 ? idx / (meta.bars_total - 1) : 0;
-    const approxT = Math.round(range[0] + frac * (range[1] - range[0]));
-    _wsSend({ action: "seek", t: approxT });
+    _wsSend({ action: "seek_index", index: idx });
   };
 
   const stopReplay = () => { _stopReplay(); };
@@ -354,16 +348,11 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 신호 시각(HHMMSS)으로 직접 시킹 — 북마크 클릭용. 서버 seek 은 t(HHMMSS)를 직접 받는다.
   const seekToTime = useCallback_sim((hms) => {
-    if (hms == null) return;
-    _wsSend({ action: "seek", t: hms });
-    setCurT(hms);
-    // 커서 근사(세션 범위 선형 역보간) — 슬라이더/진행률 표시용.
-    const range = meta && meta.session_range;
-    if (range && range[1] > range[0] && meta.bars_total) {
-      const frac = (hms - range[0]) / (range[1] - range[0]);
-      setCursor(Math.max(0, Math.min(meta.bars_total, Math.round(frac * (meta.bars_total - 1)))));
-    }
-  }, [meta]);
+    const timestamp = _exactReplayTimestamp(hms);
+    if (timestamp == null) return;
+    _wsSend({ action: "seek", t: timestamp });
+    setCurT(timestamp);
+  }, []);
 
   // 학습 모드 — 평탄화된 전체 신호(시각순). 자동정지·북마크 공용.
   const flatSignals = useMemo_sim(() => _flattenSignals(signals, codes), [signals, codes.join(",")]);
@@ -394,8 +383,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
   // 키보드 단축키 — Space=재생/정지, ←/→=배속 다운/업, Esc=정지. 입력 필드 포커스 시 무시.
   useEffect_sim(() => {
     const onKey = (e) => {
-      const tag = (e.target && e.target.tagName) || "";
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target && e.target.isContentEditable)) return;
+      if (_isReplayEditableTarget(e.target)) return;
       if (e.key === " " || e.code === "Space") {
         e.preventDefault();
         if (status === "playing") pauseReplay();
@@ -413,9 +401,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
         if (status === "playing" || status === "paused") stopReplay();
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [status, speed]);
+    return _bindReplayKeydown(active, window, onKey);
+  }, [active, status, speed]);
 
   const connected = !!(health && health.status === "ok");
   const badge = isDemo

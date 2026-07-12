@@ -35,14 +35,29 @@ import sqlite3
 import threading
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Annotated, Any, Dict, List, Literal, Optional, Protocol, TypedDict, assert_never
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    TypeAdapter,
+    ValidationError,
+    field_validator,
+)
+from pydantic_core import PydanticCustomError
 
 from ai_strategy_loop.dashboard import replay_engine
 from ai_strategy_loop.dashboard.backtest_jobs import (
     BacktestJobSpec,
     get_job_manager,
+)
+from ai_strategy_loop.dashboard.security import (
+    MAX_WEBSOCKET_MESSAGE_CHARS,
+    Capability,
+    close_websocket_failure,
 )
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로.
@@ -68,31 +83,92 @@ _HISTORY_MAX_BARS = 2000
 # 페이싱 sleep 을 잘게 쪼개는 청크(초) — 긴 대기(예: 1x min=60s)도 이 간격마다 stop/pause/seek 에 반응.
 _PACED_SLEEP_CHUNK_SEC = 0.05
 # bar 간 t_delta 산출 시 비정상(역행·과대) 간격을 막는 상한(초). 장 중 정상 gap 은 수 초~수십 초.
-_MAX_BAR_GAP_SEC = 600
 # 동시 WS 리플레이 세션 상한(프로세스 전역). 초과 연결은 정중히 거절.
 _MAX_SESSIONS = 4
 # /sim/signals 잡 폴링 상한(초). 1일·1종목 백테는 통상 1분 내.
 _SIGNAL_JOB_TIMEOUT = 180
 
+ReplayCode = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)]
+
+
+class _ReplayControl(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
+
+
+class ReplayStartControl(_ReplayControl):
+    action: Literal["start"]
+    date: int = Field(ge=20_000_101, le=20_991_231)
+    src: Literal["tick", "min"] = "min"
+    codes: list[ReplayCode] = Field(min_length=1, max_length=replay_engine.MAX_CODES)
+    agg_sec: int = Field(default=replay_engine.DEFAULT_AGG_SEC, ge=1, le=3_600)
+    speed: int = Field(default=1, ge=1, le=_MAX_SPEED)
+
+
+class ReplayPauseControl(_ReplayControl):
+    action: Literal["pause"]
+
+
+class ReplayResumeControl(_ReplayControl):
+    action: Literal["resume"]
+
+
+class ReplaySpeedControl(_ReplayControl):
+    action: Literal["speed"]
+    value: int = Field(ge=1, le=_MAX_SPEED)
+
+
+class ReplaySeekControl(_ReplayControl):
+    action: Literal["seek"]
+    t: int = Field(ge=0, le=235_959)
+
+    @field_validator("t")
+    @classmethod
+    def validate_timestamp(cls, value: int) -> int:
+        try:
+            replay_engine.hms_to_seconds(value)
+        except replay_engine.ReplayTimelineError as exc:
+            raise PydanticCustomError(
+                "invalid_hhmmss",
+                "timestamp must be valid HHMMSS",
+            ) from exc
+        return value
+
+
+class ReplaySeekIndexControl(_ReplayControl):
+    action: Literal["seek_index"]
+    index: int = Field(ge=0, le=10_000_000)
+
+
+class ReplayStopControl(_ReplayControl):
+    action: Literal["stop"]
+
+
+ReplayControl = Annotated[
+    ReplayStartControl
+    | ReplayPauseControl
+    | ReplayResumeControl
+    | ReplaySpeedControl
+    | ReplaySeekControl
+    | ReplaySeekIndexControl
+    | ReplayStopControl,
+    Field(discriminator="action"),
+]
+_REPLAY_CONTROL_ADAPTER = TypeAdapter(ReplayControl)
+
 
 def _hms_to_seconds(hms: int) -> int:
     """HHMMSS(int) → 자정 기준 초. 페이싱의 bar 간 t_delta 산출에 쓴다."""
-    h = (hms // 10000) % 100
-    m = (hms // 100) % 100
-    s = hms % 100
-    return h * 3600 + m * 60 + s
+    return replay_engine.hms_to_seconds(hms)
 
 
 def _bar_gap_seconds(prev_t: int, next_t: int) -> float:
-    """두 frame 시각(HHMMSS) 사이의 실제 경과 초. 역행/과대 간격은 보호 클램프한다.
-
-    같은 슬롯(0)·역행(음수)은 0 으로, 점심시간 등 비정상 큰 간격은 _MAX_BAR_GAP_SEC 로 클램프.
-    """
-    gap = _hms_to_seconds(int(next_t)) - _hms_to_seconds(int(prev_t))
+    """두 유효 frame 시각 사이의 실제 경과 초를 반환한다."""
+    gap = _hms_to_seconds(next_t) - _hms_to_seconds(prev_t)
     if gap <= 0:
-        return 0.0
-    if gap > _MAX_BAR_GAP_SEC:
-        return float(_MAX_BAR_GAP_SEC)
+        raise replay_engine.ReplayTimelineError(
+            timestamp=next_t,
+            reason="frame timestamps must be strictly increasing",
+        )
     return float(gap)
 
 
@@ -466,6 +542,10 @@ class _SessionRegistry:
 _GATE = _SessionRegistry()
 
 
+class _ReplayWebSocket(Protocol):
+    async def send_json(self, data: Dict[str, Any], /) -> None: ...
+
+
 class SimReplaySession:
     """WS 리플레이 1세션 상태머신 — start/pause/resume/speed/seek/stop.
 
@@ -473,7 +553,7 @@ class SimReplaySession:
     스레드 풀에서 동기 로드(시세 DB I/O)하고, 송신 루프는 이벤트 루프에서 돈다.
     """
 
-    def __init__(self, websocket: WebSocket) -> None:
+    def __init__(self, websocket: _ReplayWebSocket) -> None:
         self.ws = websocket
         self.data: Optional[replay_engine.ReplayData] = None
         self.cursor = 0
@@ -485,28 +565,26 @@ class SimReplaySession:
         # seek 직후 과거 봉 스냅샷 재전송 예약(스트림 루프가 다음 경계에서 소비).
         self._history_pending = False
 
-    async def handle_start(self, msg: Dict[str, Any]) -> None:
+    async def handle_start(self, msg: ReplayStartControl) -> None:
         """start — 데이터 로드 후 meta 송신, 스트림 루프 시작."""
-        try:
-            date = int(msg.get("date", 0) or 0)
-        except (TypeError, ValueError):
-            date = 0
-        src = "tick" if msg.get("src") == "tick" else "min"
-        codes = [str(c) for c in (msg.get("codes") or [])][:replay_engine.MAX_CODES]
-        try:
-            agg_sec = int(msg.get("agg_sec", replay_engine.DEFAULT_AGG_SEC) or replay_engine.DEFAULT_AGG_SEC)
-        except (TypeError, ValueError):
-            agg_sec = replay_engine.DEFAULT_AGG_SEC
-        self.speed = _clamp_speed(msg.get("speed", 1))
-
-        if not (10000000 <= date <= 99999999) or not codes:
-            await self._send({"type": "error", "message": "date/codes 가 필요합니다."})
-            return
+        date = msg.date
+        src = msg.src
+        codes = msg.codes
+        agg_sec = msg.agg_sec
+        self.speed = msg.speed
 
         # 시세 DB I/O 는 스레드로(이벤트 루프 차단 방지).
-        self.data = await asyncio.to_thread(
-            replay_engine.load_replay, date, src, codes, agg_sec=agg_sec
-        )
+        try:
+            self.data = await asyncio.to_thread(
+                replay_engine.load_replay, date, src, codes, agg_sec=agg_sec
+            )
+        except replay_engine.ReplayTimelineError as exc:
+            await self._send({
+                "type": "error",
+                "code": "invalid_replay_timeline",
+                "message": str(exc),
+            })
+            return
         self.cursor = 0
         self._batch_anchor = 0
         self.paused = False
@@ -518,6 +596,10 @@ class SimReplaySession:
             "src": src,
             "date": date,
             "agg_sec": agg_sec,
+            "total_elapsed_seconds": (
+                self.data.elapsed_seconds_at(self.data.bars_total - 1)
+                if self.data.bars_total else 0
+            ),
         })
         if self.data.bars_total == 0:
             await self._send({"type": "done"})
@@ -576,6 +658,9 @@ class SimReplaySession:
                 "type": "bars",
                 "t": t,
                 "index": i,
+                "frame_count": i + 1,
+                "elapsed_seconds": self.data.elapsed_seconds_at(i),
+                "total_elapsed_seconds": self.data.elapsed_seconds_at(self.data.bars_total - 1),
                 "items": frame["items"],
             })
             prev_t = t
@@ -621,17 +706,21 @@ class SimReplaySession:
     def handle_speed(self, value: Any) -> None:
         self.speed = _clamp_speed(value)
 
-    def handle_seek(self, t: Any) -> None:
+    def handle_seek(self, t: int) -> None:
         """seek — HHMMSS 시각으로 커서를 점프한다(이진 탐색). 과거 봉 스냅샷 재전송 예약."""
         if self.data is None:
             return
-        try:
-            hms = int(t)
-        except (TypeError, ValueError):
-            return
-        self.cursor = self.data.seek_index(hms)
+        self.cursor = self.data.seek_index(t)
         self._batch_anchor = self.cursor  # seek 후 묶음 기준 재설정.
         self._history_pending = True
+
+    def handle_seek_index(self, index: int) -> bool:
+        if self.data is None or type(index) is not int or index < 0 or index >= self.data.bars_total:
+            return False
+        self.cursor = index + 1
+        self._batch_anchor = self.cursor
+        self._history_pending = True
+        return True
 
     async def _send_history(self) -> None:
         """0..cursor 구간 봉을 코드별 스냅샷으로 전송한다(코드당 최근 _HISTORY_MAX_BARS 개).
@@ -644,7 +733,7 @@ class SimReplaySession:
         if self.data is None:
             return
         upto = min(self.cursor, self.data.bars_total)
-        by_code: Dict[str, list] = {}
+        by_code: Dict[str, List[Dict[str, Any]]] = {}
         for i in range(upto):
             frame = self.data.frames[i]
             t = int(frame["t"])
@@ -653,11 +742,16 @@ class SimReplaySession:
         for code, arr in by_code.items():
             if len(arr) > _HISTORY_MAX_BARS:
                 by_code[code] = arr[-_HISTORY_MAX_BARS:]
-        last_t = int(self.data.frames[upto - 1]["t"]) if upto > 0 else None
+        actual_index = upto - 1 if upto > 0 else None
+        last_t = int(self.data.frames[actual_index]["t"]) if actual_index is not None else None
         await self._send({
             "type": "history",
-            "index": upto,
+            "index": actual_index,
+            "frame_count": upto,
             "t": last_t,
+            "elapsed_seconds": (
+                self.data.elapsed_seconds_at(actual_index) if actual_index is not None else 0
+            ),
             "items_by_code": by_code,
         })
 
@@ -688,6 +782,11 @@ async def simulation_ws(websocket: WebSocket) -> None:
     start/pause/resume/speed/seek/stop. 서버→클라: meta → bars(배치) → done | error.
     제어 메시지는 스트림 루프와 동시 처리되도록 별도 수신 태스크로 받는다.
     """
+    security = websocket.app.state.dashboard_security
+    failure = security.authorize_websocket(websocket, Capability.REPLAY_CONTROL)
+    if failure is not None:
+        await close_websocket_failure(websocket, failure)
+        return
     await websocket.accept()
     session_id = _GATE.acquire()
     if session_id is None:
@@ -699,37 +798,55 @@ async def simulation_ws(websocket: WebSocket) -> None:
         return
 
     session = SimReplaySession(websocket)
-    stream_task: Optional[asyncio.Task] = None
+    stream_task: asyncio.Task[None] | None = None
     try:
         while True:
             raw = await websocket.receive_text()
-            try:
-                msg = _parse_json(raw)
-            except ValueError:
-                await websocket.send_json({"type": "error", "message": "invalid JSON"})
-                continue
-            action = (msg or {}).get("action")
-            if action == "start":
-                # 진행 중 스트림이 있으면 멈추고 새로 시작.
-                session.handle_stop()
-                if stream_task is not None and not stream_task.done():
-                    await asyncio.sleep(0)
-                stream_task = asyncio.create_task(session.handle_start(msg))
-            elif action == "pause":
-                session.handle_pause()
-            elif action == "resume":
-                session.handle_resume()
-            elif action == "speed":
-                session.handle_speed(msg.get("value"))
-            elif action == "seek":
-                session.handle_seek(msg.get("t"))
-            elif action == "stop":
-                session.handle_stop()
-                await websocket.send_json({"type": "done"})
-            else:
+            if len(raw) > MAX_WEBSOCKET_MESSAGE_CHARS:
                 await websocket.send_json({
-                    "type": "error", "message": f"unknown action: {action!r}",
+                    "type": "error",
+                    "code": "payload_too_large",
+                    "message": "replay control message exceeds the server limit",
                 })
+                continue
+            try:
+                msg = _REPLAY_CONTROL_ADAPTER.validate_json(raw)
+            except ValidationError:
+                await websocket.send_json({
+                    "type": "error",
+                    "code": "invalid_message",
+                    "message": "invalid replay control message",
+                })
+                continue
+            match msg:
+                case ReplayStartControl():
+                    session.handle_stop()
+                    if stream_task is not None and not stream_task.done():
+                        await asyncio.sleep(0)
+                    stream_task = asyncio.create_task(session.handle_start(msg))
+                case ReplayPauseControl():
+                    session.handle_pause()
+                case ReplayResumeControl():
+                    session.handle_resume()
+                case ReplaySpeedControl(value=value):
+                    session.handle_speed(value)
+                case ReplaySeekControl(t=t):
+                    session.handle_seek(t)
+                case ReplaySeekIndexControl(index=index):
+                    if not session.handle_seek_index(index):
+                        await websocket.send_json({
+                            "type": "error",
+                            "code": "seek_index_out_of_bounds",
+                            "message": "seek_index requires loaded replay data and a valid frame index",
+                        })
+                    elif stream_task is None or stream_task.done():
+                        session.running = True
+                        stream_task = asyncio.create_task(session._stream_loop())
+                case ReplayStopControl():
+                    session.handle_stop()
+                    await websocket.send_json({"type": "done"})
+                case unreachable:
+                    assert_never(unreachable)
     except WebSocketDisconnect:
         pass
     except Exception:  # noqa: BLE001 - 어떤 예외도 세션 정리 후 흡수(대시보드 보호).
@@ -739,16 +856,3 @@ async def simulation_ws(websocket: WebSocket) -> None:
         if stream_task is not None and not stream_task.done():
             stream_task.cancel()
         _GATE.release(session_id)
-
-
-def _parse_json(raw: str) -> Dict[str, Any]:
-    import json
-
-    text = (raw or "").strip()
-    if not text:
-        return {}
-    try:
-        obj = json.loads(text)
-    except (ValueError, TypeError) as exc:
-        raise ValueError(str(exc))
-    return obj if isinstance(obj, dict) else {}

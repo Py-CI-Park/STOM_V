@@ -1002,20 +1002,45 @@ def _publish_live(
             step_name = _phase_step_name(phase)
             is_start = phase.endswith("_start") or phase in ("loop_start", "ga_init")
             is_end = phase.endswith("_done") or phase.endswith("_end")
+            step_starts = _timing.setdefault("step_starts", {})
+            timings = _timing.setdefault("timings", {})
             # 세대 시작(generate_start/ga_init)이면 세대 경과 기준 시각도 리셋한다.
             if phase in ("generate_start", "ga_init"):
                 _timing["gen_t0"] = now
             # 활성 단계 *_start류면 그 단계 시작 시각을 리셋한다(미지정 phase는 건드리지 않음).
-            if is_start and step_name is not None:
+            if phase == "generation_done":
+                step_starts["iterate"] = now
+                _timing["active_step"] = "iterate"
+                _timing["phase_t0"] = now
+            elif phase == "loop_start":
+                active_step = _timing.pop("active_step", None)
+                step_starts.pop(active_step, None)
+                _timing["phase_t0"] = now
+            elif phase == "complete":
+                active_step = _timing.pop("active_step", None)
+                p0 = float(step_starts.pop(active_step, 0.0) or 0.0)
+                if p0 > 0.0:
+                    timings[active_step] = max(0.0, now - p0)
+                _timing["phase_t0"] = now
+            elif is_start and step_name is not None:
+                active_step = _timing.get("active_step")
+                p0 = float(step_starts.pop(active_step, 0.0) or 0.0)
+                if p0 > 0.0:
+                    timings[active_step] = max(0.0, now - p0)
+                step_starts[step_name] = now
+                _timing["active_step"] = step_name
                 _timing["phase_t0"] = now
             # *_done/*_end면 그 단계의 경과초를 누적 기록(phase_t0가 잡혀 있을 때만).
-            if is_end and step_name is not None:
-                p0 = float(_timing.get("phase_t0", 0.0) or 0.0)
+            if is_end and phase != "generation_done" and step_name is not None:
+                p0 = float(step_starts.pop(step_name, 0.0) or 0.0)
                 if p0 > 0.0:
-                    _timing.setdefault("timings", {})[step_name] = max(0.0, now - p0)
+                    timings[step_name] = max(0.0, now - p0)
+                    _timing["phase_t0"] = p0
+                if _timing.get("active_step") == step_name:
+                    _timing.pop("active_step", None)
             phase_started_at = float(_timing.get("phase_t0", 0.0) or 0.0)
             gen_started_at = float(_timing.get("gen_t0", 0.0) or 0.0)
-            step_timings = dict(_timing.get("timings", {}) or {})
+            step_timings = dict(timings)
         except Exception:  # noqa: BLE001 - 진행시간은 가시화 보조, 발행을 막지 않는다.
             phase_started_at = 0.0
             gen_started_at = 0.0
@@ -1175,6 +1200,7 @@ def run_loop(
 
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
+    last_completed_gen = start_gen - 1
 
     # provider 준비 (gpt_auth면 프록시 기동).
     provider, proxy_active = _make_provider_with_proxy(config)
@@ -1238,6 +1264,8 @@ def run_loop(
         "phase_t0": 0.0,
         "gen_t0": 0.0,
         "timings": {},
+        "step_starts": {},
+        "active_step": None,
         "telemetry_buf": TelemetryRing(),
     }
 
@@ -1248,7 +1276,7 @@ def run_loop(
     warm_session = None
     warm_prepare_result = None
     if getattr(config, "bt_engine_mode", "warm") == "warm":
-        _publish_live(st, rid, config, status="running", current_gen=start_gen,
+        _publish_live(st, rid, config, status="running", current_gen=last_completed_gen,
                       cumulative_tokens=cumulative_tokens, phase="warm_prepare_start",
                       message="warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)",
                       _log_buf=_live_log_buf, _timing=_timing)
@@ -1261,7 +1289,7 @@ def run_loop(
         else:
             back_count = prep.get("back_count")
             print(f"[LOOP] warm prepare 완료 (back_count={back_count})", flush=True)
-            _publish_live(st, rid, config, status="running", current_gen=start_gen,
+            _publish_live(st, rid, config, status="running", current_gen=last_completed_gen,
                           cumulative_tokens=cumulative_tokens, phase="warm_prepare_done",
                           message=f"warm session 준비 완료 (back_count={back_count})",
                           page_data=_warm_session_page_data(prepare=prep),
@@ -1276,7 +1304,7 @@ def run_loop(
     # US-007 — 루프 시작 시 잔여 정지 플래그 제거(이전 run 잔재 방지).
     clear_stop_flag()
     # 초기 idle→running 라이브 발행.
-    _publish_live(st, rid, config, status="running", current_gen=start_gen,
+    _publish_live(st, rid, config, status="running", current_gen=last_completed_gen,
                   cumulative_tokens=cumulative_tokens, phase="loop_start",
                   message="loop started",
                   _log_buf=_live_log_buf, _timing=_timing)
@@ -1301,7 +1329,7 @@ def run_loop(
             # --- US-007 정지 플래그 (세대 시작 전 깔끔히 종료) ---
             if stop_requested():
                 stop_reason = "stop_requested"
-                _publish_live(st, rid, config, status="stopping", current_gen=gen_no,
+                _publish_live(st, rid, config, status="stopping", current_gen=gen_no - 1,
                               cumulative_tokens=cumulative_tokens, phase="stopping",
                               message="stop flag observed; finishing cleanly",
                               best_gen=best_gen, best_score=best_score,
@@ -1772,7 +1800,7 @@ def run_loop(
         #   다음 run의 _load_meta_seed가 최신 인사이트를 환류한다. 실패는 흡수.
         _refresh_meta_insights(st)
         # US-007 — 최종 complete 라이브 발행 (state 닫기 전, DB 조회 가능 시점).
-        _publish_live(st, rid, config, status="complete", current_gen=gen_no,
+        _publish_live(st, rid, config, status="complete", current_gen=gen_no - 1,
                       cumulative_tokens=cumulative_tokens, phase="complete",
                       message=f"loop complete: {stop_reason}",
                       best_gen=best_gen, best_score=best_score,

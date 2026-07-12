@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from fastapi.testclient import TestClient
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
+
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -29,7 +30,7 @@ def test_reviewed_remodel_bundle_is_present() -> None:
 def test_reviewed_remodel_route_is_served_by_dashboard_app() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
     response = client.get("/ui/remodel/")
     assert response.status_code == 200
     assert "STOM AI · 조건식 AI 연구 대시보드" in response.text

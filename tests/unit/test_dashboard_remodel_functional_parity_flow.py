@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
+
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -89,7 +90,7 @@ def test_condition_panel_separates_safe_empty_from_api_error() -> None:
 def test_v2_default_routes_do_not_flip_while_v3_parity_flow_is_explicit() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
-    client = TestClient(create_app())
+    client = authorized_dashboard_client(create_app())
     v2 = client.get("/ui/backtest", follow_redirects=False)
     assert v2.status_code == 200
     assert v2.headers["x-stom-dashboard-version"] == "v2"
