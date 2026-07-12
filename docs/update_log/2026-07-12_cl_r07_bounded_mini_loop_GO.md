@@ -1,8 +1,8 @@
-# 2026-07-12 CL-R07 제한 폐루프 결과 — GO_PROCESS_PROOF
+# 2026-07-12 CL-R07 제한 폐루프 결과 — 드라이버 GO_PROCESS_PROOF (architect BLOCK: provisional)
 
 - 단계: CL-R07 (제한 3라운드 폐루프, 프로세스 증명)
 - 승인: `I approve CL-R07 bounded mini-loop only`
-- **판정: `GO_PROCESS_PROOF`** — 2026-07-11 `CL-R07_ENVIRONMENT_BLOCKED`를 대체(재인증으로 해소).
+- **판정: 드라이버 술어상 `GO_PROCESS_PROOF`(실행 성공) 이나, architect 무결성 검증에서 `BLOCK`(REQUEST_CHANGES) → 명시 계약 하 건전한 증명으로는 미승인 = provisional.** 2026-07-11 `CL-R07_ENVIRONMENT_BLOCKED`는 재인증으로 해소(실행 자체는 실 provider+공식 엔진으로 성립).
 
 ## 실행 요약 (실 provider + 공식 엔진)
 - provider: `gpt_auth` / **`gpt-5.6-terra`** + `reasoning_effort=high` (config 커밋 `85717edd`, 라이브 검증 완료)
@@ -38,3 +38,16 @@
 
 ## 하류 잠금 유지
 - CL-R08/R09/R10은 각 정확한 승인 문구 확보 전까지 잠금. CL-R09는 추가로 2026-07-11 이후 20 거래일 데이터 대기.
+
+## Architect 무결성 검증 (25-ClR07GoReview) — BLOCK / REQUEST_CHANGES
+증거: `.omo/evidence/task-14-.../cl_r07_GO_architect_review.json`
+
+**진짜로 확인(=fakery 아님):** 실 gpt_auth/gpt-5.6-terra 생성 경로 + 실 stom_backtest.py 백테스트(9회) + primary가 실제 생성 코드 백테스트 + 방향성 있는 학습사슬 + 재시도가 구별 조작 안 함.
+
+**BLOCK 사유:**
+- **HIGH-1** `provider_calls=3`은 pack 카운터로 **raw LLM 호출 과소계상**(pack당 buy4+sell4×retry; `strategy_code.sqlite` 생성행 buy 12/sell 12). "≤3 provider calls"를 raw로 해석하면 예산 위반. → raw 호출 미터링/예산 강제 또는 라운드당 단일 pack LLM 재설계.
+- **HIGH-2** **ablation arm 매핑이 attribution 계약과 불일치**. 매트릭스는 A=parent+parent/B=cand-buy+parent-sell/C=parent-buy+cand-sell/D=cand+cand인데 하네스는 on/off 토글. 즉 `ablation_valid=true`는 "4 arm metric 존재"일 뿐 광고된 인과 귀속이 아님. → arm을 parent/candidate 매핑으로 정합화 + 단위테스트.
+- **MEDIUM** 0거래 no-metrics 변환이 returncode/완료 확인 전 수행(실패 서브프로세스 마스킹 가능); control이 카운트만 되고 미검증(GO 술어 미포함).
+- **LOW** 공식 manifest가 여전히 fake 표기; `reasoning_effort=high`가 provider payload에 실제 미전송.
+
+**결론:** run#3는 실 실행으로 fakery는 배제됐고 학습사슬·엔진은 진짜이나, HIGH 2건(예산 회계·ablation 귀속 의미) 수정 + 재실행 전에는 **건전한 CL-R07 프로세스 증명으로 수용 불가**. 하류(CL-R08/R09/R10)는 계속 잠금.
