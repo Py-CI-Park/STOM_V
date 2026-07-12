@@ -261,7 +261,6 @@ def _stage_gates(repo_root: Path) -> Dict[str, Any]:
 def _stage_scoring(repo_root: Path) -> Dict[str, Any]:
     score_path = repo_root / "ai_strategy_loop" / "fitness" / "score.py"
     funcs = _defined_functions(score_path)
-    text = _read_text(score_path) or ""
     has_compute_fitness = "compute_fitness" in funcs
     has_graded = "compute_graded_fitness" in funcs
     # 아키텍트 리뷰 MEDIUM 반영: regex 단어경계는 언더스코어 식별자에서 위음성

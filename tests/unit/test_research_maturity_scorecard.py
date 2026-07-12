@@ -128,3 +128,22 @@ def test_each_stage_has_at_least_one_signal(stage_id):
     assert len(stage["signals"]) >= 1
     for signal in stage["signals"]:
         assert {"name", "value", "points", "max_points", "note"} <= set(signal)
+
+
+def test_scoring_stage_matches_underscored_pbo_and_deflated_names(tmp_path):
+    """P3(재리뷰): substring 판정의 양성 경로 — compute_pbo/deflated_sharpe_ratio 매치."""
+    from scripts.research_maturity_scorecard import build_scorecard
+
+    fitness = tmp_path / "ai_strategy_loop" / "fitness"
+    fitness.mkdir(parents=True)
+    (fitness / "score.py").write_text(
+        "def compute_fitness():\n    pass\n\n"
+        "def compute_graded_fitness():\n    pass\n\n"
+        "def compute_pbo():\n    pass\n\n"
+        "def deflated_sharpe_ratio():\n    pass\n",
+        encoding="utf-8",
+    )
+    card = build_scorecard(str(tmp_path))
+    scoring = next(s for s in card["stages"] if s["id"] == "scoring")
+    sig = next(x for x in scoring["signals"] if x["name"] == "deflated_sharpe_pbo_implemented")
+    assert sig["points"] == sig["max_points"] == 40, sig
