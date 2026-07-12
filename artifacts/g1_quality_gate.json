@@ -1,0 +1,43 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "1차 리뷰(subagent 0-G1ArchitectReview): arch/product CLEAR, code WATCH(APPROVE_WITH_NITS, 블로커 0) — Context Pack 계약 정합·fail-closed·예산 여유, 25개 샘플 CSC-06/07/10/11 전수 표본검사 통과. 닛 3건을 커밋 b9b0716f로 수정 후 델타 재리뷰(subagent 2-G1ArchitectReReview): 3-lane 전부 CLEAR, recommendation APPROVE, code_lane_clear=true. 잔여 1건은 out-of-scope 인정(P3, G2 편입).",
+    "commands": ["subagent:0-G1ArchitectReview", "subagent:2-G1ArchitectReReview"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "QA/레드팀(subagent 1-G1QaRedTeam): adversarial 5케이스 전부 passed — A1 파서 무결성(펜스25=매치25, ID 유일), A2 교차 스코프 공격(전용계열 16개 GUARD-CAUGHT/중립 9개 정당 통과), A3 매도 안전망 9/9, A4 forbidden 토큰 0, A5 Context Pack 예산 실측 29,677/250,000 within_limit. 저장소 무변경 확인.",
+    "e2eCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/test_composite_examples_asset.py tests/unit/test_context_pack_builder.py -p no:randomly -q"],
+    "redTeamCommands": ["python -c cross-scope swap probe (case A2)", "python -c fence-count vs regex-match probe (case A1)", "python -c build_research_context_pack budget probe (case A5)"],
+    "artifactRefs": [
+      { "id": "g1-test-report", "kind": "algorithm-test-report", "path": "artifacts/g1_composite_examples_test_report.json", "description": "G1 계약 테스트 실행 리포트(20 passed, exit 0)" }
+    ],
+    "contractCoverage": [
+      { "id": "cc-1", "contractRef": "G001-샘플수량", "obligation": "매수 12+/매도 8+ 샘플, 화이트리스트 변수만", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-1"] },
+      { "id": "cc-2", "contractRef": "G001-스코프검증", "obligation": "min/tick 변수 스코프 위반 0 + 검증 테스트 존재", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-2"] },
+      { "id": "cc-3", "contractRef": "G001-ContextPack등재", "obligation": "_FULL_STOM_SOURCE_ASSETS 등재 + 예산 내", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-3"] }
+    ],
+    "surfaceEvidence": [
+      { "id": "se-1", "contractRef": "G001-샘플수량", "surface": "algorithm", "invocation": "pytest test_composite_examples_asset.py test_context_pack_builder.py -q (20 passed)", "verdict": "passed", "artifactRefs": ["g1-test-report"] }
+    ],
+    "adversarialCases": [
+      { "id": "ac-1", "contractRef": "G001-샘플수량", "scenario": "헤더 규약 이탈 펜스의 무음 누락(파서 우회)", "expectedBehavior": "펜스 수==샘플 수 완전성 단언으로 검출", "verdict": "passed", "artifactRefs": ["g1-test-report"] },
+      { "id": "ac-2", "contractRef": "G001-스코프검증", "scenario": "tick-min 교차 스코프 스왑 공격", "expectedBehavior": "전용 계열 사용 샘플은 반대 스코프에서 위반 검출", "verdict": "passed", "artifactRefs": ["g1-test-report"] },
+      { "id": "ac-3", "contractRef": "G001-ContextPack등재", "scenario": "자산 추가로 250K 토큰 예산 초과 유발", "expectedBehavior": "실측 예산 내 + 초과 시 fail-closed raise 계약 유지", "verdict": "passed", "artifactRefs": ["g1-test-report"] }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT(리더 수행, G1 변경 3파일 한정): 블로킹 발견 0. 닛 수정(b9b0716f) 후 전체 루프 재실행: 계약 테스트 7 passed + 인접 회귀 50 passed. 리뷰 대상 = 정리 후 동결 변경셋(4c20fcba+b9b0716f).",
+    "fullRerun": true,
+    "rerunCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/test_composite_examples_asset.py -p no:randomly -q", "PYTHONUTF8=1 python -m pytest tests/unit/test_composite_examples_asset.py tests/unit/test_structure_principles_prompt.py tests/unit/test_context_pack_builder.py tests/unit/test_research_prompt_contracts.py tests/unit/test_pack_producer.py -p no:randomly -q"],
+    "blockers": []
+  }
+}

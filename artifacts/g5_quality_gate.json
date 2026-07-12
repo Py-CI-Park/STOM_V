@@ -1,0 +1,44 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "1차 리뷰(subagent 18-G5ArchitectReview): architecture/product PASS(정적 검사 전용·ro DB·3중 무예외 방어·수익증명 0점 우회 불가 확인), MEDIUM 2(PBO regex 위음성·게임화 한계 미문서화)+LOW 4로 WATCH/COMMENT. 반영 커밋 8c34a439+ade5930b: PBO 판정을 함수명 집합 substring으로 통일, 한계 정직 고지(docstring+update_log), profit note 미검증 단정 제거, dead read 제거+양성 경로 회귀 테스트. 델타 재리뷰(subagent 20-G5ArchitectReReview): M1/M2/L 전부 RESOLVED, LOW 4건 비차단 수용, architectural_status CLEAR·recommendation APPROVE.",
+    "commands": ["subagent:18-G5ArchitectReview", "subagent:20-G5ArchitectReReview"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "QA/레드팀(subagent 19-G5QaRedTeam) 5케이스 PASS: E1 결정론(3회 generated_at 제외 byte-동일, overall 77 고정·무캐시 실계산 확인), E2 **게임화 공격 실증** — 가짜 repo에 허위 'CL-R08/09/10 완료' 문서+가짜 원장 999행 주입해도 수익증명 0/100 불변(설계 신호 범위 내에서만 점수 변동), E3 무예외(부재/파일/권한거부 경로 전부 raise 0, icacls deny 포함), E4 라이브 :8803 200+stages 9+직렬화 누출 0+외과적 종료, E5 loop_runs.db sha 불변(ro 증명). 리더 재실행: 대상 22 passed + CLI exit0(77/100 표 출력). 브랜치 전체 최종 전수: 7 known / 4,559 passed / 신규 0.",
+    "e2eCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/test_research_maturity_scorecard.py tests/unit/dashboard/test_research_maturity_endpoint.py -p no:randomly -q (22 passed)", "PYTHONUTF8=1 python scripts/research_maturity_scorecard.py --out ai_strategy_loop/state/research_maturity.json (exit 0)", "PYTHONUTF8=1 python -m pytest tests/unit/ -p no:randomly -q (7 known failed / 4,559 passed / 신규 0)"],
+    "redTeamCommands": ["fake-repo gamification injection probe (case E2)", "permission-denied path probe via icacls (case E3)", "live uvicorn :8803 GET /research_maturity probes (case E4)", "loop_runs.db sha256 invariance probe (case E5)"],
+    "artifactRefs": [
+      { "id": "g5-state-json", "kind": "algorithm-test-report", "path": "docs/update_log/2026-07-12_g5_research_maturity_scorecard.md", "description": "G5 기록 문서(현재 77/100 단계별 점수표 + 레드팀 E2 게임화 공격 실증 + 한계 고지) — 산출 JSON 자체는 state/(비커밋 계약)" }
+    ],
+    "contractCoverage": [
+      { "id": "cc-1", "contractRef": "G005-스코어카드", "obligation": "9단계 결정론·재현 가능 점수(JSON+마크다운), 무예외", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-1", "ac-2"] },
+      { "id": "cc-2", "contractRef": "G005-대시보드", "obligation": "/research_maturity 읽기 전용 노출", "status": "covered", "surfaceEvidenceRefs": ["se-2"], "adversarialCaseRefs": ["ac-3"] },
+      { "id": "cc-3", "contractRef": "G005-비커밋", "obligation": "산출 JSON은 state/(비커밋)", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-2"] }
+    ],
+    "surfaceEvidence": [
+      { "id": "se-1", "contractRef": "G005-스코어카드", "surface": "algorithm", "invocation": "pytest 22종 + CLI exit0(77/100) + QA 결정론/게임화/무예외 프로브", "verdict": "passed", "artifactRefs": ["g5-state-json"] },
+      { "id": "se-2", "contractRef": "G005-대시보드", "surface": "api", "invocation": "uvicorn :8803 라이브 GET /research_maturity 200(stages 9, 직렬화 누출 0) — QA E4", "verdict": "passed", "artifactRefs": ["g5-state-json"] }
+    ],
+    "adversarialCases": [
+      { "id": "ac-1", "contractRef": "G005-스코어카드", "scenario": "허위 완료 문서/가짜 원장 행 주입으로 수익증명 점수 게임화", "expectedBehavior": "수익증명 0/100 하드코드 불변(주입 무효)", "verdict": "passed", "artifactRefs": ["g5-state-json"] },
+      { "id": "ac-2", "contractRef": "G005-스코어카드", "scenario": "부재/파일/권한거부 repo_root", "expectedBehavior": "예외 0, 전 단계 0점+note", "verdict": "passed", "artifactRefs": ["g5-state-json"] },
+      { "id": "ac-3", "contractRef": "G005-대시보드", "scenario": "모듈 부재/함수 raise/반복 호출", "expectedBehavior": "200+status=error 흡수, 무캐시 점수 동일", "verdict": "passed", "artifactRefs": ["g5-state-json"] }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT(리더, G5 변경 파일 한정): 아키텍트 레인 검출 MEDIUM 2+LOW를 8c34a439·ade5930b로 전부 제거(위음성 판정·미검증 단정·dead read) 후 재실행 22 passed. 브랜치 최종 전수 7 known/4,559 passed/신규 0. 최종 동결 변경셋 = 293f797e+8c34a439+ade5930b.",
+    "fullRerun": true,
+    "rerunCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/test_research_maturity_scorecard.py tests/unit/dashboard/test_research_maturity_endpoint.py -p no:randomly -q", "PYTHONUTF8=1 python -m pytest tests/unit/ -p no:randomly -q"],
+    "blockers": []
+  }
+}
