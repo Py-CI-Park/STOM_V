@@ -94,7 +94,13 @@ class OfficialProvider:
                 self.raw_generate_calls += 1
                 sell = self._generate("sell", f"{stem}_sell", candidate_feedback)
                 if buy.get("status") != "ok" or sell.get("status") != "ok":
-                    raise RuntimeError(f"generation_failed:{stem}")
+                    # Generation failure this attempt: retry within the loop; never crash the
+                    # whole run on LLM variance. Persistent failure -> empty proposal below ->
+                    # candidate_pool degrades to NO_GO_POOL_BLOCKED gracefully.
+                    buy_code = ""
+                    sell_code = ""
+                    expression = ""
+                    continue
                 buy_code = str(buy.get("code") or "")
                 sell_code = str(sell.get("code") or "")
                 expression = _extract_condition_expression(buy_code)
