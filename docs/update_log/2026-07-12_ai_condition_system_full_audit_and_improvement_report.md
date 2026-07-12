@@ -281,22 +281,23 @@ pull 반영으로 이 워크트리는 "V4 대시보드 + CL-R07 연구 통합" �
 | **A-3 정본 연구 프로파일 + 게이트 배선** | `904b660e` | ①`principle_gate_enabled`를 run_loop→generate_strategy로 **실배선**(선언만 있고 루프가 안 읽던 상태 해소) ②`research_presets._COMMON_DISCOVERY`에 정본 ON-세트 승격: principle_gate·**evidence_ledger**(P0-3/A-7 전반부)·mdd_control·exit_edge·dispersion(프롬프트+graded)·meta_seed·structure_principles — 전역 기본값은 전부 OFF 유지(불변식 4) | 신규 계약 테스트: 정본 ON-세트 20키, 프리셋 키=LoopConfig 선언 필드 전수, 루프 배선 소스 가드 — 65 passed |
 | **A-6 few-shot 골드 시드 우선** | `08f9caa4` | **정정 발견**: 운영 strategy.db에 인간 전략 본문 102 buy/47 sell 존재(Tick_902 패밀리·C_T_900_920·CSS_V7·Min_Study) — v2 보고서의 "reference 시드 부재"는 과대평가였고 실제 결함은 seed_db few-shot이 **테이블 선착순 k개**를 뽑아 골드가 선발되지 않던 것. 결정론 랭킹(골드 exact → 패밀리 prefix → 기타) + `__AUTO_TMP__` 배제로 교정. reference 17 스크린샷의 성능 스펙은 `_report_pattern_lines`(常時)에 기반영 확인(payoff≥1.25·MDD 3~7%·6~12종목) | 신규 테스트 2종 + exemplar/few_shot 스위트 20 passed |
 | **A-8 위생** | `.gitignore` 커밋 | `.gjc/_session-*/`·`.gjc.local-backup-*/` gitignore, 낡은 frontend 로컬 빌드 stash 폐기(병합본 포함 확인 후) | — |
+| **A-5 백파인더 밴드 시드 배선** | `61499e33` | `scripts/mine_band_seeds.py`(채굴→분포→시드 오프라인 파이프라인, tick DB 읽기 전용) + `band_seed_hint_enabled` 토글로 승자 셋업 밴드(q25~q75) NL 가이드를 매수 프롬프트에 주입(lookahead 편향 시드 전용·복제 금지·부검 보정 고지). tick 연구 프리셋 ON(아티팩트 없으면 graceful). **실DB 스모크: tick_subset 15거래일×60종목 = 22,545행 채굴 → 승자 3,570 → 시드 5개**(예: `[0900-0905·소형] lift 2.02, 등락율 1.71~7.19, 체결강도 58~181`) 산출·로더 소비 확인 | 계약 테스트 5종 + 관련 476 passed |
 
 ## 17. 최종 게이트 실측
 
 | 게이트 | 결과 |
 |---|---|
-| `pytest tests/unit/` 전수 (13분50초) | **7 failed / 4,458 passed / 1 skipped — 신규 실패 0. failed 7 = 전부 known spawn/UI 계약.** P-13(연구 계약 10건 파손) 해소, **불변식 #6 결정론 baseline 복원** |
+| `pytest tests/unit/` 전수 (A-1~A-3 후 13분50초 / A-5 후 재실행 10분37초) | **7 failed / 4,480 passed / 1 skipped — 신규 실패 0. failed 7 = 전부 known spawn/UI 계약.** P-13(연구 계약 10건 파손) 해소, **불변식 #6 결정론 baseline 복원·유지** |
 | `verify_nonrelease_sync.py` | 전체 통과 |
 | `pre_commit_check.py` | Syntax/Secrets PASS. print 지적 2건은 병합 유입 `cli/commands/research.py`의 CLI JSON 출력(이 브랜치 무관, 체커 휴리스틱 오탐 성격 — 기존 부채로 기록) |
 
 ## 18. 잔여 (정직 보고)
 
 - **A-4 매도/리스크 ablation 캠페인**: 미실행 — 실 provider + 공식 엔진 실행이 필요한 연구 run(R07 하네스 재사용). 코드 준비는 완료 상태이므로 다음 세션에서 격리 min subset으로 실행.
-- **A-5 백파인더 밴드 배선**(`to_band_seeds` → `band_generation_enabled`): 미착수.
 - **A-7 envelope 수렴**: evidence_ledger 프리셋 ON(원장 축적 시작 조건)까지 완료. segment/feature 환류의 envelope 경유 이관은 미착수.
+- **A-5 후속(선택)**: 이번 배선은 NL 힌트 경로. BandSpec → band_compiler 직접 컴파일 생성 경로(P1 완전형)는 미착수. 스모크 아티팩트는 threshold 3%(완화값) — 정본 채굴은 풀 tick DB·기본 임계(10%)로 재실행 권장.
 - CL-R08~R10: 승인 문구 잠금 유지(실행 안 함).
 
 ## 19. 4부 결론
 
-이 브랜치는 보고서가 지적한 **"배선 부채"의 즉시 실행 가능분을 전부 청산**했다: 깨져 있던 결정론 baseline 복원(P-13), 도메인 지식 3종의 두 프롬프트 lane 주입(P-3), 정본 연구 프로파일 확립과 잠자던 게이트/원장 토글의 연구 lane 상시화(P-4·P-5 전반부), 골드 시드의 few-shot 실효화(P-6 절반). 다음 정본 연구 run은 `research_presets`(tick_late/min_full) 프리셋으로 곧바로 "구조론 주입 + CSC 게이트 + 증거 원장 + 골드 few-shot"이 켜진 상태에서 돈다. 남은 임계 경로는 A-4/A-5 → `I approve CL-R08 bounded min performance only`다.
+이 브랜치는 보고서가 지적한 **"배선 부채"의 즉시 실행 가능분을 전부 청산**했다: 깨져 있던 결정론 baseline 복원(P-13), 도메인 지식 3종의 두 프롬프트 lane 주입(P-3), 정본 연구 프로파일 확립과 잠자던 게이트/원장 토글의 연구 lane 상시화(P-4·P-5 전반부), 골드 시드의 few-shot 실효화(P-6 절반), **채굴 밴드 시드의 생성 프롬프트 환류(A-5 — 임계값이 데이터 분포에서 오는 첫 경로)**. 다음 정본 연구 run은 `research_presets`(tick_late/min_full) 프리셋으로 곧바로 "구조론 주입 + CSC 게이트 + 증거 원장 + 골드 few-shot + 밴드 힌트"가 켜진 상태에서 돈다. 남은 임계 경로는 A-4 → `I approve CL-R08 bounded min performance only`다.
