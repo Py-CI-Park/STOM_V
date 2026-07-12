@@ -12,10 +12,9 @@ exited+exit_code) / log.txt — 정의는 contract.py.
 감시는 보고 전용 워치독으로만 한다(자동 재시작 금지):
     python scripts/batch_watch.py <run_dir>
 
-실사용 예 — D5(D9 전이 온셋 L3 접목) 측정 배치를 세션 독립으로 기동:
-    STOM_ALLOW_MINIMAL_SETTING=1 python -m alpha_lab.runlab.detached_runner ^
-        docs/research/condition_research/research_runs/alpha_restart_20260710/d5_measure_run1 ^
-        scripts/d5_measure.py -- --stage measure
+실사용 예 — D5(D9 전이 온셋) 측정 437일 배치를 세션 독립으로 기동
+(PowerShell 한 줄, 2026-07-12 실전 완주 실증 — exit 0):
+    $env:STOM_ALLOW_MINIMAL_SETTING="1"; python -m alpha_lab.runlab.detached_runner docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/run_ctl/run1 scripts/d5_d9_measure.py -- --phase all
 (옵션 --interval/--cwd/--python-exe는 run_dir 앞에 두고, 대상 스크립트 인자는
 '--' 뒤에 둔다. 대상 스크립트는 무수정 그대로 감싼다 — 체크포인트 러너 호환.)
 """
