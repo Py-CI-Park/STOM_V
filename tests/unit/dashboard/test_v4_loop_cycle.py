@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -99,23 +98,9 @@ def test_v4_loop_cycle_bundle_is_rebuilt_and_carries_markers() -> None:
 
     app_v = manifest["bundles"]["app.js"]["v"]
     assert isinstance(app_v, str) and app_v
-
-    git = _git_show_head_manifest_v()
-    if git is not None:
-        assert app_v != git, "manifest app.js v did not change — bundle was not rebuilt"
-
-
-def _git_show_head_manifest_v() -> str | None:
-    try:
-        result = subprocess.run(
-            ["git", "show", "HEAD:ai_strategy_loop/dashboard/frontend/bundle/manifest.json"],
-            cwd=ROOT, capture_output=True, text=True, timeout=20, check=False,
-        )
-    except (OSError, FileNotFoundError):
-        return None
-    if result.returncode != 0 or not result.stdout.strip():
-        return None
-    try:
-        return json.loads(result.stdout)["bundles"]["app.js"]["v"]
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return None
+    # 아키텍트 리뷰 HIGH 반영: HEAD-diff 단언은 재빌드 manifest가 같은 커밋에 포함되는
+    #   순간 자기모순(클린 체크아웃 영구 실패)이라 제거. 내구 가드는
+    #   test_p14_build_harness의 content-hash 재해시가 담당하고, 여기서는
+    #   서빙 HTML의 app.js ?v= pin이 manifest와 정합함(스테일 pin 회귀)을 가드한다.
+    v4_html = (FRONTEND / "v4.html").read_text(encoding="utf-8")
+    assert f"/ui/bundle/app.js?v={app_v}" in v4_html, "v4.html app.js pin이 manifest v와 불일치"

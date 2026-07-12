@@ -311,7 +311,6 @@
 @media (prefers-reduced-motion: reduce) {
   .v4-root *, .v4-root *::before, .v4-root *::after { animation: none !important; transition: none !important; }
 }
-yy
 
 /* ── 반복 세대 사이클 (G004) — 8노드 원형 다이어그램 ── */
 .v4-loop-cycle-panel .panel-hd { flex-wrap: wrap; gap: 8px; }
