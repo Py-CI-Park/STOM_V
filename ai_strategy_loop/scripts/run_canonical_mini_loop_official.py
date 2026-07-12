@@ -72,18 +72,34 @@ class OfficialProvider:
         seen_expressions: set[str] = set()
         for index, (lane, family, novelty) in enumerate(specs, start=1):
             stem = f"CLR07_R{round_no:02d}_{index:02d}_{lane}_{family}"
-            candidate_feedback = _feedback_text(round_no, feedback, lane=lane, family=family)
-            buy = self._generate("buy", f"{stem}_buy", candidate_feedback)
-            sell = self._generate("sell", f"{stem}_sell", candidate_feedback)
-            if buy.get("status") != "ok" or sell.get("status") != "ok":
-                raise RuntimeError(f"generation_failed:{stem}")
-            buy_code = str(buy.get("code") or "")
-            sell_code = str(sell.get("code") or "")
-            expression = _extract_condition_expression(buy_code)
-            sell_expression = _extract_condition_expression(sell_code, default="보유시간 >= 1")
-            if not expression or expression in seen_expressions:
-                raise RuntimeError(f"generation_not_distinct:{stem}")
-            seen_expressions.add(expression)
+            buy: dict[str, Any] = {}
+            sell: dict[str, Any] = {}
+            buy_code = ""
+            sell_code = ""
+            expression = ""
+            sell_expression = "보유시간 >= 1"
+            candidate_feedback = ""
+            for attempt in range(1, 4):
+                candidate_feedback = _feedback_text(
+                    round_no,
+                    feedback,
+                    lane=lane,
+                    family=family,
+                    avoid=sorted(seen_expressions),
+                    attempt=attempt,
+                )
+                buy = self._generate("buy", f"{stem}_buy", candidate_feedback)
+                sell = self._generate("sell", f"{stem}_sell", candidate_feedback)
+                if buy.get("status") != "ok" or sell.get("status") != "ok":
+                    raise RuntimeError(f"generation_failed:{stem}")
+                buy_code = str(buy.get("code") or "")
+                sell_code = str(sell.get("code") or "")
+                expression = _extract_condition_expression(buy_code)
+                sell_expression = _extract_condition_expression(sell_code, default="보유시간 >= 1")
+                if expression and expression not in seen_expressions:
+                    break
+            if expression and expression not in seen_expressions:
+                seen_expressions.add(expression)
             proposals.append(
                 _official_proposal(
                     candidate_id=f"r{round_no}-{index}-{lane}-{family}",
@@ -102,15 +118,30 @@ class OfficialProvider:
         return proposals
 
 
-def _feedback_text(round_no: int, feedback: list[dict], *, lane: str, family: str) -> str:
+def _feedback_text(
+    round_no: int,
+    feedback: list[dict],
+    *,
+    lane: str,
+    family: str,
+    avoid: list[str] | None = None,
+    attempt: int = 1,
+) -> str:
     rendered = json.dumps(feedback, ensure_ascii=False, sort_keys=True) if feedback else "[]"
+    avoid = list(avoid or [])
+    avoid_text = ""
+    if avoid:
+        avoid_text = (
+            " Avoid these exact already-used expressions in this round and produce a different "
+            f"condition: {json.dumps(avoid, ensure_ascii=False)}."
+        )
     return (
-        f"CL-R07 round {round_no} {lane}/{family}: output one SINGLE distinctive MINIMAL min-scope "
+        f"CL-R07 round {round_no} attempt {attempt} {lane}/{family}: output one SINGLE distinctive MINIMAL min-scope "
         "ENTRY condition for this candidate. Use one loose indicator condition likely to trade in a "
         "5-day single-stock min window, from 체결강도/등락율/초당거래대금 계열. Do not make the "
         "selected clause a boilerplate universe/time/market-cap filter. Make this candidate differ by "
-        "lane/family and, when feedback is present, change materially versus the prior-round feedback. "
-        f"feedback={rendered}"
+        "lane/family and, when feedback is present, change materially versus the prior-round feedback."
+        f"{avoid_text} feedback={rendered}"
     )
 
 

@@ -153,3 +153,58 @@ def test_propose_pack_shape(tmp_path: Path):
     )
     assert selection["selected"] is not None
     assert not any("semantic_duplicate" in reason for reason in selection.get("pool_blockers", []))
+def test_retry_yields_distinct(tmp_path: Path):
+    calls: dict[str, int] = {}
+
+    def generate(gubun: str, name: str, autopsy_feedback: str) -> dict:
+        if gubun == "sell":
+            return {"status": "ok", "code": _canonical_sell_code()}
+        calls[name] = calls.get(name, 0) + 1
+        match = re.search(r"R(\d{2})_(\d{2})", name)
+        assert match is not None
+        round_no = int(match.group(1))
+        index = int(match.group(2))
+        if index == 2 and calls[name] == 1:
+            expression = _EXPRESSIONS[(round_no, 1)]
+        elif index == 2:
+            assert _EXPRESSIONS[(round_no, 1)] in autopsy_feedback
+            expression = _EXPRESSIONS[(round_no, 2)]
+        else:
+            expression = _EXPRESSIONS[(round_no, index)]
+        return {"status": "ok", "code": _canonical_buy_code(expression)}
+
+    provider = OfficialProvider(generate=generate, strategy_db=tmp_path / "strat.sqlite")
+    proposals = provider.propose_pack(round_no=1, feedback=[])
+
+    assert len(proposals) == 4
+    assert len({proposal["expression"] for proposal in proposals}) == 4
+    assert calls["CLR07_R01_02_repair_mean_reversion_buy"] == 2
+    selection = select_official_candidate(
+        proposals,
+        timeframe=TIMEFRAME,
+        methodology_version=METHODOLOGY,
+    )
+    assert selection["selected"] is not None
+
+
+def test_persistent_duplicate_degrades_gracefully(tmp_path: Path):
+    def generate(gubun: str, name: str, autopsy_feedback: str) -> dict:
+        if gubun == "sell":
+            return {"status": "ok", "code": _canonical_sell_code()}
+        return {"status": "ok", "code": _canonical_buy_code("체결강도 > 101")}
+
+    strategy_db = tmp_path / "strat.sqlite"
+    provider = OfficialProvider(generate=generate, strategy_db=strategy_db)
+    evaluator = OfficialEvaluator(
+        backtest=RecordingBacktest(),
+        select_window=_stub_select_window,
+        strategy_db=strategy_db,
+    )
+
+    summary = run_mini_loop(
+        MiniLoopConfig(strategy_db=strategy_db, evidence_dir=tmp_path / "ev"),
+        provider=provider,
+        evaluator=evaluator,
+    )
+
+    assert summary["status"] == "NO_GO_POOL_BLOCKED"
