@@ -9,6 +9,13 @@
 무예외 계약: 신호 하나가 수집 실패해도(파일 없음/파싱 실패/DB 없음) 그 신호는
 0점 + note로 흡수될 뿐, `build_scorecard` 자체가 예외를 던지는 일은 없다.
 
+한계(정직 고지 — 아키텍트 리뷰 반영): 신호 다수가 **존재 기반**(파일/라우트/행수)이라
+빈 파일·형식만 갖춘 아티팩트·가짜 행 삽입으로 개별 단계 점수를 부풀릴 수 있다. 이
+도구는 자기 저장소용 advisory 지표이지 감사 증명이 아니다 — 행 품질/계보 검증은
+증거 원장(EvidenceStore)과 CL-R 게이트가 담당한다. 단 예외 하나: `수익증명` 단계는
+어떤 파일/문서 조작으로도 오르지 않는 하드코드 0점이며(레드팀 E2 실증), CL-R08~R10
+완료가 별도 승인·증거로 확정된 뒤 코드 개정으로만 열린다.
+
 CLI:
     python scripts/research_maturity_scorecard.py [--out PATH]
 
@@ -257,8 +264,10 @@ def _stage_scoring(repo_root: Path) -> Dict[str, Any]:
     text = _read_text(score_path) or ""
     has_compute_fitness = "compute_fitness" in funcs
     has_graded = "compute_graded_fitness" in funcs
-    deflated_implemented = bool(re.search(r"def\s+\w*deflated_sharpe\w*\s*\(", text, re.I))
-    pbo_implemented = bool(re.search(r"def\s+\w*\bpbo\b\w*\s*\(", text, re.I))
+    # 아키텍트 리뷰 MEDIUM 반영: regex 단어경계는 언더스코어 식별자에서 위음성
+    #   (compute_pbo 등 미매치) — 이미 수집한 함수명 집합의 substring 판정으로 통일.
+    deflated_implemented = any("deflated_sharpe" in f.lower() for f in funcs)
+    pbo_implemented = any("pbo" in f.lower() for f in funcs)
     dsr_pbo_implemented = deflated_implemented and pbo_implemented
 
     signals = [
@@ -450,9 +459,10 @@ def _stage_profit_proof(repo_root: Path) -> Dict[str, Any]:
             False,
             0,
             100,
-            "CL-R08/R09/R10(수익 검증 게이트)은 정확한 승인 문구 확보 전까지 잠금 상태이며 "
-            f"완료 기록이 없다(docs/update_log에서 관련 문서 {mentions}건 발견 — 전부 잠금/보류 기록). "
-            "이 단계 점수는 실행 실패가 아니라 승인 게이트 설계에 따른 고정 0점(정직 신호)이다.",
+            "CL-R08/R09/R10(수익 검증 게이트)의 완료를 이 도구가 검증한 기록은 없다"
+            f"(docs/update_log에서 관련 언급 문서 {mentions}건 발견 — 내용의 완료/보류 여부는 "
+            "이 스캔이 판정하지 않으며 점수에도 무관). "
+            "이 단계 점수는 승인 게이트 설계에 따른 하드코드 0점(정직 신호)이다.",
         )
     ]
     return _stage("profit_proof", "수익증명", signals)
