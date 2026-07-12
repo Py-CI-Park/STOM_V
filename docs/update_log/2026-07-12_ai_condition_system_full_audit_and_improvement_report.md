@@ -187,3 +187,81 @@ Broad-Grid 재실행/축 확장 · tick 격자 반복 · full-period 선별 후�
 - 상태 DB: `ai_strategy_loop/state/loop_runs.db`(runs 506·generations 5,124·gate_passed 1,583·prompts 460·증거 4테이블 0행), `loop_strategies.db`(stockbuy 6,310·stocksell 6,212, 실물 `AILOOP_follow12_gptauth_B2_seeded64_20260628_g6_buy/sell`)
 - 문서: `docs/update_log/2026-07-11_ai_condition_loop_canonical_rebuild_handoff.md`, `.../2026-07-08_condition_research_full_result_and_analysis.md`, `.../2026-07-12_cl_r07_bounded_mini_loop_GO.md`, `docs/research/condition_research/generated_conditions/lattice_v3_design_20260709/lattice_v3_failure_lesson_matrix_20260709.md`, `docs/AGENT_HANDOFF.md`, `.../2026-06-02_analysis_capability_audit.md`
 - 데이터/지형: `_database/` 전수 목록, `git worktree list`(11), 브랜치 목록(~90), `STOM_V.wt-alpha/docs/research/`(2026-07-12 엔진 검토 문서)
+
+---
+
+# 제3부 (v3 증보) — 8ded51f8 반영, V4 대시보드 실시간 연동 검토, 프로세스 일반화 부족점
+
+> v3 성격: `origin/loop/process-research-pipeline` tip `8ded51f8`(PR #105 `feature/dashboard-v4-into-loop` 병합)을 로컬에 반영한 뒤, 대시보드↔연구기능 실시간 연동과 "프로세스 자체의 일반화" 관점에서 검토를 이어간다. 전부 이 워크트리에서의 실측이다.
+
+## 10. 8ded51f8 pull 반영 기록 (실행 내역)
+
+| 항목 | 내용 |
+|---|---|
+| 반영 방법 | `git fetch` → 로컬 dirty 7파일 stash 보존 → `git merge --no-ff origin/loop/process-research-pipeline` = 병합 커밋 `1b7215f0` (로컬 보고서 커밋 2개 + origin 40커밋 통합) |
+| dirty frontend 7파일 | 커밋된 jsx 소스의 **낡은 로컬 재빌드**(v=1ad7aac4)로 판정. origin `36415a5f`가 loop 병합 반영 재빌드(v=443d9ca0)를 이미 커밋 → origin이 정본. 로컬본은 `stash@{0}`으로 보존(기능적으로 병합본에 전부 포함 — gpt-5.6 드롭다운 소스 `f5a3fc5b`, research_observability 패널 소스 병합 포함 — 확인 후 폐기 가능) |
+| `.gjc/` 충돌 | **origin에 `.gjc/` 에이전트 세션 상태가 커밋되어 있음**(대시보드 워크트리의 ultragoal 원장 보존 커밋 `3e879624`). 로컬 untracked와 충돌 → 로컬본 `.gjc.local-backup-20260712/` 이동 후 병합. 위생 문제로 §13-8에 기록 |
+| 결과 | frontend dirty 해소(워킹트리 = origin 빌드), 대시보드 V4 전체(소스·테스트·검증 스크립트·증거 아티팩트 ~153K줄) 인테이크 완료 |
+
+브랜치 로드맵 정합: 병합된 `docs/web_dashboard_expansion/BRANCH_FLOW_PLAN_2026-07-12.md` 기준 현재 위치는 **P3(loop에서 연구·개발 지속)**. 남은 것은 P4(alpha-lab → loop 반영, 2026-07-12 merge-tree 실측 충돌 0)와 P5(loop → `STOM_Version_2U_C-ai-strategy-loop` 승격 PR).
+
+## 11. 병합 후 검증 실측 — 그리고 새로 확정된 부채 1건
+
+| 게이트 | 결과 |
+|---|---|
+| `pytest tests/unit/ -p no:randomly -q` (13분15초) | **4,440 passed / 17 failed** |
+| `python scripts/verify_nonrelease_sync.py` | 전체 통과 |
+
+17 failed 분류(실측 — 병합 전 `c5fa0341` 체크아웃에서 동일 10건 재현 확인):
+
+1. **기존 known 7**: 백테 spawn/UI 계약(button_contract·protocol_diagnostics×2·spawn_audit×2·runner_helpers·ui_jisu) — 불변식 문서와 일치.
+2. **V4 대시보드 신규 실패 0** — PR #105 자체는 회귀를 만들지 않았다(핸드오프 §4의 주장과 실측 일치).
+3. **⚠️ P-13 (신규 확정): 연구 계약 테스트 10건이 병합 전부터 깨진 채 방치** — `test_pack_producer` 5건(validate 실패), `test_llm_pack_wiring` 2건, `test_candidate_slots_override` 1건, `test_equity_points`(테스트는 스키마 10 기대, 실제 v11 — CL-R04 스키마 업이후 테스트 미갱신) 1건, `test_tick_seed_timeout_probe` 1건. 즉 **불변식 #6("known 7 외 신규 0")이 CL-R 계보 HEAD에서 이미 깨져 있었고, 핸드오프의 결정론 baseline 주장은 stale**이다. multi-hypothesis pack은 CL-R08의 생성 경로 그 자체이므로, 이 10건 수리는 CL-R08 착수의 사실상 전제조건이다.
+
+## 12. V4 대시보드 — "모든 기능·연구가 실시간으로 보이는가, 체계적으로 UX/UI 개발되었는가"
+
+### 12.1 실시간 연동 구조 (배선 실증)
+
+- **경로**: `run_loop` → `_publish_live()`가 세대 단계(생성 0→백테 1→채점 2→부검 3→반복 4)마다 `current_state.json` 발행 → `dashboard/app.py` `/status` + WebSocket `/ws` push → V4 셸(`dashboard-v4-shell.jsx`)이 구독해 8탭에 props 분배. 프론트는 정적 서빙이라 jsx 수정 즉시 반영(백엔드 모듈 추가만 재시작).
+- **연구 관찰성 계약 실배선 확인**: `controller/condition_discovery.py::build_research_observability_contract` → `page_data.condition_discovery.research_observability`(mode_authority / context_pack_health / branch_tree / candidate_pack / analysis_cards / prompt_receipts / promotion_blockers) → V2 패널(`panels-analysis.jsx`)과 V4 Research rail(`v4-research.jsx`) **양쪽 소비**. 즉 "생성 권한·컨텍스트팩 건강·후보팩·프롬프트 영수증·승격 차단 사유"가 라이브로 보이는 구조는 실재한다.
+- **아카이브 왕복**: run 셀렉터(`?run=`)로 과거 506개 run 전체를 동일 화면에서 재구성(`/run_state`), 세대별 코드/diff/프롬프트/부검/자본곡선 API 연결.
+- **8탭 구성**: Condition AI Overview · Process(cockpit) · History · Lab · Workbench · Decision Audit · Backtest · Chart Replay — `/ui/v4/`.
+
+### 12.2 개발 체계성 평가 — 예, 오히려 과잉 수준
+
+증거: 8뷰 전수 UX 감사 3회전(~90→~95% 성숙도, `2026-07-05_dashboard_v4_full_ux_audit.md`), 자동 브라우저 UAT 13/13(`scripts/v4_uat.py`), 검증 게이트 스크립트 6종(visual gate·safety audit·runtime depth·v2/v3 compare·inventory·human UX rubric), track-z 하네스 V1~V7, dashboard 단위테스트 689+, 보안 계층(`security.py` + `STOM_DASHBOARD_ALLOW_*` mutation 게이트 default-OFF, export 승인 분리), 스크린샷 증거 게이트(ultragoal g001~g007). **대시보드 개발 프로세스는 이 저장소에서 가장 성숙한 엔지니어링 루프다.**
+
+### 12.3 남은 갭 (정직 판정)
+
+1. **판정 뷰 3종은 여전히 부재**(v2 §6 P-9 유지): train/val/OOS 분리 오버레이, 프롬프트 버전×세대 성과 A/B, 증거 원장 소비 사슬 뷰. 관찰성 rail은 "계약/건강 상태" 중심이지 "이번 세대가 왜 나은가"에 답하지 않는다.
+2. **C7 라이브 승인 게이트 E2E 미실행**(실 LLM 비용 + `backtest/graph/` 기록 → 사용자 승인 필요), B2 measurement_frame 백엔드 미배선.
+3. **역전 현상**: 대시보드 검증 인프라(視覺 게이트·UAT·스코어카드)의 정교함이 정작 관측 대상인 **수익 증거 생산(CL-R08)** 인프라보다 앞서 있다. 화면은 95점인데 화면에 띄울 성능 데이터가 0건이라는 것이 현재 상태의 정확한 요약이다.
+
+## 13. 프로세스 일반화 관점 부족점 — 프롬프트 요청 → 데이터 분석 → 시각화 → 환류 → 조건식 생성/개선
+
+각 단계는 개별적으로 잘 만들어졌지만, **"새 분석/새 가설/새 축을 하나 추가하는 데 드는 비용"** 기준으로 보면 일반화가 안 되어 있다. 이것이 "연구를 해도 체감 효과가 없다"의 공정(工程) 측 원인이다.
+
+| # | 일반화 결핍 | 실측 근거 | 권고 |
+|---|---|---|---|
+| G-1 | **환류 채널 파편화**: autopsy(매수/매도)·segment avoid·feature hints·hypothesis·meta_seed·edge feedback 등 6+채널이 각자 자유 텍스트 포맷 + 개별 config 토글 + `build_messages` 개별 kwarg. 새 분석 1개 추가 = 분석기·NL 변환·kwarg·토글·loop 배선 **5곳 수정** | `build_messages` 시그니처 20+ 파라미터, config 토글 19개 | 분석 결과를 표준 `FeedbackEnvelope`(이미 스키마 존재, 0행)로 통일하고 "envelope 목록 → 프롬프트 블록" 렌더러 1개로 수렴. 채널 추가 = envelope 생산자 1개 작성으로 축소 |
+| G-2 | **분석 축 하드코딩**: `edge_by_segment`/`feature_importance`가 시총×시간대×등락률 고정축. 갭 유형·요일·변동성 레짐 등 새 축은 코드 수정 사항 | `fitness/edge_ratio.py`, `feature_importance.py` | 선언형 세그먼테이션(축 목록을 config/JSON으로) — 분석기는 축 명세를 받아 동일 파이프로 처리 |
+| G-3 | **삼중 직렬화 중복**: 같은 분석이 ①대시보드 JSON payload ②프롬프트 NL 라인 ③문서 마크다운으로 각각 따로 구현·유지됨 | T1 히트맵 vs T4 avoid 라인 vs update_log 표가 모두 같은 세그먼트 분석의 수기 3중 렌더 | 구조화 결과(JSON) 단일 소스 + 뷰 렌더러 3개(대시보드/프롬프트/문서)로 분리 |
+| G-4 | **프롬프트 조립 이원화**: 루프 lane(`build_messages`, 한국어 지침)과 연구 lane(`build_repair/discovery_research_messages`, Context Pack 250K)이 자산을 부분 공유(`_SYSTEM_ASSETS` 3종만)하고 규약이 갈라짐. 구조론 3종 미주입(P-3)도 이 이원화의 부산물 | `prompt.py` 상수 2벌 | 프롬프트 자산 로더/레지스트리 단일화(자산 추가 1곳) + lane별 조립만 분리. 구조론 3종을 레지스트리에 등재하면 두 lane이 동시에 획득 |
+| G-5 | **조건식 자산 카탈로그 부재**: `AILOOP_*`(루프DB) / `lat_*`(격자) / `CSS_*`(차트술사 DB 등재) / Plan D passport(md) / repair composite(jsonl)가 네이밍·저장소·메타데이터 전부 제각각. "우리가 가진 모든 조건식과 그 성적"을 한 번에 조회할 방법이 없음 | `loop_strategies.db` 6,310 buy + docs 산재 | `condition_fingerprint`(AST 지문)를 PK로 하는 단일 카탈로그 뷰(읽기 전용) — 대시보드 Hall of Fame을 이 카탈로그 위로 이전 |
+| G-6 | **실험 프로파일 비관리**: `state/run_*_config.json` 60여 개가 gitignored 산재 — 과거 실험 재현이 파일 발굴에 의존. "정본 연구 프로파일"(v2 §7 P0-2)과 동일 문제의 일반형 | state/ 목록 실측 | 프로파일을 소스 관리 디렉토리로 승격 + 대시보드 launch_config와 왕복(내보내기/불러오기) |
+| G-7 | **프롬프트→성과 귀속 프레임 부재**: prompt version 상수·receipt는 있으나 세대 성과와 조인하는 실험 설계(A/B)가 없어 "어떤 프롬프트 변경이 효과였는가"를 계량 불가 | prompts 460행 ↔ generations 조인 뷰 없음 | 프롬프트 버전을 generations에 외래키로 기록 + 대시보드 A/B 패널(§12.3-1과 동일 작업) |
+| G-8 | **런타임 상태의 저장소 오염**: origin에 `.gjc/` 세션 원장(수백 파일)과 대형 스크린샷 아티팩트가 커밋됨 — pull 충돌 유발 실증(§10). `.omo` evidence untracked 수백과 반대 극단 | 이번 pull에서 실제 충돌 | `.gjc/`는 gitignore(원장 보존이 필요하면 docs/evidence로 요약 이관), 증거 보존 정책 1페이지 확정 |
+
+## 14. 갱신된 실행 우선순위 (v2 §7에 병합·증보)
+
+**P0 (승인 불필요) — v2의 7건에 추가:**
+- **P0-8. 연구 계약 테스트 10건 수리**(P-13): equity schema v11 정합, pack_producer/llm_pack/candidate_slots 실패 원인 수정. CL-R08 생성 경로의 사실상 전제.
+- **P0-9. G-1 envelope 수렴 착수**: evidence_ledger ON(기존 P0-3)과 묶어 segment/feature/hypothesis 환류를 FeedbackEnvelope 경유로 이관(1채널부터).
+- **P0-10. stash@{0} 폐기 판정**: 병합본 포함 확인 완료 후 drop, `.gjc` gitignore 정리(G-8).
+
+**P1 (승인 1개):** CL-R08 + Deflated Sharpe/PBO + 판정 뷰 3종(§12.3-1 = G-7).
+**P2:** CL-R09(≈08월 중순), min 수집 연속성, P4 alpha-lab→loop 반영(충돌 0 실측), P5 2U_C-aisl 승격(마일스톤 시).
+
+## 15. 3부 결론
+
+pull 반영으로 이 워크트리는 "V4 대시보드 + CL-R07 연구 통합" 완성 상태(BRANCH_FLOW P3)가 됐고, 실시간 연동 구조(루프→current_state→WS→8탭, research_observability 계약)는 **실재하며 체계적으로 검증되어 있다**. 그러나 전수 검사의 결론은 강화된다: **보이는 것(대시보드 95점)과 증명된 것(수익 증거 0건, 연구 계약 테스트 10건 파손, 환류 파이프 파편화) 사이의 격차가 이 시스템의 현재 병목이다.** 다음 손은 화면이 아니라 §14 P0-8(테스트 수리)과 P0 배선 작업, 그리고 CL-R08이다.
