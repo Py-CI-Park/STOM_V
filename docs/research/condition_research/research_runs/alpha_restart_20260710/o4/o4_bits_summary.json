@@ -1,0 +1,21 @@
+{
+ "consolidate": {
+  "n_parts": 437,
+  "n_onsets": 863446,
+  "bits_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\o4\\stats_map_o4\\o4_candidate_bits.parquet",
+  "bit_columns": [
+   "o4_netbuy_gt1",
+   "o4_qty_022",
+   "o4_qty_035",
+   "o4_qty_050",
+   "o4_avoid_gap_lt8"
+  ],
+  "satisfied_counts": {
+   "o4_netbuy_gt1": 373834,
+   "o4_qty_022": 51508,
+   "o4_qty_035": 28387,
+   "o4_qty_050": 16702,
+   "o4_avoid_gap_lt8": 769146
+  }
+ }
+}

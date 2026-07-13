@@ -107,7 +107,8 @@ go 이후(집행 — Sonnet designer/executor 적합): 명세 2종이 계약이�
 [O-1] 테스트 배터리   STOM_ALLOW_MINIMAL_SETTING=1 python -m pytest tests/unit/test_alpha_catalog.py \
                        tests/unit/test_alpha_discipline.py tests/unit/test_alpha_gates.py \
                        tests/unit/test_alpha_runlab.py tests/unit/test_onset_bank_v2.py \
-                       tests/unit/test_d9lab.py tests/unit/test_o3lab.py tests/unit/test_d1_pairwise.py -q
+                       tests/unit/test_d9lab.py tests/unit/test_o3lab.py tests/unit/test_d1_pairwise.py \
+                       tests/unit/test_o4lab.py -q
 [O-2] 브랜치 게이트    python scripts/verify_nonrelease_sync.py  (+ 필요 시 python -m pytest tests/unit/ -q)
 [O-3] 카탈로그 재빌드  STOM_ALLOW_MINIMAL_SETTING=1 python scripts/build_research_catalog.py
                        → 영수증 diff 확인 후 research_assets_build_receipt.json만 커밋(DB는 git 제외)
