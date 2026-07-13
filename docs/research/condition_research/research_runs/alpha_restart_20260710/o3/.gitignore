@@ -1,3 +1,5 @@
 parts/
 *.parquet
 *progress.txt
+run_ctl/
+*.log
