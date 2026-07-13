@@ -86,3 +86,6 @@
 - `evidence_mutation_forbidden`: UPDATE/DELETE 증거 이벤트.
 - `no_go_budget_exhausted` / `NO_GO_STOP` / `NO_GO_FINAL`: 각 성능 게이트 미통과. 후속 단계를 잠근다.
 - 모든 실패는 fail-closed이며 다음 단계를 자동으로 열지 않는다.
+## DR-00 post-completion governance overlay pointer (2026-07-13)
+
+Post-completion governance amendment: `docs/research/condition_research/plans/2026-07-13_ai_condition_loop_dr00_post_completion_governance_amendment.md`. This evaluation protocol retains its historical authority; the amendment has overlay-only precedence for explicit post-completion DR interpretation. Evidence != authority, no existing CL phrase/receipt carries DR authority, there is no automatic CL-R08 transition, and every post-DR-06 verdict stops at `HARD_STOP_AWAITING_CL_R08_DECISION`.

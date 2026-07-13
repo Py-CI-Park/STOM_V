@@ -142,3 +142,6 @@
 | CL-R10 | `I approve CL-R10 benchmark promotion review only` | 동일 cohort 비교 또는 정직한 non-comparability | 인간수준·export/live 주장 금지 |
 
 성능 통과도 export/live를 자동 승인하지 않는다. `system_built`/`learning_proved`/`performance_proved`/`human_comparison_proved`/`live_authorized`를 분리 보고한다.
+## DR-00 post-completion governance overlay pointer (2026-07-13)
+
+Post-completion governance amendment: `docs/research/condition_research/plans/2026-07-13_ai_condition_loop_dr00_post_completion_governance_amendment.md`. This design specification retains its historical authority; the amendment has overlay-only precedence for explicit post-completion DR interpretation. Evidence != authority, no existing CL phrase/receipt carries DR authority, and there is no automatic CL-R08 transition.
