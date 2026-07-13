@@ -24,7 +24,7 @@
 
 **핵심 자산(측정 재료)**: 출구 은행 `research_runs/alpha_restart_20260710/stats_map/onset_l3_bank.parquet`(863,446행, sha `0b6268e0…`) · 절 비트 행렬 `stats_map/d1_onset_clause_bits.parquet`(sha `4df57b77…`) · 돌파 은행 `o3/o3_breakout_onset_bank.parquet`(702,613행, variant 컬럼) · 카탈로그 `research_assets.db`(재생성: `python scripts/build_research_catalog.py`).
 
-**확정 판정(번복 금지)**: 칸-조준 KILL · O-1G 0/144 · D5 kill-3(겹침 63.5%) · O-3 kill(전 단위 음EV) · RR8 병합 무가치 · D1 양성(압력 5절) · 2절 시너지(16×37 I=+0.129%p CI[+0.078,+0.195] / 16×38 +0.124) · B1 엔진 A/B 4/4 PASS.
+**확정 판정(번복 금지)**: 칸-조준 KILL · O-1G 0/144 · D5 kill-3(겹침 63.5%) · O-3 kill(전 단위 음EV) · RR8 병합 무가치 · D1 양성(압력 5절) · 2절 시너지(16×37 I=+0.129%p CI[+0.078,+0.195] / 16×38 **+0.157** CI[+0.090,+0.230] — 판정 json 정본, 초기 산문 +0.124는 오기) · B1 엔진 A/B 4/4 PASS.
 
 ## 2. 불변 규율 (모든 트랙 공통 — 위반 시 산출물 폐기)
 
