@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from pathlib import Path
 
 import pytest
@@ -427,3 +428,65 @@ def test_strict_ledger_loader_rejects_unrelated_malformed_row(tmp_path: Path):
     with pytest.raises(ValueError):
         builder.load_ledger_mirror(con, tmp_path, receipt, strict=True)
     con.close()
+def test_promotion_sources_must_exactly_match_manifest_artifacts(tmp_path: Path):
+    source = tmp_path / "bound.json"
+    extra = tmp_path / "extra.json"
+    source.write_text("bound", encoding="utf-8")
+    extra.write_text("extra", encoding="utf-8")
+    receipt = {
+        "run_dir": str(tmp_path), "missing": [], "skipped": [], "notes": [],
+        "sources": [
+            {"path": "bound.json", "status": "loaded",
+             "sha256": builder.sha256_file(source), "size_bytes": source.stat().st_size},
+        ],
+    }
+    bound = [{"path": "bound.json", "sha256": builder.sha256_file(source)}]
+
+    assert builder._strict_source_hashes(receipt, tmp_path, tmp_path, bound) == bound
+    receipt["sources"].append(
+        {"path": "extra.json", "status": "loaded",
+         "sha256": builder.sha256_file(extra), "size_bytes": extra.stat().st_size})
+    with pytest.raises(ValueError, match="exactly equal"):
+        builder._strict_source_hashes(receipt, tmp_path, tmp_path, bound)
+
+
+def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
+    first = builder._write_temp_bytes(tmp_path, ".first.", b"first")
+    second = builder._write_temp_bytes(tmp_path, ".second.", b"second")
+    destination = tmp_path / "canonical.db"
+    try:
+        builder._publish_no_replace(first, destination)
+        with pytest.raises(FileExistsError):
+            builder._publish_no_replace(second, destination)
+        assert destination.read_bytes() == b"first"
+    finally:
+        for path in (first, second):
+            if path.exists():
+                path.unlink()
+
+
+def test_concurrent_publication_reservation_has_one_winner(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    barrier = threading.Barrier(2)
+    wins: list[Path] = []
+    failures: list[BaseException] = []
+
+    def reserve() -> None:
+        barrier.wait()
+        try:
+            wins.append(builder._reserve_publication(db_path, receipt_path))
+        except FileExistsError as exc:
+            failures.append(exc)
+
+    workers = [threading.Thread(target=reserve), threading.Thread(target=reserve)]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join()
+    try:
+        assert len(wins) == 1
+        assert len(failures) == 1
+    finally:
+        for reservation in wins:
+            builder._release_reservation(reservation)

@@ -278,10 +278,7 @@ class TestPromotionV2:
         before = fake_db.read_bytes()
         with pytest.raises(ValueError, match="promotion verification failed"):
             register_conditions_v2(
-                fake_db, [_item()], manifest_path=tmp_path / "missing.json", repo_root=tmp_path,
-                ledger_path=tmp_path / "ledger.jsonl", gate_receipt_path=tmp_path / "receipt.json",
-                gate_usage_path=tmp_path / "usage.json", catalog_receipt_path=tmp_path / "catalog.json",
-                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+                [_item()], manifest_path=tmp_path / "missing.json", repo_root=tmp_path, now=NOW,
             )
         assert fake_db.read_bytes() == before
         assert not backup_dir.exists()
@@ -292,11 +289,7 @@ class TestPromotionV2:
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
-            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir,
-            now=NOW.replace(tzinfo=dt.timezone.utc),
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
         )
         assert result["status"] == "POST"
         assert result["evidence_id"] == chain["evidence_id"]
@@ -305,26 +298,78 @@ class TestPromotionV2:
             "sha256": hashlib.sha256(chain["manifest"].read_bytes()).hexdigest(),
         }
         assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
-        assert result["journal_pre_anchor_path"] == (
-            f"promotion_journal/{chain['evidence_id']}.pre.sha256"
+        post_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json"
+        assert result == json.loads(post_path.read_text(encoding="utf-8"))
+        pre_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.json"
+        anchor_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.sha256"
+        assert anchor_path.read_bytes() == hashlib.sha256(pre_path.read_bytes()).hexdigest().encode("ascii")
+    def test_rejects_bare_inner_catalog_receipt_before_db_access(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        outer = json.loads(chain["catalog"].read_text(encoding="utf-8"))
+        chain["catalog"].write_text(
+            json.dumps(outer["promotion_receipt"]), encoding="utf-8",
         )
-        assert (tmp_path / result["journal_pre_anchor_path"]).read_bytes() == hashlib.sha256(
-            (tmp_path / result["journal_pre_path"]).read_bytes()
-        ).hexdigest().encode("ascii")
+        before = fake_db.read_bytes()
+
+        verdict = verify_promotion_manifest(chain["manifest"], repo_root=tmp_path)
+
+        assert verdict["pass"] is False
+        assert "outer builder receipt" in verdict["reasons"][0]
+        assert fake_db.read_bytes() == before
+        assert not (tmp_path / "promotion_journal").exists()
+
+    def test_rejects_wal_mode_before_journal_or_backup(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        con = sqlite3.connect(str(fake_db))
+        try:
+            assert con.execute("PRAGMA journal_mode=WAL").fetchone()[0].lower() == "wal"
+        finally:
+            con.close()
+        before = fake_db.read_bytes()
+
+        with pytest.raises(Exception, match="journal mode"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+
+        assert fake_db.read_bytes() == before
+        assert not (tmp_path / "promotion_journal").exists()
+        assert not (tmp_path / "backups").exists()
+    @pytest.mark.parametrize("suffix", ("-wal", "-shm"))
+    def test_rejects_sqlite_sidecars_before_journal_or_backup(
+        self, fake_db, tmp_path, monkeypatch, suffix,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        Path(f"{fake_db}{suffix}").write_bytes(b"ambiguous")
+        before = fake_db.read_bytes()
+
+        with pytest.raises(Exception, match="WAL/SHM sidecar"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+
+        assert fake_db.read_bytes() == before
+        assert not (tmp_path / "promotion_journal").exists()
+        assert not (tmp_path / "backups").exists()
     def test_canonical_post_is_catalog_direct_input(self, fake_db, backup_dir, tmp_path, monkeypatch):
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
-            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
         )
+        post_relative = f"promotion_journal/{chain['evidence_id']}.post.json"
         receipt = builder.build_all(
             tmp_path, repo_root=tmp_path,
-            promotion_result_path=tmp_path / result["journal_post_path"],
+            promotion_result_path=tmp_path / post_relative,
         )
-        assert receipt["promotion_receipt"]["upstream"]["path"] == result["journal_post_path"]
+        assert receipt["promotion_receipt"]["upstream"]["path"] == post_relative
         assert (tmp_path / "promotion_catalogs" / (
             f"{chain['evidence_id']}.post.receipt.json")).is_file()
 
@@ -345,14 +390,10 @@ class TestPromotionV2:
         monkeypatch.setattr(registrar, "_write_exclusive_json", crash_post)
         with pytest.raises(OSError, match="simulated crash"):
             register_conditions_v2(
-                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
         inspected = inspect_promotion_journal_v2(
-            repo_root=tmp_path, journal_dir="promotion_journal",
-            evidence_id=chain["evidence_id"],
+            repo_root=tmp_path, manifest_path=chain["manifest"],
         )
         assert inspected["status"] == "INCOMPLETE_REQUIRES_RECONCILIATION"
         assert inspected["current_db_matches_pre"] is False
@@ -362,10 +403,7 @@ class TestPromotionV2:
         assert (tmp_path / inspected["pre_anchor_path"]).exists()
         with pytest.raises(ValueError, match="refuses rerun"):
             register_conditions_v2(
-                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
 
     def test_one_sided_conflict_is_a_pair_level_skip(self, fake_db, backup_dir, tmp_path, monkeypatch):
@@ -381,10 +419,7 @@ class TestPromotionV2:
             con.close()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
-            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
         )
         assert result["inserted"] == []
         assert result["conflicts"] == [{
@@ -416,10 +451,7 @@ class TestPromotionV2:
         monkeypatch.setattr(registrar, "_write_exclusive_bytes", mutate_after_pre_anchor)
         with pytest.raises(Exception, match="changed after PRE intent"):
             register_conditions_v2(
-                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
         assert not backup_dir.exists()
 
@@ -429,12 +461,9 @@ class TestPromotionV2:
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
-            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
         )
-        post_path = tmp_path / result["journal_post_path"]
+        post_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json"
         copied = tmp_path / "copied.post.json"
         copied.write_bytes(post_path.read_bytes())
         with pytest.raises(Exception, match="sealed authority paths"):
@@ -463,64 +492,50 @@ class TestPromotionV2:
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
-            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
-            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
-            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
         )
-        post_path = tmp_path / result["journal_post_path"]
+        post_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json"
         post = json.loads(post_path.read_text(encoding="utf-8"))
         original_post = copy.deepcopy(post)
         post["inserted"].append(copy.deepcopy(post["inserted"][0]))
         post_path.write_text(json.dumps(post), encoding="utf-8")
         with pytest.raises(Exception):
             inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="promotion_journal",
-                evidence_id=chain["evidence_id"],
+                repo_root=tmp_path, manifest_path=chain["manifest"],
             )
         post = copy.deepcopy(original_post)
         post["target_db"]["post_sha256"] = "0" * 64
         post_path.write_text(json.dumps(post), encoding="utf-8")
         with pytest.raises(Exception):
             inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="promotion_journal",
-                evidence_id=chain["evidence_id"],
+                repo_root=tmp_path, manifest_path=chain["manifest"],
             )
         post = copy.deepcopy(original_post)
         post["backup_ref"]["sha256"] = "0" * 64
         post_path.write_text(json.dumps(post), encoding="utf-8")
         with pytest.raises(Exception):
             inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="promotion_journal",
-                evidence_id=chain["evidence_id"],
+                repo_root=tmp_path, manifest_path=chain["manifest"],
             )
-        anchor_path = tmp_path / result["journal_pre_anchor_path"]
+        anchor_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.sha256"
         anchor_path.unlink()
         with pytest.raises(Exception):
             inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="promotion_journal",
-                evidence_id=chain["evidence_id"],
+                repo_root=tmp_path, manifest_path=chain["manifest"],
             )
-        anchor_path.write_bytes(hashlib.sha256(
-            (tmp_path / result["journal_pre_path"]).read_bytes()
-        ).hexdigest().encode("ascii"))
+        pre_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.json"
+        anchor_path.write_bytes(hashlib.sha256(pre_path.read_bytes()).hexdigest().encode("ascii"))
         post_path.unlink()
-        pre_path = tmp_path / result["journal_pre_path"]
+        pre_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.json"
         pre = json.loads(pre_path.read_text(encoding="utf-8"))
         pre["target_db"]["pre_sha256"] = "0" * 64
         pre_path.write_text(json.dumps(pre), encoding="utf-8")
         with pytest.raises(Exception):
             inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="promotion_journal",
-                evidence_id=chain["evidence_id"],
+                repo_root=tmp_path, manifest_path=chain["manifest"],
             )
-        orphan_dir = tmp_path / "orphan"
-        orphan_dir.mkdir()
-        (orphan_dir / f"{chain['evidence_id']}.post.json").write_text("{}", encoding="utf-8")
         with pytest.raises(Exception):
-            inspect_promotion_journal_v2(
-                repo_root=tmp_path, journal_dir="orphan", evidence_id=chain["evidence_id"],
-            )
+            inspect_promotion_journal_v2(repo_root=tmp_path, manifest_path=tmp_path / "missing.json")
 
 
 class TestHistoricalAuthorityDocuments:

@@ -10,10 +10,10 @@ read-only로만 접근하며, 쓰기는 research_assets.db·빌드 영수증·ru
 from __future__ import annotations
 
 import fnmatch
-import os
-import tempfile
 import json
+import os
 import sqlite3
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -305,18 +305,35 @@ def _promotion_status(
             promotion_manifest_path, repo_root=repo_root)
         source = Path(promotion_manifest_path).resolve()
         phase, kind, evidence_id = "PRE", "promotion_manifest", manifest["evidence_id"]
+        result: dict[str, Any] | None = None
     else:
         source = Path(promotion_result_path).resolve()
         result, manifest, digest = verify_promotion_result_v2(source, repo_root=repo_root)
         phase, kind, evidence_id = "POST", "promotion_result", result["evidence_id"]
+        if (
+            result["candidate_set"] != manifest["candidate_set"]
+            or result["candidate_set_sha256"] != manifest["candidate_set_sha256"]
+            or result["status"] != "POST"
+        ):
+            raise EvidenceSchemaError("POST catalog candidate set or status is not PRE-authorized")
     try:
         relative = source.relative_to(repo_root.resolve()).as_posix()
     except ValueError as exc:
         raise EvidenceSchemaError("promotion source must be inside repo_root") from exc
+    artifacts = [*manifest["input_artifacts"], *manifest["result_artifacts"]]
+    if len({item["path"] for item in artifacts}) != len(artifacts):
+        raise EvidenceSchemaError("promotion catalog artifacts must have unique paths")
     return {
         "schema_version": 2, "phase": phase, "valid": True, "evidence_id": evidence_id,
         "source_kind": kind, "source_path": relative, "source_sha256": digest,
         "catalog_dir": manifest["authority_paths"]["catalog_dir"],
+        "candidate_set": manifest["candidate_set"],
+        "candidate_set_sha256": manifest["candidate_set_sha256"],
+        "source_artifacts": sorted(artifacts, key=lambda item: item["path"]),
+        "outcomes": (
+            {"inserted": result["inserted"], "conflicts": result["conflicts"]}
+            if result is not None else None
+        ),
     }
 
 
@@ -328,7 +345,11 @@ def _repo_ref(path: Path, root: Path, field: str) -> dict[str, str]:
     return {"path": relative, "sha256": sha256_file(path)}
 
 
-def _strict_source_hashes(receipt: Dict[str, Any], run_dir: Path, root: Path) -> list[dict[str, str]]:
+def _strict_source_hashes(
+    receipt: Dict[str, Any], run_dir: Path, root: Path,
+    expected: list[dict[str, str]] | None = None,
+) -> list[dict[str, str]]:
+    """Require complete sources and, for authority builds, an exact sealed artifact set."""
     if receipt["missing"] or receipt["skipped"]:
         raise EvidenceSchemaError("promotion catalog requires no missing, skipped, or unparsable sources")
     sources: list[dict[str, str]] = []
@@ -344,7 +365,13 @@ def _strict_source_hashes(receipt: Dict[str, Any], run_dir: Path, root: Path) ->
         sources.append(source)
     if not sources or len({item["path"] for item in sources}) != len(sources):
         raise EvidenceSchemaError("promotion catalog source hashes must be complete and unique")
-    return sorted(sources, key=lambda item: item["path"])
+    sources = sorted(sources, key=lambda item: item["path"])
+    if expected is not None:
+        if sources != expected:
+            raise EvidenceSchemaError(
+                "promotion catalog sources must exactly equal manifest input_artifacts and result_artifacts"
+            )
+    return sources
 
 
 def _promotion_receipt(
@@ -371,9 +398,104 @@ def _promotion_receipt(
         "upstream": upstream,
         "promotion_manifest": manifest_ref,
         "catalog_db": _repo_ref(db_path, root, "catalog DB"),
-        "source_hashes": _strict_source_hashes(receipt, Path(receipt["run_dir"]), root),
+        "source_hashes": _strict_source_hashes(
+            receipt, Path(receipt["run_dir"]), root, status["source_artifacts"]),
     }
 
+def _validate_catalog_candidate_identity(status: dict[str, Any]) -> None:
+    """Require the phase's candidate and (for POST) outcome identity before publication."""
+    candidates = status["candidate_set"]
+    expected = {
+        candidate["name"]: (candidate["buy_sha256"], candidate["sell_sha256"])
+        for candidate in candidates
+    }
+    if not expected or len(expected) != len(candidates):
+        raise EvidenceSchemaError("catalog promotion candidate set is not a unique PRE authority")
+    outcomes = status["outcomes"]
+    if status["phase"] == "PRE":
+        if outcomes is not None:
+            raise EvidenceSchemaError("PRE catalog must not carry POST outcomes")
+        return
+    if status["phase"] != "POST" or not isinstance(outcomes, dict):
+        raise EvidenceSchemaError("catalog phase does not match its outcome authority")
+    accounted: set[str] = set()
+    for field in ("inserted", "conflicts"):
+        values = outcomes.get(field)
+        if not isinstance(values, list):
+            raise EvidenceSchemaError("POST catalog outcomes must be lists")
+        for outcome in values:
+            name = outcome.get("name") if isinstance(outcome, dict) else None
+            hashes = (
+                outcome.get("buy_sha256"), outcome.get("sell_sha256")
+            ) if isinstance(outcome, dict) else (None, None)
+            if name not in expected or hashes != expected[name] or name in accounted:
+                raise EvidenceSchemaError("POST catalog outcome does not match PRE candidate identity")
+            accounted.add(name)
+    if accounted != set(expected):
+        raise EvidenceSchemaError("POST catalog outcomes do not account for every PRE candidate")
+
+def _fsync_directory(path: Path) -> None:
+    """Persist a directory entry when the platform exposes directory fsync."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(descriptor)
+    except OSError:
+        pass
+    finally:
+        os.close(descriptor)
+
+
+def _flush_file(path: Path) -> None:
+    with open(path, "rb+") as handle:
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def _write_temp_bytes(directory: Path, prefix: str, payload: bytes) -> Path:
+    handle = tempfile.NamedTemporaryFile(prefix=prefix, suffix=".tmp", dir=directory, delete=False)
+    try:
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+    finally:
+        handle.close()
+    return Path(handle.name)
+
+
+def _publish_no_replace(source: Path, destination: Path) -> None:
+    """Publish a fully-flushed temp file without replacing an existing authority artifact."""
+    os.link(source, destination)
+    _flush_file(destination)
+    _fsync_directory(destination.parent)
+
+
+def _reserve_publication(db_path: Path, receipt_path: Path) -> Path:
+    """Serialize publishers without claiming either authority artifact name."""
+    reservation = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
+    descriptor = os.open(reservation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        os.write(descriptor, b"catalog publication reservation\n")
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    _fsync_directory(reservation.parent)
+    return reservation
+
+
+def _release_reservation(reservation: Path) -> None:
+    try:
+        reservation.unlink()
+    except FileNotFoundError:
+        return
+    _fsync_directory(reservation.parent)
+
+
+# ---------------------------------------------------------------------------
+# build_all — 전체 오케스트레이션(멱등).
+# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # build_all — 전체 오케스트레이션(멱등).
@@ -398,9 +520,9 @@ def build_all(
         raise EvidenceSchemaError("promotion catalog requires receipt publication")
     db_path, receipt_path = _catalog_output_paths(
         root, db_path, receipt_path, promotion_status)
-    if promotion_status is not None and (db_path.exists() or receipt_path.exists()):
-        raise FileExistsError("promotion catalog authority artifacts cannot be reused or overwritten")
     receipt = new_receipt(run_dir, db_path)
+    reservation: Path | None = None
+    receipt_temp: Path | None = None
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
@@ -411,10 +533,15 @@ def build_all(
     else:
         receipt["promotion_status"] = promotion_status
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        handle = tempfile.NamedTemporaryFile(
-            prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
-        handle.close()
-        working_db_path = Path(handle.name)
+        reservation = _reserve_publication(db_path, receipt_path)
+        try:
+            handle = tempfile.NamedTemporaryFile(
+                prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
+            handle.close()
+            working_db_path = Path(handle.name)
+        except BaseException:
+            _release_reservation(reservation)
+            raise
     try:
         con = sqlite3.connect(working_db_path)
         try:
@@ -433,8 +560,11 @@ def build_all(
         finally:
             con.close()
         if promotion_status is not None:
-            _strict_source_hashes(receipt, run_dir, root)
-            os.replace(working_db_path, db_path)
+            _flush_file(working_db_path)
+            _strict_source_hashes(
+                receipt, run_dir, root, promotion_status["source_artifacts"])
+            _validate_catalog_candidate_identity(promotion_status)
+            _publish_no_replace(working_db_path, db_path)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status)
             validate_catalog_promotion_receipt_v2(
@@ -446,15 +576,14 @@ def build_all(
             if promotion_status is None:
                 receipt_path.write_bytes(receipt_bytes)
             else:
-                handle = tempfile.NamedTemporaryFile(
-                    prefix=f".{receipt_path.name}.", suffix=".tmp",
-                    dir=receipt_path.parent, delete=False)
-                try:
-                    handle.write(receipt_bytes)
-                finally:
-                    handle.close()
-                os.replace(handle.name, receipt_path)
+                receipt_temp = _write_temp_bytes(
+                    receipt_path.parent, f".{receipt_path.name}.", receipt_bytes)
+                _publish_no_replace(receipt_temp, receipt_path)
         return receipt
     finally:
+        if receipt_temp is not None and receipt_temp.exists():
+            receipt_temp.unlink()
         if promotion_status is not None and working_db_path.exists():
             working_db_path.unlink()
+        if reservation is not None:
+            _release_reservation(reservation)

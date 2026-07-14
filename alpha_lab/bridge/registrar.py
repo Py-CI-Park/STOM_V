@@ -84,9 +84,11 @@ def _validate_catalog_pre_receipt(
     value: object, *, evidence_id: str, manifest_path: Path, manifest_sha256: str, repo_root: Path,
 ) -> dict[str, Any]:
     """Require the builder's strict PRE receipt, bound to live DB and source bytes."""
-    receipt = value.get("promotion_receipt") if isinstance(value, dict) else None
-    if receipt is None:
-        receipt = value
+    if not isinstance(value, dict) or "promotion_receipt" not in value:
+        raise EvidenceSchemaError(
+            "catalog receipt must be the immutable outer builder receipt with promotion_receipt"
+        )
+    receipt = value["promotion_receipt"]
     validated = validate_catalog_promotion_receipt_v2(receipt, repo_root=repo_root)
     if validated["phase"] != "PRE":
         raise EvidenceSchemaError("catalog receipt must be PRE authority")
@@ -231,24 +233,11 @@ def _validate_live_journal_pre(pre: dict[str, Any], *, root: Path) -> tuple[dict
 def inspect_promotion_journal_v2(
     *,
     repo_root: Path | str,
-    manifest_path: Path | str | None = None,
-    journal_dir: Path | str | None = None,
-    evidence_id: str | None = None,
+    manifest_path: Path | str,
 ) -> dict[str, Any]:
-    """Authenticate journal and reserved backup state without retrying mutation."""
+    """Authenticate journal and reserved backup state from sealed authority."""
     root = Path(repo_root).resolve()
-    if manifest_path is None:
-        if evidence_id is None:
-            raise EvidenceSchemaError("manifest_path is required for journal inspection")
-        manifest_path = root / "promotions" / f"{evidence_id}.pre.json"
     manifest, _ = verify_promotion_manifest_v2(manifest_path, repo_root=root)
-    if journal_dir is not None and (
-        (root / Path(journal_dir)).resolve() if not Path(journal_dir).is_absolute()
-        else Path(journal_dir).resolve()
-    ) != (root / Path(*PurePosixPath(manifest["authority_paths"]["journal_dir"]).parts)).resolve():
-        raise EvidenceSchemaError("deprecated journal_dir does not match sealed authority")
-    if evidence_id is not None and evidence_id != manifest["evidence_id"]:
-        raise EvidenceSchemaError("deprecated evidence_id does not match sealed authority")
     evidence_id = manifest["evidence_id"]
     destinations = _promotion_destinations(root, manifest)
     pre_path, anchor_path, post_path, pre_relative, anchor_relative, post_relative = _journal_paths(root, manifest)
@@ -301,21 +290,51 @@ def _copy_locked_db_exclusive(db_path: Path, backup_path: Path) -> str:
     except FileExistsError as exc:
         raise EvidenceSchemaError("reserved promotion backup already exists") from exc
     return hashlib.sha256(backup_path.read_bytes()).hexdigest()
+def _sqlite_sidecars(db_path: Path) -> tuple[Path, Path]:
+    return Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
+
+
+def _assert_rollback_main_file(db_path: Path, con: sqlite3.Connection | None = None) -> None:
+    """Reject WAL state; the main-file SHA-256 is the defined promotion snapshot."""
+    wal_path, shm_path = _sqlite_sidecars(db_path)
+    if wal_path.exists() or shm_path.exists():
+        raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
+    close = con is None
+    if con is None:
+        con = sqlite3.connect(str(db_path))
+    try:
+        row = con.execute("PRAGMA journal_mode").fetchone()
+        if not row or str(row[0]).lower() != "delete":
+            raise EvidenceSchemaError("SQLite journal mode must be DELETE for promotion")
+        if wal_path.exists() or shm_path.exists():
+            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
+    finally:
+        if close:
+            con.close()
+
+
+def _acquire_promotion_guard(lock_path: Path) -> int:
+    """Atomically reserve the canonical promotion critical section."""
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        return os.open(str(lock_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise EvidenceSchemaError("promotion is already guarded or requires reconciliation") from exc
+
+
+def _release_promotion_guard(lock_path: Path, descriptor: int) -> None:
+    os.close(descriptor)
+    lock_path.unlink()
 
 
 def register_conditions_v2(
-    items: list | Path | str,
-    legacy_items: list | None = None,
+    items: list,
     *,
     manifest_path: Path | str,
     repo_root: Path | str,
     now,
-    **deprecated_paths: Path | str,
 ) -> dict[str, Any]:
-    """Persist sealed PRE intent; legacy destinations must exactly match sealed paths."""
-    caller_db = Path(items) if legacy_items is not None else None
-    if legacy_items is not None:
-        items = legacy_items
+    """Promote only the sealed candidate set to its sealed target database."""
     root = Path(repo_root).resolve()
     verdict = verify_promotion_manifest(manifest_path, repo_root=root)
     if verdict["pass"] is not True:
@@ -327,7 +346,10 @@ def register_conditions_v2(
         raise ValueError("v2 item names must exactly match promotion manifest candidates")
     for name, item in actual.items():
         candidate = expected[name]
-        if _sha256_text(item["buy_expr"]) != candidate["buy_sha256"] or _sha256_text(item["sell_expr"]) != candidate["sell_sha256"]:
+        if (
+            _sha256_text(item["buy_expr"]) != candidate["buy_sha256"]
+            or _sha256_text(item["sell_expr"]) != candidate["sell_sha256"]
+        ):
             raise ValueError("v2 candidate expression hash mismatch: %s" % name)
     completed_at = now.isoformat() if hasattr(now, "isoformat") else str(now)
     try:
@@ -336,84 +358,103 @@ def register_conditions_v2(
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp") from exc
     if completed.tzinfo is None or completed.utcoffset() is None:
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp")
+
     manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
     destinations = _promotion_destinations(root, manifest)
     db_file = destinations["target_db"]
-    if caller_db is not None and caller_db.resolve() != db_file.resolve():
-        raise EvidenceSchemaError("deprecated db_path does not match sealed target_db")
-    expected_deprecated = {
-        "catalog_receipt_path": destinations["catalog"],
-        "journal_dir": destinations["pre"].parent,
-        "backup_dir": destinations["backup"].parent,
-        "ledger_path": root / manifest["ledger"]["path"],
-        "gate_receipt_path": root / manifest["gate_receipt"]["path"],
-        "gate_usage_path": root / manifest["gate_claim"]["path"],
-    }
-    for field, supplied in deprecated_paths.items():
-        if field not in expected_deprecated or Path(supplied).resolve() != expected_deprecated[field].resolve():
-            raise EvidenceSchemaError(f"deprecated {field} does not match sealed authority")
     if not db_file.is_file():
         raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file)
-    catalog_path = destinations["catalog"]
-    _validate_catalog_pre_receipt(_load_json(catalog_path, "catalog receipt"), evidence_id=manifest["evidence_id"], manifest_path=Path(manifest_path), manifest_sha256=manifest_sha256, repo_root=root)
+    _assert_rollback_main_file(db_file)
     pre_path, anchor_path, post_path, pre_relative, anchor_relative, post_relative = _journal_paths(root, manifest)
-    existing = inspect_promotion_journal_v2(repo_root=root, manifest_path=manifest_path)
-    if existing["status"] != "ABSENT" or destinations["backup"].exists():
-        raise ValueError("promotion journal or reserved backup refuses rerun")
-    manifest_ref = {"path": _repo_relative_path(Path(manifest_path), root, "manifest_path"), "sha256": manifest_sha256}
-    catalog_ref = {"path": _repo_relative_path(catalog_path, root, "catalog_receipt_path"), "sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest()}
-    pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
-    pre = {
-        "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
-        "evidence_id": manifest["evidence_id"], "prepared_at": completed_at,
-        "promotion_manifest": manifest_ref, "catalog_receipt": catalog_ref,
-        "candidate_set": manifest["candidate_set"], "candidate_set_sha256": manifest["candidate_set_sha256"],
-        "target_db": {"path": _repo_relative_path(db_file, root, "target_db"), "pre_sha256": pre_sha256},
-        "backup_ref": {"path": _repo_relative_path(destinations["backup"], root, "backup"), "sha256": pre_sha256},
-        "chronology": _journal_chronology(manifest, root, completed_at),
-    }
-    validate_promotion_journal_pre_v2(pre, repo_root=root)
-    _write_exclusive_json(pre_path, pre)
-    pre_ref = {"path": pre_relative, "sha256": hashlib.sha256(pre_path.read_bytes()).hexdigest()}
-    _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
-    pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
-    backup_ref = None
-    write_con = sqlite3.connect(str(db_file))
+    guard_path = pre_path.with_suffix(".lock")
+    guard = _acquire_promotion_guard(guard_path)
     try:
-        write_con.execute("BEGIN IMMEDIATE")
-        locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
-        if locked_pre_sha256 != pre_sha256:
-            raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
-        names_by_table = {table: _existing_names(write_con, table) for table in TABLE_BY_SIDE.values()}
-        to_insert, conflicts = _split_plan(items, names_by_table)
-        inserted: list[dict[str, Any]] = []
-        if to_insert:
-            backup_sha256 = _copy_locked_db_exclusive(db_file, destinations["backup"])
-            if backup_sha256 != locked_pre_sha256:
-                raise EvidenceSchemaError("locked target DB backup does not match PRE bytes")
-            backup_ref = pre["backup_ref"]
-            inserted = _apply_inserts(write_con, to_insert)
-        write_con.commit()
-    except BaseException:
-        write_con.rollback()
-        raise
+        rechecked_manifest, rechecked_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
+        if rechecked_manifest != manifest or rechecked_sha256 != manifest_sha256:
+            raise EvidenceSchemaError("promotion manifest changed before guarded PRE recheck")
+        catalog_path = destinations["catalog"]
+        _assert_rollback_main_file(db_file)
+        _validate_catalog_pre_receipt(
+            _load_json(catalog_path, "catalog receipt"),
+            evidence_id=manifest["evidence_id"],
+            manifest_path=Path(manifest_path),
+            manifest_sha256=manifest_sha256,
+            repo_root=root,
+        )
+        existing = inspect_promotion_journal_v2(repo_root=root, manifest_path=manifest_path)
+        if existing["status"] != "ABSENT" or destinations["backup"].exists():
+            raise ValueError("promotion journal or reserved backup refuses rerun")
+        _assert_rollback_main_file(db_file)
+        manifest_ref = {
+            "path": _repo_relative_path(Path(manifest_path), root, "manifest_path"),
+            "sha256": manifest_sha256,
+        }
+        catalog_ref = {
+            "path": _repo_relative_path(catalog_path, root, "catalog_receipt_path"),
+            "sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
+        }
+        pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
+        pre = {
+            "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
+            "evidence_id": manifest["evidence_id"], "prepared_at": completed_at,
+            "promotion_manifest": manifest_ref, "catalog_receipt": catalog_ref,
+            "candidate_set": manifest["candidate_set"], "candidate_set_sha256": manifest["candidate_set_sha256"],
+            "target_db": {"path": _repo_relative_path(db_file, root, "target_db"), "pre_sha256": pre_sha256},
+            "backup_ref": {"path": _repo_relative_path(destinations["backup"], root, "backup"), "sha256": pre_sha256},
+            "chronology": _journal_chronology(manifest, root, completed_at),
+        }
+        validate_promotion_journal_pre_v2(pre, repo_root=root)
+        _write_exclusive_json(pre_path, pre)
+        pre_ref = {"path": pre_relative, "sha256": hashlib.sha256(pre_path.read_bytes()).hexdigest()}
+        _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
+        pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
+        backup_ref = None
+        write_con = sqlite3.connect(str(db_file))
+        try:
+            write_con.execute("BEGIN IMMEDIATE")
+            _assert_rollback_main_file(db_file, write_con)
+            locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
+            if locked_pre_sha256 != pre_sha256:
+                raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
+            names_by_table = {table: _existing_names(write_con, table) for table in TABLE_BY_SIDE.values()}
+            to_insert, conflicts = _split_plan(items, names_by_table)
+            inserted: list[dict[str, Any]] = []
+            if to_insert:
+                backup_sha256 = _copy_locked_db_exclusive(db_file, destinations["backup"])
+                if backup_sha256 != locked_pre_sha256:
+                    raise EvidenceSchemaError("locked target DB backup does not match defined main-file digest")
+                backup_ref = pre["backup_ref"]
+                inserted = _apply_inserts(write_con, to_insert)
+            write_con.commit()
+        except BaseException:
+            write_con.rollback()
+            raise
+        finally:
+            write_con.close()
+        db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
+        post = {
+            "schema_version": 2, "kind": "promotion_result", "status": "POST",
+            "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
+            "promotion_manifest": manifest_ref, "promotion_manifest_path": manifest_ref["path"],
+            "catalog_receipt": catalog_ref, "candidate_set": manifest["candidate_set"],
+            "candidate_set_sha256": manifest["candidate_set_sha256"],
+            "target_db": {"path": pre["target_db"]["path"], "pre_sha256": pre_sha256, "post_sha256": db_post_sha256},
+            "inserted": inserted, "conflicts": conflicts, "backup_ref": backup_ref,
+            "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
+            "chronology": {**pre["chronology"], "post_at": completed_at},
+        }
+        validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
+        _write_exclusive_json(post_path, post)
+        verified, verified_manifest, verified_sha256 = verify_promotion_result_v2(post_path, repo_root=root)
+        if (
+            verified != post
+            or verified_manifest != manifest
+            or verified_sha256 != hashlib.sha256(post_path.read_bytes()).hexdigest()
+        ):
+            raise EvidenceSchemaError("strong promotion verification does not match published POST bytes")
+        return verified
     finally:
-        write_con.close()
-    db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
-    post = {
-        "schema_version": 2, "kind": "promotion_result", "status": "POST",
-        "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
-        "promotion_manifest": manifest_ref, "promotion_manifest_path": manifest_ref["path"],
-        "catalog_receipt": catalog_ref, "candidate_set": manifest["candidate_set"],
-        "candidate_set_sha256": manifest["candidate_set_sha256"],
-        "target_db": {"path": pre["target_db"]["path"], "pre_sha256": pre_sha256, "post_sha256": db_post_sha256},
-        "inserted": inserted, "conflicts": conflicts, "backup_ref": backup_ref,
-        "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
-        "chronology": {**pre["chronology"], "post_at": completed_at},
-    }
-    validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
-    _write_exclusive_json(post_path, post)
-    return {**post, "journal_pre_path": pre_relative, "journal_pre_anchor_path": anchor_relative, "journal_post_path": post_relative}
+        _release_promotion_guard(guard_path, guard)
 
 
 def _validate_items(items: list) -> None:
