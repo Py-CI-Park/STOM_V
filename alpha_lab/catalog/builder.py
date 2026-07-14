@@ -12,6 +12,7 @@ from __future__ import annotations
 import fnmatch
 import json
 import os
+import stat
 import uuid
 from dataclasses import dataclass
 import sqlite3
@@ -575,15 +576,60 @@ def _flush_file(path: Path) -> None:
         os.fsync(handle.fileno())
 
 
-def _write_temp_bytes(directory: Path, prefix: str, payload: bytes) -> Path:
-    handle = tempfile.NamedTemporaryFile(prefix=prefix, suffix=".tmp", dir=directory, delete=False)
+def _write_temp_bytes(
+    directory: Path, prefix: str, payload: bytes, mutation_guard: Any | None = None,
+) -> Path:
+    if mutation_guard is None:
+        handle = tempfile.NamedTemporaryFile(prefix=prefix, suffix=".tmp", dir=directory, delete=False)
+        try:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        finally:
+            handle.close()
+        return Path(handle.name)
+    path, descriptor = _create_authority_temp(directory, prefix, mutation_guard)
     try:
-        handle.write(payload)
-        handle.flush()
-        os.fsync(handle.fileno())
-    finally:
-        handle.close()
-    return Path(handle.name)
+        with os.fdopen(descriptor, "wb", closefd=True) as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        if path.exists():
+            path.unlink()
+        raise
+    mutation_guard.validate_file(path)
+    return path
+
+
+def _validate_opened_regular_file(descriptor: int, label: str) -> None:
+    metadata = os.fstat(descriptor)
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise EvidenceSchemaError(f"{label} must be a regular single-link file")
+
+
+def _create_authority_temp(
+    directory: Path, prefix: str, mutation_guard: Any,
+) -> tuple[Path, int]:
+    for _ in range(16):
+        path = directory / f"{prefix}{uuid.uuid4().hex}.tmp"
+        try:
+            descriptor = mutation_guard.open_path(
+                path, os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600)
+        except FileExistsError:
+            continue
+        try:
+            _validate_opened_regular_file(descriptor, "catalog authority temporary file")
+            mutation_guard.validate_file(path)
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return path, descriptor
+    raise FileExistsError("cannot create unique catalog publication temporary file")
 
 
 def _publish_no_replace(source: Path, destination: Path) -> None:
@@ -618,13 +664,25 @@ class _PublicationReservation:
 def _lock_reservation(descriptor: int) -> None:
     """Take a non-blocking whole-file lock without replacing a live owner."""
     if os.name == "nt":
+        import ctypes
         import msvcrt
 
-        os.lseek(descriptor, 0, os.SEEK_SET)
-        try:
-            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
-        except OSError as exc:
-            raise FileExistsError("catalog publication reservation is held by a live owner") from exc
+        class _Overlapped(ctypes.Structure):
+            _fields_ = [
+                ("internal", ctypes.c_size_t),
+                ("internal_high", ctypes.c_size_t),
+                ("offset", ctypes.c_uint32),
+                ("offset_high", ctypes.c_uint32),
+                ("event", ctypes.c_void_p),
+            ]
+
+        # LockFileEx can lock a byte beyond EOF, so no contender writes a bootstrap
+        # byte before ownership is established.
+        if not ctypes.windll.kernel32.LockFileEx(
+            msvcrt.get_osfhandle(descriptor), 0x00000002 | 0x00000001,
+            0, 1, 0, ctypes.byref(_Overlapped()),
+        ):
+            raise FileExistsError("catalog publication reservation is held by a live owner")
         return
     import fcntl
 
@@ -636,26 +694,43 @@ def _lock_reservation(descriptor: int) -> None:
 
 def _unlock_reservation(descriptor: int) -> None:
     if os.name == "nt":
+        import ctypes
         import msvcrt
 
-        os.lseek(descriptor, 0, os.SEEK_SET)
-        msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+        class _Overlapped(ctypes.Structure):
+            _fields_ = [
+                ("internal", ctypes.c_size_t),
+                ("internal_high", ctypes.c_size_t),
+                ("offset", ctypes.c_uint32),
+                ("offset_high", ctypes.c_uint32),
+                ("event", ctypes.c_void_p),
+            ]
+
+        if not ctypes.windll.kernel32.UnlockFileEx(
+            msvcrt.get_osfhandle(descriptor), 0, 1, 0, ctypes.byref(_Overlapped())
+        ):
+            raise OSError(ctypes.get_last_error(), "cannot release catalog publication reservation")
         return
     import fcntl
 
     fcntl.flock(descriptor, fcntl.LOCK_UN)
 
 
-def _reserve_publication(db_path: Path, receipt_path: Path) -> _PublicationReservation:
-    """Acquire the durable reservation, including an abandoned crash reservation."""
+def _reserve_publication(
+    db_path: Path, receipt_path: Path, mutation_guard: Any,
+) -> _PublicationReservation:
+    """Acquire the durable reservation through the active authority mutation guard."""
     path = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
-    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, "O_BINARY", 0), 0o600)
     try:
-        # msvcrt byte locks require a byte to lock. This does not claim ownership:
-        # the unique token is written only after the OS lock succeeds.
-        if os.fstat(descriptor).st_size == 0:
-            os.write(descriptor, b"\0")
-            os.fsync(descriptor)
+        descriptor = mutation_guard.open_path(
+            path, os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600)
+    except FileExistsError:
+        descriptor = mutation_guard.open_path(
+            path, os.O_RDWR | getattr(os, "O_BINARY", 0), 0o600)
+    try:
+        _validate_opened_regular_file(descriptor, "catalog publication reservation")
+        # POSIX flock and Win32 LockFileEx both acquire an empty reservation inode
+        # before any owner token bytes are written.
         _lock_reservation(descriptor)
         token = (uuid.uuid4().hex + "\n").encode("ascii")
         os.ftruncate(descriptor, 0)
@@ -734,7 +809,6 @@ def build_all(
         working_db_path = db_path
     else:
         receipt["promotion_status"] = promotion_status
-        db_path.parent.mkdir(parents=True, exist_ok=True)
         mutation_guard = None
         if "authority_paths" in promotion_status:
             authority_guard = authority_mutation_guard(
@@ -744,21 +818,23 @@ def build_all(
             mutation_guard.hold_path(receipt_path)
             mutation_guard.validate_file(db_path)
             mutation_guard.validate_file(receipt_path)
-        reservation = _reserve_publication(db_path, receipt_path)
-        if mutation_guard is not None:
-            mutation_guard.validate_file(db_path)
-            mutation_guard.validate_file(receipt_path)
+        if mutation_guard is None:
+            raise EvidenceSchemaError("promotion catalog requires an active authority mutation guard")
+        reservation = _reserve_publication(db_path, receipt_path, mutation_guard)
+        mutation_guard.validate_file(db_path)
+        mutation_guard.validate_file(receipt_path)
         try:
-            handle = tempfile.NamedTemporaryFile(
-                prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
-            handle.close()
-            working_db_path = Path(handle.name)
+            working_db_path, descriptor = _create_authority_temp(
+                db_path.parent, f".{db_path.name}.", mutation_guard)
+            os.close(descriptor)
         except BaseException:
             _release_reservation(reservation)
             if authority_guard is not None:
                 authority_guard.__exit__(None, None, None)
             raise
     try:
+        if promotion_status is not None:
+            mutation_guard.validate_file(working_db_path)
         con = sqlite3.connect(working_db_path)
         try:
             create_schema(con)
@@ -804,7 +880,9 @@ def build_all(
                     root, promotion_status, db_path, receipt_path)
                 if mutation_guard is not None:
                     mutation_guard.validate_file(db_path)
+                mutation_guard.validate_file(working_db_path)
                 _publish_no_replace(working_db_path, db_path)
+                mutation_guard.validate_file(db_path)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status)
             validate_catalog_promotion_receipt_v2(
@@ -821,8 +899,10 @@ def build_all(
                 if mutation_guard is not None:
                     mutation_guard.validate_file(receipt_path)
                 receipt_temp = _write_temp_bytes(
-                    receipt_path.parent, f".{receipt_path.name}.", receipt_bytes)
+                    receipt_path.parent, f".{receipt_path.name}.", receipt_bytes, mutation_guard)
+                mutation_guard.validate_file(receipt_temp)
                 _publish_no_replace(receipt_temp, receipt_path)
+                mutation_guard.validate_file(receipt_path)
         return receipt
     finally:
         if receipt_temp is not None and receipt_temp.exists():

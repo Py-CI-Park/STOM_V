@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import os
 import threading
 from pathlib import Path
 
@@ -331,6 +332,34 @@ def _promotion_status(evidence_id: str = "a" * 64) -> dict[str, object]:
     }
 
 
+class _ReservationGuard:
+    """Minimal mutation-guard double that exposes only verified open handles."""
+
+    def __init__(self) -> None:
+        self.opened: list[Path] = []
+
+    def open_path(self, path: Path, flags: int, mode: int = 0o666) -> int:
+        self.opened.append(path)
+        return os.open(path, flags, mode)
+
+    def validate_file(self, path: Path) -> None:
+        if path.exists() and path.stat().st_nlink != 1:
+            raise builder.EvidenceSchemaError("test guard rejected hardlinked target")
+
+    def hold_path(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+    def __enter__(self) -> "_ReservationGuard":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        return None
+
+
+def _reserve(db_path: Path, receipt_path: Path) -> builder._PublicationReservation:
+    return builder._reserve_publication(db_path, receipt_path, _ReservationGuard())
+
+
 def test_catalog_output_paths_keep_legacy_defaults_non_authoritative(run_dir: Path):
     db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, None)
 
@@ -541,7 +570,7 @@ def test_live_publication_owner_cannot_be_stolen(tmp_path: Path):
     def reserve() -> None:
         barrier.wait()
         try:
-            wins.append(builder._reserve_publication(db_path, receipt_path))
+            wins.append(_reserve(db_path, receipt_path))
         except FileExistsError as exc:
             failures.append(exc)
 
@@ -562,12 +591,12 @@ def test_live_publication_owner_cannot_be_stolen(tmp_path: Path):
 def test_abandoned_publication_reservation_is_recovered_after_crash(tmp_path: Path):
     db_path = tmp_path / "evidence.pre.db"
     receipt_path = tmp_path / "evidence.pre.receipt.json"
-    crashed_owner = builder._reserve_publication(db_path, receipt_path)
+    crashed_owner = _reserve(db_path, receipt_path)
 
     builder._abandon_reservation(crashed_owner)
 
     assert crashed_owner.path.exists()
-    retry_owner = builder._reserve_publication(db_path, receipt_path)
+    retry_owner = _reserve(db_path, receipt_path)
     try:
         assert retry_owner.path == crashed_owner.path
         assert retry_owner.token != crashed_owner.token
@@ -576,6 +605,37 @@ def test_abandoned_publication_reservation_is_recovered_after_crash(tmp_path: Pa
     assert crashed_owner.path.exists()
     assert crashed_owner.path.read_bytes() == b"UNOWNED\n"
 
+
+def test_preplaced_hardlink_reservation_is_rejected(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    reservation_path = tmp_path / f".{db_path.name}.{receipt_path.name}.publish"
+    original = tmp_path / "preplaced"
+    original.write_bytes(b"attacker")
+    os.link(original, reservation_path)
+
+    with pytest.raises(ValueError, match="single-link"):
+        _reserve(db_path, receipt_path)
+
+
+def test_reservation_locks_empty_inode_before_token_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    observed_sizes: list[int] = []
+    original_lock = builder._lock_reservation
+
+    def lock_after_observing_empty(descriptor: int) -> None:
+        observed_sizes.append(os.fstat(descriptor).st_size)
+        original_lock(descriptor)
+
+    monkeypatch.setattr(builder, "_lock_reservation", lock_after_observing_empty)
+    reservation = _reserve(db_path, receipt_path)
+    try:
+        assert observed_sizes == [0]
+    finally:
+        builder._release_reservation(reservation)
 
 def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
     run_dir: Path, monkeypatch: pytest.MonkeyPatch,
@@ -590,6 +650,7 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
         "source_sha256": "b" * 64,
         "catalog_dir": "promotion_catalogs",
         "source_artifacts": [],
+        "authority_paths": {"catalog_dir": "promotion_catalogs"},
     }
     db_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.db"
     receipt_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.receipt.json"
@@ -597,6 +658,8 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
     original_release = builder._release_reservation
 
     monkeypatch.setattr(builder, "_promotion_status", lambda *args: status)
+    test_guard = _ReservationGuard()
+    monkeypatch.setattr(builder, "authority_mutation_guard", lambda *args, **kwargs: test_guard)
     monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
     monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
     monkeypatch.setattr(builder, "_revalidate_authority_paths", lambda *args, **kwargs: None)
