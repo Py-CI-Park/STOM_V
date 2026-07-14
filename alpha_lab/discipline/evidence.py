@@ -507,7 +507,6 @@ def issue_promotion_manifest_v2(
         "authority_paths": authority_paths,
     }
     output_file = output / f"{evidence_id}.pre.json"
-    output.mkdir(parents=True, exist_ok=True)
     validated = validate_promotion_manifest_v2(manifest, repo_root=root, verify_files=True)
     from alpha_lab.discipline.prereg import authority_mutation_guard
     with authority_mutation_guard(root, authority_paths, fields=("promotions_dir",)) as guard:
@@ -515,8 +514,8 @@ def issue_promotion_manifest_v2(
         guard.validate_file(output_file)
         if output_file.exists():
             raise FileExistsError("canonical promotion manifest cannot be reused or overwritten")
-        with open(output_file, "x", encoding="utf-8", newline="\n") as handle:
-            guard.validate_file(output_file)
+        fd = guard.open_path(output_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(canonical_json_bytes(validated).decode("utf-8"))
             handle.flush()
             os.fsync(handle.fileno())

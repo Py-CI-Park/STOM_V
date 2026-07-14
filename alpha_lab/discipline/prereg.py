@@ -31,6 +31,10 @@ from alpha_lab.discipline.evidence import (
     canonical_json_bytes,
     validate_prereg_seal,
 )
+class UnsupportedAuthorityPlatform(EvidenceSchemaError):
+    """Strict authority mutation is not yet descriptor-safe on this platform."""
+
+
 
 _FILL = "(기입)"
 
@@ -522,11 +526,96 @@ class _AuthorityMutationGuard:
             raise EvidenceSchemaError("authority-relative mutation must use a basename")
         return os.open(name, flags | getattr(os, "O_NOFOLLOW", 0), mode,
                        dir_fd=self.dir_fd(field))
+    def _open_windows_path(self, target: Path, flags: int, mode: int) -> int:
+        """Open a final authority file by handle and validate it before exposing a CRT fd."""
+        import ctypes
+        import msvcrt
+
+        class _FileInfo(ctypes.Structure):
+            _fields_ = [
+                ("attributes", ctypes.c_uint32),
+                ("created_low", ctypes.c_uint32),
+                ("created_high", ctypes.c_uint32),
+                ("accessed_low", ctypes.c_uint32),
+                ("accessed_high", ctypes.c_uint32),
+                ("written_low", ctypes.c_uint32),
+                ("written_high", ctypes.c_uint32),
+                ("volume_serial", ctypes.c_uint32),
+                ("size_high", ctypes.c_uint32),
+                ("size_low", ctypes.c_uint32),
+                ("links", ctypes.c_uint32),
+                ("index_high", ctypes.c_uint32),
+                ("index_low", ctypes.c_uint32),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        access = 0x80000000
+        if flags & (os.O_WRONLY | os.O_RDWR):
+            access |= 0x40000000
+        if flags & os.O_CREAT and flags & os.O_EXCL:
+            disposition = 1  # CREATE_NEW
+        elif flags & os.O_CREAT:
+            disposition = 4  # OPEN_ALWAYS
+        else:
+            disposition = 3  # OPEN_EXISTING
+        handle = kernel32.CreateFileW(
+            str(target), access, 0x3, None, disposition, 0x00200080, None
+        )
+        invalid = ctypes.c_void_p(-1).value
+        if handle in (None, invalid):
+            error = kernel32.GetLastError()
+            if error in (2, 3):
+                raise FileNotFoundError(target)
+            if error in (80, 183) and flags & os.O_CREAT and flags & os.O_EXCL:
+                raise FileExistsError(target)
+            raise EvidenceSchemaError(f"cannot securely open authority mutation target: {target}")
+        try:
+            info = _FileInfo()
+            if not kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+                raise EvidenceSchemaError(f"cannot inspect authority mutation target: {target}")
+            if kernel32.GetFileType(handle) != 1 or info.attributes & 0x410 or info.links != 1:
+                raise EvidenceSchemaError(
+                    f"authority mutation target must be a regular non-reparse non-hardlinked file: {target}"
+                )
+            size = kernel32.GetFinalPathNameByHandleW(handle, None, 0, 0)
+            if not size:
+                raise EvidenceSchemaError(f"cannot resolve authority mutation target: {target}")
+            buffer = ctypes.create_unicode_buffer(size + 1)
+            if not kernel32.GetFinalPathNameByHandleW(handle, buffer, len(buffer), 0):
+                raise EvidenceSchemaError(f"cannot resolve authority mutation target: {target}")
+            final_path = os.path.normcase(os.path.normpath(buffer.value.removeprefix("\\\\?\\")))
+            root_path = _physical_path(self.root)
+            try:
+                if os.path.commonpath((final_path, root_path)) != root_path:
+                    raise EvidenceSchemaError("authority mutation target resolves outside repo_root")
+            except ValueError as exc:
+                raise EvidenceSchemaError("authority mutation target identity cannot be compared") from exc
+            _validate_physical_ancestry(
+                self.root,
+                PurePosixPath(target.relative_to(self.root).as_posix()),
+                target,
+                "mutation target",
+            )
+            crt_flags = flags & (os.O_APPEND | os.O_WRONLY | os.O_RDWR)
+            crt_flags |= getattr(os, "O_BINARY", 0) | getattr(os, "O_NOINHERIT", 0)
+            try:
+                return msvcrt.open_osfhandle(handle, crt_flags)
+            except OSError as exc:
+                raise EvidenceSchemaError(
+                    f"cannot convert authority mutation handle to CRT fd: {target}"
+                ) from exc
+        except Exception:
+            kernel32.CloseHandle(handle)
+            raise
+
     def open_path(self, path: Path | str, flags: int, mode: int = 0o666) -> int:
-        """Open one target beneath a held POSIX parent directory."""
+        """Open one target beneath a held parent, with no pathname reopen after validation."""
         target = Path(path)
+        if os.name == "nt":
+            return self._open_windows_path(target, flags, mode)
         key = self._path_key(target.parent)
-        if os.name == "nt" or key not in self._target_dir_fds:
+        if key not in self._target_dir_fds:
             raise EvidenceSchemaError(f"no held POSIX parent for {target}")
         fd = os.open(target.name, flags | getattr(os, "O_NOFOLLOW", 0), mode,
                      dir_fd=self._target_dir_fds[key])
@@ -537,6 +626,7 @@ class _AuthorityMutationGuard:
                 os.close(fd)
                 raise EvidenceSchemaError(f"opened mutation target identity changed: {target}")
         return fd
+
 
     def validate_file(self, path: Path | str) -> None:
         """Reject a target that no longer has the identity held by this guard."""
@@ -567,6 +657,10 @@ def authority_mutation_guard(
 ) -> Iterator[_AuthorityMutationGuard]:
     """Lock and revalidate canonical authority identities across a mutation window."""
     root = Path(repo_root).resolve()
+    if os.name != "nt":
+        raise UnsupportedAuthorityPlatform(
+            "strict authority mutation is unsupported on POSIX until every operation is descriptor-relative"
+        )
     paths = revalidate_authority_paths(root, authority_paths)
     selected = tuple(sorted(paths) if fields is None else fields)
     if not selected or any(field not in paths for field in selected):
@@ -771,6 +865,50 @@ def _dotted_name(node: ast.AST, aliases: dict[str, str]) -> str | None:
         parent = _dotted_name(node.value, aliases)
         return f"{parent}.{node.attr}" if parent else None
     return None
+def _bound_names(target: ast.AST) -> set[str]:
+    if isinstance(target, ast.Name):
+        return {target.id}
+    if isinstance(target, (ast.Tuple, ast.List)):
+        return set().union(*(_bound_names(item) for item in target.elts))
+    if isinstance(target, ast.Starred):
+        return _bound_names(target.value)
+    return set()
+
+
+def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], path: Path) -> None:
+    """Reject module-scope receiver calls unless their receiver is statically imported."""
+    bound_by_iteration: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+            bound_by_iteration.update(_bound_names(node.target))
+
+    class _ModuleScopeCalls(ast.NodeVisitor):
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            return
+
+        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+            return
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            return
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            return
+
+        def visit_Call(self, node: ast.Call) -> None:
+            if isinstance(node.func, ast.Attribute):
+                receiver = node.func.value
+                raw = receiver.id if isinstance(receiver, ast.Name) else None
+                resolved = _dotted_name(receiver, aliases)
+                if raw in bound_by_iteration or raw is not None and raw not in aliases or resolved is None:
+                    raise EvidenceSchemaError(
+                        f"unresolved executable receiver is unsupported: {path}"
+                    )
+            self.generic_visit(node)
+
+    _ModuleScopeCalls().visit(tree)
+
+
 
 
 def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
@@ -806,6 +944,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
                 f"unresolved executable receiver parameter is unsupported: {path}"
             )
     calls, aliases = _dynamic_call_kinds(tree)
+    _reject_unresolved_module_receivers(tree, aliases, path)
     found: set[Path] = set()
     executable = {
         "__import__", "builtins.__import__", "importlib.import_module",
@@ -1062,8 +1201,8 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
         guard.validate_file(canonical_output)
         if canonical_output.exists():
             raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
-        with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
-            guard.validate_file(canonical_output)
+        fd = guard.open_path(canonical_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(canonical_json_bytes(validated).decode("utf-8"))
             handle.flush()
             os.fsync(handle.fileno())

@@ -146,15 +146,16 @@ def _validate_v2_record(record: dict) -> None:
 
 
 @contextlib.contextmanager
-def _canonical_ledger_lock(target_path: Path):
-    """Serialize every v2 scan-and-append against the ledger's companion lock."""
-    target_path.parent.mkdir(parents=True, exist_ok=True)
+def _canonical_ledger_lock(target_path: Path, guard):
+    """Serialize every v2 scan-and-append through the held authority parent."""
     lock_path = target_path.with_name(f"{target_path.name}.lock")
-    with open(lock_path, "a+b") as handle:
+    fd = guard.open_path(lock_path, os.O_RDWR | os.O_CREAT)
+    with os.fdopen(fd, "a+b") as handle:
         handle.seek(0, os.SEEK_END)
         if handle.tell() == 0:
             handle.write(b"\0")
             handle.flush()
+            os.fsync(handle.fileno())
         handle.seek(0)
         if os.name == "nt":
             import msvcrt
@@ -173,25 +174,28 @@ def _canonical_ledger_lock(target_path: Path):
 
 
 def _append_record(target_path: Path, record: dict, *, guard=None) -> None:
-    target_path.parent.mkdir(parents=True, exist_ok=True)
     line = _serialize(record)
     eol, prefix = b"\n", b""
-    if target_path.exists():
-        if guard is not None and os.name != "nt":
-            guard.validate_file(target_path)
+    if guard is not None:
+        try:
             with os.fdopen(guard.open_path(target_path, os.O_RDONLY), "rb") as source:
                 existing = source.read()
-        else:
-            existing = target_path.read_bytes()
-        if b"\r\n" in existing:
-            eol = b"\r\n"
-        if existing and not existing.endswith(b"\n"):
-            prefix = eol
-    if guard is not None and os.name != "nt":
-        guard.validate_file(target_path)
+        except FileNotFoundError:
+            existing = b""
+    elif target_path.exists():
+        existing = target_path.read_bytes()
+    else:
+        existing = b""
+    if b"\r\n" in existing:
+        eol = b"\r\n"
+    if existing and not existing.endswith(b"\n"):
+        prefix = eol
+    if guard is not None:
         fd = guard.open_path(target_path, os.O_WRONLY | os.O_APPEND | os.O_CREAT)
         with os.fdopen(fd, "ab") as handle:
             handle.write(prefix + line.encode("utf-8") + eol)
+            handle.flush()
+            os.fsync(handle.fileno())
     else:
         with open(target_path, "ab") as handle:
             handle.write(prefix + line.encode("utf-8") + eol)
@@ -348,14 +352,17 @@ def append_trial_v2(
         )["authority_paths"]
     except (OSError, KeyError, TypeError, json.JSONDecodeError, EvidenceSchemaError) as exc:
         raise LedgerSchemaError(f"cannot derive v2 mutation authority: {exc}") from exc
-    target_path.parent.mkdir(parents=True, exist_ok=True)
     with authority_mutation_guard(root, authority_paths) as guard:
         guard.hold_path(target_path)
-        with _canonical_ledger_lock(target_path):
+        with _canonical_ledger_lock(target_path, guard):
             guard.validate_file(target_path)
             _validate_v2_record(record)
             try:
-                existing_rows = read_all(target_path)
+                try:
+                    with os.fdopen(guard.open_path(target_path, os.O_RDONLY), "rb") as source:
+                        existing_rows = _read_all_text(source.read().decode("utf-8"))
+                except FileNotFoundError:
+                    existing_rows = []
             except LedgerSchemaError as exc:
                 raise LedgerSchemaError(
                     f"canonical ledger validation failed before append: {exc}"
@@ -382,17 +389,9 @@ def append_trial_v2(
 
 
 
-def read_all(path=None) -> list[dict]:
-    """원장 전체를 파싱해 레코드 리스트로 반환한다(없으면 빈 리스트).
-
-    파싱 불가 행·필수 키 누락 행은 행 번호와 함께 LedgerSchemaError
-    (fail-closed — 조용히 건너뛰지 않는다).
-    """
-    target = Path(path) if path is not None else DEFAULT_LEDGER_PATH
-    if not target.exists():
-        return []
+def _read_all_text(text: str) -> list[dict]:
+    """Parse ledger content already read from a stable authority descriptor."""
     entries: list[dict] = []
-    text = target.read_text(encoding="utf-8")
     for lineno, raw in enumerate(text.splitlines(), start=1):
         line = raw.strip()
         if not line:
@@ -421,6 +420,14 @@ def read_all(path=None) -> list[dict]:
             )
         entries.append(record)
     return entries
+
+
+def read_all(path=None) -> list[dict]:
+    """원장 전체를 파싱해 레코드 리스트로 반환한다(없으면 빈 리스트)."""
+    target = Path(path) if path is not None else DEFAULT_LEDGER_PATH
+    if not target.exists():
+        return []
+    return _read_all_text(target.read_text(encoding="utf-8"))
 
 
 def sqrt_2_ln(n: int) -> float:

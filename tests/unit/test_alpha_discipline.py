@@ -707,6 +707,8 @@ class TestPrereg:
         "import importlib\nload = importlib.import_module\nload('plugin')\n",
         "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
         "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
+        "import importlib\nfor loader in (importlib,):\n    loader.import_module('plugin')\n",
+        "import importlib\n[loader.import_module('plugin') for loader in (importlib,)]\n",
         "import importlib\nlist(map(lambda module: module.import_module(\"local_plugin\"), [importlib]))\n",
         "import importlib\nimportlib.import_module('builtins').eval('1 + 1')\n",
         "import builtins\nimport importlib\nlist(map(builtins.getattr(importlib, 'import_module'), ['local_plugin']))\n",
@@ -822,6 +824,38 @@ class TestPrereg:
         seals.write_text("swapped", encoding="utf-8")
         with pytest.raises(evidence.EvidenceSchemaError, match="directory"):
             prereg.revalidate_authority_paths(tmp_path, authority)
+    @pytest.mark.skipif(os.name != "nt", reason="Windows final-handle hardlink validation")
+    def test_absent_ledger_hardlink_race_is_rejected_before_append(self, tmp_path):
+        target_db = tmp_path / "measure.py"
+        target_db.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        target, source = tmp_path / "ledger.jsonl", tmp_path / "race-source.jsonl"
+        source.write_text("{}\n", encoding="utf-8")
+        source_before = source.read_bytes()
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(target)
+            original_open = guard.open_path
+            raced = False
+
+            def open_after_hardlink(path, flags, mode=0o666):
+                nonlocal raced
+                if Path(path) == target and flags == os.O_RDONLY and not raced:
+                    target.hardlink_to(source)
+                    raced = True
+                return original_open(path, flags, mode)
+
+            guard.open_path = open_after_hardlink
+            with pytest.raises(evidence.EvidenceSchemaError, match="hardlinked"):
+                ledger._append_record(target, VALID_ROW, guard=guard)
+        assert raced
+        assert source.read_bytes() == source_before
 
 # ---------------------------------------------------------------------------
 # trials_report — 시행 병기 블록 (소비 전용)
