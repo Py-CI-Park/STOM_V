@@ -4559,10 +4559,9 @@ def _frozen_chain_loop_config(**overrides):
     cfg.evidence_ledger_enabled = True
     cfg.prompt_logging_enabled = True
     cfg.final_owner_selection_enabled = True
-    # candidate_dedup_enabled / seed_plan_enabled are NOT declared LoopConfig
-    # dataclass fields -- loop.py reads them ad-hoc via getattr(config, ..., False)
-    # (see controller/loop.py:1213-1214). Set as plain attributes, same as the
-    # production wiring expects.
+    # candidate_dedup_enabled / seed_plan_enabled are now declared LoopConfig fields
+    # (config.py) after the architect re-review — setattr still works on declared
+    # fields, and they are also reachable via from_dict/presets in production.
     cfg.candidate_dedup_enabled = True
     cfg.seed_plan_enabled = True
     for key, value in overrides.items():
@@ -4931,3 +4930,60 @@ def test_dr05_card_directive_lines_inject_into_buy_prompt_only():
     # 토글 OFF(None) → 매수 프롬프트에 카드 지시 블록이 추가되지 않는다(byte 보존).
     buy_off = build_messages("buy", card_directive_lines=None)
     assert not any("AnalysisCardV3" in m["content"] for m in buy_off)
+
+# ---------------------------------------------------------------------------
+# DR-05 회귀 가드(아키텍트 재리뷰 블로커): analysis_card_v3_enabled 는 운영 run_loop
+#   경로에서 실제로 켜져야 한다. 예전엔 미선언 ad-hoc 속성이라 config =
+#   effective_condition_discovery_runtime_config(config) 의 replace() 뒤 읽으면 항상
+#   False로 떨어져 DR-05가 死배선이었다. 이제 정식 필드라 from_dict 도달 + replace() 생존.
+# ---------------------------------------------------------------------------
+def test_dr05_analysis_card_v3_flag_reachable_through_runtime_config():
+    from ai_strategy_loop.config import LoopConfig
+    from ai_strategy_loop.controller.condition_discovery import (
+        effective_condition_discovery_runtime_config,
+    )
+
+    cfg = LoopConfig.from_dict({"analysis_card_v3_enabled": True})
+    assert cfg.analysis_card_v3_enabled is True  # from_dict 도달(미선언이면 드롭됐음)
+    runtime_cfg = effective_condition_discovery_runtime_config(cfg)
+    # replace() 를 넘어 보존돼야 한다(예전 블로커: 여기서 False로 떨어졌음).
+    assert getattr(runtime_cfg, "analysis_card_v3_enabled", False) is True
+    # DR-04 토글도 동일하게 from_dict 도달 + replace() 생존.
+    dr04 = effective_condition_discovery_runtime_config(
+        LoopConfig.from_dict({"candidate_dedup_enabled": True, "seed_plan_enabled": True})
+    )
+    assert getattr(dr04, "candidate_dedup_enabled", False) is True
+    assert getattr(dr04, "seed_plan_enabled", False) is True
+
+
+def test_dr05_build_analysis_card_v3_executes_past_flag_gate_when_enabled(tmp_path, monkeypatch):
+    """플래그가 도달 가능해졌으므로, ON이면 _build_analysis_card_v3 가 게이트를 지나
+    build_analysis_card_v3 를 실제로 호출하고, OFF면 호출조차 안 한다(死배선 회귀 방지).
+    """
+    import types
+
+    import ai_strategy_loop.autopsy.analysis_card as ac
+    import ai_strategy_loop.controller.loop as loop_mod
+    from ai_strategy_loop.config import LoopConfig
+
+    csv = tmp_path / "trades.csv"
+    csv.write_text("x\n1\n", encoding="utf-8-sig")
+
+    calls = []
+
+    def _fake_build(df, **kwargs):
+        calls.append(kwargs.get("role"))
+        return types.SimpleNamespace(content_hash="deadbeef", actionable_directives=())
+
+    monkeypatch.setattr(ac, "build_analysis_card_v3", _fake_build)
+    outcome = types.SimpleNamespace(csv_path=str(csv))
+
+    cfg_on = LoopConfig.from_dict({"analysis_card_v3_enabled": True})
+    card = loop_mod._build_analysis_card_v3(cfg_on, outcome)
+    assert card is not None and card.content_hash == "deadbeef"
+    assert calls == ["train"]  # 플래그 게이트를 지나 실제로 호출됨
+
+    calls.clear()
+    cfg_off = LoopConfig.from_dict({})
+    assert loop_mod._build_analysis_card_v3(cfg_off, outcome) is None
+    assert calls == []  # OFF면 호출조차 안 함(byte-동일)

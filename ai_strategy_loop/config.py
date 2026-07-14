@@ -677,6 +677,21 @@ class LoopConfig:
     #   검증(evidence_contract.build_manifest_v2/ManifestV2.__post_init__)은 이 플래그와
     #   무관하게 항상 적용된다.
     v2_certification_enabled: bool = False
+    # --- DR-05 / DR-04 review fix (아키텍트 재리뷰): 토글을 정식 LoopConfig 필드로 선언 ---
+    # analysis_card_v3_enabled: DR-05 AnalysisCardV3(영속·해시 카드) 산출/환류 토글.
+    #   이전에는 config.py에 미선언 상태로 loop.py에서 ad-hoc getattr만 읽혀,
+    #   run_loop이 config = effective_condition_discovery_runtime_config(config)로
+    #   dataclasses.replace() 복제한 '뒤'에 읽는 이 플래그가 항상 False로 떨어져(복제가
+    #   ad-hoc 속성을 버림) DR-05가 운영 경로에서 절대 켜지지 않았다. 정식 필드로 선언해
+    #   from_dict/프리셋 도달 + replace() 생존을 보장한다(manifest_v2_enabled와 동일 패턴).
+    #   기본 OFF면 카드 산출/환류가 전혀 안 일어나 byte-동일(하위호환).
+    analysis_card_v3_enabled: bool = False
+    # candidate_dedup_enabled / seed_plan_enabled: DR-04 후보 run-wide 중복제거 / SeedPlan
+    #   토글. 종전엔 미선언 ad-hoc 속성이라 setattr로만 켤 수 있고 from_dict/프리셋으로는
+    #   도달 불가했다(replace() 직전 로컬 캡처로 setattr 경로만 보존). 정식 필드로 선언해
+    #   토글 선언 규약을 통일하고 from_dict 도달성을 확보한다. 기본 OFF면 byte-동일.
+    candidate_dedup_enabled: bool = False
+    seed_plan_enabled: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

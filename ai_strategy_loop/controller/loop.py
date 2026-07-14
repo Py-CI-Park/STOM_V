@@ -1211,10 +1211,10 @@ def run_loop(
     #   config를 복제하면 ad-hoc 속성은 소실되므로, 그 복제 이전(원본 config)에서
     #   1회 읽어 보존한다.
     _evidence_ledger_enabled_flag = bool(getattr(config, "evidence_ledger_enabled", False))
-    # DR-04 -- same ad-hoc-attribute-survives-replace() concern as above:
-    #   candidate_dedup_enabled/seed_plan_enabled are read from the ORIGINAL
-    #   config, before dataclasses.replace() below would otherwise silently
-    #   drop them back to their False defaults.
+    # DR-04 (아키텍트 재리뷰 후 정식 필드화): candidate_dedup_enabled/seed_plan_enabled는
+    #   이제 config.py의 선언된 LoopConfig 필드라 replace()를 넘어 보존되고 from_dict로도
+    #   도달 가능하다. 아래 캡처는 방어적(과거 setattr-only 경로 호환) — 원본 config에서
+    #   1회 읽어 지역에 보존한다(동작 동일, byte-안전).
     _candidate_dedup_enabled_flag = bool(getattr(config, "candidate_dedup_enabled", False))
     _seed_plan_enabled_flag = bool(getattr(config, "seed_plan_enabled", False))
     config = effective_condition_discovery_runtime_config(config)
