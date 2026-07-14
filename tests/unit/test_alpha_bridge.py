@@ -483,7 +483,7 @@ class TestPromotionV2:
             register_conditions_v2(
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
-        assert not backup_dir.exists()
+        assert not (backup_dir / f"{chain['evidence_id']}.pre.sqlite").exists()
     def test_rejects_unauthorized_extra_row_from_logical_delta(
         self, fake_db, tmp_path, monkeypatch,
     ):
@@ -552,7 +552,7 @@ class TestPromotionV2:
             )
         assert not (tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json").exists()
 
-    def test_rejects_wal_mode_created_after_post(self, fake_db, tmp_path, monkeypatch):
+    def test_queued_wal_writer_cannot_wedge_strong_verification(self, fake_db, tmp_path, monkeypatch):
         import alpha_lab.bridge.registrar as registrar
 
         item = _item()
@@ -560,18 +560,20 @@ class TestPromotionV2:
         verify = registrar.verify_promotion_result_v2
 
         def enable_wal_before_strong_verification(*args, **kwargs):
-            con = sqlite3.connect(str(fake_db))
+            con = sqlite3.connect(str(fake_db), timeout=0)
             try:
-                con.execute("PRAGMA journal_mode=WAL")
+                with pytest.raises(sqlite3.OperationalError, match="database is locked"):
+                    con.execute("PRAGMA journal_mode=WAL")
             finally:
                 con.close()
             return verify(*args, **kwargs)
 
         monkeypatch.setattr(registrar, "verify_promotion_result_v2", enable_wal_before_strong_verification)
-        with pytest.raises(Exception, match="journal mode|WAL/SHM sidecar"):
-            register_conditions_v2(
-                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
-            )
+        result = register_conditions_v2(
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+        )
+
+        assert result["target_db"]["post_sha256"] == hashlib.sha256(fake_db.read_bytes()).hexdigest()
 
     def test_copied_post_and_stale_live_db_fail_strong_verification(
         self, fake_db, backup_dir, tmp_path, monkeypatch,

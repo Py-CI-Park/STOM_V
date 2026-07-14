@@ -573,7 +573,8 @@ def test_abandoned_publication_reservation_is_recovered_after_crash(tmp_path: Pa
         assert retry_owner.token != crashed_owner.token
     finally:
         builder._release_reservation(retry_owner)
-    assert not crashed_owner.path.exists()
+    assert crashed_owner.path.exists()
+    assert crashed_owner.path.read_bytes() == b"UNOWNED\n"
 
 
 def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
@@ -632,4 +633,5 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
 
     assert db_path.read_bytes() == db_bytes
     assert receipt_path.exists()
-    assert not reservation_path.exists()
+    assert reservation_path.exists()
+    assert reservation_path.read_bytes() == b"UNOWNED\n"

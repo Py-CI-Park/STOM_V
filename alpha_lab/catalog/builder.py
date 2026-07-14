@@ -27,6 +27,7 @@ from alpha_lab.discipline.evidence import (
     verify_promotion_manifest_v2,
     verify_promotion_result_v2,
 )
+from alpha_lab.discipline.prereg import authority_mutation_guard
 
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
 from alpha_lab.catalog.loaders import (
@@ -328,6 +329,7 @@ def _promotion_status(
     return {
         "schema_version": 2, "phase": phase, "valid": True, "evidence_id": evidence_id,
         "source_kind": kind, "source_path": relative, "source_sha256": digest,
+        "authority_paths": manifest["authority_paths"],
         "catalog_dir": manifest["authority_paths"]["catalog_dir"],
         "candidate_set": manifest["candidate_set"],
         "candidate_set_sha256": manifest["candidate_set_sha256"],
@@ -674,23 +676,8 @@ def _abandon_reservation(reservation: _PublicationReservation) -> None:
 
 
 def _release_reservation(reservation: _PublicationReservation) -> None:
-    """Remove only this owner's reservation after its DB/receipt publication."""
-    if os.name != "nt":
-        # Unlink while the lock is still held: a newcomer can only lock a new inode.
-        try:
-            reservation.path.unlink()
-        except FileNotFoundError:
-            pass
-        finally:
-            _unlock_reservation(reservation.descriptor)
-            os.close(reservation.descriptor)
-        _fsync_directory(reservation.path.parent)
-        return
-
-    # Windows does not reliably permit deleting a file through an open CRT handle.
-    # Mark release under the lock so a successor replacing the token cannot be
-    # mistaken for this owner after the handle is closed.
-    released_marker = b"RELEASED:" + reservation.token
+    """Mark the permanent reservation inode unowned, then release its OS lock."""
+    unowned_marker = b"UNOWNED\n"
     try:
         os.lseek(reservation.descriptor, 0, os.SEEK_SET)
         current = os.read(
@@ -699,17 +686,11 @@ def _release_reservation(reservation: _PublicationReservation) -> None:
             raise RuntimeError("catalog publication reservation ownership changed")
         os.ftruncate(reservation.descriptor, 0)
         os.lseek(reservation.descriptor, 0, os.SEEK_SET)
-        os.write(reservation.descriptor, released_marker)
+        os.write(reservation.descriptor, unowned_marker)
         os.fsync(reservation.descriptor)
     finally:
         _unlock_reservation(reservation.descriptor)
         os.close(reservation.descriptor)
-
-    try:
-        if reservation.path.read_bytes() == released_marker:
-            reservation.path.unlink()
-    except FileNotFoundError:
-        return
     _fsync_directory(reservation.path.parent)
 
 
@@ -743,6 +724,7 @@ def build_all(
     receipt = new_receipt(run_dir, db_path)
     reservation: _PublicationReservation | None = None
     receipt_temp: Path | None = None
+    authority_guard = None
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
@@ -753,7 +735,19 @@ def build_all(
     else:
         receipt["promotion_status"] = promotion_status
         db_path.parent.mkdir(parents=True, exist_ok=True)
+        mutation_guard = None
+        if "authority_paths" in promotion_status:
+            authority_guard = authority_mutation_guard(
+                root, promotion_status["authority_paths"], fields=("catalog_dir",))
+            mutation_guard = authority_guard.__enter__()
+            mutation_guard.hold_path(db_path)
+            mutation_guard.hold_path(receipt_path)
+            mutation_guard.validate_file(db_path)
+            mutation_guard.validate_file(receipt_path)
         reservation = _reserve_publication(db_path, receipt_path)
+        if mutation_guard is not None:
+            mutation_guard.validate_file(db_path)
+            mutation_guard.validate_file(receipt_path)
         try:
             handle = tempfile.NamedTemporaryFile(
                 prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
@@ -761,6 +755,8 @@ def build_all(
             working_db_path = Path(handle.name)
         except BaseException:
             _release_reservation(reservation)
+            if authority_guard is not None:
+                authority_guard.__exit__(None, None, None)
             raise
     try:
         con = sqlite3.connect(working_db_path)
@@ -791,6 +787,9 @@ def build_all(
             _flush_file(working_db_path)
             _strict_source_hashes(
                 receipt, run_dir, root, promotion_status["source_artifacts"])
+            if mutation_guard is not None:
+                mutation_guard.validate_file(db_path)
+                mutation_guard.validate_file(receipt_path)
             _revalidate_authority_paths(
                 root, promotion_status, db_path, receipt_path)
             if receipt_path.exists() and not db_path.exists():
@@ -803,6 +802,8 @@ def build_all(
             else:
                 _revalidate_authority_paths(
                     root, promotion_status, db_path, receipt_path)
+                if mutation_guard is not None:
+                    mutation_guard.validate_file(db_path)
                 _publish_no_replace(working_db_path, db_path)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status)
@@ -817,6 +818,8 @@ def build_all(
             else:
                 _revalidate_authority_paths(
                     root, promotion_status, db_path, receipt_path)
+                if mutation_guard is not None:
+                    mutation_guard.validate_file(receipt_path)
                 receipt_temp = _write_temp_bytes(
                     receipt_path.parent, f".{receipt_path.name}.", receipt_bytes)
                 _publish_no_replace(receipt_temp, receipt_path)
@@ -828,3 +831,5 @@ def build_all(
             working_db_path.unlink()
         if reservation is not None:
             _release_reservation(reservation)
+        if authority_guard is not None:
+            authority_guard.__exit__(None, None, None)

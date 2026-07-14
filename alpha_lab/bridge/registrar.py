@@ -33,7 +33,7 @@ from alpha_lab.discipline.evidence import (
     verify_promotion_manifest_v2,
     verify_promotion_result_v2,
 )
-from alpha_lab.discipline.prereg import recheck_authority_paths
+from alpha_lab.discipline.prereg import authority_mutation_guard, recheck_authority_paths
 
 
 NAME_PREFIX = "ALP_"
@@ -64,6 +64,24 @@ def _promotion_result(
         "checks": checks or {},
         "reasons": reasons or [],
     }
+def _verify_promotion_result_locked(
+    result_path: Path, *, repo_root: Path, connection: sqlite3.Connection,
+    locked_post_state: dict[str, Any], locked_post_sha256: str,
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    """Strongly verify POST while its writer still owns SQLite EXCLUSIVE."""
+    result, manifest, result_sha256 = verify_promotion_result_v2(
+        result_path, repo_root=repo_root, target_connection=connection,
+        locked_post_state=locked_post_state)
+    target = repo_root / Path(*PurePosixPath(result["target_db"]["path"]).parts)
+    if (
+        result["target_db"]["post_sha256"] != locked_post_sha256
+        or hashlib.sha256(target.read_bytes()).hexdigest() != locked_post_sha256
+        or capture_sqlite_logical_state(target, connection=connection) != locked_post_state
+    ):
+        raise EvidenceSchemaError("locked POST verification does not match retained SQLite state")
+    return result, manifest, result_sha256
+
+
 
 
 def _load_json(path: Path, field: str) -> Any:
@@ -371,8 +389,17 @@ def register_conditions_v2(
         raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file)
     _assert_rollback_main_file(db_file)
     pre_path, anchor_path, post_path, pre_relative, anchor_relative, post_relative = _journal_paths(root, manifest)
+    catalog_path = destinations["catalog"]
     guard_path = pre_path.with_suffix(".lock")
-    guard = _acquire_promotion_guard(guard_path)
+    authority_guard = authority_mutation_guard(root, manifest["authority_paths"])
+    mutation_guard = authority_guard.__enter__()
+    try:
+        for path in (pre_path, anchor_path, post_path, destinations["backup"], catalog_path):
+            mutation_guard.hold_path(path)
+        guard = _acquire_promotion_guard(guard_path)
+    except BaseException:
+        authority_guard.__exit__(None, None, None)
+        raise
     try:
         rechecked_manifest, rechecked_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
         if rechecked_manifest != manifest or rechecked_sha256 != manifest_sha256:
@@ -411,8 +438,10 @@ def register_conditions_v2(
             "chronology": _journal_chronology(manifest, root, completed_at),
         }
         validate_promotion_journal_pre_v2(pre, repo_root=root)
+        mutation_guard.validate_file(pre_path)
         _write_exclusive_json(pre_path, pre)
         pre_ref = {"path": pre_relative, "sha256": hashlib.sha256(pre_path.read_bytes()).hexdigest()}
+        mutation_guard.validate_file(anchor_path)
         _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
         pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
         backup_ref = pre["backup_ref"]
@@ -421,6 +450,8 @@ def register_conditions_v2(
             mode = write_con.execute("PRAGMA locking_mode=EXCLUSIVE").fetchone()
             if not mode or str(mode[0]).lower() != "exclusive":
                 raise EvidenceSchemaError("SQLite EXCLUSIVE locking mode is required for promotion")
+            mutation_guard.validate_file(db_file)
+            mutation_guard.validate_file(destinations["backup"])
             write_con.execute("BEGIN EXCLUSIVE")
             if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
                 raise EvidenceSchemaError("sealed authority paths changed under write lock")
@@ -455,22 +486,27 @@ def register_conditions_v2(
                 "logical_delta": logical_delta,
             }
             validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
+            mutation_guard.validate_file(post_path)
             _write_exclusive_json(post_path, post)
+            verified, verified_manifest, verified_sha256 = _verify_promotion_result_locked(
+                post_path, repo_root=root, connection=write_con,
+                locked_post_state=post_state, locked_post_sha256=db_post_sha256)
+            if (
+                verified != post
+                or verified_manifest != manifest
+                or verified_sha256 != hashlib.sha256(post_path.read_bytes()).hexdigest()
+            ):
+                raise EvidenceSchemaError(
+                    "strong promotion verification does not match published POST bytes")
         except BaseException:
             write_con.rollback()
             raise
         finally:
             write_con.close()
-        verified, verified_manifest, verified_sha256 = verify_promotion_result_v2(post_path, repo_root=root)
-        if (
-            verified != post
-            or verified_manifest != manifest
-            or verified_sha256 != hashlib.sha256(post_path.read_bytes()).hexdigest()
-        ):
-            raise EvidenceSchemaError("strong promotion verification does not match published POST bytes")
         return verified
     finally:
         _release_promotion_guard(guard_path, guard)
+        authority_guard.__exit__(None, None, None)
 
 
 def _validate_items(items: list) -> None:
