@@ -132,6 +132,14 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
             "multiplicity_family": "bridge fixture",
             "kill_rule": "non-positive effect",
             "ledger_path": "n_trials_ledger.jsonl",
+            "authority_paths": {
+                "seal_dir": "seals",
+                "promotions_dir": "promotions",
+                "catalog_dir": "promotion_catalogs",
+                "target_db": "strategy.db",
+                "journal_dir": "promotion_journal",
+                "backup_dir": "backups",
+            },
             "dependency_roots": ["measure.py"],
             "dynamic_python_dependencies": [],
             "non_python_dependencies": [],
@@ -160,16 +168,20 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         }
 
+    strategy_db = tmp_path / "strategy.db"
+    if not strategy_db.exists():
+        _make_fake_strategy_db(strategy_db)
+    seal_path = tmp_path / "seals" / f"{hashlib.sha256(prereg.read_bytes()).hexdigest()}.seal.json"
     finalize_prereg(
         prereg,
         repo_root=tmp_path,
         code_files=(code,),
-        manifest_path=tmp_path / "seal.json",
+        manifest_path=seal_path,
         sealed_at="2026-07-14T00:00:00+00:00",
     )
     receipt = issue_gate_receipt_v2(
         tmp_path,
-        tmp_path / "seal.json",
+        seal_path,
         issued_at="2026-07-14T00:01:00+00:00",
         nonce="bridge-run",
     )
@@ -227,7 +239,7 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
         repo_root=tmp_path,
         promotion_manifest_path=manifest_path,
     )
-    catalog_path = tmp_path / "promotion_catalogs" / f"{row['evidence_id']}.receipt.json"
+    catalog_path = tmp_path / "promotion_catalogs" / f"{row['evidence_id']}.pre.receipt.json"
     assert catalog_path.is_file()
     return {
         "manifest": manifest_path,
@@ -247,13 +259,8 @@ class TestPromotionV2:
 
         import alpha_lab.bridge.registrar as registrar
         monkeypatch.setattr(registrar.sqlite3, "connect", lambda *args, **kwargs: pytest.fail("sqlite write/read invoked"))
-        monkeypatch.setattr(registrar, "_backup_db", lambda *args, **kwargs: pytest.fail("backup invoked"))
 
-        result = verify_promotion_manifest(
-            chain["manifest"], repo_root=tmp_path, ledger_path=chain["ledger"],
-            gate_receipt_path=chain["receipt"], gate_usage_path=chain["usage"],
-            catalog_receipt_path=chain["catalog"],
-        )
+        result = verify_promotion_manifest(chain["manifest"], repo_root=tmp_path)
         assert result == {
             "pass": True, "schema_version": 2, "status": "PRE",
             "evidence_id": chain["evidence_id"],
@@ -288,7 +295,7 @@ class TestPromotionV2:
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir="promotion_journal", backup_dir=backup_dir,
+            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir,
             now=NOW.replace(tzinfo=dt.timezone.utc),
         )
         assert result["status"] == "POST"
@@ -311,7 +318,7 @@ class TestPromotionV2:
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
         )
         receipt = builder.build_all(
             tmp_path, repo_root=tmp_path,
@@ -319,7 +326,7 @@ class TestPromotionV2:
         )
         assert receipt["promotion_receipt"]["upstream"]["path"] == result["journal_post_path"]
         assert (tmp_path / "promotion_catalogs" / (
-            f"{chain['evidence_id']}.receipt.json")).is_file()
+            f"{chain['evidence_id']}.post.receipt.json")).is_file()
 
     def test_crash_after_db_before_post_requires_reconciliation(
         self, fake_db, backup_dir, tmp_path, monkeypatch,
@@ -341,7 +348,7 @@ class TestPromotionV2:
                 fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
                 ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
                 gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
             )
         inspected = inspect_promotion_journal_v2(
             repo_root=tmp_path, journal_dir="promotion_journal",
@@ -358,7 +365,7 @@ class TestPromotionV2:
                 fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
                 ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
                 gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
             )
 
     def test_one_sided_conflict_is_a_pair_level_skip(self, fake_db, backup_dir, tmp_path, monkeypatch):
@@ -377,7 +384,7 @@ class TestPromotionV2:
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
         )
         assert result["inserted"] == []
         assert result["conflicts"] == [{
@@ -412,7 +419,7 @@ class TestPromotionV2:
                 fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
                 ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
                 gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+                journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
             )
         assert not backup_dir.exists()
 
@@ -425,12 +432,12 @@ class TestPromotionV2:
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
         )
         post_path = tmp_path / result["journal_post_path"]
         copied = tmp_path / "copied.post.json"
         copied.write_bytes(post_path.read_bytes())
-        with pytest.raises(Exception, match="canonical POST sibling"):
+        with pytest.raises(Exception, match="sealed authority paths"):
             verify_promotion_result_v2(copied, repo_root=tmp_path)
         con = sqlite3.connect(str(fake_db))
         try:
@@ -459,7 +466,7 @@ class TestPromotionV2:
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            journal_dir=tmp_path / "promotion_journal", backup_dir=backup_dir, now=NOW,
         )
         post_path = tmp_path / result["journal_post_path"]
         post = json.loads(post_path.read_text(encoding="utf-8"))

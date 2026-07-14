@@ -264,51 +264,29 @@ def ensure_gitignore(run_dir: Path) -> Dict[str, str]:
     gi.write_text(existing + block, encoding="utf-8")
     action = "appended(기존 내용 보존)" if existing else "created"
     return {"path": str(gi), "action": action, "pattern": _GI_PATTERN}
-_PROMOTION_CATALOG_DIR = "promotion_catalogs"
-_PROMOTION_RECEIPT_SUFFIX = ".receipt.json"
-
-
-def _is_in_promotion_namespace(path: Path, namespace: Path) -> bool:
-    """Resolve containment so symlinked promotion paths cannot bypass the boundary."""
-    try:
-        path.resolve().relative_to(namespace.resolve())
-    except ValueError:
-        return False
-    return True
+LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT = "legacy_non_authoritative_catalogs"
 
 
 def _catalog_output_paths(
-    run_dir: Path,
+    repo_root: Path,
     db_path: Path | str | None,
     receipt_path: Path | str | None,
     promotion_status: dict[str, Any] | None,
 ) -> tuple[Path, Path]:
-    """Derive authority-specific outputs and reject cross-namespace aliases."""
-    namespace = run_dir / _PROMOTION_CATALOG_DIR
+    """Use fixed legacy or sealed evidence-and-phase catalog destinations."""
     if promotion_status is None:
-        selected_db = Path(db_path) if db_path is not None else run_dir / "research_assets.db"
-        selected_receipt = (
-            Path(receipt_path) if receipt_path is not None
-            else run_dir / "research_assets_build_receipt.json"
-        )
-        if (
-            _is_in_promotion_namespace(selected_db, namespace)
-            or _is_in_promotion_namespace(selected_receipt, namespace)
-        ):
-            raise EvidenceSchemaError(
-                "legacy catalog outputs cannot be inside the promotion_catalogs namespace"
-            )
-        return selected_db, selected_receipt
-
-    evidence_id = promotion_status["evidence_id"]
-    canonical_db = namespace / f"{evidence_id}.db"
-    canonical_receipt = namespace / f"{evidence_id}{_PROMOTION_RECEIPT_SUFFIX}"
-    if db_path is not None and Path(db_path) != canonical_db:
-        raise EvidenceSchemaError("promotion catalog db_path must equal its canonical evidence path")
-    if receipt_path is not None and Path(receipt_path) != canonical_receipt:
-        raise EvidenceSchemaError(
-            "promotion catalog receipt_path must equal its canonical evidence path"
-        )
+        root = repo_root / LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT
+        canonical_db = root / "research_assets.db"
+        canonical_receipt = root / "research_assets_build_receipt.json"
+    else:
+        root = repo_root / Path(*PurePosixPath(promotion_status["catalog_dir"]).parts)
+        phase = promotion_status["phase"].lower()
+        canonical_db = root / f"{promotion_status['evidence_id']}.{phase}.db"
+        canonical_receipt = root / f"{promotion_status['evidence_id']}.{phase}.receipt.json"
+    if db_path is not None and Path(db_path).resolve() != canonical_db.resolve():
+        raise EvidenceSchemaError("catalog db_path must equal its authority-owned canonical path")
+    if receipt_path is not None and Path(receipt_path).resolve() != canonical_receipt.resolve():
+        raise EvidenceSchemaError("catalog receipt_path must equal its authority-owned canonical path")
     return canonical_db, canonical_receipt
 
 
@@ -338,6 +316,7 @@ def _promotion_status(
     return {
         "schema_version": 2, "phase": phase, "valid": True, "evidence_id": evidence_id,
         "source_kind": kind, "source_path": relative, "source_sha256": digest,
+        "catalog_dir": manifest["authority_paths"]["catalog_dir"],
     }
 
 
@@ -415,14 +394,19 @@ def build_all(
     root = Path(repo_root).resolve() if repo_root is not None else root_from_run_dir(run_dir)
     promotion_status = _promotion_status(
         root, promotion_manifest_path, promotion_result_path)
+    if promotion_status is not None and not write_receipt:
+        raise EvidenceSchemaError("promotion catalog requires receipt publication")
     db_path, receipt_path = _catalog_output_paths(
-        run_dir, db_path, receipt_path, promotion_status)
+        root, db_path, receipt_path, promotion_status)
+    if promotion_status is not None and (db_path.exists() or receipt_path.exists()):
+        raise FileExistsError("promotion catalog authority artifacts cannot be reused or overwritten")
     receipt = new_receipt(run_dir, db_path)
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
             "reason": "legacy best-effort catalog build; not promotion authority",
         }
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         working_db_path = db_path
     else:
         receipt["promotion_status"] = promotion_status
@@ -455,7 +439,8 @@ def build_all(
                 receipt, root=root, db_path=db_path, status=promotion_status)
             validate_catalog_promotion_receipt_v2(
                 receipt["promotion_receipt"], repo_root=root)
-        receipt["gitignore"] = ensure_gitignore(run_dir)
+        if promotion_status is None:
+            receipt["gitignore"] = ensure_gitignore(db_path.parent)
         if write_receipt:
             receipt_bytes = json.dumps(receipt, ensure_ascii=False, indent=1).encode("utf-8")
             if promotion_status is None:

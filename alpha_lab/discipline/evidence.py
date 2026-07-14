@@ -757,17 +757,6 @@ def verify_promotion_result_v2(
         raise EvidenceSchemaError("promotion result must be readable JSON") from exc
     result = validate_promotion_result_v2(raw, repo_root=root)
     evidence_id = result["evidence_id"]
-    pre_relative = PurePosixPath(result["pre_intent"]["path"])
-    expected_pre = pre_relative.with_name(f"{evidence_id}.pre.json").as_posix()
-    expected_anchor = pre_relative.with_name(f"{evidence_id}.pre.sha256").as_posix()
-    expected_post = pre_relative.with_name(f"{evidence_id}.post.json").as_posix()
-    if result["pre_intent"]["path"] != expected_pre:
-        raise EvidenceSchemaError("promotion result pre_intent path is not canonical")
-    if result["pre_intent_anchor"]["path"] != expected_anchor:
-        raise EvidenceSchemaError("promotion result pre_intent_anchor path is not canonical")
-    if source != root / Path(*PurePosixPath(expected_post).parts):
-        raise EvidenceSchemaError("promotion result path is not the canonical POST sibling of its PRE intent")
-
     manifest_path = root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
     manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
     if result["promotion_manifest"] != {
@@ -775,6 +764,18 @@ def verify_promotion_result_v2(
         "sha256": manifest_sha256,
     } or evidence_id != manifest["evidence_id"]:
         raise EvidenceSchemaError("promotion result does not bind the exact PRE manifest")
+    destinations = _promotion_authority_paths(root, manifest, evidence_id)
+    expected_pre = destinations["pre"]
+    expected_anchor = destinations["anchor"]
+    expected_post = destinations["post"]
+    if (
+        result["pre_intent"]["path"] != expected_pre
+        or result["pre_intent_anchor"]["path"] != expected_anchor
+        or result["target_db"]["path"] != destinations["target_db"]
+        or source != root / Path(*PurePosixPath(expected_post).parts)
+    ):
+        raise EvidenceSchemaError("promotion result destinations are not sealed authority paths")
+    pre_relative = PurePosixPath(expected_pre)
 
     pre_path = root / Path(*pre_relative.parts)
     if _hash_file(pre_path, "promotion result pre_intent") != result["pre_intent"]["sha256"]:
@@ -791,6 +792,9 @@ def verify_promotion_result_v2(
         or pre["candidate_set_sha256"] != manifest["candidate_set_sha256"]
         or pre["target_db"]["path"] != result["target_db"]["path"]
         or pre["target_db"]["pre_sha256"] != result["target_db"]["pre_sha256"]
+        or pre["backup_ref"]["path"] != destinations["backup"]
+        or pre["backup_ref"]["sha256"] != result["target_db"]["pre_sha256"]
+        or (result["backup_ref"] is not None and result["backup_ref"] != pre["backup_ref"])
         or pre["chronology"] != {key: result["chronology"][key] for key in pre["chronology"]}
     ):
         raise EvidenceSchemaError("promotion result does not preserve its exact PRE intent")
@@ -897,6 +901,10 @@ def validate_catalog_promotion_receipt_v2(
         if result_sha256 != upstream_sha256 or result_manifest != manifest:
             raise EvidenceSchemaError("catalog POST receipt does not bind the exact POST/PRE chain")
     db_ref = _validate_file_ref(receipt["catalog_db"], "catalog receipt catalog_db", root, verify_files=True)
+    catalog_dir = PurePosixPath(manifest["authority_paths"]["catalog_dir"])
+    expected_db = (catalog_dir / f"{evidence_id}.{receipt['phase'].lower()}.db").as_posix()
+    if db_ref["path"] != expected_db:
+        raise EvidenceSchemaError("catalog receipt DB path is not a sealed authority destination")
     sources = _validate_manifest(receipt["source_hashes"], "catalog receipt source_hashes", root, verify_files=True)
     if len({item["path"] for item in sources}) != len(sources):
         raise EvidenceSchemaError("catalog receipt source_hashes paths must be unique")
@@ -906,6 +914,25 @@ def validate_catalog_promotion_receipt_v2(
             "kind": expected_kind, **upstream_ref,
         }, "promotion_manifest": manifest_ref, "catalog_db": db_ref, "source_hashes": sources,
     }
+def _promotion_authority_paths(
+    root: Path, manifest: Mapping[str, Any], evidence_id: str,
+) -> dict[str, str]:
+    """Derive every mutable promotion destination from sealed authority paths."""
+    authority = manifest["authority_paths"]
+    journal = PurePosixPath(authority["journal_dir"])
+    backup = PurePosixPath(authority["backup_dir"])
+    catalog = PurePosixPath(authority["catalog_dir"])
+    return {
+        "target_db": authority["target_db"],
+        "pre": (journal / f"{evidence_id}.pre.json").as_posix(),
+        "anchor": (journal / f"{evidence_id}.pre.sha256").as_posix(),
+        "post": (journal / f"{evidence_id}.post.json").as_posix(),
+        "backup": (backup / f"{evidence_id}.pre.sqlite").as_posix(),
+        "catalog_pre": (catalog / f"{evidence_id}.pre.receipt.json").as_posix(),
+        "catalog_post": (catalog / f"{evidence_id}.post.receipt.json").as_posix(),
+    }
+
+
 def validate_promotion_journal_pre_v2(
     value: object, *, repo_root: Path | str | None = None,
 ) -> dict[str, Any]:
@@ -914,7 +941,7 @@ def validate_promotion_journal_pre_v2(
     keys = {
         "schema_version", "kind", "status", "evidence_id", "prepared_at",
         "promotion_manifest", "catalog_receipt", "candidate_set",
-        "candidate_set_sha256", "target_db", "chronology",
+        "candidate_set_sha256", "target_db", "backup_ref", "chronology",
     }
     pre = _require_exact_keys(value, keys, "promotion journal PRE")
     if (pre["schema_version"], pre["kind"], pre["status"]) != (2, "promotion_journal", "PRE"):
@@ -932,6 +959,17 @@ def validate_promotion_journal_pre_v2(
     target = _require_exact_keys(
         pre["target_db"], {"path", "pre_sha256"}, "promotion journal PRE target_db")
     target_path, _ = _repo_path(target["path"], "promotion journal PRE target_db.path", root)
+    pre_sha256 = require_full_sha256(
+        target["pre_sha256"], "promotion journal PRE target_db.pre_sha256")
+    backup = _validate_file_ref(
+        pre["backup_ref"], "promotion journal PRE backup_ref", root, verify_files=False)
+    if backup["sha256"] != pre_sha256:
+        raise EvidenceSchemaError("promotion journal PRE backup SHA-256 must equal target DB pre-state")
+    manifest_value, _ = verify_promotion_manifest_v2(
+        root / Path(*PurePosixPath(manifest["path"]).parts), repo_root=root)
+    expected = _promotion_authority_paths(root, manifest_value, pre["evidence_id"])
+    if target_path != expected["target_db"] or backup["path"] != expected["backup"]:
+        raise EvidenceSchemaError("promotion journal PRE destinations are not sealed authority paths")
     chronology = _require_exact_keys(
         pre["chronology"], {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at"},
         "promotion journal PRE chronology",
@@ -947,12 +985,8 @@ def validate_promotion_journal_pre_v2(
         "prepared_at": _require_timestamp(pre["prepared_at"], "promotion journal PRE prepared_at"),
         "promotion_manifest": manifest, "catalog_receipt": catalog,
         "candidate_set": candidates, "candidate_set_sha256": candidate_hash,
-        "target_db": {
-            "path": target_path,
-            "pre_sha256": require_full_sha256(
-                target["pre_sha256"], "promotion journal PRE target_db.pre_sha256"),
-        },
-        "chronology": dict(chronology),
+        "target_db": {"path": target_path, "pre_sha256": pre_sha256},
+        "backup_ref": backup, "chronology": dict(chronology),
     }
 
 

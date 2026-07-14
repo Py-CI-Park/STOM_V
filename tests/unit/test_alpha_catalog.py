@@ -230,7 +230,7 @@ def test_build_all_counts_and_receipt(run_dir: Path):
 
 def test_build_all_strategy_details(run_dir: Path):
     builder.build_all(run_dir, write_receipt=False)
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     rows = dict(con.execute("SELECT name, api_compat FROM strategies"))
     assert rows["OLD_B"].startswith("legacy")
     assert rows["#1"].startswith("원문없음")
@@ -255,7 +255,7 @@ def test_build_all_strategy_details(run_dir: Path):
 
 def test_build_all_judgment_ledger_links(run_dir: Path):
     builder.build_all(run_dir, write_receipt=False)
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     rows = {r[0]: (r[1], r[2], r[3]) for r in con.execute(
         "SELECT series, verdict, ledger_rows, n_ledger_rows FROM judgments")}
     assert rows["B1 감독형 이관 엔진 A/B"][0].startswith("PASS")
@@ -280,7 +280,7 @@ def test_rebuild_is_idempotent(run_dir: Path):
     first = builder.build_all(run_dir)
     second = builder.build_all(run_dir)
     assert first["table_counts"] == second["table_counts"]
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     n, max_id = con.execute("SELECT COUNT(*), MAX(cell_id) FROM cells").fetchone()
     con.close()
     assert n == max_id  # cell_id 시퀀스 초기화 — 재빌드 중복 없음
@@ -326,23 +326,24 @@ def _promotion_status(evidence_id: str = "a" * 64) -> dict[str, object]:
         "source_kind": "promotion_manifest",
         "source_path": "promotions/test.pre.json",
         "source_sha256": "b" * 64,
+        "catalog_dir": "promotion_catalogs",
     }
 
 
 def test_catalog_output_paths_keep_legacy_defaults_non_authoritative(run_dir: Path):
     db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, None)
 
-    assert db_path == run_dir / "research_assets.db"
-    assert receipt_path == run_dir / "research_assets_build_receipt.json"
+    assert db_path == run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db"
+    assert receipt_path == run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets_build_receipt.json"
 
 
 def test_catalog_output_paths_use_evidence_bound_promotion_defaults(run_dir: Path):
     evidence_id = "a" * 64
-    db_path, receipt_path = builder._catalog_output_paths(
-        run_dir, None, None, _promotion_status(evidence_id))
+    status = {**_promotion_status(evidence_id), "catalog_dir": "sealed_catalogs"}
+    db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, status)
 
-    assert db_path == run_dir / "promotion_catalogs" / f"{evidence_id}.db"
-    assert receipt_path == run_dir / "promotion_catalogs" / f"{evidence_id}.receipt.json"
+    assert db_path == run_dir / "sealed_catalogs" / f"{evidence_id}.pre.db"
+    assert receipt_path == run_dir / "sealed_catalogs" / f"{evidence_id}.pre.receipt.json"
 
 
 @pytest.mark.parametrize("field", ["db_path", "receipt_path"])
@@ -362,7 +363,7 @@ def test_promotion_output_aliases_are_rejected_before_mutation(
     }
     monkeypatch.setattr(builder, "_promotion_status", lambda *args: _promotion_status(evidence_id))
 
-    with pytest.raises(ValueError, match="canonical evidence path"):
+    with pytest.raises(ValueError, match="authority-owned canonical path"):
         builder.build_all(run_dir, **kwargs)
 
     assert not (run_dir / "promotion_catalogs").exists()
@@ -376,7 +377,7 @@ def test_legacy_outputs_reject_promotion_namespace_before_mutation(
     namespace_path = run_dir / "promotion_catalogs" / "untrusted.db"
     kwargs = {field: namespace_path}
 
-    with pytest.raises(ValueError, match="cannot be inside"):
+    with pytest.raises(ValueError, match="authority-owned canonical path"):
         builder.build_all(run_dir, **kwargs)
 
     assert not (run_dir / "promotion_catalogs").exists()
@@ -384,7 +385,7 @@ def test_legacy_outputs_reject_promotion_namespace_before_mutation(
 
 
 def test_build_all_rejects_shape_only_promotion_before_catalog_mutation(run_dir: Path):
-    db_path = run_dir / "research_assets.db"
+    db_path = run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db"
     builder.build_all(run_dir, write_receipt=False)
     before = db_path.read_bytes()
     manifest_path = run_dir / "promotion_manifest.json"
