@@ -1,6 +1,9 @@
 # O-4 생성 문법 후보 사전등록 — 봉인본 (2026-07-13)
 
 > 지위: **봉인본.** 에이전트 초안(§13 미결 13건+부수 1건)을 메인 세션이 W5 어휘 실측 재확인·clause_lab/은행 계약 확인 후 §14에서 전건 결정했다. **본 커밋이 봉인 커밋이다** — 측정(신규 비트 산출·후보 발화 집계~)은 이 커밋 이후에만, 사후 변경은 새 사전등록으로만. §13은 초안 원문으로 보존한다(§14가 확정본 — 상충 시 §14 우선).
+> evidence_contract: **LEGACY_V1**
+> promotion_authority: **NONE**
+> G001: this historical prereg/result remains readable, but it is not SEALED-v2 and no one-use gate receipt may be reconstructed after measurement. Promotion requires a new preregistration and a fresh complete v2 evidence chain.
 > 상위: 마스터 플랜 v2 §3.3(O-트랙 O-4: "O-1~3 생존 조합 ≤8 봉인")·§9.2 순서 8(O-4 후보 봉인)·§9.3 즉시 금지("O-4 봉인 전 O-5 금지"·"S-v1 하드 veto 금지"·"원-임계 이식 금지"), 실행 계획 정본 §4(트랙 A)·§2(불변 규율), 핸드오프 v3 §0·§3·§5(확정 판정·번복 금지), D1 봉인 `2026-07-12_d1_clause_ablation_preregistration.md`(§8·§9 딱지·§12 원-임계 금지) + 판정 `d1_clause_ablation_summary.json`, 2절 봉인 `2026-07-12_d1_pairwise_interaction_preregistration.md`(§14) + 판정 `d1_pairwise_interaction_summary.json`, O-3 봉인 `2026-07-12_o3_breakout_onset_preregistration.md`(온셋·L3 인프라·딱지 문화), O-1G 봉인 `2026-07-11_o1g_gap_feasibility_preregistration.md` + `o1g/o1g_grid_summary.json`(null 기준선·함정 지도), W5 `w5_composite_survey.json`(절 어휘 실재값), 문법 지도 `ground_grammar_map.json`(엔진 번역 가능성), 창-지위 원장 `2026-07-10_window_status_ledger.md`.
 > 문체·구조: D1·2절·O-3 봉인본과 동일 형식(측정 전 봉인·표 중심·결론 먼저·쉬운 설명 병기·§14 봉인 결정 기록).
 > 원본 접근: 본 초안 작성은 기존 판정 json·문법 지도·W5 어휘 정독 + 실물 parquet **스키마·지문(sha)만** 실측(값 분포 무관측). **엔진 백테 0회, 후보 발화 집계 0회, 신규 비트 산출 0회, L3 재관측 0회** — 어떤 신규 수치도 이 초안 단계에서 생산하지 않았다. known 창(2024/2025-01~2026-02) 무접촉.

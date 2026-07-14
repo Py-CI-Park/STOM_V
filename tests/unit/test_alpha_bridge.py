@@ -9,13 +9,20 @@
 
 import copy
 import datetime as dt
+import hashlib
+import json
 import sqlite3
-
+from pathlib import Path
 import pytest
 
 from alpha_lab.bridge import append_receipt, read_receipts, register_conditions
 from alpha_lab.bridge.receipts import ALLOWED_SOURCE_KINDS
 from alpha_lab.bridge.registrar import NAME_PREFIX
+from alpha_lab.bridge.registrar import (
+    register_conditions_v2,
+    verify_promotion_manifest,
+)
+from alpha_lab.discipline.evidence import build_evidence_identity, sha256_canonical
 
 NOW = dt.datetime(2026, 7, 5, 12, 0, 0)
 
@@ -74,6 +81,146 @@ def fake_db(tmp_path):
 def backup_dir(tmp_path):
     return tmp_path / "backups"
 
+def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
+    """Create a complete synthetic v2 chain entirely under pytest's tmp path."""
+    prereg = tmp_path / "prereg.md"
+    code = tmp_path / "measure.py"
+    prereg.write_text("> 지위: **SEALED**\n", encoding="utf-8")
+    code.write_text("MEASURE = 1\n", encoding="utf-8")
+    file_ref = lambda path: {
+        "path": path.relative_to(tmp_path).as_posix(),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+    seal = {
+        "schema_version": 2, "kind": "prereg_seal", "status": "SEALED",
+        "sealed_at": "2026-07-14T00:00:00+00:00",
+        "sealed_doc": file_ref(prereg), "code_manifest": [file_ref(code)],
+    }
+    seal_path = tmp_path / "seal.json"
+    seal_path.write_text(json.dumps(seal), encoding="utf-8")
+    seal_ref = {"path": "seal.json", "sha256": sha256_canonical(seal)}
+    receipt = {
+        "schema_version": 2, "kind": "measure_gate_receipt", "status": "PASS",
+        "issued_at": "2026-07-14T00:01:00+00:00", "nonce": "run-1",
+        "repo_head": "a" * 40, "seal_manifest": seal_ref, "prereg": file_ref(prereg),
+        "code_manifest_sha256": sha256_canonical(seal["code_manifest"]),
+        "code_manifest": seal["code_manifest"],
+        "checks": {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
+    }
+    receipt["receipt_id"] = sha256_canonical({
+        key: receipt[key] for key in (
+            "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256",
+        )
+    })
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    usage = {
+        "schema_version": 2, "kind": "measure_gate_usage", "receipt_id": receipt["receipt_id"],
+        "receipt_sha256": sha256_canonical(receipt), "consumer": "test-run",
+        "consumed_at": "2026-07-14T00:02:00+00:00",
+    }
+    usage_path = tmp_path / "usage.json"
+    usage_path.write_text(json.dumps(usage), encoding="utf-8")
+    evidence_id, evidence = build_evidence_identity(receipt, usage)
+    row = {
+        "ts": "2026-07-14T00:03:00+00:00", "series": "B", "window": "2022-03-23~2023-12-31",
+        "trial_type": "b(test)", "target": "candidate", "result": "pass", "session": "test",
+        "schema_version": 2, "evidence_id": evidence_id, "evidence": evidence,
+    }
+    ledger_path = tmp_path / "ledger.jsonl"
+    ledger_path.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+    manifest = {
+        "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
+        "created_at": "2026-07-14T00:04:00+00:00", "evidence_id": evidence_id,
+        "ledger": {"path": "ledger.jsonl", "record_sha256": sha256_canonical(row)},
+        "candidates": [{
+            "name": item["name"],
+            "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
+            "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
+        }],
+    }
+    manifest_path = tmp_path / "promotion.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    catalog_path = tmp_path / "catalog.json"
+    catalog_path.write_text(json.dumps({"promotion_status": {
+        "schema_version": 2, "phase": "PRE", "valid": True, "evidence_id": evidence_id,
+        "source_kind": "promotion_manifest", "source_path": "promotion.json",
+        "source_sha256": sha256_canonical(manifest),
+    }}), encoding="utf-8")
+    return {
+        "manifest": manifest_path, "ledger": ledger_path, "receipt": receipt_path,
+        "usage": usage_path, "catalog": catalog_path, "evidence_id": evidence_id,
+    }
+
+
+class TestPromotionV2:
+    def test_verifies_complete_synthetic_chain_read_only(self, tmp_path, monkeypatch):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item)
+        before = {path: path.read_bytes() for path in tmp_path.iterdir()}
+
+        import alpha_lab.bridge.registrar as registrar
+        monkeypatch.setattr(registrar.sqlite3, "connect", lambda *args, **kwargs: pytest.fail("sqlite write/read invoked"))
+        monkeypatch.setattr(registrar, "_backup_db", lambda *args, **kwargs: pytest.fail("backup invoked"))
+
+        result = verify_promotion_manifest(
+            chain["manifest"], repo_root=tmp_path, ledger_path=chain["ledger"],
+            gate_receipt_path=chain["receipt"], gate_usage_path=chain["usage"],
+            catalog_receipt_path=chain["catalog"],
+        )
+        assert result == {
+            "pass": True, "schema_version": 2, "status": "PRE",
+            "evidence_id": chain["evidence_id"],
+            "candidates": [{
+                "name": item["name"],
+                "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
+                "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
+            }],
+            "checks": {"manifest": True, "ledger": True, "evidence_chain": True, "catalog_pre": True},
+            "reasons": [],
+        }
+        assert {path: path.read_bytes() for path in tmp_path.iterdir()} == before
+
+    def test_register_rejects_invalid_evidence_before_db_or_backup(self, fake_db, backup_dir, tmp_path):
+        before = fake_db.read_bytes()
+        with pytest.raises(ValueError, match="promotion verification failed"):
+            register_conditions_v2(
+                fake_db, [_item()], manifest_path=tmp_path / "missing.json", repo_root=tmp_path,
+                ledger_path=tmp_path / "ledger.jsonl", gate_receipt_path=tmp_path / "receipt.json",
+                gate_usage_path=tmp_path / "usage.json", catalog_receipt_path=tmp_path / "catalog.json",
+                backup_dir=backup_dir, now=NOW,
+            )
+        assert fake_db.read_bytes() == before
+        assert not backup_dir.exists()
+
+    def test_registers_verified_manifest_with_legacy_insert_semantics(self, fake_db, backup_dir, tmp_path):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item)
+        result = register_conditions_v2(
+            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+            backup_dir=backup_dir, now=NOW.replace(tzinfo=dt.timezone.utc),
+        )
+        assert result["status"] == "POST"
+        assert result["evidence_id"] == chain["evidence_id"]
+        assert result["promotion_manifest_sha256"] == sha256_canonical(
+            json.loads(chain["manifest"].read_text(encoding="utf-8"))
+        )
+        assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
+
+
+class TestHistoricalAuthorityDocuments:
+    def test_b_ext_and_o4_are_legacy_v1_without_promotion_authority(self):
+        root = Path(__file__).resolve().parents[2]
+        for name in (
+            "2026-07-14_b_track_ext_multistrategy_branches_preregistration.md",
+            "2026-07-13_o4_generation_grammar_preregistration.md",
+        ):
+            text = (root / "docs/research/condition_research/plans" / name).read_text(encoding="utf-8")
+            assert "evidence_contract: **LEGACY_V1**" in text
+            assert "promotion_authority: **NONE**" in text
+            assert "no one-use gate receipt may be reconstructed after measurement" in text
 
 class TestNamePrefixEnforcement:
     def test_rejects_name_without_prefix(self, fake_db, backup_dir):
