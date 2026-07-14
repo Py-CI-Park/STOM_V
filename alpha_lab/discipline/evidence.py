@@ -62,7 +62,8 @@ def _require_exact_keys(value: object, keys: set[str], field: str) -> dict[str, 
     return value
 
 
-def _require_timestamp(value: object, field: str) -> str:
+def parse_timestamp(value: object, field: str) -> dt.datetime:
+    """Parse one timezone-aware ISO-8601 timestamp for evidence chronology."""
     if not isinstance(value, str) or not value:
         raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
     try:
@@ -71,7 +72,20 @@ def _require_timestamp(value: object, field: str) -> str:
         raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
+    return parsed
+
+
+def _require_timestamp(value: object, field: str) -> str:
+    parse_timestamp(value, field)
     return value
+
+
+def require_timestamp_order(*timestamps: tuple[str, object]) -> None:
+    """Require the supplied causal timestamps to be in nondecreasing order."""
+    parsed = [(field, parse_timestamp(value, field)) for field, value in timestamps]
+    for (previous_field, previous), (field, current) in zip(parsed, parsed[1:]):
+        if current < previous:
+            raise EvidenceSchemaError(f"{field} must not precede {previous_field}")
 
 
 def _repo_path(value: object, field: str, repo_root: Path) -> tuple[str, Path]:
@@ -233,6 +247,7 @@ def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, 
     if sha256_canonical(seal_value) != seal_manifest["sha256"]:
         raise EvidenceSchemaError("seal_manifest SHA-256 does not match canonical contents")
     seal = validate_prereg_seal(seal_value, repo_root=root, verify_files=True)
+    require_timestamp_order(("sealed_at", seal["sealed_at"]), ("issued_at", issued_at))
     prereg = _validate_file_ref(receipt["prereg"], "prereg", root, verify_files=True)
     if prereg != seal["sealed_doc"]:
         raise EvidenceSchemaError("receipt prereg does not match seal manifest")
@@ -284,8 +299,7 @@ def validate_gate_usage(value: object, *, receipt: Mapping[str, Any]) -> dict[st
         raise EvidenceSchemaError("consumer must be non-empty")
     consumed_at = _require_timestamp(usage["consumed_at"], "consumed_at")
     issued_at = _require_timestamp(receipt.get("issued_at"), "receipt.issued_at")
-    if dt.datetime.fromisoformat(consumed_at.replace("Z", "+00:00")) < dt.datetime.fromisoformat(issued_at.replace("Z", "+00:00")):
-        raise EvidenceSchemaError("consumed_at must not precede receipt issued_at")
+    require_timestamp_order(("issued_at", issued_at), ("consumed_at", consumed_at))
     return dict(usage)
 
 

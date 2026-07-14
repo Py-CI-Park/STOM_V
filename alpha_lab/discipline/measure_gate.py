@@ -31,8 +31,10 @@ from typing import Any, Mapping
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
     require_full_sha256,
+    require_timestamp_order,
     sha256_canonical,
     validate_gate_receipt,
+    validate_gate_usage,
     validate_prereg_seal,
 )
 
@@ -219,16 +221,6 @@ def _gate_result(repo_root: Path | str, gate_pass: bool, reasons: list[str],
         "checks": checks,
         "verdict": "기동 허용" if gate_pass else "기동 거부 — 사유 해소 후 재실행",
     }
-def _require_timestamp(value: str, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp") from exc
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
-    return value
 
 
 def _relative_file_ref(path: Path | str, repo_root: Path) -> dict[str, str]:
@@ -253,13 +245,12 @@ def issue_gate_receipt_v2(
     repo_root: Path | str,
     seal_manifest_path: Path | str,
     *,
-    receipt_path: Path | str,
     issued_at: str,
     nonce: str,
 ) -> dict[str, Any]:
     """Issue an immutable v2 receipt for the complete sealed code manifest."""
     root = Path(repo_root).resolve()
-    _require_timestamp(issued_at, "issued_at")
+    require_timestamp_order(("issued_at", issued_at))
     if not isinstance(nonce, str) or not nonce:
         raise EvidenceSchemaError("nonce must be non-empty")
     seal_file_ref = _relative_file_ref(seal_manifest_path, root)
@@ -300,12 +291,14 @@ def issue_gate_receipt_v2(
         "code_manifest": seal["code_manifest"],
         "checks": gate["checks"],
     }
-    out = Path(receipt_path)
+    validate_gate_receipt(receipt, repo_root=root)
+    out = root / "receipts" / f"{receipt_id}.json"
     try:
+        out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("x", encoding="utf-8") as handle:
             json.dump(receipt, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     except FileExistsError as exc:
-        raise EvidenceSchemaError("receipt_path already exists") from exc
+        raise EvidenceSchemaError("canonical receipt path already exists") from exc
     return receipt
 
 
@@ -318,7 +311,7 @@ def claim_gate_receipt_v2(
 ) -> dict[str, Any]:
     """Atomically claim a valid v2 receipt at its sole canonical claim path."""
     root = Path(repo_root).resolve()
-    _require_timestamp(consumed_at, "consumed_at")
+    require_timestamp_order(("consumed_at", consumed_at))
     if not isinstance(consumer, str) or not consumer:
         raise EvidenceSchemaError("consumer must be non-empty")
     receipt_file = Path(receipt_path).resolve()
@@ -327,13 +320,15 @@ def claim_gate_receipt_v2(
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("receipt must be readable JSON") from exc
     receipt = validate_gate_receipt(receipt, repo_root=root)
+    receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
+    expected_receipt_path = root / "receipts" / f"{receipt_id}.json"
+    if receipt_file != expected_receipt_path:
+        raise EvidenceSchemaError("receipt_path is not the canonical receipt path")
     if _current_head(root) != receipt["repo_head"]:
         raise EvidenceSchemaError("receipt repo_head does not match current HEAD")
-    if datetime.fromisoformat(consumed_at.replace("Z", "+00:00")) < datetime.fromisoformat(receipt["issued_at"].replace("Z", "+00:00")):
-        raise EvidenceSchemaError("consumed_at must not precede receipt issued_at")
-    receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
-    claim_dir = receipt_file.parent / "claims"
-    claim_path = claim_dir / f"{receipt_id}.json"
+    require_timestamp_order(
+        ("issued_at", receipt["issued_at"]), ("consumed_at", consumed_at))
+    claim_path = root / "claims" / f"{receipt_id}.json"
     usage = {
         "schema_version": 2,
         "kind": "measure_gate_usage",
@@ -350,8 +345,9 @@ def claim_gate_receipt_v2(
         "consumer": consumer,
         "consumed_at": consumed_at,
     }
+    validate_gate_usage(usage, receipt=receipt)
     try:
-        claim_dir.mkdir(exist_ok=True)
+        claim_path.parent.mkdir(parents=True, exist_ok=True)
         with claim_path.open("x", encoding="utf-8") as handle:
             json.dump(usage, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     except FileExistsError as exc:
@@ -399,7 +395,6 @@ def main(argv: list[str] | None = None) -> int:
                         help="sha 봉인 기록 미제공 시에도 fail 처리(v1)")
     parser.add_argument("--json-out", default=None, help="결과 json 저장 경로(v1)")
     parser.add_argument("--seal-manifest", default=None, help="v2 prereg seal manifest")
-    parser.add_argument("--receipt-out", default=None, help="v2 receipt output path")
     parser.add_argument("--issued-at", default=None, help="v2 receipt issue timestamp")
     parser.add_argument("--nonce", default=None, help="v2 non-empty run nonce")
     args = parser.parse_args(argv)
@@ -407,11 +402,11 @@ def main(argv: list[str] | None = None) -> int:
         if (args.sealed_doc or args.code or args.expect or args.manifest
                 or args.require_sha or args.json_out):
             parser.error("--seal-manifest cannot be combined with v1 gate options")
-        if not (args.receipt_out and args.issued_at and args.nonce):
-            parser.error("--seal-manifest requires --receipt-out, --issued-at, and --nonce")
+        if not (args.issued_at and args.nonce):
+            parser.error("--seal-manifest requires --issued-at and --nonce")
         try:
             receipt = issue_gate_receipt_v2(
-                args.repo_root, args.seal_manifest, receipt_path=args.receipt_out,
+                args.repo_root, args.seal_manifest,
                 issued_at=args.issued_at, nonce=args.nonce)
         except (OSError, ValueError, EvidenceSchemaError) as exc:
             print(f"[measure-gate] v2 receipt issue failed: {exc}", file=sys.stderr)

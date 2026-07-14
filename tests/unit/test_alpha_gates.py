@@ -378,25 +378,24 @@ def _v2_seal_manifest(repo: Path, sealed: Path, code: Path, env: dict) -> Path:
 def test_issue_and_claim_gate_receipt_v2_once(sealed_repo):
     repo, sealed, code, env = sealed_repo
     seal = _v2_seal_manifest(repo, sealed, code, env)
-    receipt_path = repo / "receipt.json"
     receipt = measure_gate.issue_gate_receipt_v2(
-        repo, seal, receipt_path=receipt_path,
-        issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
+        repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
+    receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
+    assert receipt_path.is_file()
     assert receipt["code_manifest"] == json.loads(
         seal.read_text(encoding="utf-8"))["code_manifest"]
-    assert len(receipt["receipt_id"]) == 64
     usage = measure_gate.claim_gate_receipt_v2(
         receipt_path, repo_root=repo,
         consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
-    usage_path = receipt_path.parent / "claims" / f"{receipt['receipt_id']}.json"
-    assert usage["issuer"]["receipt_id"] == receipt["receipt_id"]
+    usage_path = repo / "claims" / f"{receipt['receipt_id']}.json"
+    assert usage_path.is_file()
     assert usage["claim"]["path"] == f"claims/{receipt['receipt_id']}.json"
-    alternate_path = repo / "alternate-claim.json"
-    with pytest.raises(TypeError):
+    alternate_receipt = repo / "alternate-receipt.json"
+    alternate_receipt.write_bytes(receipt_path.read_bytes())
+    with pytest.raises(ValueError, match="canonical receipt path"):
         measure_gate.claim_gate_receipt_v2(
-            receipt_path, repo_root=repo, usage_path=alternate_path,
+            alternate_receipt, repo_root=repo,
             consumer="alternate", consumed_at="2026-07-14T00:01:30+00:00")
-    assert not alternate_path.exists()
     original_usage = usage_path.read_bytes()
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
@@ -409,8 +408,7 @@ def test_v2_receipt_rejects_empty_or_false_authoritative_checks(sealed_repo):
     repo, sealed, code, env = sealed_repo
     seal = _v2_seal_manifest(repo, sealed, code, env)
     receipt = measure_gate.issue_gate_receipt_v2(
-        repo, seal, receipt_path=repo / "receipt.json",
-        issued_at="2026-07-14T00:00:00+00:00", nonce="checks")
+        repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="checks")
     for checks in (
         {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
         {**receipt["checks"], "sha_seal": {**receipt["checks"]["sha_seal"], "pass": False}},
@@ -420,15 +418,29 @@ def test_v2_receipt_rejects_empty_or_false_authoritative_checks(sealed_repo):
             validate_gate_receipt(forged, repo_root=repo)
 
 
+def test_issue_gate_receipt_v2_rejects_preseal_timestamp(sealed_repo):
+    repo, sealed, code, env = sealed_repo
+    seal = _v2_seal_manifest(repo, sealed, code, env)
+    raw = json.loads(seal.read_text(encoding="utf-8"))
+    raw["sealed_at"] = "2026-07-14T00:01:00+00:00"
+    seal.write_text(json.dumps(raw, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    _git(repo, env, "add", "seal.json")
+    _git(repo, env, "-c", "user.name=tester", "-c", "user.email=t@example.com",
+         "commit", "-q", "-m", "later seal")
+    with pytest.raises(ValueError, match="issued_at must not precede sealed_at"):
+        measure_gate.issue_gate_receipt_v2(
+            repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="preseal")
+    assert not (repo / "receipts").exists()
+
+
 def test_v2_usage_rejects_handwritten_and_preissue_claims(sealed_repo):
     from alpha_lab.discipline.evidence import EvidenceSchemaError, validate_gate_usage
 
     repo, sealed, code, env = sealed_repo
     seal = _v2_seal_manifest(repo, sealed, code, env)
-    receipt_path = repo / "receipt.json"
     receipt = measure_gate.issue_gate_receipt_v2(
-        repo, seal, receipt_path=receipt_path,
-        issued_at="2026-07-14T00:00:00+00:00", nonce="usage")
+        repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="usage")
+    receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
     handwritten = {
         "schema_version": 2,
         "kind": "measure_gate_usage",
@@ -439,7 +451,7 @@ def test_v2_usage_rejects_handwritten_and_preissue_claims(sealed_repo):
     }
     with pytest.raises(EvidenceSchemaError):
         validate_gate_usage(handwritten, receipt=receipt)
-    with pytest.raises(EvidenceSchemaError):
+    with pytest.raises(EvidenceSchemaError, match="consumed_at must not precede issued_at"):
         measure_gate.claim_gate_receipt_v2(
             receipt_path, repo_root=repo, consumer="too-early",
             consumed_at="2026-07-13T23:59:59+00:00")
@@ -448,23 +460,22 @@ def test_v2_usage_rejects_handwritten_and_preissue_claims(sealed_repo):
 def test_claim_gate_receipt_v2_rejects_tampered_receipt_and_code(sealed_repo):
     repo, sealed, code, env = sealed_repo
     seal = _v2_seal_manifest(repo, sealed, code, env)
-    receipt_path = repo / "receipt.json"
-    measure_gate.issue_gate_receipt_v2(
-        repo, seal, receipt_path=receipt_path,
-        issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
+    receipt = measure_gate.issue_gate_receipt_v2(
+        repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
+    receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     receipt["receipt_id"] = "0" * 64
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
-    usage_path = receipt_path.parent / "claims" / "unused.json"
+    usage_path = repo / "claims" / "unused.json"
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
             receipt_path, repo_root=repo,
             consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
     assert not usage_path.exists()
     receipt_path.unlink()
-    measure_gate.issue_gate_receipt_v2(
-        repo, seal, receipt_path=receipt_path,
-        issued_at="2026-07-14T00:00:00+00:00", nonce="run-2")
+    receipt = measure_gate.issue_gate_receipt_v2(
+        repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="run-2")
+    receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
     code.write_text("VALUE = 99\n", encoding="utf-8")
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
@@ -478,12 +489,10 @@ def test_issue_gate_receipt_v2_rejects_noncanonical_inputs_without_output(sealed
     raw = json.loads(seal.read_text(encoding="utf-8"))
     raw["code_manifest"][0]["sha256"] = raw["code_manifest"][0]["sha256"][:12]
     seal.write_text(json.dumps(raw), encoding="utf-8")
-    receipt_path = repo / "receipt.json"
     with pytest.raises(ValueError):
         measure_gate.issue_gate_receipt_v2(
-            repo, seal, receipt_path=receipt_path,
-            issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
-    assert not receipt_path.exists()
+            repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="run-1")
+    assert not (repo / "receipts").exists()
 
 
 # ── CLI 래퍼(subprocess) 스모크 — 실행 대상은 전부 tmp ───────────────────────

@@ -27,6 +27,7 @@ from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
     build_evidence_identity,
     require_full_sha256,
+    require_timestamp_order,
     sha256_canonical,
     validate_gate_receipt,
     validate_gate_usage,
@@ -242,13 +243,20 @@ def append_trial_v2(
 ) -> dict:
     """Append a v2 evidence-bound trial after validating its immutable claim."""
     root = Path(repo_root).resolve()
+    receipt_file = Path(gate_receipt_path).resolve()
+    usage_file = Path(gate_usage_path).resolve()
     try:
-        receipt_value = json.loads(Path(gate_receipt_path).read_text(encoding="utf-8"))
-        usage_value = json.loads(Path(gate_usage_path).read_text(encoding="utf-8"))
+        receipt_value = json.loads(receipt_file.read_text(encoding="utf-8"))
+        usage_value = json.loads(usage_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise LedgerSchemaError(f"v2 gate receipt or usage cannot be read: {exc}") from exc
     try:
         receipt = validate_gate_receipt(receipt_value, repo_root=root)
+        receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
+        if receipt_file != root / "receipts" / f"{receipt_id}.json":
+            raise EvidenceSchemaError("gate_receipt_path is not the canonical receipt path")
+        if usage_file != root / "claims" / f"{receipt_id}.json":
+            raise EvidenceSchemaError("gate_usage_path is not the canonical claim path")
         usage = validate_gate_usage(usage_value, receipt=receipt)
         evidence_id, evidence = build_evidence_identity(
             receipt,
@@ -261,6 +269,17 @@ def append_trial_v2(
         )
     except EvidenceSchemaError as exc:
         raise LedgerSchemaError(f"invalid v2 evidence chain: {exc}") from exc
+    try:
+        require_timestamp_order(
+            ("sealed_at", json.loads(
+                (root / Path(*receipt["seal_manifest"]["path"].split("/"))).read_text(
+                    encoding="utf-8"))["sealed_at"]),
+            ("issued_at", receipt["issued_at"]),
+            ("consumed_at", usage["consumed_at"]),
+            ("ledger.ts", ts),
+        )
+    except (OSError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise LedgerSchemaError(f"invalid v2 evidence chronology: {exc}") from exc
     record = {
         "ts": ts,
         "series": series,

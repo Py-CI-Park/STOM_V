@@ -31,7 +31,7 @@ REAL_LEDGER = (
 REAL_RUNS_DIR = REAL_LEDGER.parent
 
 VALID_ROW = {
-    "ts": "2026-07-12T23:00:00",
+    "ts": "2026-07-14T00:03:00+00:00",
     "series": "D1",
     "window": "2022-03-23~2023-12-31(발견창)",
     "trial_type": "b(오프라인 봉인 판정)",
@@ -262,14 +262,13 @@ def _v2_chain(tmp_path):
         manifest_path=tmp_path / "seal.json",
         sealed_at="2026-07-14T00:00:00+00:00",
     )
-    receipt_path = tmp_path / "receipt.json"
     receipt = measure_gate.issue_gate_receipt_v2(
         tmp_path,
         tmp_path / "seal.json",
-        receipt_path=receipt_path,
         issued_at="2026-07-14T00:01:00+00:00",
         nonce="unit-run",
     )
+    receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
     measure_gate.claim_gate_receipt_v2(
         receipt_path,
         repo_root=tmp_path,
@@ -293,11 +292,30 @@ class TestLedgerV2:
             input_artifacts=input_artifacts,
             result_artifacts=result_artifacts,
             candidate_set=candidate_set,
-            **_row(ts="2026-07-14T00:03:00"),
+            **_row(ts="2026-07-14T00:03:00+00:00"),
         )
         assert list(record) == list(ledger.V2_REQUIRED_KEYS)
         assert record["evidence_id"] == evidence.sha256_canonical(record["evidence"])
         assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
+
+    def test_append_v2_rejects_backdated_ledger_timestamp(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError, match="ledger.ts must not precede consumed_at"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "ledger.jsonl", **_row(ts="2026-07-14T00:01:30+00:00"))
+
+    def test_append_v2_rejects_relocated_evidence_files(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        relocated = tmp_path / "receipt-copy.json"
+        relocated.write_bytes(receipt_path.read_bytes())
+        with pytest.raises(ledger.LedgerSchemaError, match="canonical receipt path"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=relocated, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "ledger.jsonl", **_row())
+
 
     def test_append_v2_rejects_usage_mismatch_and_changed_code(self, tmp_path):
         receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
@@ -381,8 +399,9 @@ class TestLedgerV2:
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
         receipt_id = receipt["receipt_id"]
         canonical_receipt = tmp_path / "receipts" / f"{receipt_id}.json"
-        canonical_receipt.parent.mkdir()
-        canonical_receipt.write_bytes(receipt_path.read_bytes())
+        canonical_claim = tmp_path / "claims" / f"{receipt_id}.json"
+        assert canonical_receipt == receipt_path
+        assert canonical_claim == usage_path
         ref = lambda path: {
             "path": path.relative_to(tmp_path).as_posix(),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
