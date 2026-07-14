@@ -18,20 +18,19 @@ from pathlib import Path
 
 import pytest
 
-from alpha_lab.bridge import (
-    append_receipt,
-    inspect_promotion_journal_v2,
-    read_receipts,
-    register_conditions,
-)
-from alpha_lab.bridge.receipts import ALLOWED_SOURCE_KINDS
-from alpha_lab.bridge.registrar import NAME_PREFIX
+from alpha_lab.bridge import inspect_promotion_journal_v2
+from alpha_lab.bridge.receipts import ALLOWED_SOURCE_KINDS, append_receipt, read_receipts
 from alpha_lab.bridge.registrar import (
+    NAME_PREFIX,
+    register_conditions,
     register_conditions_v2,
     verify_promotion_manifest,
 )
 from alpha_lab.catalog import builder
-from alpha_lab.discipline.evidence import sha256_canonical
+from alpha_lab.discipline.evidence import (
+    issue_promotion_manifest_v2,
+    verify_promotion_result_v2,
+)
 from alpha_lab.discipline.ledger import append_trial_v2
 from alpha_lab.discipline.measure_gate import (
     claim_gate_receipt_v2,
@@ -125,6 +124,7 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
             "sample_floors": {"qualified": 2},
             "multiplicity_family": "bridge fixture",
             "kill_rule": "non-positive effect",
+            "ledger_path": "n_trials_ledger.jsonl",
             "dependency_roots": ["measure.py"],
             "dynamic_python_dependencies": [],
             "non_python_dependencies": [],
@@ -196,25 +196,16 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
         candidate_set=candidates,
         path=ledger_path,
     )
-    manifest = {
-        "schema_version": 2,
-        "kind": "promotion_manifest",
-        "status": "PRE",
-        "created_at": "2026-07-14T00:04:00+00:00",
-        "evidence_id": row["evidence_id"],
-        "ledger": {
-            **file_ref(ledger_path),
-            "record_sha256": sha256_canonical(row),
-        },
-        "gate_receipt": file_ref(receipt_path),
-        "gate_claim": file_ref(usage_path),
-        "input_artifacts": row["evidence"]["input_artifacts"],
-        "result_artifacts": row["evidence"]["result_artifacts"],
-        "candidate_set": row["evidence"]["candidate_set"],
-        "candidate_set_sha256": row["evidence"]["candidate_set_sha256"],
-    }
-    manifest_path = tmp_path / "promotion.json"
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    manifest = issue_promotion_manifest_v2(
+        tmp_path,
+        gate_receipt_path=receipt_path,
+        gate_claim_path=usage_path,
+        ledger_path=ledger_path,
+        evidence_id=row["evidence_id"],
+        created_at="2026-07-14T00:04:00+00:00",
+        output_dir=tmp_path / "promotions",
+    )
+    manifest_path = tmp_path / "promotions" / f"{row['evidence_id']}.pre.json"
 
     for rel in builder._SHARED_RELS:
         path = tmp_path / rel
@@ -222,14 +213,15 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
         path.write_text("{}", encoding="utf-8")
     for name in ("load_assets", "load_clauses", "load_strategies", "load_cells", "load_judgments"):
         monkeypatch.setattr(builder, name, lambda *args, **kwargs: None)
-    catalog_path = tmp_path / "catalog.json"
-    builder.build_all(
+    monkeypatch.setattr(
+        builder, "_strict_source_hashes", lambda *args, **kwargs: [file_ref(source)])
+    receipt = builder.build_all(
         tmp_path,
-        db_path=tmp_path / "catalog.db",
-        receipt_path=catalog_path,
         repo_root=tmp_path,
         promotion_manifest_path=manifest_path,
     )
+    catalog_path = tmp_path / "promotion_catalogs" / f"{row['evidence_id']}.receipt.json"
+    assert catalog_path.is_file()
     return {
         "manifest": manifest_path,
         "ledger": ledger_path,
@@ -295,7 +287,7 @@ class TestPromotionV2:
         assert result["status"] == "POST"
         assert result["evidence_id"] == chain["evidence_id"]
         assert result["promotion_manifest"] == {
-            "path": "promotion.json",
+            "path": f"promotions/{chain['evidence_id']}.pre.json",
             "sha256": hashlib.sha256(chain["manifest"].read_bytes()).hexdigest(),
         }
         assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
@@ -315,11 +307,12 @@ class TestPromotionV2:
             journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
         )
         receipt = builder.build_all(
-            tmp_path, db_path=tmp_path / "catalog-post.db",
-            receipt_path=tmp_path / "catalog-post.json", repo_root=tmp_path,
+            tmp_path, repo_root=tmp_path,
             promotion_result_path=tmp_path / result["journal_post_path"],
         )
         assert receipt["promotion_receipt"]["upstream"]["path"] == result["journal_post_path"]
+        assert (tmp_path / "promotion_catalogs" / (
+            f"{chain['evidence_id']}.receipt.json")).is_file()
 
     def test_crash_after_db_before_post_requires_reconciliation(
         self, fake_db, backup_dir, tmp_path, monkeypatch,
@@ -386,6 +379,70 @@ class TestPromotionV2:
         }]
         assert item["name"] not in {name for name, _ in _all_rows(fake_db, "stocksell")}
 
+    def test_rechecks_pre_bytes_under_the_write_lock(self, fake_db, backup_dir, tmp_path, monkeypatch):
+        import alpha_lab.bridge.registrar as registrar
+
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        write = registrar._write_exclusive_bytes
+
+        def mutate_after_pre_anchor(path, payload):
+            write(path, payload)
+            if path.name.endswith(".pre.sha256"):
+                con = sqlite3.connect(str(fake_db))
+                try:
+                    con.execute(
+                        'INSERT INTO "stockbuy" ("index", "전략코드") VALUES (?, ?)',
+                        ("raced", "mutation"),
+                    )
+                    con.commit()
+                finally:
+                    con.close()
+
+        monkeypatch.setattr(registrar, "_write_exclusive_bytes", mutate_after_pre_anchor)
+        with pytest.raises(Exception, match="changed after PRE intent"):
+            register_conditions_v2(
+                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            )
+        assert not backup_dir.exists()
+
+    def test_copied_post_and_stale_live_db_fail_strong_verification(
+        self, fake_db, backup_dir, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        result = register_conditions_v2(
+            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+        )
+        post_path = tmp_path / result["journal_post_path"]
+        copied = tmp_path / "copied.post.json"
+        copied.write_bytes(post_path.read_bytes())
+        with pytest.raises(Exception, match="canonical POST sibling"):
+            verify_promotion_result_v2(copied, repo_root=tmp_path)
+        con = sqlite3.connect(str(fake_db))
+        try:
+            con.execute(
+                'INSERT INTO "stockbuy" ("index", "전략코드") VALUES (?, ?)',
+                ("stale", "mutation"),
+            )
+            con.commit()
+        finally:
+            con.close()
+        with pytest.raises(Exception, match="target DB SHA-256"):
+            verify_promotion_result_v2(post_path, repo_root=tmp_path)
+
+    def test_private_complete_writer_is_absent(self):
+        import alpha_lab.bridge as bridge
+        import alpha_lab.bridge.registrar as registrar
+
+        assert not hasattr(registrar, "_register_conditions")
+        assert "register_conditions" not in bridge.__all__
     def test_tampered_post_pre_and_orphan_post_fail_closed(
         self, fake_db, backup_dir, tmp_path, monkeypatch,
     ):
@@ -464,6 +521,26 @@ class TestHistoricalAuthorityDocuments:
             assert "promotion_authority: **NONE**" in text
             assert "no one-use gate receipt may be reconstructed after measurement" in text
 
+    def test_b1_registration_script_is_historical_non_executable_notice(self):
+        root = Path(__file__).resolve().parents[2]
+        text = (
+            root
+            / "docs/research/condition_research/research_runs"
+            / "alpha_restart_20260710/d5r_b1_live/register_b1.py"
+        ).read_text(encoding="utf-8")
+        assert "HISTORICAL EVIDENCE" in text
+        assert "NON-EXECUTABLE ARCHIVE" in text
+        assert "b1_registration_receipt.json" in text
+        assert "fresh v2 evidence chain" in text
+        assert "authorized non-protected target" in text
+        for forbidden in (
+            "sqlite3",
+            "register_conditions",
+            "--write",
+            "_database/strategy.db",
+            "scratchpad",
+        ):
+            assert forbidden not in text
 class TestLegacyRegistrarBlocked:
     def test_public_legacy_registrar_fails_before_db_access(self, fake_db, backup_dir, monkeypatch):
         import alpha_lab.bridge.registrar as registrar

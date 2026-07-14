@@ -239,7 +239,7 @@ _SEALED_PREREG_DOCUMENT = """# 봉인 픽스처
 > 지위: **SEALED**
 
 ```json prereg-contract-v2
-{"dependency_roots":["code/measure.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-gate-fixture","kill_rule":"non-positive effect","multiplicity_family":"gate fixture","non_python_dependencies":[],"primary_estimand":"fixture value","sample_floors":{"qualified":2},"schema_version":2}
+{"dependency_roots":["code/measure.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-gate-fixture","kill_rule":"non-positive effect","ledger_path":"ledger.jsonl","multiplicity_family":"gate fixture","non_python_dependencies":[],"primary_estimand":"fixture value","sample_floors":{"qualified":2},"schema_version":2}
 ```
 """
 

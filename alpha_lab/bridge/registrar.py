@@ -17,7 +17,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
-import logging
 import os
 import shutil
 import sqlite3
@@ -33,7 +32,6 @@ from alpha_lab.discipline.evidence import (
     verify_promotion_result_v2,
 )
 
-logger = logging.getLogger(__name__)
 
 NAME_PREFIX = "ALP_"
 TABLE_BY_SIDE: dict[str, str] = {"buy": "stockbuy", "sell": "stocksell"}
@@ -399,16 +397,37 @@ def register_conditions_v2(
         "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest(),
     }
 
-    legacy_result = _register_conditions(db_file, items, backup_dir=backup_dir, now=now)
-    if legacy_result["db_pre_sha256"] != pre["target_db"]["pre_sha256"]:
-        raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
     backup_ref = None
-    if legacy_result["backup_path"] is not None:
-        backup = Path(legacy_result["backup_path"])
-        backup_ref = {
-            "path": _repo_relative_path(backup, root, "backup_path"),
-            "sha256": hashlib.sha256(backup.read_bytes()).hexdigest(),
+    write_con = sqlite3.connect(str(db_file))
+    try:
+        write_con.execute("BEGIN IMMEDIATE")
+        locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
+        if locked_pre_sha256 != pre["target_db"]["pre_sha256"]:
+            raise EvidenceSchemaError(
+                "target DB changed after PRE intent; reconciliation is required")
+        names_by_table = {
+            table: _existing_names(write_con, table)
+            for table in TABLE_BY_SIDE.values()
         }
+        to_insert, conflicts = _split_plan(items, names_by_table)
+        inserted: list[dict[str, Any]] = []
+        if to_insert:
+            backup = _backup_db(db_file, Path(backup_dir), now)
+            backup_sha256 = hashlib.sha256(backup.read_bytes()).hexdigest()
+            if backup_sha256 != locked_pre_sha256:
+                raise EvidenceSchemaError("locked target DB backup does not match PRE bytes")
+            backup_ref = {
+                "path": _repo_relative_path(backup, root, "backup_path"),
+                "sha256": backup_sha256,
+            }
+            inserted = _apply_inserts(write_con, to_insert)
+        write_con.commit()
+    except BaseException:
+        write_con.rollback()
+        raise
+    finally:
+        write_con.close()
+    db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
     post = {
         "schema_version": 2, "kind": "promotion_result", "status": "POST",
         "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
@@ -418,9 +437,9 @@ def register_conditions_v2(
         "target_db": {
             "path": db_relative,
             "pre_sha256": pre["target_db"]["pre_sha256"],
-            "post_sha256": legacy_result["db_post_sha256"],
+            "post_sha256": db_post_sha256,
         },
-        "inserted": legacy_result["inserted"], "conflicts": legacy_result["conflicts"],
+        "inserted": inserted, "conflicts": conflicts,
         "backup_ref": backup_ref, "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
         "chronology": {**pre["chronology"], "post_at": completed_at},
     }
@@ -463,10 +482,6 @@ def _validate_items(items: list) -> None:
         seen.add(name)
 
 
-def _open_readonly(db_path: Path) -> sqlite3.Connection:
-    """존재 확인용 연결은 read-only URI로 열어 변형 가능성 자체를 차단한다."""
-    uri = db_path.resolve().as_uri() + "?mode=ro"
-    return sqlite3.connect(uri, uri=True)
 
 
 def _existing_names(con: sqlite3.Connection, table: str) -> set:
@@ -495,7 +510,7 @@ def _split_plan(items: list, names_by_table: dict) -> tuple:
 
 
 def _backup_db(db_path: Path, backup_dir: Path, now) -> Path:
-    """실쓰기 직전 DB 파일 사본을 backup_dir에 만든다(동명 충돌 시 suffix)."""
+    """Copy exact DB bytes while the caller's BEGIN IMMEDIATE lock is held."""
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = now.strftime("%Y%m%dT%H%M%S")
     base = "%s.bak.alpha_lab_%s" % (db_path.name, stamp)
@@ -526,57 +541,9 @@ def _apply_inserts(con: sqlite3.Connection, to_insert: list) -> list:
                 "meta": item.get("meta"),
             }
         )
-    con.commit()
     return inserted
 
 
-def _register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
-    """조건식 배치를 전략 DB에 INSERT-only로 등록한다.
-
-    items: [{name, buy_expr, sell_expr, meta}] — name은 'ALP_' 접두 강제.
-    buy_expr→stockbuy, sell_expr→stocksell에 같은 이름으로 쌍 저장한다.
-    동명이 어느 테이블에든 이미 있으면 쌍 전체 스킵 + conflicts 기록(멱등).
-    실쓰기 전 backup_dir에 DB 파일 백업을 강제한다(삽입 0건이면 백업 생략).
-    now: 호출자 주입 datetime(백업 파일명 스탬프에만 사용).
-
-    반환: {"inserted": [...], "conflicts": [...], "backup_path": str | None}
-    """
-    _validate_items(items)
-    db_file = Path(db_path)
-    if not db_file.exists():
-        raise FileNotFoundError("전략 DB 파일이 없습니다: %s" % db_file)
-    db_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
-
-    read_con = _open_readonly(db_file)
-    try:
-        names_by_table = {
-            table: _existing_names(read_con, table)
-            for table in TABLE_BY_SIDE.values()
-        }
-    finally:
-        read_con.close()
-
-    to_insert, conflicts = _split_plan(items, names_by_table)
-    backup_path = None
-    inserted: list = []
-    if to_insert:
-        backup_path = _backup_db(db_file, Path(backup_dir), now)
-        write_con = sqlite3.connect(str(db_file))
-        try:
-            inserted = _apply_inserts(write_con, to_insert)
-        finally:
-            write_con.close()
-    logger.info(
-        "register_conditions db=%s inserted=%d conflicts=%d backup=%s",
-        db_file, len(inserted), len(conflicts), backup_path,
-    )
-    return {
-        "inserted": inserted,
-        "conflicts": conflicts,
-        "backup_path": str(backup_path) if backup_path else None,
-        "db_pre_sha256": db_pre_sha256,
-        "db_post_sha256": hashlib.sha256(db_file.read_bytes()).hexdigest(),
-    }
 def register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
     """Retired legacy entry point; v2 provenance is the sole write authority."""
     raise LegacyPromotionBlockedError(

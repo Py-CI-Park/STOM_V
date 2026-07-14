@@ -710,7 +710,7 @@ def validate_promotion_result_v2(
 def verify_promotion_result_v2(
     result_path: Path | str, *, repo_root: Path | str,
 ) -> tuple[PromotionResultV2, PromotionManifestV2, str]:
-    """Verify a canonical POST against its PRE intent and live authorities."""
+    """Verify the canonical POST, its exact PRE anchor, and live byte authorities."""
     root = Path(repo_root).resolve()
     source = Path(result_path).resolve()
     try:
@@ -718,37 +718,50 @@ def verify_promotion_result_v2(
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("promotion result must be readable JSON") from exc
     result = validate_promotion_result_v2(raw, repo_root=root)
+    evidence_id = result["evidence_id"]
+    pre_relative = PurePosixPath(result["pre_intent"]["path"])
+    expected_pre = pre_relative.with_name(f"{evidence_id}.pre.json").as_posix()
+    expected_anchor = pre_relative.with_name(f"{evidence_id}.pre.sha256").as_posix()
+    expected_post = pre_relative.with_name(f"{evidence_id}.post.json").as_posix()
+    if result["pre_intent"]["path"] != expected_pre:
+        raise EvidenceSchemaError("promotion result pre_intent path is not canonical")
+    if result["pre_intent_anchor"]["path"] != expected_anchor:
+        raise EvidenceSchemaError("promotion result pre_intent_anchor path is not canonical")
+    if source != root / Path(*PurePosixPath(expected_post).parts):
+        raise EvidenceSchemaError("promotion result path is not the canonical POST sibling of its PRE intent")
+
     manifest_path = root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
     manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
-    if result["promotion_manifest"]["sha256"] != manifest_sha256 or result["evidence_id"] != manifest["evidence_id"]:
+    if result["promotion_manifest"] != {
+        "path": manifest_path.relative_to(root).as_posix(),
+        "sha256": manifest_sha256,
+    } or evidence_id != manifest["evidence_id"]:
         raise EvidenceSchemaError("promotion result does not bind the exact PRE manifest")
-    pre_path = root / Path(*PurePosixPath(result["pre_intent"]["path"]).parts)
+
+    pre_path = root / Path(*pre_relative.parts)
     if _hash_file(pre_path, "promotion result pre_intent") != result["pre_intent"]["sha256"]:
         raise EvidenceSchemaError("promotion result pre_intent SHA-256 does not match bytes")
-    pre = validate_promotion_journal_pre_v2(_load_json_file(root, result["pre_intent"], "promotion result pre_intent"), repo_root=root)
+    pre = validate_promotion_journal_pre_v2(
+        _load_json_file(root, result["pre_intent"], "promotion result pre_intent"), repo_root=root)
     if (
-        pre["evidence_id"] != result["evidence_id"]
+        pre["evidence_id"] != evidence_id
         or pre["promotion_manifest"] != result["promotion_manifest"]
         or pre["catalog_receipt"] != result["catalog_receipt"]
         or pre["candidate_set"] != result["candidate_set"]
         or pre["candidate_set_sha256"] != result["candidate_set_sha256"]
+        or pre["candidate_set"] != manifest["candidate_set"]
+        or pre["candidate_set_sha256"] != manifest["candidate_set_sha256"]
         or pre["target_db"]["path"] != result["target_db"]["path"]
         or pre["target_db"]["pre_sha256"] != result["target_db"]["pre_sha256"]
         or pre["chronology"] != {key: result["chronology"][key] for key in pre["chronology"]}
     ):
         raise EvidenceSchemaError("promotion result does not preserve its exact PRE intent")
-    expected_anchor_path = (
-        PurePosixPath(result["pre_intent"]["path"])
-        .with_name(f"{result['evidence_id']}.pre.sha256")
-        .as_posix()
-    )
-    if result["pre_intent_anchor"]["path"] != expected_anchor_path:
-        raise EvidenceSchemaError("promotion result pre_intent_anchor path is not canonical")
-    anchor_path = root / Path(*PurePosixPath(result["pre_intent_anchor"]["path"]).parts)
+    anchor_path = root / Path(*PurePosixPath(expected_anchor).parts)
     if _hash_file(anchor_path, "promotion result pre_intent_anchor") != result["pre_intent_anchor"]["sha256"]:
         raise EvidenceSchemaError("promotion result pre_intent_anchor SHA-256 does not match bytes")
     if anchor_path.read_bytes() != result["pre_intent"]["sha256"].encode("ascii"):
         raise EvidenceSchemaError("promotion result pre_intent_anchor does not bind exact PRE bytes")
+
     catalog_path = root / Path(*PurePosixPath(result["catalog_receipt"]["path"]).parts)
     if _hash_file(catalog_path, "promotion result catalog_receipt") != result["catalog_receipt"]["sha256"]:
         raise EvidenceSchemaError("promotion result catalog receipt SHA-256 does not match bytes")
@@ -760,14 +773,46 @@ def verify_promotion_result_v2(
         outer_catalog_receipt["promotion_receipt"], repo_root=root)
     if (
         catalog["phase"] != "PRE"
-        or catalog["evidence_id"] != result["evidence_id"]
+        or catalog["evidence_id"] != evidence_id
         or catalog["promotion_manifest"] != result["promotion_manifest"]
+        or catalog["upstream"] != {"kind": "promotion_manifest", **result["promotion_manifest"]}
     ):
         raise EvidenceSchemaError("promotion result does not bind the exact PRE catalog receipt")
+
+    receipt = validate_gate_receipt(
+        _load_json_file(root, manifest["gate_receipt"], "gate_receipt"), repo_root=root)
+    usage = validate_gate_usage(
+        _load_json_file(root, manifest["gate_claim"], "gate_claim"), receipt=receipt)
+    seal = validate_prereg_seal(
+        _load_json_file(root, receipt["seal_manifest"], "seal_manifest"), repo_root=root)
+    from alpha_lab.discipline import ledger as authority_ledger
+
+    try:
+        rows = authority_ledger.read_all(root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts))
+    except authority_ledger.LedgerSchemaError as exc:
+        raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
+    rows = [row for row in rows if row.get("evidence_id") == evidence_id]
+    if len(rows) != 1 or sha256_canonical(rows[0]) != manifest["ledger"]["record_sha256"]:
+        raise EvidenceSchemaError("promotion result cannot revalidate its exact ledger authority")
+    expected_chronology = {
+        "sealed_at": seal["sealed_at"],
+        "issued_at": receipt["issued_at"],
+        "consumed_at": usage["consumed_at"],
+        "ledger_at": rows[0]["ts"],
+        "pre_at": pre["prepared_at"],
+        "post_at": result["completed_at"],
+    }
+    if result["chronology"] != expected_chronology:
+        raise EvidenceSchemaError("promotion result chronology does not match live authorities")
+    require_timestamp_order(*list(expected_chronology.items()))
+
     if result["backup_ref"] is not None:
         backup = root / Path(*PurePosixPath(result["backup_ref"]["path"]).parts)
         if _hash_file(backup, "promotion result backup_ref") != result["backup_ref"]["sha256"]:
             raise EvidenceSchemaError("promotion result backup SHA-256 does not match bytes")
+    target = root / Path(*PurePosixPath(result["target_db"]["path"]).parts)
+    if _hash_file(target, "promotion result target_db") != result["target_db"]["post_sha256"]:
+        raise EvidenceSchemaError("promotion result target DB SHA-256 does not match live bytes")
     return result, manifest, _hash_file(source, "promotion result")
 
 
