@@ -233,7 +233,10 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
     for name in ("load_assets", "load_clauses", "load_strategies", "load_cells", "load_judgments"):
         monkeypatch.setattr(builder, name, lambda *args, **kwargs: None)
     monkeypatch.setattr(
-        builder, "_strict_source_hashes", lambda *args, **kwargs: [file_ref(source)])
+        builder,
+        "_strict_source_hashes",
+        lambda *args, **kwargs: sorted([file_ref(source), file_ref(artifact)], key=lambda item: item["path"]),
+    )
     receipt = builder.build_all(
         tmp_path,
         repo_root=tmp_path,
@@ -256,9 +259,6 @@ class TestPromotionV2:
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         before = _file_snapshot(tmp_path)
-
-        import alpha_lab.bridge.registrar as registrar
-        monkeypatch.setattr(registrar.sqlite3, "connect", lambda *args, **kwargs: pytest.fail("sqlite write/read invoked"))
 
         result = verify_promotion_manifest(chain["manifest"], repo_root=tmp_path)
         assert result == {
@@ -319,6 +319,36 @@ class TestPromotionV2:
         assert verdict["pass"] is False
         assert "outer builder receipt" in verdict["reasons"][0]
         assert fake_db.read_bytes() == before
+    @pytest.mark.parametrize("mutation", ("empty", "extra"))
+    def test_rejects_forged_self_consistent_catalog_authority_db(
+        self, fake_db, tmp_path, monkeypatch, mutation,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        outer = json.loads(chain["catalog"].read_text(encoding="utf-8"))
+        catalog_db = tmp_path / outer["promotion_receipt"]["catalog_db"]["path"]
+        con = sqlite3.connect(str(catalog_db))
+        try:
+            if mutation == "empty":
+                con.execute("DELETE FROM catalog_authority")
+            else:
+                con.execute(
+                    "INSERT INTO catalog_authority "
+                    "(name, buy_sha256, sell_sha256, phase, outcome, disposition) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    ("ALP_forged", "0" * 64, "0" * 64, "PRE", "authorized", "pending_post"),
+                )
+            con.commit()
+        finally:
+            con.close()
+        outer["promotion_receipt"]["catalog_db"]["sha256"] = hashlib.sha256(
+            catalog_db.read_bytes()).hexdigest()
+        chain["catalog"].write_text(json.dumps(outer), encoding="utf-8")
+
+        verdict = verify_promotion_manifest(chain["manifest"], repo_root=tmp_path)
+
+        assert verdict["pass"] is False
+        assert "catalog authority DB records are omitted, extra, or misstated" in verdict["reasons"][0]
         assert not (tmp_path / "promotion_journal").exists()
 
     def test_rejects_wal_mode_before_journal_or_backup(
@@ -501,24 +531,43 @@ class TestPromotionV2:
                 "code_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
             }]},
         ]
+    def test_rejects_persistent_pragma_mutation_from_logical_delta(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        import alpha_lab.bridge.registrar as registrar
+
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        apply = registrar._apply_inserts
+
+        def mutate_pragma(con, planned):
+            inserted = apply(con, planned)
+            con.execute("PRAGMA user_version=7")
+            return inserted
+
+        monkeypatch.setattr(registrar, "_apply_inserts", mutate_pragma)
+        with pytest.raises(Exception, match="persistent SQLite pragma state"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+        assert not (tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json").exists()
 
     def test_rejects_wal_mode_created_after_post(self, fake_db, tmp_path, monkeypatch):
         import alpha_lab.bridge.registrar as registrar
 
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
-        write = registrar._write_exclusive_json
+        verify = registrar.verify_promotion_result_v2
 
-        def write_then_enable_wal(path, value):
-            write(path, value)
-            if path.name.endswith(".post.json"):
-                con = sqlite3.connect(str(fake_db))
-                try:
-                    con.execute("PRAGMA journal_mode=WAL")
-                finally:
-                    con.close()
+        def enable_wal_before_strong_verification(*args, **kwargs):
+            con = sqlite3.connect(str(fake_db))
+            try:
+                con.execute("PRAGMA journal_mode=WAL")
+            finally:
+                con.close()
+            return verify(*args, **kwargs)
 
-        monkeypatch.setattr(registrar, "_write_exclusive_json", write_then_enable_wal)
+        monkeypatch.setattr(registrar, "verify_promotion_result_v2", enable_wal_before_strong_verification)
         with pytest.raises(Exception, match="journal mode|WAL/SHM sidecar"):
             register_conditions_v2(
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,

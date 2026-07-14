@@ -418,6 +418,9 @@ def register_conditions_v2(
         backup_ref = pre["backup_ref"]
         write_con = sqlite3.connect(str(db_file))
         try:
+            mode = write_con.execute("PRAGMA locking_mode=EXCLUSIVE").fetchone()
+            if not mode or str(mode[0]).lower() != "exclusive":
+                raise EvidenceSchemaError("SQLite EXCLUSIVE locking mode is required for promotion")
             write_con.execute("BEGIN EXCLUSIVE")
             if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
                 raise EvidenceSchemaError("sealed authority paths changed under write lock")
@@ -434,32 +437,30 @@ def register_conditions_v2(
             if to_insert:
                 inserted = _apply_inserts(write_con, to_insert)
             write_con.commit()
-            pre_state = capture_sqlite_logical_state(destinations["backup"])
-            write_con.execute("BEGIN EXCLUSIVE")
             _assert_rollback_main_file(db_file, write_con)
             post_state = capture_sqlite_logical_state(db_file, connection=write_con)
             db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
-            write_con.commit()
+            logical_delta = build_promotion_logical_delta(
+                capture_sqlite_logical_state(destinations["backup"]), post_state, inserted)
+            post = {
+                "schema_version": 2, "kind": "promotion_result", "status": "POST",
+                "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
+                "promotion_manifest": manifest_ref, "promotion_manifest_path": manifest_ref["path"],
+                "catalog_receipt": catalog_ref, "candidate_set": manifest["candidate_set"],
+                "candidate_set_sha256": manifest["candidate_set_sha256"],
+                "target_db": {"path": pre["target_db"]["path"], "pre_sha256": pre_sha256, "post_sha256": db_post_sha256},
+                "inserted": inserted, "conflicts": conflicts, "backup_ref": backup_ref,
+                "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
+                "chronology": {**pre["chronology"], "post_at": completed_at},
+                "logical_delta": logical_delta,
+            }
+            validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
+            _write_exclusive_json(post_path, post)
         except BaseException:
             write_con.rollback()
             raise
         finally:
             write_con.close()
-        logical_delta = build_promotion_logical_delta(pre_state, post_state, inserted)
-        post = {
-            "schema_version": 2, "kind": "promotion_result", "status": "POST",
-            "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
-            "promotion_manifest": manifest_ref, "promotion_manifest_path": manifest_ref["path"],
-            "catalog_receipt": catalog_ref, "candidate_set": manifest["candidate_set"],
-            "candidate_set_sha256": manifest["candidate_set_sha256"],
-            "target_db": {"path": pre["target_db"]["path"], "pre_sha256": pre_sha256, "post_sha256": db_post_sha256},
-            "inserted": inserted, "conflicts": conflicts, "backup_ref": backup_ref,
-            "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
-            "chronology": {**pre["chronology"], "post_at": completed_at},
-            "logical_delta": logical_delta,
-        }
-        validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
-        _write_exclusive_json(post_path, post)
         verified, verified_manifest, verified_sha256 = verify_promotion_result_v2(post_path, repo_root=root)
         if (
             verified != post

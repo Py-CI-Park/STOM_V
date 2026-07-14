@@ -724,7 +724,7 @@ def _quote_identifier(identifier: str) -> str:
 def capture_sqlite_logical_state(
     db_path: Path | str, *, connection: sqlite3.Connection | None = None,
 ) -> dict[str, Any]:
-    """Read a stable DELETE-mode SQLite logical snapshot through a read-only transaction."""
+    """Read a stable SQLite logical snapshot, including persistent pragma state."""
     path = Path(db_path).resolve()
     wal_path, shm_path = _sqlite_sidecars(path)
     if wal_path.exists() or shm_path.exists():
@@ -744,6 +744,14 @@ def capture_sqlite_logical_state(
             raise EvidenceSchemaError("SQLite journal mode must be DELETE for verification")
         if wal_path.exists() or shm_path.exists():
             raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        persistent_state = {
+            "user_version": con.execute("PRAGMA user_version").fetchone()[0],
+            "application_id": con.execute("PRAGMA application_id").fetchone()[0],
+            "encoding": con.execute("PRAGMA encoding").fetchone()[0],
+            "auto_vacuum": con.execute("PRAGMA auto_vacuum").fetchone()[0],
+            "page_size": con.execute("PRAGMA page_size").fetchone()[0],
+            "schema_version": con.execute("PRAGMA schema_version").fetchone()[0],
+        }
         schema = [
             {"type": row[0], "name": row[1], "table": row[2], "sql": row[3]}
             for row in con.execute(
@@ -771,7 +779,7 @@ def capture_sqlite_logical_state(
             }
         if wal_path.exists() or shm_path.exists():
             raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
-        return {"schema": schema, "tables": tables}
+        return {"persistent_state": persistent_state, "schema": schema, "tables": tables}
     except sqlite3.Error as exc:
         raise EvidenceSchemaError(f"target SQLite DB cannot be read logically: {exc}") from exc
     finally:
@@ -789,9 +797,11 @@ def build_promotion_logical_delta(
     pre_state: Mapping[str, Any], post_state: Mapping[str, Any], inserted: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Prove that only the declared candidate pair rows changed from the canonical pre-state."""
+    expected = {item["name"]: item for item in inserted}
     if pre_state.get("schema") != post_state.get("schema"):
         raise EvidenceSchemaError("promotion changed SQLite schema or schema state")
-    expected = {item["name"]: item for item in inserted}
+    if pre_state.get("persistent_state") != post_state.get("persistent_state"):
+        raise EvidenceSchemaError("promotion changed persistent SQLite pragma state")
     changes: list[dict[str, Any]] = []
     if set(pre_state.get("tables", {})) != set(post_state.get("tables", {})):
         raise EvidenceSchemaError("promotion changed SQLite table state")
@@ -1071,6 +1081,86 @@ def verify_promotion_result_v2(
     return result, manifest, _hash_file(source, "promotion result")
 
 
+def _canonical_catalog_authority_records(
+    manifest: Mapping[str, Any], result: Mapping[str, Any] | None, phase: str,
+) -> list[dict[str, str]]:
+    candidates = {candidate["name"]: candidate for candidate in manifest["candidate_set"]}
+    if not candidates or len(candidates) != len(manifest["candidate_set"]):
+        raise EvidenceSchemaError("catalog authority candidates must be unique and nonempty")
+    if phase == "PRE":
+        return [
+            {
+                "name": name, "buy_sha256": candidate["buy_sha256"],
+                "sell_sha256": candidate["sell_sha256"], "phase": "PRE",
+                "outcome": "authorized", "disposition": "pending_post",
+            }
+            for name, candidate in sorted(candidates.items())
+        ]
+    if phase != "POST" or result is None:
+        raise EvidenceSchemaError("catalog authority phase does not match verified upstream")
+    outcomes = {
+        item["name"]: ("inserted", "published") for item in result["inserted"]
+    }
+    outcomes.update({
+        item["name"]: ("conflict", item["reason"]) for item in result["conflicts"]
+    })
+    if set(outcomes) != set(candidates):
+        raise EvidenceSchemaError("catalog authority outcomes do not account for every PRE candidate")
+    return [
+        {
+            "name": name, "buy_sha256": candidate["buy_sha256"],
+            "sell_sha256": candidate["sell_sha256"], "phase": "POST",
+            "outcome": outcomes[name][0], "disposition": outcomes[name][1],
+        }
+        for name, candidate in sorted(candidates.items())
+    ]
+
+
+def _verify_catalog_authority_db(
+    db_path: Path, expected_records: list[dict[str, str]],
+) -> None:
+    expected_sql = (
+        "CREATE TABLE catalog_authority (name TEXT PRIMARY KEY, "
+        "buy_sha256 TEXT NOT NULL, sell_sha256 TEXT NOT NULL, phase TEXT NOT NULL, "
+        "outcome TEXT NOT NULL, disposition TEXT NOT NULL)"
+    )
+    try:
+        con = sqlite3.connect(f"{db_path.as_uri()}?mode=ro", uri=True, isolation_level=None)
+    except sqlite3.Error as exc:
+        raise EvidenceSchemaError(f"catalog authority DB cannot be opened read-only: {exc}") from exc
+    try:
+        row = con.execute(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'catalog_authority'"
+        ).fetchone()
+        columns = con.execute("PRAGMA table_info(catalog_authority)").fetchall()
+        expected_columns = [
+            ("name", "TEXT", 0, 1), ("buy_sha256", "TEXT", 1, 0),
+            ("sell_sha256", "TEXT", 1, 0), ("phase", "TEXT", 1, 0),
+            ("outcome", "TEXT", 1, 0), ("disposition", "TEXT", 1, 0),
+        ]
+        actual_columns = [(item[1], item[2], item[3], item[5]) for item in columns]
+        if row is None or row[0] != expected_sql or actual_columns != expected_columns:
+            raise EvidenceSchemaError("catalog authority DB schema is not canonical")
+        rows = con.execute(
+            "SELECT name, buy_sha256, sell_sha256, phase, outcome, disposition "
+            "FROM catalog_authority ORDER BY name"
+        ).fetchall()
+    except sqlite3.Error as exc:
+        raise EvidenceSchemaError(f"catalog authority DB cannot be read: {exc}") from exc
+    finally:
+        con.close()
+    actual_records = [
+        dict(zip(("name", "buy_sha256", "sell_sha256", "phase", "outcome", "disposition"), row))
+        for row in rows
+    ]
+    if (
+        len(actual_records) != len(expected_records)
+        or sha256_canonical(actual_records) != sha256_canonical(expected_records)
+        or actual_records != expected_records
+    ):
+        raise EvidenceSchemaError("catalog authority DB records are omitted, extra, or misstated")
+
+
 def validate_catalog_promotion_receipt_v2(
     value: object, *, repo_root: Path | str,
 ) -> dict[str, Any]:
@@ -1105,11 +1195,12 @@ def validate_catalog_promotion_receipt_v2(
     if _hash_file(upstream_file, "catalog receipt upstream") != upstream_sha256:
         raise EvidenceSchemaError("catalog receipt upstream SHA does not match exact authority bytes")
     upstream_ref = {"path": upstream_path, "sha256": upstream_sha256}
+    verified_result: PromotionResultV2 | None = None
     if receipt["phase"] == "PRE":
         if upstream_path != manifest_ref["path"]:
             raise EvidenceSchemaError("catalog PRE receipt upstream must be the exact PRE manifest")
     else:
-        result, result_manifest, result_sha256 = verify_promotion_result_v2(
+        verified_result, result_manifest, result_sha256 = verify_promotion_result_v2(
             upstream_file, repo_root=root)
         if result_sha256 != upstream_sha256 or result_manifest != manifest:
             raise EvidenceSchemaError("catalog POST receipt does not bind the exact POST/PRE chain")
@@ -1119,8 +1210,17 @@ def validate_catalog_promotion_receipt_v2(
     if db_ref["path"] != expected_db:
         raise EvidenceSchemaError("catalog receipt DB path is not a sealed authority destination")
     sources = _validate_manifest(receipt["source_hashes"], "catalog receipt source_hashes", root, verify_files=True)
-    if len({item["path"] for item in sources}) != len(sources):
-        raise EvidenceSchemaError("catalog receipt source_hashes paths must be unique")
+    expected_sources = sorted(
+        [*manifest["input_artifacts"], *manifest["result_artifacts"]],
+        key=lambda item: item["path"],
+    )
+    if sources != expected_sources:
+        raise EvidenceSchemaError(
+            "catalog receipt source_hashes must exactly equal manifest input_artifacts and result_artifacts")
+    _verify_catalog_authority_db(
+        root / Path(*PurePosixPath(db_ref["path"]).parts),
+        _canonical_catalog_authority_records(manifest, verified_result, receipt["phase"]),
+    )
     return {
         "schema_version": 2, "kind": "catalog_promotion_receipt", "phase": receipt["phase"],
         "valid": True, "evidence_id": evidence_id, "upstream": {
