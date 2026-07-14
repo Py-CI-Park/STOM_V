@@ -12,9 +12,11 @@ import json
 from pathlib import Path
 
 import hashlib
+import shutil
+import subprocess
 import pytest
 
-from alpha_lab.discipline import evidence, ledger, lint, prereg, trials_report, windows
+from alpha_lab.discipline import evidence, ledger, lint, measure_gate, prereg, trials_report, windows
 
 ROOT = Path(__file__).resolve().parents[2]
 REAL_LEDGER = (
@@ -238,58 +240,42 @@ def _bindings(tmp_path):
     return [ref(input_file)], [ref(result_file)], [{"name": "candidate-a", "sha256": "c" * 64}]
 
 def _v2_chain(tmp_path):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for authoritative v2 receipt fixtures")
     tmp_path.mkdir(parents=True, exist_ok=True)
     doc = tmp_path / "prereg.md"
     code = tmp_path / "measure.py"
     code.write_text("value = 1\n", encoding="utf-8")
     doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-    seal = prereg.finalize_prereg(
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "prereg.md", "measure.py"], check=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "-c", "user.name=tester", "-c", "user.email=t@example.com",
+         "commit", "-q", "-m", "fixture"],
+        check=True,
+    )
+    prereg.finalize_prereg(
         doc,
         repo_root=tmp_path,
         code_files=(code,),
         manifest_path=tmp_path / "seal.json",
         sealed_at="2026-07-14T00:00:00+00:00",
     )
-    seal_manifest = {
-        "path": "seal.json",
-        "sha256": evidence.sha256_canonical(seal),
-    }
-    receipt = {
-        "schema_version": 2,
-        "kind": "measure_gate_receipt",
-        "status": "PASS",
-        "receipt_id": "",
-        "issued_at": "2026-07-14T00:01:00+00:00",
-        "nonce": "unit-run",
-        "repo_head": "a" * 40,
-        "seal_manifest": seal_manifest,
-        "prereg": seal["sealed_doc"],
-        "code_manifest_sha256": evidence.sha256_canonical(seal["code_manifest"]),
-        "code_manifest": seal["code_manifest"],
-        "checks": {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
-    }
-    receipt["receipt_id"] = evidence.sha256_canonical(
-        {
-            "issued_at": receipt["issued_at"],
-            "nonce": receipt["nonce"],
-            "repo_head": receipt["repo_head"],
-            "seal_manifest": receipt["seal_manifest"],
-            "prereg": receipt["prereg"],
-            "code_manifest_sha256": receipt["code_manifest_sha256"],
-        }
-    )
     receipt_path = tmp_path / "receipt.json"
-    receipt_path.write_bytes(evidence.canonical_json_bytes(receipt))
-    usage = {
-        "schema_version": 2,
-        "kind": "measure_gate_usage",
-        "receipt_id": receipt["receipt_id"],
-        "receipt_sha256": evidence.sha256_canonical(receipt),
-        "consumer": "unit-batch",
-        "consumed_at": "2026-07-14T00:02:00+00:00",
-    }
-    usage_path = tmp_path / "usage.json"
-    usage_path.write_bytes(evidence.canonical_json_bytes(usage))
+    receipt = measure_gate.issue_gate_receipt_v2(
+        tmp_path,
+        tmp_path / "seal.json",
+        receipt_path=receipt_path,
+        issued_at="2026-07-14T00:01:00+00:00",
+        nonce="unit-run",
+    )
+    measure_gate.claim_gate_receipt_v2(
+        receipt_path,
+        repo_root=tmp_path,
+        consumer="unit-batch",
+        consumed_at="2026-07-14T00:02:00+00:00",
+    )
+    usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
     return receipt_path, usage_path, *_bindings(tmp_path)
 
 

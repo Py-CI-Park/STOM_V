@@ -385,17 +385,64 @@ def test_issue_and_claim_gate_receipt_v2_once(sealed_repo):
     assert receipt["code_manifest"] == json.loads(
         seal.read_text(encoding="utf-8"))["code_manifest"]
     assert len(receipt["receipt_id"]) == 64
-    usage_path = repo / "usage.json"
     usage = measure_gate.claim_gate_receipt_v2(
-        receipt_path, repo_root=repo, usage_path=usage_path,
+        receipt_path, repo_root=repo,
         consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
-    assert usage["receipt_id"] == receipt["receipt_id"]
+    usage_path = receipt_path.parent / "claims" / f"{receipt['receipt_id']}.json"
+    assert usage["issuer"]["receipt_id"] == receipt["receipt_id"]
+    assert usage["claim"]["path"] == f"claims/{receipt['receipt_id']}.json"
+    alternate_path = repo / "alternate-claim.json"
+    with pytest.raises(TypeError):
+        measure_gate.claim_gate_receipt_v2(
+            receipt_path, repo_root=repo, usage_path=alternate_path,
+            consumer="alternate", consumed_at="2026-07-14T00:01:30+00:00")
+    assert not alternate_path.exists()
     original_usage = usage_path.read_bytes()
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
-            receipt_path, repo_root=repo, usage_path=usage_path,
+            receipt_path, repo_root=repo,
             consumer="measure-run-2", consumed_at="2026-07-14T00:02:00+00:00")
     assert usage_path.read_bytes() == original_usage
+def test_v2_receipt_rejects_empty_or_false_authoritative_checks(sealed_repo):
+    from alpha_lab.discipline.evidence import EvidenceSchemaError, validate_gate_receipt
+
+    repo, sealed, code, env = sealed_repo
+    seal = _v2_seal_manifest(repo, sealed, code, env)
+    receipt = measure_gate.issue_gate_receipt_v2(
+        repo, seal, receipt_path=repo / "receipt.json",
+        issued_at="2026-07-14T00:00:00+00:00", nonce="checks")
+    for checks in (
+        {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
+        {**receipt["checks"], "sha_seal": {**receipt["checks"]["sha_seal"], "pass": False}},
+    ):
+        forged = {**receipt, "checks": checks}
+        with pytest.raises(EvidenceSchemaError):
+            validate_gate_receipt(forged, repo_root=repo)
+
+
+def test_v2_usage_rejects_handwritten_and_preissue_claims(sealed_repo):
+    from alpha_lab.discipline.evidence import EvidenceSchemaError, validate_gate_usage
+
+    repo, sealed, code, env = sealed_repo
+    seal = _v2_seal_manifest(repo, sealed, code, env)
+    receipt_path = repo / "receipt.json"
+    receipt = measure_gate.issue_gate_receipt_v2(
+        repo, seal, receipt_path=receipt_path,
+        issued_at="2026-07-14T00:00:00+00:00", nonce="usage")
+    handwritten = {
+        "schema_version": 2,
+        "kind": "measure_gate_usage",
+        "receipt_id": receipt["receipt_id"],
+        "receipt_sha256": measure_gate.sha256_canonical(receipt),
+        "consumer": "forged",
+        "consumed_at": "2026-07-14T00:01:00+00:00",
+    }
+    with pytest.raises(EvidenceSchemaError):
+        validate_gate_usage(handwritten, receipt=receipt)
+    with pytest.raises(EvidenceSchemaError):
+        measure_gate.claim_gate_receipt_v2(
+            receipt_path, repo_root=repo, consumer="too-early",
+            consumed_at="2026-07-13T23:59:59+00:00")
 
 
 def test_claim_gate_receipt_v2_rejects_tampered_receipt_and_code(sealed_repo):
@@ -408,10 +455,10 @@ def test_claim_gate_receipt_v2_rejects_tampered_receipt_and_code(sealed_repo):
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     receipt["receipt_id"] = "0" * 64
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
-    usage_path = repo / "usage.json"
+    usage_path = receipt_path.parent / "claims" / "unused.json"
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
-            receipt_path, repo_root=repo, usage_path=usage_path,
+            receipt_path, repo_root=repo,
             consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
     assert not usage_path.exists()
     receipt_path.unlink()
@@ -421,9 +468,8 @@ def test_claim_gate_receipt_v2_rejects_tampered_receipt_and_code(sealed_repo):
     code.write_text("VALUE = 99\n", encoding="utf-8")
     with pytest.raises(ValueError):
         measure_gate.claim_gate_receipt_v2(
-            receipt_path, repo_root=repo, usage_path=usage_path,
+            receipt_path, repo_root=repo,
             consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
-    assert not usage_path.exists()
 
 
 def test_issue_gate_receipt_v2_rejects_noncanonical_inputs_without_output(sealed_repo):

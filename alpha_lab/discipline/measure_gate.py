@@ -313,32 +313,46 @@ def claim_gate_receipt_v2(
     receipt_path: Path | str,
     *,
     repo_root: Path | str,
-    usage_path: Path | str,
     consumer: str,
     consumed_at: str,
 ) -> dict[str, Any]:
-    """Atomically claim a valid v2 receipt exactly once."""
+    """Atomically claim a valid v2 receipt at its sole canonical claim path."""
     root = Path(repo_root).resolve()
     _require_timestamp(consumed_at, "consumed_at")
     if not isinstance(consumer, str) or not consumer:
         raise EvidenceSchemaError("consumer must be non-empty")
+    receipt_file = Path(receipt_path).resolve()
     try:
-        receipt = json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+        receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("receipt must be readable JSON") from exc
     receipt = validate_gate_receipt(receipt, repo_root=root)
     if _current_head(root) != receipt["repo_head"]:
         raise EvidenceSchemaError("receipt repo_head does not match current HEAD")
+    if datetime.fromisoformat(consumed_at.replace("Z", "+00:00")) < datetime.fromisoformat(receipt["issued_at"].replace("Z", "+00:00")):
+        raise EvidenceSchemaError("consumed_at must not precede receipt issued_at")
+    receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
+    claim_dir = receipt_file.parent / "claims"
+    claim_path = claim_dir / f"{receipt_id}.json"
     usage = {
         "schema_version": 2,
         "kind": "measure_gate_usage",
-        "receipt_id": require_full_sha256(receipt["receipt_id"], "receipt_id"),
-        "receipt_sha256": sha256_canonical(receipt),
+        "issuer": {
+            "receipt_id": receipt_id,
+            "receipt_sha256": sha256_canonical(receipt),
+            "issued_at": receipt["issued_at"],
+            "repo_head": receipt["repo_head"],
+        },
+        "claim": {
+            "receipt_id": receipt_id,
+            "path": f"claims/{receipt_id}.json",
+        },
         "consumer": consumer,
         "consumed_at": consumed_at,
     }
     try:
-        with Path(usage_path).open("x", encoding="utf-8") as handle:
+        claim_dir.mkdir(exist_ok=True)
+        with claim_path.open("x", encoding="utf-8") as handle:
             json.dump(usage, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     except FileExistsError as exc:
         raise EvidenceSchemaError("gate receipt has already been claimed") from exc

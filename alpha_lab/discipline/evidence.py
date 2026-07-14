@@ -166,6 +166,45 @@ def validate_prereg_seal(value: object, *, repo_root: Path | str, verify_files: 
     return result
 
 
+def _validate_authoritative_checks(checks: object, *, repo_root: Path, prereg: Mapping[str, str],
+                                   manifest: list[dict[str, str]]) -> dict[str, Any]:
+    required = {"repo", "sealed_doc", "code_clean", "sha_seal"}
+    if not isinstance(checks, dict) or set(checks) != required:
+        raise EvidenceSchemaError("checks must contain authoritative repo, sealed_doc, code_clean, and sha_seal results")
+    if not all(isinstance(checks[name], dict) and checks[name].get("pass") is True for name in required):
+        raise EvidenceSchemaError("all authoritative checks must explicitly pass")
+    repo = checks["repo"]
+    if repo.get("detail") != "true" or repo.get("reason") != "":
+        raise EvidenceSchemaError("repo check is not an authoritative clean work-tree result")
+    sealed_doc = checks["sealed_doc"]
+    if sealed_doc.get("rel") != prereg["path"] or not _GIT_SHA1.fullmatch(sealed_doc.get("last_commit", "")):
+        raise EvidenceSchemaError("sealed_doc check does not bind the sealed preregistration")
+    code_clean = checks["code_clean"]
+    expected_paths = {str(repo_root / Path(*PurePosixPath(item["path"]).parts)) for item in manifest}
+    files = code_clean.get("files")
+    if not isinstance(files, dict) or set(files) != expected_paths or code_clean.get("reasons") != []:
+        raise EvidenceSchemaError("code_clean check does not cover the complete code manifest")
+    for path, item in files.items():
+        if not isinstance(item, dict) or item.get("tracked") is not True or item.get("clean") is not True:
+            raise EvidenceSchemaError(f"code_clean check is not authoritative for {path}")
+        if not _GIT_SHA1.fullmatch(item.get("last_commit", "")) or item.get("reason") != "":
+            raise EvidenceSchemaError(f"code_clean check lacks committed provenance for {path}")
+    sha_seal = checks["sha_seal"]
+    sha_files = sha_seal.get("files")
+    if sha_seal.get("checked") is not True or not isinstance(sha_files, dict) or set(sha_files) != expected_paths:
+        raise EvidenceSchemaError("sha_seal check must cover the complete code manifest")
+    expected_sha = {
+        str(repo_root / Path(*PurePosixPath(item["path"]).parts)): item["sha256"]
+        for item in manifest
+    }
+    for path, item in sha_files.items():
+        if not isinstance(item, dict) or item.get("expected") != expected_sha[path]:
+            raise EvidenceSchemaError(f"sha_seal expected hash does not bind {path}")
+        if item.get("actual") != expected_sha[path] or item.get("match") is not True or item.get("reason") != "":
+            raise EvidenceSchemaError(f"sha_seal check is not authoritative for {path}")
+    return dict(checks)
+
+
 def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     keys = {"schema_version", "kind", "status", "receipt_id", "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256", "code_manifest", "checks"}
@@ -195,31 +234,50 @@ def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, 
     code_manifest_sha256 = require_full_sha256(receipt["code_manifest_sha256"], "code_manifest_sha256")
     if code_manifest_sha256 != sha256_canonical(manifest):
         raise EvidenceSchemaError("code_manifest_sha256 does not match code_manifest")
-    if (
-        not isinstance(receipt["checks"], dict)
-        or set(receipt["checks"]) != {"repo", "sealed_doc", "code_clean", "sha_seal"}
-        or not all(isinstance(item, dict) for item in receipt["checks"].values())
-    ):
-        raise EvidenceSchemaError("checks must contain repo, sealed_doc, code_clean, and sha_seal")
+    checks = _validate_authoritative_checks(
+        receipt["checks"], repo_root=root, prereg=prereg, manifest=manifest
+    )
     expected_id = sha256_canonical({"issued_at": issued_at, "nonce": receipt["nonce"], "repo_head": receipt["repo_head"], "seal_manifest": seal_manifest, "prereg": prereg, "code_manifest_sha256": code_manifest_sha256})
     if require_full_sha256(receipt["receipt_id"], "receipt_id") != expected_id:
         raise EvidenceSchemaError("receipt_id does not match receipt identity")
-    return dict(receipt)
+    result = dict(receipt)
+    result["checks"] = checks
+    return result
 
 
 def validate_gate_usage(value: object, *, receipt: Mapping[str, Any]) -> dict[str, Any]:
-    usage = _require_exact_keys(value, {"schema_version", "kind", "receipt_id", "receipt_sha256", "consumer", "consumed_at"}, "gate usage")
+    usage = _require_exact_keys(
+        value,
+        {"schema_version", "kind", "issuer", "claim", "consumer", "consumed_at"},
+        "gate usage",
+    )
     if usage["schema_version"] != 2 or usage["kind"] != "measure_gate_usage":
         raise EvidenceSchemaError("gate usage must be schema_version=2 and kind=measure_gate_usage")
     receipt_id = require_full_sha256(receipt.get("receipt_id"), "receipt.receipt_id")
-    if require_full_sha256(usage["receipt_id"], "receipt_id") != receipt_id:
-        raise EvidenceSchemaError("gate usage receipt_id does not match receipt")
     receipt_sha256 = sha256_canonical(dict(receipt))
-    if require_full_sha256(usage["receipt_sha256"], "receipt_sha256") != receipt_sha256:
-        raise EvidenceSchemaError("gate usage receipt_sha256 does not match receipt")
+    issuer = _require_exact_keys(
+        usage["issuer"], {"receipt_id", "receipt_sha256", "issued_at", "repo_head"}, "gate usage issuer"
+    )
+    if require_full_sha256(issuer["receipt_id"], "issuer.receipt_id") != receipt_id:
+        raise EvidenceSchemaError("gate usage issuer receipt_id does not match receipt")
+    if require_full_sha256(issuer["receipt_sha256"], "issuer.receipt_sha256") != receipt_sha256:
+        raise EvidenceSchemaError("gate usage issuer receipt_sha256 does not match receipt")
+    if _require_timestamp(issuer["issued_at"], "issuer.issued_at") != receipt.get("issued_at"):
+        raise EvidenceSchemaError("gate usage issuer issued_at does not match receipt")
+    if issuer["repo_head"] != receipt.get("repo_head"):
+        raise EvidenceSchemaError("gate usage issuer repo_head does not match receipt")
+    claim = _require_exact_keys(usage["claim"], {"receipt_id", "path"}, "gate usage claim")
+    if require_full_sha256(claim["receipt_id"], "claim.receipt_id") != receipt_id:
+        raise EvidenceSchemaError("gate usage claim receipt_id does not match receipt")
+    expected_claim_path = f"claims/{receipt_id}.json"
+    if claim["path"] != expected_claim_path:
+        raise EvidenceSchemaError("gate usage claim path is not the canonical receipt claim path")
     if not isinstance(usage["consumer"], str) or not usage["consumer"]:
         raise EvidenceSchemaError("consumer must be non-empty")
-    _require_timestamp(usage["consumed_at"], "consumed_at")
+    consumed_at = _require_timestamp(usage["consumed_at"], "consumed_at")
+    issued_at = _require_timestamp(receipt.get("issued_at"), "receipt.issued_at")
+    if dt.datetime.fromisoformat(consumed_at.replace("Z", "+00:00")) < dt.datetime.fromisoformat(issued_at.replace("Z", "+00:00")):
+        raise EvidenceSchemaError("consumed_at must not precede receipt issued_at")
     return dict(usage)
 
 
