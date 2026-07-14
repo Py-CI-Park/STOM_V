@@ -27,7 +27,7 @@ import math
 import re
 import unicodedata
 from collections.abc import Mapping as MappingABC
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from types import MappingProxyType
 from typing import Any, Mapping, Optional, Tuple
 
@@ -60,6 +60,21 @@ __all__ = [
     "compute_consumption_id",
     "compute_manifest_id",
     "compute_receipt_id",
+    # DR-02 — Manifest v2 (additive; v1 EvaluationManifest above is unchanged/untouched).
+    "ManifestV2",
+    "MANIFEST_V2_SCHEMA",
+    "MANIFEST_V2_CONTRACT_LABEL",
+    "MANIFEST_V2_MANDATORY_CATEGORIES",
+    "build_manifest_v2",
+    "manifest_v2_content_hash",
+    # DR-03 — real content-addressed prompt FK + rendered-only consumption +
+    #   fail-closed certification outcome labels (additive; v1 contracts above
+    #   are byte-unchanged, nothing in v1 wiring reads these).
+    "ID_PREFIX_RENDERED_PROMPT",
+    "compute_rendered_prompt_id",
+    "OUTCOME_GO",
+    "OUTCOME_NO_GO",
+    "OUTCOME_INDETERMINATE_EXTERNAL_EFFECT",
 ]
 
 
@@ -359,6 +374,14 @@ def _require_mapping(value: Any, name: str) -> MappingProxyType:
     if not (isinstance(value, MappingProxyType) or isinstance(value, MappingABC)):
         raise ValueError(f"{name}_must_be_mapping")
     return _deep_freeze(value, name)
+
+
+def _require_nonempty_mapping(value: Any, name: str) -> MappingProxyType:
+    """``_require_mapping`` + non-empty 강제 — 필수 카테고리 누락(빈 dict)도 차단한다."""
+    frozen = _require_mapping(value, name)
+    if len(frozen) == 0:
+        raise ValueError(f"{name}_required")
+    return frozen
 
 
 def _require_tuple_of_str(value: Any, name: str) -> Tuple[str, ...]:
@@ -704,3 +727,184 @@ def _require_tuple_of_str_allow_empty(value: Any, name: str) -> Tuple[str, ...]:
         if not isinstance(item, str) or not item.strip():
             raise ValueError(f"{name}_elements_must_be_nonempty_str")
     return frozen
+
+
+# ---------------------------------------------------------------------
+# ManifestV2 (DR-02) — additive typed effective-profile + evaluation-input binding.
+#   v1 EvaluationManifest above stays byte-identical; nothing in v1 wiring reads this
+#   contract. ManifestV2 exists to bind the canonical effective-profile identity
+#   (effective_profile_hash/name, see condition_discovery.canonical_effective_profile)
+#   to the full evaluation-input taxonomy (data/universe/engine/cost/fill/capital/
+#   session/prompt/seed/code/config). Every mandatory category MUST be a non-empty
+#   mapping at construction — missing/empty -> ValueError (fail-closed: certification
+#   never silently passes on an incomplete binding).
+# ---------------------------------------------------------------------
+
+MANIFEST_V2_SCHEMA = 1
+MANIFEST_V2_CONTRACT_LABEL = "ManifestV2"
+
+MANIFEST_V2_MANDATORY_CATEGORIES: Tuple[str, ...] = (
+    "data",
+    "universe",
+    "engine",
+    "cost",
+    "fill",
+    "capital",
+    "session",
+    "prompt",
+    "seed",
+    "code",
+    "config",
+)
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class ManifestV2:
+    """DR-02 additive Manifest v2 — effective-profile identity + full input binding.
+
+    Preserves ``EvaluationManifest`` (v1) unchanged; this is a separate, additive
+    contract. Construction fails closed: every mandatory input category must be a
+    non-empty mapping, and ``manifest_contract`` must equal ``MANIFEST_V2_CONTRACT_LABEL``.
+    """
+
+    schema: int
+    manifest_contract: str
+    effective_profile_hash: str
+    effective_profile_name: str
+    data: Any
+    universe: Any
+    engine: Any
+    cost: Any
+    fill: Any
+    capital: Any
+    session: Any
+    prompt: Any
+    seed: Any
+    code: Any
+    config: Any
+    created_at: str
+    manifest_id: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        set_ = object.__setattr__
+        set_(self, "schema", _require_non_negative_int(self.schema, "schema"))
+        set_(self, "manifest_contract", _require_nonempty_str(self.manifest_contract, "manifest_contract"))
+        if self.manifest_contract != MANIFEST_V2_CONTRACT_LABEL:
+            raise ValueError(f"manifest_contract_must_equal:{MANIFEST_V2_CONTRACT_LABEL}")
+        set_(self, "effective_profile_hash", _require_sha256(self.effective_profile_hash, "effective_profile_hash"))
+        set_(self, "effective_profile_name", _require_nonempty_str(self.effective_profile_name, "effective_profile_name"))
+        set_(self, "data", _require_nonempty_mapping(self.data, "data"))
+        set_(self, "universe", _require_nonempty_mapping(self.universe, "universe"))
+        set_(self, "engine", _require_nonempty_mapping(self.engine, "engine"))
+        set_(self, "cost", _require_nonempty_mapping(self.cost, "cost"))
+        set_(self, "fill", _require_nonempty_mapping(self.fill, "fill"))
+        set_(self, "capital", _require_nonempty_mapping(self.capital, "capital"))
+        set_(self, "session", _require_nonempty_mapping(self.session, "session"))
+        set_(self, "prompt", _require_nonempty_mapping(self.prompt, "prompt"))
+        set_(self, "seed", _require_nonempty_mapping(self.seed, "seed"))
+        set_(self, "code", _require_nonempty_mapping(self.code, "code"))
+        set_(self, "config", _require_nonempty_mapping(self.config, "config"))
+        set_(self, "created_at", _require_utc_timestamp(self.created_at, "created_at"))
+        set_(self, "manifest_id", _require_optional_id(self.manifest_id, "manifest_id", ID_PREFIX_EVALUATION_MANIFEST))
+
+    def to_dict(self) -> dict:
+        return _to_dict(self)
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "ManifestV2":
+        return _from_dict(cls, data)
+
+
+def manifest_v2_content_hash(manifest: "ManifestV2") -> str:
+    """Canonical content hash for a certified Manifest v2 (design spec §8)."""
+    return content_sha256(manifest)
+
+
+def build_manifest_v2(payload: Mapping[str, Any]) -> "ManifestV2":
+    """Fail-closed Manifest v2 builder.
+
+    Raises ``ValueError`` when any mandatory input category (see
+    ``MANIFEST_V2_MANDATORY_CATEGORIES``) is missing or empty in ``payload`` --
+    certification MUST block rather than silently accept a partial binding.
+    """
+    missing = [key for key in MANIFEST_V2_MANDATORY_CATEGORIES if not payload.get(key)]
+    if missing:
+        raise ValueError(f"manifest_v2_missing_mandatory_fields:{','.join(missing)}")
+    return ManifestV2(
+        schema=int(payload.get("schema", MANIFEST_V2_SCHEMA)),
+        manifest_contract=str(payload.get("manifest_contract", MANIFEST_V2_CONTRACT_LABEL)),
+        effective_profile_hash=payload["effective_profile_hash"],
+        effective_profile_name=payload["effective_profile_name"],
+        data=payload["data"],
+        universe=payload["universe"],
+        engine=payload["engine"],
+        cost=payload["cost"],
+        fill=payload["fill"],
+        capital=payload["capital"],
+        session=payload["session"],
+        prompt=payload["prompt"],
+        seed=payload["seed"],
+        code=payload["code"],
+        config=payload["config"],
+        created_at=str(payload.get("created_at") or datetime.now(timezone.utc).isoformat()),
+        manifest_id=payload.get("manifest_id"),
+    )
+
+
+# ---------------------------------------------------------------------
+# DR-03 — real content-addressed prompt FK + rendered-only consumption +
+#   fail-closed certification outcomes (additive; v1 contracts above are
+#   byte-unchanged, nothing in v1 wiring reads these).
+#
+# ID_PREFIX_RENDERED_PROMPT/compute_rendered_prompt_id give a prompt an
+# IMMUTABLE content-addressed identity (same kind+attempt+system/user body ->
+# same id, regardless of run/gen coordinates). controller.state.LoopState.
+# record_prompt computes this same id when it persists the actual prompt row
+# and registers it in the additive ``rendered_prompts`` table, so evidence
+# rows can carry a real, verifiable FK to an ACTUALLY-PERSISTED prompt
+# instead of a synthetic placeholder string. controller.evidence_store
+# EvidenceStore.append_consumption(..., require_rendered=True) rejects any
+# FeedbackConsumption whose prompt_id is not registered in rendered_prompts
+# (orphan/rendered-only guard) when that opt-in flag is set; default False
+# preserves the existing v1 FeedbackConsumption.prompt_id free-string
+# behavior byte-for-byte.
+# ---------------------------------------------------------------------
+
+ID_PREFIX_RENDERED_PROMPT = "rp_"
+
+
+def compute_rendered_prompt_id(
+    kind: str, attempt: int, system_sha256: str, user_sha256: str
+) -> str:
+    """Content-addressed immutable prompt identity (DR-03).
+
+    Pure content identity: identical kind/attempt/system+user body sha256 ->
+    identical id, independent of run_id/gen_no. This lets the SAME rendered
+    prompt content be recognized as "the same actually-rendered prompt"
+    across an interrupted+resumed run and an uninterrupted run (deterministic
+    resume — DR-03 acceptance #5), since the id depends only on content that
+    was already deterministically produced and persisted before any crash.
+    """
+    _require_nonempty_str(kind, "kind")
+    _require_non_negative_int(attempt, "attempt")
+    _require_sha256(system_sha256, "system_sha256")
+    _require_sha256(user_sha256, "user_sha256")
+    return _prefixed_id(
+        ID_PREFIX_RENDERED_PROMPT,
+        {
+            "kind": kind,
+            "attempt": attempt,
+            "system_sha256": system_sha256,
+            "user_sha256": user_sha256,
+        },
+    )
+
+
+# Fail-closed certification outcome labels (DR-03 acceptance #3). RunReceipt.outcome
+# stays a free nonempty string (v1 contract unchanged) — these are just the additive
+# vocabulary controller.loop uses so an evidence I/O failure during certification can
+# never be confused with a real GO/success receipt. INDETERMINATE_EXTERNAL_EFFECT
+# receipts carry stop_reason="evidence_io_failure" and are never auto-retried.
+OUTCOME_GO = "GO"
+OUTCOME_NO_GO = "NO_GO"
+OUTCOME_INDETERMINATE_EXTERNAL_EFFECT = "INDETERMINATE_EXTERNAL_EFFECT"

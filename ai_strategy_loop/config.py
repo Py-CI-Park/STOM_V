@@ -663,6 +663,20 @@ class LoopConfig:
     #   ad-hoc 읽혔다 — 오타(예: evidence_ledger_enable)가 조용히 OFF로 흡수되는 것을
     #   막기 위해 여기 정식 필드로 선언한다(R07 활성화 전 CL-R05/R06 리뷰 시정).
     evidence_ledger_enabled: bool = False
+    # --- DR-02: Manifest v2 (additive, opt-in) — controller/loop.py + evidence_contract.py ---
+    # manifest_v2_enabled: True면 run 시작 시 이미 만들어지는 EvaluationManifest(v1) 옆에
+    #   evidence_contract.ManifestV2(효과적 프로파일 해시/이름 + data/universe/engine/
+    #   cost/fill/capital/session/prompt/seed/code/config 전체 바인딩)를 추가로 빌드한다.
+    #   v1 EvaluationManifest/DB 스키마/evidence_store는 전혀 건드리지 않으며(영속화 없음),
+    #   빌드 실패는 흡수한다(루프를 막지 않음). 기본 OFF면 run_loop 동작이 기존과
+    #   byte-동일하다(하위호환) — v11 기동 불변.
+    manifest_v2_enabled: bool = False
+    # v2_certification_enabled: True면 (향후 인증 파이프라인이) ManifestV2 필수 카테고리
+    #   결측을 fail-closed로 차단해야 한다는 선언적 의도 플래그다. 현재 어떤 코드 경로도
+    #   이 플래그를 평가하지 않는다(순수 선언; 하위호환). Manifest v2 자체의 fail-closed
+    #   검증(evidence_contract.build_manifest_v2/ManifestV2.__post_init__)은 이 플래그와
+    #   무관하게 항상 적용된다.
+    v2_certification_enabled: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

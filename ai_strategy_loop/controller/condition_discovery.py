@@ -14,6 +14,8 @@ import hashlib
 import json
 import math
 
+from ai_strategy_loop.controller.evidence_contract import canonical_json, sha256_hex
+
 PRESET_FAST = "fast"
 PRESET_RESEARCH = "research"
 PRESET_PROMOTION = "promotion"
@@ -1573,6 +1575,78 @@ def effective_condition_discovery_runtime_config(config: Any) -> Any:
     return effective
 
 
+def canonical_effective_profile(config: Any) -> Dict[str, Any]:
+    """Build the DR-02 canonical effective-profile projection (Appendix-C field taxonomy).
+
+    Resolves ``config`` through :func:`effective_condition_discovery_runtime_config`
+    first, then projects only the evaluation-input categories that matter for a run's
+    identity (data/universe/engine/cost/fill/capital/session/prompt/seed/code/config).
+    The projection is byte-identical whenever the CLI parser dict, the UI/launch-config
+    form dict, and a research-preset dict resolve to equivalent ``LoopConfig`` values --
+    all three funnel through the same ``config_from_dict`` +
+    ``effective_condition_discovery_runtime_config`` pipeline before reaching here, and
+    the hash below is computed over sorted-key canonical JSON (order-independent).
+
+    Returns a JSON-safe dict with the profile body plus ``effective_profile_name`` and
+    ``effective_profile_hash`` (sha256 of the canonical-JSON body, see
+    ``evidence_contract.canonical_json``/``sha256_hex``).
+    """
+    effective = effective_condition_discovery_runtime_config(config)
+    profile_name = str(getattr(effective, "condition_discovery_preset", PRESET_FAST) or PRESET_FAST)
+    timeframe = str(getattr(effective, "bt_timeframe", TIMEFRAME_MIN) or TIMEFRAME_MIN)
+    body: Dict[str, Any] = {
+        "data": {
+            "bt_start": getattr(effective, "bt_start", None),
+            "bt_end": getattr(effective, "bt_end", None),
+            "bt_full_start": getattr(effective, "bt_full_start", None),
+            "bt_full_end": getattr(effective, "bt_full_end", None),
+        },
+        "universe": {
+            "bt_scope": getattr(effective, "bt_scope", None),
+            "bt_one_code": getattr(effective, "bt_one_code", None),
+        },
+        "engine": {
+            "bt_engine_mode": getattr(effective, "bt_engine_mode", None),
+            "bt_engine_count": getattr(effective, "bt_engine_count", None),
+            "bt_warm_engine_count": getattr(effective, "bt_warm_engine_count", None),
+        },
+        "cost": {
+            "mdd_cap": getattr(effective, "mdd_cap", None),
+        },
+        "fill": {
+            "bt_timeout": getattr(effective, "bt_timeout", None),
+            "bt_warm_run_timeout": getattr(effective, "bt_warm_run_timeout", None),
+        },
+        "capital": {
+            "bt_betting": getattr(effective, "bt_betting", None),
+        },
+        "session": {
+            "start": getattr(effective, "bt_universe_start_time", None),
+            "end": getattr(effective, "bt_universe_end_time", None),
+            "timeframe": timeframe,
+        },
+        "prompt": {
+            "prompt_logging_enabled": bool(getattr(effective, "prompt_logging_enabled", False)),
+        },
+        "seed": {
+            "seed_mode": str(getattr(effective, "seed_mode", None) or ""),
+            "seed_source": str(getattr(effective, "seed_source", None) or ""),
+        },
+        "code": {
+            "evolution_mode": str(getattr(effective, "evolution_mode", None) or ""),
+        },
+        "config": {
+            "condition_discovery_process": getattr(effective, "condition_discovery_process", None),
+            "condition_discovery_preset": profile_name,
+        },
+    }
+    profile_hash = sha256_hex(canonical_json(body))
+    profile = dict(body)
+    profile["effective_profile_name"] = profile_name
+    profile["effective_profile_hash"] = profile_hash
+    return profile
+
+
 def resolve_condition_discovery_policy(
     config: Any,
     *,
@@ -1672,4 +1746,5 @@ __all__ = [
     "score_research_lane",
     "build_research_loop_policy",
     "resolve_time_window_policy",
+    "canonical_effective_profile",
 ]
