@@ -9,6 +9,8 @@ import json
 
 import pytest
 
+from alpha_lab import registry
+from alpha_lab.discipline import ledger as authority_ledger
 from alpha_lab.registry import (
     SealViolation,
     append_trials,
@@ -143,6 +145,32 @@ class TestTrialsLedger:
         with pytest.raises(ValueError):
             total_trials(ledger, "P9")
 
+    def test_canonical_authority_alias_rejected_without_mutation(self, tmp_path, monkeypatch):
+        canonical = tmp_path / "authority" / "n_trials_ledger.jsonl"
+        canonical.parent.mkdir()
+        canonical.write_bytes(b'{"existing": "authority"}\n')
+        monkeypatch.setattr(authority_ledger, "DEFAULT_LEDGER_PATH", canonical)
+        canonical_alias = canonical.parent / "." / canonical.name
+        before = canonical.read_bytes()
+
+        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
+            append_trials(
+                canonical_alias, program="P1", batch="legacy", n=1, now=NOW
+            )
+
+        assert canonical.read_bytes() == before
+
+    def test_isolated_legacy_ledger_is_append_only_not_v2_authority(self, tmp_path):
+        legacy = tmp_path / "legacy-runs" / "trial_counter.jsonl"
+        append_trials(legacy, program="P1", batch="first", n=3, now=NOW)
+        first_bytes = legacy.read_bytes()
+        append_trials(legacy, program="P2", batch="second", n=4, now=NOW)
+
+        assert legacy.read_bytes().startswith(first_bytes)
+        assert total_trials(legacy) == 7
+        assert registry.LEGACY_NON_AUTHORITATIVE_SCHEMA != authority_ledger.REQUIRED_KEYS
+        with pytest.raises(authority_ledger.LedgerSchemaError, match="필수 키 누락"):
+            authority_ledger.read_all(legacy)
 
 class TestV2ProgramTags:
     """알파 랩 v2 additive 태그(V2M·V2F) — 기존 4태그 불변 + 신규 허용."""
