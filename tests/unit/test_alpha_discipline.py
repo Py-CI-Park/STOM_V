@@ -217,7 +217,7 @@ class TestAppendTrial:
         path.write_bytes(json.dumps(VALID_ROW, ensure_ascii=False).encode("utf-8"))
         ledger.append_trial(path=path, **_row(target="둘째 행"))
         assert len(ledger.read_all(path)) == 2  # 행 붙음 없음
-def _sealed_contract(*, roots, non_python=()) -> str:
+def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
     contract = {
         "schema_version": 2,
         "hypothesis_id": "H-unit",
@@ -227,6 +227,7 @@ def _sealed_contract(*, roots, non_python=()) -> str:
         "multiplicity_family": "unit family",
         "kill_rule": "non-positive effect",
         "dependency_roots": list(roots),
+        "dynamic_python_dependencies": list(dynamic_python),
         "non_python_dependencies": list(non_python),
     }
     return "> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract, sort_keys=True) + "\n```\n"
@@ -237,7 +238,7 @@ def _bindings(tmp_path):
     input_file.write_text('{"input": 1}\n', encoding="utf-8")
     result_file.write_text('{"result": 1}\n', encoding="utf-8")
     ref = lambda file: {"path": file.name, "sha256": hashlib.sha256(file.read_bytes()).hexdigest()}
-    return [ref(input_file)], [ref(result_file)], [{"name": "candidate-a", "sha256": "c" * 64}]
+    return [ref(input_file)], [ref(result_file)], [{"name": "candidate-a", "buy_sha256": "b" * 64, "sell_sha256": "c" * 64}]
 
 def _v2_chain(tmp_path):
     if shutil.which("git") is None:
@@ -335,7 +336,7 @@ class TestLedgerV2:
             ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=candidates, path=tmp_path / "l.jsonl", **_row())
         inputs, results, candidates = _bindings(tmp_path)
         with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "sha256": "d" * 64}], path=tmp_path / "l.jsonl", **_row())
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "buy_sha256": "d" * 64, "sell_sha256": "e" * 64}], path=tmp_path / "l.jsonl", **_row())
 
     def test_append_v2_allows_empty_candidates_only_for_negative_kill(self, tmp_path):
         receipt_path, usage_path, inputs, results, _ = _v2_chain(tmp_path)
@@ -343,6 +344,70 @@ class TestLedgerV2:
             ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], path=tmp_path / "l.jsonl", **_row())
         record = ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], negative_or_kill=True, path=tmp_path / "l.jsonl", **_row())
         assert record["evidence"]["candidate_set_sha256"] == evidence.sha256_canonical([])
+    def test_candidate_identity_requires_exact_buy_sell_hashes_and_name(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        usage = json.loads(usage_path.read_text(encoding="utf-8"))
+        evidence_id, identity = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=candidates, negative_or_kill=False, repo_root=tmp_path,
+        )
+        assert identity["candidate_set"] == candidates
+        renamed = [{**candidates[0], "name": "candidate-b"}]
+        changed_buy = [{**candidates[0], "buy_sha256": "d" * 64}]
+        renamed_id, _ = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=renamed, negative_or_kill=False, repo_root=tmp_path,
+        )
+        changed_buy_id, _ = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=changed_buy, negative_or_kill=False, repo_root=tmp_path,
+        )
+        assert evidence_id not in {renamed_id, changed_buy_id}
+        with pytest.raises(evidence.EvidenceSchemaError):
+            evidence.validate_measurement_bindings(
+                input_artifacts=inputs, result_artifacts=results,
+                candidate_set=[{"name": "candidate-a", "sha256": "c" * 64}],
+                negative_or_kill=False, repo_root=tmp_path,
+            )
+    def test_promotion_rejects_invalid_unrelated_authority_ledger_row(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        ledger_path = tmp_path / "ledger.jsonl"
+        record = ledger.append_trial_v2(
+            repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+            input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+            path=ledger_path, **_row(),
+        )
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt_id = receipt["receipt_id"]
+        canonical_receipt = tmp_path / "receipts" / f"{receipt_id}.json"
+        canonical_receipt.parent.mkdir()
+        canonical_receipt.write_bytes(receipt_path.read_bytes())
+        ref = lambda path: {
+            "path": path.relative_to(tmp_path).as_posix(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+        manifest = {
+            "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
+            "created_at": "2026-07-14T00:04:00+00:00",
+            "evidence_id": record["evidence_id"],
+            "ledger": {**ref(ledger_path), "record_sha256": evidence.sha256_canonical(record)},
+            "gate_receipt": ref(canonical_receipt),
+            "gate_claim": ref(usage_path),
+            "input_artifacts": inputs, "result_artifacts": results,
+            "candidate_set": candidates,
+            "candidate_set_sha256": evidence.sha256_canonical(candidates),
+        }
+        manifest_path = tmp_path / "promotion.json"
+        malformed_unrelated = {**VALID_ROW, "extra": "invalid"}
+        ledger_path.write_text(
+            ledger_path.read_text(encoding="utf-8") + json.dumps(malformed_unrelated) + "\n",
+            encoding="utf-8",
+        )
+        manifest["ledger"]["sha256"] = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="ledger authority validation failed"):
+            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
 
 
 class TestStrictV1Reads:
@@ -569,12 +634,51 @@ class TestPrereg:
             "sample_floors": {"qualified": 2},
             "multiplicity_family": "unit family",
             "dependency_roots": ["measure.py"],
-            "non_python_dependencies": [],
+            "dynamic_python_dependencies": [],
         }
         doc = tmp_path / "prereg.md"
         doc.write_text("> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract) + "\n```\n", encoding="utf-8")
         with pytest.raises(evidence.EvidenceSchemaError):
             prereg.finalize_prereg(doc, repo_root=tmp_path, code_files=(code,), manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00")
+    def test_finalize_prereg_includes_executed_package_initializers(self, tmp_path):
+        package = tmp_path / "pkg"
+        package.mkdir()
+        (package / "__init__.py").write_text("PACKAGE = True\n", encoding="utf-8")
+        worker = package / "worker.py"
+        worker.write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import pkg.worker\n", encoding="utf-8")
+        doc = tmp_path / "prereg.md"
+        doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        seal = prereg.finalize_prereg(
+            doc, repo_root=tmp_path,
+            code_files=(measure, package / "__init__.py", worker),
+            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == [
+            "measure.py", "pkg/__init__.py", "pkg/worker.py",
+        ]
+
+    def test_finalize_prereg_requires_exact_dynamic_dependency_declaration(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        plugin = tmp_path / "plugin.py"
+        measure.write_text("import importlib\nimportlib.import_module('plugin')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        doc = tmp_path / "prereg.md"
+        doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="dynamic_python_dependencies"):
+            prereg.finalize_prereg(
+                doc, repo_root=tmp_path, code_files=(measure, plugin),
+                manifest_path=tmp_path / "bad.json", sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        doc.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+        prereg.finalize_prereg(
+            doc, repo_root=tmp_path, code_files=(measure, plugin),
+            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+        )
 
 
 # ---------------------------------------------------------------------------

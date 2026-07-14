@@ -36,7 +36,7 @@ DEFAULT_KILL_CRITERIA: tuple[str, ...] = (
     "kill-3(재현 게이트): 스칼라/벡터 등가 대조 미달 → 해당 경로 금지, 전 경로 미달 시 중단",
 )
 _CONTRACT_FENCE = re.compile(r"```json prereg-contract-v2\s*\n(?P<contract>.*?)\n```", re.DOTALL)
-_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "dependency_roots", "non_python_dependencies"}
+_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "dependency_roots", "dynamic_python_dependencies", "non_python_dependencies"}
 
 
 def _front_sections(params: dict) -> list[str]:
@@ -251,15 +251,25 @@ def _parse_contract(text: str, root: Path) -> dict:
     floors = contract["sample_floors"]
     if not isinstance(floors, dict) or not floors or any(not isinstance(name, str) or not name.strip() or not isinstance(floor, int) or isinstance(floor, bool) or floor <= 0 for name, floor in floors.items()):
         raise EvidenceSchemaError("sample_floors must be a non-empty object of positive integer floors")
-    roots, dependencies = contract["dependency_roots"], contract["non_python_dependencies"]
-    if not isinstance(roots, list) or not roots or not isinstance(dependencies, list):
-        raise EvidenceSchemaError("dependency_roots must be non-empty and non_python_dependencies must be a list")
+    roots, dynamic_dependencies, dependencies = (
+        contract["dependency_roots"],
+        contract["dynamic_python_dependencies"],
+        contract["non_python_dependencies"],
+    )
+    if not isinstance(roots, list) or not roots or not isinstance(dynamic_dependencies, list) or not isinstance(dependencies, list):
+        raise EvidenceSchemaError("dependency_roots must be non-empty and dynamic_python_dependencies/non_python_dependencies must be lists")
     root_paths = [_contract_repo_path(item, f"dependency_roots[{index}]", root) for index, item in enumerate(roots)]
+    dynamic_paths = [_contract_repo_path(item, f"dynamic_python_dependencies[{index}]", root) for index, item in enumerate(dynamic_dependencies)]
     dependency_paths = [_contract_repo_path(item, f"non_python_dependencies[{index}]", root) for index, item in enumerate(dependencies)]
-    if any(not item.endswith(".py") for item in root_paths) or any(item.endswith(".py") for item in dependency_paths):
-        raise EvidenceSchemaError("dependency_roots must be Python and non_python_dependencies must not be Python")
-    if root_paths != sorted(root_paths) or len(set(root_paths)) != len(root_paths) or dependency_paths != sorted(dependency_paths) or len(set(dependency_paths)) != len(dependency_paths):
-        raise EvidenceSchemaError("declared dependency paths must be sorted and unique")
+    if (
+        any(not item.endswith(".py") for item in root_paths)
+        or any(not item.endswith(".py") for item in dynamic_paths)
+        or any(item.endswith(".py") for item in dependency_paths)
+    ):
+        raise EvidenceSchemaError("dependency_roots and dynamic_python_dependencies must be Python; non_python_dependencies must not be Python")
+    for paths in (root_paths, dynamic_paths, dependency_paths):
+        if paths != sorted(paths) or len(set(paths)) != len(paths):
+            raise EvidenceSchemaError("declared dependency paths must be sorted and unique")
     return contract
 
 
@@ -273,7 +283,54 @@ def _module_file(root: Path, module: str) -> Path | None:
     return None
 
 
-def _local_imports(path: Path, root: Path) -> set[Path]:
+def _package_initializers(path: Path, root: Path) -> set[Path]:
+    """Return every local package initializer executed before *path* is imported."""
+    initializers: set[Path] = set()
+    parent = path.parent
+    while parent != root:
+        initializer = parent / "__init__.py"
+        if initializer.is_file():
+            initializers.add(initializer.resolve())
+        parent = parent.parent
+    return initializers
+
+
+def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
+    """Resolve literal local dynamic imports; reject non-literal local loader targets."""
+    found: set[Path] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        function = node.func
+        name = function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else ""
+        is_module_import = name in {"__import__", "import_module"}
+        is_file_loader = name in {"spec_from_file_location", "SourceFileLoader", "SourcelessFileLoader"}
+        if not (is_module_import or is_file_loader):
+            continue
+        target = node.args[0] if is_module_import and node.args else (
+            node.args[1] if is_file_loader and len(node.args) > 1 else next(
+                (keyword.value for keyword in node.keywords if keyword.arg in {"location", "path"}), None
+            )
+        )
+        if not isinstance(target, ast.Constant) or not isinstance(target.value, str):
+            raise EvidenceSchemaError(f"dynamic import/load target must be an exact string literal: {path}")
+        if is_module_import:
+            candidate = _module_file(root, target.value)
+        else:
+            location = Path(target.value)
+            candidate = (path.parent / location).resolve() if not location.is_absolute() else location.resolve()
+            if not candidate.is_file() or candidate.suffix != ".py":
+                candidate = None
+        if candidate is not None:
+            try:
+                candidate.relative_to(root)
+            except ValueError:
+                continue
+            found.add(candidate)
+    return found
+
+
+def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path]]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
@@ -296,18 +353,25 @@ def _local_imports(path: Path, root: Path) -> set[Path]:
             candidate = _module_file(root, module)
             if candidate is not None:
                 found.add(candidate)
-    return found
+                found.update(_package_initializers(candidate, root))
+    return found, _dynamic_local_dependencies(tree, path, root)
 
 
-def _derived_python_closure(root: Path, dependency_roots: list[str]) -> set[str]:
+def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[set[str], set[str]]:
     pending = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
     closure: set[Path] = set()
+    dynamic: set[Path] = set()
     while pending:
         current = pending.pop()
         if current not in closure:
             closure.add(current)
-            pending.extend(_local_imports(current, root) - closure)
-    return {path.relative_to(root).as_posix() for path in closure}
+            imports, dynamic_imports = _local_imports(current, root)
+            dynamic.update(dynamic_imports)
+            pending.extend((imports | dynamic_imports | set().union(*(_package_initializers(item, root) for item in dynamic_imports))) - closure)
+    return (
+        {path.relative_to(root).as_posix() for path in closure},
+        {path.relative_to(root).as_posix() for path in dynamic},
+    )
 
 
 def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
@@ -336,7 +400,10 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
             raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
     if len(declared) != len(set(declared)):
         raise EvidenceSchemaError("code_files must resolve to unique paths")
-    expected = _derived_python_closure(root, contract["dependency_roots"]) | set(contract["non_python_dependencies"])
+    python_closure, dynamic_dependencies = _derived_python_closure(root, contract["dependency_roots"])
+    if dynamic_dependencies != set(contract["dynamic_python_dependencies"]):
+        raise EvidenceSchemaError("dynamic_python_dependencies must exactly declare every local dynamic import/load target")
+    expected = python_closure | set(contract["non_python_dependencies"])
     if set(declared) != expected:
         raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
     manifest = [{"path": item, "sha256": hashlib.sha256((root / Path(*PurePosixPath(item).parts)).read_bytes()).hexdigest()} for item in sorted(expected)]

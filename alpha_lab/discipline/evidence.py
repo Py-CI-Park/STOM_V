@@ -133,13 +133,21 @@ def validate_measurement_bindings(
         raise EvidenceSchemaError("candidate_set must be a list")
     candidates: list[dict[str, str]] = []
     for index, item in enumerate(candidate_set):
-        candidate = _require_exact_keys(item, {"name", "sha256"}, f"candidate_set[{index}]")
+        candidate = _require_exact_keys(
+            item, {"name", "buy_sha256", "sell_sha256"}, f"candidate_set[{index}]"
+        )
         name = candidate["name"]
         if not isinstance(name, str) or not name.strip():
             raise EvidenceSchemaError(f"candidate_set[{index}].name must be non-empty")
-        candidates.append(
-            {"name": name, "sha256": require_full_sha256(candidate["sha256"], f"candidate_set[{index}].sha256")}
-        )
+        candidates.append({
+            "name": name,
+            "buy_sha256": require_full_sha256(
+                candidate["buy_sha256"], f"candidate_set[{index}].buy_sha256"
+            ),
+            "sell_sha256": require_full_sha256(
+                candidate["sell_sha256"], f"candidate_set[{index}].sell_sha256"
+            ),
+        })
     names = [candidate["name"] for candidate in candidates]
     if names != sorted(names) or len(names) != len(set(names)):
         raise EvidenceSchemaError("candidate_set names must be sorted and unique")
@@ -328,7 +336,6 @@ class PromotionManifestV2(TypedDict):
     result_artifacts: list[dict[str, str]]
     candidate_set: list[dict[str, str]]
     candidate_set_sha256: str
-    candidates: list[dict[str, str]]
 
 
 class PromotionResultV2(TypedDict):
@@ -344,25 +351,6 @@ class PromotionResultV2(TypedDict):
     backup_path: str | None
 
 
-def _validate_promotion_candidates(value: object) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        raise EvidenceSchemaError("promotion candidates must be a non-empty list")
-    candidates = []
-    for index, item in enumerate(value):
-        candidate = _require_exact_keys(
-            item, {"name", "buy_sha256", "sell_sha256"}, f"candidates[{index}]"
-        )
-        if not isinstance(candidate["name"], str) or not candidate["name"].startswith("ALP_"):
-            raise EvidenceSchemaError(f"candidates[{index}].name must start with ALP_")
-        candidates.append({
-            "name": candidate["name"],
-            "buy_sha256": require_full_sha256(candidate["buy_sha256"], f"candidates[{index}].buy_sha256"),
-            "sell_sha256": require_full_sha256(candidate["sell_sha256"], f"candidates[{index}].sell_sha256"),
-        })
-    names = [candidate["name"] for candidate in candidates]
-    if names != sorted(names) or len(names) != len(set(names)):
-        raise EvidenceSchemaError("promotion candidates must be sorted and unique")
-    return candidates
 
 
 def validate_promotion_manifest_v2(
@@ -373,7 +361,7 @@ def validate_promotion_manifest_v2(
     keys = {
         "schema_version", "kind", "status", "created_at", "evidence_id", "ledger",
         "gate_receipt", "gate_claim", "input_artifacts", "result_artifacts",
-        "candidate_set", "candidate_set_sha256", "candidates",
+        "candidate_set", "candidate_set_sha256",
     }
     manifest = _require_exact_keys(value, keys, "promotion manifest")
     if (manifest["schema_version"], manifest["kind"], manifest["status"]) != (2, "promotion_manifest", "PRE"):
@@ -390,9 +378,8 @@ def validate_promotion_manifest_v2(
         "gate_claim": _validate_file_ref(manifest["gate_claim"], "gate_claim", root, verify_files=verify_files),
         "input_artifacts": _validate_manifest(manifest["input_artifacts"], "input_artifacts", root, verify_files=verify_files),
         "result_artifacts": _validate_manifest(manifest["result_artifacts"], "result_artifacts", root, verify_files=verify_files),
-        "candidate_set": [],
+        "candidate_set": manifest["candidate_set"],
         "candidate_set_sha256": require_full_sha256(manifest["candidate_set_sha256"], "candidate_set_sha256"),
-        "candidates": _validate_promotion_candidates(manifest["candidates"]),
     }
     _, _, candidates, candidate_hash = validate_measurement_bindings(
         input_artifacts=result["input_artifacts"], result_artifacts=result["result_artifacts"],
@@ -450,20 +437,20 @@ def verify_promotion_manifest_v2(
     )
     if evidence_id != manifest["evidence_id"]:
         raise EvidenceSchemaError("promotion manifest evidence_id does not reconstruct")
+    from alpha_lab.discipline import ledger as authority_ledger
+
     ledger_path = root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts)
-    rows = []
-    for line_number, line in enumerate(ledger_path.read_text(encoding="utf-8").splitlines(), 1):
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise EvidenceSchemaError(f"ledger row {line_number} is not JSON") from exc
-        if isinstance(row, dict) and row.get("schema_version") == 2 and row.get("evidence_id") == evidence_id:
-            rows.append(row)
+    try:
+        authority_rows = authority_ledger.read_all(ledger_path)
+    except authority_ledger.LedgerSchemaError as exc:
+        raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
+    rows = [
+        row for row in authority_rows
+        if row.get("schema_version") == 2 and row.get("evidence_id") == evidence_id
+    ]
     if len(rows) != 1 or sha256_canonical(rows[0]) != manifest["ledger"]["record_sha256"]:
         raise EvidenceSchemaError("promotion manifest does not bind exactly one ledger v2 row")
-    if rows[0].get("evidence") != identity:
+    if rows[0]["evidence"] != identity:
         raise EvidenceSchemaError("ledger evidence does not match promotion evidence")
     return manifest, sha256_canonical(raw)
 
