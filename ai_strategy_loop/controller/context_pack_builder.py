@@ -26,7 +26,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Callable, Mapping, Optional
 
-from ..brain.pack_producer import produce_candidate_pack
+from ..brain.pack_producer import produce_candidate_pack, produce_candidate_pack_result
 from ..brain.prompt import MAX_RESEARCH_CONTEXT_PACK_TOKENS
 from ..brain.prompt import build_research_context_pack as _build_prompt_context_pack
 
@@ -240,6 +240,8 @@ def produce_research_candidate_pack(
     lanes: Optional[Mapping[str, int]] = None,
     axis_prompt_lines: Optional[list] = None,
     context_pack: Optional[Mapping[str, Any]] = None,
+    final_owner_enabled: bool = False,
+    methodology_version: str = "clr04_v1",
 ) -> Optional[dict]:
     """Context Pack + pack_producer 로 research_candidate_pack 을 만든다.
 
@@ -247,6 +249,11 @@ def produce_research_candidate_pack(
     None 을 반환한다 — analysis_result['research_candidate_pack'] 에 넣으면
     falsy 라서 cli.research_loop 의 결정론 폴백(mark_diagnostic_fallback,
     prompt credit 0)이 자연 발동한다.
+
+    DR-04 -- `final_owner_enabled` (default False = byte-identical v1 path)
+    additionally routes the pack through the canonical
+    `candidate_pool.select_official_candidate` final-owner selection and
+    exposes the pick as `pack['final_owner_selection']`.
     """
 
     try:
@@ -257,4 +264,14 @@ def produce_research_candidate_pack(
     if lines is None:
         raw_lines = sources.get("axis_prompt_lines") if isinstance(sources, Mapping) else None
         lines = [str(line) for line in raw_lines] if raw_lines else None
-    return produce_candidate_pack(context, provider, lanes=lanes, axis_prompt_lines=lines)
+    if not final_owner_enabled:
+        return produce_candidate_pack(context, provider, lanes=lanes, axis_prompt_lines=lines)
+    result = produce_candidate_pack_result(
+        context,
+        provider,
+        lanes=lanes,
+        axis_prompt_lines=lines,
+        final_owner_enabled=True,
+        methodology_version=methodology_version,
+    )
+    return result["candidate_pack"]

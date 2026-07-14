@@ -26,7 +26,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 from . import token_check
 from .liquidity_gate import has_liquidity_gate
-from .prompt import build_messages, extract_code
+from .prompt import build_messages, extract_code, render_messages
 from .token_check import DedupTracker
 from .variable_scope import check_variable_scope
 
@@ -319,6 +319,14 @@ def generate_strategy(
                     "model": getattr(result, "model", None),
                     "usage": last_usage,
                     "response_text": getattr(result, "text", "") or "",
+                    # DR-03(additive) — content-addressed identity for THIS actually
+                    #   rendered (system,user) pair. Pure/no I/O. LoopState.record_prompt
+                    #   independently recomputes the identical id from the same content
+                    #   when it persists the prompt row (real FK — see prompt.py
+                    #   render_messages / evidence_contract.compute_rendered_prompt_id).
+                    "actually_rendered_ids": render_messages(
+                        messages, kind=kind, attempt=attempt
+                    ).actually_rendered_ids,
                 })
             except Exception as _e:
                 logger.info("prompt 로깅 실패(무시): %s", _e)

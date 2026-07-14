@@ -249,6 +249,29 @@ def rowset_fingerprint(*, dataset_sha: str, window: str, row_keys: list[str]) ->
     return hashlib.sha256(payload.encode('utf-8')).hexdigest()
 
 
+# DR-04 -- additive only. ``ast_fingerprint``/``rowset_fingerprint`` above keep
+# their exact pre-DR-04 signatures/semantics; this section only adds a version
+# constant and a pure helper for building canonical full-row keys (a row's
+# *entire* semantic content, not just ``trade_id:net_pnl``) that callers may
+# feed into the unchanged ``rowset_fingerprint(row_keys=...)`` contract for
+# run-wide rowset-duplicate detection. No new fingerprint algorithm is
+# introduced -- callers still hash through the one ``rowset_fingerprint``.
+DR04_DEDUP_CONTRACT_VERSION = 'dr04_run_wide_dedup_v1'
+
+
+def canonical_full_row_key(row: Mapping[str, object]) -> str:
+    """Return one canonical full-semantic-row key for a rowset membership row.
+
+    Sorted-key JSON of the *whole* row (not just a trade_id/net_pnl subset) so
+    two rows are considered the same member only when every recorded field
+    matches. Pure/stdlib-only; never touches a DB/file/network.
+    """
+
+    import json  # noqa: PLC0415 -- kept local; the module has no top-level json import.
+
+    return json.dumps(dict(row), ensure_ascii=False, sort_keys=True, default=str)
+
+
 def validate_b_only(expression: str, *, timeframe: str, kind: str = 'buy') -> list[str]:
     """Return blocker reason codes for `expression` against the B-only approved surface.
 

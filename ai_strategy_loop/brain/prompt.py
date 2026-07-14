@@ -10,6 +10,7 @@ CRITICAL: 상위 프록시 API는 system 메시지를 필수로 요구한다 (�
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import math
@@ -17,6 +18,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
+from ai_strategy_loop.controller.evidence_contract import compute_rendered_prompt_id
 from .time_cap_bucket import time_cap_bucket_prompt_lines
 
 # v1 자산 디렉토리 (저장소 고정 위치).
@@ -1371,6 +1373,70 @@ def build_messages(
         {"role": "user", "content": "\n".join(user_lines)},
     ]
 
+
+
+# ---------------------------------------------------------------------
+# DR-03 — RenderedPrompt: pure content-addressed wrapper around an already-built
+#   messages list. Additive only — build_messages/build_repair_research_messages/
+#   build_discovery_research_messages above stay byte-unchanged (v1 adapter
+#   preserved); nothing existing calls render_messages, so default behavior is
+#   untouched. LoopState.record_prompt (controller/state.py) computes the SAME
+#   ID from the same (kind, attempt, system_sha256, user_sha256) tuple when it
+#   persists the actual prompt row, so ``actually_rendered_ids`` here matches the
+#   real, verifiable FK evidence rows can carry (see evidence_store.EvidenceStore.
+#   is_rendered_prompt / append_consumption(require_rendered=True)).
+# ---------------------------------------------------------------------
+
+@dataclasses.dataclass(frozen=True)
+class RenderedPrompt:
+    """A rendered (system, user) message pair plus its content-addressed identity.
+
+    ``actually_rendered_ids`` is a 1-tuple containing the single content-addressed
+    id for this rendered prompt (kept as a tuple, not a scalar, so future multi-
+    message-pair renders can extend it without an API break). ``bundle_receipt``
+    is a small JSON-safe dict describing what was actually rendered (byte counts
+    only — never raw content) for auditability.
+    """
+
+    messages: Tuple[Mapping[str, str], ...]
+    actually_rendered_ids: Tuple[str, ...]
+    bundle_receipt: Mapping[str, Any]
+
+
+def render_messages(messages: List[Dict[str, str]], *, kind: str, attempt: int = 1) -> RenderedPrompt:
+    """Wrap an already-built ``messages`` list (see ``build_messages``) with its
+    immutable content-addressed identity.
+
+    Pure function — no I/O, no DB. ``kind``/``attempt`` plus the sha256 of each
+    message's content deterministically produce the same id for the same content
+    every time (see ``evidence_contract.compute_rendered_prompt_id``), which is
+    what makes DR-03 deterministic-resume possible: the id for "the next prompt"
+    after an interrupted+resumed run is identical to the id an uninterrupted run
+    would have produced for that same generation, because it depends only on
+    already-persisted deterministic content — never on wall-clock time or a
+    row-count/sequence position.
+    """
+    system_text = next((m.get("content", "") for m in messages if m.get("role") == "system"), "")
+    user_text = next((m.get("content", "") for m in messages if m.get("role") == "user"), "")
+    system_sha256 = _sha256_text(system_text)
+    user_sha256 = _sha256_text(user_text)
+    rendered_id = compute_rendered_prompt_id(kind, int(attempt), system_sha256, user_sha256)
+    frozen_messages = tuple(
+        {"role": m.get("role", ""), "content": m.get("content", "")} for m in messages
+    )
+    bundle_receipt = {
+        "kind": kind,
+        "attempt": int(attempt),
+        "system_bytes": len(system_text.encode("utf-8")),
+        "user_bytes": len(user_text.encode("utf-8")),
+        "system_sha256": system_sha256,
+        "user_sha256": user_sha256,
+    }
+    return RenderedPrompt(
+        messages=frozen_messages,
+        actually_rendered_ids=(rendered_id,),
+        bundle_receipt=bundle_receipt,
+    )
 
 def extract_code(response_text: str) -> str:
     """LLM 응답에서 python 코드 블록을 추출한다.

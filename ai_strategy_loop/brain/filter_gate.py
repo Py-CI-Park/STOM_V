@@ -280,3 +280,85 @@ def is_noop_time_window(
     lo_covers = lo is None or lo <= session_lo
     hi_covers = hi is None or hi >= session_hi
     return lo_covers and hi_covers
+
+
+# ===================================================================
+# DR-04 -- branch-aware OR (DNF) validator (additive, pure/no-exception).
+#   Background: an `A or B` entry condition only needs ONE branch to fire, so
+#   "the whole expression mentions a time/liquidity/category gate" is not
+#   sufficient -- EACH top-level `or` branch must independently satisfy the
+#   common gates, otherwise a narrow branch can silently bypass every gate.
+#   This module never runs/evaluates the code; it only parses+re-renders it
+#   with `ast` (stdlib) to split the top-level boolean-OR branches, then
+#   reuses `categories_present` (unchanged) per branch.
+# ===================================================================
+import ast as _ast  # noqa: E402 - kept local to the DR-04 section, stdlib only.
+
+
+def _first_if_test(code: str):
+    try:
+        module = _ast.parse(code, mode="exec")
+    except SyntaxError:
+        return None
+    for node in _ast.walk(module):
+        if isinstance(node, _ast.If):
+            return node.test
+    return None
+
+
+def split_or_branches(code: str) -> list:
+    """Split `code` into its top-level boolean-OR branches (each re-rendered as code).
+
+    Fail-open: returns `[code]` unchanged when the snippet has no top-level
+    `or` or cannot be parsed as a single expression/`if` test, so callers
+    never need to special-case unparseable input -- a single-branch
+    expression is simply its own only branch.
+    """
+
+    stripped = _strip_comments(code)
+    test = None
+    try:
+        test = _ast.parse(stripped.strip(), mode="eval").body
+    except SyntaxError:
+        test = _first_if_test(stripped)
+    if test is None:
+        return [code]
+    if isinstance(test, _ast.BoolOp) and isinstance(test.op, _ast.Or):
+        try:
+            return [_ast.unparse(value) for value in test.values]
+        except Exception:  # noqa: BLE001 - defensive; never raise on odd ASTs.
+            return [code]
+    return [code]
+
+
+def validate_branch_aware_gates(code: str, required_categories) -> dict:
+    """Validate that EACH top-level OR branch independently satisfies `required_categories`.
+
+    A single-branch expression (no top-level `or`) is its own only branch, so
+    this degrades to the plain whole-expression check when there is no OR.
+
+    Returns:
+        {'branches': [{'branch': str, 'categories_present': [...], 'missing': [...]}],
+         'branch_count': int, 'all_branches_pass': bool, 'missing_by_branch': {index: [...]}}
+    """
+
+    required = set(required_categories or ())
+    branches = split_or_branches(code)
+    missing_by_branch: Dict[int, list] = {}
+    branch_reports = []
+    for index, branch in enumerate(branches):
+        present = categories_present(branch)
+        missing = sorted(required - present)
+        branch_reports.append({
+            "branch": branch,
+            "categories_present": sorted(present),
+            "missing": missing,
+        })
+        if missing:
+            missing_by_branch[index] = missing
+    return {
+        "branches": branch_reports,
+        "branch_count": len(branches),
+        "all_branches_pass": not missing_by_branch,
+        "missing_by_branch": missing_by_branch,
+    }
