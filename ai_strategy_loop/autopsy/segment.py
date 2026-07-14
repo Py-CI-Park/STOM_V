@@ -601,3 +601,24 @@ def to_page_data(result: SegmentAutopsyResult, *, top: int = TOP_SEGMENTS) -> Di
         "thresholds": [_thr_row(t) for t in result.thresholds],
         "note": result.note,
     }
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 서술 섹션 어댑터. to_page_data(대시보드) 를 그대로
+#   재사용하고 스키마 라벨만 덧붙인다(재구현 금지, 가법 전용). 세그먼트 발견은
+#   그 자체로 행동 지시가 아니다 — build_analysis_card_v3 의 게이트를 거쳐야만
+#   actionable_directives 로 승격될 수 있다(여기서는 candidate_findings 로
+#   넘길 원재료만 만든다).
+# ---------------------------------------------------------------------------
+
+SEGMENT_CARD_SECTION_SCHEMA_V3 = "segment_card_section_v3"
+
+
+def to_card_section_v3(result: SegmentAutopsyResult, *, top: int = TOP_SEGMENTS) -> Dict[str, Any]:
+    """SegmentAutopsyResult를 AnalysisCardV3.segment_findings 항목 dict로 만든다.
+
+    to_page_data 를 그대로 재사용해 라벨(schema)만 덧붙인다 — 별도 판정 로직
+    없음(순수 서술). 게이트/directive 승격은 analysis_card_v3 의 책임이다.
+    """
+    page_data = to_page_data(result, top=top)
+    return {"schema": SEGMENT_CARD_SECTION_SCHEMA_V3, **page_data}

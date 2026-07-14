@@ -26,9 +26,14 @@ EN: Result CSVs record per-trade R_MFE (max favorable excursion %) and R_MAE (ma
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+
 
 import pandas as pd
+import hashlib
+import json
+
 
 from cli._utils import ensure_dataframe as _ensure_dataframe
 from cli.research_segments import (
@@ -39,19 +44,113 @@ from cli.research_segments import (
     add_time_segment,
 )
 
-# 결과 CSV 컬럼명(utf-8-sig·Korean). 우선 R_MFE/R_MAE를, 없으면 R_매수후최고/최저수익률로 폴백.
+# 결과 CSV 컬럼명(utf-8-sig·Korean). 정본 컬럼(R_매수후최고/최저수익률, analyze.py의
+#   MFE_COLUMN/MAE_COLUMN과 동일 우선순위)을 우선 쓰고, 없으면 R_MFE/R_MAE로 폴백한다
+#   — 다른 autopsy 모듈(trade_quant/analysis_card)과 별칭 해석 순서를 일치시킨다.
 _RETURN_COLUMN = "수익률"
 _PROFIT_COLUMN = "수익금"
-_MFE_PRIMARY = "R_MFE"
-_MAE_PRIMARY = "R_MAE"
-_MFE_FALLBACK = "R_매수후최고수익률"
-_MAE_FALLBACK = "R_매수후최저수익률"
+_MFE_PRIMARY = "R_매수후최고수익률"
+_MAE_PRIMARY = "R_매수후최저수익률"
+_MFE_FALLBACK = "R_MFE"
+_MAE_FALLBACK = "R_MAE"
 
 # 한 세그먼트 셀이 보고되려면 필요한 최소 거래 수(작은 셀의 잡음 통계 배제).
 DEFAULT_MIN_SAMPLES = 5
 
 # 라벨링 실패 행. add_*_segment가 컬럼 부재/범위밖에 부여하는 기본 라벨 — 세그먼트에서 제외.
 _UNCLASSIFIED = "미분류"
+
+
+# ---------------------------------------------------------------------------
+# AnalysisCardV3 identity/정본화 계약 (DR-05) — 거래행을 카드 콘텐츠 해시/식별에
+#   쓰기 전에 "어떤 컬럼을 어떤 이름으로 읽었는가"를 고정하는 선언적 계약이다.
+#   기존 compute_edge_metrics/edge_by_segment 는 전혀 건드리지 않는다(가법 전용).
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class TradeColumnContract:
+    """거래행 컬럼 계약 — 기존 별칭 해석 순서(_RETURN_COLUMN 등)와 동일한 기본값.
+
+    analysis_card_v3/trade_quant_section_v3 가 소스 정체성(카드 콘텐츠 해시)을
+    고정하기 전에 컬럼 해석을 명시적으로 못박아, 같은 CSV라도 컬럼 별칭이
+    바뀌면 해시가 달라지는 것을 방지한다(정직 계약 — 조용한 컬럼 스와핑 금지).
+    """
+
+    return_column: str = _RETURN_COLUMN
+    profit_column: str = _PROFIT_COLUMN
+    mfe_column: str = _MFE_PRIMARY
+    mae_column: str = _MAE_PRIMARY
+    date_column: str = "매수시간"
+    symbol_column: str = "종목코드"
+
+
+DEFAULT_TRADE_COLUMN_CONTRACT = TradeColumnContract()
+
+
+@dataclass(frozen=True, slots=True)
+class ResolvedTradeRow:
+    """canonical_trade_row/canonical_trade_key 가 소비하는 정규화된 거래 1행."""
+
+    date_key: str
+    symbol_key: str
+    return_value: Optional[float]
+    profit_value: Optional[float]
+
+
+def _coerce_float(value: Any) -> Optional[float]:
+    try:
+        if value is None:
+            return None
+        num = float(value)
+    except (TypeError, ValueError):
+        return None
+    return num if num == num else None  # NaN 배제.
+
+
+def resolve_trade_columns(
+    row: Mapping[str, Any], contract: TradeColumnContract = DEFAULT_TRADE_COLUMN_CONTRACT,
+) -> ResolvedTradeRow:
+    """거래행 dict 1개를 contract 기준으로 정규화한다(순수·무예외).
+
+    컬럼이 없거나 값이 비어있으면 빈 문자열/None 으로 정직하게 흡수한다.
+    """
+    date_raw = row.get(contract.date_column)
+    symbol_raw = row.get(contract.symbol_column)
+    return ResolvedTradeRow(
+        date_key=str(date_raw) if date_raw is not None else "",
+        symbol_key=str(symbol_raw) if symbol_raw is not None else "",
+        return_value=_coerce_float(row.get(contract.return_column)),
+        profit_value=_coerce_float(row.get(contract.profit_column)),
+    )
+
+
+def canonical_trade_row(
+    row: Mapping[str, Any], contract: TradeColumnContract = DEFAULT_TRADE_COLUMN_CONTRACT,
+) -> str:
+    """거래행 1개를 sort_keys JSON 문자열로 정규화한다(콘텐츠 해시/중복판정용).
+
+    resolve_trade_columns 로 뽑은 4개 필드만 싣는다 — 원본의 임의 추가 컬럼은
+    카드 콘텐츠 해시에 영향을 주지 않는다(정본 컬럼만 정체성에 반영).
+    """
+    resolved = resolve_trade_columns(row, contract)
+    payload = {
+        "date": resolved.date_key,
+        "symbol": resolved.symbol_key,
+        "return": resolved.return_value,
+        "profit": resolved.profit_value,
+    }
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def canonical_trade_key(
+    row: Mapping[str, Any], contract: TradeColumnContract = DEFAULT_TRADE_COLUMN_CONTRACT,
+) -> Tuple[str, str, str]:
+    """(date_key, symbol_key, sha256(canonical_trade_row)) 튜플 — 중복/식별 키."""
+    resolved = resolve_trade_columns(row, contract)
+    row_sha = hashlib.sha256(canonical_trade_row(row, contract).encode("utf-8")).hexdigest()
+    return (resolved.date_key, resolved.symbol_key, row_sha)
+
 
 
 def _numeric_series(df: pd.DataFrame, column: str) -> Optional[pd.Series]:

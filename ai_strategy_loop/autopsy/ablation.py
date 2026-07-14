@@ -751,3 +751,34 @@ def to_mutation_axis_suggestions(ablation_result: AblationResult
     for item in plain:
         suggestions.append(_ineffective_suggestion(item))
     return suggestions
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 서술 섹션 어댑터. row ablation은 행 기반 근사일 뿐
+#   재백테스트가 아니므로(모듈 docstring 계약) **별도로 승인된 공식 2x2가
+#   없는 한 인과 주장을 하지 않는다**. causal_claim 은 항상 False로 고정한다
+#   — analysis_card_v3.candidate_findings 로 승격하지 않는다(서술 전용).
+# ---------------------------------------------------------------------------
+
+ABLATION_CARD_SECTION_SCHEMA_V3 = "ablation_card_section_v3"
+
+# row ablation 단독으로는 절대 인과를 주장하지 않는다는 명시 계약(정직 라벨).
+ABLATION_NONCAUSAL_NOTE = (
+    "row ablation 은 거래행 기반 근사이며 재백테스트가 아니다 — 별도로 승인된 "
+    "공식 2x2 실험 없이는 인과(causal) 주장을 하지 않는다."
+)
+
+
+def to_card_section_v3(ablation_result: AblationResult) -> Dict[str, object]:
+    """AblationResult 를 AnalysisCardV3 서술 섹션 dict로 만든다.
+
+    to_dict()를 그대로 재사용하고 `causal_claim: False` 를 항상 못박는다 —
+    이 값은 어떤 입력에도 True 로 바뀌지 않는다(row ablation 은 non-causal).
+    """
+    return {
+        "schema": ABLATION_CARD_SECTION_SCHEMA_V3,
+        "causal_claim": False,
+        "noncausal_note": ABLATION_NONCAUSAL_NOTE,
+        **ablation_result.to_dict(),
+        "causal_claim": False,
+    }

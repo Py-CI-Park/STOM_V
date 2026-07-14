@@ -244,3 +244,29 @@ def format_hypothesis_feedback(judged: List[Hypothesis], side: str) -> str:
         lines.append(f"- 유효했음: {h.text}")
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 서술 섹션 어댑터. 가정(Hypothesis) 판정은 부호 델타
+#   기반이지 통계 검정(p/q값)이 아니므로, 여기서는 항상 서술(descriptive)로만
+#   카드에 실린다 — analysis_card_v3.candidate_findings 로 승격하지 않는다
+#   (가정 채택/기각을 통계 지시로 둔갑시키지 않는다, 정직 계약).
+# ---------------------------------------------------------------------------
+
+HYPOTHESIS_CARD_SECTION_SCHEMA_V3 = "hypothesis_card_section_v3"
+
+
+def to_card_section_v3(hypotheses: List[Hypothesis]) -> Dict[str, Any]:
+    """가정 목록을 AnalysisCardV3 서술 섹션 dict로 만든다(항상 non-directive).
+
+    각 행에 explicit `is_statistical_directive: False` 를 박아, 소비부(카드
+    빌더/렌더러)가 실수로 통계 지시로 취급하지 못하게 한다.
+    """
+    return {
+        "schema": HYPOTHESIS_CARD_SECTION_SCHEMA_V3,
+        "count": len(hypotheses),
+        "items": [
+            {**h.to_dict(), "is_statistical_directive": False}
+            for h in hypotheses
+        ],
+    }

@@ -20,7 +20,8 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
+
 
 import pandas as pd
 
@@ -118,7 +119,8 @@ def _expectancy_pf_winrate_payoff(returns: pd.Series) -> Dict[str, Any]:
         out["expectancy_pct_reason"] = "거래 0건"
 
     wins = returns[returns > 0]
-    losses = returns[returns <= 0]
+    # 무손익(수익률==0) 거래는 승/패 어느 쪽도 아니다 — payoff_ratio 분모/분자에서 제외.
+    losses = returns[returns < 0]
     out["win_rate"] = _safe_round(float(len(wins)) / n) if n else None
 
     gross_profit = float(wins.sum())
@@ -353,7 +355,10 @@ def _drawdown_contributors(
         return None
 
     equity = p.cumsum()
-    running_peak = equity.cummax()
+    # 낙폭의 기준(peak)은 0에서 시작한다(자금 곡선의 시작점) — 첫 거래가 곧바로
+    #   손실이어도 그 손실 전체가 낙폭으로 잡혀야 한다(peak를 첫 누적값으로 잡으면
+    #   단일 손실 거래의 낙폭이 0으로 사라지는 버그였다).
+    running_peak = equity.cummax().clip(lower=0.0)
     drawdown = equity - running_peak
 
     trough_idx = int(drawdown.idxmin())
@@ -366,14 +371,16 @@ def _drawdown_contributors(
         }
 
     peak_value = float(running_peak.iloc[trough_idx])
-    peak_idx = 0
+    # peak_idx = -1 은 '시리즈 시작 이전의 가상 0 지점'(zero-origin peak)을 뜻한다 —
+    #   낙폭 구간이 첫 거래부터 시작하는 경우(peak_value==0 이 시리즈 내에 없음)를 표현.
+    peak_idx = -1
     for i in range(trough_idx, -1, -1):
         if math.isclose(float(equity.iloc[i]), peak_value, rel_tol=1e-9, abs_tol=1e-9):
             peak_idx = i
             break
 
     window = range(peak_idx + 1, trough_idx + 1)
-    total_decline = abs(float(equity.iloc[trough_idx]) - float(equity.iloc[peak_idx]))
+    total_decline = abs(float(equity.iloc[trough_idx]) - peak_value)
 
     # 기여자 = 최대낙폭 구간 내 **손실 거래만**(아키텍트 리뷰 MEDIUM 반영).
     #   share 분모는 구간 내 총손실(gross loss) — 구간 내 이익 거래가 상쇄해도
@@ -569,15 +576,26 @@ def analyze_trade_table(csv_path: str, *, fine_time: bool = False, top_n: int = 
         if trade_count == 0:
             return {**empty, "note": "유효한 수익률 값을 가진 거래 0건"}
 
-        is_win = returns > 0
-
         profit_col = _resolve(df, _PROFIT_AMOUNT_ALIASES)
         cum_col = _resolve(df, _CUM_PROFIT_ALIASES)
         buy_col = _resolve(df, _BUY_TIME_ALIASES)
+        sell_col = _resolve(df, _SELL_TIME_ALIASES)
         hold_col = _resolve(df, _HOLD_TIME_ALIASES)
         mfe_col = _resolve(df, _MFE_ALIASES)
         mae_col = _resolve(df, _MAE_ALIASES)
         id_col = _resolve(df, _TRADE_ID_ALIASES)
+
+        # streak/낙폭처럼 경로(순서)에 의존하는 지표는 입력 행 순서가 아니라
+        #   매수/매도 시간 기준의 정본 순서를 써야 한다 — 같은 거래 집합을 시간순이
+        #   아닌 다른 행 순서로 넣어도 결과(연속승패 길이, MDD)가 바뀌면 안 된다.
+        #   (거래id/종목명은 시간 순서를 보장하지 않으므로 정렬 키로 쓰지 않는다.)
+        sort_col = buy_col or sell_col
+        if sort_col is not None:
+            order = df[sort_col].astype(str).sort_values(kind="stable").index
+            df = df.loc[order].reset_index(drop=True)
+            returns = returns.loc[order].reset_index(drop=True)
+
+        is_win = returns > 0
 
         profit_amount = _numeric(df, profit_col)
         hold_time = _numeric(df, hold_col)
@@ -637,3 +655,117 @@ def analyze_trade_table(csv_path: str, *, fine_time: bool = False, top_n: int = 
         }
     except Exception as exc:  # noqa: BLE001 — 무예외 계약: 어떤 예외도 status로 흡수.
         return {**empty, "status": STATUS_ERROR, "error": f"{type(exc).__name__}: {exc}"}
+
+
+# ---------------------------------------------------------------------------
+# AnalysisCardV3 정본 섹션 (DR-05) — 표본/결측/집중도/tail/downside/CVaR/
+#   capacity·participation/비용 스트레스를 하나의 typed dict 섹션으로 묶는다.
+#   기존 analyze_trade_table 은 전혀 건드리지 않는다(가법 전용, 별도 공개 API).
+# ---------------------------------------------------------------------------
+
+TRADE_QUANT_SECTION_SCHEMA_V3 = "trade_quant_section_v3"
+
+# CVaR/tail 근사에 쓰는 하위 분위(worst 5%) — advisory 정밀도면 충분.
+_CVAR_TAIL_FRACTION = 0.05
+_TAIL_TOP_N = (1, 5, 10)
+
+
+def build_trade_quant_section(
+    rows: Sequence[Mapping[str, Any]], contract: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """거래행(dict 시퀀스)에서 AnalysisCardV3 정본 섹션을 만든다(순수·무예외).
+
+    Args:
+        rows: 거래행 dict 시퀀스(백테스트 per-trade CSV를 dict로 읽은 것).
+        contract: `ai_strategy_loop.fitness.edge_ratio.TradeColumnContract`
+            (None이면 기본 계약). 순환 import 회피를 위해 함수 내부에서 지연 import.
+
+    Returns:
+        dict(schema=TRADE_QUANT_SECTION_SCHEMA_V3, n_trades/n_days/n_symbols,
+        missing_count, excluded_duplicate_count, concentration, tail,
+        downside, capacity, cost_stress). status(SECTION_OK/insufficient)
+        메타 없이도 안전한 기본값(0/None)만 돌려준다 — 무예외 계약.
+    """
+    from ai_strategy_loop.fitness import edge_ratio as _edge_ratio  # noqa: PLC0415
+    from ai_strategy_loop.fitness import promotion_diagnostics as _promo  # noqa: PLC0415
+
+    active_contract = contract or _edge_ratio.DEFAULT_TRADE_COLUMN_CONTRACT
+    resolved = [_edge_ratio.resolve_trade_columns(row, active_contract) for row in rows]
+    n_trades = len(resolved)
+
+    dates = {r.date_key for r in resolved if r.date_key}
+    symbols = {r.symbol_key for r in resolved if r.symbol_key}
+    missing_count = sum(1 for r in resolved if r.return_value is None)
+
+    seen_keys = set()
+    excluded_duplicate_count = 0
+    for row in rows:
+        key = _edge_ratio.canonical_trade_key(row, active_contract)
+        if key in seen_keys:
+            excluded_duplicate_count += 1
+        else:
+            seen_keys.add(key)
+
+    profits = [r.profit_value for r in resolved if r.profit_value is not None]
+    returns = [r.return_value for r in resolved if r.return_value is not None]
+
+    concentration = None
+    if profits and sum(abs(p) for p in profits) > 0:
+        total_abs = sum(abs(p) for p in profits)
+        concentration = round(max(abs(p) for p in profits) / total_abs, 6)
+
+    tail: Dict[str, Any] = {}
+    if profits:
+        total_profit = sum(profits)
+        ordered = sorted(profits, reverse=True)
+        for top_n in _TAIL_TOP_N:
+            removed = sum(ordered[:top_n])
+            tail[f"top{top_n}_removed_total"] = round(total_profit - removed, 6)
+    else:
+        for top_n in _TAIL_TOP_N:
+            tail[f"top{top_n}_removed_total"] = None
+
+    downside: Dict[str, Any] = {"downside_deviation": None, "cvar_95": None}
+    if returns:
+        negatives = [r for r in returns if r < 0]
+        if negatives:
+            mean_neg = sum(negatives) / len(negatives)
+            variance = sum((r - mean_neg) ** 2 for r in negatives) / len(negatives)
+            downside["downside_deviation"] = round(variance ** 0.5, 6)
+        ordered_returns = sorted(returns)
+        tail_n = max(1, int(round(len(ordered_returns) * _CVAR_TAIL_FRACTION)))
+        worst = ordered_returns[:tail_n]
+        downside["cvar_95"] = round(sum(worst) / len(worst), 6) if worst else None
+
+    n_days = len(dates)
+    capacity = {
+        "trades_per_day": round(n_trades / n_days, 6) if n_days else None,
+        "note": "participation/capacity 는 실제 유동성 데이터가 없어 거래빈도 proxy 만 제공한다.",
+    }
+
+    cost_stress: Dict[str, Any] = {"status": "insufficient_data", "rows": ()}
+    if profits:
+        total_profit = sum(profits)
+        summary = _promo.OosTradeSummary(
+            name="trade_quant_section_v3", final_profit=float(total_profit), trade_count=n_trades,
+        )
+        stress = _promo.compute_slippage_stress(summary)
+        cost_stress = {
+            "status": stress.status,
+            "promotion_passed": stress.promotion_passed,
+            "rows": tuple({"haircut": row.haircut, "stressed_profit": row.stressed_profit} for row in stress.rows),
+        }
+
+    return {
+        "schema": TRADE_QUANT_SECTION_SCHEMA_V3,
+        "n_trades": n_trades,
+        "n_days": n_days,
+        "n_symbols": len(symbols),
+        "missing_count": missing_count,
+        "excluded_duplicate_count": excluded_duplicate_count,
+        "concentration": concentration,
+        "tail": tail,
+        "downside": downside,
+        "capacity": capacity,
+        "cost_stress": cost_stress,
+    }

@@ -149,6 +149,12 @@ def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
         return 0.0
 
     cov_xy = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
+    # 우상향 여부는 기울기 부호로 먼저 게이트한다 — 평평/하락 곡선(slope<=0)은
+    #   R²가 아무리 높아도(완벽한 하락 직선 포함) 0.0으로 취급한다.
+    slope = cov_xy / var_x
+    if slope <= 0.0:
+        return 0.0
+
     # 단순 선형회귀의 R² = corr(x, y)^2 = cov^2 / (var_x * var_y).
     r2 = (cov_xy * cov_xy) / (var_x * var_y)
 
@@ -954,7 +960,8 @@ def load_exit_quality_from_csv(csv_path: str, mfe_giveback_threshold: float = 1.
         return {}
 
     wins = [r for r in rets if r > 0.0]
-    losses = [r for r in rets if r <= 0.0]
+    # 무손익(수익률==0) 거래는 승/패 어느 쪽도 아니다 — payoff_ratio 분모/분자에서 제외.
+    losses = [r for r in rets if r < 0.0]
 
     # payoff_ratio = 평균이익 / abs(평균손실).
     if not losses:

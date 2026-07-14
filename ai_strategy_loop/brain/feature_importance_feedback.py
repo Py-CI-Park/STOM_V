@@ -140,3 +140,26 @@ def build_feature_importance_lines(
         for _, seg_label, feat, gap in scored[:MAX_CELLS_PER_AXIS]:
             lines.append(_hint_line(axis_ko, seg_label, feat, gap))
     return lines
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 영속 지시 렌더러(segment_feedback.render_directives_
+#   from_card_v3 짝). 카드가 이미 통과시킨 actionable_directives 만 그대로
+#   렌더한다 — 재판정/재해시 없음(동일-해시 렌더 경로 계약).
+# ---------------------------------------------------------------------------
+
+
+def render_directive_hints_from_card_v3(card: Any) -> List[str]:
+    """AnalysisCardV3.actionable_directives 를 'prefer 힌트' 라인으로 렌더한다.
+
+    segment_feedback.render_directives_from_card_v3 와 동일 계약 — 카드
+    content_hash 를 그대로 읽어 참조 태그로 달고, 재계산하지 않는다.
+    """
+    directives = getattr(card, "actionable_directives", None) or ()
+    content_hash = getattr(card, "content_hash", "")
+    lines: List[str] = []
+    for directive in directives:
+        statement = directive.get("statement") if isinstance(directive, dict) else None
+        if statement:
+            lines.append(f"[card:{content_hash}][prefer] {statement}")
+    return lines
