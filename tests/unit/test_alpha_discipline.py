@@ -698,6 +698,81 @@ class TestPrereg:
             doc, repo_root=tmp_path, code_files=(measure, plugin),
             manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
         )
+    def test_validate_prereg_seal_rejects_hand_authored_incomplete_closure(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        dependency = tmp_path / "dependency.py"
+        measure.write_text("import dependency\n", encoding="utf-8")
+        dependency.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        seal = {
+            "schema_version": 2, "kind": "prereg_seal", "status": "SEALED",
+            "sealed_at": "2026-07-14T00:00:00+00:00",
+            "sealed_doc": {"path": "prereg.md", "sha256": hashlib.sha256(document.read_bytes()).hexdigest()},
+            "code_manifest": [{"path": "measure.py", "sha256": hashlib.sha256(measure.read_bytes()).hexdigest()}],
+        }
+        with pytest.raises(evidence.EvidenceSchemaError, match="derived dependency closure"):
+            evidence.validate_prereg_seal(seal, repo_root=tmp_path, verify_files=True)
+
+    def test_finalize_prereg_seeds_declared_root_package_initializers(self, tmp_path):
+        package = tmp_path / "pkg"
+        package.mkdir()
+        initializer = package / "__init__.py"
+        initializer.write_text("PACKAGE = True\n", encoding="utf-8")
+        worker = package / "worker.py"
+        worker.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("pkg/worker.py",)), encoding="utf-8")
+        seal = prereg.finalize_prereg(
+            document, repo_root=tmp_path, code_files=(worker, initializer),
+            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == ["pkg/__init__.py", "pkg/worker.py"]
+
+    def test_finalize_prereg_resolves_alias_dynamic_and_relative_imports(self, tmp_path):
+        package = tmp_path / "pkg"
+        package.mkdir()
+        initializer = package / "__init__.py"
+        initializer.write_text("", encoding="utf-8")
+        dependency = package / "dependency.py"
+        dependency.write_text("VALUE = 1\n", encoding="utf-8")
+        plugin = tmp_path / "plugin.py"
+        plugin.write_text("VALUE = 2\n", encoding="utf-8")
+        measure = package / "measure.py"
+        measure.write_text(
+            "from importlib import import_module as load\nfrom . import dependency\nload('plugin')\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("pkg/measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+        seal = prereg.finalize_prereg(
+            document, repo_root=tmp_path,
+            code_files=(measure, initializer, dependency, plugin),
+            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == [
+            "pkg/__init__.py", "pkg/dependency.py", "pkg/measure.py", "plugin.py",
+        ]
+        assert evidence.validate_prereg_seal(seal, repo_root=tmp_path, verify_files=True) == seal
+
+    def test_finalize_prereg_rejects_unsupported_dynamic_loader_shape(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        plugin = tmp_path / "plugin.py"
+        measure.write_text(
+            "import importlib\nloader = importlib.import_module\nname = 'plugin'\nloader(name)\n",
+            encoding="utf-8",
+        )
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="exact string literal"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure, plugin),
+                manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+            )
 
 
 # ---------------------------------------------------------------------------

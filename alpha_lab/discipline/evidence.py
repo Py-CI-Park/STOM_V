@@ -172,6 +172,22 @@ def validate_measurement_bindings(
     return inputs, results, candidates, sha256_canonical(candidates)
 
 
+def _validate_prereg_seal_authority(result: PreregSealV2, root: Path) -> None:
+    """Bind a live seal manifest to the sealed document's derived closure."""
+    document = root / Path(*PurePosixPath(result["sealed_doc"]["path"]).parts)
+    text = document.read_text(encoding="utf-8")
+    if "> 지위: **SEALED**" not in text:
+        raise EvidenceSchemaError("sealed_doc is not explicitly SEALED")
+    if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
+        raise EvidenceSchemaError("sealed_doc retains draft marker")
+    from alpha_lab.discipline.prereg import derive_prereg_code_manifest
+
+    expected = sorted(derive_prereg_code_manifest(text, root))
+    actual = [item["path"] for item in result["code_manifest"]]
+    if actual != expected:
+        raise EvidenceSchemaError("code_manifest must equal the sealed document's derived dependency closure")
+
+
 def validate_prereg_seal(value: object, *, repo_root: Path | str, verify_files: bool = True) -> PreregSealV2:
     root = Path(repo_root).resolve()
     seal = _require_exact_keys(value, {"schema_version", "kind", "status", "sealed_at", "sealed_doc", "code_manifest"}, "prereg seal")
@@ -185,6 +201,8 @@ def validate_prereg_seal(value: object, *, repo_root: Path | str, verify_files: 
         "sealed_doc": _validate_file_ref(seal["sealed_doc"], "sealed_doc", root, verify_files=verify_files),
         "code_manifest": _validate_manifest(seal["code_manifest"], "code_manifest", root, verify_files=verify_files),
     }
+    if verify_files:
+        _validate_prereg_seal_authority(result, root)
     return result
 
 

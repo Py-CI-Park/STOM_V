@@ -295,27 +295,107 @@ def _package_initializers(path: Path, root: Path) -> set[Path]:
     return initializers
 
 
+def _dynamic_call_kinds(tree: ast.AST) -> dict[str, str]:
+    """Resolve statically bound aliases for supported dynamic import/load APIs."""
+    kinds = {
+        "__import__": "module",
+        "builtins.__import__": "module",
+        "importlib.import_module": "module",
+        "importlib.util.spec_from_file_location": "file",
+        "importlib.machinery.SourceFileLoader": "file",
+        "importlib.machinery.SourcelessFileLoader": "file",
+    }
+    aliases: dict[str, str] = {}
+    calls = {"__import__": "module"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bound = alias.asname or alias.name.split(".", 1)[0]
+                aliases[bound] = alias.name if alias.asname else bound
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            for alias in node.names:
+                canonical = f"{node.module}.{alias.name}"
+                if canonical in kinds:
+                    calls[alias.asname or alias.name] = kinds[canonical]
+        elif isinstance(node, ast.Assign):
+            canonical = _dotted_name(node.value, aliases)
+            if canonical in kinds:
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        calls[target.id] = kinds[canonical]
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "getattr"
+            and node.args
+        ):
+            continue
+        base = _dotted_name(node.args[0], aliases)
+        if base in {"importlib", "importlib.util", "importlib.machinery", "builtins"}:
+            raise EvidenceSchemaError("dynamic import/load through getattr is unsupported")
+    for name, canonical in aliases.items():
+        if canonical in kinds:
+            calls[name] = kinds[canonical]
+        for canonical_name, kind in kinds.items():
+            if canonical_name.startswith(f"{canonical}."):
+                calls[f"{name}{canonical_name[len(canonical):]}"] = kind
+    return calls
+
+
+def _dotted_name(node: ast.AST, aliases: dict[str, str]) -> str | None:
+    if isinstance(node, ast.Name):
+        return aliases.get(node.id, node.id)
+    if isinstance(node, ast.Attribute):
+        parent = _dotted_name(node.value, aliases)
+        return f"{parent}.{node.attr}" if parent else None
+    return None
+
+
+def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
+    if not target.startswith("."):
+        return _module_file(root, target)
+    package = list(path.relative_to(root).parent.parts)
+    dots = len(target) - len(target.lstrip("."))
+    if dots > len(package):
+        raise EvidenceSchemaError(f"relative dynamic import escapes repo package: {path}")
+    suffix = target[dots:]
+    module = package[:len(package) - dots + 1] + (suffix.split(".") if suffix else [])
+    return _module_file(root, ".".join(module))
+
+
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
-    """Resolve literal local dynamic imports; reject non-literal local loader targets."""
+    """Resolve supported literal dynamic imports/loaders and fail closed otherwise."""
+    calls = _dynamic_call_kinds(tree)
     found: set[Path] = set()
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
-        function = node.func
-        name = function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else ""
-        is_module_import = name in {"__import__", "import_module"}
-        is_file_loader = name in {"spec_from_file_location", "SourceFileLoader", "SourcelessFileLoader"}
-        if not (is_module_import or is_file_loader):
+        call_name = _dotted_name(node.func, {})
+        kind = calls.get(call_name) if call_name else None
+        if kind is None:
+            canonical = call_name
+            if canonical == "__import__":
+                kind = "module"
+            elif canonical in {
+                "builtins.__import__",
+                "importlib.import_module",
+                "importlib.util.spec_from_file_location",
+                "importlib.machinery.SourceFileLoader",
+                "importlib.machinery.SourcelessFileLoader",
+            }:
+                kind = "module" if canonical in {"builtins.__import__", "importlib.import_module"} else "file"
+        if kind is None:
             continue
-        target = node.args[0] if is_module_import and node.args else (
-            node.args[1] if is_file_loader and len(node.args) > 1 else next(
+        target = node.args[0] if kind == "module" and node.args else (
+            node.args[1] if kind == "file" and len(node.args) > 1 else next(
                 (keyword.value for keyword in node.keywords if keyword.arg in {"location", "path"}), None
             )
         )
         if not isinstance(target, ast.Constant) or not isinstance(target.value, str):
             raise EvidenceSchemaError(f"dynamic import/load target must be an exact string literal: {path}")
-        if is_module_import:
-            candidate = _module_file(root, target.value)
+        if kind == "module":
+            candidate = _dynamic_module_file(root, target.value, path)
         else:
             location = Path(target.value)
             candidate = (path.parent / location).resolve() if not location.is_absolute() else location.resolve()
@@ -358,7 +438,8 @@ def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path]]:
 
 
 def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[set[str], set[str]]:
-    pending = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
+    roots = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
+    pending = roots + [initializer for item in roots for initializer in _package_initializers(item, root)]
     closure: set[Path] = set()
     dynamic: set[Path] = set()
     while pending:
@@ -372,6 +453,16 @@ def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[se
         {path.relative_to(root).as_posix() for path in closure},
         {path.relative_to(root).as_posix() for path in dynamic},
     )
+
+
+def derive_prereg_code_manifest(text: str, repo_root: Path | str) -> set[str]:
+    """Derive the only valid code manifest from a sealed document contract."""
+    root = Path(repo_root).resolve()
+    contract = _parse_contract(text, root)
+    python_closure, dynamic_dependencies = _derived_python_closure(root, contract["dependency_roots"])
+    if dynamic_dependencies != set(contract["dynamic_python_dependencies"]):
+        raise EvidenceSchemaError("dynamic_python_dependencies must exactly declare every local dynamic import/load target")
+    return python_closure | set(contract["non_python_dependencies"])
 
 
 def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
@@ -388,7 +479,6 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
         raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
     if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
         raise EvidenceSchemaError("preregistration document retains draft marker")
-    contract = _parse_contract(text, root)
     declared = []
     for index, code_file in enumerate(code_files):
         candidate = Path(code_file).resolve()
@@ -400,10 +490,7 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
             raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
     if len(declared) != len(set(declared)):
         raise EvidenceSchemaError("code_files must resolve to unique paths")
-    python_closure, dynamic_dependencies = _derived_python_closure(root, contract["dependency_roots"])
-    if dynamic_dependencies != set(contract["dynamic_python_dependencies"]):
-        raise EvidenceSchemaError("dynamic_python_dependencies must exactly declare every local dynamic import/load target")
-    expected = python_closure | set(contract["non_python_dependencies"])
+    expected = derive_prereg_code_manifest(text, root)
     if set(declared) != expected:
         raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
     manifest = [{"path": item, "sha256": hashlib.sha256((root / Path(*PurePosixPath(item).parts)).read_bytes()).hexdigest()} for item in sorted(expected)]
