@@ -8,6 +8,9 @@ prerequisite).
 
 from __future__ import annotations
 
+import ast
+import dataclasses
+import json
 from datetime import datetime
 import hashlib
 from pathlib import Path
@@ -372,6 +375,72 @@ def validate_multi_hypothesis_candidate_pack(
     }
 
 
+# ===================================================================
+# DR-04 -- approved-B_* registry reconciliation (additive, default-OFF via the
+#   existing `enforce_approved_b_only` toggle above). ApprovedBRegistryV2 is an
+#   immutable, content-addressed snapshot of the approved B_* feature surface:
+#   construction is the only way to mint one (frozen dataclass + frozenset),
+#   so its `registry_id` always reflects exactly the approved set it was built
+#   from. `reconcile_approved_b_features` narrows `validate_b_only`'s existing
+#   `non_approved_variable:*` reasons to this specific registry snapshot --
+#   it never invents a new B-only algorithm, it only checks registry identity.
+# ===================================================================
+@dataclasses.dataclass(frozen=True)
+class ApprovedBRegistryV2:
+    """Immutable approved B_* feature registry with a content-addressed identity."""
+
+    approved_features: frozenset
+    timeframe: str
+    registry_id: str
+
+    def contains(self, feature_name: str) -> bool:
+        return feature_name in self.approved_features
+
+
+def build_approved_b_registry(
+    approved_features, *, timeframe: str = _SAFE_DEFAULT_TIMEFRAME,
+) -> ApprovedBRegistryV2:
+    """Build an immutable ApprovedBRegistryV2 with a deterministic content-hash identity."""
+
+    normalized = frozenset(
+        str(name) for name in approved_features if str(name).startswith('B_')
+    )
+    payload = json.dumps(
+        {'timeframe': timeframe, 'approved_features': sorted(normalized)}, sort_keys=True,
+    )
+    registry_id = 'b_registry_' + hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
+    return ApprovedBRegistryV2(approved_features=normalized, timeframe=timeframe, registry_id=registry_id)
+
+
+def reconcile_approved_b_features(
+    expression: str, *, timeframe: str, registry: ApprovedBRegistryV2, kind: str = 'buy',
+) -> list[str]:
+    """Return blocker reasons when `expression` references a ``B_*`` name absent from `registry`.
+
+    Only ``B_``-prefixed identifiers are registry-governed (the offline
+    engineered-feature naming convention); every other identifier is left to
+    the existing `validate_b_only`/variable-scope guard untouched. Never
+    raises -- an unparseable expression is reported as one reason, not raised.
+    """
+
+    reasons: list[str] = []
+    if registry.timeframe != timeframe:
+        reasons.append(f'registry_timeframe_mismatch:{registry.timeframe}!={timeframe}')
+    try:
+        tree = ast.parse(expression, mode='eval')
+    except SyntaxError:
+        reasons.append('unparseable_expression')
+        return reasons
+    b_names = sorted({
+        node.id for node in ast.walk(tree)
+        if isinstance(node, ast.Name) and node.id.startswith('B_')
+    })
+    for name in b_names:
+        if not registry.contains(name):
+            reasons.append(f'registry_rejected_variable:{name}')
+    return reasons
+
+
 def expression_result_from_candidate_pack(
     candidate_pack: dict,
     *,
@@ -448,6 +517,38 @@ def mark_diagnostic_fallback(expression_result: dict, *, reason: str) -> dict:
     marked['fallback_reason'] = reason
     marked['prompt_maturity_credit_allowed'] = False
     return marked
+
+
+# ===================================================================
+# DR-04 -- fallback/control-origin exclusion from AI-performance accounting
+#   (additive, read-only classifier). This never mutates a result; callers
+#   decide what "AI-performance accounting" means for their own aggregate
+#   (e.g. skip the item when summing prompt-maturity/AI-authored stats).
+# ===================================================================
+_CONTROL_ORIGIN_SOURCES = frozenset({_DIAGNOSTIC_FALLBACK_SOURCE, 'control', 'control_origin'})
+
+
+def is_ai_performance_eligible(expression_result: dict) -> bool:
+    """Return False when `expression_result` is fallback/control-origin, not AI-authored.
+
+    Mirrors the exact fields `mark_diagnostic_fallback` sets
+    (`source`/`fallback_used`) plus a generic `origin` field some callers
+    (e.g. candidate-pool proposals) attach for control-arm/negative-control
+    candidates. Defaults to True (AI-performance eligible) for anything else,
+    including the plain LLM research source.
+    """
+
+    if bool(expression_result.get('fallback_used')):
+        return False
+    source = str(expression_result.get('source') or '')
+    origin = str(expression_result.get('origin') or '')
+    return source not in _CONTROL_ORIGIN_SOURCES and origin not in _CONTROL_ORIGIN_SOURCES
+
+
+def candidate_ai_performance_eligible(candidate: dict) -> bool:
+    """Per-candidate variant of `is_ai_performance_eligible` for pool proposals."""
+
+    return is_ai_performance_eligible(candidate)
 
 
 def _format_value(value):

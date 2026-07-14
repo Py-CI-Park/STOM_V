@@ -26,7 +26,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 from . import token_check
 from .liquidity_gate import has_liquidity_gate
-from .prompt import build_messages, extract_code
+from .prompt import build_messages, extract_code, render_messages
 from .token_check import DedupTracker
 from .variable_scope import check_variable_scope
 
@@ -81,6 +81,7 @@ def generate_strategy(
     sparse_positive_prompt_enabled: bool = False,
     exec_budget_prompt_enabled: bool = False,
     report_principles_enabled: bool = False,
+    structure_principles_prompt_enabled: bool = False,
     sell_exec_budget_guard_enabled: bool = False,
     sell_max_window_calls: int = 8,
     principle_gate_enabled: bool = False,
@@ -90,6 +91,8 @@ def generate_strategy(
     pattern_cards: Optional[list] = None,
     segment_avoid_lines: Optional[list] = None,
     feature_hint_lines: Optional[list] = None,
+    card_directive_lines: Optional[list] = None,
+    band_seed_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
@@ -211,10 +214,13 @@ def generate_strategy(
             sparse_positive_prompt_enabled=sparse_positive_prompt_enabled,
             exec_budget_prompt_enabled=exec_budget_prompt_enabled,
             report_principles_enabled=report_principles_enabled,
+            structure_principles_prompt_enabled=structure_principles_prompt_enabled,
             hypothesis_feedback=hypothesis_feedback,
             few_shot_examples=few_shot_examples,
             segment_avoid_lines=segment_avoid_lines,
             feature_hint_lines=feature_hint_lines,
+            card_directive_lines=card_directive_lines,
+            band_seed_lines=band_seed_lines,
         )
 
         # --- 1) LLM 호출 ---
@@ -275,12 +281,14 @@ def generate_strategy(
                         "sparse_positive_prompt_enabled": sparse_positive_prompt_enabled,
                         "exec_budget_prompt_enabled": exec_budget_prompt_enabled,
                         "report_principles_enabled": report_principles_enabled,
+                        "structure_principles_prompt_enabled": structure_principles_prompt_enabled,
                         "sell_exec_budget_guard_enabled": sell_exec_budget_guard_enabled,
                         "target_daily_trades": target_daily_trades,
                         "min_filter_categories": min_filter_categories,
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
                         "has_few_shot": bool(few_shot_examples),
                         "has_segment_avoid": bool(segment_avoid_lines),
+                        "has_band_seed_hints": bool(band_seed_lines),
                         "guide_context": {
                             "system_prompt_assets": "v1",
                             "timeframe": timeframe,
@@ -313,6 +321,14 @@ def generate_strategy(
                     "model": getattr(result, "model", None),
                     "usage": last_usage,
                     "response_text": getattr(result, "text", "") or "",
+                    # DR-03(additive) — content-addressed identity for THIS actually
+                    #   rendered (system,user) pair. Pure/no I/O. LoopState.record_prompt
+                    #   independently recomputes the identical id from the same content
+                    #   when it persists the prompt row (real FK — see prompt.py
+                    #   render_messages / evidence_contract.compute_rendered_prompt_id).
+                    "actually_rendered_ids": render_messages(
+                        messages, kind=kind, attempt=attempt
+                    ).actually_rendered_ids,
                 })
             except Exception as _e:
                 logger.info("prompt 로깅 실패(무시): %s", _e)

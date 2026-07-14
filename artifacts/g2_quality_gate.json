@@ -1,0 +1,43 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "1차 리뷰(subagent 5-G2ArchitectReview): architecture CLEAR(감사 스크립트 읽기 전용 계약·brain 공개 함수만 사용), product BLOCK — 핵심 발견: 매도수량/강제청산 sell 허용의 진실 공급원 혼동(저장 검증기 superset env ≠ 백테 엔진 exec env), 허용 시 NameError→BackStop 무신호→타임아웃 홀 재개방 + exemplar_pool 노출. 반영 커밋 22c9671f: 화이트리스트 추가 철회 + 가드 계약 주석 명문화 + GUI 라이브 3이름 전 12조합 거부 회귀 테스트 + 보고서 v2(오탐 0건 확정, 짝 38/평가 41·8시나리오/7테스트 정정) + 아티팩트 재생성 정합. 델타 재리뷰(subagent 7-G2ArchitectReReview): BLOCK 4건 전부 해소, 3-lane CLEAR, recommendation APPROVE. 잔여 P3 코스메틱(중복 import)은 커밋 f5f7deba로 제거. 파생 접두 가드 홀 교정(누적/최고 초당·분당 계열 전용화)은 양 리뷰에서 안전 확인(dict_add_func 181개 전수 대조 오분류 0).",
+    "commands": ["subagent:5-G2ArchitectReview", "subagent:7-G2ArchitectReReview"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "QA/레드팀(subagent 6-G2QaRedTeam) 5케이스 passed: B2 재현성(감사 3회 실행 generated_at 제외 byte-identical — 비결정론 0), B3 읽기 전용 증명(strategy.db sha256 cf068e2e... 3회 측정 불변 + mode=ro URI 소스 확인), B4 보고서-아티팩트 기계 대조 전항 일치, B5 접두 오분류 전수 스캔(181개 중 '초당' 포함 10개 전부 tick 전용/'분당·분봉' 포함 15개 전부 min 전용, 교집합 0). B1(sell-허용 확인)은 아키텍트 BLOCK 반영 철회로 의미가 뒤집혀 **신규 회귀 테스트(GUI 라이브 3이름 × tf 2 × kind 2 = 12조합 전부 거부)로 대체 검증** — pytest 22 passed로 실행 확인. 철회 후 아티팩트 재생성 수치(72/197, 103/146=70.5%)는 리더가 재실행으로 확인, 재리뷰가 사유분포(매도수량 29/강제청산 29 거부 존재)를 '현행 가드로 실행된 독립 증거'로 교차 확인.",
+    "e2eCommands": ["PYTHONUTF8=1 python -m pytest tests/unit/test_audit_gate_false_rejects.py tests/unit/test_variable_scope_cumulative_prefix.py -p no:randomly -q", "PYTHONUTF8=1 python scripts/audit_gate_false_rejects.py"],
+    "redTeamCommands": ["determinism triple-run diff (case B2)", "strategy.db sha256 invariance probe (case B3)", "prefix misclassification full scan over 181 names (case B5)", "GUI-live name rejection 12-combo regression (pytest)"],
+    "artifactRefs": [
+      { "id": "g2-audit-json", "kind": "algorithm-test-report", "path": "artifacts/g2_gate_false_reject_audit.json", "description": "운영 strategy.db 146전략 게이트 사슬 전수 감사 실측(결정론·읽기 전용 검증됨)" }
+    ],
+    "contractCoverage": [
+      { "id": "cc-1", "contractRef": "G002-감사스크립트", "obligation": "검사 사슬 5종 전수 적용 + 검사별 거부율/사유 분포 산출(읽기 전용)", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-1", "ac-2"] },
+      { "id": "cc-2", "contractRef": "G002-오탐판정", "obligation": "인간 전략 거부의 오탐/정탐 분류 + 보고서 기록(하드게이트 불변)", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-3"] },
+      { "id": "cc-3", "contractRef": "G002-타이트판정", "obligation": "매수/매도식 과타이트 여부 수치 판정", "status": "covered", "surfaceEvidenceRefs": ["se-1"], "adversarialCaseRefs": ["ac-1"] }
+    ],
+    "surfaceEvidence": [
+      { "id": "se-1", "contractRef": "G002-감사스크립트", "surface": "algorithm", "invocation": "PYTHONUTF8=1 python scripts/audit_gate_false_rejects.py + pytest 22종 (22 passed)", "verdict": "passed", "artifactRefs": ["g2-audit-json"] }
+    ],
+    "adversarialCases": [
+      { "id": "ac-1", "contractRef": "G002-감사스크립트", "scenario": "감사 반복 실행 비결정론/운영 DB 오염", "expectedBehavior": "3회 byte-identical + strategy.db sha256 불변", "verdict": "passed", "artifactRefs": ["g2-audit-json"] },
+      { "id": "ac-2", "contractRef": "G002-감사스크립트", "scenario": "파생 접두 substring 전환의 오분류 유발", "expectedBehavior": "181개 이름 전수에서 교차 오분류 0", "verdict": "passed", "artifactRefs": ["g2-audit-json"] },
+      { "id": "ac-3", "contractRef": "G002-오탐판정", "scenario": "잘못된 진실 공급원으로 매수 누수/엔진 NameError 홀 개방", "expectedBehavior": "아키텍트 레드팀이 검출(BLOCK)→철회+12조합 거부 회귀 고정", "verdict": "passed", "artifactRefs": ["g2-audit-json"] }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT(리더, G2 변경 파일 한정): 1차 패스에서 블로킹 0이었으나 아키텍트 레인이 실질 결함(진실 공급원 혼동)을 검출 — 철회 커밋 22c9671f + 코스메틱 f5f7deba로 수정 후 전체 루프 재실행: 대상 스위트 59 passed → 정정 후 22 passed(대상 2파일) + 감사 재실행으로 아티팩트-보고서 정합 복원. 최종 동결 변경셋 = 284e792b+22c9671f+f5f7deba.",
+    "fullRerun": true,
+    "rerunCommands": ["PYTHONUTF8=1 python -m pytest tests/unit -k \"variable_scope or audit_gate or composite or exemplar\" -p no:randomly -q", "PYTHONUTF8=1 python scripts/audit_gate_false_rejects.py"],
+    "blockers": []
+  }
+}

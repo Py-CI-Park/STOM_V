@@ -251,3 +251,105 @@ class TestSchemaV6DispersionColumns:
         assert gens[0]["max_hold_count"] == 11.0
         assert gens[0]["calmar"] == 2.5
         assert gens[0]["uptrend_r2"] == 0.8
+
+
+class TestDr03AdditiveEvidencePromptSchema:
+    """DR-03 — prompts.content_sha256 + rendered_prompts are additive; automatic
+    schema stays SCHEMA_VERSION==11 (no version bump), and legacy DBs (including
+    ones with an old prompts table lacking content_sha256) still open/read fine.
+    """
+
+    def _make_legacy_prompts_db(self, path):
+        """A pre-DR-03 DB: prompts table exists but has no content_sha256 column,
+        and there is no rendered_prompts table at all yet.
+        """
+        con = sqlite3.connect(path)
+        con.executescript(
+            """
+            CREATE TABLE runs (
+                run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT,
+                status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL
+            );
+            CREATE TABLE generations (
+                run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT,
+                status TEXT, score REAL, calmar REAL, uptrend_r2 REAL,
+                gate_passed INTEGER, reason TEXT, csv_path TEXT, trade_count INTEGER,
+                created_at REAL, PRIMARY KEY (run_id, gen_no)
+            );
+            CREATE TABLE prompts (
+                prompt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT, gen_no INTEGER, kind TEXT, attempt INTEGER,
+                system_sha TEXT, user_text TEXT, user_sha TEXT,
+                injected_features TEXT, prior_error TEXT, model TEXT,
+                prompt_tokens INTEGER, completion_tokens INTEGER,
+                total_tokens INTEGER, response_sha TEXT, created_at REAL
+            );
+            """
+        )
+        con.execute(
+            "INSERT INTO runs (run_id, started_at, status) VALUES ('legacy_run', 1.0, 'complete')"
+        )
+        con.execute(
+            "INSERT INTO prompts (run_id, gen_no, kind, attempt, system_sha, user_sha, created_at) "
+            "VALUES ('legacy_run', 0, 'buy', 1, 'a' * 64, 'b' * 64, 1.0)"
+        )
+        con.commit()
+        con.close()
+
+    def test_automatic_schema_stays_v11_after_dr03_additions(self, tmp_path):
+        st = LoopState(db_path=str(tmp_path / "dr03_new.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            assert SCHEMA_VERSION == 11
+            assert st.get_schema_version() == 11
+            tables = {
+                row[0]
+                for row in st._con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            }
+            assert "rendered_prompts" in tables
+            assert "content_sha256" in _cols(st._con, "prompts")
+        finally:
+            st.close()
+
+    def test_legacy_prompts_db_without_content_sha256_column_gets_it(self, tmp_path):
+        db = str(tmp_path / "legacy_prompts.db")
+        self._make_legacy_prompts_db(db)
+        con = sqlite3.connect(db)
+        before = _cols(con, "prompts")
+        con.close()
+        assert "content_sha256" not in before
+
+        st = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        try:
+            assert st.get_schema_version() == 11
+            after = _cols(st._con, "prompts")
+            assert "content_sha256" in after
+            # existing legacy row preserved (readable), new column is NULL for it.
+            row = st._con.execute(
+                "SELECT run_id, kind, content_sha256 FROM prompts WHERE run_id = 'legacy_run'"
+            ).fetchone()
+            assert row["run_id"] == "legacy_run"
+            assert row["kind"] == "buy"
+            assert row["content_sha256"] is None
+            # the additive rendered_prompts table is now present too.
+            tables = {
+                r[0] for r in st._con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            }
+            assert "rendered_prompts" in tables
+            # new prompts recorded post-migration get a real content_sha256/FK.
+            result = st.record_prompt(
+                "legacy_run", 1, "sell", 1, system_text="s", user_text="u",
+            )
+            assert len(result["content_sha256"]) == 64
+        finally:
+            st.close()
+
+    def test_reopen_dr03_schema_is_idempotent(self, tmp_path):
+        db = str(tmp_path / "dr03_idem.db")
+        st1 = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        st1.close()
+        st2 = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        try:
+            assert st2.get_schema_version() == 11
+            assert "content_sha256" in _cols(st2._con, "prompts")
+        finally:
+            st2.close()

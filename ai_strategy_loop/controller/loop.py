@@ -56,7 +56,10 @@ from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     FeedbackConsumption,
     FeedbackEnvelope,
     FeedbackSide,
+    ManifestV2,
+    OUTCOME_INDETERMINATE_EXTERNAL_EFFECT,
     RunReceipt,
+    build_manifest_v2,
     compute_candidate_id,
     compute_consumption_id,
     compute_feedback_id,
@@ -66,7 +69,10 @@ from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     sha256_hex,
     text_sha256,
 )
-from ai_strategy_loop.controller.evidence_store import EvidenceStore  # noqa: E402
+from ai_strategy_loop.controller.evidence_store import (  # noqa: E402
+    EvidenceOrphanError,
+    EvidenceStore,
+)
 from ai_strategy_loop.controller.history import (  # noqa: E402
     GenRecord,
     build_history_summary,
@@ -668,6 +674,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    prev_judged_hypotheses: Optional[list] = None,
                    segment_avoid_lines: Optional[list] = None,
                    feature_hint_lines: Optional[list] = None,
+                   card_directive_lines: Optional[list] = None,
+                   band_seed_lines: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
@@ -724,10 +732,16 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
     #   on_prompt=None으로 두어 generate_strategy 동작이 byte-identical 하다(하위호환).
     #   콜백은 generator가 넘긴 레코드 dict를 state.record_prompt 인자로 매핑한다.
     on_prompt = None
+    # DR-03(additive) — captures the real, content-addressed rendered_prompt_id
+    #   that LoopState.record_prompt actually persisted (last successful call wins,
+    #   i.e. the last generated kind's prompt — sell overwrites buy since sell is
+    #   generated last in the buy/sell loop below). Stays empty when prompt_logging
+    #   is OFF/state is None (byte-identical — nothing reads this dict then).
+    _evidence_rendered_prompt_ids: Dict[str, str] = {}
     if getattr(config, "prompt_logging_enabled", False) and state is not None:
         def on_prompt(rec):
             u = rec.get("usage") or {}
-            state.record_prompt(
+            result = state.record_prompt(
                 run_id, gen_no, rec["kind"], rec["attempt"],
                 system_text=rec.get("system_text", ""),
                 user_text=rec.get("user_text", ""),
@@ -739,6 +753,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                 total_tokens=u.get("total_tokens", 0),
                 response_text=rec.get("response_text", ""),
             )
+            if isinstance(result, dict) and result.get("rendered_prompt_id"):
+                _evidence_rendered_prompt_ids[rec["kind"]] = result["rendered_prompt_id"]
 
     # 타깃 처방: base_buy_code가 있을 때만 매수 동결을 발동한다(없으면 안전 폴백).
     do_freeze_buy = bool(freeze_buy and base_buy_code)
@@ -852,6 +868,11 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # v5.0 리포트 원리 어휘 주입 — build_messages가 kind별 어휘 블록을 추가한다.
             #   getattr 기본 False라 구버전 config도 무영향(byte-동일, 하위호환).
             report_principles_enabled=getattr(config, "report_principles_enabled", False),
+            # 차트술사 구조론 핵심 원리 주입(A-2) — 기본 OFF, getattr로 구버전 config 무영향.
+            structure_principles_prompt_enabled=getattr(config, "structure_principles_prompt_enabled", False),
+            # T4.3 원리 일관성 게이트(A-3 배선) — 기본 OFF, reject 위반 시 재시도.
+            #   metadata는 None → PG-META-01 advisory만 로그(저장은 막지 않음).
+            principle_gate_enabled=getattr(config, "principle_gate_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).
@@ -868,6 +889,13 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를
             #   byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
             feature_hint_lines=(feature_hint_lines if kind == "buy" else None),
+            # DR-05 AnalysisCardV3 지시 환류 — build_messages가 kind=='buy'일 때만 반영하므로
+            #   매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를 byte-identical 보존한다.
+            #   토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
+            card_directive_lines=(card_directive_lines if kind == "buy" else None),
+            # A-5 밴드 시드 힌트 — 매수 전용(kind=='buy'), 토글 OFF/아티팩트 없음이면
+            #   호출부가 None을 넘겨 미주입(byte-동일).
+            band_seed_lines=(band_seed_lines if kind == "buy" else None),
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
@@ -877,7 +905,12 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
         usage = res.get("usage") or {}
         tokens += int(usage.get("total_tokens", 0) or 0)
 
-    return {"status": "ok", "buy_name": buy_name, "sell_name": sell_name, "tokens": tokens}
+    return {
+        "status": "ok", "buy_name": buy_name, "sell_name": sell_name, "tokens": tokens,
+        # DR-03(additive) — {} when prompt_logging is OFF/state is None (byte-identical
+        #   default). Callers that don't read this key are unaffected.
+        "rendered_prompt_ids": dict(_evidence_rendered_prompt_ids),
+    }
 
 
 # =====================================================================
@@ -1178,6 +1211,12 @@ def run_loop(
     #   config를 복제하면 ad-hoc 속성은 소실되므로, 그 복제 이전(원본 config)에서
     #   1회 읽어 보존한다.
     _evidence_ledger_enabled_flag = bool(getattr(config, "evidence_ledger_enabled", False))
+    # DR-04 (아키텍트 재리뷰 후 정식 필드화): candidate_dedup_enabled/seed_plan_enabled는
+    #   이제 config.py의 선언된 LoopConfig 필드라 replace()를 넘어 보존되고 from_dict로도
+    #   도달 가능하다. 아래 캡처는 방어적(과거 setattr-only 경로 호환) — 원본 config에서
+    #   1회 읽어 지역에 보존한다(동작 동일, byte-안전).
+    _candidate_dedup_enabled_flag = bool(getattr(config, "candidate_dedup_enabled", False))
+    _seed_plan_enabled_flag = bool(getattr(config, "seed_plan_enabled", False))
     config = effective_condition_discovery_runtime_config(config)
     # P6 — cross-process single-writer 락 획득. CLI/GUI 어느 진입점이든 같은
     #   current_state.json/loop_runs.db에 쓰므로, 살아있는 다른 루프가 락을 잡고
@@ -1228,6 +1267,12 @@ def run_loop(
     meta_seed_text: Optional[str] = None
     if getattr(config, "meta_seed_enabled", False):
         meta_seed_text = _load_meta_seed()
+    # A-5 밴드 시드 힌트: band_seed_hint_enabled ON이면 run 시작 시 1회 아티팩트를
+    #   로드해 매수 프롬프트용 NL 힌트 라인을 만든다. 기본 OFF면 None(미주입=하위호환).
+    #   파일 없음/파싱 실패는 생성 보조이므로 흡수한다(루프를 막지 않음).
+    band_seed_hint_lines: Optional[list] = None
+    if getattr(config, "band_seed_hint_enabled", False):
+        band_seed_hint_lines = _load_band_seed_lines(config)
 
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
@@ -1244,6 +1289,14 @@ def run_loop(
     if evidence_enabled:
         evidence_store = EvidenceStore(st)
         evidence_manifest_id = _evidence_safe_append_manifest(evidence_store, config, rid)
+
+    # DR-04 -- run-wide AST/rowset dedup archive (DEFAULT-OFF via
+    #   config.candidate_dedup_enabled). OFF(기본)면 dedup_archive는 None으로
+    #   남아 아래 모든 dedup 검사가 스킵된다(byte-동일). ON이면 이 run 안에서
+    #   본 적 있는 ast/rowset 지문의 후보는 백테스트 실행 전에(평가 예산을
+    #   쓰기 전에) 거부된다.
+    candidate_dedup_enabled = _candidate_dedup_enabled_flag
+    dedup_archive = _dr04_new_dedup_archive() if candidate_dedup_enabled else None
 
     # provider 준비 (gpt_auth면 프록시 기동).
     provider, proxy_active = _make_provider_with_proxy(config)
@@ -1275,6 +1328,12 @@ def run_loop(
     #   환류한다. 토글(feature_importance_feedback_enabled) OFF면 항상 None이라 산출·주입이
     #   전혀 안 일어난다(byte-동일). 백테 실패 세대(CSV 없음)는 None으로 비운다.
     next_feature_hint_lines: Optional[list] = None
+    # DR-05 AnalysisCardV3 지시 환류: 이 세대 카드(analysis_card_v3)의 actionable_directives를
+    #   render_directives_from_card_v3로 뽑은 매수 프롬프트용 지시 라인. 다음 세대 매수
+    #   프롬프트로 환류한다(avoid/prefer 힌트와 동일 채널). 토글(analysis_card_v3_enabled)
+    #   OFF면 항상 None이라 산출·주입이 전혀 안 일어난다(byte-동일). 백테 실패 세대(CSV 없음)는
+    #   None으로 비운다.
+    next_card_directive_lines: Optional[list] = None
     # P2a 가정 루프: 직전 세대 피드백이 '이 다음 세대'를 겨냥해 세운 가정 목록.
     #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
     #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
@@ -1446,6 +1505,11 @@ def run_loop(
                             else:
                                 if next_autopsy_feedback is None:
                                     next_autopsy_feedback = _evidence_rendered
+            # DR-03(additive) — real rendered_prompt_id captured only when
+            #   _generate_pair actually ran (prompt_logging_enabled + state). The
+            #   seed path below makes no LLM call, so no prompt was rendered — {} is
+            #   correct there (not a synthetic placeholder).
+            _evidence_gen_rendered_prompt_ids: Dict[str, str] = {}
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
@@ -1509,6 +1573,17 @@ def run_loop(
                 if (getattr(config, "feature_importance_feedback_enabled", False)
                         and next_feature_hint_lines):
                     gen_kwargs["feature_hint_lines"] = next_feature_hint_lines
+                # DR-05 AnalysisCardV3 지시 환류: 토글 ON + 이 세대 카드에서 지시 라인을
+                #   확보했을 때만 _generate_pair로 넘겨 매수 프롬프트에 환류한다. OFF(기본)거나
+                #   라인이 비면 키를 넣지 않아 호출 시그니처가 byte-identical(다른 배선과 동일).
+                if (getattr(config, "analysis_card_v3_enabled", False)
+                        and next_card_directive_lines):
+                    gen_kwargs["card_directive_lines"] = next_card_directive_lines
+                # A-5 밴드 시드 힌트: run 시작 시 1회 로드한 정적 힌트를 매 세대 매수
+                #   프롬프트에 전달한다. OFF/아티팩트 없음이면 키를 넣지 않아 호출
+                #   시그니처가 기존과 byte-identical 하다(하위호환).
+                if band_seed_hint_lines:
+                    gen_kwargs["band_seed_lines"] = band_seed_hint_lines
                 # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
                 #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
@@ -1538,6 +1613,7 @@ def run_loop(
                 buy_name = gen_res["buy_name"]
                 sell_name = gen_res["sell_name"]
                 cumulative_tokens += int(gen_res.get("tokens", 0) or 0)
+                _evidence_gen_rendered_prompt_ids = dict(gen_res.get("rendered_prompt_ids") or {})
                 print(f"[LOOP] generated buy={buy_name} sell={sell_name} "
                       f"(cum_tokens={cumulative_tokens})", flush=True)
                 _publish_live(st, rid, config, status="running", current_gen=gen_no,
@@ -1573,6 +1649,33 @@ def run_loop(
                     buy_name, sell_name, _evidence_buy_code, _evidence_sell_code,
                     evidence_prev_passport_id, evidence_manifest_id,
                 )
+                # DR-04 -- run-wide AST/rowset dedup, BEFORE the backtest runs
+                #   (candidate_dedup_enabled=False keeps this a no-op; dedup_archive
+                #   stays None so nothing below ever executes -- byte-동일).
+                if candidate_dedup_enabled and dedup_archive is not None:
+                    _dr04_dup_reasons = _dr04_check_run_wide_duplicate(
+                        dedup_archive,
+                        ast_fingerprint=_evidence_passport.ast_fingerprint,
+                        rowset_fingerprint=_evidence_passport.rowset_fingerprint,
+                    )
+                    if _dr04_dup_reasons:
+                        reason_g = (
+                            "evidence: run-wide duplicate fingerprint rejected before "
+                            f"evaluation ({','.join(_dr04_dup_reasons)})"
+                        )
+                        print(f"[LOOP] {reason_g}", flush=True)
+                        st.record_generation(
+                            rid, gen_no,
+                            buy_name=buy_name, sell_name=sell_name,
+                            status="error", score=0.0, gate_passed=False, reason=reason_g,
+                        )
+                        gen_no += 1
+                        continue
+                    _dr04_register_run_wide_fingerprints(
+                        dedup_archive,
+                        ast_fingerprint=_evidence_passport.ast_fingerprint,
+                        rowset_fingerprint=_evidence_passport.rowset_fingerprint,
+                    )
                 if _evidence_safe_append_passport(evidence_store, _evidence_passport):
                     evidence_current_passport_id = _evidence_passport.passport_id
                     evidence_prev_passport_id = _evidence_passport.passport_id
@@ -1586,7 +1689,19 @@ def run_loop(
                     #   FeedbackConsumption을 남긴다(consumption_id가 feedback_id를 포함해
                     #   내용주소화되므로 서로 구별되고 멱등하다).
                     if evidence_feedback_ids_to_consume:
-                        _evidence_prompt_id = f"promptrec_{rid}_g{gen_no}"
+                        # DR-03 — prefer the REAL content-addressed FK that
+                        #   LoopState.record_prompt actually persisted (buy prompt
+                        #   first, since it is the entry/primary generation; sell as
+                        #   fallback). Only when neither exists (prompt_logging_enabled
+                        #   OFF/state=None/seed path — no LLM call happened) do we fall
+                        #   back to the pre-DR-03 synthetic placeholder, preserving the
+                        #   exact old default-OFF behavior byte-for-byte.
+                        _evidence_real_prompt_id = (
+                            _evidence_gen_rendered_prompt_ids.get("buy")
+                            or _evidence_gen_rendered_prompt_ids.get("sell")
+                        )
+                        _evidence_prompt_id = _evidence_real_prompt_id or f"promptrec_{rid}_g{gen_no}"
+                        _evidence_require_rendered = _evidence_real_prompt_id is not None
                         for _evidence_fb_id in evidence_feedback_ids_to_consume:
                             _evidence_safe_append_consumption(
                                 evidence_store,
@@ -1596,6 +1711,7 @@ def run_loop(
                                     evidence_current_passport_id,
                                 ),
                                 rid,
+                                require_rendered=_evidence_require_rendered,
                             )
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
@@ -1712,6 +1828,9 @@ def run_loop(
                 #   힌트를 비워 다음 세대가 오래된 힌트를 환류받지 않게 한다(토글 OFF면
                 #   어차피 항상 None).
                 next_feature_hint_lines = None
+                # DR-05 — 실패 세대는 CSV가 없어 카드 산출도 불가하다. 지시 라인을 비워
+                #   다음 세대가 오래된 카드 지시를 환류받지 않게 한다(토글 OFF면 항상 None).
+                next_card_directive_lines = None
                 gen_no += 1
                 continue
 
@@ -1957,6 +2076,32 @@ def run_loop(
             #   데이터 없음/부족/읽기 실패는 빈 힌트로 흡수). OFF(기본)면 헬퍼를 호출조차
             #   안 해 None 유지(byte-동일). holdout 가드: outcome.csv_path는 train CSV다.
             next_feature_hint_lines = _build_feature_hints(config, outcome)
+            # DR-05 AnalysisCardV3 환류: 토글 ON일 때만 이 세대 결과 CSV에서 '영속·해시 카드'를
+            #   만들어, actionable_directives를 매수 프롬프트 지시(prefer)로 환류하고 문서 힌트를
+            #   로그로 남긴다. 카드/지시/문서힌트 세 산출은 '같은' content_hash를 그대로 읽어
+            #   렌더한다(재계산 금지 — 동일-해시 계약). OFF(기본)면 _build_analysis_card_v3가 None이라
+            #   아무 일도 안 일어난다(byte-동일). 매수 프롬프트 환류는 avoid/prefer 힌트와 동일
+            #   채널 규약(kind=='buy' 전용, 다음 세대 주입)이다. 렌더 실패는 흡수한다(분석 보조 경로).
+            next_card_directive_lines = None
+            _card_v3 = _build_analysis_card_v3(config, outcome)
+            if _card_v3 is not None:
+                try:
+                    from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: PLC0415
+                        render_directive_hints_from_card_v3,
+                    )
+                    from ai_strategy_loop.brain.segment_feedback import (  # noqa: PLC0415
+                        render_directives_from_card_v3,
+                    )
+
+                    next_card_directive_lines = render_directives_from_card_v3(_card_v3) or None
+                    _card_doc_hints = render_directive_hints_from_card_v3(_card_v3)
+                    logger.info(
+                        "AnalysisCardV3 gen %s card=%s 지시=%d 문서힌트=%d",
+                        gen_no, _card_v3.content_hash[:12],
+                        len(next_card_directive_lines or []), len(_card_doc_hints or []),
+                    )
+                except Exception as exc:  # noqa: BLE001 - 카드 렌더 실패는 루프를 막지 않음(분석 보조 경로).
+                    logger.info("AnalysisCardV3 렌더 실패(무시): %s", exc)
             # P2a 가정 방출: 부검 NL과 동일 인자(게이트 통과/MDD/손익/거래수)로 이 세대가
             #   '다음 세대용'으로 세우는 가정을 만든다. is_refine은 다음 세대가 부모를 갖는지
             #   (현재 best가 출발점이 되는지)로 본다. 토글 OFF면 None이라 가정이 carry되지
@@ -2061,6 +2206,13 @@ def run_loop(
             "winner_sell": winner_sell,
             "stop_reason": stop_reason,
         }
+    # DR-04 -- fresh SeedPlan (DEFAULT-OFF via config.seed_plan_enabled). A
+    #   fresh (non-seeded) gen-0 reads no seed body and earns zero seed
+    #   credit -- additive summary key only, never changes any existing key.
+    if _seed_plan_enabled_flag and not seed_buy and not seed_sell:
+        from ai_strategy_loop.controller.candidate_pool import fresh_seed_plan  # noqa: PLC0415
+        summary = dict(summary)
+        summary["dr04_seed_plan"] = dataclasses.asdict(fresh_seed_plan())
     return summary
 
 
@@ -2102,6 +2254,35 @@ def _fetch_parent_row(
     except Exception:  # noqa: BLE001 - 조회 실패는 diff 없이 진행(루프를 막지 않음).
         return None
     return rows.get(int(parent_gen))
+
+
+def _load_band_seed_lines(config) -> Optional[list]:
+    """A-5 — 밴드 시드 아티팩트(band_seeds.json)에서 매수 프롬프트 NL 힌트 라인을 만든다.
+
+    scripts/mine_band_seeds.py 산출(schema band_seed_hint_v1)을 읽어 seeds[].nl_guide를
+    lift 내림차순 상위 band_seed_hint_max_lines개까지 돌려준다. 파일 없음/파싱 실패/
+    시드 0개면 None(graceful — 생성 보조는 루프를 막지 않는다).
+    """
+    try:
+        path = str(getattr(config, "band_seed_hint_path", "") or "").strip()
+        if not path:
+            path = os.path.join(REPO_ROOT, "ai_strategy_loop", "state", "band_seeds.json")
+        if not os.path.exists(path):
+            return None
+        with open(path, encoding="utf-8") as f:
+            artifact = json.load(f)
+        seeds = artifact.get("seeds") or []
+        seeds = sorted(
+            (s for s in seeds if s.get("nl_guide")),
+            key=lambda s: float(s.get("lift") or 0.0),
+            reverse=True,
+        )
+        max_lines = max(1, int(getattr(config, "band_seed_hint_max_lines", 8) or 8))
+        lines = [str(s["nl_guide"]) for s in seeds[:max_lines]]
+        return lines or None
+    except Exception as exc:  # noqa: BLE001 — 생성 보조 경로: 어떤 실패도 루프를 막지 않음.
+        logger.info("밴드 시드 힌트 로드 실패(무시): %s", exc)
+        return None
 
 
 def _build_parent_diff(
@@ -2544,6 +2725,49 @@ def _build_segment_avoid(config, outcome) -> Optional[list]:
         return None
 
 
+
+# =====================================================================
+# DR-05 — AnalysisCardV3 (통계 안전판 카드). 토글(analysis_card_v3_enabled)
+#   OFF(기본)면 이 함수는 어디서도 호출되지 않는다(byte-동일, 기존 패턴과 동일
+#   — _build_segment_avoid/_build_feature_hints 참조). 산출 실패는 흡수해
+#   루프를 막지 않는다. role != 'train' 이면 카드 자체가 항상 지시 0개다
+#   (analysis_card.build_analysis_card_v3 의 train-only 게이트).
+# =====================================================================
+def _build_analysis_card_v3(config, outcome, *, role: str = "train"):
+    """이 세대 결과 CSV에서 AnalysisCardV3(영속·해시 카드)를 만든다(토글 ON일 때만).
+
+    build_analysis_card_v3(무예외 계약을 따르도록 이 함수가 흡수)를 호출해
+    표본/CI/q값-또는-사전등록축 게이트를 통과한 것만 actionable_directives 로
+    승격한 카드를 만든다. 대시보드/프롬프트/문서 렌더 경로는 이 카드의
+    content_hash 를 그대로 읽기만 해야 한다(재계산 금지 — 동일-해시 계약).
+
+    반환: AnalysisCardV3 또는 None(토글 OFF/CSV 없음/산출 실패).
+    """
+    if not getattr(config, "analysis_card_v3_enabled", False):
+        return None
+    csv_path = getattr(outcome, "csv_path", None)
+    if not csv_path:
+        return None
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        from ai_strategy_loop.autopsy.analysis_card import (  # noqa: PLC0415
+            build_analysis_card_v3,
+        )
+
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        if not os.path.exists(abs_csv):
+            return None
+        trades_df = pd.read_csv(abs_csv, encoding="utf-8-sig")
+        return build_analysis_card_v3(
+            trades_df,
+            source={"alias": f"file://{os.path.basename(abs_csv)}", "path": abs_csv},
+            role=role,
+        )
+    except Exception as exc:  # noqa: BLE001 - 카드 산출 실패는 루프를 막지 않음(분석 보조 경로).
+        logger.info("AnalysisCardV3 산출 실패(무시): %s", exc)
+        return None
+
 def _build_feature_hints(config, outcome) -> Optional[list]:
     """P3 feature_importance 환류 — 이 세대 train CSV에서 'prefer 힌트' 라인을 산출한다(토글 ON일 때만).
 
@@ -2845,6 +3069,40 @@ def _evidence_rowset_fallback(buy_code: str, sell_code: str, timeframe: str) -> 
     return f"codehash:{sha256_hex(timeframe + '|' + buy_code + '|' + sell_code)}"
 
 
+# DR-04 -- run-wide AST/rowset dedup archive helpers (DEFAULT-OFF, additive).
+#   Local imports keep this module free of any top-level
+#   ai_strategy_loop.controller.candidate_pool dependency when
+#   candidate_dedup_enabled is False (the default) -- the OFF path never even
+#   imports this module, matching the existing local-import convention used
+#   by _evidence_fingerprint above.
+def _dr04_new_dedup_archive():
+    from ai_strategy_loop.controller.candidate_pool import (  # noqa: PLC0415
+        new_run_wide_dedup_archive,
+    )
+    return new_run_wide_dedup_archive()
+
+
+def _dr04_check_run_wide_duplicate(archive: Any, *, ast_fingerprint: str, rowset_fingerprint: str) -> list:
+    from ai_strategy_loop.controller.candidate_pool import (  # noqa: PLC0415
+        check_run_wide_duplicate,
+    )
+    return check_run_wide_duplicate(
+        archive, ast_fingerprint=ast_fingerprint, rowset_fingerprint=rowset_fingerprint,
+    )
+
+
+def _dr04_register_run_wide_fingerprints(
+    archive: Any, *, ast_fingerprint: str, rowset_fingerprint: str,
+) -> None:
+    from ai_strategy_loop.controller.candidate_pool import (  # noqa: PLC0415
+        register_run_wide_fingerprints,
+    )
+    register_run_wide_fingerprints(
+        archive, ast_fingerprint=ast_fingerprint, rowset_fingerprint=rowset_fingerprint,
+    )
+
+
+
 def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
     cfg_dict = _evidence_config_dict(config)
     timeframe = str(getattr(config, "bt_timeframe", None) or "min")
@@ -2994,9 +3252,65 @@ def _evidence_build_run_finished_receipt(
     )
 
 
+def _evidence_build_manifest_v2(config: Any, run_id: str, v1_manifest: EvaluationManifest) -> Optional[ManifestV2]:
+    """DR-02 additive Manifest v2 (default OFF via ``config.manifest_v2_enabled``).
+
+    Binds the same session/cost/fill/capital fields already frozen in the v1
+    ``EvaluationManifest`` plus the canonical effective-profile identity
+    (``condition_discovery.canonical_effective_profile``) into an
+    ``evidence_contract.ManifestV2``. Never persisted (no evidence_store.py wiring),
+    never called unless the flag is on, and any failure is absorbed (evidence
+    augmentation must never block the loop) -- so ``run_loop`` output stays
+    byte-identical whenever the flag is OFF (v11 default startup unchanged).
+    """
+    if not bool(getattr(config, "manifest_v2_enabled", False)):
+        return None
+    try:
+        from ai_strategy_loop.controller.condition_discovery import canonical_effective_profile  # noqa: PLC0415
+
+        profile = canonical_effective_profile(config)
+        payload = {
+            "effective_profile_hash": profile["effective_profile_hash"],
+            "effective_profile_name": profile["effective_profile_name"],
+            "data": {
+                "source": v1_manifest.data,
+                "window": dict(v1_manifest.period),
+                "read_only": True,
+            },
+            "universe": {
+                "codes": v1_manifest.universe,
+                "selection_rule": str(getattr(config, "bt_scope", None) or ""),
+            },
+            "engine": {
+                "engine": "ai_strategy_loop",
+                "runner": v1_manifest.methodology,
+                "repository_commit": None,
+            },
+            "cost": dict(v1_manifest.cost),
+            "fill": dict(v1_manifest.fill),
+            "capital": dict(v1_manifest.capital),
+            "session": dict(v1_manifest.session),
+            "prompt": {"bundle_identity": v1_manifest.manifest_id},
+            "seed": {
+                "seed_mode": str(getattr(config, "seed_mode", None) or ""),
+                "seed_source": str(getattr(config, "seed_source", None) or ""),
+            },
+            "code": {"code_hash": v1_manifest.code_hash},
+            "config": {"config_hash": v1_manifest.config_hash},
+            "manifest_id": v1_manifest.manifest_id,
+        }
+        return build_manifest_v2(payload)
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: manifest v2 build failed (ignored)")
+        return None
+
+
 def _evidence_safe_append_manifest(store: EvidenceStore, config: Any, run_id: str) -> Optional[str]:
     try:
         manifest = _evidence_build_manifest(config, run_id)
+        # DR-02 additive wiring: builds/discards ManifestV2 alongside the v1 manifest
+        # when config.manifest_v2_enabled=True (default OFF -> no-op, byte-identical).
+        _evidence_build_manifest_v2(config, run_id, manifest)
         # Idempotent resume: manifest_id is content-addressed (frozen evaluation
         # subset only, see _evidence_build_manifest). A resume that only changes an
         # operational knob (e.g. max_generations) recomputes the SAME manifest_id,
@@ -3025,11 +3339,55 @@ def _evidence_safe_append_passport(store: EvidenceStore, passport: CandidatePass
         return False
 
 
-def _evidence_safe_append_receipt(store: EvidenceStore, receipt: RunReceipt) -> None:
+def _evidence_build_indeterminate_receipt(original: RunReceipt) -> RunReceipt:
+    """DR-03 fail-closed replacement receipt — same phase/run, but the outcome is
+    explicitly INDETERMINATE_EXTERNAL_EFFECT (never the original GO/success value)
+    because the evidence store could not durably confirm the original receipt.
+    """
+    receipt_id = compute_receipt_id(
+        original.run_id, original.phase_id, OUTCOME_INDETERMINATE_EXTERNAL_EFFECT,
+        "evidence_io_failure",
+    )
+    return RunReceipt(
+        schema=RUN_RECEIPT_SCHEMA,
+        receipt_id=receipt_id,
+        run_id=original.run_id,
+        phase_id=original.phase_id,
+        outcome=OUTCOME_INDETERMINATE_EXTERNAL_EFFECT,
+        stop_reason="evidence_io_failure",
+        budget_counters=original.budget_counters,
+        predecessor_ids=original.predecessor_ids,
+        artifact_hashes={},
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_safe_append_receipt(store: EvidenceStore, receipt: RunReceipt) -> str:
+    """append a RunReceipt; returns the outcome that was ACTUALLY durably recorded.
+
+    Fail-closed (DR-03 acceptance #3): if the append itself raises (a real evidence
+    I/O failure, not the idempotent no-op path inside EvidenceStore), this function
+    MUST NOT let the receipt's original outcome (e.g. a GO/success value) stand as
+    if it had been certified — a certification decision can never be trusted when
+    the evidence ledger backing it failed to write. It makes exactly ONE additional
+    attempt to durably record a replacement receipt whose outcome is
+    ``OUTCOME_INDETERMINATE_EXTERNAL_EFFECT`` (no retry of the original receipt —
+    the original content is gone/unwritable, not merely delayed). If even that
+    replacement attempt fails, the failure is logged and
+    ``OUTCOME_INDETERMINATE_EXTERNAL_EFFECT`` is still returned (the evidence engine
+    could not confirm either outcome — never treated as GO).
+    """
     try:
         store.append_receipt(receipt)
-    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
-        logger.exception("evidence: receipt append failed (ignored)")
+        return receipt.outcome
+    except Exception:  # noqa: BLE001 - 원본 append 실패 — fail-closed 대체 시도로 넘어간다.
+        logger.exception("evidence: receipt append failed (fail-closed, no retry of original)")
+        indeterminate = _evidence_build_indeterminate_receipt(receipt)
+        try:
+            store.append_receipt(indeterminate)
+        except Exception:  # noqa: BLE001 - 대체 receipt도 실패 — 로그만 남기고 흡수(루프 유지).
+            logger.exception("evidence: indeterminate replacement receipt append also failed (ignored)")
+        return OUTCOME_INDETERMINATE_EXTERNAL_EFFECT
 
 
 
@@ -3122,11 +3480,23 @@ def _evidence_build_consumption(
 
 def _evidence_safe_append_consumption(
     store: EvidenceStore, consumption: FeedbackConsumption, run_id: str,
+    *, require_rendered: bool = False,
 ) -> bool:
+    """append a FeedbackConsumption; absorbs transient I/O failures (existing
+    robustness contract — a broken evidence ledger must never block the loop).
+
+    DR-03: ``EvidenceOrphanError`` (rendered-only consumption guard) is NOT
+    absorbed here — it means the loop tried to consume feedback against a
+    prompt_id that was never actually rendered/persisted, which is a real
+    correctness defect, not a transient I/O hiccup. It propagates so callers/
+    tests can observe the rejection instead of it being silently swallowed.
+    """
     try:
-        store.append_consumption(consumption, run_id=run_id)
+        store.append_consumption(consumption, run_id=run_id, require_rendered=require_rendered)
         return True
-    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+    except EvidenceOrphanError:
+        raise
+    except Exception:  # noqa: BLE001 - 증거 원장 I/O 실패는 흡수(루프를 막지 않음).
         logger.exception("evidence: feedback consumption append failed (ignored)")
         return False
 

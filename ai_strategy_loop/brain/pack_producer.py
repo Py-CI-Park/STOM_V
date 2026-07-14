@@ -544,6 +544,31 @@ def _error_envelope(
     }
 
 
+# DR-04 -- optional final-owner wiring (default OFF via `final_owner_enabled`).
+#   Maps an assembled candidate dict (see `_assemble_candidate`) onto the
+#   candidate_pool proposal shape so `select_official_candidate` (the
+#   UNCHANGED, single selection owner) can pick exactly one official
+#   candidate from this pack's 4 accepted candidates. Import is local -- this
+#   module stays free of any top-level `ai_strategy_loop.controller` import
+#   when the feature is OFF (the default), keeping the OFF path byte-for-byte
+#   identical to before this feature existed.
+_FINAL_OWNER_ROUND_SIZE = 4
+
+
+def _candidate_pool_proposal(candidate: Mapping[str, Any]) -> dict:
+    novelty = candidate.get("novelty")
+    novelty_value = float(len(novelty)) if isinstance(novelty, Mapping) else 0.0
+    return {
+        "candidate_id": str(candidate.get("hypothesis_id") or ""),
+        "lane": str(candidate.get("lane") or ""),
+        "family": str(candidate.get("mutation_axis") or "unspecified"),
+        "expression": str(candidate.get("expression") or ""),
+        "timeframe": str(candidate.get("timeframe") or ""),
+        "novelty": novelty_value,
+        "threshold_provenance": {},
+    }
+
+
 def produce_candidate_pack_result(
     context: Mapping[str, Any],
     provider: Callable[[list[dict]], str],
@@ -551,6 +576,8 @@ def produce_candidate_pack_result(
     lanes: Optional[Mapping[str, int]] = None,
     axis_prompt_lines: Optional[list[str]] = None,
     retry_max_per_lane: int = RETRY_MAX_PER_LANE,
+    final_owner_enabled: bool = False,
+    methodology_version: str = "clr04_v1",
 ) -> dict:
     """repair/discovery 레인별로 provider 를 호출해 후보팩 결과 봉투를 만든다.
 
@@ -708,7 +735,19 @@ def produce_candidate_pack_result(
         pack["full_stom_sources_included"] = context_trace["full_sources"]
     if context_trace["tokens"] is not None:
         pack["prompt_budget_estimated_tokens"] = context_trace["tokens"]
-    return {
+
+    final_owner_selection: Optional[dict] = None
+    if final_owner_enabled and not shortfall and len(accepted) == _FINAL_OWNER_ROUND_SIZE:
+        from ai_strategy_loop.controller.candidate_pool import (  # noqa: PLC0415
+            select_official_candidate,
+        )
+        pool_proposals = [_candidate_pool_proposal(item) for item in accepted]
+        final_owner_selection = select_official_candidate(
+            pool_proposals, timeframe=timeframe, methodology_version=methodology_version,
+        )
+        pack["final_owner_selection"] = final_owner_selection
+
+    result: dict[str, Any] = {
         "schema_version": 1,
         "status": "ok" if not shortfall else "partial",
         "candidate_pack": pack,
@@ -720,6 +759,9 @@ def produce_candidate_pack_result(
         "provider_call_count": total_attempts,
         "authority": _AUTHORITY_NOTE,
     }
+    if final_owner_selection is not None:
+        result["final_owner_selection"] = final_owner_selection
+    return result
 
 
 def produce_candidate_pack(

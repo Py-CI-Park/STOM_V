@@ -45,6 +45,18 @@ _COMPARE_OP_NAMES = {
     ast.NotEq: 'ne',
 }
 
+# 산술 이항 연산자 허용 목록 — 실전 STOM 조건식(예: `시가 * 1.02`,
+#   `매수총잔량 * 0.2`)의 스케일/비율 비교를 지문 문법에 수용한다.
+#   이전에는 BinOp이 무조건 에러였으므로 기존 식형 지문은 전부 불변이다.
+_BINARY_OP_NAMES = {
+    ast.Add: 'add',
+    ast.Sub: 'sub',
+    ast.Mult: 'mul',
+    ast.Div: 'div',
+}
+# 가환 연산은 자식 정준 정렬로 `a*b`와 `b*a`를 동일 지문으로 만든다.
+_COMMUTATIVE_BINARY_OPS = (ast.Add, ast.Mult)
+
 
 class FingerprintError(Exception):
     """Raised when an expression cannot be reduced to an allowed AST shape."""
@@ -132,6 +144,15 @@ def _canonicalize(node: ast.AST) -> str:
             raise FingerprintError(f'forbidden boolean operator: {type(node.op).__name__}')
         children = sorted(_canonicalize(value) for value in node.values)
         return f'({op_name} ' + ' '.join(children) + ')'
+    if isinstance(node, ast.BinOp):
+        op_name = _BINARY_OP_NAMES.get(type(node.op))
+        if op_name is None:
+            raise FingerprintError(f'forbidden binary operator: {type(node.op).__name__}')
+        left = _canonicalize(node.left)
+        right = _canonicalize(node.right)
+        if isinstance(node.op, _COMMUTATIVE_BINARY_OPS):
+            left, right = sorted((left, right))
+        return f'({op_name} {left} {right})'
     if isinstance(node, ast.UnaryOp):
         if isinstance(node.op, ast.Not):
             return f'(not {_canonicalize(node.operand)})'
@@ -174,13 +195,47 @@ def ast_fingerprint(expression: str, *, timeframe: str, methodology_version: str
     Subscript, Lambda, comprehensions, arithmetic BinOp, etc.).
     """
 
-    try:
-        tree = ast.parse(expression.strip(), mode='eval')
-    except SyntaxError as exc:
-        raise FingerprintError(f'unparseable expression: {exc}') from exc
+    tree = _parse_condition_tree(expression)
     canonical = _canonicalize(tree)
     payload = f'{timeframe}|{methodology_version}|{canonical}'
     return hashlib.sha256(payload.encode('utf-8')).hexdigest()
+
+
+def _statement_condition_tests(text: str) -> list:
+    """Collect `if`/`elif` test expressions from a statement-form snippet."""
+
+    module = ast.parse(text, mode='exec')
+    return [node.test for node in ast.walk(module) if isinstance(node, ast.If)]
+
+
+def _parse_condition_tree(expression: str) -> ast.Expression:
+    """Parse a condition into an eval-mode AST.
+
+    Accepts either a bare boolean expression (기존 계약) or a canonical STOM
+    statement snippet (`if <조건>: self.Buy()` / elif 체인 — pack_producer가
+    발행하는 후보 `expression` 형태). Statement 입력은 `if`/`elif` test 식만
+    추출해 OR로 결합한다(어느 분기든 액션에 도달하면 조건 발화). 이전에는
+    statement 입력이 무조건 에러였으므로 기존 식형 지문은 전부 불변이다.
+
+    Raises FingerprintError when neither parse succeeds or no condition
+    expression exists in the snippet.
+    """
+
+    text = expression.strip()
+    try:
+        return ast.parse(text, mode='eval')
+    except SyntaxError as eval_exc:
+        try:
+            tests = _statement_condition_tests(text)
+        except SyntaxError as exc:
+            raise FingerprintError(f'unparseable expression: {exc}') from exc
+        if not tests:
+            raise FingerprintError(f'unparseable expression: {eval_exc}') from eval_exc
+        if len(tests) == 1:
+            body = tests[0]
+        else:
+            body = ast.BoolOp(op=ast.Or(), values=list(tests))
+        return ast.Expression(body=body)
 
 
 def rowset_fingerprint(*, dataset_sha: str, window: str, row_keys: list[str]) -> str:
@@ -194,6 +249,29 @@ def rowset_fingerprint(*, dataset_sha: str, window: str, row_keys: list[str]) ->
     return hashlib.sha256(payload.encode('utf-8')).hexdigest()
 
 
+# DR-04 -- additive only. ``ast_fingerprint``/``rowset_fingerprint`` above keep
+# their exact pre-DR-04 signatures/semantics; this section only adds a version
+# constant and a pure helper for building canonical full-row keys (a row's
+# *entire* semantic content, not just ``trade_id:net_pnl``) that callers may
+# feed into the unchanged ``rowset_fingerprint(row_keys=...)`` contract for
+# run-wide rowset-duplicate detection. No new fingerprint algorithm is
+# introduced -- callers still hash through the one ``rowset_fingerprint``.
+DR04_DEDUP_CONTRACT_VERSION = 'dr04_run_wide_dedup_v1'
+
+
+def canonical_full_row_key(row: Mapping[str, object]) -> str:
+    """Return one canonical full-semantic-row key for a rowset membership row.
+
+    Sorted-key JSON of the *whole* row (not just a trade_id/net_pnl subset) so
+    two rows are considered the same member only when every recorded field
+    matches. Pure/stdlib-only; never touches a DB/file/network.
+    """
+
+    import json  # noqa: PLC0415 -- kept local; the module has no top-level json import.
+
+    return json.dumps(dict(row), ensure_ascii=False, sort_keys=True, default=str)
+
+
 def validate_b_only(expression: str, *, timeframe: str, kind: str = 'buy') -> list[str]:
     """Return blocker reason codes for `expression` against the B-only approved surface.
 
@@ -202,8 +280,8 @@ def validate_b_only(expression: str, *, timeframe: str, kind: str = 'buy') -> li
     """
 
     try:
-        tree = ast.parse(expression.strip(), mode='eval')
-    except SyntaxError:
+        tree = _parse_condition_tree(expression)
+    except FingerprintError:
         return ['unparseable_expression']
 
     reasons: list[str] = []
@@ -222,7 +300,11 @@ def validate_b_only(expression: str, *, timeframe: str, kind: str = 'buy') -> li
     for node_type in sorted(forbidden_node_types):
         reasons.append(f'forbidden_node:{node_type}')
 
-    ok, offending = check_variable_scope(expression, timeframe, kind)
+    try:
+        condition_source = ast.unparse(tree.body)
+    except Exception:  # noqa: BLE001 — 방어적 폴백(원문 그대로 검사)
+        condition_source = expression
+    ok, offending = check_variable_scope(condition_source, timeframe, kind)
     if not ok:
         for name in offending:
             if name in leaky_names:

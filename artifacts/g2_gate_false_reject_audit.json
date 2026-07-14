@@ -1,0 +1,1563 @@
+{
+  "generated_at": "2026-07-12T18:20:31+00:00",
+  "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
+  "excluded_auto_tmp": {
+    "buy": 3,
+    "sell": 0,
+    "total": 3,
+    "buy_names": [
+      "__AUTO_TMP__Auto_B_Pilot01_1773230899792",
+      "__AUTO_TMP__Auto_B_Pilot01_1773231079685",
+      "__AUTO_TMP__Auto_B_PilotSlice01_1773231391970"
+    ],
+    "sell_names": []
+  },
+  "counts": {
+    "buy_total_raw": 102,
+    "sell_total_raw": 47,
+    "buy_audited": 99,
+    "sell_audited": 47
+  },
+  "checks": {
+    "variable_scope": {
+      "evaluated": 197,
+      "rejected": 72,
+      "reject_rate": 0.365482,
+      "reason_distribution": {
+        "매수수량": 34,
+        "강제청산": 29,
+        "매도수량": 29,
+        "VI아래5호가": 12,
+        "분당거래대금": 8,
+        "분당거래대금N": 7,
+        "분당매도수량": 7,
+        "분당매수수량": 7,
+        "분봉고가": 7,
+        "분봉시가": 7,
+        "분봉저가": 7,
+        "RSI": 5,
+        "MACD": 3,
+        "MACDS": 3,
+        "MACDS_N": 3,
+        "MACD_N": 3,
+        "최고분봉고가": 2,
+        "초당거래대금": 2,
+        "분당거래대금평균": 1,
+        "BBM": 1,
+        "BBM_N": 1,
+        "RSI_N": 1,
+        "분당순매수금액": 1,
+        "<구문 오류>": 1,
+        "최고등락율각도": 1
+      },
+      "rejected_strategies": [
+        {
+          "name": "20250715_Study",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250715_Study",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_B_2",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량",
+            "분당거래대금",
+            "분당거래대금평균",
+            "최고분봉고가"
+          ]
+        },
+        {
+          "name": "20250715_Study_B_2",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_B",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_B",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_B_2",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "BBM",
+            "BBM_N",
+            "MACD",
+            "MACDS",
+            "MACDS_N",
+            "MACD_N",
+            "RSI",
+            "RSI_N",
+            "매수수량",
+            "최고분봉고가"
+          ]
+        },
+        {
+          "name": "20250720_Study_B_2",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "AutoResearchBaselineCompare_20260418_T6",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "AutoResearchInspect_20260418_T6",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "Auto_B_Generalize_aggressive_top2_single_round_1773392300",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "Auto_B_Generalize_balanced_top1_multi_round_1773392368",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "Auto_B_Generalize_control_aggressive_top1_single_round_1773392228",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "Auto_B_MergedPilot_1773391663",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "Auto_B_TestRun_20260315",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "분당거래대금",
+            "분당거래대금N",
+            "분당매도수량",
+            "분당매수수량",
+            "분봉고가",
+            "분봉시가",
+            "분봉저가"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_MASTER_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_B_MASTER_0900_0930",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "C_S_3_B_902_Min",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량",
+            "분당순매수금액"
+          ]
+        },
+        {
+          "name": "C_T_900_920_STUDY_B",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_B",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_B_FS",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "C_T_902_905_U3_B",
+          "kind": "buy",
+          "timeframe": "tick",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_250824",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_250831",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_250907",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251225",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251227_Filter",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251227_Filtered",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량",
+            "초당거래대금"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251227_Filtered2",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량",
+            "초당거래대금"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251227_ICOS_Filtered",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "<구문 오류>"
+          ]
+        },
+        {
+          "name": "Min_B_Study_251229",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "VI아래5호가",
+            "매수수량"
+          ]
+        },
+        {
+          "name": "Test_Min_B_20250713_2",
+          "kind": "buy",
+          "timeframe": "min",
+          "reasons": [
+            "매수수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S_2",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "MACD",
+            "MACDS",
+            "MACDS_N",
+            "MACD_N",
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250715_Study_S_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S_2",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "MACD",
+            "MACDS",
+            "MACDS_N",
+            "MACD_N",
+            "RSI",
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "20250720_Study_S_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_MASTER_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_MASTER_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_S_3_S_902_Min",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_STUDY_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_900_920_U2_S_FS",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "C_T_902_905_U3_S",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250824",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250831",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_250907",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251225",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251226",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Min_S_Study_251227_Filtered",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Test_Min_S_20250713_2",
+          "kind": "sell",
+          "timeframe": "min",
+          "reasons": [
+            "강제청산",
+            "매도수량"
+          ]
+        },
+        {
+          "name": "Tick_S_910_930_RB",
+          "kind": "sell",
+          "timeframe": "tick",
+          "reasons": [
+            "최고등락율각도"
+          ]
+        }
+      ]
+    },
+    "token_check": {
+      "evaluated": 146,
+      "rejected": 1,
+      "reject_rate": 0.006849,
+      "reason_distribution": {
+        "구문 오류: expected an indented block after 'if' statement on line 121 (<unknown>, line 123)": 1
+      },
+      "rejected_strategies": [
+        {
+          "name": "Min_B_Study_251227_ICOS_Filtered",
+          "kind": "buy",
+          "reason": "구문 오류: expected an indented block after 'if' statement on line 121 (<unknown>, line 123)"
+        }
+      ]
+    },
+    "filter_gate": {
+      "evaluated": 99,
+      "rejected": 10,
+      "reject_rate": 0.10101,
+      "min_filter_categories": 5,
+      "category_count_distribution": {
+        "2": 2,
+        "3": 3,
+        "4": 5,
+        "5": 32,
+        "6": 26,
+        "7": 2,
+        "8": 5,
+        "9": 24
+      },
+      "rejected_category_count_distribution": {
+        "2": 2,
+        "3": 3,
+        "4": 5
+      },
+      "rejected_strategies": [
+        {
+          "name": "20250715_Study",
+          "category_count": 2,
+          "min_required": 5
+        },
+        {
+          "name": "20250715_Study_B_2",
+          "category_count": 3,
+          "min_required": 5
+        },
+        {
+          "name": "20250720_Study_B_2",
+          "category_count": 3,
+          "min_required": 5
+        },
+        {
+          "name": "Auto_B_Pilot01",
+          "category_count": 2,
+          "min_required": 5
+        },
+        {
+          "name": "Auto_B_PilotSlice01",
+          "category_count": 3,
+          "min_required": 5
+        },
+        {
+          "name": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+          "category_count": 4,
+          "min_required": 5
+        },
+        {
+          "name": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+          "category_count": 4,
+          "min_required": 5
+        },
+        {
+          "name": "C_T_900_920_U2_B_FS",
+          "category_count": 4,
+          "min_required": 5
+        },
+        {
+          "name": "ResearchTest_Tick_B_090000_092800_Wide_20260419",
+          "category_count": 4,
+          "min_required": 5
+        },
+        {
+          "name": "WideV1RetentionCand5_20260422__cand003",
+          "category_count": 4,
+          "min_required": 5
+        }
+      ]
+    },
+    "exec_budget": {
+      "evaluated": 47,
+      "rejected": 20,
+      "reject_rate": 0.425532,
+      "reason_distribution": {
+        "윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다": 17,
+        "윈도우/구간 집계 함수 호출이 10개로 상한(8개)을 초과한다": 2,
+        "윈도우/구간 집계 함수 호출이 11개로 상한(8개)을 초과한다": 1
+      },
+      "rejected_strategies": [
+        {
+          "name": "CSS_V7_MIN_S_MASTER_0900_1518",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 10개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "C_T_902_905_U3_S",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905_2",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905_Update",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905_Update_2",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_905_Update_2_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_Update",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_902_v2_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_905",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_905910_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_905_915_LT",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 10개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_905_Study",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_905_Update",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_910",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_910_930_RB",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 11개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        },
+        {
+          "name": "Tick_S_930_Dev",
+          "reason": "매도식 계산예산 위반 — 윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다. 매도식은 보유 종목의 모든 틱에서 평가되므로 비싼 호출은 백테스트 타임아웃을 유발한다. 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율) 위주로 줄여라."
+        }
+      ]
+    },
+    "principle_gate": {
+      "evaluated": 41,
+      "rejected": 24,
+      "reject_rate": 0.585366,
+      "reject_reason_distribution": {
+        "CSC-10": 26,
+        "CSC-07": 2
+      },
+      "advisory_reason_distribution": {
+        "PG-META-01": 41
+      },
+      "rejected_pairs": [
+        {
+          "buy_name": "20250715_Study_B_2",
+          "sell_name": "20250715_Study_S_2",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-07",
+              "severity": "reject",
+              "message": "매수식에 대응하는 손절 매도조건이 없다 — 수익률 <= -k 하드 스톱, 매수가 기준 이탈(현재가 < 매수가*k), 구조 하단 이탈 중 최소 1개를 매도식에 두어라."
+            },
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매수식의 시간창이 09:00~09:30 밖이다 — 90000 <= 시분초 < 93000(또는 그 이내) 필터를 두고 93000 초과 구간을 허용하지 마라."
+            },
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "20250715_Study_B_2",
+          "sell_name": "20250715_Study_S_2",
+          "timeframe": "min",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-07",
+              "severity": "reject",
+              "message": "매수식에 대응하는 손절 매도조건이 없다 — 수익률 <= -k 하드 스톱, 매수가 기준 이탈(현재가 < 매수가*k), 구조 하단 이탈 중 최소 1개를 매도식에 두어라."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "20250720_Study_B",
+          "sell_name": "20250720_Study_S",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매수식의 시간창이 09:00~09:30 밖이다 — 90000 <= 시분초 < 93000(또는 그 이내) 필터를 두고 93000 초과 구간을 허용하지 마라."
+            },
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "20250720_Study_B_2",
+          "sell_name": "20250720_Study_S_2",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매수식의 시간창이 09:00~09:30 밖이다 — 90000 <= 시분초 < 93000(또는 그 이내) 필터를 두고 93000 초과 구간을 허용하지 마라."
+            },
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "C_T_900_920_STUDY_B",
+          "sell_name": "C_T_900_920_STUDY_S",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매수식의 시간창이 09:00~09:30 밖이다 — 90000 <= 시분초 < 93000(또는 그 이내) 필터를 두고 93000 초과 구간을 허용하지 마라."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "C_T_902_905_U3_B",
+          "sell_name": "C_T_902_905_U3_S",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902",
+          "sell_name": "Tick_S_902",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905",
+          "sell_name": "Tick_S_902_905",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905_2",
+          "sell_name": "Tick_S_902_905_2",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905_Study",
+          "sell_name": "Tick_S_902_905_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905_Update",
+          "sell_name": "Tick_S_902_905_Update",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905_Update_2",
+          "sell_name": "Tick_S_902_905_Update_2",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_905_Update_2_Study",
+          "sell_name": "Tick_S_902_905_Update_2_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_Study",
+          "sell_name": "Tick_S_902_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_Update",
+          "sell_name": "Tick_S_902_Update",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_902_v2_Study",
+          "sell_name": "Tick_S_902_v2_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_905",
+          "sell_name": "Tick_S_905",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_905910_Study",
+          "sell_name": "Tick_S_905910_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_905_915_LT",
+          "sell_name": "Tick_S_905_915_LT",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_905_Study",
+          "sell_name": "Tick_S_905_Study",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_905_Update",
+          "sell_name": "Tick_S_905_Update",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_910",
+          "sell_name": "Tick_S_910",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_910_930_RB",
+          "sell_name": "Tick_S_910_930_RB",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        },
+        {
+          "buy_name": "Tick_B_930_Dev",
+          "sell_name": "Tick_S_930_Dev",
+          "timeframe": "tick",
+          "reject_violations": [
+            {
+              "rule_id": "CSC-10",
+              "severity": "reject",
+              "message": "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, 90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 09:30 이후 보유 허용이라 무효)."
+            }
+          ],
+          "advisory_violations": [
+            {
+              "rule_id": "PG-META-01",
+              "severity": "advisory",
+              "message": "metadata.principle_ids 가 없다 — 이 조건식이 근거한 원리(P0~P15, utility/ai_agent/system_prompt/v1/principles.md)를 표시하라(advisory)."
+            }
+          ]
+        }
+      ],
+      "paired_count": 38,
+      "unpaired_buy_count": 61,
+      "unpaired_sell_count": 9,
+      "unpaired_buy_names": [
+        "20250715_Study",
+        "AutoResearchBaselineCompare_20260418_T6",
+        "AutoResearchInspect_20260418_T6",
+        "Auto_B_Generalize_aggressive_top2_single_round_1773392300",
+        "Auto_B_Generalize_balanced_top1_multi_round_1773392368",
+        "Auto_B_Generalize_control_aggressive_top1_single_round_1773392228",
+        "Auto_B_MergedPilot_1773391663",
+        "Auto_B_Pilot01",
+        "Auto_B_PilotSlice01",
+        "Auto_B_TestRun_20260315",
+        "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+        "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+        "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+        "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+        "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+        "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+        "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+        "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+        "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+        "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+        "Min_B_Study_251227_Filter",
+        "Min_B_Study_251227_Filtered2",
+        "Min_B_Study_251227_ICOS_Filtered",
+        "Min_B_Study_251229",
+        "Tick_B_902_905_Study_2",
+        "Tick_B_902_Study_2",
+        "Tick_B_902_Update_2",
+        "WideV1Final_B_20260425",
+        "WideV1IterationV2_20260423__cand005",
+        "WideV1IterationV3_20260423__cand001",
+        "WideV1IterationV5CheckpointSmoke_20260425__cand001",
+        "WideV1IterationV5Recovery_20260425__cand001",
+        "WideV1IterationV5Recovery_20260425__cand002",
+        "WideV1IterationV5Recovery_20260425__cand003",
+        "WideV1IterationV5Recovery_20260425__cand004",
+        "WideV1IterationV5Recovery_20260425__cand005",
+        "WideV1IterationV5Recovery_20260425__cand006",
+        "WideV1IterationV5Recovery_20260425__cand007",
+        "WideV1IterationV5Recovery_20260425__cand008",
+        "WideV1IterationV5Recovery_20260425__cand009",
+        "WideV1IterationV5Recovery_20260425__cand010",
+        "WideV1IterationV5Recovery_20260425__cand011",
+        "WideV1IterationV5Recovery_20260425__cand012",
+        "WideV1IterationV5Recovery_20260425__cand013",
+        "WideV1IterationV5Recovery_20260425__cand014",
+        "WideV1IterationV5Recovery_20260425__cand015",
+        "WideV1IterationV5Recovery_20260425__cand016",
+        "WideV1IterationV5Recovery_20260425__cand017",
+        "WideV1IterationV5_20260424__cand001",
+        "WideV1IterationV5_20260424__cand002",
+        "WideV1IterationV5_20260424__cand003",
+        "WideV1IterationV5_20260424__cand004",
+        "WideV1IterationV5_20260424__cand005",
+        "WideV1IterationV5_20260424__cand006",
+        "WideV1IterationV5_20260424__cand008",
+        "WideV1RetentionCand5_20260422__cand003",
+        "WideV2Final_B_20260428",
+        "WideV2V5DirectV4ShortfallRecovery_20260428__round001__cand007",
+        "WideV2V5NextSeedRecoverySmoke_20260428__round001__cand003",
+        "WideV2V5NextSeedRecoverySmoke_20260428__round002__cand003",
+        "WideV2V5RecoverySmoke_20260428__round001__cand003"
+      ],
+      "unpaired_sell_names": [
+        "20250715_Study_S",
+        "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+        "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+        "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+        "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+        "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+        "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+        "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+        "Min_S_Study_251226"
+      ]
+    }
+  },
+  "summary": {
+    "strategies_total": 146,
+    "strategies_rejected_by_any_check": 103,
+    "rejected_by_any_rate": 0.705479,
+    "top_reject_reasons_by_check": {
+      "variable_scope": [
+        [
+          "매수수량",
+          34
+        ],
+        [
+          "강제청산",
+          29
+        ],
+        [
+          "매도수량",
+          29
+        ],
+        [
+          "VI아래5호가",
+          12
+        ],
+        [
+          "분당거래대금",
+          8
+        ]
+      ],
+      "token_check": [
+        [
+          "구문 오류: expected an indented block after 'if' statement on line 121 (<unknown>, line 123)",
+          1
+        ]
+      ],
+      "filter_gate": [
+        [
+          "2",
+          2
+        ],
+        [
+          "3",
+          3
+        ],
+        [
+          "4",
+          5
+        ]
+      ],
+      "exec_budget": [
+        [
+          "윈도우/구간 집계 함수 호출이 9개로 상한(8개)을 초과한다",
+          17
+        ],
+        [
+          "윈도우/구간 집계 함수 호출이 10개로 상한(8개)을 초과한다",
+          2
+        ],
+        [
+          "윈도우/구간 집계 함수 호출이 11개로 상한(8개)을 초과한다",
+          1
+        ]
+      ],
+      "principle_gate": [
+        [
+          "CSC-10",
+          26
+        ],
+        [
+          "CSC-07",
+          2
+        ]
+      ]
+    }
+  }
+}

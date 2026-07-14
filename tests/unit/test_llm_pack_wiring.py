@@ -618,3 +618,74 @@ def test_apply_llm_candidate_pack_off_returns_identical_object():
     assert out is analysis
     out_no_provider = research_loop._apply_llm_candidate_pack(_config(), analysis, None, None)
     assert out_no_provider is analysis
+
+
+# ------------------------------------------------- DR-04 final-owner wiring
+# ===================================================================
+# final_owner_selection_enabled is opt-in (default OFF) and layered strictly
+# on top of the already-opt-in llm_candidate_pack_enabled -- flipping it on
+# alone (without llm_candidate_pack_enabled) has zero effect, since pack
+# production itself is skipped.
+# ===================================================================
+
+
+def test_research_loop_config_has_final_owner_selection_field():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert "final_owner_selection_enabled" in names
+    config = ResearchLoopConfig()
+    assert config.final_owner_selection_enabled is False
+    assert asdict(config)["final_owner_selection_enabled"] is False
+
+
+def test_final_owner_selection_enabled_end_to_end_selects_official_candidate(monkeypatch, tmp_path):
+    baseline = tmp_path / "baseline.csv"
+    _write_trade_csv(baseline)
+    _patch_common(monkeypatch)
+    executed = []
+    _install_fake_execute(monkeypatch, executed)
+    provider = QueueProvider(repair=_valid_repair_responses(), discovery=_valid_discovery_responses())
+
+    result = run_research_iteration(
+        _config(
+            baseline_csv=str(baseline),
+            llm_candidate_pack_enabled=True,
+            final_owner_selection_enabled=True,
+        ),
+        DummyController(),
+        provider=provider,
+    )
+
+    assert result["status"] == "ok"
+    pack = result["analysis_result"]["research_candidate_pack"]
+    assert "final_owner_selection" in pack
+    selection = pack["final_owner_selection"]
+    assert selection["selected"] is not None
+    assert selection["pool_blockers"] == []
+    hypothesis_ids = {c["hypothesis_id"] for c in pack["candidates"]}
+    assert selection["selected"]["candidate_id"] in hypothesis_ids
+
+
+def test_final_owner_selection_enabled_without_llm_pack_has_no_effect(monkeypatch, tmp_path):
+    baseline = tmp_path / "baseline.csv"
+    _write_trade_csv(baseline)
+    _patch_common(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        "generate_condition_expressions_from_analysis",
+        lambda *a, **k: _fallback_expression_result(),
+    )
+    executed = []
+    _install_fake_execute(monkeypatch, executed)
+
+    result = run_research_iteration(
+        _config(baseline_csv=str(baseline), final_owner_selection_enabled=True),
+        DummyController(),
+        provider=ExplodingProvider(),
+    )
+
+    assert result["status"] == "ok"
+    # llm_candidate_pack_enabled stays False (default), so pack production is
+    # skipped entirely regardless of final_owner_selection_enabled -- byte-동일
+    # to the OFF/OFF path.
+    assert "research_candidate_pack_wiring" not in result["analysis_result"]
+    assert "research_candidate_pack" not in result["analysis_result"]

@@ -147,3 +147,29 @@ def build_segment_avoid_lines(
                 lines.append(_avoid_line(axis, cell))
                 taken += 1
     return lines
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 영속 지시 렌더러. 카드가 이미 게이트(표본/CI/q값-또는
+#   -사전등록축/train-only)를 통과시킨 actionable_directives 만 그대로 렌더한다
+#   — 여기서 새로 판정하거나 카드 content_hash 를 재계산하지 않는다(동일-해시
+#   렌더 경로 계약: analysis_card.render_card_v3_md 와 항상 같은 해시를 참조).
+# ---------------------------------------------------------------------------
+
+
+def render_directives_from_card_v3(card: Any) -> List[str]:
+    """AnalysisCardV3.actionable_directives 를 매수 프롬프트용 라인으로 렌더한다.
+
+    카드가 이미 train-only + 표본/CI/FDR 게이트를 통과시킨 것만 실었으므로,
+    여기서는 재판정하지 않고 그대로 옮긴다. 각 라인은 카드 content_hash 를
+    참조 태그로 달아, 다른 렌더 경로와 동일 정체성임을 검증 가능하게 한다.
+    빈 카드/지시 0개는 빈 리스트를 돌려준다(무예외).
+    """
+    directives = getattr(card, "actionable_directives", None) or ()
+    content_hash = getattr(card, "content_hash", "")
+    lines: List[str] = []
+    for directive in directives:
+        statement = directive.get("statement") if isinstance(directive, dict) else None
+        if statement:
+            lines.append(f"[card:{content_hash}] {statement}")
+    return lines

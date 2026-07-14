@@ -1,10 +1,17 @@
+import pytest
+
 from cli.condition_generator import (
+    ApprovedBRegistryV2,
+    build_approved_b_registry,
+    candidate_ai_performance_eligible,
     candidate_to_expression,
     generate_condition_code,
     generate_condition_expressions_from_analysis,
     expression_result_from_candidate_pack,
     generate_conditions_from_analysis,
+    is_ai_performance_eligible,
     mark_diagnostic_fallback,
+    reconcile_approved_b_features,
     validate_multi_hypothesis_candidate_pack,
     save_condition_code,
 )
@@ -324,3 +331,67 @@ def test_expression_result_from_candidate_pack_enforce_approved_b_only_rejects_u
     assert enforced_result['candidate_count'] < default_result['candidate_count']
     assert '완전히_존재하지않는_변수 > 1' in default_result['expressions']
     assert '완전히_존재하지않는_변수 > 1' not in enforced_result['expressions']
+
+
+# ===================================================================
+# DR-04 -- approved-B registry reconciliation + AI-performance-accounting
+#   exclusion classifier.
+# ===================================================================
+
+
+def test_build_approved_b_registry_is_immutable_and_content_addressed():
+    registry = build_approved_b_registry(['B_foo', 'B_bar'], timeframe='min')
+    assert isinstance(registry, ApprovedBRegistryV2)
+    assert registry.approved_features == frozenset({'B_foo', 'B_bar'})
+    assert registry.contains('B_foo') is True
+    assert registry.contains('B_missing') is False
+    # frozen dataclass -- cannot be mutated after construction.
+    import dataclasses
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        registry.approved_features = frozenset()
+    # identity is a pure function of the (timeframe, approved set) content.
+    same_registry = build_approved_b_registry(['B_bar', 'B_foo'], timeframe='min')
+    assert same_registry.registry_id == registry.registry_id
+    different_registry = build_approved_b_registry(['B_foo'], timeframe='min')
+    assert different_registry.registry_id != registry.registry_id
+
+
+def test_reconcile_approved_b_features_rejects_unregistered_b_name_only():
+    registry = build_approved_b_registry(['B_ok'], timeframe='min')
+    assert reconcile_approved_b_features('B_ok > 1', timeframe='min', registry=registry) == []
+    reasons = reconcile_approved_b_features('B_not_registered > 1', timeframe='min', registry=registry)
+    assert reasons == ['registry_rejected_variable:B_not_registered']
+    # non-B_-prefixed names are out of registry scope entirely (left to
+    # validate_b_only/variable-scope, not this identity check).
+    assert reconcile_approved_b_features('아무이름 > 1', timeframe='min', registry=registry) == []
+
+
+def test_reconcile_approved_b_features_flags_timeframe_mismatch():
+    registry = build_approved_b_registry(['B_ok'], timeframe='min')
+    reasons = reconcile_approved_b_features('B_ok > 1', timeframe='tick', registry=registry)
+    assert any(r.startswith('registry_timeframe_mismatch:') for r in reasons)
+
+
+def test_is_ai_performance_eligible_excludes_fallback_and_control_origin():
+    assert is_ai_performance_eligible({'source': 'llm_multi_hypothesis_candidate_pack'}) is True
+    assert is_ai_performance_eligible({
+        'source': 'diagnostic_deterministic_candidate_fallback',
+    }) is False
+    assert is_ai_performance_eligible({'fallback_used': True}) is False
+    assert is_ai_performance_eligible({'origin': 'control'}) is False
+    assert candidate_ai_performance_eligible({'origin': 'control_origin'}) is False
+    assert candidate_ai_performance_eligible({'lane': 'discovery'}) is True
+
+
+def test_mark_diagnostic_fallback_result_is_excluded_from_ai_performance_accounting():
+    """Bullet 7 -- mark_diagnostic_fallback's own output must classify as
+    fallback/control-origin, tying the two DR-04 additions together."""
+    baseline = {
+        'status': 'ok',
+        'expressions': ['등락율 <= 2'],
+        'selected_candidates': [{'source': 'quantile', 'feature': 'B_등락율'}],
+        'candidate_count': 1,
+    }
+    fallback = mark_diagnostic_fallback(baseline, reason='llm_candidate_pack_missing')
+    assert is_ai_performance_eligible(fallback) is False
+    assert is_ai_performance_eligible(baseline) is True

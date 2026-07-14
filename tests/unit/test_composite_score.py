@@ -78,6 +78,16 @@ def test_uptrend_r2_flat_curve_is_zero():
     """평평한(분산 0) 곡선은 R²=0."""
     assert compute_uptrend_r2([5, 5, 5, 5, 5]) == 0.0
 
+def test_uptrend_r2_downward_line_is_zero():
+    """DR-01: 완벽한 하락 직선은 corr²=1.0 이지만 우상향 의도가 아니므로 0.0이어야 한다."""
+    assert compute_uptrend_r2([50, 40, 30, 20, 10]) == 0.0
+
+
+def test_uptrend_r2_positive_line_is_near_one():
+    """DR-01: 양(+)기울기 완벽한 직선은 여전히 R²≈1.0(하락 게이트가 상승 케이스를 죽이면 안 됨)."""
+    r2 = compute_uptrend_r2([10, 20, 30, 40, 50])
+    assert abs(r2 - 1.0) < 1e-9
+
 
 # ============================================================
 # (b) gate: 위반 시 composite 0
@@ -173,3 +183,29 @@ def test_compute_fitness_with_mdd_zero_does_not_crash():
     assert res.gate_passed is True
     assert res.calmar == 1e6
     assert res.score > 0.0
+
+
+def test_load_exit_quality_from_csv_neutral_trades_do_not_change_payoff_ratio(tmp_path):
+    """DR-01: 무손익(0%) 거래 98건을 1승/1패 세트에 더해도 payoff_ratio 는 변하지 않는다."""
+    import csv
+
+    from ai_strategy_loop.fitness.score import load_exit_quality_from_csv
+
+    base_rows = [{"수익률": "10.0"}, {"수익률": "-5.0"}]
+    neutral_rows = [{"수익률": "0.0"} for _ in range(98)]
+
+    def _write(path, rows):
+        with open(path, "w", encoding="utf-8-sig", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=["수익률"])
+            writer.writeheader()
+            writer.writerows(rows)
+        return str(path)
+
+    base_csv = _write(tmp_path / "base.csv", base_rows)
+    padded_csv = _write(tmp_path / "padded.csv", base_rows + neutral_rows)
+
+    base_result = load_exit_quality_from_csv(base_csv)
+    padded_result = load_exit_quality_from_csv(padded_csv)
+
+    assert abs(base_result["payoff_ratio"] - 2.0) < 1e-9  # mean_win=10 / |mean_loss|=5.
+    assert abs(padded_result["payoff_ratio"] - base_result["payoff_ratio"]) < 1e-9

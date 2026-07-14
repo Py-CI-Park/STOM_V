@@ -217,13 +217,13 @@ def test_record_empty_series_is_noop():
 
 
 def test_schema_version_and_equity_table_exist():
-    """SCHEMA_VERSION==10, equity_points 테이블·인덱스가 존재한다."""
-    assert SCHEMA_VERSION == 10
+    """SCHEMA_VERSION==11(CL-R04 증거 원장 v11), equity_points 테이블·인덱스가 존재한다."""
+    assert SCHEMA_VERSION == 11
     db_dir = tempfile.mkdtemp()
     db_path = os.path.join(db_dir, "loop_runs.db")
     st = LoopState(db_path=db_path, snapshot_dir=os.path.join(db_dir, "snap"))
     try:
-        assert st.get_schema_version() == 10
+        assert st.get_schema_version() == 11
         tables = {
             r[0] for r in st._con.execute(
                 "SELECT name FROM sqlite_master WHERE type='table'"

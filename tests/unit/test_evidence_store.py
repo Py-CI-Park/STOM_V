@@ -36,6 +36,7 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401  (env-before-import 계약)
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.controller.evidence_store import (  # noqa: E402
     EvidenceCorruptionError,
+    EvidenceOrphanError,
     EvidenceStore,
 )
 from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
@@ -534,3 +535,149 @@ def test_non_integrity_insert_error_rolls_back_no_stranded_txn(tmp_path):
         assert con.execute("SELECT COUNT(*) FROM candidate_passports").fetchone()[0] == 0
     finally:
         con.close()
+
+
+# ---------------------------------------------------------------------
+# 10) DR-03 — rendered-only consumption guard (real prompt FK, no orphan).
+# ---------------------------------------------------------------------
+
+def _record_prompt(st, **overrides):
+    kwargs = dict(
+        run_id="run-1", gen_no=0, kind="buy", attempt=1,
+        system_text="sys", user_text="usr",
+    )
+    kwargs.update(overrides)
+    return st.record_prompt(**kwargs)
+
+
+def test_record_prompt_returns_real_persisted_ids(tmp_path):
+    st = _open(tmp_path)
+    try:
+        result = _record_prompt(st)
+        assert isinstance(result["prompt_id"], int)
+        assert result["rendered_prompt_id"].startswith("rp_")
+        assert len(result["content_sha256"]) == 64
+        row = st._con.execute(
+            "SELECT prompt_id, content_sha256 FROM prompts WHERE prompt_id = ?",
+            (result["prompt_id"],),
+        ).fetchone()
+        assert row is not None
+        assert row["content_sha256"] == result["content_sha256"]
+        rp_row = st._con.execute(
+            "SELECT prompt_row_id FROM rendered_prompts WHERE rendered_prompt_id = ?",
+            (result["rendered_prompt_id"],),
+        ).fetchone()
+        assert rp_row is not None
+        assert rp_row["prompt_row_id"] == result["prompt_id"]
+    finally:
+        st.close()
+
+
+def test_is_rendered_prompt_true_only_for_actually_persisted_prompt(tmp_path):
+    st = _open(tmp_path)
+    try:
+        store = EvidenceStore(st)
+        result = _record_prompt(st)
+        assert store.is_rendered_prompt(result["rendered_prompt_id"]) is True
+        assert store.is_rendered_prompt("rp_" + _sha("never-rendered")) is False
+        assert store.is_rendered_prompt(None) is False
+        assert store.is_rendered_prompt("") is False
+    finally:
+        st.close()
+
+
+def test_is_rendered_prompt_fail_closed_when_table_missing():
+    # A raw connection that never ran LoopState._init_schema has no
+    # rendered_prompts table at all — must reject (False), never accept.
+    con = sqlite3.connect(":memory:")
+    con.row_factory = sqlite3.Row
+    store = EvidenceStore(con)
+    assert store.is_rendered_prompt("rp_" + _sha("anything")) is False
+
+
+def test_append_consumption_require_rendered_accepts_real_prompt_id(tmp_path):
+    st = _open(tmp_path)
+    try:
+        store = EvidenceStore(st)
+        passport = make_passport()
+        store.append_passport(passport)
+        feedback = make_feedback(source_passport_id=passport.passport_id)
+        store.append_feedback(feedback, run_id=passport.run_id)
+        rendered = _record_prompt(st)
+        consumption = make_consumption(
+            feedback_id=feedback.feedback_id,
+            target_passport_id=passport.passport_id,
+            prompt_id=rendered["rendered_prompt_id"],
+        )
+        store.append_consumption(consumption, run_id=passport.run_id, require_rendered=True)
+        assert store.unconsumed_feedback("run-1") == []
+    finally:
+        st.close()
+
+
+def test_append_consumption_require_rendered_rejects_orphan_prompt_id(tmp_path):
+    st = _open(tmp_path)
+    try:
+        store = EvidenceStore(st)
+        passport = make_passport()
+        store.append_passport(passport)
+        feedback = make_feedback(source_passport_id=passport.passport_id)
+        store.append_feedback(feedback, run_id=passport.run_id)
+        # "prompt-1" (the v1-style placeholder used elsewhere in this suite) was
+        # never actually rendered/persisted — the rendered-only guard must reject it.
+        consumption = make_consumption(
+            feedback_id=feedback.feedback_id,
+            target_passport_id=passport.passport_id,
+            prompt_id="prompt-1",
+        )
+        with pytest.raises(EvidenceOrphanError):
+            store.append_consumption(consumption, run_id=passport.run_id, require_rendered=True)
+        # fail-closed: no row was written for the rejected consumption.
+        count = st._con.execute(
+            "SELECT COUNT(*) FROM feedback_consumptions WHERE consumption_id = ?",
+            (consumption.consumption_id,),
+        ).fetchone()[0]
+        assert count == 0
+        assert store.unconsumed_feedback("run-1") != []
+    finally:
+        st.close()
+
+
+def test_append_consumption_default_still_accepts_any_nonempty_prompt_id(tmp_path):
+    # require_rendered defaults False — v1 behavior (free placeholder string)
+    # stays byte-identical for existing callers/fixtures in this suite.
+    st = _open(tmp_path)
+    try:
+        store = EvidenceStore(st)
+        passport = make_passport()
+        store.append_passport(passport)
+        feedback = make_feedback(source_passport_id=passport.passport_id)
+        store.append_feedback(feedback, run_id=passport.run_id)
+        consumption = make_consumption(
+            feedback_id=feedback.feedback_id,
+            target_passport_id=passport.passport_id,
+            prompt_id="prompt-1",
+        )
+        store.append_consumption(consumption, run_id=passport.run_id)
+        assert store.unconsumed_feedback("run-1") == []
+    finally:
+        st.close()
+
+
+def test_record_prompt_mismatch_guard_rejects_content_reuse(tmp_path):
+    # Defensive integrity guard: if a rendered_prompt_id is somehow already
+    # registered against a DIFFERENT content_sha256 (should be impossible since
+    # the id is itself content-derived — simulated here directly), record_prompt
+    # must fail loudly instead of silently accepting the mismatch.
+    st = _open(tmp_path)
+    try:
+        first = _record_prompt(st, user_text="usr")
+        st._con.execute(
+            "UPDATE rendered_prompts SET content_sha256 = ? WHERE rendered_prompt_id = ?",
+            ("0" * 64, first["rendered_prompt_id"]),
+        )
+        st._con.commit()
+        with pytest.raises(ValueError):
+            _record_prompt(st, user_text="usr")
+    finally:
+        st.close()

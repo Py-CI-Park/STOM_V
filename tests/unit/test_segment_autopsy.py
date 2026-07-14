@@ -30,6 +30,11 @@ from ai_strategy_loop.autopsy import (  # noqa: E402
     summarize_segments,
     to_page_data,
 )
+from ai_strategy_loop.autopsy.segment import (  # noqa: E402
+    SEGMENT_CARD_SECTION_SCHEMA_V3,
+    to_card_section_v3,
+)
+
 from ai_strategy_loop.autopsy.analyze import (  # noqa: E402
     STATUS_INSUFFICIENT,
     STATUS_OK,
@@ -291,3 +296,27 @@ def test_loop_feeds_segment_autopsy_and_publishes_page_data(monkeypatch, tmp_pat
     autopsy_payloads = [p for p in published if p and "autopsy" in p]
     assert autopsy_payloads, "page_data['autopsy']가 한 번도 발행되지 않았다"
     assert autopsy_payloads[0]["autopsy"]["trade_count"] == 50
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — segment.to_card_section_v3: AnalysisCardV3 서술 섹션 어댑터.
+# ---------------------------------------------------------------------------
+
+
+def test_to_card_section_v3_wraps_to_page_data_with_schema_label(tmp_path):
+    csv = _write_csv(tmp_path / "seg_v3.csv", _make_segmented_rows())
+    result = analyze_segments(csv, min_trades=10)
+    page = to_page_data(result)
+    section = to_card_section_v3(result)
+
+    assert section["schema"] == SEGMENT_CARD_SECTION_SCHEMA_V3
+    # 재구현이 아니라 to_page_data 를 그대로 재사용해야 한다 — schema 제외 나머지 동일.
+    for key, value in page.items():
+        assert section[key] == value
+
+
+def test_to_card_section_v3_is_json_serializable(tmp_path):
+    csv = _write_csv(tmp_path / "seg_v3b.csv", _make_segmented_rows())
+    result = analyze_segments(csv, min_trades=10)
+    section = to_card_section_v3(result)
+    assert json.dumps(section, ensure_ascii=False)

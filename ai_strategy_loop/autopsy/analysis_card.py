@@ -23,10 +23,13 @@ result_meta 에 승격/실전 권한 키(can_promote 등)가 truthy 면 ValueErr
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import math
+from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+
 
 import pandas as pd
 
@@ -251,11 +254,21 @@ def _build_zone_sections(
         "note": ("손실 집중 세그먼트 %d개(전체 대비 return_diff<0)." % len(avoid))
         if avoid else "손실 집중 세그먼트 없음(전 셀 return_diff>=0).",
     }
+    # "선호" 세그먼트는 전체 평균 대비(return_diff>0) 상대 우위일 뿐, 절대 수익률이
+    #   음수일 수 있다(예: 전 구간이 손실이고 이 셀만 '덜' 손실). 그런 경우 진입을
+    #   늘리라는 신호로 오독되면 안 되므로 actionable=False로 정직하게 표시한다.
+    best_slice_actionable = bool(prefer) and float(prefer[0].avg_return) > 0
     prefer_section = {
         "status": SECTION_OK, "zone_axis": zone_axis,
-        "zones": [_segment_row(s) for s in prefer],
-        "note": ("이익 집중 세그먼트 %d개(전체 대비 return_diff>0)." % len(prefer))
-        if prefer else "이익 집중 세그먼트 없음(전 셀 return_diff<=0).",
+        "zones": [dict(_segment_row(s), actionable=bool(s.avg_return > 0)) for s in prefer],
+        "actionable": best_slice_actionable,
+        "note": (
+            ("이익 집중 세그먼트 %d개(전체 대비 return_diff>0)." % len(prefer))
+            if prefer else "이익 집중 세그먼트 없음(전 셀 return_diff<=0)."
+        ) + (
+            "" if not prefer or best_slice_actionable
+            else " 단, 최선 셀도 절대 수익률<=0 — 실행 불가(non-actionable, 상대 우위일 뿐)."
+        ),
     }
     return avoid_section, prefer_section
 
@@ -793,4 +806,363 @@ def render_card_md(card: Mapping[str, Any]) -> str:
     _md_mutation(lines, card.get("mutation_axis") or {})
 
     lines.extend(["", "## 리스크 노트", str(card.get("risk_note") or "(없음)")])
+    return "\n".join(lines) + "\n"
+
+
+# ---------------------------------------------------------------------------
+# AnalysisCardV3 (DR-05) — 통계 안전판이 있는 영속 카드.
+#
+#   source/role/manifest 정체성 + 콘텐츠 해시를 갖고, 표본(n_trades/n_days/
+#   n_symbols)·CI·q값-또는-사전등록축 게이트를 **전부** 통과하고 role=='train'
+#   인 발견만 actionable_directives 에 들어간다. 나머지는 전부
+#   descriptive_findings 로 남는다(정직 계약 — 미달 발견을 지시로 승격하지
+#   않는다). validation/oos 롤은 게이트 통과 여부와 무관하게 지시 0개다.
+#
+#   대시보드/프롬프트/문서 렌더 경로(render_card_v3_md, segment_feedback의
+#   render_directives_from_card_v3, feature_importance_feedback의 대응 함수)는
+#   전부 이 카드의 content_hash 를 그대로 읽기만 한다 — 절대 재계산하지 않는다.
+# ---------------------------------------------------------------------------
+
+ANALYSIS_CARD_SCHEMA_V3 = "analysis_card_v3"
+
+DEFAULT_MIN_N_TRADES_V3 = 30
+DEFAULT_MIN_N_DAYS_V3 = 10
+DEFAULT_MIN_N_SYMBOLS_V3 = 2
+DEFAULT_ALPHA_V3 = 0.05
+
+# 게이트 거부 사유 코드 — 절대 조작된 'OK'를 돌려주지 않는다.
+REASON_OK = "OK"
+REASON_INELIGIBLE = "STATISTICAL_DIRECTIVE_INELIGIBLE"
+REASON_NOT_TRAIN = "VALIDATION_OOS_TRAIN_ONLY"
+
+ROLE_TRAIN = "train"
+ROLE_VALIDATION = "validation"
+ROLE_OOS = "oos"
+VALID_ROLES_V3 = (ROLE_TRAIN, ROLE_VALIDATION, ROLE_OOS)
+
+
+@dataclass(frozen=True, slots=True)
+class AnalysisFindingV3:
+    """서술적 발견 하나 — 표본/CI/q값 증거를 지니고, 게이트 통과 여부(is_directive)와
+    그 사유(reason_code)를 함께 담는다. build_analysis_card_v3 가 evaluate_directive_gate
+    로 계산한 값을 그대로 싣는다(자체적으로 조작하지 않는다 — 정직 계약).
+    """
+
+    finding_id: str
+    statement: str
+    axis: str
+    n_trades: int
+    n_days: int
+    n_symbols: int
+    ci_low: Optional[float]
+    ci_high: Optional[float]
+    q_value: Optional[float]
+    prereg_axis: bool
+    is_directive: bool
+    reason_code: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "finding_id": self.finding_id,
+            "statement": self.statement,
+            "axis": self.axis,
+            "n_trades": self.n_trades,
+            "n_days": self.n_days,
+            "n_symbols": self.n_symbols,
+            "ci_low": self.ci_low,
+            "ci_high": self.ci_high,
+            "q_value": self.q_value,
+            "prereg_axis": self.prereg_axis,
+            "is_directive": self.is_directive,
+            "reason_code": self.reason_code,
+        }
+
+
+def evaluate_directive_gate(
+    *,
+    role: str,
+    n_trades: int,
+    n_days: int,
+    n_symbols: int,
+    ci_low: Optional[float],
+    ci_high: Optional[float],
+    q_value: Optional[float],
+    prereg_axis: bool,
+    min_n_trades: int = DEFAULT_MIN_N_TRADES_V3,
+    min_n_days: int = DEFAULT_MIN_N_DAYS_V3,
+    min_n_symbols: int = DEFAULT_MIN_N_SYMBOLS_V3,
+    alpha: float = DEFAULT_ALPHA_V3,
+) -> Tuple[bool, str]:
+    """발견 하나가 actionable_directive 자격이 있는지 판정한다(순수·무예외).
+
+    게이트(전부 AND):
+      1) role == 'train' — validation/oos 는 항상 거부(train-only 강제).
+      2) n_trades/n_days/n_symbols 최소 표본(기본 30/10/2).
+      3) CI(ci_low..ci_high)가 유효하고 0을 포함하지 않는다.
+      4) prereg_axis(사전등록 축)이거나 q_value<=alpha(BH-FDR 통과).
+
+    미달이면 (False, STATISTICAL_DIRECTIVE_INELIGIBLE)을 돌려준다.
+    """
+    if role != ROLE_TRAIN:
+        return False, REASON_NOT_TRAIN
+    if n_trades < min_n_trades or n_days < min_n_days or n_symbols < min_n_symbols:
+        return False, REASON_INELIGIBLE
+    if ci_low is None or ci_high is None:
+        return False, REASON_INELIGIBLE
+    if ci_low <= 0.0 <= ci_high:
+        return False, REASON_INELIGIBLE
+    statistically_ok = bool(prereg_axis) or (q_value is not None and q_value <= alpha)
+    if not statistically_ok:
+        return False, REASON_INELIGIBLE
+    return True, REASON_OK
+
+
+@dataclass(frozen=True, slots=True)
+class AnalysisCardV3:
+    """DR-05 영속 카드. content_hash 는 build_analysis_card_v3 가 1회 계산해
+    싣는다 — 렌더 경로는 이 필드를 그대로 읽기만 한다(재계산 금지).
+    """
+
+    schema: str
+    source: Dict[str, Any]
+    role: str
+    manifest_id: Optional[str]
+    quality: str
+    trade_quant: Dict[str, Any]
+    ci_evidence: Dict[str, Any]
+    split_evidence: Dict[str, Any]
+    segment_findings: Tuple[Dict[str, Any], ...]
+    ablation_findings: Tuple[Dict[str, Any], ...]
+    descriptive_findings: Tuple[Dict[str, Any], ...]
+    actionable_directives: Tuple[Dict[str, Any], ...]
+    content_hash: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "schema": self.schema,
+            "source": self.source,
+            "role": self.role,
+            "manifest_id": self.manifest_id,
+            "quality": self.quality,
+            "trade_quant": self.trade_quant,
+            "ci_evidence": self.ci_evidence,
+            "split_evidence": self.split_evidence,
+            "segment_findings": list(self.segment_findings),
+            "ablation_findings": list(self.ablation_findings),
+            "descriptive_findings": list(self.descriptive_findings),
+            "actionable_directives": list(self.actionable_directives),
+            "content_hash": self.content_hash,
+        }
+
+
+def _card_v3_content_payload(
+    *,
+    schema: str, source: Mapping[str, Any], role: str, manifest_id: Optional[str], quality: str,
+    trade_quant: Mapping[str, Any], ci_evidence: Mapping[str, Any], split_evidence: Mapping[str, Any],
+    segment_findings: Sequence[Mapping[str, Any]], ablation_findings: Sequence[Mapping[str, Any]],
+    descriptive_findings: Sequence[Mapping[str, Any]], actionable_directives: Sequence[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    """content_hash 입력이 되는 정본 payload(재현 가능한 순서/구조)."""
+    return {
+        "schema": schema, "source": dict(source), "role": role, "manifest_id": manifest_id,
+        "quality": quality, "trade_quant": dict(trade_quant), "ci_evidence": dict(ci_evidence),
+        "split_evidence": dict(split_evidence),
+        "segment_findings": [dict(x) for x in segment_findings],
+        "ablation_findings": [dict(x) for x in ablation_findings],
+        "descriptive_findings": [dict(x) for x in descriptive_findings],
+        "actionable_directives": [dict(x) for x in actionable_directives],
+    }
+
+
+def _card_v3_content_hash(payload: Mapping[str, Any]) -> str:
+    text = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    )
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _daily_pnl_from_rows(
+    rows: Sequence[Mapping[str, Any]], contract: Any,
+) -> Dict[str, float]:
+    """거래행에서 일별 손익 dict를 만든다(overfit_stats CI 어댑터 입력용)."""
+    from ai_strategy_loop.fitness import edge_ratio as _edge_ratio  # noqa: PLC0415
+
+    daily: Dict[str, float] = {}
+    for row in rows:
+        resolved = _edge_ratio.resolve_trade_columns(row, contract)
+        if not resolved.date_key or resolved.profit_value is None:
+            continue
+        day_key = resolved.date_key[:8] if len(resolved.date_key) >= 8 else resolved.date_key
+        daily[day_key] = daily.get(day_key, 0.0) + resolved.profit_value
+    return daily
+
+
+def _split_evidence_from_returns(returns: Sequence[float]) -> Dict[str, Any]:
+    """시간순 전/후반 분할 평균 수익률 부호 일치 여부(정직 근사 split 증거)."""
+    n = len(returns)
+    if n < 2:
+        return {"status": SECTION_INSUFFICIENT, "note": "표본 부족(2행 미만)"}
+    half = n // 2
+    first = returns[:half]
+    second = returns[half:]
+    first_mean = sum(first) / len(first) if first else None
+    second_mean = sum(second) / len(second) if second else None
+    consistent = (
+        first_mean is not None and second_mean is not None
+        and (first_mean > 0) == (second_mean > 0)
+    )
+    return {
+        "status": SECTION_OK,
+        "first_half_mean": _safe_number(first_mean),
+        "second_half_mean": _safe_number(second_mean),
+        "direction_consistent": bool(consistent),
+    }
+
+
+def _findings_to_gated(
+    candidate_findings: Sequence[Mapping[str, Any]],
+    *,
+    role: str, n_trades: int, n_days: int, n_symbols: int,
+    min_n_trades: int, min_n_days: int, min_n_symbols: int, alpha: float,
+) -> Tuple[Tuple[Dict[str, Any], ...], Tuple[Dict[str, Any], ...]]:
+    """후보 발견 목록에 BH-FDR(q값 미제공 시)을 적용하고 게이트를 통과시켜
+    (descriptive_findings, actionable_directives) 로 가른다.
+    """
+    from ai_strategy_loop.autopsy import analyze as _analyze_local  # noqa: PLC0415
+
+    items = list(candidate_findings)
+    needs_q = [i for i, item in enumerate(items) if item.get("q_value") is None]
+    if needs_q:
+        p_values = [float(items[i].get("p_value", 1.0) if items[i].get("p_value") is not None else 1.0) for i in needs_q]
+        q_values, _pass_flags = _analyze_local._benjamini_hochberg(p_values, alpha=alpha)
+        for pos, idx in enumerate(needs_q):
+            items[idx] = {**items[idx], "q_value": q_values[pos]}
+
+    descriptive: List[Dict[str, Any]] = []
+    directives: List[Dict[str, Any]] = []
+    for idx, item in enumerate(items):
+        is_directive, reason = evaluate_directive_gate(
+            role=role, n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
+            ci_low=item.get("ci_low"), ci_high=item.get("ci_high"),
+            q_value=item.get("q_value"), prereg_axis=bool(item.get("prereg_axis", False)),
+            min_n_trades=min_n_trades, min_n_days=min_n_days, min_n_symbols=min_n_symbols,
+            alpha=alpha,
+        )
+        finding = AnalysisFindingV3(
+            finding_id=str(item.get("finding_id") or f"finding_{idx}"),
+            statement=str(item.get("statement") or ""),
+            axis=str(item.get("axis") or ""),
+            n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
+            ci_low=item.get("ci_low"), ci_high=item.get("ci_high"),
+            q_value=item.get("q_value"), prereg_axis=bool(item.get("prereg_axis", False)),
+            is_directive=is_directive, reason_code=reason,
+        ).to_dict()
+        (directives if is_directive else descriptive).append(finding)
+    return tuple(descriptive), tuple(directives)
+
+
+def build_analysis_card_v3(
+    trades_df: Optional[pd.DataFrame],
+    *,
+    source: Mapping[str, Any],
+    role: str = ROLE_TRAIN,
+    manifest_id: Optional[str] = None,
+    candidate_findings: Optional[Sequence[Mapping[str, Any]]] = None,
+    segment_findings: Optional[Sequence[Mapping[str, Any]]] = None,
+    ablation_findings: Optional[Sequence[Mapping[str, Any]]] = None,
+    min_n_trades: int = DEFAULT_MIN_N_TRADES_V3,
+    min_n_days: int = DEFAULT_MIN_N_DAYS_V3,
+    min_n_symbols: int = DEFAULT_MIN_N_SYMBOLS_V3,
+    alpha: float = DEFAULT_ALPHA_V3,
+    trade_column_contract: Any = None,
+) -> AnalysisCardV3:
+    """거래행 + 후보 발견 목록에서 AnalysisCardV3(영속·해시 카드)를 만든다.
+
+    Args:
+        trades_df: 거래행 DataFrame(없으면 빈 카드 — insufficient_data).
+        source: source identity(alias/hash/size 등) — 카드 콘텐츠 해시에 실린다.
+        role: 'train' | 'validation' | 'oos'. train 이 아니면 항상 지시 0개.
+        candidate_findings: [{finding_id, statement, axis, p_value|q_value,
+            prereg_axis, ci_low, ci_high}, ...] — 게이트를 거쳐 descriptive/
+            actionable 로 갈린다(BH-FDR 은 q_value 미제공 항목에만 적용).
+        segment_findings/ablation_findings: 순수 서술 섹션(게이트 없음 — 이미
+            segment.py/ablation.py 의 to_card_section_v3 가 non-causal 라벨을
+            붙여 넘긴 것을 그대로 싣는다).
+
+    Returns:
+        AnalysisCardV3(role=='validation'|'oos' 면 actionable_directives=()).
+    """
+    if role not in VALID_ROLES_V3:
+        raise ValueError(f"analysis_card_v3_invalid_role:{role}")
+
+    from ai_strategy_loop.autopsy import trade_quant as _trade_quant_local  # noqa: PLC0415
+    from ai_strategy_loop.fitness import edge_ratio as _edge_ratio_local  # noqa: PLC0415
+    from ai_strategy_loop.fitness import overfit_stats as _overfit_local  # noqa: PLC0415
+
+    contract = trade_column_contract or _edge_ratio_local.DEFAULT_TRADE_COLUMN_CONTRACT
+    frame = _working_frame(trades_df)
+    rows: List[Dict[str, Any]] = [] if frame is None else frame.to_dict("records")
+
+    tq_section = _trade_quant_local.build_trade_quant_section(rows, contract)
+    n_trades = int(tq_section["n_trades"])
+    n_days = int(tq_section["n_days"])
+    n_symbols = int(tq_section["n_symbols"])
+    quality = SECTION_OK if n_trades > 0 else SECTION_INSUFFICIENT
+
+    daily_pnl = _daily_pnl_from_rows(rows, contract)
+    ci_evidence = _overfit_local.daily_overfit_stats_v1_for_card(daily_pnl)
+
+    returns = [
+        r.return_value for r in (_edge_ratio_local.resolve_trade_columns(row, contract) for row in rows)
+        if r.return_value is not None
+    ]
+    split_evidence = _split_evidence_from_returns(returns)
+
+    descriptive, directives = _findings_to_gated(
+        candidate_findings or (),
+        role=role, n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
+        min_n_trades=min_n_trades, min_n_days=min_n_days, min_n_symbols=min_n_symbols,
+        alpha=alpha,
+    )
+
+    payload = _card_v3_content_payload(
+        schema=ANALYSIS_CARD_SCHEMA_V3, source=source, role=role, manifest_id=manifest_id,
+        quality=quality, trade_quant=tq_section, ci_evidence=ci_evidence, split_evidence=split_evidence,
+        segment_findings=segment_findings or (), ablation_findings=ablation_findings or (),
+        descriptive_findings=descriptive, actionable_directives=directives,
+    )
+    content_hash = _card_v3_content_hash(payload)
+
+    return AnalysisCardV3(
+        schema=ANALYSIS_CARD_SCHEMA_V3, source=dict(source), role=role, manifest_id=manifest_id,
+        quality=quality, trade_quant=tq_section, ci_evidence=ci_evidence, split_evidence=split_evidence,
+        segment_findings=tuple(segment_findings or ()), ablation_findings=tuple(ablation_findings or ()),
+        descriptive_findings=descriptive, actionable_directives=directives, content_hash=content_hash,
+    )
+
+
+def card_v3_to_json(card: AnalysisCardV3) -> str:
+    """카드를 결정론 JSON 문자열로 직렬화한다(영속/전송용)."""
+    return json.dumps(
+        card.to_dict(), ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    )
+
+
+def render_card_v3_md(card: AnalysisCardV3) -> str:
+    """카드를 사람이 읽는 markdown으로 렌더링한다 — content_hash 를 그대로 읽어
+    싣는다(재계산 금지, 대시보드/문서 렌더 경로 동일-해시 계약).
+    """
+    lines: List[str] = [
+        f"# Analysis Card V3 ({card.role})",
+        f"- content_hash: {card.content_hash}",
+        f"- quality: {card.quality}",
+        f"- n_trades/n_days/n_symbols: {card.trade_quant.get('n_trades')}/"
+        f"{card.trade_quant.get('n_days')}/{card.trade_quant.get('n_symbols')}",
+        f"- actionable_directives: {len(card.actionable_directives)}",
+        f"- descriptive_findings: {len(card.descriptive_findings)}",
+    ]
+    for directive in card.actionable_directives:
+        lines.append(f"  - [DIRECTIVE] {directive.get('statement')}")
+    for finding in card.descriptive_findings:
+        lines.append(f"  - [descriptive:{finding.get('reason_code')}] {finding.get('statement')}")
     return "\n".join(lines) + "\n"

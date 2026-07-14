@@ -211,6 +211,12 @@ class ResearchLoopConfig:
     # provider는 호출자가 주입하는 Callable[[list[dict]], str]이다.
     # 기본 False(하위호환, 기존 결과 스키마 byte-동일).
     llm_candidate_pack_enabled: bool = False
+    # DR-04 -- True이면 LLM 후보팩을 candidate_pool.select_official_candidate
+    # (변경되지 않은 단일 최종 소유자)로 라우팅해 pack['final_owner_selection']에
+    # 그 선택 결과를 additive로 싣는다. 기본 False(하위호환, 기존 결과 스키마
+    # byte-동일) -- llm_candidate_pack_enabled 자체가 False면 이 플래그는 아무
+    # 효과도 없다(팩 생산 자체가 스킵되므로).
+    final_owner_selection_enabled: bool = False
     # 변이축 효과 원장(JSONL) 경로. 설정 시 (a) LLM 팩 생산 프롬프트에 축
     # 사전확률 라인(AxisLedger.to_prompt_lines)을 주입하고, (b) 라운드 후보
     # 평가 완료 후 각 후보의 부모 대비 delta를 AxisLedger.record로 기록한다.
@@ -1465,6 +1471,7 @@ def _apply_llm_candidate_pack(
             provider,
             lanes=_llm_pack_lanes(config),
             axis_prompt_lines=axis_lines or None,
+            final_owner_enabled=bool(getattr(config, 'final_owner_selection_enabled', False)),
         )
     except Exception as exc:
         wiring['failure_reason'] = f'llm_pack_production_error:{exc}'

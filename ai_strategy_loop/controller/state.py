@@ -21,6 +21,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ai_strategy_loop.controller.evidence_contract import compute_rendered_prompt_id
+
 # 패키지 루트 (.../ai_strategy_loop)
 _PACKAGE_DIR = Path(__file__).resolve().parent.parent
 _STATE_DIR = _PACKAGE_DIR / "state"
@@ -52,6 +54,13 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #         evaluation_manifests/run_receipts) 신규 — CL-R03 append-only 증거 저장.
 #         CREATE TABLE IF NOT EXISTS라 구버전 DB도 안전(하위호환). FOREIGN KEY 적용
 #         (쓰기 모드 연결에서만 PRAGMA foreign_keys=ON).
+#     v11 additive(DR-03, 버전 번호 증가 없음): prompts.content_sha256 컬럼(멱등 ALTER) +
+#         rendered_prompts 테이블(신규, CREATE TABLE IF NOT EXISTS) 추가 — record_prompt가
+#         실제로 영속한 prompt 행에 content-addressed 불변 식별자(rendered_prompt_id)를
+#         부여해 evidence 쪽(FeedbackConsumption.prompt_id)이 synthetic/None 대신 진짜
+#         persisted prompt를 가리키는 FK를 가질 수 있게 한다(DR-00 authority ceiling —
+#         automatic/default 스키마는 v11에 고정되고 SCHEMA_VERSION 상수도 올리지 않는다).
+#         구버전 DB도 안전(하위호환) — 누락 컬럼/테이블만 멱등 보강.
 SCHEMA_VERSION = 11
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
@@ -176,6 +185,19 @@ class LoopState:
                 created_at   REAL
             );
             CREATE INDEX IF NOT EXISTS idx_prompts_run_gen ON prompts(run_id, gen_no);
+            CREATE TABLE IF NOT EXISTS rendered_prompts (
+                rendered_prompt_id TEXT PRIMARY KEY,
+                prompt_row_id      INTEGER,
+                run_id             TEXT,
+                gen_no             INTEGER,
+                kind               TEXT,
+                attempt            INTEGER,
+                content_sha256     TEXT,
+                created_at         REAL,
+                UNIQUE(prompt_row_id),
+                FOREIGN KEY(prompt_row_id) REFERENCES prompts(prompt_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_rendered_prompts_run_gen ON rendered_prompts(run_id, gen_no);
             CREATE TABLE IF NOT EXISTS equity_points (
                 run_id      TEXT,
                 gen_no      INTEGER,
@@ -296,6 +318,11 @@ class LoopState:
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
+        # v11 additive(DR-03, SCHEMA_VERSION 증가 없음) — prompts.content_sha256 누락 보강.
+        #   구버전 DB(신 컬럼 도입 전)도 CREATE TABLE IF NOT EXISTS + 이 멱등 ALTER로 안전.
+        existing_prompt_cols = {row[1] for row in self._con.execute("PRAGMA table_info(prompts)")}
+        if "content_sha256" not in existing_prompt_cols:
+            self._con.execute("ALTER TABLE prompts ADD COLUMN content_sha256 TEXT")
         # 현재 스키마 버전 기록(멱등 UPSERT).
         self._con.execute(
             "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
@@ -504,7 +531,7 @@ class LoopState:
         completion_tokens: int = 0,
         total_tokens: int = 0,
         response_text: str = "",
-    ) -> None:
+    ) -> Dict[str, Any]:
         """한 LLM 호출의 프롬프트를 prompts 테이블에 기록한다 (P1c 프롬프트 영속화).
 
         재현성: 현재 호출별 프롬프트가 휘발해 어떤 프롬프트가 어떤 전략을 낳았는지
@@ -517,6 +544,20 @@ class LoopState:
         sha는 hashlib.sha256(UTF-8)으로 계산하며 빈 문자열도 안전하다. 예외는
         삼키지 않는다 — 호출측(콜백 try/except)이 처리한다(로깅 실패가 루프를
         막지 않도록).
+
+        DR-03(additive): 실제로 INSERT된 prompts 행의 진짜 autoincrement PK
+        (``prompt_id``)와, 그 내용(kind+attempt+system_sha+user_sha)에서 뽑은
+        불변 content-addressed 식별자(``rendered_prompt_id`` —
+        ``evidence_contract.compute_rendered_prompt_id``)를 함께 ``rendered_prompts``
+        레지스트리에 등록하고 dict로 반환한다. 이전에는 반환값이 없었다(None) —
+        기존 호출부(예: controller.loop의 on_prompt 콜백)는 반환값을 쓰지 않으므로
+        byte-identical하게 계속 동작한다(하위호환). ``rendered_prompt_id``는 evidence
+        FeedbackConsumption.prompt_id로 쓰일 수 있는 **진짜 persisted FK**다 —
+        synthetic/placeholder 문자열이 아니라 EvidenceStore.is_rendered_prompt로
+        검증 가능하다. 동일 content가 재삽입돼도(PK 충돌 없음, INSERT OR IGNORE)
+        rendered_prompts는 최초 행만 유지한다(멱등) — 단, 동일 id에 **다른**
+        content_sha256이 매핑되려 하면(이론상 불가능해야 하는 해시 충돌/계산 버그)
+        조용히 넘기지 않고 ValueError로 막는다(무결성 가드, "no mismatch").
         """
         system_sha = hashlib.sha256((system_text or "").encode("utf-8")).hexdigest()
         user_sha = hashlib.sha256((user_text or "").encode("utf-8")).hexdigest()
@@ -526,21 +567,49 @@ class LoopState:
             if injected_features is not None
             else None
         )
-        self._con.execute(
+        rendered_prompt_id = compute_rendered_prompt_id(kind, int(attempt), system_sha, user_sha)
+        content_sha256 = rendered_prompt_id.split("_", 1)[1]
+        cur = self._con.cursor()
+        cur.execute(
             "INSERT INTO prompts "
             "(run_id, gen_no, kind, attempt, system_sha, user_text, user_sha, "
             " injected_features, prior_error, model, prompt_tokens, completion_tokens, "
-            " total_tokens, response_sha, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " total_tokens, response_sha, content_sha256, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, int(gen_no), kind, int(attempt),
                 system_sha, user_text, user_sha,
                 features_json, prior_error, model,
                 int(prompt_tokens), int(completion_tokens), int(total_tokens),
-                response_sha, _now(),
+                response_sha, content_sha256, _now(),
             ),
         )
+        prompt_row_id = cur.lastrowid
+        existing = cur.execute(
+            "SELECT content_sha256 FROM rendered_prompts WHERE rendered_prompt_id = ?",
+            (rendered_prompt_id,),
+        ).fetchone()
+        if existing is None:
+            cur.execute(
+                "INSERT INTO rendered_prompts "
+                "(rendered_prompt_id, prompt_row_id, run_id, gen_no, kind, attempt, "
+                " content_sha256, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    rendered_prompt_id, prompt_row_id, run_id, int(gen_no), kind,
+                    int(attempt), content_sha256, _now(),
+                ),
+            )
+        elif existing[0] != content_sha256:
+            self._con.rollback()
+            raise ValueError(
+                f"rendered_prompt_id_content_mismatch:{rendered_prompt_id}"
+            )
         self._con.commit()
+        return {
+            "prompt_id": prompt_row_id,
+            "rendered_prompt_id": rendered_prompt_id,
+            "content_sha256": content_sha256,
+        }
 
     def get_prompts(self, run_id: str) -> List[Dict[str, Any]]:
         """이 run의 모든 프롬프트 기록을 prompt_id 순으로 반환한다 (재현/조회용)."""
@@ -892,6 +961,9 @@ _ACTIVE_CONFIG_FIELDS = (
     "sell_exec_budget_guard_enabled",
     "sell_max_window_calls",
     "report_principles_enabled",
+    "structure_principles_prompt_enabled",
+    "band_seed_hint_enabled",
+    "band_seed_hint_path",
     "quantile_feedback_enabled",
     "counterfactual_feedback_enabled",
     "time_cap_bucket_generation_enabled",
@@ -940,6 +1012,9 @@ _ACTIVE_CONFIG_TOGGLES = (
     "exec_budget_prompt_enabled",
     "sell_exec_budget_guard_enabled",
     "report_principles_enabled",
+    "structure_principles_prompt_enabled",
+    "band_seed_hint_enabled",
+    "band_seed_hint_path",
     "quantile_feedback_enabled",
     "counterfactual_feedback_enabled",
     "time_cap_bucket_generation_enabled",

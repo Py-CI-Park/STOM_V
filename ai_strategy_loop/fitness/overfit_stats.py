@@ -24,7 +24,8 @@ from __future__ import annotations
 
 import math
 from itertools import combinations
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple
+
 
 import numpy as np
 
@@ -489,3 +490,49 @@ def curve_shape_metrics(daily: Dict[str, float]) -> Optional[Dict[str, object]]:
         }
     except Exception:  # noqa: BLE001 - advisory.
         return None
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3 CI 증거용 라벨된 비-위임(non-delegating) 어댑터.
+#   daily overfit_stats v1(이 파일의 block_bootstrap_daily)을 그대로 호출한다
+#   — 통계를 재구현하지 않는다. monthly promotion_diagnostics v1(별도 파일)과는
+#   의미/계약이 다르며 절대 섞이지 않는다 — stats_contract 라벨로 구분한다.
+# ---------------------------------------------------------------------------
+
+STATS_CONTRACT_DAILY_V1_ADAPTER = "overfit_stats_v1_adapter"
+
+
+def daily_overfit_stats_v1_for_card(
+    daily_pnl: Mapping[str, float], *, n_boot: int = 2000, block_len: int = 5, seed: int = 20260611,
+) -> Dict[str, object]:
+    """AnalysisCardV3 ci_evidence 섹션용 어댑터 — daily overfit_stats v1 그대로 호출.
+
+    Args:
+        daily_pnl: {일자문자열: 손익} — 정렬은 이 함수가 담당(호출부는 순서 무관).
+
+    Returns:
+        {status, stats_contract, ci_low, ci_high, ...} — ci_low/ci_high 는
+        block_bootstrap_daily 의 profit_p05/profit_p95 를 그대로 옮긴 것이다
+        (근사 90% 구간, advisory). 입력 부족이면 status='insufficient_data'.
+    """
+    ordered = [daily_pnl[k] for k in sorted(daily_pnl.keys())]
+    boot = block_bootstrap_daily(ordered, n_boot=n_boot, block_len=block_len, seed=seed)
+    if boot is None:
+        return {
+            "status": "insufficient_data",
+            "stats_contract": STATS_CONTRACT_DAILY_V1_ADAPTER,
+            "ci_low": None,
+            "ci_high": None,
+            "n_days": len(ordered),
+        }
+    return {
+        "status": "ok",
+        "stats_contract": STATS_CONTRACT_DAILY_V1_ADAPTER,
+        "ci_low": boot["profit_p05"],
+        "ci_high": boot["profit_p95"],
+        "profit_mean": boot["profit_mean"],
+        "p_positive": boot["p_positive"],
+        "n_days": boot["n_days"],
+        "n_boot": boot["n_boot"],
+        "block_len": boot["block_len"],
+    }

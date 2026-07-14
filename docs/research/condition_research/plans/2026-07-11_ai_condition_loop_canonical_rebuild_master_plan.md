@@ -45,3 +45,6 @@
 
 ## 성공 기준 (분리 보고)
 `system_built`, `learning_proved`, `performance_proved`, `human_comparison_proved`, `live_authorized`(이 범위에서 항상 false)를 각각 정직하게 보고한다. 인프라/문서 완성만으로 자율 개선 목표 달성을 선언하지 않는다.
+## DR-00 post-completion governance overlay pointer (2026-07-13)
+
+Post-completion governance amendment: `docs/research/condition_research/plans/2026-07-13_ai_condition_loop_dr00_post_completion_governance_amendment.md`. This master plan retains its historical authority; the amendment has overlay-only precedence for explicit post-completion DR interpretation. Evidence != authority, no existing CL phrase/receipt carries DR authority, and there is no automatic CL-R08 transition.

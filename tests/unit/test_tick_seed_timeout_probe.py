@@ -129,13 +129,17 @@ def test_run_cold_command_uses_warm_window_and_forbidden_tokens_are_absent(tmp_p
         sell_name="C_T_900_920_U2_S",
     )
 
-    # Then: it carries the exact warm window into stom_backtest.py safely.
+    # Then: it carries the exact *effective* warm window into stom_backtest.py.
+    #   condition-discovery 하드 정책이 tick 창을 preset 기준(fast=90000~92800)으로
+    #   고정하므로(_build_warm_btconfig → effective_condition_discovery_runtime_config,
+    #   test_condition_discovery_policy가 계약 가드), cold 명령은 구성값(90100)이 아니라
+    #   warm 세션이 실제로 쓰는 유효 창(92800)을 미러해야 동일창 비교가 성립한다.
     joined = " ".join(spec.command)
     assert "stom_backtest.py" in joined
     assert "--start 20250102" in joined
     assert "--end 20250102" in joined
     assert "--start-time 90000" in joined
-    assert "--end-time 90100" in joined
+    assert "--end-time 92800" in joined
     assert "--avg-time 30" in joined
     assert "--engines 1" in joined
     assert "--timeout 60" in joined

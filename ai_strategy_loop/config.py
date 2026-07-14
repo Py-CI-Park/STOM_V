@@ -519,6 +519,26 @@ class LoopConfig:
     # report_principles_enabled: True면 build_messages가 매수/매도 프롬프트에 v5.0 원리
     #   어휘 블록을 추가한다. 기본 OFF면 미추가되어 출력이 기존과 byte-동일하다(하위호환).
     report_principles_enabled: bool = False
+    # --- 차트술사 구조론 핵심 원리 주입 (A-2, 2026-07-12 전수검사 보고서 P-3) ---
+    # 데이터 근거: 인간 우수전략의 정의적 특성이 '구조 문맥'(박스/눌림/리테스트)인데
+    #   기존 생성 어휘는 필터 조합에 갇혀 있었다(CSC-03이 정확히 이 결핍을 위반으로 정의).
+    # structure_principles_prompt_enabled: True면 build_messages가 매수/매도 프롬프트에
+    #   차트술사 구조론 정제 블록(principles.md P0~P15 + CSC 핵심)을 추가한다. 전문은
+    #   연구 Context Pack(_FULL_STOM_SOURCE_ASSETS)이 보유. 수치 임계값은 무근거 가설로
+    #   명시되며 부검 분위수 보정을 지시한다. 기본 OFF면 출력이 기존과 byte-동일하다(하위호환).
+    structure_principles_prompt_enabled: bool = False
+
+    # --- A-5: 백파인더 밴드 시드 힌트 주입 (T2 채굴 → 생성 프롬프트 배선) ---
+    # band_seed_hint_enabled: True면 run 시작 시 밴드 시드 아티팩트(band_seeds.json —
+    #   scripts/mine_band_seeds.py 산출)를 1회 로드해 매수 프롬프트에 '데이터 채굴 진입
+    #   밴드 힌트' 블록으로 주입한다. lookahead/survivorship 편향이 있는 **생성 시드
+    #   전용** 힌트라 '복제 금지·부검 분위수 보정' 고지를 함께 주입한다. 파일 없음/파싱
+    #   실패는 조용히 미주입(graceful). 기본 OFF면 출력이 기존과 byte-동일하다(하위호환).
+    band_seed_hint_enabled: bool = False
+    # band_seed_hint_path: 아티팩트 경로. 빈 문자열이면 기본 state/band_seeds.json.
+    band_seed_hint_path: str = ""
+    # band_seed_hint_max_lines: 주입할 최대 힌트 라인 수(lift 내림차순 상위).
+    band_seed_hint_max_lines: int = 8
 
     # --- 분석→생성 환류 업그레이드 (R1·R2, 2026-06-11 검토 보고서 §5) ---
     # 데이터 근거(G1): 부검이 "기준을 높여라/낮춰라"(방향)만 주면 LLM이 임의 숫자를
@@ -630,9 +650,8 @@ class LoopConfig:
     #   배선된 경로에서 brain/principle_gate.check_principle_consistency 의 reject
     #   severity 위반(CSC-06 돌파-무거래량 / CSC-07 손절 부재 / CSC-10 tick 시간창)
     #   시 저장 거부→재시도한다. advisory(PG-META-01)는 로그만 남긴다.
-    #   ⚠️ 현 시점 루프 오케스트레이터(controller/loop.py)는 이 토글을 읽지 않는다
-    #   (다른 워크플로우가 동시 수정 중인 파일이라 배선 보류 — 후속 배선 지점:
-    #   _generate_pair 의 generate_strategy 호출부에서 이 토글을 전달). 기본 OFF면
+    #   2026-07-12(A-3): controller/loop.py::_generate_pair가 이 토글을 getattr로 읽어
+    #   generate_strategy(principle_gate_enabled=...)에 전달한다(배선 완료). 기본 OFF면
     #   어떤 코드 경로도 게이트를 평가하지 않아 동작이 기존과 byte-동일하다(하위호환).
     principle_gate_enabled: bool = False
     # --- CL-R05/R06 review fix (G003): declared evidence-ledger feature flag ---
@@ -644,6 +663,35 @@ class LoopConfig:
     #   ad-hoc 읽혔다 — 오타(예: evidence_ledger_enable)가 조용히 OFF로 흡수되는 것을
     #   막기 위해 여기 정식 필드로 선언한다(R07 활성화 전 CL-R05/R06 리뷰 시정).
     evidence_ledger_enabled: bool = False
+    # --- DR-02: Manifest v2 (additive, opt-in) — controller/loop.py + evidence_contract.py ---
+    # manifest_v2_enabled: True면 run 시작 시 이미 만들어지는 EvaluationManifest(v1) 옆에
+    #   evidence_contract.ManifestV2(효과적 프로파일 해시/이름 + data/universe/engine/
+    #   cost/fill/capital/session/prompt/seed/code/config 전체 바인딩)를 추가로 빌드한다.
+    #   v1 EvaluationManifest/DB 스키마/evidence_store는 전혀 건드리지 않으며(영속화 없음),
+    #   빌드 실패는 흡수한다(루프를 막지 않음). 기본 OFF면 run_loop 동작이 기존과
+    #   byte-동일하다(하위호환) — v11 기동 불변.
+    manifest_v2_enabled: bool = False
+    # v2_certification_enabled: True면 (향후 인증 파이프라인이) ManifestV2 필수 카테고리
+    #   결측을 fail-closed로 차단해야 한다는 선언적 의도 플래그다. 현재 어떤 코드 경로도
+    #   이 플래그를 평가하지 않는다(순수 선언; 하위호환). Manifest v2 자체의 fail-closed
+    #   검증(evidence_contract.build_manifest_v2/ManifestV2.__post_init__)은 이 플래그와
+    #   무관하게 항상 적용된다.
+    v2_certification_enabled: bool = False
+    # --- DR-05 / DR-04 review fix (아키텍트 재리뷰): 토글을 정식 LoopConfig 필드로 선언 ---
+    # analysis_card_v3_enabled: DR-05 AnalysisCardV3(영속·해시 카드) 산출/환류 토글.
+    #   이전에는 config.py에 미선언 상태로 loop.py에서 ad-hoc getattr만 읽혀,
+    #   run_loop이 config = effective_condition_discovery_runtime_config(config)로
+    #   dataclasses.replace() 복제한 '뒤'에 읽는 이 플래그가 항상 False로 떨어져(복제가
+    #   ad-hoc 속성을 버림) DR-05가 운영 경로에서 절대 켜지지 않았다. 정식 필드로 선언해
+    #   from_dict/프리셋 도달 + replace() 생존을 보장한다(manifest_v2_enabled와 동일 패턴).
+    #   기본 OFF면 카드 산출/환류가 전혀 안 일어나 byte-동일(하위호환).
+    analysis_card_v3_enabled: bool = False
+    # candidate_dedup_enabled / seed_plan_enabled: DR-04 후보 run-wide 중복제거 / SeedPlan
+    #   토글. 종전엔 미선언 ad-hoc 속성이라 setattr로만 켤 수 있고 from_dict/프리셋으로는
+    #   도달 불가했다(replace() 직전 로컬 캡처로 setattr 경로만 보존). 정식 필드로 선언해
+    #   토글 선언 규약을 통일하고 from_dict 도달성을 확보한다. 기본 OFF면 byte-동일.
+    candidate_dedup_enabled: bool = False
+    seed_plan_enabled: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

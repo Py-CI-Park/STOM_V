@@ -34,7 +34,7 @@ from ai_strategy_loop.controller.evidence_contract import (
     canonical_json,
 )
 
-__all__ = ["EvidenceStore", "EvidenceCorruptionError"]
+__all__ = ["EvidenceStore", "EvidenceCorruptionError", "EvidenceOrphanError"]
 
 
 class EvidenceCorruptionError(Exception):
@@ -43,6 +43,14 @@ class EvidenceCorruptionError(Exception):
     append-only 증거는 내용이 바뀌면 안 된다 — 같은 identity가 다른 내용을 낸다는
     것은 hash/identity 계산이 깨졌거나 상위 로직이 재사용 가능한 PK를 실수로 새
     내용에 재사용했다는 뜻이다. 조용히 덮어쓰면 감사 추적이 오염되므로 예외로 막는다.
+    """
+
+
+class EvidenceOrphanError(Exception):
+    """DR-03 — a consumption references a prompt_id that is not an actually-
+    rendered/persisted prompt (see ``EvidenceStore.append_consumption``'s
+    ``require_rendered`` guard). Raised BEFORE any row is written — fail-closed,
+    no orphan evidence row is ever committed.
     """
 
 
@@ -204,8 +212,30 @@ class EvidenceStore:
     # append — FeedbackConsumption
     # ------------------------------------------------------------------
     def append_consumption(
-        self, consumption: FeedbackConsumption, run_id: Optional[str] = None
+        self,
+        consumption: FeedbackConsumption,
+        run_id: Optional[str] = None,
+        *,
+        require_rendered: bool = False,
     ) -> None:
+        """append a FeedbackConsumption (append-only).
+
+        ``require_rendered`` (DR-03, additive, default False — v1 byte-identical):
+        when True, ``consumption.prompt_id`` MUST already be registered in the
+        additive ``rendered_prompts`` table (see ``LoopState.record_prompt``) —
+        i.e. it must reference an ACTUALLY-rendered/persisted prompt, not an
+        absent/synthetic id. Violations raise ``EvidenceOrphanError`` *before*
+        any row is written (fail-closed — no partial/orphan consumption row).
+        Default False preserves the original v1 behavior exactly, where
+        ``prompt_id`` is any free nonempty string (existing tests/fixtures use
+        placeholder strings like ``"prompt-1"``).
+        """
+        if require_rendered and not self.is_rendered_prompt(consumption.prompt_id):
+            raise EvidenceOrphanError(
+                f"consumption:{consumption.consumption_id} references prompt_id="
+                f"{consumption.prompt_id!r} that is not an actually-rendered/"
+                "persisted prompt (rendered-only consumption guard, DR-03)"
+            )
         payload_json = canonical_json(consumption.to_dict())
         self._append(
             table="feedback_consumptions",
@@ -227,6 +257,27 @@ class EvidenceStore:
             run_id=run_id,
             snapshot_kind="consumption",
         )
+
+    # ------------------------------------------------------------------
+    # DR-03 — rendered-prompt registry lookup (see LoopState.record_prompt).
+    # ------------------------------------------------------------------
+    def is_rendered_prompt(self, rendered_prompt_id: Optional[str]) -> bool:
+        """True iff ``rendered_prompt_id`` is registered in ``rendered_prompts``.
+
+        A missing ``rendered_prompts`` table (e.g. a raw ``sqlite3.Connection``
+        fixture that never ran ``LoopState._init_schema``) is treated the same
+        as "not found" — fail-closed (reject), never fail-open (accept).
+        """
+        if not rendered_prompt_id:
+            return False
+        try:
+            row = self._con.execute(
+                "SELECT 1 FROM rendered_prompts WHERE rendered_prompt_id = ?",
+                (rendered_prompt_id,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return False
+        return row is not None
 
     # ------------------------------------------------------------------
     # append — EvaluationManifest

@@ -1,0 +1,150 @@
+{
+ "schemaVersion": 1,
+ "kind": "browser-automation-transcript",
+ "tool": "playwright-chromium (QA lane) + gjc headless chromium (leader lane)",
+ "story": "G004 V4 loop-cycle diagram live render verification",
+ "actions": [
+  {
+   "step": 1,
+   "actor": "leader",
+   "target": "http://127.0.0.1:8799/ui/v4/",
+   "result": "title 'STOM V4 · graph-first research terminal (preview)'",
+   "type": "open",
+   "timestamp": "2026-07-12T21:30:00+00:00",
+   "selector": "body"
+  },
+  {
+   "step": 2,
+   "actor": "leader",
+   "target": ".v4-loop-node / .v4-loop-badge--ai / --code / --active / --complete + styleSheets('v4-loop-pulse')",
+   "result": "nodes=8, ai_badges=2, code_badges=6, active=0, complete=1, pulseKeyframes=true",
+   "type": "evaluate",
+   "timestamp": "2026-07-12T21:31:00+00:00",
+   "selector": ".v4-loop-node"
+  },
+  {
+   "step": 3,
+   "actor": "leader",
+   "target": "artifacts/g4_loop_cycle_render_20260712.png",
+   "result": "saved 1706x960",
+   "type": "screenshot",
+   "timestamp": "2026-07-12T21:32:00+00:00",
+   "selector": ".v4-loop-cycle-panel"
+  },
+  {
+   "step": 4,
+   "actor": "qa",
+   "target": "http://127.0.0.1:8802/ui/v4/ (nodes==8)",
+   "result": "nodes=8, ai=2, code=6, console_errors=0, page_errors=0",
+   "type": "goto+wait_for_function",
+   "timestamp": "2026-07-12T21:33:00+00:00",
+   "selector": ".v4-loop-node"
+  },
+  {
+   "step": 5,
+   "actor": "qa",
+   "target": "window.normalizeFlowStepIndex probes(raw 0..5,-1 / bogus / malformed / null)",
+   "result": "0..4 정합, 5 클램프, 전 케이스 무예외 -1",
+   "type": "evaluate",
+   "timestamp": "2026-07-12T21:34:00+00:00",
+   "selector": ".v4-loop-node"
+  },
+  {
+   "step": 6,
+   "actor": "qa",
+   "target": "8 tabs(role=tab) 순차 클릭 후 research 복귀",
+   "result": "errors=0, 복귀 후 nodes=8",
+   "type": "click-roundtrip",
+   "timestamp": "2026-07-12T21:35:00+00:00",
+   "selector": "[role=tab]"
+  },
+  {
+   "step": 7,
+   "actor": "qa",
+   "target": "artifacts/g4_qa_render.png",
+   "result": "1280x900, 3900 고유색(비균일)",
+   "type": "screenshot",
+   "timestamp": "2026-07-12T21:36:00+00:00",
+   "selector": ".v4-loop-cycle-panel"
+  },
+  {
+   "step": 8,
+   "actor": "qa",
+   "target": "reduced_motion=reduce → getComputedStyle(.v4-loop-node--active)",
+   "result": "reduce: none/0s, no-preference: v4-loop-pulse/1.8s",
+   "type": "emulate_media",
+   "timestamp": "2026-07-12T21:37:00+00:00",
+   "selector": ".v4-loop-node--active"
+  }
+ ],
+ "sessions": [
+  {
+   "actor": "leader (headless Chromium via GJC browser tool)",
+   "server": "uvicorn ai_strategy_loop.dashboard.app:app 127.0.0.1:8799 (PID 98748, 검증 후 외과적 종료·리스너 0 확인)",
+   "steps": [
+    {
+     "action": "open",
+     "url": "http://127.0.0.1:8799/ui/v4/",
+     "result": "title 'STOM V4 · graph-first research terminal (preview)'"
+    },
+    {
+     "action": "evaluate",
+     "script": "querySelectorAll('.v4-loop-node') / '.v4-loop-badge--ai' / '--code' / '--active' / '--complete' + styleSheets scan for 'v4-loop-pulse'",
+     "result": {
+      "found": true,
+      "nodeCount": 8,
+      "nodes": [
+       "⚙시드",
+       "⚙프롬프트 조립",
+       "AI·AI 생성",
+       "⚙게이트",
+       "⚙공식 백테",
+       "⚙채점",
+       "⚙부검",
+       "AI·환류"
+      ],
+      "badges": {
+       "ai": 2,
+       "code": 6
+      },
+      "active": 0,
+      "complete": 1,
+      "pulseKeyframes": true
+     }
+    },
+    {
+     "action": "screenshot",
+     "path": "artifacts/g4_loop_cycle_render_20260712.png",
+     "note": "1706x960 원본, 완료 상태(demo run 종료 — dim+완료 뱃지) 렌더"
+    }
+   ]
+  },
+  {
+   "actor": "executor QA red-team (Playwright Chromium headless, subagent 15-G4QaRedTeam)",
+   "server": "uvicorn 127.0.0.1:8802 (netstat 확인 LISTENING PID 81768 — 외과적 종료·리스너 0)",
+   "steps": [
+    {
+     "case": "D1",
+     "action": "goto /ui/v4/ + wait_for_function nodes==8",
+     "result": "nodes 8, ai badges 2, code badges 6, console_errors 0, page_errors 0, screenshot artifacts/g4_qa_render.png (1280x900, 3900 고유색 비균일)"
+    },
+    {
+     "case": "D2",
+     "action": "window.normalizeFlowStepIndex probes(raw 0..5,-1 / bogus phase / malformed / null)",
+     "result": "0..4 정합·5 클램프·전 케이스 무예외 폴백 -1"
+    },
+    {
+     "case": "D3",
+     "action": "8탭(role=tab) 순차 클릭 왕복 후 research 복귀",
+     "result": "console/page errors 0, 복귀 후 .v4-loop-node 8 유지"
+    },
+    {
+     "case": "D5",
+     "action": "page.emulate_media(reduced_motion='reduce') → getComputedStyle(.v4-loop-node--active)",
+     "result": "reduce: animationName none/0s, no-preference: v4-loop-pulse/1.8s"
+    }
+   ]
+  }
+ ],
+ "full_qa_report_ref": "subagent:15-G4QaRedTeam"
+}

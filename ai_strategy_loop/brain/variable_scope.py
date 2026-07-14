@@ -82,6 +82,15 @@ _COMMON_SCALARS = frozenset({
 })
 
 # --- 매도전략 전용 잔고종목 스칼라 (forbidden.md (a): 매수에서는 금지) ---
+#   G2(2026-07-12) 진실 공급원 확정: 이 가드의 계약은 **백테 엔진 exec env**
+#   (backengine_* Strategy 스코프)다 — 저장 시점 검증기(back_code_test.py)는
+#   GUI 라이브 이름까지 포함한 superset env라 진실 공급원이 아니다(아키텍트
+#   리뷰 5-G2ArchitectReview 판정). '매도수량'/'강제청산'/'매수수량'은 GUI
+#   라이브 전용 이름으로 어떤 backengine sell exec env에도 없어 **미추가**
+#   (추가하면 NameError→BackStop 무신호→타임아웃 홀 재개방). 인간 운영
+#   전략의 self.Sell(종목코드, 종목명, 매도수량, 강제청산) 시그니처는 루프
+#   정규형(bare self.Sell())과 호스트 환경이 다른 것이지 가드 오탐이 아니다.
+#   근거: docs/update_log/2026-07-12_g2_gate_false_reject_audit_report.md.
 _SELL_ONLY_SCALARS = frozenset({
     "수익금", "수익률", "매수가", "보유수량", "보유시간",
     "분할매수횟수", "분할매도횟수", "최고수익률", "최저수익률",
@@ -134,8 +143,13 @@ def _derive_setglobals_names() -> Set[str]:
 
 
 def _is_tick_specific(name: str) -> bool:
-    """SetGlobalsFunc 이름이 TICK 전용인지 (초당* 접두)."""
-    return name.startswith("초당")
+    """SetGlobalsFunc 이름이 TICK 전용인지 (초당* 접두, 또는 누적/최고 등 접두 뒤의 '초당').
+
+    '누적초당매수수량', '최고초당매도수량'처럼 파생 접두(누적/최고)가 '초당' 앞에
+    붙는 이름도 tick 파생이므로 부분일치로 판정한다 (base_strategy.py dict_add_func
+    실측: '초당'을 포함하는 리터럴 키는 전부 tick 전용).
+    """
+    return "초당" in name
 
 
 def _is_min_specific(name: str) -> bool:
@@ -143,8 +157,11 @@ def _is_min_specific(name: str) -> bool:
 
     보조지표 함수형 이름은 'RSI_N', 'MACD_N' 처럼 끝나며 _MIN_ONLY_INDICATORS의
     '_N' 변형이다. 단순화를 위해 베이스 이름이 보조지표면 MIN 전용으로 본다.
+    '누적분당매수수량', '최고분당매도수량'처럼 파생 접두(누적/최고)가 '분당'/'분봉'
+    앞에 붙는 이름도 min 파생이므로 부분일치로 판정한다 (base_strategy.py
+    dict_add_func 실측: '분당'/'분봉'을 포함하는 리터럴 키는 전부 min 전용).
     """
-    if name.startswith("분당") or name.startswith("분봉"):
+    if "분당" in name or "분봉" in name:
         return True
     # 'RSI_N' → base 'RSI'
     base = name[:-2] if name.endswith("_N") else name

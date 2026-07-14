@@ -1,0 +1,38 @@
+{
+ "schemaVersion": 1,
+ "kind": "algorithm-test-report",
+ "generated_at": "2026-07-12T18:46:31.474612+00:00",
+ "generated_by": "python - (leader smoke): sqlite ro pick latest ok gen csv >=30 trades -> analyze_trade_table(csv, fine_time=True); 재현: 본 JSON의 run_id/gen_no로 loop_runs.db에서 csv_path 조회 후 동일 호출",
+ "run_id": "lat_lattice_v2_body8_min_warm64_20260708",
+ "gen_no": 7,
+ "csv_path": "backtest/csv\\stock_bt_LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B_20260708222720.csv",
+ "generations_trade_count": 4365,
+ "result_status": "ok",
+ "trade_count": 4365,
+ "trade_count_matches_generations": true,
+ "metrics_keys": [
+  "distribution",
+  "drawdown_contributors",
+  "entry_feature_split",
+  "expectancy_amount",
+  "expectancy_pct",
+  "final_cum_profit_reported",
+  "hold_time",
+  "mfe_mae",
+  "payoff_ratio",
+  "profit_factor",
+  "streaks",
+  "time_of_day",
+  "win_rate"
+ ],
+ "nl_lines": [
+  "기대값 -0.47%/거래, PF 0.55 (거래 4365건).",
+  "승률 33.7%, 페이오프비율 1.08.",
+  "최대 연속승 11회, 최대 연속패 21회.",
+  "보유시간-수익 상관 -0.02. 보유 3분위(평균 92)가 수익률 최저(-0.56%).",
+  "시간대 1430 버킷이 누적손익 최고(-457067.0원, 승률 41.7%).",
+  "MFE 대비 실현효율 67%, 손실거래 MAE가 승리거래 MAE의 2.42배.",
+  "최대낙폭 구간(102079946.0) 손실의 1%가 구간 내 손실 상위 5거래에서 발생.",
+  "진입 피처 중 B_당일거래대금가 승패 평균차 최대(정규화 +0.11)."
+ ]
+}

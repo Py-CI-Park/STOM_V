@@ -486,6 +486,26 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "(시총=억, 금액=백만원) 명시. 기본 OFF.",
         },
         {
+            "name": "structure_principles_prompt_enabled", "label": "차트술사 구조론 원리", "type": "bool",
+            "default": d.structure_principles_prompt_enabled,
+            "help": "켜면 차트술사 구조론 핵심 원리(박스/추세 이분법·종가 우선·사건거래대금·"
+                    "눌림 구조·진입근거 상실 청산 — CSC 핵심)를 프롬프트에 추가한다. "
+                    "수치 임계값은 무근거 가설로 명시하고 부검 분위수 보정을 지시. 기본 OFF.",
+        },
+        {
+            "name": "band_seed_hint_enabled", "label": "백파인더 밴드 시드 힌트", "type": "bool",
+            "default": d.band_seed_hint_enabled,
+            "help": "켜면 채굴 아티팩트(state/band_seeds.json — scripts/mine_band_seeds.py 산출)의 "
+                    "승자 셋업 밴드(q25~q75)를 매수 프롬프트 힌트로 주입한다. lookahead 편향이 "
+                    "있는 생성 시드 전용(복제 금지·부검 보정 고지 포함). 파일 없으면 무시. 기본 OFF.",
+        },
+        {
+            "name": "principle_gate_enabled", "label": "구조론 원리 일관성 게이트(T4.3)", "type": "bool",
+            "default": d.principle_gate_enabled,
+            "help": "켜면 저장 전 조건식 쌍을 CSC 핵심 규칙(CSC-06 무거래량 돌파 / CSC-07 손절 부재 / "
+                    "CSC-10 tick 시간창)으로 검사해 reject 위반 시 재생성한다. 기본 OFF.",
+        },
+        {
             "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
             "default": d.quantile_feedback_enabled,
             "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "

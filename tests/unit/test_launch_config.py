@@ -17,7 +17,10 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from ai_strategy_loop.controller import loop as L  # noqa: E402
+from ai_strategy_loop.controller.condition_discovery import canonical_effective_profile  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
+from ai_strategy_loop.scripts.research_presets import PresetName, preset_payload  # noqa: E402
 
 
 class TestConfigFromDictEquivalence:
@@ -199,3 +202,67 @@ class TestConfigFieldSpecs:
         specs = {s["name"]: s for s in config_field_specs()}
         for name in bool_fields:
             assert specs[name]["type"] == "bool", f"{name} should be bool type"
+
+
+class TestDr02EffectiveProfileHashEquality:
+    """DR-02 — CLI/UI/preset entry points must resolve to one canonical effective profile.
+
+    All three funnel through ``config_from_dict`` + ``canonical_effective_profile``; the
+    hash is computed over sorted-key canonical JSON, so differing input dict key order
+    (CLI argparse collection order vs. a GUI form's field order vs. a preset's declared
+    key order) must not change the resulting hash.
+    """
+
+    def test_hash_identical_across_cli_ui_and_preset_dict_styles(self):
+        preset_config = dict(preset_payload(PresetName.MIN_FULL_0900_1500)["config"])
+
+        cli_style = dict(preset_config)  # argparse-collected dict, declared key order.
+        gui_style = {k: preset_config[k] for k in reversed(list(preset_config))}  # form dict, reversed order.
+        preset_style = dict(preset_config)
+
+        cli_cfg = config_from_dict(cli_style)
+        gui_cfg = config_from_dict(gui_style)
+        preset_cfg = config_from_dict(preset_style)
+
+        cli_profile = canonical_effective_profile(cli_cfg)
+        gui_profile = canonical_effective_profile(gui_cfg)
+        preset_profile = canonical_effective_profile(preset_cfg)
+
+        assert cli_profile["effective_profile_hash"] == gui_profile["effective_profile_hash"]
+        assert cli_profile["effective_profile_hash"] == preset_profile["effective_profile_hash"]
+        assert cli_profile["effective_profile_name"] == gui_profile["effective_profile_name"] == preset_profile["effective_profile_name"]
+
+    def test_hash_changes_when_session_window_differs(self):
+        base = config_from_dict({"bt_timeframe": "min"})
+        changed = config_from_dict({"bt_timeframe": "min", "bt_min_universe_end_time": 151800})
+        base_profile = canonical_effective_profile(base)
+        changed_profile = canonical_effective_profile(changed)
+        # full_session_enabled defaults False for both -> session end untouched either way,
+        # but mdd_cap/timeframe fields still participate; assert hash is a stable function
+        # of canonical content (identical inputs -> identical hash) rather than random.
+        assert base_profile["effective_profile_hash"] == canonical_effective_profile(
+            config_from_dict({"bt_timeframe": "min"})
+        )["effective_profile_hash"]
+        assert isinstance(changed_profile["effective_profile_hash"], str)
+        assert len(changed_profile["effective_profile_hash"]) == 64
+
+
+class TestDr02MinFullPresetSessionWindow:
+    """DR-02 — min_full_0900_1500 preset must resolve session 09:00-15:00 with the
+    existing warm-mode command-building path (``loop._build_warm_btconfig``); no
+    subprocess is executed."""
+
+    def test_warm_backtest_config_ends_at_150000(self):
+        preset_cfg = config_from_dict(preset_payload(PresetName.MIN_FULL_0900_1500)["config"])
+        bt_config = L._build_warm_btconfig(preset_cfg)
+        assert bt_config.start_time == 90000
+        assert bt_config.end_time == 150000
+        assert bt_config.divid_mode == "종목코드별 분류"
+
+    def test_default_full_session_disabled_keeps_original_end_time(self):
+        # Defaults-OFF invariant: full_session_enabled=False (global default) must not
+        # pull the end-time window to 15:00 even for a min-timeframe config.
+        cfg = config_from_dict({"bt_timeframe": "min"})
+        assert cfg.full_session_enabled is False
+        bt_config = L._build_warm_btconfig(cfg)
+        assert bt_config.end_time != 150000

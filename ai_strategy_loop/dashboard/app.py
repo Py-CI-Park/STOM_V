@@ -458,6 +458,85 @@ def _autopsy_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     return out
 
 
+def _trade_quant_payload(run_id: str, gen_no: int, fine_time: bool, top_n: int) -> Dict[str, Any]:
+    """G3 — per-trade CSV의 정량 지표 자연어 요약을 반환한다(읽기 전용·무예외).
+
+    gen_no<0이면 run_id의 최신 ok 세대(csv_path 보유)를 쓴다(_portfolio_sim_payload와
+    동일 관례). ai_strategy_loop.autopsy.trade_quant.analyze_trade_table을 지연
+    import해 호출한다 — 모듈이 아직 없거나 import/분석이 실패해도 예외를 던지지
+    않고 status="error"로 흡수한다.
+    """
+    out: Dict[str, Any] = {
+        "run_id": run_id, "gen_no": gen_no,
+        "contract_version": C.CONTRACT_VERSION,
+        "status": "unavailable", "trade_count": 0, "metrics": {}, "nl_lines": [],
+    }
+    if not run_id:
+        out["error"] = "run_id required"
+        return out
+
+    csv_path = ""
+    label = ""
+    try:
+        if gen_no is not None and int(gen_no) >= 0:
+            row = _row_for_gen(run_id, int(gen_no))
+            if row is not None:
+                csv_path = row.get("csv_path") or ""
+                label = row.get("strategy_gist") or ""
+        else:
+            con = sqlite3.connect(str(S.LOOP_RUNS_DB))
+            con.row_factory = sqlite3.Row
+            try:
+                row = con.execute(
+                    "SELECT gen_no, strategy_gist, csv_path"
+                    " FROM generations"
+                    " WHERE run_id=? AND status='ok' AND csv_path IS NOT NULL AND csv_path != ''"
+                    " ORDER BY gen_no DESC LIMIT 1",
+                    (run_id,),
+                ).fetchone()
+            finally:
+                con.close()
+            if row is not None:
+                out["gen_no"] = row["gen_no"]
+                csv_path = str(row["csv_path"] or "")
+                label = str(row["strategy_gist"] or "")
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패는 error로 흡수(무예외).
+        out["status"] = "error"
+        out["error"] = str(exc)
+        return out
+
+    if not csv_path:
+        out["status"] = "no_csv"
+        return out
+
+    out["label"] = label
+    abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+    try:
+        from ai_strategy_loop.autopsy.trade_quant import analyze_trade_table  # noqa: PLC0415
+
+        result = analyze_trade_table(abs_csv, fine_time=bool(fine_time), top_n=int(top_n))
+        out.update(result or {})
+    except Exception as exc:  # noqa: BLE001 - 모듈 부재/분석 실패도 error로 흡수(무예외).
+        out["status"] = "error"
+        out["error"] = str(exc)
+    return out
+
+
+def _research_maturity_payload() -> Dict[str, Any]:
+    """G005 — 연구 프로그램 단계별 성숙도 스코어카드를 즉석 계산한다(읽기 전용·무예외).
+
+    scripts.research_maturity_scorecard.build_scorecard을 지연 import해 호출한다(모듈이
+    아직 없거나 계산이 실패해도 예외를 던지지 않고 status="error"로 흡수한다). state
+    캐시를 두지 않고 매 호출 재계산한다 — 값이 저장소 파일/상태 DB 변화를 즉시 반영한다.
+    """
+    try:
+        from scripts.research_maturity_scorecard import build_scorecard  # noqa: PLC0415
+
+        return build_scorecard(REPO_ROOT)
+    except Exception as exc:  # noqa: BLE001 - 모듈 부재/계산 실패도 error로 흡수(무예외).
+        return {"schema": "research_maturity_v1", "status": "error", "error": str(exc)}
+
+
 def _selector_preview_payload(run_id: str, selector: str) -> Dict[str, Any]:
     """D4 — run 행에 선택기를 진단 적용해 동결 가능 후보를 미리 본다(읽기 전용·무예외).
 
@@ -3333,6 +3412,29 @@ def create_app(
         직접 본다(손실군집·MFE 반납·손실집중 매도규칙). CSV 없으면 status=no_csv.
         """
         return _autopsy_payload(run_id, gen_no)
+
+    @app.get("/trade_quant")
+    def trade_quant(run_id: str = "", gen_no: int = -1,
+                    fine_time: bool = False, top_n: int = 5) -> Dict[str, Any]:
+        """G3 — 세대 결과 CSV의 거래 정량 지표 자연어 요약을 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>(음수면 최신 ok 세대)&fine_time=<bool>&top_n=<k>.
+        ai_strategy_loop.autopsy.trade_quant.analyze_trade_table을 지연 import해 호출한다
+        (모듈이 아직 없어도 조기 부팅을 막지 않는다). 승인/export/엔진 경로 무영향 —
+        advisory 전용.
+        """
+        # top_n 클램프(아키텍트 리뷰 LOW): 음수/초대형 입력 방어 — 이웃 라우트 관례.
+        return _trade_quant_payload(run_id, gen_no, fine_time, max(1, min(int(top_n), 50)))
+
+    @app.get("/research_maturity")
+    def research_maturity() -> Dict[str, Any]:
+        """G005 — 연구 프로그램 단계별 성숙도 자동 스코어카드(읽기 전용·무예외).
+
+        scripts.research_maturity_scorecard.build_scorecard을 지연 import해 즉석 계산한다
+        (모듈이 아직 없어도 조기 부팅을 막지 않는다). state 캐시 없음 — 매 호출 재계산.
+        승인/export/엔진 경로 무영향, advisory 전용.
+        """
+        return _research_maturity_payload()
 
     @app.get("/selector_preview")
     def selector_preview(run_id: str = "", selector: str = "sparse_positive_v1") -> Dict[str, Any]:

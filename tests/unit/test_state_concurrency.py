@@ -112,3 +112,48 @@ def test_record_generation_upsert_no_duplicate_gen(tmp_path):
     assert len(gens) == 1
     assert gens[0]["score"] == 5.0  # 최신 값으로 갱신.
     st.close()
+
+
+# =====================================================================
+# DR-03 — deterministic crash/resume for prompt identity: the content-addressed
+#   rendered_prompt_id/content_sha256 for "the next prompt" after an interrupted
+#   +resumed run MUST equal what an uninterrupted run would have produced for
+#   that same generation, since the id is a pure function of already-persisted
+#   deterministic content (not wall-clock time / row-count / sequence position).
+# =====================================================================
+def test_deterministic_next_prompt_identity_across_interrupted_and_uninterrupted_runs(tmp_path):
+    config = LoopConfig()
+
+    # --- uninterrupted run: gen0 then gen1 prompts recorded in one open session ---
+    db_uninterrupted = str(tmp_path / "uninterrupted.db")
+    st_u = LoopState(db_path=db_uninterrupted, snapshot_dir=str(tmp_path / "snaps_u"))
+    rid_u = st_u.start_run(config, run_id="run_u")
+    st_u.record_prompt(
+        rid_u, 0, "buy", 1, system_text="sys-gen0", user_text="usr-gen0",
+    )
+    next_prompt_uninterrupted = st_u.record_prompt(
+        rid_u, 1, "buy", 1, system_text="sys-gen1", user_text="usr-gen1",
+    )
+    st_u.close()
+
+    # --- interrupted+resumed run: gen0 recorded, "crash" (close), reopen/resume,
+    #     THEN gen1 (the next prompt) recorded — identical content to the run above.
+    db_resumed = str(tmp_path / "resumed.db")
+    st_r1 = LoopState(db_path=db_resumed, snapshot_dir=str(tmp_path / "snaps_r"))
+    rid_r = st_r1.start_run(config, run_id="run_r")
+    st_r1.record_prompt(
+        rid_r, 0, "buy", 1, system_text="sys-gen0", user_text="usr-gen0",
+    )
+    st_r1.close()  # simulated crash/interruption
+
+    st_r2 = LoopState(db_path=db_resumed, snapshot_dir=str(tmp_path / "snaps_r"))
+    resumed_rid = st_r2.resume_or_start(config, run_id="run_r")
+    assert resumed_rid == "run_r"
+    next_prompt_resumed = st_r2.record_prompt(
+        resumed_rid, 1, "buy", 1, system_text="sys-gen1", user_text="usr-gen1",
+    )
+    st_r2.close()
+
+    # The next-prompt identity/hash is identical across both scenarios.
+    assert next_prompt_resumed["rendered_prompt_id"] == next_prompt_uninterrupted["rendered_prompt_id"]
+    assert next_prompt_resumed["content_sha256"] == next_prompt_uninterrupted["content_sha256"]

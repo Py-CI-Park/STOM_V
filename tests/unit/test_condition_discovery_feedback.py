@@ -4,6 +4,7 @@ import sys
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+import pandas as pd  # noqa: E402
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
@@ -15,6 +16,10 @@ from ai_strategy_loop.controller.condition_discovery_feedback import (  # noqa: 
     strip_numeric_thresholds,
     validate_pattern_card_usage,
 )
+from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: E402
+    render_directive_hints_from_card_v3,
+)
+
 
 
 def test_persistence_state_blocks_research_when_prompt_or_equity_missing():
@@ -150,3 +155,61 @@ def test_strip_numeric_thresholds_removes_signed_and_decimal_numbers():
     assert strip_numeric_thresholds("수익률 <= -2.5 and 거래대금 > 1500") == "수익률 <= <N> and 거래대금 > <N>"
     assert strip_numeric_thresholds("체결강도120이상 and 거래대금1500이상") == "체결강도<N>이상 and 거래대금<N>이상"
     assert strip_numeric_thresholds("비율>.5 and 체결강도>1.2e2") == "비율><N> and 체결강도><N>"
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — feature_importance_feedback.render_directive_hints_from_card_v3:
+#   AnalysisCardV3 영속 지시 렌더러(segment_feedback 짝).
+# ---------------------------------------------------------------------------
+
+
+class _FakeCardV3:
+    def __init__(self, actionable_directives, content_hash="deadbeef"):
+        self.actionable_directives = actionable_directives
+        self.content_hash = content_hash
+
+
+def test_render_directive_hints_from_card_v3_renders_only_actionable_statements():
+    card = _FakeCardV3(
+        actionable_directives=[{"statement": "B_signal 상단 노림", "reason_code": "OK"}],
+        content_hash="feedcafe",
+    )
+    lines = render_directive_hints_from_card_v3(card)
+    assert lines == ["[card:feedcafe][prefer] B_signal 상단 노림"]
+
+
+def test_render_directive_hints_from_card_v3_empty_when_no_directives():
+    assert render_directive_hints_from_card_v3(_FakeCardV3([])) == []
+
+
+def test_render_directive_hints_from_card_v3_shares_hash_with_segment_feedback_path():
+    """DR-05: 두 렌더 경로(segment_feedback/feature_importance_feedback)가
+    같은 카드에서 같은 content_hash를 참조해야 한다(동일-해시 렌더 경로 계약).
+    """
+    from ai_strategy_loop.autopsy.analysis_card import build_analysis_card_v3
+    from ai_strategy_loop.brain.segment_feedback import (
+        render_directives_from_card_v3,
+    )
+
+    rows = []
+    for i in range(40):
+        day = (i % 12) + 1
+        rows.append({
+            "매수시간": f"202601{day:02d}120000",
+            "종목코드": f"S{i % 3}",
+            "수익률": 1.0 if i % 3 else -0.5,
+            "수익금": 100.0 if i % 3 else -50.0,
+        })
+    df = pd.DataFrame(rows)
+    finding = {
+        "finding_id": "f1", "statement": "테스트 지시", "axis": "entry_feature",
+        "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+    }
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role="train", candidate_findings=[finding],
+    )
+    prompt_lines = render_directives_from_card_v3(card)
+    hint_lines = render_directive_hints_from_card_v3(card)
+    assert prompt_lines and hint_lines
+    assert card.content_hash in prompt_lines[0]
+    assert card.content_hash in hint_lines[0]
