@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 
+from ai_strategy_loop.config import LoopConfig
+from ai_strategy_loop.controller import loop as L
+from ai_strategy_loop.launch_config import config_from_dict
 from ai_strategy_loop.scripts.research_presets import (
     PresetName,
     preset_names,
@@ -51,3 +54,24 @@ def test_preset_names_are_stable_cli_values() -> None:
         "tick_late_0920_0925",
         "min_full_0900_1500",
     ]
+
+
+def test_min_full_preset_warm_command_ends_at_150000() -> None:
+    """DR-02 — resolve the preset through the real command-building path
+    (loop._build_warm_btconfig), not just the raw preset dict; no subprocess runs."""
+    preset_config = preset_payload(PresetName.MIN_FULL_0900_1500)["config"]
+    cfg = config_from_dict(preset_config)
+
+    bt_config = L._build_warm_btconfig(cfg)
+
+    assert bt_config.start_time == 90000
+    assert bt_config.end_time == 150000
+
+
+def test_min_full_preset_defaults_off_baseline() -> None:
+    # Defaults-OFF invariant: the preset opts research toggles in explicitly; a bare
+    # LoopConfig (v11 default, no preset applied) must keep them OFF.
+    defaults = LoopConfig()
+    assert defaults.full_session_enabled is False
+    assert defaults.exec_budget_prompt_enabled is False
+    assert defaults.sell_exec_budget_guard_enabled is False

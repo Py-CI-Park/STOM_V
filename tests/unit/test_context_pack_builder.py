@@ -277,3 +277,62 @@ def test_build_result_promotes_context_pack_trace_fields_additively():
         "analysis_result": {"status": "ok", "context_pack_error": "boom"},
     })
     assert error_case["context_pack_error"] == "boom"
+
+
+# ===================================================================
+# DR-04 -- final-owner wiring threaded through produce_research_candidate_pack.
+# ===================================================================
+
+
+def test_produce_research_candidate_pack_final_owner_disabled_by_default(monkeypatch):
+    import ai_strategy_loop.controller.context_pack_builder as ctx_mod
+
+    captured = {}
+
+    def _fake_produce_candidate_pack(context, provider, *, lanes=None, axis_prompt_lines=None):
+        captured["called_plain"] = True
+        return {"schema_version": 1, "candidates": []}
+
+    def _fake_produce_candidate_pack_result(context, provider, **kwargs):
+        captured["kwargs"] = kwargs
+        return {"candidate_pack": {"schema_version": 1, "candidates": []}}
+
+    monkeypatch.setattr(ctx_mod, "produce_candidate_pack", _fake_produce_candidate_pack)
+    monkeypatch.setattr(ctx_mod, "produce_candidate_pack_result", _fake_produce_candidate_pack_result)
+
+    pack = produce_research_candidate_pack(_sources(), lambda messages: "ignored")
+    assert captured.get("called_plain") is True
+    assert "kwargs" not in captured
+    assert pack == {"schema_version": 1, "candidates": []}
+
+
+def test_produce_research_candidate_pack_final_owner_enabled_routes_through_result(monkeypatch):
+    import ai_strategy_loop.controller.context_pack_builder as ctx_mod
+
+    captured = {}
+
+    def _fake_produce_candidate_pack_result(context, provider, **kwargs):
+        captured["kwargs"] = kwargs
+        return {
+            "candidate_pack": {
+                "schema_version": 1,
+                "candidates": [],
+                "final_owner_selection": {"selected": {"candidate_id": "x"}, "pool_blockers": []},
+            },
+        }
+
+    monkeypatch.setattr(ctx_mod, "produce_candidate_pack_result", _fake_produce_candidate_pack_result)
+
+    pack = produce_research_candidate_pack(
+        _sources(), lambda messages: "ignored", final_owner_enabled=True, methodology_version="clr04_v1",
+    )
+    assert captured["kwargs"]["final_owner_enabled"] is True
+    assert captured["kwargs"]["methodology_version"] == "clr04_v1"
+    assert pack["final_owner_selection"]["selected"]["candidate_id"] == "x"
+
+
+def test_research_loop_config_final_owner_selection_default_off():
+    config = ResearchLoopConfig()
+    assert config.final_owner_selection_enabled is False
+    from dataclasses import asdict
+    assert asdict(config)["final_owner_selection_enabled"] is False

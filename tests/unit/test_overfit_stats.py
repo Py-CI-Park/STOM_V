@@ -12,7 +12,10 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
+    STATS_CONTRACT_DAILY_V1_ADAPTER,
     align_daily_matrix,
+    block_bootstrap_daily,
+    daily_overfit_stats_v1_for_card,
     daily_pnl_series,
     deflated_sharpe_ratio,
     effective_independent_count,
@@ -20,6 +23,7 @@ from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
     oos_diff_ci,
     pbo_cscv,
 )
+
 
 
 def test_pbo_high_for_pure_noise_candidates() -> None:
@@ -246,3 +250,44 @@ def test_oos_diff_ci_deterministic() -> None:
     assert out1["ci_low"] == out2["ci_low"]
     assert out1["ci_high"] == out2["ci_high"]
     assert out1["p_diff_le_0"] == out2["p_diff_le_0"]
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — daily_overfit_stats_v1_for_card: 라벨된 비-위임 어댑터.
+#   block_bootstrap_daily(daily overfit_stats v1)를 그대로 재사용해야 한다
+#   (재구현 금지) — 직접 호출 결과와 profit_p05/p95가 정확히 같아야 한다.
+# ---------------------------------------------------------------------------
+
+
+def test_daily_overfit_stats_v1_for_card_matches_direct_block_bootstrap():
+    daily = {f"2026-01-{i+1:02d}": float((i % 5) - 2) * 100.0 for i in range(30)}
+    ordered = [daily[k] for k in sorted(daily.keys())]
+
+    direct = block_bootstrap_daily(ordered, n_boot=500, block_len=5, seed=1)
+    adapted = daily_overfit_stats_v1_for_card(daily, n_boot=500, block_len=5, seed=1)
+
+    assert adapted["stats_contract"] == STATS_CONTRACT_DAILY_V1_ADAPTER
+    assert adapted["status"] == "ok"
+    assert adapted["ci_low"] == direct["profit_p05"]
+    assert adapted["ci_high"] == direct["profit_p95"]
+    assert adapted["profit_mean"] == direct["profit_mean"]
+    assert adapted["n_days"] == direct["n_days"]
+
+
+def test_daily_overfit_stats_v1_for_card_insufficient_data_is_honest():
+    # block_len*4 = 20일 미만 → block_bootstrap_daily가 None을 돌린다(동결 계약 그대로).
+    daily = {f"2026-01-{i+1:02d}": 1.0 for i in range(3)}
+    adapted = daily_overfit_stats_v1_for_card(daily)
+    assert adapted["status"] == "insufficient_data"
+    assert adapted["ci_low"] is None and adapted["ci_high"] is None
+    assert adapted["stats_contract"] == STATS_CONTRACT_DAILY_V1_ADAPTER
+
+
+def test_daily_overfit_stats_v1_for_card_sorts_unordered_daily_dict():
+    """호출부가 dict 순서를 보장하지 않아도, 정렬된 값 시퀀스로 block_bootstrap을 호출한다."""
+    ordered_daily = {f"2026-01-{i+1:02d}": float(i) for i in range(25)}
+    shuffled_daily = dict(reversed(list(ordered_daily.items())))
+    a = daily_overfit_stats_v1_for_card(ordered_daily, n_boot=300, seed=5)
+    b = daily_overfit_stats_v1_for_card(shuffled_daily, n_boot=300, seed=5)
+    assert a["ci_low"] == b["ci_low"]
+    assert a["ci_high"] == b["ci_high"]

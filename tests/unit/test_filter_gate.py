@@ -31,7 +31,12 @@ if PROJECT_ROOT not in sys.path:
 
 # generator는 cli.* 를 지연 import 한다. bootstrap을 먼저 import해 env-before-import 계약 충족.
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
-from ai_strategy_loop.brain.filter_gate import categories_present, count_filter_categories  # noqa: E402
+from ai_strategy_loop.brain.filter_gate import (  # noqa: E402
+    categories_present,
+    count_filter_categories,
+    split_or_branches,
+    validate_branch_aware_gates,
+)
 from ai_strategy_loop.brain.generator import generate_strategy  # noqa: E402
 from ai_strategy_loop.brain.prompt import build_messages  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
@@ -341,3 +346,44 @@ def test_config_from_dict_parses_toggle():
 def test_config_from_dict_ignores_unknown():
     cfg = LoopConfig.from_dict({"unknown_key_xyz": 123})
     assert cfg.require_filter_gates is False
+
+
+# ============================================================
+# 5) DR-04 -- branch-aware OR (DNF) validator
+# ============================================================
+
+
+def test_split_or_branches_no_or_is_single_branch():
+    code = "if 체결강도 > 100:\n    pass"
+    assert split_or_branches(code) == [code]
+
+
+def test_split_or_branches_splits_top_level_or():
+    branches = split_or_branches("체결강도 > 100 or 등락율 < -5")
+    assert len(branches) == 2
+    assert "체결강도" in branches[0]
+    assert "등락율" in branches[1]
+
+
+def test_validate_branch_aware_gates_each_branch_must_pass_independently():
+    # branch 1 has BOTH required categories; branch 2 is missing exec_strength.
+    code = "(체결강도 > 100 and 시분초 > 90000) or (등락율 < -5)"
+    result = validate_branch_aware_gates(code, {"exec_strength", "time_window"})
+    assert result["branch_count"] == 2
+    assert result["all_branches_pass"] is False
+    assert result["missing_by_branch"][1] == ["exec_strength", "time_window"]
+    assert result["missing_by_branch"].get(0) is None
+
+
+def test_validate_branch_aware_gates_passes_when_every_branch_satisfies_gates():
+    code = "(체결강도 > 100 and 시분초 > 90000) or (체결강도 > 50 and 시분초 < 150000)"
+    result = validate_branch_aware_gates(code, {"exec_strength", "time_window"})
+    assert result["all_branches_pass"] is True
+    assert result["missing_by_branch"] == {}
+
+
+def test_validate_branch_aware_gates_single_branch_degrades_to_whole_expression():
+    code = "체결강도 > 100 and 시분초 > 90000"
+    result = validate_branch_aware_gates(code, {"exec_strength", "time_window"})
+    assert result["branch_count"] == 1
+    assert result["all_branches_pass"] is True

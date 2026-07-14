@@ -15,10 +15,27 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+import pytest  # noqa: E402
+
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import loop as L  # noqa: E402
-from ai_strategy_loop.controller.evidence_store import EvidenceStore  # noqa: E402
+from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
+    FEEDBACK_CONSUMPTION_SCHEMA,
+    OUTCOME_GO,
+    OUTCOME_INDETERMINATE_EXTERNAL_EFFECT,
+    RUN_RECEIPT_SCHEMA,
+    FeedbackConsumption,
+    RunReceipt,
+    build_manifest_v2,
+    compute_consumption_id,
+    compute_receipt_id,
+    manifest_v2_content_hash,
+)
+from ai_strategy_loop.controller.evidence_store import (  # noqa: E402
+    EvidenceOrphanError,
+    EvidenceStore,
+)
 from ai_strategy_loop.controller.phase_contract import (  # noqa: E402
     EXECUTION_KIND_FIXED_BATCH,
     EXECUTION_KIND_RUN_LOOP,
@@ -26,6 +43,7 @@ from ai_strategy_loop.controller.phase_contract import (  # noqa: E402
 )
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.fitness.score import FitnessResult, GradedResult  # noqa: E402
+
 
 
 def _seed_strategy_db(tmp_path, buy_codes=None, sell_codes=None):
@@ -342,3 +360,219 @@ class TestFixedBatchCannotAdvanceCanonicalLineage:
         finally:
             con.close()
         assert count == 0
+
+
+class TestDr02ManifestV2Wiring:
+    """DR-02 — additive Manifest v2 typed contract (evidence_contract.ManifestV2) plus
+    its loop.py wiring (controller.loop._evidence_build_manifest_v2), default OFF."""
+
+    def _sample_payload(self, v1):
+        return {
+            "effective_profile_hash": "0" * 64,
+            "effective_profile_name": "fast",
+            "data": {"source": v1.data},
+            "universe": {"codes": v1.universe},
+            "engine": {"engine": "ai_strategy_loop"},
+            "cost": dict(v1.cost),
+            "fill": dict(v1.fill),
+            "capital": dict(v1.capital),
+            "session": dict(v1.session),
+            "prompt": {"bundle_identity": v1.manifest_id},
+            "seed": {"seed_mode": "fresh"},
+            "code": {"code_hash": v1.code_hash},
+            "config": {"config_hash": v1.config_hash},
+            "created_at": "2026-01-01T00:00:00+00:00",
+        }
+
+    def test_build_manifest_v2_binds_every_mandatory_category(self):
+        v1 = L._evidence_build_manifest(_base_config(), "run-v2")
+        payload = self._sample_payload(v1)
+
+        manifest_v2 = build_manifest_v2(payload)
+
+        assert manifest_v2.manifest_contract == "ManifestV2"
+        assert manifest_v2.effective_profile_hash == "0" * 64
+        for category in (
+            "data", "universe", "engine", "cost", "fill", "capital", "session",
+            "prompt", "seed", "code", "config",
+        ):
+            assert len(getattr(manifest_v2, category)) > 0, f"{category} must be bound"
+
+        # canonical content hash is a deterministic function of the frozen payload.
+        assert manifest_v2_content_hash(manifest_v2) == manifest_v2_content_hash(build_manifest_v2(payload))
+
+    def test_build_manifest_v2_blocks_certification_on_missing_mandatory_field(self):
+        v1 = L._evidence_build_manifest(_base_config(), "run-v2-missing")
+        payload = self._sample_payload(v1)
+
+        for missing_key in ("data", "cost", "session", "code", "prompt"):
+            broken = dict(payload)
+            broken.pop(missing_key)
+            with pytest.raises(ValueError):
+                build_manifest_v2(broken)
+
+        empty_category = dict(payload)
+        empty_category["fill"] = {}
+        with pytest.raises(ValueError):
+            build_manifest_v2(empty_category)
+
+    def test_loop_wiring_default_off_builds_nothing(self):
+        # Defaults-OFF invariant: config.manifest_v2_enabled defaults False -> the
+        # wiring point in loop.py never builds a ManifestV2 (v11 unchanged).
+        cfg = _base_config()
+        assert cfg.manifest_v2_enabled is False
+        v1 = L._evidence_build_manifest(cfg, "run-off")
+        assert L._evidence_build_manifest_v2(cfg, "run-off", v1) is None
+
+    def test_loop_wiring_enabled_builds_bound_manifest(self):
+        cfg = _base_config()
+        cfg.manifest_v2_enabled = True
+        v1 = L._evidence_build_manifest(cfg, "run-on")
+        manifest_v2 = L._evidence_build_manifest_v2(cfg, "run-on", v1)
+        assert manifest_v2 is not None
+        assert manifest_v2.manifest_id == v1.manifest_id
+        assert len(manifest_v2.effective_profile_hash) == 64
+
+
+class TestDr03FailClosedEvidenceReceipt:
+    """DR-03 acceptance #3 — an evidence I/O failure while appending a RunReceipt
+    must never let the original (e.g. GO/success) outcome stand as durably
+    certified; it must surface OUTCOME_INDETERMINATE_EXTERNAL_EFFECT instead,
+    with no automatic retry of the original receipt.
+    """
+
+    def _sample_receipt(self, run_id="run-1", phase_id="gen0", outcome=OUTCOME_GO):
+        return RunReceipt(
+            schema=RUN_RECEIPT_SCHEMA,
+            receipt_id=compute_receipt_id(run_id, phase_id, outcome, None),
+            run_id=run_id,
+            phase_id=phase_id,
+            outcome=outcome,
+            stop_reason=None,
+            budget_counters={"gen_no": 0},
+            predecessor_ids=(),
+            artifact_hashes={},
+            created_at="2026-07-14T00:00:00+00:00",
+        )
+
+    def test_successful_append_returns_original_outcome(self, tmp_path):
+        st = LoopState(db_path=str(tmp_path / "r.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            store = EvidenceStore(st)
+            receipt = self._sample_receipt()
+            outcome = L._evidence_safe_append_receipt(store, receipt)
+            assert outcome == OUTCOME_GO
+            rows = store.receipts_for_run("run-1")
+            assert len(rows) == 1
+            assert rows[0]["outcome"] == OUTCOME_GO
+        finally:
+            st.close()
+
+    def test_io_failure_never_yields_go_and_appends_indeterminate_no_retry(self, tmp_path, monkeypatch):
+        st = LoopState(db_path=str(tmp_path / "r2.db"), snapshot_dir=str(tmp_path / "s2"))
+        try:
+            store = EvidenceStore(st)
+            receipt = self._sample_receipt(run_id="run-2", phase_id="gen1")
+            calls = []
+            original_append = store.append_receipt
+
+            def flaky_append(r):
+                calls.append(r.receipt_id)
+                if r.receipt_id == receipt.receipt_id:
+                    raise sqlite3.OperationalError("simulated evidence write failure")
+                return original_append(r)
+
+            monkeypatch.setattr(store, "append_receipt", flaky_append)
+            outcome = L._evidence_safe_append_receipt(store, receipt)
+            assert outcome == OUTCOME_INDETERMINATE_EXTERNAL_EFFECT
+            # exactly two attempts: the original (failed) + one replacement — no retry loop.
+            assert len(calls) == 2
+            rows = store.receipts_for_run("run-2")
+            assert len(rows) == 1
+            assert rows[0]["outcome"] == OUTCOME_INDETERMINATE_EXTERNAL_EFFECT
+            assert rows[0]["stop_reason"] == "evidence_io_failure"
+            assert all(r["outcome"] != OUTCOME_GO for r in rows)
+        finally:
+            st.close()
+
+    def test_replacement_also_failing_still_returns_indeterminate_not_go(self, tmp_path, monkeypatch):
+        st = LoopState(db_path=str(tmp_path / "r3.db"), snapshot_dir=str(tmp_path / "s3"))
+        try:
+            store = EvidenceStore(st)
+            receipt = self._sample_receipt(run_id="run-3", phase_id="gen2")
+            calls = []
+
+            def always_fail(r):
+                calls.append(r.receipt_id)
+                raise sqlite3.OperationalError("simulated evidence write failure")
+
+            monkeypatch.setattr(store, "append_receipt", always_fail)
+            outcome = L._evidence_safe_append_receipt(store, receipt)
+            assert outcome == OUTCOME_INDETERMINATE_EXTERNAL_EFFECT
+            # original attempt + exactly one replacement attempt — no retry loop.
+            assert len(calls) == 2
+            assert store.receipts_for_run("run-3") == []
+        finally:
+            st.close()
+
+
+class TestDr03RenderedOnlyConsumptionOrphanPropagates:
+    """DR-03 acceptance #2/#4 — loop._evidence_safe_append_consumption absorbs
+    transient evidence I/O failures (existing robustness contract) but MUST NOT
+    absorb EvidenceOrphanError — a consumption referencing a prompt_id that was
+    never actually rendered/persisted is a real correctness defect, not a
+    transient I/O hiccup, and must surface loudly instead of being swallowed.
+    """
+
+    def test_orphan_prompt_id_raises_and_writes_nothing(self, tmp_path):
+        st = LoopState(db_path=str(tmp_path / "o.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            store = EvidenceStore(st)
+            feedback_id = "fe_" + "0" * 64
+            target_passport_id = "cp_" + "0" * 64
+            prompt_id = "rp_" + "0" * 64  # never actually rendered/persisted.
+            consumption = FeedbackConsumption(
+                schema=FEEDBACK_CONSUMPTION_SCHEMA,
+                consumption_id=compute_consumption_id(feedback_id, prompt_id, target_passport_id),
+                feedback_id=feedback_id,
+                prompt_id=prompt_id,
+                target_passport_id=target_passport_id,
+                created_at="2026-07-14T00:00:00+00:00",
+            )
+            with pytest.raises(EvidenceOrphanError):
+                L._evidence_safe_append_consumption(
+                    store, consumption, "run-1", require_rendered=True
+                )
+            count = st._con.execute(
+                "SELECT COUNT(*) FROM feedback_consumptions WHERE consumption_id = ?",
+                (consumption.consumption_id,),
+            ).fetchone()[0]
+            assert count == 0
+        finally:
+            st.close()
+
+    def test_require_rendered_false_default_absorbs_as_before(self, tmp_path):
+        # default (require_rendered=False) keeps the pre-DR-03 robustness contract:
+        # a bad prompt_id (or any transient issue) is absorbed, returns False, and
+        # never raises — existing callers are unaffected.
+        st = LoopState(db_path=str(tmp_path / "o2.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            store = EvidenceStore(st)
+            feedback_id = "fe_" + "1" * 64
+            target_passport_id = "cp_" + "1" * 64
+            prompt_id = "rp_" + "1" * 64
+            consumption = FeedbackConsumption(
+                schema=FEEDBACK_CONSUMPTION_SCHEMA,
+                consumption_id=compute_consumption_id(feedback_id, prompt_id, target_passport_id),
+                feedback_id=feedback_id,
+                prompt_id=prompt_id,
+                target_passport_id=target_passport_id,
+                created_at="2026-07-14T00:00:00+00:00",
+            )
+            # feedback_id/target_passport_id don't exist -> FK IntegrityError on
+            # write, which IS absorbed (transient/robustness path, not the
+            # rendered-only guard).
+            ok = L._evidence_safe_append_consumption(store, consumption, "run-1")
+            assert ok is False
+        finally:
+            st.close()

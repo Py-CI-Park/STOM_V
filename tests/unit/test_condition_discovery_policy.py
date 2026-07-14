@@ -17,6 +17,7 @@ from ai_strategy_loop.controller.condition_discovery import (  # noqa: E402
     build_research_analysis_card,
     build_research_observability_contract,
     build_validation_provenance,
+    canonical_effective_profile,
     effective_condition_discovery_runtime_config,
     merge_condition_discovery_page_data,
     normalize_condition_discovery_preset,
@@ -780,3 +781,46 @@ def test_validation_provenance_blocks_research_fed_promotion_and_allows_fresh_ho
     assert forged_without_evidence["blocked"] is True
     assert forged_without_evidence["promotion_eligible"] is False
     assert "validation_evidence_incomplete" in forged_without_evidence["blockers"]
+
+
+def test_canonical_effective_profile_shape_and_hash_stability():
+    cfg = config_from_dict({"bt_timeframe": "min", "condition_discovery_preset": "research"})
+    profile = canonical_effective_profile(cfg)
+
+    for category in (
+        "data", "universe", "engine", "cost", "fill", "capital", "session",
+        "prompt", "seed", "code", "config",
+    ):
+        assert category in profile
+        assert isinstance(profile[category], dict)
+
+    assert profile["effective_profile_name"] == "research"
+    assert profile["session"]["timeframe"] == "min"
+    assert isinstance(profile["effective_profile_hash"], str)
+    assert len(profile["effective_profile_hash"]) == 64
+
+    # Determinism: same config content -> same hash.
+    same_cfg = config_from_dict({"bt_timeframe": "min", "condition_discovery_preset": "research"})
+    assert canonical_effective_profile(same_cfg)["effective_profile_hash"] == profile["effective_profile_hash"]
+
+
+def test_canonical_effective_profile_hash_reflects_session_window():
+    research_min = config_from_dict({"bt_timeframe": "min", "condition_discovery_preset": "research"})
+    promotion_min = config_from_dict({"bt_timeframe": "min", "condition_discovery_preset": "promotion"})
+
+    research_profile = canonical_effective_profile(research_min)
+    promotion_profile = canonical_effective_profile(promotion_min)
+
+    # Both presets resolve full-session end-time for min timeframe, but the preset
+    # identity itself differs, so the profile (and hash) must differ.
+    assert research_profile["effective_profile_name"] != promotion_profile["effective_profile_name"]
+    assert research_profile["effective_profile_hash"] != promotion_profile["effective_profile_hash"]
+    assert research_profile["session"]["end"] == promotion_profile["session"]["end"] == 151900
+
+
+def test_canonical_effective_profile_defaults_off_matches_fast_preset():
+    # Defaults-OFF invariant: an all-default LoopConfig resolves to the 'fast' preset
+    # identity (v11 unchanged default), not research/promotion.
+    cfg = config_from_dict({})
+    profile = canonical_effective_profile(cfg)
+    assert profile["effective_profile_name"] == "fast"

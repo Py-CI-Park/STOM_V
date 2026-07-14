@@ -28,6 +28,7 @@ if PROJECT_ROOT not in sys.path:
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.brain.generator import generate_strategy  # noqa: E402
+from ai_strategy_loop.brain.prompt import RenderedPrompt, render_messages  # noqa: E402
 from ai_strategy_loop.controller.state import SCHEMA_VERSION, LoopState  # noqa: E402
 
 
@@ -235,6 +236,17 @@ def test_prompt_logging_default_disabled():
     assert "prompt_logging_enabled" in cfg.to_dict()
 
 
+def test_dr02_manifest_v2_flags_default_disabled():
+    # DR-02 additive Manifest v2 flags must default OFF, same invariant as
+    # prompt_logging_enabled above (v11 unchanged / evidence augmentation opt-in only).
+    cfg = LoopConfig()
+    assert cfg.manifest_v2_enabled is False
+    assert cfg.v2_certification_enabled is False
+    assert LoopConfig.from_dict({}).manifest_v2_enabled is False
+    assert "manifest_v2_enabled" in cfg.to_dict()
+    assert "v2_certification_enabled" in cfg.to_dict()
+
+
 # =====================================================================
 # 4) prompts 테이블/인덱스 존재 + 스키마 버전이 prompts 도입(v7) 이후.
 #    SCHEMA_VERSION은 이후 마이그레이션(v8 P1b 등)으로 증가하므로 ">=7"로 검증한다.
@@ -306,3 +318,109 @@ def test_legacy_db_without_prompts_table_gets_it(tmp_path):
         assert len(st.get_prompts(rid)) == 1
     finally:
         st.close()
+
+
+# =====================================================================
+# 5) DR-03 — RenderedPrompt/render_messages (pure content-addressed identity)
+#    + real prompt FK matching LoopState.record_prompt's returned identity.
+# =====================================================================
+def test_render_messages_is_deterministic_and_content_addressed():
+    messages = [
+        {"role": "system", "content": "sys body"},
+        {"role": "user", "content": "user body"},
+    ]
+    a = render_messages(messages, kind="buy", attempt=1)
+    b = render_messages(messages, kind="buy", attempt=1)
+    assert isinstance(a, RenderedPrompt)
+    assert a.actually_rendered_ids == b.actually_rendered_ids
+    assert len(a.actually_rendered_ids) == 1
+    assert a.actually_rendered_ids[0].startswith("rp_")
+    assert a.bundle_receipt["kind"] == "buy"
+    assert a.bundle_receipt["attempt"] == 1
+    assert a.bundle_receipt["user_bytes"] == len("user body".encode("utf-8"))
+
+
+def test_render_messages_differs_on_content_kind_or_attempt():
+    messages = [
+        {"role": "system", "content": "sys body"},
+        {"role": "user", "content": "user body"},
+    ]
+    other_content = [
+        {"role": "system", "content": "sys body"},
+        {"role": "user", "content": "DIFFERENT user body"},
+    ]
+    base = render_messages(messages, kind="buy", attempt=1)
+    diff_kind = render_messages(messages, kind="sell", attempt=1)
+    diff_attempt = render_messages(messages, kind="buy", attempt=2)
+    diff_content = render_messages(other_content, kind="buy", attempt=1)
+    ids = {
+        base.actually_rendered_ids,
+        diff_kind.actually_rendered_ids,
+        diff_attempt.actually_rendered_ids,
+        diff_content.actually_rendered_ids,
+    }
+    assert len(ids) == 4
+
+
+def test_record_prompt_id_matches_render_messages_id_for_same_content(tmp_path):
+    # This is the DR-03 "real FK" property: the id LoopState.record_prompt
+    # actually persists (and registers in rendered_prompts) for a given
+    # (kind, attempt, system_text, user_text) MUST equal the pure content id
+    # brain.prompt.render_messages computes for the same content — so a
+    # caller that only has the RenderedPrompt (no DB access) can still name
+    # the exact FK a later evidence row should carry.
+    messages = [
+        {"role": "system", "content": "system content"},
+        {"role": "user", "content": "user content"},
+    ]
+    rendered = render_messages(messages, kind="buy", attempt=2)
+
+    st = LoopState(db_path=str(tmp_path / "fk.db"), snapshot_dir=str(tmp_path / "s"))
+    try:
+        rid = st.start_run(LoopConfig())
+        result = st.record_prompt(
+            rid, 0, "buy", 2,
+            system_text="system content", user_text="user content",
+        )
+        assert result["rendered_prompt_id"] == rendered.actually_rendered_ids[0]
+    finally:
+        st.close()
+
+
+def test_record_prompt_rendered_id_registered_and_traceable_to_real_row(tmp_path):
+    st = LoopState(db_path=str(tmp_path / "fk2.db"), snapshot_dir=str(tmp_path / "s"))
+    try:
+        rid = st.start_run(LoopConfig())
+        result = st.record_prompt(
+            rid, 0, "buy", 1, system_text="s", user_text="u",
+        )
+        # the rendered_prompt_id genuinely traces back to an actual prompts row —
+        # not a synthetic/placeholder string with nothing behind it.
+        row = st._con.execute(
+            "SELECT rp.prompt_row_id, p.run_id, p.gen_no, p.kind "
+            "FROM rendered_prompts rp JOIN prompts p ON p.prompt_id = rp.prompt_row_id "
+            "WHERE rp.rendered_prompt_id = ?",
+            (result["rendered_prompt_id"],),
+        ).fetchone()
+        assert row is not None
+        assert row["prompt_row_id"] == result["prompt_id"]
+        assert row["run_id"] == rid
+        assert row["kind"] == "buy"
+    finally:
+        st.close()
+
+
+def test_generate_strategy_on_prompt_record_exposes_actually_rendered_ids():
+    provider = _ScriptedProvider([GOOD_BUY])
+    records = []
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = os.path.join(tmp, "s2.db")
+        result = generate_strategy(
+            provider, "buy", "X", db_path, retry_max=1,
+            on_prompt=records.append,
+        )
+    assert result["status"] == "ok"
+    assert len(records) == 1
+    ids = records[0]["actually_rendered_ids"]
+    assert isinstance(ids, tuple) and len(ids) == 1
+    assert ids[0].startswith("rp_")

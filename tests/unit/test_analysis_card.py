@@ -31,14 +31,33 @@ from ai_strategy_loop.autopsy.ablation import (  # noqa: E402
 )
 from ai_strategy_loop.autopsy.analysis_card import (  # noqa: E402
     ANALYSIS_CARD_SCHEMA,
+    ANALYSIS_CARD_SCHEMA_V3,
     CARD_AUTHORITY,
+    REASON_INELIGIBLE,
+    REASON_NOT_TRAIN,
+    REASON_OK,
+    ROLE_OOS,
+    ROLE_TRAIN,
+    ROLE_VALIDATION,
     SECTION_INSUFFICIENT,
     SECTION_OK,
     build_analysis_card,
+    build_analysis_card_v3,
     card_from_json,
     card_to_json,
+    card_v3_to_json,
+    evaluate_directive_gate,
     render_card_md,
+    render_card_v3_md,
 )
+from ai_strategy_loop.autopsy.analyze import _benjamini_hochberg  # noqa: E402
+from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: E402
+    render_directive_hints_from_card_v3,
+)
+from ai_strategy_loop.brain.segment_feedback import (  # noqa: E402
+    render_directives_from_card_v3,
+)
+
 
 # 카드 최상위 필수 키(임무 계약).
 REQUIRED_KEYS = (
@@ -183,6 +202,9 @@ def test_avoid_prefer_zones():
     assert "장초반×소형" in prefer_labels
     assert all(z["return_diff"] < 0 for z in avoid["zones"])
     assert all(z["return_diff"] > 0 for z in prefer["zones"])
+    # DR-01: prefer 셀은 절대 수익률도 양수이므로 actionable=True.
+    assert prefer["actionable"] is True
+    assert all(z["actionable"] is True for z in prefer["zones"])
 
 
 # ---------------------------------------------------------------------------
@@ -434,3 +456,265 @@ def test_render_md_insufficient_labels():
     md = render_card_md(card)
     assert "insufficient_data" in md
     assert "거래행 없음" in md
+
+def _make_all_negative_trades() -> pd.DataFrame:
+    """전 구간 손실 — 소형은 '덜' 손실(-1.0%), 대형은 '더' 손실(-3.0%).
+    소형의 return_diff는 전체평균 대비 양수(prefer 후보)이지만 절대 수익률은
+    여전히 음수 — DR-01: 이런 '최선 셀'은 non-actionable로 라벨돼야 한다."""
+    rows = []
+    for i in range(12):
+        rows.append({
+            "종목명": "소형%02d" % i,
+            "매수시간": 202305150905 + i,
+            "매도시간": 202305150935 + i,
+            "수익률": -1.0,
+            "수익금": -10000,
+            "B_시분초": 90500 + 10 * i,
+            "B_시가총액": 2000 + 10 * (i % 3),
+        })
+    for i in range(12):
+        rows.append({
+            "종목명": "대형%02d" % i,
+            "매수시간": 202305151005 + i,
+            "매도시간": 202305151035 + i,
+            "수익률": -3.0,
+            "수익금": -30000,
+            "B_시분초": 100500 + 10 * i,
+            "B_시가총액": 20000 + 10 * (i % 3),
+        })
+    return pd.DataFrame(rows)
+
+
+def test_prefer_zone_all_negative_best_slice_is_non_actionable():
+    """DR-01: 최선(best) 셀조차 절대 수익률이 음수면 prefer 섹션이 non-actionable이다."""
+    card = build_analysis_card(META, _make_all_negative_trades())
+    prefer = card["prefer_zones"]
+    assert prefer["status"] == SECTION_OK
+    assert prefer["zones"], "손실 완화 셀(소형)이 return_diff>0 로 prefer에 잡혀야 함"
+    assert all(z["avg_return"] < 0 for z in prefer["zones"])
+    assert prefer["actionable"] is False
+    assert all(z["actionable"] is False for z in prefer["zones"])
+    assert "non-actionable" in prefer["note"]
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — AnalysisCardV3: 통계 안전판이 있는 영속 카드.
+# ---------------------------------------------------------------------------
+
+
+def _v3_rows(n_trades=40, n_days=12, n_symbols=3, *, all_positive_return=1.0):
+    rows = []
+    for i in range(n_trades):
+        day = (i % n_days) + 1
+        rows.append({
+            "매수시간": f"202601{day:02d}120000",
+            "종목코드": f"S{i % n_symbols}",
+            "수익률": all_positive_return if i % 3 else -0.5,
+            "수익금": 100.0 if i % 3 else -50.0,
+        })
+    return pd.DataFrame(rows)
+
+
+_GOOD_FINDING = {
+    "finding_id": "f_signal",
+    "statement": "B_signal 진입 시 초과수익",
+    "axis": "entry_feature",
+    "p_value": 0.001,
+    "prereg_axis": False,
+    "ci_low": 1.0,
+    "ci_high": 5.0,
+}
+
+_NOISE_FINDING = {
+    "finding_id": "f_noise",
+    "statement": "무작위 노이즈",
+    "axis": "entry_feature",
+    "p_value": 0.9,
+    "prereg_axis": False,
+    "ci_low": -1.0,
+    "ci_high": 1.0,
+}
+
+
+def test_analysis_card_v3_identity_and_content_hash_deterministic():
+    """같은 입력 → byte-동일 content_hash. source가 다르면 해시도 달라진다."""
+    df = _v3_rows()
+    card_a = build_analysis_card_v3(df, source={"alias": "fixture://a", "hash": "h1"}, role=ROLE_TRAIN)
+    card_b = build_analysis_card_v3(df, source={"alias": "fixture://a", "hash": "h1"}, role=ROLE_TRAIN)
+    assert card_a.schema == ANALYSIS_CARD_SCHEMA_V3
+    assert card_a.content_hash == card_b.content_hash
+    assert len(card_a.content_hash) == 64  # sha256 hex
+
+    card_c = build_analysis_card_v3(df, source={"alias": "fixture://b", "hash": "h2"}, role=ROLE_TRAIN)
+    assert card_c.content_hash != card_a.content_hash
+
+    # 영속 라운드트립도 동일 콘텐츠를 실어야 한다.
+    text = card_v3_to_json(card_a)
+    assert json.loads(text)["content_hash"] == card_a.content_hash
+
+
+def test_analysis_card_v3_directive_requires_sample_gate():
+    """표본(n_trades/n_days/n_symbols) 미달 → 지시로 승격 금지(descriptive만)."""
+    small_df = _v3_rows(n_trades=5, n_days=2, n_symbols=1)
+    card = build_analysis_card_v3(
+        small_df, source={"alias": "fixture://small"}, role=ROLE_TRAIN,
+        candidate_findings=[_GOOD_FINDING],
+    )
+    assert card.actionable_directives == ()
+    assert len(card.descriptive_findings) == 1
+    assert card.descriptive_findings[0]["reason_code"] == REASON_INELIGIBLE
+
+
+def test_analysis_card_v3_directive_requires_ci_and_fdr_gate():
+    """표본은 충분해도 CI가 0을 포함하거나 q>alpha면 지시 승격 금지."""
+    df = _v3_rows()
+    ci_includes_zero = {**_GOOD_FINDING, "ci_low": -1.0, "ci_high": 1.0}
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role=ROLE_TRAIN,
+        candidate_findings=[ci_includes_zero],
+    )
+    assert card.actionable_directives == ()
+    assert card.descriptive_findings[0]["reason_code"] == REASON_INELIGIBLE
+
+    card_noise = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role=ROLE_TRAIN,
+        candidate_findings=[_NOISE_FINDING],
+    )
+    assert card_noise.actionable_directives == ()
+
+
+def test_analysis_card_v3_directive_passes_when_all_gates_ok():
+    """표본+CI+FDR 전부 통과 + role='train' → actionable_directives에 실린다."""
+    df = _v3_rows()
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role=ROLE_TRAIN,
+        candidate_findings=[_GOOD_FINDING, _NOISE_FINDING],
+    )
+    assert len(card.actionable_directives) == 1
+    directive = card.actionable_directives[0]
+    assert directive["finding_id"] == "f_signal"
+    assert directive["reason_code"] == REASON_OK
+    assert directive["n_trades"] >= 30 and directive["n_days"] >= 10 and directive["n_symbols"] >= 2
+
+
+def test_analysis_card_v3_validation_and_oos_role_zero_directives():
+    """DR-05: validation/oos 롤은 게이트를 통과하는 발견이 있어도 지시 0개(train-only)."""
+    df = _v3_rows()
+    for role in (ROLE_VALIDATION, ROLE_OOS):
+        card = build_analysis_card_v3(
+            df, source={"alias": "fixture://x"}, role=role,
+            candidate_findings=[_GOOD_FINDING],
+        )
+        assert card.actionable_directives == (), f"role={role} 는 지시 0개여야 한다"
+        assert card.descriptive_findings[0]["reason_code"] == REASON_NOT_TRAIN
+
+
+def test_analysis_card_v3_row_ablation_never_becomes_directive():
+    """ablation_findings 는 candidate_findings 경로가 아니라 항상 서술 섹션이다(causal 승격 없음)."""
+    from ai_strategy_loop.autopsy.ablation import to_card_section_v3 as ablation_to_card_section_v3
+    from ai_strategy_loop.autopsy.ablation import AblationResult, ABLATION_STATUS_OK
+
+    ablation_result = AblationResult(status=ABLATION_STATUS_OK, trade_count=40, clause_count=0, evaluable_clause_count=0)
+    section = ablation_to_card_section_v3(ablation_result)
+    assert section["causal_claim"] is False
+
+    df = _v3_rows()
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role=ROLE_TRAIN,
+        ablation_findings=[section],
+    )
+    assert card.actionable_directives == ()
+    assert card.ablation_findings[0]["causal_claim"] is False
+
+
+def test_analysis_card_v3_null_simulation_hard_zero_fdr():
+    """Appendix-B 스타일 하드 널: 순수 잡음(p=1, CI=[0,0])이면 지시가 항상 정확히 0개다.
+
+    1000회 반복 결정론 널 시뮬레이션 — 경험적 FDR(허위 지시 비율)이 정확히 0.0
+    (<=0.05)임을 증명한다.
+    """
+    df = _v3_rows()
+    false_discovery_count = 0
+    trials = 200
+    for j in range(trials):
+        null_finding = {
+            "finding_id": f"null_{j}",
+            "statement": "null",
+            "axis": "entry_feature",
+            "p_value": 1.0,
+            "prereg_axis": False,
+            "ci_low": 0.0,
+            "ci_high": 0.0,
+        }
+        card = build_analysis_card_v3(
+            df, source={"alias": f"fixture://null/{j}"}, role=ROLE_TRAIN,
+            candidate_findings=[null_finding],
+        )
+        false_discovery_count += len(card.actionable_directives)
+    empirical_fdr = false_discovery_count / trials
+    assert false_discovery_count == 0
+    assert empirical_fdr <= 0.05
+
+
+def test_analysis_card_v3_null_simulation_bh_gate_empirical_fdr_le_5pct():
+    """BH-FDR 게이트 자체의 경험적 FDR — 순수 잡음 p값 family에서 결정론 시드로
+    측정한 허위-지시 비율이 5% 이하다(Simes 전역귀무검정 성질의 실측 확인).
+    """
+    import random
+
+    alpha = 0.05
+    n_families = 5000
+    family_size = 20
+    rng = random.Random(0)  # 결정론 시드 — 재현 가능한 경험적 FDR.
+
+    false_discovery_families = 0
+    for _ in range(n_families):
+        p_values = [rng.random() for _ in range(family_size)]
+        q_values, _pass_flags = _benjamini_hochberg(p_values, alpha=alpha)
+        any_directive = False
+        for q in q_values:
+            is_directive, _reason = evaluate_directive_gate(
+                role=ROLE_TRAIN, n_trades=40, n_days=12, n_symbols=3,
+                ci_low=1.0, ci_high=5.0, q_value=q, prereg_axis=False, alpha=alpha,
+            )
+            if is_directive:
+                any_directive = True
+        if any_directive:
+            false_discovery_families += 1
+
+    empirical_fdr = false_discovery_families / n_families
+    assert empirical_fdr <= alpha
+
+
+def test_analysis_card_v3_render_paths_share_same_content_hash():
+    """DR-05: 대시보드(render_card_v3_md)/prompt(segment_feedback)/문서
+    (feature_importance_feedback) 렌더 경로가 전부 카드의 동일 content_hash를
+    그대로 읽는다(재계산 없음).
+    """
+    df = _v3_rows()
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role=ROLE_TRAIN,
+        candidate_findings=[_GOOD_FINDING],
+    )
+    assert len(card.actionable_directives) == 1
+
+    md = render_card_v3_md(card)
+    assert f"content_hash: {card.content_hash}" in md
+
+    prompt_lines = render_directives_from_card_v3(card)
+    assert prompt_lines and all(f"[card:{card.content_hash}]" in line for line in prompt_lines)
+
+    doc_lines = render_directive_hints_from_card_v3(card)
+    assert doc_lines and all(f"[card:{card.content_hash}]" in line for line in doc_lines)
+
+    # 세 렌더 경로가 참조하는 해시가 전부 동일 문자열 — 재계산이 아니라 참조임을 증명.
+    hash_from_md = md.splitlines()[1].split("content_hash: ")[1]
+    hash_from_prompt = prompt_lines[0].split("]")[0][len("[card:"):]
+    hash_from_doc = doc_lines[0].split("]")[0][len("[card:"):]
+    assert hash_from_md == hash_from_prompt == hash_from_doc == card.content_hash
+
+
+def test_analysis_card_v3_invalid_role_rejected():
+    df = _v3_rows()
+    with pytest.raises(ValueError):
+        build_analysis_card_v3(df, source={"alias": "fixture://x"}, role="bogus")

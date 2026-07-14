@@ -35,6 +35,10 @@ import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.brain.prompt import build_messages  # noqa: E402
 from ai_strategy_loop.brain.segment_feedback import build_segment_avoid_lines  # noqa: E402
+from ai_strategy_loop.brain.segment_feedback import (  # noqa: E402
+    render_directives_from_card_v3,
+)
+
 
 
 # base_code(seed-refine) 경로를 타게 하는 더미 출발점 전략(내용 무관).
@@ -227,3 +231,67 @@ def test_config_from_dict_ignores_unknown():
     cfg = LoopConfig.from_dict({"unknown_key_xyz": 123})
     assert cfg.segment_feedback_enabled is False
     assert cfg.segment_feedback_min_count == 8
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — render_directives_from_card_v3: AnalysisCardV3 영속 지시 렌더러.
+# ---------------------------------------------------------------------------
+
+
+class _FakeCardV3:
+    def __init__(self, actionable_directives, content_hash="deadbeef"):
+        self.actionable_directives = actionable_directives
+        self.content_hash = content_hash
+
+
+def test_render_directives_from_card_v3_renders_only_actionable_statements():
+    card = _FakeCardV3(
+        actionable_directives=[
+            {"statement": "B_signal 진입 우위", "reason_code": "OK"},
+            {"statement": "B_other 진입 우위", "reason_code": "OK"},
+        ],
+        content_hash="abc123",
+    )
+    lines = render_directives_from_card_v3(card)
+    assert len(lines) == 2
+    assert all(line.startswith("[card:abc123]") for line in lines)
+    assert "B_signal 진입 우위" in lines[0]
+
+
+def test_render_directives_from_card_v3_empty_when_no_directives():
+    card = _FakeCardV3(actionable_directives=[])
+    assert render_directives_from_card_v3(card) == []
+
+
+def test_render_directives_from_card_v3_never_raises_on_malformed_card():
+    """무예외 계약: card에 필드가 없어도 예외를 던지지 않고 빈 리스트를 돌려준다."""
+    class _Empty:
+        pass
+
+    assert render_directives_from_card_v3(_Empty()) == []
+
+
+def test_render_directives_from_card_v3_matches_real_analysis_card_v3_hash():
+    """실제 build_analysis_card_v3 로 만든 카드로도 동일 계약을 만족한다(통합 확인)."""
+    from ai_strategy_loop.autopsy.analysis_card import build_analysis_card_v3
+
+    rows = []
+    for i in range(40):
+        day = (i % 12) + 1
+        rows.append({
+            "매수시간": f"202601{day:02d}120000",
+            "종목코드": f"S{i % 3}",
+            "수익률": 1.0 if i % 3 else -0.5,
+            "수익금": 100.0 if i % 3 else -50.0,
+        })
+    df = pd.DataFrame(rows)
+    finding = {
+        "finding_id": "f1", "statement": "테스트 지시", "axis": "entry_feature",
+        "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+    }
+    card = build_analysis_card_v3(
+        df, source={"alias": "fixture://x"}, role="train", candidate_findings=[finding],
+    )
+    lines = render_directives_from_card_v3(card)
+    assert lines
+    assert all(card.content_hash in line for line in lines)

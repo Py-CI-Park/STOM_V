@@ -28,6 +28,8 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.autopsy.ablation import (  # noqa: E402
+    ABLATION_CARD_SECTION_SCHEMA_V3,
+    ABLATION_NONCAUSAL_NOTE,
     ABLATION_STATUS_EMPTY_TRADES,
     ABLATION_STATUS_NO_CLAUSES,
     ABLATION_STATUS_OK,
@@ -43,8 +45,10 @@ from ai_strategy_loop.autopsy.ablation import (  # noqa: E402
     ablate,
     evaluate_clause_pass_rates,
     parse_top_level_clauses,
+    to_card_section_v3,
     to_mutation_axis_suggestions,
 )
+
 
 # 정찰에서 확인한 실형태를 단순화한 매수식(플래그 패턴 + 중첩 if + 파생변수 + or 그룹).
 BUY_CODE = """
@@ -452,3 +456,35 @@ def test_deterministic_serialization():
 
     assert run() == run()
     # to_dict 는 JSON-안전해야 한다(위 dumps 성공 자체가 검증).
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — ablation.to_card_section_v3: row ablation은 항상 non-causal.
+# ---------------------------------------------------------------------------
+
+
+def test_to_card_section_v3_causal_claim_always_false():
+    clauses = parse_top_level_clauses(BUY_CODE)
+    df = pd.DataFrame({
+        "B_시분초": [91000, 92000, 94000], "B_현재가": [5000, 200, 3000],
+        "B_등락율": [5, 1, 10], "B_체결강도": [130, 100, 90],
+        "B_매수총잔량": [100, 10, 80], "B_매도총잔량": [50, 90, 20],
+        "수익률": [1.0, -0.5, 0.3],
+    })
+    result = ablate(clauses, df)
+    section = to_card_section_v3(result)
+
+    assert section["schema"] == ABLATION_CARD_SECTION_SCHEMA_V3
+    assert section["causal_claim"] is False
+    assert section["noncausal_note"] == ABLATION_NONCAUSAL_NOTE
+    assert section["status"] == result.status
+    assert section["items"] == [item.to_dict() for item in result.items]
+
+
+def test_to_card_section_v3_causal_claim_false_even_for_empty_trades():
+    """빈 거래행(status=empty_trades)에서도 causal_claim은 절대 True가 될 수 없다."""
+    clauses = parse_top_level_clauses(BUY_CODE)
+    result = ablate(clauses, pd.DataFrame())
+    section = to_card_section_v3(result)
+    assert section["status"] == ABLATION_STATUS_EMPTY_TRADES
+    assert section["causal_claim"] is False

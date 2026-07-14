@@ -526,3 +526,44 @@ def test_context_pack_trace_propagates_to_pack_and_receipts():
     assert all(
         item["context_pack_id"] == "rcp_test16" for item in validation["valid_candidates"]
     )
+
+
+# ===================================================================
+# DR-04 -- final-owner wiring (default OFF via final_owner_enabled).
+# ===================================================================
+
+
+def test_final_owner_disabled_by_default_is_byte_identical():
+    provider = QueueProvider(repair=_valid_repair_responses(), discovery=_valid_discovery_responses())
+    result = produce_candidate_pack_result(_context(), provider)
+    assert "final_owner_selection" not in result
+    assert "final_owner_selection" not in result["candidate_pack"]
+
+
+def test_final_owner_enabled_routes_full_round_through_select_official_candidate():
+    provider = QueueProvider(repair=_valid_repair_responses(), discovery=_valid_discovery_responses())
+    result = produce_candidate_pack_result(_context(), provider, final_owner_enabled=True)
+
+    assert result["status"] == "ok"
+    assert "final_owner_selection" in result
+    selection = result["final_owner_selection"]
+    assert selection["selected"] is not None
+    assert selection["pool_blockers"] == []
+    # exactly one candidate is promoted to official; the pack keeps all 4.
+    assert len(result["candidate_pack"]["candidates"]) == 4
+    assert result["candidate_pack"]["final_owner_selection"] == selection
+    # the selected candidate_id is one of this round's real hypothesis_ids.
+    hypothesis_ids = {c["hypothesis_id"] for c in result["candidate_pack"]["candidates"]}
+    assert selection["selected"]["candidate_id"] in hypothesis_ids
+
+
+def test_final_owner_enabled_skips_selection_when_round_is_a_shortfall_partial():
+    """A partial round (missing a lane slot) must not be force-fed into
+    select_official_candidate's strict 2/2 4-proposal contract."""
+    provider = QueueProvider(
+        repair=_valid_repair_responses(),
+        discovery=[_valid_discovery_responses()[0], GARBAGE_RESPONSE, GARBAGE_RESPONSE, GARBAGE_RESPONSE],
+    )
+    result = produce_candidate_pack_result(_context(), provider, final_owner_enabled=True)
+    assert result["status"] == "partial"
+    assert "final_owner_selection" not in result

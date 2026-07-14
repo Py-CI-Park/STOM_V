@@ -34,7 +34,11 @@ from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     ID_PREFIX_EVALUATION_MANIFEST,
     ID_PREFIX_FEEDBACK_CONSUMPTION,
     ID_PREFIX_FEEDBACK_ENVELOPE,
+    ID_PREFIX_RENDERED_PROMPT,
     ID_PREFIX_RUN_RECEIPT,
+    OUTCOME_GO,
+    OUTCOME_INDETERMINATE_EXTERNAL_EFFECT,
+    OUTCOME_NO_GO,
     RUN_RECEIPT_SCHEMA,
     CandidateMode,
     CandidatePassport,
@@ -46,6 +50,7 @@ from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     canonical_json,
     compute_candidate_id,
     compute_passport_id,
+    compute_rendered_prompt_id,
     content_sha256,
     sha256_hex,
     text_sha256,
@@ -456,3 +461,57 @@ def test_manifest_rejects_missing_code_hash():
 def test_receipt_rejects_non_mapping_budget_counters():
     with pytest.raises(ValueError):
         make_receipt(budget_counters=["not", "a", "mapping"])
+
+
+# ---------------------------------------------------------------------
+# DR-03 — real content-addressed prompt FK (compute_rendered_prompt_id) +
+#   fail-closed certification outcome vocabulary.
+# ---------------------------------------------------------------------
+
+def test_rendered_prompt_id_deterministic_for_same_content():
+    a = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("user"))
+    b = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("user"))
+    assert a == b
+    assert a.startswith(ID_PREFIX_RENDERED_PROMPT)
+
+
+def test_rendered_prompt_id_independent_of_run_and_gen_coordinates():
+    # Same content -> same id regardless of caller-side run_id/gen_no (content
+    # identity, not run/gen identity) — this is what makes the id verifiable
+    # across an interrupted+resumed run (DR-03 acceptance #5).
+    a = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("user"))
+    b = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("user"))
+    assert a == b
+
+
+def test_rendered_prompt_id_distinguishes_kind_attempt_and_content():
+    base = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("user"))
+    diff_kind = compute_rendered_prompt_id("sell", 1, _sha("system"), _sha("user"))
+    diff_attempt = compute_rendered_prompt_id("buy", 2, _sha("system"), _sha("user"))
+    diff_user = compute_rendered_prompt_id("buy", 1, _sha("system"), _sha("other"))
+    assert len({base, diff_kind, diff_attempt, diff_user}) == 4
+
+
+def test_rendered_prompt_id_rejects_non_sha256_inputs():
+    with pytest.raises(ValueError):
+        compute_rendered_prompt_id("buy", 1, "not-a-sha", _sha("user"))
+
+
+def test_rendered_prompt_id_rejects_negative_attempt():
+    with pytest.raises(ValueError):
+        compute_rendered_prompt_id("buy", -1, _sha("system"), _sha("user"))
+
+
+def test_outcome_labels_are_distinct_nonempty_strings():
+    labels = {OUTCOME_GO, OUTCOME_NO_GO, OUTCOME_INDETERMINATE_EXTERNAL_EFFECT}
+    assert len(labels) == 3
+    for label in labels:
+        assert isinstance(label, str) and label
+
+
+def test_run_receipt_accepts_indeterminate_external_effect_outcome():
+    # RunReceipt.outcome stays a free nonempty string (v1 contract unchanged) —
+    # the new label is just additive vocabulary, not a new validated enum.
+    receipt = make_receipt(outcome=OUTCOME_INDETERMINATE_EXTERNAL_EFFECT, stop_reason="evidence_io_failure")
+    assert receipt.outcome == OUTCOME_INDETERMINATE_EXTERNAL_EFFECT
+    assert receipt.stop_reason == "evidence_io_failure"

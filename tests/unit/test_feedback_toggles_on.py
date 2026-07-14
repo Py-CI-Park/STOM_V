@@ -93,6 +93,14 @@ def test_global_defaults_stay_off() -> None:
         assert getattr(cfg, name) is False, f"{name} 전역 기본값은 OFF여야 한다"
 
 
+def test_dr02_manifest_v2_flags_default_off() -> None:
+    # DR-02 additive flags (Manifest v2 wiring) must default OFF like every other
+    # feature toggle — v11 startup/default run_loop output stays byte-identical.
+    cfg = LoopConfig()
+    assert cfg.manifest_v2_enabled is False
+    assert cfg.v2_certification_enabled is False
+
+
 def test_research_presets_enable_feedback_toggles() -> None:
     for preset in (PresetName.TICK_LATE_0920_0925, PresetName.MIN_FULL_0900_1500):
         config = preset_payload(preset)["config"]

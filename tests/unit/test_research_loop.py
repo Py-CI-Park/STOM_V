@@ -347,6 +347,17 @@ def test_research_loop_config_has_iteration_v2_trade_amount_feature():
     assert config.iteration_v2_trade_amount_feature == 'B_당일거래대금'
 
 
+def test_research_loop_config_has_dr04_final_owner_selection_field():
+    """DR-04 -- bullet 1: default-OFF final-owner selection routing flag."""
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'final_owner_selection_enabled' in names
+
+    config = ResearchLoopConfig()
+    assert config.final_owner_selection_enabled is False
+    # OFF has zero effect unless llm_candidate_pack_enabled is also True --
+    # exercised end-to-end in tests/unit/test_llm_pack_wiring.py.
+
+
 def test_iteration_plan_includes_v2_settings():
     plan = research_loop._build_iteration_plan(
         ResearchLoopConfig(
@@ -4515,3 +4526,367 @@ def test_rank_candidate_results_preserves_hybrid_lane_score_payload():
     assert ranked[0]['rank_score']['research_lane'] == 'repair'
     assert ranked[0]['rank_score']['research_lane_score'] == 12.5
     assert ranked[0]['rank_score']['research_score_authority'] == 'advisory_research_budget_only'
+
+
+# ===========================================================================
+# DR-01..DR-05 frozen chain E2E (validation-coupled integration).
+#
+# Deterministic, fixture-driven. No provider/model/evaluator/official-backtest/
+# subprocess/network/protected-DB call anywhere in this cluster:
+#   - DR-02 manifest build is a pure function of a LoopConfig fixture (no I/O).
+#   - DR-03 uses a fresh tmp-path sqlite LoopState/EvidenceStore (never the
+#     protected ai_strategy_loop/state/loop_runs.db default path).
+#   - DR-04 drives a scripted QueueProvider fake (a full 2-repair/2-discovery
+#     round) through produce_candidate_pack_result/select_official_candidate,
+#     then proves a run-wide duplicate is rejected by select_official_candidate_v2
+#     WITHOUT any further provider call (that function takes no provider/
+#     evaluator argument at all -- the QueueProvider's captured call count is
+#     asserted unchanged across the dedup check).
+#   - DR-01 (uptrend_r2 slope-gate + zero-origin MDD) and DR-05 (AnalysisCardV3)
+#     are pure functions over an in-memory synthetic trades DataFrame.
+#
+# All DR feature flags default OFF (see ai_strategy_loop/config.py) and are
+# enabled explicitly below on the fixture only.
+# ===========================================================================
+
+
+def _frozen_chain_loop_config(**overrides):
+    from ai_strategy_loop.config import LoopConfig
+
+    cfg = LoopConfig(provider="openrouter", max_generations=1, bt_engine_mode="cold")
+    # --- DR feature flags: all default OFF; enabled explicitly on this fixture ---
+    cfg.manifest_v2_enabled = True
+    cfg.evidence_ledger_enabled = True
+    cfg.prompt_logging_enabled = True
+    cfg.final_owner_selection_enabled = True
+    # candidate_dedup_enabled / seed_plan_enabled are NOT declared LoopConfig
+    # dataclass fields -- loop.py reads them ad-hoc via getattr(config, ..., False)
+    # (see controller/loop.py:1213-1214). Set as plain attributes, same as the
+    # production wiring expects.
+    cfg.candidate_dedup_enabled = True
+    cfg.seed_plan_enabled = True
+    for key, value in overrides.items():
+        setattr(cfg, key, value)
+    return cfg
+
+
+_FROZEN_REPAIR_CODE_1 = "if 현재가 > 시가 and 거래대금 > 30000:\n    self.Buy()"
+_FROZEN_REPAIR_CODE_2 = "if 현재가 > 시가 and 체결강도 > 120:\n    self.Buy()"
+_FROZEN_DISCOVERY_CODE_1 = "if 등락율 > 3 and 회전율 > 1.5:\n    self.Buy()"
+_FROZEN_DISCOVERY_CODE_2 = "if 고가 > 시가 * 1.02 and 전일비 > 150:\n    self.Buy()"
+
+
+def _frozen_chain_response(metadata, code):
+    return f"```python\n{code}\n```\n```json\n{json.dumps(metadata, ensure_ascii=False)}\n```"
+
+
+def _frozen_chain_repair_metadata(**extra):
+    from ai_strategy_loop.brain.prompt import REPAIR_RESEARCH_PROMPT_VERSION
+
+    payload = {
+        "schema_version": 1, "lane": "repair", "prompt_version": REPAIR_RESEARCH_PROMPT_VERSION,
+        "kind": "buy", "timeframe": "min", "parent_id": "parent-1", "analysis_card_id": "analysis-1",
+        "intended_hypothesis": "turnover 임계만 완화", "risk_note": "노이즈 진입 증가 위험",
+        "mutation_axis": "turnover_min_902 1.5 -> 3.0", "expected_effect": "거래수 +20% 기대",
+        "hypothesis_id": "rh1",
+    }
+    payload.update(extra)
+    return payload
+
+
+def _frozen_chain_discovery_metadata(**extra):
+    from ai_strategy_loop.brain.prompt import DISCOVERY_RESEARCH_PROMPT_VERSION
+
+    payload = {
+        "schema_version": 1, "lane": "discovery", "prompt_version": DISCOVERY_RESEARCH_PROMPT_VERSION,
+        "kind": "buy", "timeframe": "min", "coverage_gap_id": "gap-1",
+        "discovery_target_coverage": ["cap:small|time:0900"], "intended_hypothesis": "회전율 반전 계열 신규 탐색",
+        "novelty_rationale": "기존 팩과 다른 feature family", "risk_note": "한산장 미체결 위험",
+        "mutation_axis": "feature_family:회전율", "expected_effect": "커버리지 공백 채움",
+        "hypothesis_id": "dh1", "novelty": {"feature_family": "회전율_reversal"},
+    }
+    payload.update(extra)
+    return payload
+
+
+class _FrozenChainQueueProvider:
+    """Scripted fake provider -- no network/model call. Records every call so
+    the test can assert an exact, bounded call count (the DR-04 "budget")."""
+
+    def __init__(self, repair, discovery):
+        self.queues = {"repair": list(repair), "discovery": list(discovery)}
+        self.calls = []
+
+    def __call__(self, messages):
+        user_text = messages[1]["content"]
+        lane = "repair" if "repair 후보" in user_text else "discovery"
+        self.calls.append(lane)
+        return self.queues[lane].pop(0)
+
+
+def _frozen_chain_context():
+    return {
+        "kind": "buy", "timeframe": "min", "round_id": "frozen-round-1",
+        "parents": {
+            "buy": {"id": "parent-1", "code": "if 현재가 > 시가:\n    self.Buy()"},
+            "sell": {"id": "sell-1", "code": "if 수익률 < -1:\n    self.Sell()"},
+        },
+        "analysis_card": {
+            "analysis_id": "analysis-1", "candidate_id": "parent-1",
+            "root_cause": "too strict near open", "mutation_axis": "turnover_min_902 1.5 -> 3.0",
+        },
+        "coverage_gap": {"coverage_gap_id": "gap-1", "coverage_bucket_keys": ["cap:small|time:0900"]},
+        "novelty_context": {"coverage_regime": "open_30min", "existing_fingerprints": ["fp-a"]},
+    }
+
+
+def _frozen_chain_proposal(candidate):
+    """Same projection produce_candidate_pack_result._candidate_pool_proposal
+    uses to hand an accepted candidate to the candidate_pool selectors."""
+    novelty = candidate.get("novelty")
+    novelty_value = float(len(novelty)) if isinstance(novelty, dict) else 0.0
+    return {
+        "candidate_id": str(candidate.get("hypothesis_id") or ""),
+        "lane": str(candidate.get("lane") or ""),
+        "family": str(candidate.get("mutation_axis") or "unspecified"),
+        "expression": str(candidate.get("expression") or ""),
+        "timeframe": str(candidate.get("timeframe") or ""),
+        "novelty": novelty_value,
+        "threshold_provenance": {},
+    }
+
+
+def _frozen_chain_v3_rows(n_trades=40, n_days=12, n_symbols=3):
+    rows = []
+    for i in range(n_trades):
+        day = (i % n_days) + 1
+        rows.append({
+            "매수시간": f"202601{day:02d}120000",
+            "종목코드": f"S{i % n_symbols}",
+            "수익률": 1.0 if i % 3 else -0.5,
+            "수익금": 100.0 if i % 3 else -50.0,
+        })
+    return pd.DataFrame(rows)
+
+
+def test_dr01_dr05_frozen_chain_composes_end_to_end(tmp_path):
+    """Bind DR-01..DR-05 into one coherent chain: DR-02 manifest -> DR-03
+    content-addressed prompt (+ deterministic resume) -> DR-04 final-owner
+    selection with run-wide dedup -> DR-01 math feeding the DR-05 card whose
+    content_hash is identical across every render path.
+    """
+    from ai_strategy_loop.brain.pack_producer import produce_candidate_pack_result
+    from ai_strategy_loop.controller import loop as L
+    from ai_strategy_loop.controller.candidate_pool import (
+        RunWideDedupArchive,
+        select_official_candidate_v2,
+    )
+    from ai_strategy_loop.controller.evidence_store import EvidenceStore
+    from ai_strategy_loop.controller.state import LoopState
+    from ai_strategy_loop.fitness.overfit_stats import _max_drawdown_amount
+    from ai_strategy_loop.fitness.score import compute_uptrend_r2
+    from ai_strategy_loop.autopsy.analysis_card import (
+        ROLE_TRAIN,
+        ROLE_VALIDATION,
+        build_analysis_card_v3,
+        render_card_v3_md,
+    )
+    from ai_strategy_loop.brain.segment_feedback import render_directives_from_card_v3
+    from ai_strategy_loop.brain.feature_importance_feedback import render_directive_hints_from_card_v3
+    from cli.condition_fingerprint import ast_fingerprint
+
+    cfg = _frozen_chain_loop_config()
+    run_id = "frozen-chain-e2e"
+
+    # ---------------------------------------------------------------
+    # Step 1 (DR-02): canonical effective profile + Manifest v2, built from
+    # the fixture config only (pure function -- no DB/network/backtest).
+    # ---------------------------------------------------------------
+    assert cfg.manifest_v2_enabled is True  # explicit ON; declared default is False
+    v1_manifest = L._evidence_build_manifest(cfg, run_id)
+    manifest_v2 = L._evidence_build_manifest_v2(cfg, run_id, v1_manifest)
+    assert manifest_v2 is not None
+    assert manifest_v2.manifest_contract == "ManifestV2"
+    assert len(manifest_v2.effective_profile_hash) == 64
+    for category in (
+        "data", "universe", "engine", "cost", "fill", "capital", "session",
+        "prompt", "seed", "code", "config",
+    ):
+        assert len(getattr(manifest_v2, category)) > 0, f"{category} must be bound"
+
+    # ---------------------------------------------------------------
+    # Step 2 (DR-03): a real recorded prompt yields a content-addressed
+    # rendered_prompt_id that EvidenceStore.is_rendered_prompt can verify via
+    # a real FK (not a synthetic placeholder). Uses a FRESH tmp sqlite path
+    # -- never the protected ai_strategy_loop/state/loop_runs.db.
+    # ---------------------------------------------------------------
+    db_path = str(tmp_path / "loop_runs.db")
+    state = LoopState(db_path=db_path, snapshot_dir=str(tmp_path / "snapshots"))
+    state.resume_or_start(cfg, run_id=run_id)
+    store = EvidenceStore(state)
+
+    fake_backtest_calls = []  # nothing in this chain should ever append here.
+
+    prompt_record = state.record_prompt(
+        run_id, 0, "repair", 1,
+        system_text="frozen-chain-system-v1", user_text="frozen-chain-user-body",
+        model="fake-provider-no-network",
+    )
+    rendered_prompt_id = prompt_record["rendered_prompt_id"]
+    assert rendered_prompt_id
+    assert store.is_rendered_prompt(rendered_prompt_id) is True
+    assert store.is_rendered_prompt("synthetic_not_persisted") is False
+
+    # ---------------------------------------------------------------
+    # Step 6 (DR-03 resume): the next-prompt rendered id/hash is identical
+    # whether the run was interrupted+resumed or ran straight through --
+    # content-addressed identity is a pure function of (kind, attempt,
+    # system_sha, user_sha), never of wall-clock/run continuity.
+    # ---------------------------------------------------------------
+    state.close()
+    resumed_state = LoopState(db_path=db_path, snapshot_dir=str(tmp_path / "snapshots"))
+    resumed_state.resume_or_start(cfg, run_id=run_id)  # simulates interrupt+resume
+    resumed_record = resumed_state.record_prompt(
+        run_id, 0, "repair", 1,
+        system_text="frozen-chain-system-v1", user_text="frozen-chain-user-body",
+        model="fake-provider-no-network",
+    )
+    assert resumed_record["rendered_prompt_id"] == rendered_prompt_id
+
+    uninterrupted_state = LoopState(
+        db_path=str(tmp_path / "loop_runs_uninterrupted.db"),
+        snapshot_dir=str(tmp_path / "snapshots_uninterrupted"),
+    )
+    uninterrupted_run_id = "frozen-chain-e2e-uninterrupted"
+    uninterrupted_state.resume_or_start(cfg, run_id=uninterrupted_run_id)
+    uninterrupted_record = uninterrupted_state.record_prompt(
+        uninterrupted_run_id, 0, "repair", 1,
+        system_text="frozen-chain-system-v1", user_text="frozen-chain-user-body",
+        model="fake-provider-no-network",
+    )
+    assert uninterrupted_record["rendered_prompt_id"] == rendered_prompt_id
+    uninterrupted_state.close()
+
+    # ---------------------------------------------------------------
+    # Step 3 (DR-04): drive final-owner selection through a scripted fake
+    # provider producing a full 2-repair/2-discovery round. provider_call_count
+    # proves the exact, bounded "budget" spent (4 -- one per accepted slot).
+    # ---------------------------------------------------------------
+    provider = _FrozenChainQueueProvider(
+        repair=[
+            _frozen_chain_response(_frozen_chain_repair_metadata(hypothesis_id="rh1"), _FROZEN_REPAIR_CODE_1),
+            _frozen_chain_response(_frozen_chain_repair_metadata(hypothesis_id="rh2"), _FROZEN_REPAIR_CODE_2),
+        ],
+        discovery=[
+            _frozen_chain_response(_frozen_chain_discovery_metadata(hypothesis_id="dh1"), _FROZEN_DISCOVERY_CODE_1),
+            _frozen_chain_response(_frozen_chain_discovery_metadata(hypothesis_id="dh2"), _FROZEN_DISCOVERY_CODE_2),
+        ],
+    )
+    round_result = produce_candidate_pack_result(
+        _frozen_chain_context(), provider, final_owner_enabled=True,
+    )
+    assert round_result["status"] == "ok"
+    assert round_result["provider_call_count"] == 4
+    assert len(provider.calls) == 4  # exactly the scripted 2-repair/2-discovery round
+    selection = round_result["final_owner_selection"]
+    assert selection["selected"] is not None
+    assert selection["pool_blockers"] == []
+    accepted_candidates = round_result["candidate_pack"]["candidates"]
+    assert len(accepted_candidates) == 4
+    winner_expression = selection["selected"]["expression"]
+
+    # A duplicate AST/rowset is rejected BEFORE any evaluation budget is spent:
+    # select_official_candidate_v2 takes proposals directly (no provider/
+    # evaluator/backtest parameter at all), so the fake provider's call count
+    # is proven unchanged across this second-round dedup check.
+    archive = RunWideDedupArchive()
+    winner_fingerprint = ast_fingerprint(winner_expression, timeframe="min", methodology_version="clr04_v1")
+    archive.ast_fingerprints.add(winner_fingerprint)
+
+    round_2_candidates = [dict(c) for c in accepted_candidates]
+    round_2_candidates[0] = dict(round_2_candidates[0], expression=winner_expression)  # force AST duplicate
+    round_2_proposals = [_frozen_chain_proposal(c) for c in round_2_candidates]
+
+    dedup_result = select_official_candidate_v2(
+        round_2_proposals, timeframe="min", methodology_version="clr04_v1",
+        run_wide_archive=archive,
+    )
+    assert any("run_wide_ast_duplicate" in reason for reason in dedup_result["pool_blockers"])
+    assert dedup_result["selected"] is None
+    assert len(provider.calls) == 4  # unchanged -- no provider call was consumed by the dedup check
+    assert fake_backtest_calls == []  # nothing in DR-02..DR-04 ever touches a backtest seam
+
+    # ---------------------------------------------------------------
+    # Step 4 (DR-01 + DR-05): DR-01 math (uptrend_r2 slope-gate, zero-origin
+    # MDD) is computed from a fixture result-row equity curve and feeds the
+    # DR-05 AnalysisCardV3's source identity (content_hash is a function of
+    # `source`, so DR-01's numbers demonstrably flow into the card).
+    # ---------------------------------------------------------------
+    daily_pnls = [10.0, 10.0, 10.0, -30.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]
+    equity_curve = []
+    running = 0.0
+    for pnl in daily_pnls:
+        running += pnl
+        equity_curve.append(running)
+    uptrend_r2 = compute_uptrend_r2(equity_curve)
+    zero_origin_mdd = _max_drawdown_amount(_np_asarray(equity_curve))
+    assert 0.0 <= uptrend_r2 <= 1.0
+    assert uptrend_r2 > 0.5  # overall trend is up despite the one -30 dip -- slope-gate math
+    assert zero_origin_mdd == pytest.approx(30.0)  # single dip from the running-from-0 peak
+
+    trades_df = _frozen_chain_v3_rows()
+    source = {
+        "alias": "fixture://frozen-chain", "hash": "h1",
+        "dr01_uptrend_r2": uptrend_r2, "dr01_mdd_amount": zero_origin_mdd,
+    }
+    card_train = build_analysis_card_v3(
+        trades_df, source=source, role=ROLE_TRAIN, manifest_id=manifest_v2.manifest_id,
+        candidate_findings=[{
+            "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
+            "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+        }],
+    )
+    assert card_train.role == ROLE_TRAIN
+    assert len(card_train.content_hash) == 64
+    assert card_train.actionable_directives, "train role with a sample-gate-passing finding must yield directives"
+
+    # DR-01 numbers demonstrably feed the card: changing them changes the hash.
+    different_source = dict(source, dr01_uptrend_r2=0.0, dr01_mdd_amount=0.0)
+    card_train_different_dr01 = build_analysis_card_v3(
+        trades_df, source=different_source, role=ROLE_TRAIN, manifest_id=manifest_v2.manifest_id,
+        candidate_findings=[{
+            "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
+            "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+        }],
+    )
+    assert card_train_different_dr01.content_hash != card_train.content_hash
+
+    # role='validation' -> zero directives regardless of the same findings/gate.
+    card_validation = build_analysis_card_v3(
+        trades_df, source=source, role=ROLE_VALIDATION, manifest_id=manifest_v2.manifest_id,
+        candidate_findings=[{
+            "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
+            "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+        }],
+    )
+    assert card_validation.actionable_directives == ()
+
+    # ---------------------------------------------------------------
+    # Step 5 (DR-05 feedback): every render path (dashboard md / prompt
+    # feedback / doc hints) reads the SAME card content_hash -- never
+    # recomputes it.
+    # ---------------------------------------------------------------
+    md = render_card_v3_md(card_train)
+    prompt_lines = render_directives_from_card_v3(card_train)
+    doc_lines = render_directive_hints_from_card_v3(card_train)
+    assert f"content_hash: {card_train.content_hash}" in md
+    assert prompt_lines and all(f"[card:{card_train.content_hash}]" in line for line in prompt_lines)
+    assert doc_lines and all(f"[card:{card_train.content_hash}]" in line for line in doc_lines)
+
+    resumed_state.close()
+
+
+def _np_asarray(values):
+    import numpy as np
+
+    return np.asarray(values, dtype=float)

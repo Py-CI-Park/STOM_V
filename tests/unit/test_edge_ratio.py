@@ -24,10 +24,17 @@ import pandas as pd  # noqa: E402
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.fitness.edge_ratio import (  # noqa: E402
+    DEFAULT_TRADE_COLUMN_CONTRACT,
+    ResolvedTradeRow,
+    TradeColumnContract,
+    canonical_trade_key,
+    canonical_trade_row,
     compute_edge_metrics,
     edge_by_segment,
     edge_report_from_csvs,
+    resolve_trade_columns,
 )
+
 
 
 # ---------------------------------------------------------------------------
@@ -99,6 +106,21 @@ def test_compute_edge_metrics_column_fallback():
     assert m["mean_mfe"] == 3.0
     assert m["mean_mae"] == 1.5
     assert abs(m["edge_ratio"] - (3.0 / 1.5)) < 1e-9
+
+
+def test_compute_edge_metrics_prefers_canonical_korean_column_over_r_mfe():
+    """DR-01: 두 컬럼이 모두 있으면 정본(R_매수후최고/최저수익률)을 우선한다 —
+    analyze.py/trade_quant.py/analysis_card.py 와 별칭 해석 순서를 일치시킨다."""
+    df = pd.DataFrame({
+        "수익률": [1.0, -1.0],
+        "R_매수후최고수익률": [4.0, 2.0],   # 정본 — mean = 3.0.
+        "R_매수후최저수익률": [-1.0, -2.0],  # 정본 — |.| 평균 = 1.5.
+        "R_MFE": [40.0, 20.0],              # 폴백(값이 다름 — 우선순위 검증용).
+        "R_MAE": [-10.0, -20.0],            # 폴백(값이 다름 — 우선순위 검증용).
+    })
+    m = compute_edge_metrics(df)
+    assert m["mean_mfe"] == 3.0
+    assert m["mean_mae"] == 1.5
 
 
 # ---------------------------------------------------------------------------
@@ -222,3 +244,60 @@ def test_edge_report_from_csvs_empty_pool_insufficient():
     assert rep == {"insufficient": True, "pooled_trades": 0}
     # 빈 리스트도 insufficient.
     assert edge_report_from_csvs([]) == {"insufficient": True, "pooled_trades": 0}
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — TradeColumnContract / resolve_trade_columns / canonical_trade_row /
+#   canonical_trade_key: 거래행 identity/정본화 계약.
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_trade_columns_reads_default_aliases():
+    row = {"매수시간": "20260101090000", "종목코드": "AAA", "수익률": 1.5, "수익금": 100.0}
+    resolved = resolve_trade_columns(row)
+    assert resolved == ResolvedTradeRow(
+        date_key="20260101090000", symbol_key="AAA", return_value=1.5, profit_value=100.0,
+    )
+
+
+def test_resolve_trade_columns_missing_values_are_honest_none():
+    resolved = resolve_trade_columns({})
+    assert resolved.date_key == ""
+    assert resolved.symbol_key == ""
+    assert resolved.return_value is None
+    assert resolved.profit_value is None
+
+
+def test_canonical_trade_row_is_deterministic_sorted_json():
+    row = {"매수시간": "20260101090000", "종목코드": "AAA", "수익률": 1.5, "수익금": 100.0, "무관컬럼": "x"}
+    text_a = canonical_trade_row(row)
+    text_b = canonical_trade_row(dict(row))
+    assert text_a == text_b
+    assert "무관컬럼" not in text_a  # 정본 컬럼만 정체성에 반영.
+
+
+def test_canonical_trade_key_differs_by_content():
+    row_a = {"매수시간": "20260101090000", "종목코드": "AAA", "수익률": 1.0, "수익금": 10.0}
+    row_b = {"매수시간": "20260101090000", "종목코드": "AAA", "수익률": 2.0, "수익금": 20.0}
+    key_a = canonical_trade_key(row_a)
+    key_b = canonical_trade_key(row_b)
+    assert key_a[0] == key_b[0] == "20260101090000"
+    assert key_a[1] == key_b[1] == "AAA"
+    assert key_a[2] != key_b[2]  # 내용이 다르면 행 해시가 다르다.
+
+
+def test_canonical_trade_key_identical_for_exact_duplicate_rows():
+    row = {"매수시간": "20260101090000", "종목코드": "AAA", "수익률": 1.0, "수익금": 10.0}
+    assert canonical_trade_key(row) == canonical_trade_key(dict(row))
+
+
+def test_trade_column_contract_custom_column_names():
+    contract = TradeColumnContract(date_column="dt", symbol_column="sym", return_column="ret", profit_column="pnl")
+    row = {"dt": "20260101", "sym": "BBB", "ret": 0.5, "pnl": 5.0}
+    resolved = resolve_trade_columns(row, contract)
+    assert resolved.date_key == "20260101"
+    assert resolved.symbol_key == "BBB"
+    assert resolved.return_value == 0.5
+    assert resolved.profit_value == 5.0
+    # 기본 계약과는 다른 컬럼 해석이라 canonical_trade_row 결과도 달라진다.
+    assert canonical_trade_row(row, contract) != canonical_trade_row(row, DEFAULT_TRADE_COLUMN_CONTRACT)

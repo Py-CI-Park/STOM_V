@@ -22,6 +22,7 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.autopsy.hypothesis import (  # noqa: E402
+    HYPOTHESIS_CARD_SECTION_SCHEMA_V3,
     VERDICT_ACCEPTED,
     VERDICT_INCONCLUSIVE,
     VERDICT_REJECTED,
@@ -29,7 +30,9 @@ from ai_strategy_loop.autopsy.hypothesis import (  # noqa: E402
     Hypothesis,
     adjudicate,
     build_hypotheses,
+    to_card_section_v3,
 )
+
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import loop as L  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
@@ -375,3 +378,26 @@ class _FakeGraded:
     def __init__(self, *, mdd, total_profit):
         self.mdd = mdd
         self.total_profit = total_profit
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — hypothesis.to_card_section_v3: 항상 non-directive 서술 섹션.
+# ---------------------------------------------------------------------------
+
+
+def test_to_card_section_v3_all_items_marked_non_statistical_directive():
+    hyps = build_hypotheses(
+        gate_passed=False, mdd=20.0, mdd_cap=12.0, total_profit=-100.0,
+        trade_count=5, min_trades=10, is_refine=False,
+    )
+    assert hyps  # gate 실패라 원인별 가정이 최소 1개.
+    section = to_card_section_v3(hyps)
+    assert section["schema"] == HYPOTHESIS_CARD_SECTION_SCHEMA_V3
+    assert section["count"] == len(hyps)
+    assert all(item["is_statistical_directive"] is False for item in section["items"])
+
+
+def test_to_card_section_v3_empty_list_is_honest_zero():
+    section = to_card_section_v3([])
+    assert section["count"] == 0
+    assert section["items"] == []

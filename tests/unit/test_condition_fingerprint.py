@@ -12,10 +12,12 @@ import dataclasses
 import pytest
 
 from cli.condition_fingerprint import (
+    DR04_DEDUP_CONTRACT_VERSION,
     FingerprintError,
     ThresholdEstimator,
     ThresholdProvenance,
     ast_fingerprint,
+    canonical_full_row_key,
     rowset_fingerprint,
     validate_b_only,
 )
@@ -454,3 +456,59 @@ def test_condition_generator_ingestion_has_no_controller_or_provider_imports():
 
     offending = [m for m in imported_modules if any(token in m for token in forbidden_substrings)]
     assert offending == []
+
+
+# ---------------------------------------------------------------------------
+# DR-04 -- additive-only helpers (ast_fingerprint/rowset_fingerprint signatures
+#   and semantics are UNCHANGED; this section only exercises the new
+#   version constant + canonical_full_row_key helper).
+# ---------------------------------------------------------------------------
+
+
+def test_ast_fingerprint_and_rowset_fingerprint_signatures_unchanged():
+    """DR-04 must not alter the canonical identity functions' contracts."""
+    import inspect
+
+    ast_sig = inspect.signature(ast_fingerprint)
+    assert list(ast_sig.parameters) == ['expression', 'timeframe', 'methodology_version']
+    rowset_sig = inspect.signature(rowset_fingerprint)
+    assert list(rowset_sig.parameters) == ['dataset_sha', 'window', 'row_keys']
+    # both existing kwargs remain keyword-only (signature shape unchanged).
+    assert ast_sig.parameters['timeframe'].kind == inspect.Parameter.KEYWORD_ONLY
+    assert rowset_sig.parameters['dataset_sha'].kind == inspect.Parameter.KEYWORD_ONLY
+
+
+def test_dr04_dedup_contract_version_is_a_stable_string_constant():
+    assert isinstance(DR04_DEDUP_CONTRACT_VERSION, str)
+    assert DR04_DEDUP_CONTRACT_VERSION == 'dr04_run_wide_dedup_v1'
+
+
+def test_canonical_full_row_key_is_order_independent_and_content_sensitive():
+    row_a = {'symbol': 'AAA', 'date_index': 0, 'net_pnl': 100}
+    row_b = {'date_index': 0, 'net_pnl': 100, 'symbol': 'AAA'}  # same content, different key order.
+    assert canonical_full_row_key(row_a) == canonical_full_row_key(row_b)
+
+    row_c = {'symbol': 'AAA', 'date_index': 0, 'net_pnl': 999}  # different content.
+    assert canonical_full_row_key(row_a) != canonical_full_row_key(row_c)
+
+
+def test_canonical_full_row_key_feeds_the_unchanged_rowset_fingerprint():
+    """Two rowsets differing only in one field's value must fingerprint differently
+    when their full-row keys (not just trade_id:net_pnl) are used as row_keys."""
+    rows_1 = [
+        {'symbol': 'AAA', 'date_index': 0, 'net_pnl': 100},
+        {'symbol': 'BBB', 'date_index': 0, 'net_pnl': 100},
+    ]
+    rows_2 = [
+        {'symbol': 'AAA', 'date_index': 0, 'net_pnl': 100},
+        {'symbol': 'BBB', 'date_index': 0, 'net_pnl': 200},  # only net_pnl differs.
+    ]
+    fp_1 = rowset_fingerprint(
+        dataset_sha='a' * 64, window='2026-01-02..2026-01-15',
+        row_keys=[canonical_full_row_key(r) for r in rows_1],
+    )
+    fp_2 = rowset_fingerprint(
+        dataset_sha='a' * 64, window='2026-01-02..2026-01-15',
+        row_keys=[canonical_full_row_key(r) for r in rows_2],
+    )
+    assert fp_1 != fp_2

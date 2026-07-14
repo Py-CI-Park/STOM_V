@@ -466,3 +466,96 @@ class TestDefaultOff:
         count = st._con.execute("SELECT COUNT(*) FROM feedback_envelopes").fetchone()[0]
         assert count == 0
         st.close()
+
+
+# =====================================================================
+# 4) DR-03 — real generate_pair (scripted provider, no monkeypatch of
+#    _generate_pair itself) produces a REAL, verifiable content-addressed
+#    prompt FK — not a synthetic placeholder.
+# =====================================================================
+class _ScriptedResult:
+    def __init__(self, text):
+        self.text = text
+        self.usage = None
+        self.model = "fake-model-dr03"
+
+
+class _ScriptedProvider:
+    def __init__(self, texts):
+        self.texts = list(texts)
+        self.calls = []
+
+    def chat(self, messages, **kwargs):
+        self.calls.append(messages)
+        return _ScriptedResult(self.texts.pop(0))
+
+
+class TestDr03RealPromptFkEndToEnd:
+    _GOOD_BUY = (
+        "```python\n"
+        "매수 = True\n"
+        "if not (3 <= 등락율 <= 25):\n"
+        "    매수 = False\n"
+        "\n"
+        "if 매수:\n"
+        "    self.Buy()\n"
+        "```"
+    )
+    _GOOD_SELL = (
+        "```python\n"
+        "매도 = True\n"
+        "if not (3 <= 등락율 <= 25):\n"
+        "    매도 = False\n"
+        "\n"
+        "if 매도:\n"
+        "    self.Sell()\n"
+        "```"
+    )
+
+    def test_real_generate_pair_produces_verifiable_rendered_prompt_fk(self, monkeypatch, tmp_path):
+        rid = "fkrun"
+        strat_db = str(tmp_path / "strat.db")
+        monkeypatch.setattr(L.bootstrap, "LOOP_DB_STRATEGY", strat_db)
+
+        provider = _ScriptedProvider([self._GOOD_BUY, self._GOOD_SELL])
+        st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            config = _base_config()
+            config.prompt_logging_enabled = True
+            res = L._generate_pair(provider, config, rid, 0, None, state=st)
+            assert res["status"] == "ok", res
+
+            rendered_ids = res.get("rendered_prompt_ids") or {}
+            assert set(rendered_ids) == {"buy", "sell"}
+
+            store = EvidenceStore(st)
+            for kind, rp_id in rendered_ids.items():
+                assert rp_id.startswith("rp_")
+                # a REAL, verifiable FK — not a synthetic placeholder string.
+                assert store.is_rendered_prompt(rp_id) is True
+
+            prompts = st.get_prompts(rid)
+            assert {p["kind"] for p in prompts} == {"buy", "sell"}
+            for p in prompts:
+                assert p["content_sha256"] is not None and len(p["content_sha256"]) == 64
+        finally:
+            st.close()
+
+    def test_prompt_logging_disabled_yields_no_rendered_ids_and_synthetic_fk_fallback_still_works(
+        self, monkeypatch, tmp_path
+    ):
+        # Default OFF: no rendered_prompt_ids at all (byte-identical to pre-DR-03).
+        rid = "fkrun_off"
+        strat_db = str(tmp_path / "strat2.db")
+        monkeypatch.setattr(L.bootstrap, "LOOP_DB_STRATEGY", strat_db)
+        provider = _ScriptedProvider([self._GOOD_BUY, self._GOOD_SELL])
+        st = LoopState(db_path=str(tmp_path / "runs2.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            config = _base_config()
+            assert config.prompt_logging_enabled is False
+            res = L._generate_pair(provider, config, rid, 0, None, state=st)
+            assert res["status"] == "ok", res
+            assert res.get("rendered_prompt_ids") == {}
+            assert st.get_prompts(rid) == []
+        finally:
+            st.close()

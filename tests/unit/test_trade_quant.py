@@ -28,8 +28,12 @@ from ai_strategy_loop.autopsy.trade_quant import (  # noqa: E402
     STATUS_ERROR,
     STATUS_NO_DATA,
     STATUS_OK,
+    TRADE_QUANT_SECTION_SCHEMA_V3,
     analyze_trade_table,
+    build_trade_quant_section,
 )
+from ai_strategy_loop.fitness.edge_ratio import TradeColumnContract  # noqa: E402
+
 
 
 def _write_csv(path, rows):
@@ -382,3 +386,172 @@ def test_time_of_day_carries_pnl_unit(tmp_path):
         w.writerow(["-0.5", "202506130912"])
     res = analyze_trade_table(str(p))
     assert res["metrics"]["time_of_day"]["pnl_unit"] == "pct"  # 수익금 컬럼 없음 → pct
+
+# ---------------------------------------------------------------------
+# DR-01 — 0-기준 MDD / 행순서 불변 / 무손익 거래 제외.
+# ---------------------------------------------------------------------
+
+def test_drawdown_zero_origin_single_loss_counts_full():
+    """DR-01: pnl=[-100] → 낙폭 기준(peak)이 0에서 시작하므로 낙폭 전체(100)가 잡힌다."""
+    from ai_strategy_loop.autopsy.trade_quant import _drawdown_contributors
+
+    res = _drawdown_contributors(pd.Series([-100.0]), None, top_n=5)
+    assert res["total_decline"] == pytest.approx(100.0, abs=1e-9)
+
+
+def test_drawdown_zero_origin_two_losses_accumulate():
+    """DR-01: pnl=[-100,-50] → 누적손실 전체(150)가 낙폭으로 잡힌다."""
+    from ai_strategy_loop.autopsy.trade_quant import _drawdown_contributors
+
+    res = _drawdown_contributors(pd.Series([-100.0, -50.0]), None, top_n=5)
+    assert res["total_decline"] == pytest.approx(150.0, abs=1e-9)
+
+
+def test_drawdown_zero_origin_gain_then_bigger_loss():
+    """DR-01: pnl=[100,-150] → equity 150 하락(100→-50)이 낙폭으로 잡힌다."""
+    from ai_strategy_loop.autopsy.trade_quant import _drawdown_contributors
+
+    res = _drawdown_contributors(pd.Series([100.0, -150.0]), None, top_n=5)
+    assert res["total_decline"] == pytest.approx(150.0, abs=1e-9)
+
+
+def test_row_order_permutation_does_not_change_streak_or_mdd(tmp_path):
+    """DR-01: 매수시간이 있으면 입력 행 순서를 뒤섞어도 연속패 길이/MDD가 동일하다."""
+    times = [f"2025061309{i:02d}" for i in range(6)]
+    pnls = [100.0, -50.0, -50.0, 200.0, -300.0, 50.0]
+    base_rows = [
+        {"종목명": f"t{i}", "매수시간": times[i], "수익률": pnls[i] / 100.0, "수익금": pnls[i]}
+        for i in range(len(pnls))
+    ]
+
+    ordered_csv = _write_csv(tmp_path / "ordered.csv", base_rows)
+    shuffled_csv = _write_csv(tmp_path / "shuffled.csv", list(reversed(base_rows)))
+
+    ordered = analyze_trade_table(ordered_csv)
+    shuffled = analyze_trade_table(shuffled_csv)
+
+    assert ordered["status"] == STATUS_OK
+    assert shuffled["status"] == STATUS_OK
+    assert (
+        ordered["metrics"]["streaks"]["max_loss_streak"]
+        == shuffled["metrics"]["streaks"]["max_loss_streak"]
+    )
+    assert (
+        ordered["metrics"]["drawdown_contributors"]["total_decline"]
+        == shuffled["metrics"]["drawdown_contributors"]["total_decline"]
+    )
+
+
+def test_neutral_trades_do_not_change_payoff_ratio(tmp_path):
+    """DR-01: 1승/1패 + 무손익(0%) 98건을 더해도 payoff_ratio 는 그대로다."""
+    base_rows = [{"종목명": "win0", "수익률": 10.0}, {"종목명": "loss0", "수익률": -5.0}]
+    neutral_rows = [{"종목명": f"neutral{i}", "수익률": 0.0} for i in range(98)]
+
+    base_csv = _write_csv(tmp_path / "base.csv", base_rows)
+    padded_csv = _write_csv(tmp_path / "padded.csv", base_rows + neutral_rows)
+
+    base_result = analyze_trade_table(base_csv)
+    padded_result = analyze_trade_table(padded_csv)
+
+    assert base_result["metrics"]["payoff_ratio"] == pytest.approx(2.0, abs=1e-9)
+    assert padded_result["metrics"]["payoff_ratio"] == pytest.approx(
+        base_result["metrics"]["payoff_ratio"], abs=1e-9
+    )
+
+
+# ---------------------------------------------------------------------------
+# DR-05 — build_trade_quant_section: AnalysisCardV3 정본 섹션.
+# ---------------------------------------------------------------------------
+
+
+def _v3_trade_rows(n=30, n_days=10, n_symbols=3):
+    rows = []
+    for i in range(n):
+        rows.append({
+            "매수시간": f"202601{(i % n_days) + 1:02d}090000",
+            "종목코드": f"SYM{i % n_symbols}",
+            "수익률": 1.0 if i % 2 == 0 else -0.5,
+            "수익금": 100.0 if i % 2 == 0 else -50.0,
+        })
+    return rows
+
+
+def test_build_trade_quant_section_v3_sample_counts():
+    rows = _v3_trade_rows(n=30, n_days=10, n_symbols=3)
+    section = build_trade_quant_section(rows)
+    assert section["schema"] == TRADE_QUANT_SECTION_SCHEMA_V3
+    assert section["n_trades"] == 30
+    assert section["n_days"] == 10
+    assert section["n_symbols"] == 3
+    assert section["missing_count"] == 0
+
+
+def test_build_trade_quant_section_v3_missing_and_duplicate():
+    rows = _v3_trade_rows(n=10, n_days=5, n_symbols=2)
+    rows.append(dict(rows[0]))  # exact duplicate row -> excluded_duplicate_count.
+    rows.append({"매수시간": "20260101090000", "종목코드": "SYMX"})  # missing 수익률.
+    section = build_trade_quant_section(rows)
+    assert section["missing_count"] == 1
+    assert section["excluded_duplicate_count"] == 1
+
+
+def test_build_trade_quant_section_v3_tail_top1_5_10_removal():
+    rows = [
+        {"매수시간": f"2026010{i+1}090000", "종목코드": "S0", "수익률": 1.0, "수익금": float(profit)}
+        for i, profit in enumerate([1000, 10, 10, 10, 10, 10, 10, 10, 10, 10])
+    ]
+    section = build_trade_quant_section(rows)
+    total = sum(r["수익금"] for r in rows)
+    ordered = sorted((r["수익금"] for r in rows), reverse=True)
+    assert section["tail"]["top1_removed_total"] == round(total - sum(ordered[:1]), 6)
+    assert section["tail"]["top5_removed_total"] == round(total - sum(ordered[:5]), 6)
+    assert section["tail"]["top10_removed_total"] == round(total - sum(ordered[:10]), 6)
+
+
+def test_build_trade_quant_section_v3_downside_and_cvar():
+    rows = [
+        {"매수시간": f"2026010{i+1}090000", "종목코드": "S0", "수익률": ret, "수익금": ret * 100}
+        for i, ret in enumerate([-5.0, -3.0, -1.0, 1.0, 2.0])
+    ]
+    section = build_trade_quant_section(rows)
+    assert section["downside"]["downside_deviation"] is not None
+    assert section["downside"]["cvar_95"] is not None
+    # cvar_95는 최악 5%(최소 1개) 수익률의 평균이므로 전체 최소값 이하다.
+    assert section["downside"]["cvar_95"] <= min(r["수익률"] for r in rows)
+
+
+def test_build_trade_quant_section_v3_capacity_is_proxy_labeled():
+    rows = _v3_trade_rows(n=20, n_days=4, n_symbols=2)
+    section = build_trade_quant_section(rows)
+    assert section["capacity"]["trades_per_day"] == round(20 / 4, 6)
+    assert "proxy" in section["capacity"]["note"]
+
+
+def test_build_trade_quant_section_v3_reuses_promotion_diagnostics_slippage_stress():
+    """DR-05: 비용/슬리피지 스트레스는 promotion_diagnostics.compute_slippage_stress
+    를 그대로 재사용한다(재구현 금지) — 직접 호출한 결과와 haircut별 stressed_profit이
+    정확히 같아야 한다.
+    """
+    from ai_strategy_loop.fitness.promotion_diagnostics import (
+        DEFAULT_HAIRCUTS,
+        OosTradeSummary,
+        compute_slippage_stress,
+    )
+
+    rows = _v3_trade_rows(n=30, n_days=10, n_symbols=3)
+    section = build_trade_quant_section(rows)
+    total_profit = sum(r["수익금"] for r in rows)
+    direct = compute_slippage_stress(OosTradeSummary(name="x", final_profit=total_profit, trade_count=30))
+    assert section["cost_stress"]["status"] == direct.status
+    assert section["cost_stress"]["promotion_passed"] == direct.promotion_passed
+    got = {row["haircut"]: row["stressed_profit"] for row in section["cost_stress"]["rows"]}
+    want = {row.haircut: row.stressed_profit for row in direct.rows}
+    assert got == want
+    assert set(got.keys()) == set(DEFAULT_HAIRCUTS)
+
+
+def test_build_trade_quant_section_v3_accepts_custom_contract():
+    contract = TradeColumnContract(date_column="매수시간", symbol_column="종목코드")
+    rows = _v3_trade_rows(n=15, n_days=5, n_symbols=2)
+    section = build_trade_quant_section(rows, contract)
+    assert section["n_trades"] == 15
