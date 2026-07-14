@@ -11,19 +11,33 @@ import copy
 import datetime as dt
 import hashlib
 import json
+import shutil
 import sqlite3
+import subprocess
 from pathlib import Path
+
 import pytest
 
-from alpha_lab.bridge import append_receipt, read_receipts, register_conditions
+from alpha_lab.bridge import (
+    append_receipt,
+    inspect_promotion_journal_v2,
+    read_receipts,
+    register_conditions,
+)
 from alpha_lab.bridge.receipts import ALLOWED_SOURCE_KINDS
 from alpha_lab.bridge.registrar import NAME_PREFIX
 from alpha_lab.bridge.registrar import (
     register_conditions_v2,
     verify_promotion_manifest,
 )
-from alpha_lab.discipline.evidence import build_evidence_identity, sha256_canonical
 from alpha_lab.catalog import builder
+from alpha_lab.discipline.evidence import sha256_canonical
+from alpha_lab.discipline.ledger import append_trial_v2
+from alpha_lab.discipline.measure_gate import (
+    claim_gate_receipt_v2,
+    issue_gate_receipt_v2,
+)
+from alpha_lab.discipline.prereg import finalize_prereg
 
 NOW = dt.datetime(2026, 7, 14, 0, 5, 0, tzinfo=dt.timezone.utc)
 
@@ -94,92 +108,136 @@ def _file_snapshot(root: Path) -> dict[str, bytes]:
 
 def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
     """Create a complete authoritative v2 chain entirely under tmp_path."""
+    if shutil.which("git") is None:
+        pytest.skip("git is required for authoritative v2 receipt fixtures")
+
     prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
     source, artifact = tmp_path / "source.json", tmp_path / "result.json"
-    prereg.write_text("> 지위: **SEALED**\n", encoding="utf-8")
     code.write_text("MEASURE = 1\n", encoding="utf-8")
-    source.write_text("source", encoding="utf-8")
-    artifact.write_text("result", encoding="utf-8")
+    prereg.write_text(
+        "> 지위: **SEALED**\n"
+        "```json prereg-contract-v2\n"
+        + json.dumps({
+            "schema_version": 2,
+            "hypothesis_id": "H-bridge",
+            "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+            "primary_estimand": "mean spread",
+            "sample_floors": {"qualified": 2},
+            "multiplicity_family": "bridge fixture",
+            "kill_rule": "non-positive effect",
+            "dependency_roots": ["measure.py"],
+            "dynamic_python_dependencies": [],
+            "non_python_dependencies": [],
+        }, sort_keys=True)
+        + "\n```\n",
+        encoding="utf-8",
+    )
+    source.write_text('{"source":"fixture"}\n', encoding="utf-8")
+    artifact.write_text('{"result":"pass"}\n', encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "prereg.md", "measure.py"],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "git", "-C", str(tmp_path), "-c", "user.name=tester",
+            "-c", "user.email=t@example.com", "commit", "-q", "-m", "fixture",
+        ],
+        check=True,
+    )
+
     def file_ref(path):
-        return {"path": path.relative_to(tmp_path).as_posix(),
-                "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
-    seal = {
-        "schema_version": 2, "kind": "prereg_seal", "status": "SEALED",
-        "sealed_at": "2026-07-14T00:00:00+00:00",
-        "sealed_doc": file_ref(prereg), "code_manifest": [file_ref(code)],
-    }
-    seal_path = tmp_path / "seal.json"
-    seal_path.write_text(json.dumps(seal), encoding="utf-8")
-    absolute_code = str(code)
-    receipt = {
-        "schema_version": 2, "kind": "measure_gate_receipt", "status": "PASS",
-        "issued_at": "2026-07-14T00:01:00+00:00", "nonce": "run-1",
-        "repo_head": "a" * 40,
-        "seal_manifest": {"path": "seal.json", "sha256": sha256_canonical(seal)},
-        "prereg": file_ref(prereg), "code_manifest_sha256": sha256_canonical(seal["code_manifest"]),
-        "code_manifest": seal["code_manifest"],
-        "checks": {
-            "repo": {"pass": True, "detail": "true", "reason": ""},
-            "sealed_doc": {"pass": True, "rel": "prereg.md", "last_commit": "b" * 40},
-            "code_clean": {"pass": True, "reasons": [], "files": {
-                absolute_code: {"tracked": True, "clean": True, "last_commit": "c" * 40, "reason": ""}}},
-            "sha_seal": {"pass": True, "checked": True, "files": {
-                absolute_code: {"expected": file_ref(code)["sha256"], "actual": file_ref(code)["sha256"],
-                                "match": True, "reason": ""}}},
-        },
-    }
-    receipt["receipt_id"] = sha256_canonical({key: receipt[key] for key in (
-        "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256")})
-    (tmp_path / "receipts").mkdir()
+        return {
+            "path": path.relative_to(tmp_path).as_posix(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+
+    finalize_prereg(
+        prereg,
+        repo_root=tmp_path,
+        code_files=(code,),
+        manifest_path=tmp_path / "seal.json",
+        sealed_at="2026-07-14T00:00:00+00:00",
+    )
+    receipt = issue_gate_receipt_v2(
+        tmp_path,
+        tmp_path / "seal.json",
+        issued_at="2026-07-14T00:01:00+00:00",
+        nonce="bridge-run",
+    )
     receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
-    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
-    usage = {
-        "schema_version": 2, "kind": "measure_gate_usage",
-        "issuer": {"receipt_id": receipt["receipt_id"], "receipt_sha256": sha256_canonical(receipt),
-                   "issued_at": receipt["issued_at"], "repo_head": receipt["repo_head"]},
-        "claim": {"receipt_id": receipt["receipt_id"], "path": f"claims/{receipt['receipt_id']}.json"},
-        "consumer": "test-run", "consumed_at": "2026-07-14T00:02:00+00:00",
-    }
-    (tmp_path / "claims").mkdir()
-    usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
-    usage_path.write_text(json.dumps(usage), encoding="utf-8")
+    usage = claim_gate_receipt_v2(
+        receipt_path,
+        repo_root=tmp_path,
+        consumer="bridge-test",
+        consumed_at="2026-07-14T00:02:00+00:00",
+    )
+    usage_path = tmp_path / Path(usage["claim"]["path"])
     candidates = [{
         "name": item["name"],
         "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
         "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
     }]
-    evidence_id, evidence = build_evidence_identity(
-        receipt, usage, input_artifacts=[file_ref(source)], result_artifacts=[file_ref(artifact)],
-        candidate_set=candidates, negative_or_kill=False, repo_root=tmp_path)
-    row = {"ts": "2026-07-14T00:03:00+00:00", "series": "B", "window": "window",
-           "trial_type": "b(test)", "target": "candidate", "result": "pass", "session": "test",
-           "schema_version": 2, "evidence_id": evidence_id, "evidence": evidence}
-    ledger_path = tmp_path / "ledger.jsonl"
-    ledger_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    ledger_path = tmp_path / "n_trials_ledger.jsonl"
+    row = append_trial_v2(
+        ts="2026-07-14T00:03:00+00:00",
+        series="B",
+        window="2022-03-23~2023-12-31(발견창)",
+        trial_type="b(test)",
+        target="candidate",
+        result="pass",
+        session="test",
+        repo_root=tmp_path,
+        gate_receipt_path=receipt_path,
+        gate_usage_path=usage_path,
+        input_artifacts=[file_ref(source)],
+        result_artifacts=[file_ref(artifact)],
+        candidate_set=candidates,
+        path=ledger_path,
+    )
     manifest = {
-        "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
-        "created_at": "2026-07-14T00:04:00+00:00", "evidence_id": evidence_id,
-        "ledger": {**file_ref(ledger_path), "record_sha256": sha256_canonical(row)}, "gate_receipt": file_ref(receipt_path),
-        "gate_claim": file_ref(usage_path), "input_artifacts": [file_ref(source)],
-        "result_artifacts": [file_ref(artifact)], "candidate_set": candidates,
-        "candidate_set_sha256": sha256_canonical(candidates),
+        "schema_version": 2,
+        "kind": "promotion_manifest",
+        "status": "PRE",
+        "created_at": "2026-07-14T00:04:00+00:00",
+        "evidence_id": row["evidence_id"],
+        "ledger": {
+            **file_ref(ledger_path),
+            "record_sha256": sha256_canonical(row),
+        },
+        "gate_receipt": file_ref(receipt_path),
+        "gate_claim": file_ref(usage_path),
+        "input_artifacts": row["evidence"]["input_artifacts"],
+        "result_artifacts": row["evidence"]["result_artifacts"],
+        "candidate_set": row["evidence"]["candidate_set"],
+        "candidate_set_sha256": row["evidence"]["candidate_set_sha256"],
     }
     manifest_path = tmp_path / "promotion.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    for name in ("load_assets", "load_ledger_mirror", "load_clauses", "load_strategies",
-                 "load_cells", "load_judgments"):
+
+    for rel in builder._SHARED_RELS:
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+    for name in ("load_assets", "load_clauses", "load_strategies", "load_cells", "load_judgments"):
         monkeypatch.setattr(builder, name, lambda *args, **kwargs: None)
-    monkeypatch.setattr(builder, "_strict_source_hashes",
-                        lambda receipt, run_dir, root: [file_ref(source)])
-    monkeypatch.setattr(builder, "ensure_gitignore",
-                        lambda run_dir: {"path": "", "action": "test", "pattern": ""})
     catalog_path = tmp_path / "catalog.json"
     builder.build_all(
-        tmp_path, db_path=tmp_path / "catalog.db", receipt_path=catalog_path,
-        repo_root=tmp_path, promotion_manifest_path=manifest_path,
+        tmp_path,
+        db_path=tmp_path / "catalog.db",
+        receipt_path=catalog_path,
+        repo_root=tmp_path,
+        promotion_manifest_path=manifest_path,
     )
-    return {"manifest": manifest_path, "ledger": ledger_path, "receipt": receipt_path,
-            "usage": usage_path, "catalog": catalog_path, "evidence_id": evidence_id}
+    return {
+        "manifest": manifest_path,
+        "ledger": ledger_path,
+        "receipt": receipt_path,
+        "usage": usage_path,
+        "catalog": catalog_path,
+        "evidence_id": row["evidence_id"],
+    }
 
 
 class TestPromotionV2:
@@ -241,6 +299,157 @@ class TestPromotionV2:
             "sha256": hashlib.sha256(chain["manifest"].read_bytes()).hexdigest(),
         }
         assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
+        assert result["journal_pre_anchor_path"] == (
+            f"promotion_journal/{chain['evidence_id']}.pre.sha256"
+        )
+        assert (tmp_path / result["journal_pre_anchor_path"]).read_bytes() == hashlib.sha256(
+            (tmp_path / result["journal_pre_path"]).read_bytes()
+        ).hexdigest().encode("ascii")
+    def test_canonical_post_is_catalog_direct_input(self, fake_db, backup_dir, tmp_path, monkeypatch):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        result = register_conditions_v2(
+            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+        )
+        receipt = builder.build_all(
+            tmp_path, db_path=tmp_path / "catalog-post.db",
+            receipt_path=tmp_path / "catalog-post.json", repo_root=tmp_path,
+            promotion_result_path=tmp_path / result["journal_post_path"],
+        )
+        assert receipt["promotion_receipt"]["upstream"]["path"] == result["journal_post_path"]
+
+    def test_crash_after_db_before_post_requires_reconciliation(
+        self, fake_db, backup_dir, tmp_path, monkeypatch,
+    ):
+        import alpha_lab.bridge.registrar as registrar
+
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        write = registrar._write_exclusive_json
+
+        def crash_post(path, value):
+            if path.name.endswith(".post.json"):
+                raise OSError("simulated crash after DB mutation")
+            write(path, value)
+
+        monkeypatch.setattr(registrar, "_write_exclusive_json", crash_post)
+        with pytest.raises(OSError, match="simulated crash"):
+            register_conditions_v2(
+                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            )
+        inspected = inspect_promotion_journal_v2(
+            repo_root=tmp_path, journal_dir="promotion_journal",
+            evidence_id=chain["evidence_id"],
+        )
+        assert inspected["status"] == "INCOMPLETE_REQUIRES_RECONCILIATION"
+        assert inspected["current_db_matches_pre"] is False
+        assert inspected["pre_anchor_path"] == (
+            f"promotion_journal/{chain['evidence_id']}.pre.sha256"
+        )
+        assert (tmp_path / inspected["pre_anchor_path"]).exists()
+        with pytest.raises(ValueError, match="refuses rerun"):
+            register_conditions_v2(
+                fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+                ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+                gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+            )
+
+    def test_one_sided_conflict_is_a_pair_level_skip(self, fake_db, backup_dir, tmp_path, monkeypatch):
+        item = _item()
+        con = sqlite3.connect(str(fake_db))
+        try:
+            con.execute(
+                'INSERT INTO "stockbuy" ("index", "전략코드") VALUES (?, ?)',
+                (item["name"], "existing"),
+            )
+            con.commit()
+        finally:
+            con.close()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        result = register_conditions_v2(
+            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+        )
+        assert result["inserted"] == []
+        assert result["conflicts"] == [{
+            "name": item["name"], "reason": "name_exists",
+            "existing_tables": ["stockbuy"],
+        }]
+        assert item["name"] not in {name for name, _ in _all_rows(fake_db, "stocksell")}
+
+    def test_tampered_post_pre_and_orphan_post_fail_closed(
+        self, fake_db, backup_dir, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        result = register_conditions_v2(
+            fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
+            ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
+            gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
+            journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
+        )
+        post_path = tmp_path / result["journal_post_path"]
+        post = json.loads(post_path.read_text(encoding="utf-8"))
+        original_post = copy.deepcopy(post)
+        post["inserted"].append(copy.deepcopy(post["inserted"][0]))
+        post_path.write_text(json.dumps(post), encoding="utf-8")
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="promotion_journal",
+                evidence_id=chain["evidence_id"],
+            )
+        post = copy.deepcopy(original_post)
+        post["target_db"]["post_sha256"] = "0" * 64
+        post_path.write_text(json.dumps(post), encoding="utf-8")
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="promotion_journal",
+                evidence_id=chain["evidence_id"],
+            )
+        post = copy.deepcopy(original_post)
+        post["backup_ref"]["sha256"] = "0" * 64
+        post_path.write_text(json.dumps(post), encoding="utf-8")
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="promotion_journal",
+                evidence_id=chain["evidence_id"],
+            )
+        anchor_path = tmp_path / result["journal_pre_anchor_path"]
+        anchor_path.unlink()
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="promotion_journal",
+                evidence_id=chain["evidence_id"],
+            )
+        anchor_path.write_bytes(hashlib.sha256(
+            (tmp_path / result["journal_pre_path"]).read_bytes()
+        ).hexdigest().encode("ascii"))
+        post_path.unlink()
+        pre_path = tmp_path / result["journal_pre_path"]
+        pre = json.loads(pre_path.read_text(encoding="utf-8"))
+        pre["target_db"]["pre_sha256"] = "0" * 64
+        pre_path.write_text(json.dumps(pre), encoding="utf-8")
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="promotion_journal",
+                evidence_id=chain["evidence_id"],
+            )
+        orphan_dir = tmp_path / "orphan"
+        orphan_dir.mkdir()
+        (orphan_dir / f"{chain['evidence_id']}.post.json").write_text("{}", encoding="utf-8")
+        with pytest.raises(Exception):
+            inspect_promotion_journal_v2(
+                repo_root=tmp_path, journal_dir="orphan", evidence_id=chain["evidence_id"],
+            )
 
 
 class TestHistoricalAuthorityDocuments:

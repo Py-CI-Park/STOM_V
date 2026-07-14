@@ -44,6 +44,8 @@ prereg_diff = _load("t_alpha_discipline_prereg_diff",
                     "alpha_lab/discipline/prereg_diff.py")
 measure_gate = _load("t_alpha_discipline_measure_gate",
                      "alpha_lab/discipline/measure_gate.py")
+prereg = _load("t_alpha_discipline_prereg",
+               "alpha_lab/discipline/prereg.py")
 
 # ── prereg_diff 픽스처 ───────────────────────────────────────────────────────
 _BUY_SHA = "0123456789abcdef" * 4          # 64 hex
@@ -232,6 +234,16 @@ def _git(repo: Path, env: dict, *args: str) -> str:
     return cp.stdout
 
 
+_SEALED_PREREG_DOCUMENT = """# 봉인 픽스처
+
+> 지위: **SEALED**
+
+```json prereg-contract-v2
+{"dependency_roots":["code/measure.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-gate-fixture","kill_rule":"non-positive effect","multiplicity_family":"gate fixture","non_python_dependencies":[],"primary_estimand":"fixture value","sample_floors":{"qualified":2},"schema_version":2}
+```
+"""
+
+
 @pytest.fixture
 def sealed_repo(tmp_path):
     """봉인 문서+측정 코드가 커밋된 임시 repo (clean 기준 상태)."""
@@ -241,7 +253,7 @@ def sealed_repo(tmp_path):
     (repo / "docs").mkdir(parents=True)
     (repo / "code").mkdir()
     sealed = repo / "docs" / "prereg_sealed.md"
-    sealed.write_text("# 봉인 픽스처\n", encoding="utf-8")
+    sealed.write_text(_SEALED_PREREG_DOCUMENT, encoding="utf-8")
     code = repo / "code" / "measure.py"
     code.write_text("VALUE = 1\n", encoding="utf-8")
     env = _git_env(tmp_path)
@@ -348,30 +360,26 @@ def test_run_git_rejects_write_commands(sealed_repo):
     with pytest.raises(ValueError):  # status 는 --porcelain 강제
         measure_gate._run_git(repo, "status")
 
-def _v2_seal_manifest(repo: Path, sealed: Path, code: Path, env: dict) -> Path:
-    from alpha_lab.discipline.evidence import sha256_canonical
-
-    manifest = {
-        "schema_version": 2,
-        "kind": "prereg_seal",
-        "status": "SEALED",
-        "sealed_at": "2026-07-14T00:00:00+00:00",
-        "sealed_doc": {
-            "path": sealed.relative_to(repo).as_posix(),
-            "sha256": measure_gate.file_sha256(sealed),
-        },
-        "code_manifest": [{
-            "path": code.relative_to(repo).as_posix(),
-            "sha256": measure_gate.file_sha256(code),
-        }],
-    }
+def _v2_seal_manifest(
+    repo: Path,
+    sealed: Path,
+    code: Path,
+    env: dict,
+    *,
+    sealed_at: str = "2026-07-14T00:00:00+00:00",
+) -> Path:
+    """Official finalizer가 생성·검증한 봉인 sidecar를 커밋한다."""
     path = repo / "seal.json"
-    path.write_text(json.dumps(manifest, ensure_ascii=False, sort_keys=True,
-                               separators=(",", ":")), encoding="utf-8")
+    prereg.finalize_prereg(
+        sealed,
+        repo_root=repo,
+        code_files=(code,),
+        manifest_path=path,
+        sealed_at=sealed_at,
+    )
     _git(repo, env, "add", "seal.json")
     _git(repo, env, "-c", "user.name=tester", "-c", "user.email=t@example.com",
          "commit", "-q", "-m", "seal")
-    assert sha256_canonical(json.loads(path.read_text(encoding="utf-8")))
     return path
 
 
@@ -420,13 +428,8 @@ def test_v2_receipt_rejects_empty_or_false_authoritative_checks(sealed_repo):
 
 def test_issue_gate_receipt_v2_rejects_preseal_timestamp(sealed_repo):
     repo, sealed, code, env = sealed_repo
-    seal = _v2_seal_manifest(repo, sealed, code, env)
-    raw = json.loads(seal.read_text(encoding="utf-8"))
-    raw["sealed_at"] = "2026-07-14T00:01:00+00:00"
-    seal.write_text(json.dumps(raw, sort_keys=True, separators=(",", ":")), encoding="utf-8")
-    _git(repo, env, "add", "seal.json")
-    _git(repo, env, "-c", "user.name=tester", "-c", "user.email=t@example.com",
-         "commit", "-q", "-m", "later seal")
+    seal = _v2_seal_manifest(
+        repo, sealed, code, env, sealed_at="2026-07-14T00:01:00+00:00")
     with pytest.raises(ValueError, match="issued_at must not precede sealed_at"):
         measure_gate.issue_gate_receipt_v2(
             repo, seal, issued_at="2026-07-14T00:00:00+00:00", nonce="preseal")

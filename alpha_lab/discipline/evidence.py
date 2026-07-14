@@ -371,17 +371,25 @@ class PromotionManifestV2(TypedDict):
 
 
 class PromotionResultV2(TypedDict):
+    """The sole durable POST record for a v2 promotion."""
+
     schema_version: int
     kind: str
     status: str
-    completed_at: str
     evidence_id: str
+    completed_at: str
+    promotion_manifest: dict[str, str]
     promotion_manifest_path: str
-    promotion_manifest_sha256: str
+    catalog_receipt: dict[str, str]
+    candidate_set: list[dict[str, str]]
+    candidate_set_sha256: str
+    target_db: dict[str, str]
     inserted: list[dict[str, Any]]
     conflicts: list[dict[str, Any]]
-    backup_path: str | None
-
+    backup_ref: dict[str, str] | None
+    pre_intent: dict[str, str]
+    pre_intent_anchor: dict[str, str]
+    chronology: dict[str, str]
 
 
 
@@ -488,40 +496,130 @@ def verify_promotion_manifest_v2(
     return manifest, _hash_file(manifest_file, "promotion manifest")
 
 
+def _validate_promotion_outcomes(
+    *, inserted: object, conflicts: object, candidates: list[dict[str, str]], field: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if not isinstance(inserted, list) or not isinstance(conflicts, list):
+        raise EvidenceSchemaError(f"{field} outcomes must be lists")
+    expected = {candidate["name"]: candidate for candidate in candidates}
+    accounted: set[str] = set()
+    normalized_inserted: list[dict[str, Any]] = []
+    for index, value in enumerate(inserted):
+        item = _require_exact_keys(
+            value, {"name", "tables", "buy_sha256", "sell_sha256", "meta"},
+            f"{field}.inserted[{index}]",
+        )
+        candidate = expected.get(item["name"])
+        if (
+            candidate is None
+            or item["tables"] != ["stockbuy", "stocksell"]
+            or require_full_sha256(item["buy_sha256"], f"{field}.inserted[{index}].buy_sha256")
+            != candidate["buy_sha256"]
+            or require_full_sha256(item["sell_sha256"], f"{field}.inserted[{index}].sell_sha256")
+            != candidate["sell_sha256"]
+            or item["name"] in accounted
+        ):
+            raise EvidenceSchemaError(f"{field} inserted does not bind a PRE candidate")
+        accounted.add(item["name"])
+        normalized_inserted.append(dict(item))
+    normalized_conflicts: list[dict[str, Any]] = []
+    for index, value in enumerate(conflicts):
+        item = _require_exact_keys(
+            value, {"name", "reason", "existing_tables"}, f"{field}.conflicts[{index}]",
+        )
+        tables = item["existing_tables"]
+        if (
+            item["name"] not in expected
+            or item["name"] in accounted
+            or item["reason"] != "name_exists"
+            or not isinstance(tables, list)
+            or not tables
+            or len(tables) != len(set(tables))
+            or any(table not in {"stockbuy", "stocksell"} for table in tables)
+        ):
+            raise EvidenceSchemaError(f"{field} conflict does not bind a PRE candidate")
+        accounted.add(item["name"])
+        normalized_conflicts.append({
+            "name": item["name"], "reason": "name_exists",
+            "existing_tables": sorted(tables),
+        })
+    if accounted != set(expected):
+        raise EvidenceSchemaError(f"{field} must account for every PRE candidate exactly once")
+    return normalized_inserted, normalized_conflicts
+
+
 def validate_promotion_result_v2(
     value: object, *, repo_root: Path | str,
 ) -> PromotionResultV2:
-    """Validate the POST envelope before its PRE authority is resolved."""
+    """Validate the canonical durable POST envelope without translating it."""
+    root = Path(repo_root).resolve()
     keys = {
-        "schema_version", "kind", "status", "completed_at", "evidence_id",
-        "promotion_manifest_path", "promotion_manifest_sha256", "inserted",
-        "conflicts", "backup_path",
+        "schema_version", "kind", "status", "evidence_id", "completed_at",
+        "promotion_manifest", "promotion_manifest_path", "catalog_receipt",
+        "candidate_set", "candidate_set_sha256", "target_db", "inserted",
+        "conflicts", "backup_ref", "pre_intent", "pre_intent_anchor", "chronology",
     }
     result = _require_exact_keys(value, keys, "promotion result")
     if (result["schema_version"], result["kind"], result["status"]) != (2, "promotion_result", "POST"):
-        raise EvidenceSchemaError("promotion result must be strict POST v2")
-    manifest_path, _ = _repo_path(
-        result["promotion_manifest_path"], "promotion_manifest_path", Path(repo_root).resolve())
-    if not isinstance(result["inserted"], list) or not isinstance(result["conflicts"], list):
-        raise EvidenceSchemaError("promotion result inserted and conflicts must be lists")
-    if result["backup_path"] is not None and not isinstance(result["backup_path"], str):
-        raise EvidenceSchemaError("promotion result backup_path must be a string or null")
+        raise EvidenceSchemaError("promotion result must be strict canonical POST v2")
+    manifest = _validate_file_ref(result["promotion_manifest"], "promotion result promotion_manifest", root, verify_files=False)
+    manifest_path, _ = _repo_path(result["promotion_manifest_path"], "promotion_manifest_path", root)
+    if manifest_path != manifest["path"]:
+        raise EvidenceSchemaError("promotion_manifest_path must match promotion_manifest.path")
+    catalog = _validate_file_ref(result["catalog_receipt"], "promotion result catalog_receipt", root, verify_files=False)
+    candidates = result["candidate_set"]
+    _, _, normalized_candidates, candidate_hash = validate_measurement_bindings(
+        input_artifacts=[manifest], result_artifacts=[catalog], candidate_set=candidates,
+        negative_or_kill=False, repo_root=root, verify_files=False,
+    )
+    if require_full_sha256(result["candidate_set_sha256"], "candidate_set_sha256") != candidate_hash:
+        raise EvidenceSchemaError("candidate_set_sha256 does not match candidate_set")
+    target_db = _require_exact_keys(
+        result["target_db"], {"path", "pre_sha256", "post_sha256"}, "promotion result target_db")
+    target_path, _ = _repo_path(target_db["path"], "promotion result target_db.path", root)
+    target = {
+        "path": target_path,
+        "pre_sha256": require_full_sha256(target_db["pre_sha256"], "promotion result target_db.pre_sha256"),
+        "post_sha256": require_full_sha256(target_db["post_sha256"], "promotion result target_db.post_sha256"),
+    }
+    pre_intent = _validate_file_ref(result["pre_intent"], "promotion result pre_intent", root, verify_files=False)
+    pre_intent_anchor = _validate_file_ref(
+        result["pre_intent_anchor"], "promotion result pre_intent_anchor", root, verify_files=False)
+    backup_ref = result["backup_ref"]
+    if backup_ref is not None:
+        backup_ref = _validate_file_ref(backup_ref, "promotion result backup_ref", root, verify_files=False)
+        if backup_ref["sha256"] != target["pre_sha256"]:
+            raise EvidenceSchemaError("promotion result backup SHA-256 must equal target DB pre-state")
+    chronology = _require_exact_keys(
+        result["chronology"], {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at", "post_at"},
+        "promotion result chronology",
+    )
+    require_timestamp_order(*[(name, chronology[name]) for name in (
+        "sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at", "post_at"
+    )])
+    if result["completed_at"] != chronology["post_at"]:
+        raise EvidenceSchemaError("promotion result completed_at must equal chronology.post_at")
+    normalized_inserted, normalized_conflicts = _validate_promotion_outcomes(
+        inserted=result["inserted"], conflicts=result["conflicts"],
+        candidates=normalized_candidates, field="promotion result",
+    )
     return {
         "schema_version": 2, "kind": "promotion_result", "status": "POST",
-        "completed_at": _require_timestamp(result["completed_at"], "completed_at"),
-        "evidence_id": require_full_sha256(result["evidence_id"], "evidence_id"),
-        "promotion_manifest_path": manifest_path,
-        "promotion_manifest_sha256": require_full_sha256(
-            result["promotion_manifest_sha256"], "promotion_manifest_sha256"),
-        "inserted": result["inserted"], "conflicts": result["conflicts"],
-        "backup_path": result["backup_path"],
+        "evidence_id": require_full_sha256(result["evidence_id"], "promotion result evidence_id"),
+        "completed_at": _require_timestamp(result["completed_at"], "promotion result completed_at"),
+        "promotion_manifest": manifest, "promotion_manifest_path": manifest_path,
+        "catalog_receipt": catalog, "candidate_set": normalized_candidates,
+        "candidate_set_sha256": candidate_hash, "target_db": target,
+        "inserted": normalized_inserted, "conflicts": normalized_conflicts,
+        "backup_ref": backup_ref, "pre_intent": pre_intent,
+        "pre_intent_anchor": pre_intent_anchor, "chronology": dict(chronology),
     }
 
 
 def verify_promotion_result_v2(
     result_path: Path | str, *, repo_root: Path | str,
 ) -> tuple[PromotionResultV2, PromotionManifestV2, str]:
-    """Verify POST against the exact PRE authority and every candidate outcome."""
+    """Verify a canonical POST against its PRE intent and live authorities."""
     root = Path(repo_root).resolve()
     source = Path(result_path).resolve()
     try:
@@ -531,43 +629,54 @@ def verify_promotion_result_v2(
     result = validate_promotion_result_v2(raw, repo_root=root)
     manifest_path = root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
     manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
-    if result["evidence_id"] != manifest["evidence_id"]:
-        raise EvidenceSchemaError("promotion result evidence_id does not match PRE manifest")
-    if result["promotion_manifest_sha256"] != manifest_sha256:
-        raise EvidenceSchemaError("promotion result does not bind the exact PRE manifest bytes")
-    require_timestamp_order(
-        ("PRE.created_at", manifest["created_at"]), ("POST.completed_at", result["completed_at"]))
-    expected = {candidate["name"]: candidate for candidate in manifest["candidate_set"]}
-    inserted_names: set[str] = set()
-    for index, item in enumerate(result["inserted"]):
-        item = _require_exact_keys(
-            item, {"name", "tables", "buy_sha256", "sell_sha256", "meta"}, f"inserted[{index}]")
-        name = item["name"]
-        if not isinstance(name, str) or name not in expected or item["tables"] != ["stockbuy", "stocksell"]:
-            raise EvidenceSchemaError("promotion result inserted structure is invalid")
-        if name in inserted_names:
-            raise EvidenceSchemaError("promotion result inserted names must be unique")
-        candidate = expected[name]
-        if (
-            require_full_sha256(item["buy_sha256"], f"inserted[{index}].buy_sha256") != candidate["buy_sha256"]
-            or require_full_sha256(item["sell_sha256"], f"inserted[{index}].sell_sha256") != candidate["sell_sha256"]
-        ):
-            raise EvidenceSchemaError("promotion result inserted hashes do not match PRE candidate")
-        inserted_names.add(name)
-    conflict_names: set[str] = set()
-    for index, item in enumerate(result["conflicts"]):
-        item = _require_exact_keys(item, {"name", "reason", "tables"}, f"conflicts[{index}]")
-        name = item["name"]
-        if (
-            not isinstance(name, str) or name not in expected or item["reason"] != "name_exists"
-            or item["tables"] != ["stockbuy", "stocksell"]
-        ):
-            raise EvidenceSchemaError("promotion result conflict does not bind a candidate")
-        if name in conflict_names:
-            raise EvidenceSchemaError("promotion result conflict names must be unique")
-        conflict_names.add(name)
-    if inserted_names & conflict_names or inserted_names | conflict_names != set(expected):
-        raise EvidenceSchemaError("promotion result must account for every PRE candidate exactly once")
+    if result["promotion_manifest"]["sha256"] != manifest_sha256 or result["evidence_id"] != manifest["evidence_id"]:
+        raise EvidenceSchemaError("promotion result does not bind the exact PRE manifest")
+    pre_path = root / Path(*PurePosixPath(result["pre_intent"]["path"]).parts)
+    if _hash_file(pre_path, "promotion result pre_intent") != result["pre_intent"]["sha256"]:
+        raise EvidenceSchemaError("promotion result pre_intent SHA-256 does not match bytes")
+    pre = validate_promotion_journal_pre_v2(_load_json_file(root, result["pre_intent"], "promotion result pre_intent"), repo_root=root)
+    if (
+        pre["evidence_id"] != result["evidence_id"]
+        or pre["promotion_manifest"] != result["promotion_manifest"]
+        or pre["catalog_receipt"] != result["catalog_receipt"]
+        or pre["candidate_set"] != result["candidate_set"]
+        or pre["candidate_set_sha256"] != result["candidate_set_sha256"]
+        or pre["target_db"]["path"] != result["target_db"]["path"]
+        or pre["target_db"]["pre_sha256"] != result["target_db"]["pre_sha256"]
+        or pre["chronology"] != {key: result["chronology"][key] for key in pre["chronology"]}
+    ):
+        raise EvidenceSchemaError("promotion result does not preserve its exact PRE intent")
+    expected_anchor_path = (
+        PurePosixPath(result["pre_intent"]["path"])
+        .with_name(f"{result['evidence_id']}.pre.sha256")
+        .as_posix()
+    )
+    if result["pre_intent_anchor"]["path"] != expected_anchor_path:
+        raise EvidenceSchemaError("promotion result pre_intent_anchor path is not canonical")
+    anchor_path = root / Path(*PurePosixPath(result["pre_intent_anchor"]["path"]).parts)
+    if _hash_file(anchor_path, "promotion result pre_intent_anchor") != result["pre_intent_anchor"]["sha256"]:
+        raise EvidenceSchemaError("promotion result pre_intent_anchor SHA-256 does not match bytes")
+    if anchor_path.read_bytes() != result["pre_intent"]["sha256"].encode("ascii"):
+        raise EvidenceSchemaError("promotion result pre_intent_anchor does not bind exact PRE bytes")
+    catalog_path = root / Path(*PurePosixPath(result["catalog_receipt"]["path"]).parts)
+    if _hash_file(catalog_path, "promotion result catalog_receipt") != result["catalog_receipt"]["sha256"]:
+        raise EvidenceSchemaError("promotion result catalog receipt SHA-256 does not match bytes")
+    outer_catalog_receipt = _load_json_file(
+        root, result["catalog_receipt"], "promotion result catalog_receipt")
+    if not isinstance(outer_catalog_receipt, dict) or "promotion_receipt" not in outer_catalog_receipt:
+        raise EvidenceSchemaError("promotion result catalog receipt must be a research assets build receipt")
+    catalog = validate_catalog_promotion_receipt_v2(
+        outer_catalog_receipt["promotion_receipt"], repo_root=root)
+    if (
+        catalog["phase"] != "PRE"
+        or catalog["evidence_id"] != result["evidence_id"]
+        or catalog["promotion_manifest"] != result["promotion_manifest"]
+    ):
+        raise EvidenceSchemaError("promotion result does not bind the exact PRE catalog receipt")
+    if result["backup_ref"] is not None:
+        backup = root / Path(*PurePosixPath(result["backup_ref"]["path"]).parts)
+        if _hash_file(backup, "promotion result backup_ref") != result["backup_ref"]["sha256"]:
+            raise EvidenceSchemaError("promotion result backup SHA-256 does not match bytes")
     return result, manifest, _hash_file(source, "promotion result")
 
 
@@ -623,136 +732,73 @@ def validate_catalog_promotion_receipt_v2(
             "kind": expected_kind, **upstream_ref,
         }, "promotion_manifest": manifest_ref, "catalog_db": db_ref, "source_hashes": sources,
     }
-def validate_promotion_journal_pre_v2(value: object) -> dict[str, Any]:
-    """Validate the durable, pre-mutation journal intent envelope."""
+def validate_promotion_journal_pre_v2(
+    value: object, *, repo_root: Path | str | None = None,
+) -> dict[str, Any]:
+    """Validate the durable PRE intent before any target DB access."""
+    root = Path(repo_root).resolve() if repo_root is not None else Path.cwd().resolve()
     keys = {
         "schema_version", "kind", "status", "evidence_id", "prepared_at",
         "promotion_manifest", "catalog_receipt", "candidate_set",
-        "candidate_set_sha256", "chronology",
+        "candidate_set_sha256", "target_db", "chronology",
     }
     pre = _require_exact_keys(value, keys, "promotion journal PRE")
-    if (pre["schema_version"], pre["kind"], pre["status"]) != (
-        2, "promotion_journal", "PRE"
-    ):
+    if (pre["schema_version"], pre["kind"], pre["status"]) != (2, "promotion_journal", "PRE"):
         raise EvidenceSchemaError("promotion journal PRE must be strict v2")
-    candidates = pre["candidate_set"]
-    if not isinstance(candidates, list):
-        raise EvidenceSchemaError("promotion journal PRE candidate_set must be a list")
-    normalized_candidates: list[dict[str, str]] = []
-    for index, candidate in enumerate(candidates):
-        item = _require_exact_keys(
-            candidate, {"name", "buy_sha256", "sell_sha256"},
-            f"promotion journal PRE candidate_set[{index}]",
-        )
-        if not isinstance(item["name"], str) or not item["name"]:
-            raise EvidenceSchemaError("promotion journal PRE candidate name must be non-empty")
-        normalized_candidates.append({
-            "name": item["name"],
-            "buy_sha256": require_full_sha256(item["buy_sha256"], "promotion journal PRE buy_sha256"),
-            "sell_sha256": require_full_sha256(item["sell_sha256"], "promotion journal PRE sell_sha256"),
-        })
-    if normalized_candidates != sorted(normalized_candidates, key=lambda item: item["name"]):
-        raise EvidenceSchemaError("promotion journal PRE candidate_set must be sorted")
-    if len({item["name"] for item in normalized_candidates}) != len(normalized_candidates):
-        raise EvidenceSchemaError("promotion journal PRE candidate_set names must be unique")
+    manifest = _validate_file_ref(
+        pre["promotion_manifest"], "promotion journal PRE manifest", root, verify_files=False)
+    catalog = _validate_file_ref(
+        pre["catalog_receipt"], "promotion journal PRE catalog receipt", root, verify_files=False)
+    _, _, candidates, candidate_hash = validate_measurement_bindings(
+        input_artifacts=[manifest], result_artifacts=[catalog], candidate_set=pre["candidate_set"],
+        negative_or_kill=False, repo_root=root, verify_files=False,
+    )
+    if require_full_sha256(pre["candidate_set_sha256"], "promotion journal PRE candidate_set_sha256") != candidate_hash:
+        raise EvidenceSchemaError("promotion journal PRE candidate_set_sha256 does not match candidate_set")
+    target = _require_exact_keys(
+        pre["target_db"], {"path", "pre_sha256"}, "promotion journal PRE target_db")
+    target_path, _ = _repo_path(target["path"], "promotion journal PRE target_db.path", root)
     chronology = _require_exact_keys(
-        pre["chronology"],
-        {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at"},
+        pre["chronology"], {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at"},
         "promotion journal PRE chronology",
     )
-    require_timestamp_order(
-        ("sealed_at", chronology["sealed_at"]),
-        ("issued_at", chronology["issued_at"]),
-        ("consumed_at", chronology["consumed_at"]),
-        ("ledger_at", chronology["ledger_at"]),
-        ("pre_at", chronology["pre_at"]),
-    )
+    require_timestamp_order(*[(name, chronology[name]) for name in (
+        "sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at"
+    )])
     if pre["prepared_at"] != chronology["pre_at"]:
         raise EvidenceSchemaError("promotion journal PRE prepared_at must equal chronology.pre_at")
     return {
         "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
         "evidence_id": require_full_sha256(pre["evidence_id"], "promotion journal PRE evidence_id"),
         "prepared_at": _require_timestamp(pre["prepared_at"], "promotion journal PRE prepared_at"),
-        "promotion_manifest": _require_exact_keys(
-            pre["promotion_manifest"], {"path", "sha256"}, "promotion journal PRE manifest"),
-        "catalog_receipt": _require_exact_keys(
-            pre["catalog_receipt"], {"path", "sha256"}, "promotion journal PRE catalog receipt"),
-        "candidate_set": normalized_candidates,
-        "candidate_set_sha256": require_full_sha256(
-            pre["candidate_set_sha256"], "promotion journal PRE candidate_set_sha256"),
+        "promotion_manifest": manifest, "catalog_receipt": catalog,
+        "candidate_set": candidates, "candidate_set_sha256": candidate_hash,
+        "target_db": {
+            "path": target_path,
+            "pre_sha256": require_full_sha256(
+                target["pre_sha256"], "promotion journal PRE target_db.pre_sha256"),
+        },
         "chronology": dict(chronology),
     }
 
 
-def validate_promotion_journal_post_v2(value: object, *, pre: Mapping[str, Any]) -> dict[str, Any]:
-    """Validate a durable POST outcome against its exact PRE intent."""
-    keys = {
-        "schema_version", "kind", "status", "evidence_id", "completed_at",
-        "promotion_manifest", "catalog_receipt", "candidate_set_sha256",
-        "inserted", "conflicts", "backup_ref", "db_pre_sha256", "db_post_sha256",
-        "chronology",
-    }
-    post = _require_exact_keys(value, keys, "promotion journal POST")
-    if (post["schema_version"], post["kind"], post["status"]) != (2, "promotion_journal", "POST"):
-        raise EvidenceSchemaError("promotion journal POST must be strict v2")
-    validated_pre = validate_promotion_journal_pre_v2(pre)
-    if post["evidence_id"] != validated_pre["evidence_id"]:
-        raise EvidenceSchemaError("promotion journal POST evidence_id does not match PRE")
-    if post["promotion_manifest"] != validated_pre["promotion_manifest"]:
-        raise EvidenceSchemaError("promotion journal POST manifest does not match PRE")
-    if post["catalog_receipt"] != validated_pre["catalog_receipt"]:
-        raise EvidenceSchemaError("promotion journal POST catalog receipt does not match PRE")
-    if post["candidate_set_sha256"] != validated_pre["candidate_set_sha256"]:
-        raise EvidenceSchemaError("promotion journal POST candidate set does not match PRE")
-    chronology = _require_exact_keys(
-        post["chronology"],
-        {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at", "post_at"},
-        "promotion journal POST chronology",
-    )
-    if {key: chronology[key] for key in validated_pre["chronology"]} != validated_pre["chronology"]:
-        raise EvidenceSchemaError("promotion journal POST chronology does not preserve PRE")
-    require_timestamp_order(
-        ("sealed_at", chronology["sealed_at"]),
-        ("issued_at", chronology["issued_at"]),
-        ("consumed_at", chronology["consumed_at"]),
-        ("ledger_at", chronology["ledger_at"]),
-        ("pre_at", chronology["pre_at"]),
-        ("post_at", chronology["post_at"]),
-    )
-    if post["completed_at"] != chronology["post_at"]:
-        raise EvidenceSchemaError("promotion journal POST completed_at must equal chronology.post_at")
-    if not isinstance(post["inserted"], list) or not isinstance(post["conflicts"], list):
-        raise EvidenceSchemaError("promotion journal POST outcomes must be lists")
-    expected = {candidate["name"]: candidate for candidate in validated_pre["candidate_set"]}
-    accounted: set[str] = set()
-    for index, item in enumerate(post["inserted"]):
-        item = _require_exact_keys(
-            item, {"name", "tables", "buy_sha256", "sell_sha256", "meta"},
-            f"promotion journal POST inserted[{index}]",
-        )
-        candidate = expected.get(item["name"])
-        if (candidate is None or item["tables"] != ["stockbuy", "stocksell"]
-                or item["buy_sha256"] != candidate["buy_sha256"]
-                or item["sell_sha256"] != candidate["sell_sha256"]
-                or item["name"] in accounted):
-            raise EvidenceSchemaError("promotion journal POST inserted does not bind PRE candidate")
-        accounted.add(item["name"])
-    for index, item in enumerate(post["conflicts"]):
-        item = _require_exact_keys(
-            item, {"name", "reason", "tables"}, f"promotion journal POST conflicts[{index}]")
-        if (item["name"] not in expected or item["name"] in accounted
-                or item["reason"] != "name_exists"
-                or item["tables"] != ["stockbuy", "stocksell"]):
-            raise EvidenceSchemaError("promotion journal POST conflict does not bind PRE candidate")
-        accounted.add(item["name"])
-    if accounted != set(expected):
-        raise EvidenceSchemaError("promotion journal POST must account for every PRE candidate")
-    require_full_sha256(post["db_pre_sha256"], "promotion journal POST db_pre_sha256")
-    require_full_sha256(post["db_post_sha256"], "promotion journal POST db_post_sha256")
-    backup_ref = post["backup_ref"]
-    if backup_ref is not None:
-        _require_exact_keys(backup_ref, {"path", "sha256"}, "promotion journal POST backup_ref")
-        require_full_sha256(backup_ref["sha256"], "promotion journal POST backup_ref.sha256")
-        if not isinstance(backup_ref["path"], str) or not backup_ref["path"]:
-            raise EvidenceSchemaError("promotion journal POST backup_ref.path must be non-empty")
-    return dict(post)
+def validate_promotion_journal_post_v2(
+    value: object, *, pre: Mapping[str, Any], repo_root: Path | str,
+) -> PromotionResultV2:
+    """Compatibility verifier for the canonical POST file against its PRE intent."""
+    validated_pre = validate_promotion_journal_pre_v2(pre, repo_root=repo_root)
+    post = validate_promotion_result_v2(value, repo_root=repo_root)
+    if (
+        post["evidence_id"] != validated_pre["evidence_id"]
+        or post["promotion_manifest"] != validated_pre["promotion_manifest"]
+        or post["catalog_receipt"] != validated_pre["catalog_receipt"]
+        or post["candidate_set"] != validated_pre["candidate_set"]
+        or post["candidate_set_sha256"] != validated_pre["candidate_set_sha256"]
+        or post["target_db"]["path"] != validated_pre["target_db"]["path"]
+        or post["target_db"]["pre_sha256"] != validated_pre["target_db"]["pre_sha256"]
+        or post["chronology"] != {
+            **validated_pre["chronology"], "post_at": post["chronology"]["post_at"],
+        }
+    ):
+        raise EvidenceSchemaError("promotion result does not preserve its exact PRE intent")
+    return post
