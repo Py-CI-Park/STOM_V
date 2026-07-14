@@ -244,18 +244,25 @@ class _FakeCardV3:
         self.content_hash = content_hash
 
 
-def test_render_directives_from_card_v3_renders_only_actionable_statements():
+def test_render_directives_from_card_v3_rejects_unverified_card_like_objects():
     card = _FakeCardV3(
         actionable_directives=[
-            {"statement": "B_signal 진입 우위", "reason_code": "OK"},
-            {"statement": "B_other 진입 우위", "reason_code": "OK"},
+            {
+                "statement": "B_signal 진입 우위",
+                "reason_code": "OK",
+                "data_role": "TRAIN",
+                "status": "READY",
+            },
+            {
+                "statement": "B_other 진입 우위",
+                "reason_code": "OK",
+                "data_role": "TRAIN",
+                "status": "READY",
+            },
         ],
         content_hash="abc123",
     )
-    lines = render_directives_from_card_v3(card)
-    assert len(lines) == 2
-    assert all(line.startswith("[card:abc123]") for line in lines)
-    assert "B_signal 진입 우위" in lines[0]
+    assert render_directives_from_card_v3(card) == []
 
 
 def test_render_directives_from_card_v3_empty_when_no_directives():
@@ -288,6 +295,7 @@ def test_render_directives_from_card_v3_matches_real_analysis_card_v3_hash():
     finding = {
         "finding_id": "f1", "statement": "테스트 지시", "axis": "entry_feature",
         "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+        "full_population": True,
     }
     card = build_analysis_card_v3(
         df, source={"alias": "fixture://x"}, role="train", candidate_findings=[finding],

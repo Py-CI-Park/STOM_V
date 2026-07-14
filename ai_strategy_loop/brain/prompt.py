@@ -13,12 +13,17 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import logging
 import math
 import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from ai_strategy_loop.controller.evidence_contract import compute_rendered_prompt_id
+from ai_strategy_loop.controller.feedback_resolver import (
+    FeedbackDirective,
+    TypedFeedbackEnvelope,
+)
 from .time_cap_bucket import time_cap_bucket_prompt_lines
 from .candidate_output_contract import (
     BUY_EXCLUSION_EXPR,
@@ -50,6 +55,7 @@ _FULL_STOM_SOURCE_ASSETS = (
     ("composite_examples", _ASSET_DIR / "composite_examples.md"),
 )
 MAX_RESEARCH_CONTEXT_PACK_TOKENS = 250_000
+logger = logging.getLogger(__name__)
 
 _VALID_KINDS = ("buy", "sell")
 _VALID_TIMEFRAMES = ("min", "tick")
@@ -1003,6 +1009,72 @@ def build_research_prompt_receipt(
         "authority": "research_prompt_maturity_only",
     }
 
+def _resolved_typed_feedback_lines(
+    envelope: Any, *, kind: str
+) -> List[str]:
+    """Return only resolver-authorized directives from a typed v2 envelope."""
+    if not isinstance(envelope, TypedFeedbackEnvelope):
+        return []
+    evidence_id = envelope.evidence_id
+    generation = envelope.generation
+    directives = envelope.actionable_directives
+
+    def field(directive: Any, name: str) -> Any:
+        if isinstance(directive, Mapping):
+            return directive.get(name)
+        return getattr(directive, name, None)
+
+    def enum_value(value: Any) -> Any:
+        return getattr(value, "value", value)
+
+
+    ready: List[Tuple[int, str, str]] = []
+    for directive in directives:
+        if not isinstance(directive, FeedbackDirective):
+            logger.info("typed_feedback dropped reason=UNVERIFIED_DIRECTIVE")
+            continue
+        created_generation = field(directive, "created_generation")
+        expires_generation = field(directive, "expires_generation")
+        checks = (
+            ("SIDE_MISMATCH", enum_value(field(directive, "side")) == kind.upper()),
+            ("EVIDENCE_ID_MISMATCH", field(directive, "evidence_id") == evidence_id),
+            ("EVIDENCE_HASH_MISMATCH", field(directive, "evidence_sha256") == evidence_id),
+            ("DATA_ROLE_NOT_TRAIN", enum_value(field(directive, "role")) == "TRAIN"),
+            ("STATUS_NOT_READY", enum_value(field(directive, "status")) == "READY"),
+            (
+                "GENERATION_NOT_ACTIVE",
+                isinstance(created_generation, int)
+                and not isinstance(created_generation, bool)
+                and isinstance(expires_generation, int)
+                and not isinstance(expires_generation, bool)
+                and created_generation <= generation <= expires_generation,
+            ),
+        )
+        failed = next((reason for reason, valid in checks if not valid), None)
+        if failed is not None:
+            logger.info("typed_feedback dropped reason=%s", failed)
+            continue
+        statement = field(directive, "statement")
+        directive_id = field(directive, "directive_id")
+        priority = field(directive, "priority")
+        if (
+            not isinstance(statement, str)
+            or not statement.strip()
+            or not isinstance(directive_id, str)
+            or not directive_id
+            or isinstance(priority, bool)
+            or not isinstance(priority, int)
+        ):
+            logger.info("typed_feedback dropped reason=INVALID_DIRECTIVE")
+            continue
+        provenance = (
+            f"[feedback:{directive_id} side={kind.upper()} "
+            f"scope={field(directive, 'scope')} "
+            f"role={enum_value(field(directive, 'role'))} "
+            f"status={enum_value(field(directive, 'status'))} evidence={evidence_id}]"
+        )
+        ready.append((-priority, directive_id, f"{provenance} {statement.strip()}"))
+    return [statement for _, _, statement in sorted(ready)]
 def build_messages(
     kind: str,
     *,
@@ -1319,14 +1391,11 @@ def build_messages(
                 "해당 구간 진입 조건에 이 변수의 제시된 방향(상단/하단)을 우선 반영하라:\n"
                 + "\n".join(feature_hint_lines)
             )
-        # DR-05 AnalysisCardV3 지시(매수 전용): 이 카드가 표본/CI/다중검정(FDR)·train-only
-        #   게이트를 모두 통과시킨 actionable_directives 만 실었으므로, 그 지시를 매수
-        #   프롬프트에 'prefer' 가이드로 추가한다. None/빈 리스트면 미추가(byte 보존).
-        #   호출부가 매수일 때만 채운다(feature_hint 규약과 동일 — 매도 무영향).
-        if card_directive_lines:
+        # DR-05 legacy AnalysisCardV3 string directives remain buy-only.
+        if card_directive_lines and not isinstance(card_directive_lines, TypedFeedbackEnvelope):
             user_lines.append(
                 "최근 백테 분석 카드 지시(AnalysisCardV3 — 통계 게이트 통과 지시): 아래는 "
-                "직전 백테 결과가 표본·신뢰구간·다중검정(FDR)·train-only 게이트를 모두 통과해 "
+                "직전 백테 결과가 표본·신뢰구간·(FDR 또는 사전등록 축)·train-only 게이트를 통과해 "
                 "채택된 실행 지시다. 다음 세대 매수 조건에 이 지시를 우선 반영하라:\n"
                 + "\n".join(card_directive_lines)
             )
@@ -1429,6 +1498,15 @@ def build_messages(
                 "목표: 손실은 얕고 빠르게, 이익은 고점 근처에서 확정. 승리·손실 MAE 비대칭을 줄이는 것이 핵심."
             ]
 
+    # Typed feedback is side-aware and therefore rendered for both BUY and SELL.
+    if isinstance(card_directive_lines, TypedFeedbackEnvelope):
+        directive_lines = _resolved_typed_feedback_lines(card_directive_lines, kind=kind)
+        if directive_lines:
+            user_lines.append(
+                "최근 백테 분석 카드 지시(AnalysisCardV3 — 검증된 typed feedback): "
+                f"다음 세대 {label['ko']} 조건에 아래 지시를 우선 반영하라:\n"
+                + "\n".join(directive_lines)
+            )
     if history_summary:
         user_lines += [
             "",

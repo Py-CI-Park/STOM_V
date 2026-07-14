@@ -13,6 +13,7 @@
   - 원본 trades_df 불변성.
 """
 
+from dataclasses import replace
 import json
 import os
 import sys
@@ -49,9 +50,11 @@ from ai_strategy_loop.autopsy.analysis_card import (  # noqa: E402
     evaluate_directive_gate,
     render_card_md,
     render_card_v3_md,
+    verify_analysis_card_v3_content_hash,
 )
 from ai_strategy_loop.autopsy.analyze import _benjamini_hochberg  # noqa: E402
 from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: E402
+    build_feature_importance_findings,
     render_directive_hints_from_card_v3,
 )
 from ai_strategy_loop.brain.segment_feedback import (  # noqa: E402
@@ -523,6 +526,7 @@ _GOOD_FINDING = {
     "prereg_axis": False,
     "ci_low": 1.0,
     "ci_high": 5.0,
+    "full_population": True,
 }
 
 _NOISE_FINDING = {
@@ -533,6 +537,7 @@ _NOISE_FINDING = {
     "prereg_axis": False,
     "ci_low": -1.0,
     "ci_high": 1.0,
+    "full_population": True,
 }
 
 
@@ -544,6 +549,10 @@ def test_analysis_card_v3_identity_and_content_hash_deterministic():
     assert card_a.schema == ANALYSIS_CARD_SCHEMA_V3
     assert card_a.content_hash == card_b.content_hash
     assert len(card_a.content_hash) == 64  # sha256 hex
+    assert verify_analysis_card_v3_content_hash(card_a) is True
+    assert verify_analysis_card_v3_content_hash(
+        replace(card_a, role=ROLE_VALIDATION)
+    ) is False
 
     card_c = build_analysis_card_v3(df, source={"alias": "fixture://b", "hash": "h2"}, role=ROLE_TRAIN)
     assert card_c.content_hash != card_a.content_hash
@@ -713,6 +722,122 @@ def test_analysis_card_v3_render_paths_share_same_content_hash():
     hash_from_doc = doc_lines[0].split("]")[0][len("[card:"):]
     assert hash_from_md == hash_from_prompt == hash_from_doc == card.content_hash
 
+def test_analysis_card_v3_supplied_typed_attribution_is_hashed_and_rendered():
+    """Supplied segment/feature/evidence lineage is preserved; no empty prior is made."""
+    finding = {
+        **_GOOD_FINDING,
+        "side": "buy",
+        "scope": "entry",
+        "priority": 2,
+        "data_role": "TRAIN",
+        "status": "READY",
+        "evidence_ids": ["ev-feature", "ev-segment"],
+    }
+    supplied_segments = [{"finding_id": "seg-loss", "kind": "loss", "label": "0900-0905"}]
+    supplied_features = [{"finding_id": "feature-win", "feature": "B_signal", "kind": "win"}]
+    kwargs = {
+        "source": {"alias": "fixture://typed", "hash": "typed"},
+        "role": ROLE_TRAIN,
+        "candidate_findings": [finding, {**finding, "finding_id": "empty", "statement": "   "}],
+        "segment_findings": supplied_segments,
+        "feature_importance_findings": supplied_features,
+        "evidence_ids": ["ev-card"],
+    }
+    card_a = build_analysis_card_v3(_v3_rows(), **kwargs)
+    card_b = build_analysis_card_v3(_v3_rows(), **kwargs)
+    changed = build_analysis_card_v3(
+        _v3_rows(), **{**kwargs, "candidate_findings": [{**finding, "statement": "B_signal stronger"}]}
+    )
+
+    assert card_a.content_hash == card_b.content_hash
+    assert card_a.content_hash != changed.content_hash
+    supplied_segments[0]["label"] = "mutated-after-build"
+    assert card_a.segment_findings[0]["label"] == "0900-0905"
+    with pytest.raises(TypeError):
+        card_a.source["alias"] = "mutated"
+    assert verify_analysis_card_v3_content_hash(card_a) is True
+    assert card_a.feature_importance_findings == tuple(supplied_features)
+    assert len(card_a.actionable_directives) == 1
+    directive = card_a.actionable_directives[0]
+    assert {key: directive[key] for key in ("side", "scope", "priority", "data_role", "status")} == {
+        "side": "buy", "scope": "entry", "priority": 2, "data_role": "TRAIN", "status": "READY",
+    }
+    assert directive["evidence_ids"] == ("ev-feature", "ev-segment")
+
+
+def test_analysis_card_v3_prompt_renderers_only_accept_train_ready_directives():
+    """Validation/HOLDOUT and non-READY supplied findings remain descriptive-only."""
+    finding = {
+        **_GOOD_FINDING,
+        "side": "buy",
+        "scope": "entry",
+        "priority": 1,
+        "data_role": "TRAIN",
+        "status": "READY",
+    }
+    card = build_analysis_card_v3(
+        _v3_rows(), source={"alias": "fixture://typed"}, role=ROLE_TRAIN,
+        candidate_findings=[
+            finding,
+            {**finding, "finding_id": "holdout", "data_role": "HOLDOUT"},
+            {**finding, "finding_id": "pending", "status": "PENDING"},
+        ],
+    )
+
+    assert [item["finding_id"] for item in card.actionable_directives] == ["f_signal"]
+    assert len(card.descriptive_findings) == 2
+    assert len(render_directives_from_card_v3(card)) == 1
+    assert len(render_directive_hints_from_card_v3(card)) == 1
+
+
+def test_analysis_card_v3_malformed_statistics_fail_closed():
+    malformed = {
+        **_GOOD_FINDING,
+        "p_value": "not-a-number",
+        "q_value": float("nan"),
+        "ci_low": float("nan"),
+        "ci_high": "bad",
+    }
+    out_of_range_preregistered = {
+        **_GOOD_FINDING,
+        "finding_id": "invalid-preregistered",
+        "p_value": 2.0,
+        "q_value": 2.0,
+        "prereg_axis": True,
+    }
+
+    card = build_analysis_card_v3(
+        _v3_rows(),
+        source={"alias": "fixture://malformed"},
+        role=ROLE_TRAIN,
+        candidate_findings=[malformed, out_of_range_preregistered],
+    )
+
+    assert card.actionable_directives == ()
+    assert len(card.descriptive_findings) == 2
+
+
+def test_feature_importance_findings_carry_real_gap_ci(monkeypatch):
+    import ai_strategy_loop.brain.feature_importance_feedback as feature_mod
+
+    monkeypatch.setattr(
+        feature_mod,
+        "feature_importance_by_segment",
+        lambda *args, **kwargs: {
+            "segment-a": [{
+                "feature": "B_체결강도",
+                "win_rate_top_q": 1.0,
+                "win_rate_bot_q": 0.0,
+                "n": 100,
+            }],
+        },
+    )
+
+    findings = build_feature_importance_findings(pd.DataFrame({"x": [1]}))
+
+    assert findings
+    assert findings[0]["ci_low"] > 0
+    assert findings[0]["ci_high"] > 0
 
 def test_analysis_card_v3_invalid_role_rejected():
     df = _v3_rows()

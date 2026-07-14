@@ -62,6 +62,7 @@ class TestConfigFromDictEquivalence:
         assert cfg.bt_timeframe == defaults.bt_timeframe
         assert cfg.graduation_holdout == defaults.graduation_holdout
         assert cfg.autopsy_enabled == defaults.autopsy_enabled
+        assert cfg.typed_feedback_v2_enabled is False
 
     def test_empty_dict_yields_all_defaults(self):
         assert config_from_dict({}).to_dict() == LoopConfig().to_dict()

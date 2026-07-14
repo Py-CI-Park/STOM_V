@@ -28,6 +28,7 @@ import io
 import json
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 
@@ -843,14 +844,17 @@ VALID_ROLES_V3 = (ROLE_TRAIN, ROLE_VALIDATION, ROLE_OOS)
 
 @dataclass(frozen=True, slots=True)
 class AnalysisFindingV3:
-    """서술적 발견 하나 — 표본/CI/q값 증거를 지니고, 게이트 통과 여부(is_directive)와
-    그 사유(reason_code)를 함께 담는다. build_analysis_card_v3 가 evaluate_directive_gate
-    로 계산한 값을 그대로 싣는다(자체적으로 조작하지 않는다 — 정직 계약).
-    """
+    """Supplied analysis finding with its typed lineage and directive eligibility."""
 
     finding_id: str
     statement: str
     axis: str
+    side: Optional[str]
+    scope: Optional[str]
+    priority: Optional[int]
+    data_role: str
+    status: str
+    evidence_ids: Tuple[str, ...]
     n_trades: int
     n_days: int
     n_symbols: int
@@ -866,6 +870,12 @@ class AnalysisFindingV3:
             "finding_id": self.finding_id,
             "statement": self.statement,
             "axis": self.axis,
+            "side": self.side,
+            "scope": self.scope,
+            "priority": self.priority,
+            "data_role": self.data_role,
+            "status": self.status,
+            "evidence_ids": list(self.evidence_ids),
             "n_trades": self.n_trades,
             "n_days": self.n_days,
             "n_symbols": self.n_symbols,
@@ -903,6 +913,32 @@ def evaluate_directive_gate(
 
     미달이면 (False, STATISTICAL_DIRECTIVE_INELIGIBLE)을 돌려준다.
     """
+    if (
+        any(isinstance(value, bool) or not isinstance(value, int) or value < 0
+            for value in (n_trades, n_days, n_symbols))
+        or isinstance(alpha, bool)
+        or not isinstance(alpha, (int, float))
+        or not math.isfinite(float(alpha))
+        or not 0.0 < float(alpha) <= 1.0
+    ):
+        return False, REASON_INELIGIBLE
+    if (
+        isinstance(ci_low, bool)
+        or isinstance(ci_high, bool)
+        or not isinstance(ci_low, (int, float))
+        or not isinstance(ci_high, (int, float))
+        or not math.isfinite(float(ci_low))
+        or not math.isfinite(float(ci_high))
+        or float(ci_low) > float(ci_high)
+    ):
+        return False, REASON_INELIGIBLE
+    if q_value is not None and (
+        isinstance(q_value, bool)
+        or not isinstance(q_value, (int, float))
+        or not math.isfinite(float(q_value))
+        or not 0.0 <= float(q_value) <= 1.0
+    ):
+        return False, REASON_INELIGIBLE
     if role != ROLE_TRAIN:
         return False, REASON_NOT_TRAIN
     if n_trades < min_n_trades or n_days < min_n_days or n_symbols < min_n_symbols:
@@ -915,6 +951,24 @@ def evaluate_directive_gate(
     if not statistically_ok:
         return False, REASON_INELIGIBLE
     return True, REASON_OK
+
+
+def _freeze_card_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType({
+            key: _freeze_card_value(item) for key, item in value.items()
+        })
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_card_value(item) for item in value)
+    return value
+
+
+def _thaw_card_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _thaw_card_value(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw_card_value(item) for item in value]
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -931,26 +985,48 @@ class AnalysisCardV3:
     trade_quant: Dict[str, Any]
     ci_evidence: Dict[str, Any]
     split_evidence: Dict[str, Any]
+    evidence_ids: Tuple[str, ...]
     segment_findings: Tuple[Dict[str, Any], ...]
+    feature_importance_findings: Tuple[Dict[str, Any], ...]
     ablation_findings: Tuple[Dict[str, Any], ...]
     descriptive_findings: Tuple[Dict[str, Any], ...]
     actionable_directives: Tuple[Dict[str, Any], ...]
     content_hash: str
+    def __post_init__(self) -> None:
+        for field_name in (
+            "source",
+            "trade_quant",
+            "ci_evidence",
+            "split_evidence",
+            "segment_findings",
+            "feature_importance_findings",
+            "ablation_findings",
+            "descriptive_findings",
+            "actionable_directives",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _freeze_card_value(getattr(self, field_name)),
+            )
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "schema": self.schema,
-            "source": self.source,
+            "source": _thaw_card_value(self.source),
             "role": self.role,
             "manifest_id": self.manifest_id,
             "quality": self.quality,
-            "trade_quant": self.trade_quant,
-            "ci_evidence": self.ci_evidence,
-            "split_evidence": self.split_evidence,
-            "segment_findings": list(self.segment_findings),
-            "ablation_findings": list(self.ablation_findings),
-            "descriptive_findings": list(self.descriptive_findings),
-            "actionable_directives": list(self.actionable_directives),
+            "trade_quant": _thaw_card_value(self.trade_quant),
+            "ci_evidence": _thaw_card_value(self.ci_evidence),
+            "split_evidence": _thaw_card_value(self.split_evidence),
+            "evidence_ids": list(self.evidence_ids),
+            "segment_findings": _thaw_card_value(self.segment_findings),
+            "feature_importance_findings": _thaw_card_value(self.feature_importance_findings),
+            "ablation_findings": _thaw_card_value(self.ablation_findings),
+            "descriptive_findings": _thaw_card_value(self.descriptive_findings),
+            "actionable_directives": _thaw_card_value(self.actionable_directives),
             "content_hash": self.content_hash,
         }
 
@@ -959,18 +1035,25 @@ def _card_v3_content_payload(
     *,
     schema: str, source: Mapping[str, Any], role: str, manifest_id: Optional[str], quality: str,
     trade_quant: Mapping[str, Any], ci_evidence: Mapping[str, Any], split_evidence: Mapping[str, Any],
-    segment_findings: Sequence[Mapping[str, Any]], ablation_findings: Sequence[Mapping[str, Any]],
+    evidence_ids: Sequence[str], segment_findings: Sequence[Mapping[str, Any]],
+    feature_importance_findings: Sequence[Mapping[str, Any]], ablation_findings: Sequence[Mapping[str, Any]],
     descriptive_findings: Sequence[Mapping[str, Any]], actionable_directives: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     """content_hash 입력이 되는 정본 payload(재현 가능한 순서/구조)."""
     return {
-        "schema": schema, "source": dict(source), "role": role, "manifest_id": manifest_id,
-        "quality": quality, "trade_quant": dict(trade_quant), "ci_evidence": dict(ci_evidence),
-        "split_evidence": dict(split_evidence),
-        "segment_findings": [dict(x) for x in segment_findings],
-        "ablation_findings": [dict(x) for x in ablation_findings],
-        "descriptive_findings": [dict(x) for x in descriptive_findings],
-        "actionable_directives": [dict(x) for x in actionable_directives],
+        "schema": schema, "source": _thaw_card_value(source), "role": role,
+        "manifest_id": manifest_id, "quality": quality,
+        "trade_quant": _thaw_card_value(trade_quant),
+        "ci_evidence": _thaw_card_value(ci_evidence),
+        "split_evidence": _thaw_card_value(split_evidence),
+        "evidence_ids": list(evidence_ids),
+        "segment_findings": [_thaw_card_value(x) for x in segment_findings],
+        "feature_importance_findings": [
+            _thaw_card_value(x) for x in feature_importance_findings
+        ],
+        "ablation_findings": [_thaw_card_value(x) for x in ablation_findings],
+        "descriptive_findings": [_thaw_card_value(x) for x in descriptive_findings],
+        "actionable_directives": [_thaw_card_value(x) for x in actionable_directives],
     }
 
 
@@ -979,6 +1062,32 @@ def _card_v3_content_hash(payload: Mapping[str, Any]) -> str:
         payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
     )
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def verify_analysis_card_v3_content_hash(card: Any) -> bool:
+    """Recompute a card's canonical payload hash before strict prompt consumption."""
+    if not isinstance(card, AnalysisCardV3):
+        return False
+    try:
+        payload = _card_v3_content_payload(
+            schema=card.schema,
+            source=card.source,
+            role=card.role,
+            manifest_id=card.manifest_id,
+            quality=card.quality,
+            trade_quant=card.trade_quant,
+            ci_evidence=card.ci_evidence,
+            split_evidence=card.split_evidence,
+            evidence_ids=card.evidence_ids,
+            segment_findings=card.segment_findings,
+            feature_importance_findings=card.feature_importance_findings,
+            ablation_findings=card.ablation_findings,
+            descriptive_findings=card.descriptive_findings,
+            actionable_directives=card.actionable_directives,
+        )
+        return _card_v3_content_hash(payload) == card.content_hash
+    except (TypeError, ValueError):
+        return False
 
 
 def _daily_pnl_from_rows(
@@ -1019,42 +1128,136 @@ def _split_evidence_from_returns(returns: Sequence[float]) -> Dict[str, Any]:
     }
 
 
+def _canonical_finding_id(item: Mapping[str, Any]) -> str:
+    """Produce an ID only when the supplier did not provide one."""
+    supplied = item.get("finding_id")
+    if isinstance(supplied, str) and supplied.strip():
+        return supplied.strip()
+    text = json.dumps(dict(item), ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+    return "finding_" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _typed_text(value: Any) -> Optional[str]:
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def _typed_priority(value: Any) -> Optional[int]:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _typed_support_count(value: Any) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+
+
+def _typed_evidence_ids(item: Mapping[str, Any], evidence_ids: Sequence[str]) -> Tuple[str, ...]:
+    supplied = item.get("evidence_ids", evidence_ids)
+    if not isinstance(supplied, Sequence) or isinstance(supplied, (str, bytes)):
+        return ()
+    return tuple(sorted({value.strip() for value in supplied if isinstance(value, str) and value.strip()}))
+
+
 def _findings_to_gated(
     candidate_findings: Sequence[Mapping[str, Any]],
     *,
     role: str, n_trades: int, n_days: int, n_symbols: int,
     min_n_trades: int, min_n_days: int, min_n_symbols: int, alpha: float,
+    evidence_ids: Sequence[str],
 ) -> Tuple[Tuple[Dict[str, Any], ...], Tuple[Dict[str, Any], ...]]:
-    """후보 발견 목록에 BH-FDR(q값 미제공 시)을 적용하고 게이트를 통과시켜
-    (descriptive_findings, actionable_directives) 로 가른다.
-    """
+    """Gate supplied findings without inventing statements or directive priors."""
     from ai_strategy_loop.autopsy import analyze as _analyze_local  # noqa: PLC0415
 
-    items = list(candidate_findings)
-    needs_q = [i for i, item in enumerate(items) if item.get("q_value") is None]
+    items = [dict(item) for item in candidate_findings if isinstance(item, Mapping)]
+    needs_q = [
+        i for i, item in enumerate(items)
+        if (
+            "q_value" not in item
+            and (p_value := _safe_number(item.get("p_value"))) is not None
+            and 0.0 <= p_value <= 1.0
+        )
+    ]
     if needs_q:
-        p_values = [float(items[i].get("p_value", 1.0) if items[i].get("p_value") is not None else 1.0) for i in needs_q]
+        p_values = [
+            _safe_number(items[i].get("p_value"))
+            if _safe_number(items[i].get("p_value")) is not None
+            else 1.0
+            for i in needs_q
+        ]
         q_values, _pass_flags = _analyze_local._benjamini_hochberg(p_values, alpha=alpha)
         for pos, idx in enumerate(needs_q):
             items[idx] = {**items[idx], "q_value": q_values[pos]}
 
     descriptive: List[Dict[str, Any]] = []
     directives: List[Dict[str, Any]] = []
-    for idx, item in enumerate(items):
+    for item in items:
+        statement = _typed_text(item.get("statement"))
+        if statement is None:
+            continue
+        data_role = (_typed_text(item.get("data_role")) or (
+            "TRAIN" if role == ROLE_TRAIN else "HOLDOUT"
+        )).upper()
+        supplied_status = (_typed_text(item.get("status")) or "READY").upper()
+        ci_low = _safe_number(item.get("ci_low"))
+        ci_high = _safe_number(item.get("ci_high"))
+        supplied_p = _safe_number(item.get("p_value"))
+        statistics_valid = (
+            "p_value" not in item
+            or (supplied_p is not None and 0.0 <= supplied_p <= 1.0)
+        )
+        if "q_value" in item:
+            supplied_q = _safe_number(item.get("q_value"))
+            if supplied_q is not None and 0.0 <= supplied_q <= 1.0:
+                q_value = supplied_q
+            else:
+                q_value = None
+                statistics_valid = False
+        elif "p_value" in item:
+            if supplied_p is not None and 0.0 <= supplied_p <= 1.0:
+                q_value = _safe_number(item.get("q_value"))
+            else:
+                q_value = None
+                statistics_valid = False
+        else:
+            q_value = None
+        full_population = item.get("full_population") is True
+        finding_n_trades = (
+            n_trades if full_population else _typed_support_count(item.get("n_trades"))
+        )
+        finding_n_days = (
+            n_days if full_population else _typed_support_count(item.get("n_days"))
+        )
+        finding_n_symbols = (
+            n_symbols if full_population else _typed_support_count(item.get("n_symbols"))
+        )
         is_directive, reason = evaluate_directive_gate(
-            role=role, n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
-            ci_low=item.get("ci_low"), ci_high=item.get("ci_high"),
-            q_value=item.get("q_value"), prereg_axis=bool(item.get("prereg_axis", False)),
+            role=role, n_trades=finding_n_trades,
+            n_days=finding_n_days, n_symbols=finding_n_symbols,
+            ci_low=ci_low, ci_high=ci_high,
+            q_value=q_value,
+            prereg_axis=bool(item.get("prereg_axis", False)) and statistics_valid,
             min_n_trades=min_n_trades, min_n_days=min_n_days, min_n_symbols=min_n_symbols,
             alpha=alpha,
         )
+        is_directive = bool(is_directive and data_role == "TRAIN" and supplied_status == "READY")
+        if data_role != "TRAIN":
+            reason = REASON_NOT_TRAIN
+        elif supplied_status != "READY":
+            reason = "SUPPLIER_STATUS_NOT_READY"
+        status = "READY" if is_directive else "DESCRIPTIVE_ONLY"
         finding = AnalysisFindingV3(
-            finding_id=str(item.get("finding_id") or f"finding_{idx}"),
-            statement=str(item.get("statement") or ""),
-            axis=str(item.get("axis") or ""),
-            n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
-            ci_low=item.get("ci_low"), ci_high=item.get("ci_high"),
-            q_value=item.get("q_value"), prereg_axis=bool(item.get("prereg_axis", False)),
+            finding_id=_canonical_finding_id(item),
+            statement=statement,
+            axis=_typed_text(item.get("axis")) or "",
+            side=_typed_text(item.get("side")),
+            scope=_typed_text(item.get("scope")),
+            priority=_typed_priority(item.get("priority")),
+            data_role=data_role,
+            status=status,
+            evidence_ids=_typed_evidence_ids(item, evidence_ids),
+            n_trades=finding_n_trades,
+            n_days=finding_n_days,
+            n_symbols=finding_n_symbols,
+            ci_low=ci_low, ci_high=ci_high,
+            q_value=q_value, prereg_axis=bool(item.get("prereg_axis", False)),
             is_directive=is_directive, reason_code=reason,
         ).to_dict()
         (directives if is_directive else descriptive).append(finding)
@@ -1069,7 +1272,9 @@ def build_analysis_card_v3(
     manifest_id: Optional[str] = None,
     candidate_findings: Optional[Sequence[Mapping[str, Any]]] = None,
     segment_findings: Optional[Sequence[Mapping[str, Any]]] = None,
+    feature_importance_findings: Optional[Sequence[Mapping[str, Any]]] = None,
     ablation_findings: Optional[Sequence[Mapping[str, Any]]] = None,
+    evidence_ids: Sequence[str] = (),
     min_n_trades: int = DEFAULT_MIN_N_TRADES_V3,
     min_n_days: int = DEFAULT_MIN_N_DAYS_V3,
     min_n_symbols: int = DEFAULT_MIN_N_SYMBOLS_V3,
@@ -1082,12 +1287,12 @@ def build_analysis_card_v3(
         trades_df: 거래행 DataFrame(없으면 빈 카드 — insufficient_data).
         source: source identity(alias/hash/size 등) — 카드 콘텐츠 해시에 실린다.
         role: 'train' | 'validation' | 'oos'. train 이 아니면 항상 지시 0개.
-        candidate_findings: [{finding_id, statement, axis, p_value|q_value,
-            prereg_axis, ci_low, ci_high}, ...] — 게이트를 거쳐 descriptive/
-            actionable 로 갈린다(BH-FDR 은 q_value 미제공 항목에만 적용).
-        segment_findings/ablation_findings: 순수 서술 섹션(게이트 없음 — 이미
-            segment.py/ablation.py 의 to_card_section_v3 가 non-causal 라벨을
-            붙여 넘긴 것을 그대로 싣는다).
+        candidate_findings: supplied typed findings. Empty statements are ignored; this
+            builder never manufactures directives or statements.
+        segment_findings/feature_importance_findings/ablation_findings: supplied
+            descriptive attribution sections, preserved in the card and content hash.
+        evidence_ids: supplied evidence lineage copied into each candidate finding
+            unless that finding supplies its own evidence_ids.
 
     Returns:
         AnalysisCardV3(role=='validation'|'oos' 면 actionable_directives=()).
@@ -1118,17 +1323,21 @@ def build_analysis_card_v3(
     ]
     split_evidence = _split_evidence_from_returns(returns)
 
+    normalized_evidence_ids = _typed_evidence_ids({}, evidence_ids)
     descriptive, directives = _findings_to_gated(
         candidate_findings or (),
         role=role, n_trades=n_trades, n_days=n_days, n_symbols=n_symbols,
         min_n_trades=min_n_trades, min_n_days=min_n_days, min_n_symbols=min_n_symbols,
-        alpha=alpha,
+        alpha=alpha, evidence_ids=normalized_evidence_ids,
     )
 
     payload = _card_v3_content_payload(
         schema=ANALYSIS_CARD_SCHEMA_V3, source=source, role=role, manifest_id=manifest_id,
         quality=quality, trade_quant=tq_section, ci_evidence=ci_evidence, split_evidence=split_evidence,
-        segment_findings=segment_findings or (), ablation_findings=ablation_findings or (),
+        evidence_ids=normalized_evidence_ids,
+        segment_findings=segment_findings or (),
+        feature_importance_findings=feature_importance_findings or (),
+        ablation_findings=ablation_findings or (),
         descriptive_findings=descriptive, actionable_directives=directives,
     )
     content_hash = _card_v3_content_hash(payload)
@@ -1136,7 +1345,10 @@ def build_analysis_card_v3(
     return AnalysisCardV3(
         schema=ANALYSIS_CARD_SCHEMA_V3, source=dict(source), role=role, manifest_id=manifest_id,
         quality=quality, trade_quant=tq_section, ci_evidence=ci_evidence, split_evidence=split_evidence,
-        segment_findings=tuple(segment_findings or ()), ablation_findings=tuple(ablation_findings or ()),
+        evidence_ids=normalized_evidence_ids,
+        segment_findings=tuple(segment_findings or ()),
+        feature_importance_findings=tuple(feature_importance_findings or ()),
+        ablation_findings=tuple(ablation_findings or ()),
         descriptive_findings=descriptive, actionable_directives=directives, content_hash=content_hash,
     )
 
@@ -1152,16 +1364,20 @@ def render_card_v3_md(card: AnalysisCardV3) -> str:
     """카드를 사람이 읽는 markdown으로 렌더링한다 — content_hash 를 그대로 읽어
     싣는다(재계산 금지, 대시보드/문서 렌더 경로 동일-해시 계약).
     """
+    renderable_directives = [
+        directive for directive in card.actionable_directives
+        if directive.get("data_role") == "TRAIN" and directive.get("status") == "READY"
+    ]
     lines: List[str] = [
         f"# Analysis Card V3 ({card.role})",
         f"- content_hash: {card.content_hash}",
         f"- quality: {card.quality}",
         f"- n_trades/n_days/n_symbols: {card.trade_quant.get('n_trades')}/"
         f"{card.trade_quant.get('n_days')}/{card.trade_quant.get('n_symbols')}",
-        f"- actionable_directives: {len(card.actionable_directives)}",
+        f"- actionable_directives: {len(renderable_directives)}",
         f"- descriptive_findings: {len(card.descriptive_findings)}",
     ]
-    for directive in card.actionable_directives:
+    for directive in renderable_directives:
         lines.append(f"  - [DIRECTIVE] {directive.get('statement')}")
     for finding in card.descriptive_findings:
         lines.append(f"  - [descriptive:{finding.get('reason_code')}] {finding.get('statement')}")

@@ -4879,6 +4879,7 @@ def test_dr01_dr05_frozen_chain_composes_end_to_end(tmp_path):
         candidate_findings=[{
             "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
             "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+            "full_population": True,
         }],
     )
     assert card_train.role == ROLE_TRAIN
@@ -4892,6 +4893,7 @@ def test_dr01_dr05_frozen_chain_composes_end_to_end(tmp_path):
         candidate_findings=[{
             "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
             "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+            "full_population": True,
         }],
     )
     assert card_train_different_dr01.content_hash != card_train.content_hash
@@ -4902,6 +4904,7 @@ def test_dr01_dr05_frozen_chain_composes_end_to_end(tmp_path):
         candidate_findings=[{
             "finding_id": "f_signal", "statement": "B_signal 진입 시 초과수익", "axis": "entry_feature",
             "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+            "full_population": True,
         }],
     )
     assert card_validation.actionable_directives == ()
@@ -5023,3 +5026,100 @@ def test_dr05_build_analysis_card_v3_executes_past_flag_gate_when_enabled(tmp_pa
     cfg_off = LoopConfig.from_dict({})
     assert loop_mod._build_analysis_card_v3(cfg_off, outcome) is None
     assert calls == []  # OFF면 호출조차 안 함(byte-동일)
+
+
+def test_dr05_loop_wires_real_segment_and_feature_findings_into_card(tmp_path, monkeypatch):
+    import types
+
+    import ai_strategy_loop.autopsy.analysis_card as ac
+    import ai_strategy_loop.brain.feature_importance_feedback as feature_mod
+    import ai_strategy_loop.brain.segment_feedback as segment_mod
+    import ai_strategy_loop.controller.loop as loop_mod
+    from ai_strategy_loop.config import LoopConfig
+
+    csv = tmp_path / "trades.csv"
+    csv.write_text("종목명,매수시간\nA,202601010900\n", encoding="utf-8-sig")
+    captured = {}
+
+    monkeypatch.setattr(segment_mod, "build_segment_avoid_lines", lambda *args, **kwargs: ["SEGMENT_REAL"])
+    monkeypatch.setattr(
+        feature_mod,
+        "build_feature_importance_findings",
+        lambda *args, **kwargs: [{
+            "statement": "FEATURE_REAL",
+            "axis": "feature",
+            "side": "BUY",
+            "scope": "feature_importance_feedback",
+            "priority": 50,
+            "data_role": "TRAIN",
+            "status": "READY",
+            "ci_low": 0.1,
+            "ci_high": 0.2,
+            "prereg_axis": True,
+        }],
+    )
+
+    def _fake_build(df, **kwargs):
+        captured.update(kwargs)
+        return types.SimpleNamespace(content_hash="d" * 64, actionable_directives=())
+
+    monkeypatch.setattr(ac, "build_analysis_card_v3", _fake_build)
+    config = LoopConfig.from_dict({
+        "analysis_card_v3_enabled": True,
+        "segment_feedback_enabled": True,
+        "feature_importance_feedback_enabled": True,
+    })
+
+    assert loop_mod._build_analysis_card_v3(
+        config, types.SimpleNamespace(csv_path=str(csv))
+    ) is not None
+    assert [item["statement"] for item in captured["candidate_findings"]] == [
+        "FEATURE_REAL",
+    ]
+    assert [item["statement"] for item in captured["segment_findings"]] == [
+        "SEGMENT_REAL",
+    ]
+    assert captured["evidence_ids"] and len(captured["evidence_ids"][0]) == 64
+
+def test_typed_analysis_card_feedback_resolves_side_conflicts_deterministically(monkeypatch):
+    import types
+    import ai_strategy_loop.autopsy.analysis_card as ac
+
+    from ai_strategy_loop.controller.loop import _resolve_analysis_card_typed_feedback
+    monkeypatch.setattr(ac, "verify_analysis_card_v3_content_hash", lambda card: True)
+
+    evidence_id = "c" * 64
+    card = types.SimpleNamespace(
+        content_hash=evidence_id,
+        actionable_directives=(
+            {"statement": "BUY_WINNER", "side": "BUY"},
+            {"statement": "BUY_CONFLICT", "side": "BUY"},
+            {"statement": "SELL_READY", "side": "SELL"},
+            {
+                "statement": "HOLDOUT_LEAK",
+                "side": "BUY",
+                "data_role": "HOLDOUT",
+                "status": "READY",
+            },
+            {
+                "statement": "BLOCKED_LEAK",
+                "side": "SELL",
+                "data_role": "TRAIN",
+                "status": "BLOCKED",
+            },
+        ),
+    )
+    envelope = _resolve_analysis_card_typed_feedback(card, generation=4)
+
+    assert envelope is not None
+    assert envelope.evidence_id == evidence_id
+    assert envelope.scope == "analysis_card_v3_prompt"
+    assert [
+        (directive.side.value, directive.statement)
+        for directive in envelope.actionable_directives
+    ] == [
+        ("BUY", "BUY_WINNER"),
+        ("SELL", "SELL_READY"),
+    ]
+    assert all(directive.role.value == "TRAIN" for directive in envelope.actionable_directives)
+    assert all(directive.status.value == "READY" for directive in envelope.actionable_directives)

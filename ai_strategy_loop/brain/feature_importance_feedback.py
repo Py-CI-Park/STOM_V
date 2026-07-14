@@ -15,14 +15,22 @@
 """
 
 from __future__ import annotations
+import math
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import pandas as pd
 
 from ai_strategy_loop.autopsy.analyze import B_TO_STOM_VAR
 from ai_strategy_loop.fitness.feature_importance import feature_importance_by_segment
 from cli._utils import ensure_dataframe as _ensure_dataframe
+from cli.research_segments import (
+    DEFAULT_TIME_BUCKETS,
+    FINE_TIME_BUCKETS,
+    add_change_segment,
+    add_market_cap_segment,
+    add_time_segment,
+)
 
 # 분위 승률 격차(상위25% 승률 - 하위25% 승률)가 이 값 이상이어야 '결정적 피처'로 환류한다.
 #   작은 격차는 잡음일 수 있어 환류하지 않는다(prefer 힌트 보수화).
@@ -142,6 +150,116 @@ def build_feature_importance_lines(
     return lines
 
 
+def _segment_support(
+    df: pd.DataFrame, *, axis: str, fine_time: bool, feature: Optional[str] = None
+) -> Dict[str, Dict[str, int]]:
+    buckets = FINE_TIME_BUCKETS if fine_time else DEFAULT_TIME_BUCKETS
+    labeled = add_change_segment(
+        add_market_cap_segment(add_time_segment(df, buckets=buckets))
+    )
+    segment_column = "_market_cap_segment" if axis == "market_cap" else "_time_segment"
+    if segment_column not in labeled.columns:
+        return {}
+    date_column = next(
+        (name for name in ("매도시간", "매수시간", "date", "날짜") if name in labeled.columns),
+        None,
+    )
+    symbol_column = next(
+        (name for name in ("종목명", "종목코드", "symbol", "code") if name in labeled.columns),
+        None,
+    )
+    support = {}
+    for label, group in labeled.groupby(segment_column, dropna=False):
+        if feature is not None:
+            if feature not in group.columns or "수익률" not in group.columns:
+                continue
+            valid_feature = pd.to_numeric(group[feature], errors="coerce").notna()
+            valid_return = pd.to_numeric(group["수익률"], errors="coerce").notna()
+            group = group[valid_feature & valid_return]
+        support[str(label)] = {
+            "n_trades": int(len(group)),
+            "n_days": (
+                int(group[date_column].astype(str).str[:8].nunique())
+                if date_column is not None else 0
+            ),
+            "n_symbols": (
+                int(group[symbol_column].astype(str).nunique())
+                if symbol_column is not None else 0
+            ),
+        }
+    return support
+
+
+def build_feature_importance_findings(
+    df_or_path: Any,
+    *,
+    min_cell: int = 20,
+    fine_time: bool = False,
+    min_winrate_gap: float = DEFAULT_MIN_WINRATE_GAP,
+) -> List[Dict[str, Any]]:
+    """Return finding-specific win-rate-gap evidence with a normal-approximation CI."""
+    try:
+        df = df_or_path if isinstance(df_or_path, pd.DataFrame) else _ensure_dataframe(df_or_path)
+    except Exception:  # noqa: BLE001
+        return []
+    if df is None or len(df) == 0:
+        return []
+
+    findings: List[Dict[str, Any]] = []
+    priority = 100
+    for axis, axis_ko in _AXES:
+        try:
+            by_seg = feature_importance_by_segment(
+                df, axis=axis, fine_time=fine_time, min_cell=int(min_cell),
+            )
+        except Exception:  # noqa: BLE001
+            continue
+        support_by_segment: Dict[str, Dict[str, int]] = {}
+        scored: List[Tuple[float, str, Dict[str, Any], float]] = []
+        for seg_label, feats in by_seg.items():
+            best = _best_feature(feats, min_winrate_gap)
+            if best is not None:
+                feat, gap = best
+                scored.append((abs(gap), str(seg_label), feat, gap))
+        scored.sort(key=lambda value: value[0], reverse=True)
+        for _, seg_label, feat, gap in scored[:MAX_CELLS_PER_AXIS]:
+            feature_name = str(feat.get("feature", ""))
+            support_by_segment = _segment_support(
+                df, axis=axis, fine_time=fine_time, feature=feature_name
+            )
+            support = support_by_segment.get(seg_label, {
+                "n_trades": 0,
+                "n_days": 0,
+                "n_symbols": 0,
+            })
+            support["n_trades"] = min(
+                support["n_trades"], int(feat.get("n", 0) or 0)
+            )
+            top = float(feat["win_rate_top_q"])
+            bottom = float(feat["win_rate_bot_q"])
+            quartile_n = max(int(feat.get("n", 0) or 0) // 4, 1)
+            standard_error = math.sqrt(
+                top * (1.0 - top) / quartile_n
+                + bottom * (1.0 - bottom) / quartile_n
+            )
+            findings.append({
+                "statement": _hint_line(axis_ko, seg_label, feat, gap),
+                "axis": f"feature_importance:{axis}:{seg_label}",
+                "side": "BUY",
+                "scope": "feature_importance_feedback",
+                "priority": priority,
+                "data_role": "TRAIN",
+                "status": "READY",
+                "ci_low": gap - 1.96 * standard_error,
+                "ci_high": gap + 1.96 * standard_error,
+                "prereg_axis": True,
+                "n": int(feat.get("n", 0) or 0),
+                **support,
+            })
+            priority -= 1
+    return findings
+
+
 # ---------------------------------------------------------------------------
 # DR-05 — AnalysisCardV3 영속 지시 렌더러(segment_feedback.render_directives_
 #   from_card_v3 짝). 카드가 이미 통과시킨 actionable_directives 만 그대로
@@ -156,10 +274,22 @@ def render_directive_hints_from_card_v3(card: Any) -> List[str]:
     content_hash 를 그대로 읽어 참조 태그로 달고, 재계산하지 않는다.
     """
     directives = getattr(card, "actionable_directives", None) or ()
+    from ai_strategy_loop.autopsy.analysis_card import (  # noqa: PLC0415
+        verify_analysis_card_v3_content_hash,
+    )
+    if not verify_analysis_card_v3_content_hash(card):
+        return []
     content_hash = getattr(card, "content_hash", "")
     lines: List[str] = []
     for directive in directives:
-        statement = directive.get("statement") if isinstance(directive, dict) else None
-        if statement:
+        if not isinstance(directive, Mapping):
+            continue
+        if (
+            directive.get("data_role") != "TRAIN"
+            or directive.get("status") != "READY"
+        ):
+            continue
+        statement = directive.get("statement")
+        if isinstance(statement, str) and statement.strip():
             lines.append(f"[card:{content_hash}][prefer] {statement}")
     return lines

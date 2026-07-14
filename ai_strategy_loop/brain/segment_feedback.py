@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import pandas as pd
 
@@ -165,11 +165,23 @@ def render_directives_from_card_v3(card: Any) -> List[str]:
     참조 태그로 달아, 다른 렌더 경로와 동일 정체성임을 검증 가능하게 한다.
     빈 카드/지시 0개는 빈 리스트를 돌려준다(무예외).
     """
+    from ai_strategy_loop.autopsy.analysis_card import (  # noqa: PLC0415
+        verify_analysis_card_v3_content_hash,
+    )
+    if not verify_analysis_card_v3_content_hash(card):
+        return []
     directives = getattr(card, "actionable_directives", None) or ()
     content_hash = getattr(card, "content_hash", "")
     lines: List[str] = []
     for directive in directives:
-        statement = directive.get("statement") if isinstance(directive, dict) else None
-        if statement:
+        if not isinstance(directive, Mapping):
+            continue
+        if (
+            directive.get("data_role") != "TRAIN"
+            or directive.get("status") != "READY"
+        ):
+            continue
+        statement = directive.get("statement")
+        if isinstance(statement, str) and statement.strip():
             lines.append(f"[card:{content_hash}] {statement}")
     return lines

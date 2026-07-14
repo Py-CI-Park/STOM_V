@@ -29,11 +29,102 @@ from ai_strategy_loop.brain.candidate_output_contract import (  # noqa: E402
     make_candidate_payload,
     validate_candidate_payload,
 )
+from ai_strategy_loop.controller.feedback_resolver import (  # noqa: E402
+    FeedbackDataRole,
+    FeedbackDirective,
+    FeedbackSide,
+    FeedbackStatus,
+    TypedFeedbackEnvelope,
+)
 
 def _payload_response(**kwargs):
     import json
 
     return f"```json\n{json.dumps(make_candidate_payload(**kwargs).as_dict(), ensure_ascii=False)}\n```"
+
+
+def _typed_directive(
+    statement,
+    *,
+    evidence_id,
+    side="BUY",
+    role="TRAIN",
+    status="READY",
+    priority=1,
+):
+    return FeedbackDirective(
+        scope="analysis_card_v3_prompt",
+        side=FeedbackSide(side),
+        role=FeedbackDataRole(role),
+        priority=priority,
+        statement=statement,
+        evidence_id=evidence_id,
+        evidence_sha256=evidence_id,
+        created_generation=1,
+        expires_generation=2,
+        status=FeedbackStatus(status),
+    )
+
+def test_typed_feedback_prompt_injects_only_ready_train_matching_directives():
+    evidence_id = "a" * 64
+    envelope = TypedFeedbackEnvelope(
+        scope="analysis_card_v3_prompt",
+        evidence_id=evidence_id,
+        generation=1,
+        directives=(
+            _typed_directive("BUY_LOW", evidence_id=evidence_id, priority=1),
+            _typed_directive("BUY_HIGH", evidence_id=evidence_id, priority=2),
+            _typed_directive(
+                "SELL_ONLY", evidence_id=evidence_id, side="SELL", priority=9,
+            ),
+            _typed_directive(
+                "HOLDOUT_ONLY", evidence_id=evidence_id, role="HOLDOUT", priority=9,
+            ),
+            _typed_directive(
+                "STALE_ONLY", evidence_id=evidence_id, status="STALE", priority=9,
+            ),
+            _typed_directive(
+                "CONFLICT_ONLY", evidence_id=evidence_id, status="BLOCKED", priority=9,
+            ),
+        ),
+    )
+    buy = prompt_mod.build_messages("buy", card_directive_lines=envelope)
+    content = "\n".join(message["content"] for message in buy)
+    assert "BUY_HIGH" in content
+    for forbidden in ("BUY_LOW", "SELL_ONLY", "HOLDOUT_ONLY", "STALE_ONLY", "CONFLICT_ONLY"):
+        assert forbidden not in content
+    sell = prompt_mod.build_messages("sell", card_directive_lines=envelope)
+    sell_content = "\n".join(message["content"] for message in sell)
+    assert "SELL_ONLY" in sell_content
+    assert "BUY_HIGH" not in sell_content
+    assert (
+        f"side=SELL scope=analysis_card_v3_prompt role=TRAIN status=READY "
+        f"evidence={evidence_id}"
+    ) in sell_content
+    assert prompt_mod.build_messages("buy") == prompt_mod.build_messages(
+        "buy", card_directive_lines=None
+    )
+    forged = {
+        "schema": "typed_feedback_v2",
+        "scope": envelope.scope,
+        "evidence_id": evidence_id,
+        "generation": 1,
+        "directives": [{
+            "directive_id": "forged",
+            "side": "BUY",
+            "scope": envelope.scope,
+            "evidence_id": evidence_id,
+            "evidence_sha256": evidence_id,
+            "role": "TRAIN",
+            "status": "READY",
+            "priority": 999,
+            "statement": "FORGED",
+        }],
+    }
+    assert "FORGED" not in "\n".join(
+        message["content"]
+        for message in prompt_mod.build_messages("buy", card_directive_lines=forged)
+    )
 
 
 def test_candidate_payload_v2_rejects_cross_kind_side_timeframe_and_hash_before_admission():

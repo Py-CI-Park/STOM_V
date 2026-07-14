@@ -39,10 +39,11 @@ import sys  # noqa: E402
 import time  # noqa: E402
 from collections import deque  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
-from typing import Any, Callable, Deque, Dict, List, Optional, Tuple  # noqa: E402
+from typing import Any, Callable, Deque, Dict, List, Mapping, Optional, Tuple  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller.contract import CandidateIdentityV2Projection  # noqa: E402
+from ai_strategy_loop.controller.feedback_resolver import TypedFeedbackEnvelope  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
 from cli.warm_session import WarmBacktestSession  # noqa: E402
 from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
@@ -891,10 +892,13 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를
             #   byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
             feature_hint_lines=(feature_hint_lines if kind == "buy" else None),
-            # DR-05 AnalysisCardV3 지시 환류 — build_messages가 kind=='buy'일 때만 반영하므로
-            #   매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를 byte-identical 보존한다.
-            #   토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
-            card_directive_lines=(card_directive_lines if kind == "buy" else None),
+            # DR-05 legacy list feedback remains buy-only. Typed feedback carries an
+            # explicit side and is passed to both prompts; the renderer filters it.
+            card_directive_lines=(
+                card_directive_lines
+                if isinstance(card_directive_lines, TypedFeedbackEnvelope) or kind == "buy"
+                else None
+            ),
             # A-5 밴드 시드 힌트 — 매수 전용(kind=='buy'), 토글 OFF/아티팩트 없음이면
             #   호출부가 None을 넘겨 미주입(byte-동일).
             band_seed_lines=(band_seed_lines if kind == "buy" else None),
@@ -2138,12 +2142,22 @@ def run_loop(
                         render_directives_from_card_v3,
                     )
 
-                    next_card_directive_lines = render_directives_from_card_v3(_card_v3) or None
+                    if getattr(config, "typed_feedback_v2_enabled", False):
+                        next_card_directive_lines = _resolve_analysis_card_typed_feedback(
+                            _card_v3, generation=gen_no + 1,
+                        )
+                    else:
+                        next_card_directive_lines = render_directives_from_card_v3(_card_v3) or None
                     _card_doc_hints = render_directive_hints_from_card_v3(_card_v3)
+                    _card_directive_count = (
+                        len(next_card_directive_lines.get("directives", ()))
+                        if isinstance(next_card_directive_lines, dict)
+                        else len(next_card_directive_lines or [])
+                    )
                     logger.info(
                         "AnalysisCardV3 gen %s card=%s 지시=%d 문서힌트=%d",
                         gen_no, _card_v3.content_hash[:12],
-                        len(next_card_directive_lines or []), len(_card_doc_hints or []),
+                        _card_directive_count, len(_card_doc_hints or []),
                     )
                 except Exception as exc:  # noqa: BLE001 - 카드 렌더 실패는 루프를 막지 않음(분석 보조 경로).
                     logger.info("AnalysisCardV3 렌더 실패(무시): %s", exc)
@@ -2771,6 +2785,86 @@ def _build_segment_avoid(config, outcome) -> Optional[list]:
 
 
 
+def _resolve_analysis_card_typed_feedback(
+    card: Any, *, generation: int
+) -> Optional[TypedFeedbackEnvelope]:
+    """Resolve an AnalysisCardV3's directives into one strict prompt envelope."""
+    try:
+        from ai_strategy_loop.autopsy.analysis_card import (  # noqa: PLC0415
+            verify_analysis_card_v3_content_hash,
+        )
+        if not verify_analysis_card_v3_content_hash(card):
+            logger.info("typed_feedback dropped reason=CARD_CONTENT_HASH_MISMATCH")
+            return None
+        from ai_strategy_loop.controller.feedback_resolver import (  # noqa: PLC0415
+            FeedbackDataRole,
+            FeedbackDirective,
+            FeedbackSide as ResolverFeedbackSide,
+            FeedbackStatus,
+            resolve_feedback,
+        )
+
+        evidence_id = card.content_hash
+        scope = "analysis_card_v3_prompt"
+        directives = []
+        for priority, item in enumerate(getattr(card, "actionable_directives", ()) or ()):
+            statement = item.get("statement") if isinstance(item, dict) else None
+            if not isinstance(statement, str) or not statement.strip():
+                continue
+            side_value = item.get("side", "BUY") if isinstance(item, dict) else "BUY"
+            role_value = item.get("data_role", "TRAIN") if isinstance(item, dict) else "TRAIN"
+            status_value = item.get("status", "READY") if isinstance(item, dict) else "READY"
+            scope_value = item.get("scope", scope) if isinstance(item, dict) else scope
+            supplied_priority = item.get("priority") if isinstance(item, dict) else None
+            priority_value = (
+                supplied_priority
+                if isinstance(supplied_priority, int) and not isinstance(supplied_priority, bool)
+                else len(getattr(card, "actionable_directives", ())) - priority
+            )
+            try:
+                side = ResolverFeedbackSide(side_value)
+                role = FeedbackDataRole(role_value)
+                status = FeedbackStatus(status_value)
+            except ValueError:
+                logger.info("typed_feedback dropped reason=INVALID_TYPED_FIELD")
+                continue
+            directives.append(FeedbackDirective(
+                scope=scope_value,
+                side=side,
+                role=role,
+                priority=priority_value,
+                statement=statement,
+                evidence_id=evidence_id,
+                evidence_sha256=evidence_id,
+                created_generation=generation - 1,
+                expires_generation=generation,
+                status=status,
+            ))
+        resolution = resolve_feedback(
+            directives,
+            generation=generation,
+            evidence_hashes={evidence_id: evidence_id},
+        )
+        for item in resolution.directives:
+            if not item.actionable:
+                logger.info(
+                    "typed_feedback dropped reason=%s directive=%s",
+                    item.reason_code,
+                    item.directive.directive_id,
+                )
+        ready = resolution.actionable_directives
+        if not ready:
+            return None
+        return TypedFeedbackEnvelope(
+            scope=scope,
+            evidence_id=evidence_id,
+            generation=generation,
+            directives=tuple(directives),
+        )
+    except Exception as exc:  # noqa: BLE001 - strict feedback must fail closed.
+        logger.info("typed_feedback dropped reason=RESOLVER_UNAVAILABLE error=%s", exc)
+        return None
+
 # =====================================================================
 # DR-05 — AnalysisCardV3 (통계 안전판 카드). 토글(analysis_card_v3_enabled)
 #   OFF(기본)면 이 함수는 어디서도 호출되지 않는다(byte-동일, 기존 패턴과 동일
@@ -2804,10 +2898,50 @@ def _build_analysis_card_v3(config, outcome, *, role: str = "train"):
         if not os.path.exists(abs_csv):
             return None
         trades_df = pd.read_csv(abs_csv, encoding="utf-8-sig")
+        candidate_findings = []
+        segment_findings = []
+        feature_findings = []
+        if role == "train" and getattr(config, "segment_feedback_enabled", False):
+            from ai_strategy_loop.brain.segment_feedback import (  # noqa: PLC0415
+                build_segment_avoid_lines,
+            )
+            for priority, statement in enumerate(build_segment_avoid_lines(
+                abs_csv,
+                min_count=int(getattr(config, "segment_feedback_min_count", 8) or 8),
+                fine_time=bool(getattr(config, "segment_fine_time", False)),
+            )):
+                finding = {
+                    "statement": statement,
+                    "axis": "segment_avoid",
+                    "side": "BUY",
+                    "scope": "segment_feedback",
+                    "priority": 100 - priority,
+                    "data_role": "TRAIN",
+                    "status": "READY",
+                    "prereg_axis": True,
+                }
+                segment_findings.append(finding)
+        if role == "train" and getattr(config, "feature_importance_feedback_enabled", False):
+            from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: PLC0415
+                build_feature_importance_findings,
+            )
+            feature_findings = build_feature_importance_findings(
+                abs_csv,
+                min_cell=int(
+                    getattr(config, "feature_importance_feedback_min_cell", 8) or 8
+                ),
+                fine_time=bool(getattr(config, "segment_fine_time", False)),
+            )
+            candidate_findings.extend(feature_findings)
+        evidence_id = text_sha256(trades_df.to_json(orient="split", force_ascii=False))
         return build_analysis_card_v3(
             trades_df,
             source={"alias": f"file://{os.path.basename(abs_csv)}", "path": abs_csv},
             role=role,
+            candidate_findings=candidate_findings,
+            segment_findings=segment_findings,
+            feature_importance_findings=feature_findings,
+            evidence_ids=(evidence_id,),
         )
     except Exception as exc:  # noqa: BLE001 - 카드 산출 실패는 루프를 막지 않음(분석 보조 경로).
         logger.info("AnalysisCardV3 산출 실패(무시): %s", exc)

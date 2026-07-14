@@ -695,6 +695,9 @@ class LoopConfig:
     # CandidatePayloadV2 strict output envelope. Default-OFF preserves legacy
     # code-fence prompts; certification profiles opt in atomically.
     strict_candidate_payload_v2: bool = False
+    # Typed feedback resolver/prompt envelope. Default-OFF preserves legacy
+    # free-text feedback while strict profiles opt in to TRAIN+READY only.
+    typed_feedback_v2_enabled: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
