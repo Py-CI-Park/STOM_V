@@ -326,3 +326,35 @@ def test_build_all_rejects_shape_only_promotion_before_catalog_mutation(run_dir:
             run_dir, write_receipt=False, repo_root=run_dir,
             promotion_manifest_path=manifest_path)
     assert db_path.read_bytes() == before
+
+
+@pytest.mark.parametrize("field, value", [
+    ("missing", ["required.json"]),
+    ("skipped", [{"path": "required.json", "reason": "parse failure"}]),
+])
+def test_promotion_source_receipt_rejects_incomplete_inputs(
+    tmp_path: Path, field: str, value: list,
+):
+    source = tmp_path / "required.json"
+    source.write_text("{}", encoding="utf-8")
+    receipt = {
+        "run_dir": str(tmp_path),
+        "missing": [],
+        "skipped": [],
+        "sources": [{"path": "required.json", "status": "loaded",
+                     "sha256": builder.sha256_file(source), "size_bytes": 2}],
+    }
+    receipt[field] = value
+    with pytest.raises(ValueError):
+        builder._strict_source_hashes(receipt, tmp_path, tmp_path)
+
+
+def test_strict_ledger_loader_rejects_unrelated_malformed_row(tmp_path: Path):
+    ledger = tmp_path / "n_trials_ledger.jsonl"
+    ledger.write_text('{"ts":"not-a-timestamp"}\n', encoding="utf-8")
+    con = sqlite3.connect(":memory:")
+    schema.create_schema(con)
+    receipt = {"missing": [], "skipped": [], "sources": [], "notes": []}
+    with pytest.raises(ValueError):
+        builder.load_ledger_mirror(con, tmp_path, receipt, strict=True)
+    con.close()

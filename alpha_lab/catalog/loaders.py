@@ -11,13 +11,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from alpha_lab.catalog.sources import add_note, record_source
+from alpha_lab.discipline import ledger as authority_ledger
 
 # ---------------------------------------------------------------------------
 # ledger_mirror — n_trials_ledger.jsonl 미러(row_num = 물리 행 번호 1-기반).
 # ---------------------------------------------------------------------------
 
 def load_ledger_mirror(
-    con: sqlite3.Connection, run_dir: Path, receipt: Dict[str, Any],
+    con: sqlite3.Connection, run_dir: Path, receipt: Dict[str, Any], *, strict: bool = False,
 ) -> List[Tuple[int, dict]]:
     """장부 jsonl을 미러 적재하고 (행번호, 원본객체) 목록을 돌려준다."""
     rel = "n_trials_ledger.jsonl"
@@ -27,6 +28,11 @@ def load_ledger_mirror(
         receipt["missing"].append(rel)
         receipt["sources"].append({"path": rel, "status": "missing"})
         return rows
+    if strict:
+        try:
+            authority_ledger.read_all(path)
+        except authority_ledger.LedgerSchemaError as exc:
+            raise ValueError(f"strict ledger validation failed: {exc}") from exc
     for lineno, line in enumerate(
             path.read_text(encoding="utf-8").splitlines(), start=1):
         text = line.strip()

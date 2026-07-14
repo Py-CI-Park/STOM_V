@@ -466,12 +466,14 @@ def verify_promotion_manifest_v2(
         raise EvidenceSchemaError("promotion manifest does not bind exactly one ledger v2 row")
     if rows[0]["evidence"] != identity:
         raise EvidenceSchemaError("ledger evidence does not match promotion evidence")
+    require_timestamp_order(("ledger.ts", rows[0]["ts"]), ("PRE.created_at", manifest["created_at"]))
     return manifest, sha256_canonical(raw)
 
 
 def validate_promotion_result_v2(
     value: object, *, repo_root: Path | str,
 ) -> PromotionResultV2:
+    """Validate the POST envelope before its PRE authority is resolved."""
     keys = {
         "schema_version", "kind", "status", "completed_at", "evidence_id",
         "promotion_manifest_path", "promotion_manifest_sha256", "inserted",
@@ -480,7 +482,8 @@ def validate_promotion_result_v2(
     result = _require_exact_keys(value, keys, "promotion result")
     if (result["schema_version"], result["kind"], result["status"]) != (2, "promotion_result", "POST"):
         raise EvidenceSchemaError("promotion result must be strict POST v2")
-    manifest_path, _ = _repo_path(result["promotion_manifest_path"], "promotion_manifest_path", Path(repo_root).resolve())
+    manifest_path, _ = _repo_path(
+        result["promotion_manifest_path"], "promotion_manifest_path", Path(repo_root).resolve())
     if not isinstance(result["inserted"], list) or not isinstance(result["conflicts"], list):
         raise EvidenceSchemaError("promotion result inserted and conflicts must be lists")
     if result["backup_path"] is not None and not isinstance(result["backup_path"], str):
@@ -490,7 +493,115 @@ def validate_promotion_result_v2(
         "completed_at": _require_timestamp(result["completed_at"], "completed_at"),
         "evidence_id": require_full_sha256(result["evidence_id"], "evidence_id"),
         "promotion_manifest_path": manifest_path,
-        "promotion_manifest_sha256": require_full_sha256(result["promotion_manifest_sha256"], "promotion_manifest_sha256"),
+        "promotion_manifest_sha256": require_full_sha256(
+            result["promotion_manifest_sha256"], "promotion_manifest_sha256"),
         "inserted": result["inserted"], "conflicts": result["conflicts"],
         "backup_path": result["backup_path"],
+    }
+
+
+def verify_promotion_result_v2(
+    result_path: Path | str, *, repo_root: Path | str,
+) -> tuple[PromotionResultV2, PromotionManifestV2, str]:
+    """Verify POST against the exact PRE authority and every candidate outcome."""
+    root = Path(repo_root).resolve()
+    source = Path(result_path).resolve()
+    try:
+        raw = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("promotion result must be readable JSON") from exc
+    result = validate_promotion_result_v2(raw, repo_root=root)
+    manifest_path = root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
+    manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
+    if result["evidence_id"] != manifest["evidence_id"]:
+        raise EvidenceSchemaError("promotion result evidence_id does not match PRE manifest")
+    if result["promotion_manifest_sha256"] != manifest_sha256:
+        raise EvidenceSchemaError("promotion result does not bind the exact PRE manifest bytes")
+    require_timestamp_order(
+        ("PRE.created_at", manifest["created_at"]), ("POST.completed_at", result["completed_at"]))
+    expected = {candidate["name"]: candidate for candidate in manifest["candidate_set"]}
+    inserted_names: set[str] = set()
+    for index, item in enumerate(result["inserted"]):
+        item = _require_exact_keys(
+            item, {"name", "tables", "buy_sha256", "sell_sha256", "meta"}, f"inserted[{index}]")
+        name = item["name"]
+        if not isinstance(name, str) or name not in expected or item["tables"] != ["stockbuy", "stocksell"]:
+            raise EvidenceSchemaError("promotion result inserted structure is invalid")
+        if name in inserted_names:
+            raise EvidenceSchemaError("promotion result inserted names must be unique")
+        candidate = expected[name]
+        if (
+            require_full_sha256(item["buy_sha256"], f"inserted[{index}].buy_sha256") != candidate["buy_sha256"]
+            or require_full_sha256(item["sell_sha256"], f"inserted[{index}].sell_sha256") != candidate["sell_sha256"]
+        ):
+            raise EvidenceSchemaError("promotion result inserted hashes do not match PRE candidate")
+        inserted_names.add(name)
+    conflict_names: set[str] = set()
+    for index, item in enumerate(result["conflicts"]):
+        item = _require_exact_keys(item, {"name", "reason", "tables"}, f"conflicts[{index}]")
+        name = item["name"]
+        if (
+            not isinstance(name, str) or name not in expected or item["reason"] != "name_exists"
+            or item["tables"] != ["stockbuy", "stocksell"]
+        ):
+            raise EvidenceSchemaError("promotion result conflict does not bind a candidate")
+        if name in conflict_names:
+            raise EvidenceSchemaError("promotion result conflict names must be unique")
+        conflict_names.add(name)
+    if inserted_names & conflict_names or inserted_names | conflict_names != set(expected):
+        raise EvidenceSchemaError("promotion result must account for every PRE candidate exactly once")
+    return result, manifest, sha256_canonical(raw)
+
+
+def validate_catalog_promotion_receipt_v2(
+    value: object, *, repo_root: Path | str,
+) -> dict[str, Any]:
+    """Validate the authoritative catalog receipt, including live catalog bytes."""
+    root = Path(repo_root).resolve()
+    keys = {
+        "schema_version", "kind", "phase", "valid", "evidence_id", "upstream",
+        "promotion_manifest", "catalog_db", "source_hashes",
+    }
+    receipt = _require_exact_keys(value, keys, "catalog promotion receipt")
+    if receipt["schema_version"] != 2 or receipt["kind"] != "catalog_promotion_receipt":
+        raise EvidenceSchemaError("catalog receipt must be schema v2 catalog_promotion_receipt")
+    if receipt["phase"] not in {"PRE", "POST"} or receipt["valid"] is not True:
+        raise EvidenceSchemaError("catalog receipt must be an authoritative PRE or POST receipt")
+    evidence_id = require_full_sha256(receipt["evidence_id"], "catalog receipt evidence_id")
+    manifest_ref = _validate_file_ref(
+        receipt["promotion_manifest"], "catalog receipt promotion_manifest", root, verify_files=True)
+    manifest, _ = verify_promotion_manifest_v2(
+        root / Path(*PurePosixPath(manifest_ref["path"]).parts), repo_root=root)
+    if manifest["evidence_id"] != evidence_id:
+        raise EvidenceSchemaError("catalog receipt does not bind its exact PRE manifest")
+    upstream = _require_exact_keys(receipt["upstream"], {"kind", "path", "sha256"}, "catalog receipt upstream")
+    expected_kind = "promotion_manifest" if receipt["phase"] == "PRE" else "promotion_result"
+    if upstream["kind"] != expected_kind:
+        raise EvidenceSchemaError("catalog receipt upstream kind does not match phase")
+    upstream_path, upstream_file = _repo_path(upstream["path"], "catalog receipt upstream.path", root)
+    upstream_sha256 = require_full_sha256(upstream["sha256"], "catalog receipt upstream.sha256")
+    try:
+        upstream_raw = json.loads(upstream_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("catalog receipt upstream must be readable JSON") from exc
+    if sha256_canonical(upstream_raw) != upstream_sha256:
+        raise EvidenceSchemaError("catalog receipt upstream SHA does not match exact authority JSON")
+    upstream_ref = {"path": upstream_path, "sha256": upstream_sha256}
+    if receipt["phase"] == "PRE":
+        if upstream_path != manifest_ref["path"]:
+            raise EvidenceSchemaError("catalog PRE receipt upstream must be the exact PRE manifest")
+    else:
+        result, result_manifest, result_sha256 = verify_promotion_result_v2(
+            upstream_file, repo_root=root)
+        if result_sha256 != upstream_sha256 or result_manifest != manifest:
+            raise EvidenceSchemaError("catalog POST receipt does not bind the exact POST/PRE chain")
+    db_ref = _validate_file_ref(receipt["catalog_db"], "catalog receipt catalog_db", root, verify_files=True)
+    sources = _validate_manifest(receipt["source_hashes"], "catalog receipt source_hashes", root, verify_files=True)
+    if len({item["path"] for item in sources}) != len(sources):
+        raise EvidenceSchemaError("catalog receipt source_hashes paths must be unique")
+    return {
+        "schema_version": 2, "kind": "catalog_promotion_receipt", "phase": receipt["phase"],
+        "valid": True, "evidence_id": evidence_id, "upstream": {
+            "kind": expected_kind, **upstream_ref,
+        }, "promotion_manifest": manifest_ref, "catalog_db": db_ref, "source_hashes": sources,
     }

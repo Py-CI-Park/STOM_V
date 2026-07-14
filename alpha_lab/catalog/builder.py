@@ -10,6 +10,8 @@ read-only로만 접근하며, 쓰기는 research_assets.db·빌드 영수증·ru
 from __future__ import annotations
 
 import fnmatch
+import os
+import tempfile
 import json
 import sqlite3
 from datetime import datetime, timezone
@@ -19,8 +21,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
     sha256_canonical,
-    validate_promotion_result_v2,
+    validate_catalog_promotion_receipt_v2,
     verify_promotion_manifest_v2,
+    verify_promotion_result_v2,
 )
 
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
@@ -278,37 +281,8 @@ def _promotion_status(
         phase, kind, evidence_id = "PRE", "promotion_manifest", manifest["evidence_id"]
     else:
         source = Path(promotion_result_path).resolve()
-        try:
-            raw = json.loads(source.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise EvidenceSchemaError("promotion result must be readable JSON") from exc
-        result = validate_promotion_result_v2(raw, repo_root=repo_root)
-        manifest_path = repo_root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
-        manifest, manifest_digest = verify_promotion_manifest_v2(
-            manifest_path, repo_root=repo_root)
-        if (
-            result["evidence_id"] != manifest["evidence_id"]
-            or result["promotion_manifest_sha256"] != manifest_digest
-        ):
-            raise EvidenceSchemaError("promotion result does not bind the verified PRE manifest")
-        expected_names = {candidate["name"] for candidate in manifest["candidates"]}
-        inserted_names = set()
-        for item in result["inserted"]:
-            if not isinstance(item, dict) or set(item) != {
-                "name", "tables", "buy_sha256", "sell_sha256", "meta"
-            } or item["name"] not in expected_names or item["tables"] != ["stockbuy", "stocksell"]:
-                raise EvidenceSchemaError("promotion result inserted structure is invalid")
-            inserted_names.add(item["name"])
-        conflict_names = set()
-        for item in result["conflicts"]:
-            if not isinstance(item, dict) or set(item) != {"name", "reason", "tables"}:
-                raise EvidenceSchemaError("promotion result conflicts structure is invalid")
-            if item["name"] not in expected_names or item["reason"] != "name_exists":
-                raise EvidenceSchemaError("promotion result conflict does not bind a candidate")
-            conflict_names.add(item["name"])
-        if inserted_names | conflict_names != expected_names or inserted_names & conflict_names:
-            raise EvidenceSchemaError("promotion result must account for every PRE candidate exactly once")
-        digest, phase, kind, evidence_id = sha256_canonical(raw), "POST", "promotion_result", result["evidence_id"]
+        result, manifest, digest = verify_promotion_result_v2(source, repo_root=repo_root)
+        phase, kind, evidence_id = "POST", "promotion_result", result["evidence_id"]
     try:
         relative = source.relative_to(repo_root.resolve()).as_posix()
     except ValueError as exc:
@@ -318,6 +292,60 @@ def _promotion_status(
         "source_kind": kind, "source_path": relative, "source_sha256": digest,
     }
 
+
+def _repo_ref(path: Path, root: Path, field: str) -> dict[str, str]:
+    try:
+        relative = path.resolve().relative_to(root).as_posix()
+    except ValueError as exc:
+        raise EvidenceSchemaError(f"{field} must be inside repo_root") from exc
+    return {"path": relative, "sha256": sha256_file(path)}
+
+
+def _strict_source_hashes(receipt: Dict[str, Any], run_dir: Path, root: Path) -> list[dict[str, str]]:
+    if receipt["missing"] or receipt["skipped"]:
+        raise EvidenceSchemaError("promotion catalog requires no missing, skipped, or unparsable sources")
+    sources: list[dict[str, str]] = []
+    for item in receipt["sources"]:
+        if set(item) - {"path", "status", "sha256", "size_bytes", "note"} or item.get("status") != "loaded":
+            raise EvidenceSchemaError("promotion catalog requires every source to be loaded")
+        path = run_dir / item["path"]
+        if not isinstance(item.get("sha256"), str) or sha256_file(path) != item["sha256"]:
+            raise EvidenceSchemaError("promotion catalog source hash is incomplete or stale")
+        source = _repo_ref(path, root, "catalog source")
+        if source["sha256"] != item["sha256"]:
+            raise EvidenceSchemaError("catalog source hash does not bind the loaded source")
+        sources.append(source)
+    if not sources or len({item["path"] for item in sources}) != len(sources):
+        raise EvidenceSchemaError("promotion catalog source hashes must be complete and unique")
+    return sorted(sources, key=lambda item: item["path"])
+
+
+def _promotion_receipt(
+    receipt: Dict[str, Any], *, root: Path, db_path: Path, status: dict[str, Any],
+) -> dict[str, Any]:
+    upstream = {"kind": status["source_kind"], "path": status["source_path"], "sha256": status["source_sha256"]}
+    manifest_path = (
+        upstream["path"] if status["phase"] == "PRE"
+        else Path(root / Path(*PurePosixPath(upstream["path"]).parts)).resolve()
+    )
+    if status["phase"] == "POST":
+        result, manifest, manifest_sha256 = verify_promotion_result_v2(
+            root / Path(*PurePosixPath(upstream["path"]).parts), repo_root=root)
+        manifest_ref = _repo_ref(
+            root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts), root, "promotion manifest")
+    else:
+        manifest_ref = _repo_ref(root / Path(*PurePosixPath(manifest_path).parts), root, "promotion manifest")
+    return {
+        "schema_version": 2,
+        "kind": "catalog_promotion_receipt",
+        "phase": status["phase"],
+        "valid": True,
+        "evidence_id": status["evidence_id"],
+        "upstream": upstream,
+        "promotion_manifest": manifest_ref,
+        "catalog_db": _repo_ref(db_path, root, "catalog DB"),
+        "source_hashes": _strict_source_hashes(receipt, Path(receipt["run_dir"]), root),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -343,25 +371,57 @@ def build_all(
     receipt_path = (Path(receipt_path) if receipt_path
                     else run_dir / "research_assets_build_receipt.json")
     receipt = new_receipt(run_dir, db_path)
-    if promotion_status is not None:
+    if promotion_status is None:
+        receipt["catalog_authority"] = {
+            "authoritative": False,
+            "reason": "legacy best-effort catalog build; not promotion authority",
+        }
+        working_db_path = db_path
+    else:
         receipt["promotion_status"] = promotion_status
-    con = sqlite3.connect(db_path)
+        handle = tempfile.NamedTemporaryFile(
+            prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
+        handle.close()
+        working_db_path = Path(handle.name)
     try:
-        create_schema(con)
-        reset_tables(con)
-        docs = {rel: read_json(receipt, run_dir, rel) for rel in _SHARED_RELS}
-        load_assets(con, run_dir, receipt)
-        ledger_rows = load_ledger_mirror(con, run_dir, receipt)
-        load_clauses(con, docs[_REL_D1], receipt)
-        load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
-        load_cells(con, run_dir, docs[_REL_O1G], receipt)
-        load_judgments(con, docs, ledger_rows, receipt)
-        con.commit()
-        receipt["table_counts"] = table_counts(con)
+        con = sqlite3.connect(working_db_path)
+        try:
+            create_schema(con)
+            reset_tables(con)
+            docs = {rel: read_json(receipt, run_dir, rel) for rel in _SHARED_RELS}
+            load_assets(con, run_dir, receipt)
+            ledger_rows = load_ledger_mirror(
+                con, run_dir, receipt, strict=promotion_status is not None)
+            load_clauses(con, docs[_REL_D1], receipt)
+            load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
+            load_cells(con, run_dir, docs[_REL_O1G], receipt)
+            load_judgments(con, docs, ledger_rows, receipt)
+            con.commit()
+            receipt["table_counts"] = table_counts(con)
+        finally:
+            con.close()
+        if promotion_status is not None:
+            _strict_source_hashes(receipt, run_dir, root)
+            os.replace(working_db_path, db_path)
+            receipt["promotion_receipt"] = _promotion_receipt(
+                receipt, root=root, db_path=db_path, status=promotion_status)
+            validate_catalog_promotion_receipt_v2(
+                receipt["promotion_receipt"], repo_root=root)
+        receipt["gitignore"] = ensure_gitignore(run_dir)
+        if write_receipt:
+            receipt_bytes = json.dumps(receipt, ensure_ascii=False, indent=1).encode("utf-8")
+            if promotion_status is None:
+                receipt_path.write_bytes(receipt_bytes)
+            else:
+                handle = tempfile.NamedTemporaryFile(
+                    prefix=f".{receipt_path.name}.", suffix=".tmp",
+                    dir=receipt_path.parent, delete=False)
+                try:
+                    handle.write(receipt_bytes)
+                finally:
+                    handle.close()
+                os.replace(handle.name, receipt_path)
+        return receipt
     finally:
-        con.close()
-    receipt["gitignore"] = ensure_gitignore(run_dir)
-    if write_receipt:
-        Path(receipt_path).write_text(
-            json.dumps(receipt, ensure_ascii=False, indent=1), encoding="utf-8")
-    return receipt
+        if promotion_status is not None and working_db_path.exists():
+            working_db_path.unlink()
