@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import shutil
@@ -239,7 +240,7 @@ _SEALED_PREREG_DOCUMENT = """# 봉인 픽스처
 > 지위: **SEALED**
 
 ```json prereg-contract-v2
-{"dependency_roots":["code/measure.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-gate-fixture","kill_rule":"non-positive effect","ledger_path":"ledger.jsonl","multiplicity_family":"gate fixture","non_python_dependencies":[],"primary_estimand":"fixture value","sample_floors":{"qualified":2},"schema_version":2}
+{"authority_paths":{"backup_dir":"backups","catalog_dir":"catalog","journal_dir":"journal","promotions_dir":"promotions","seal_dir":"seals","target_db":"code/measure.py"},"dependency_roots":["code/measure.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-gate-fixture","kill_rule":"non-positive effect","ledger_path":"ledger.jsonl","multiplicity_family":"gate fixture","non_python_dependencies":[],"primary_estimand":"fixture value","sample_floors":{"qualified":2},"schema_version":2}
 ```
 """
 
@@ -369,7 +370,7 @@ def _v2_seal_manifest(
     sealed_at: str = "2026-07-14T00:00:00+00:00",
 ) -> Path:
     """Official finalizer가 생성·검증한 봉인 sidecar를 커밋한다."""
-    path = repo / "seal.json"
+    path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
     prereg.finalize_prereg(
         sealed,
         repo_root=repo,
@@ -377,7 +378,7 @@ def _v2_seal_manifest(
         manifest_path=path,
         sealed_at=sealed_at,
     )
-    _git(repo, env, "add", "seal.json")
+    _git(repo, env, "add", path.relative_to(repo).as_posix())
     _git(repo, env, "-c", "user.name=tester", "-c", "user.email=t@example.com",
          "commit", "-q", "-m", "seal")
     return path

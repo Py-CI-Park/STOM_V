@@ -64,6 +64,9 @@ ALLOWED_TRIAL_PREFIXES: tuple[str, ...] = ("a", "b", "c")
 class LedgerSchemaError(Exception):
     """원장 스키마 위반(필수 키·형식·파싱 불가) — fail-closed 거부."""
 
+class LegacyLedgerWriteBlockedError(LedgerSchemaError):
+    """The public v1 writer is retired; historical rows remain readable."""
+
 
 def _serialize(record: dict) -> str:
     """Serialize v1 byte-compatibly and v2 with its appended contract keys."""
@@ -203,25 +206,10 @@ def append_trial(
     path=None,
     known_ok: bool = False,
 ) -> dict:
-    """전역 n_trials 원장에 시행 1행을 append한다 — 유일한 기입 경로.
-
-    known 창(2025-01-01~2026-02-27·부재 창·계열-known 2024) 접촉 window는
-    known_ok=True를 명시해야만 기록된다(veto/감사 기록 용도 — 원장 §1).
-    반환: 기록된 레코드 사본(dict).
-    """
-    record = {
-        "ts": ts,
-        "series": series,
-        "window": window,
-        "trial_type": trial_type,
-        "target": target,
-        "result": result,
-        "session": session,
-    }
-    _validate_append_fields(record, known_ok)
-    target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
-    _append_record(target_path, record)
-    return dict(record)
+    """Retired v1 writer; v1 ledger rows are historical read-only evidence."""
+    raise LegacyLedgerWriteBlockedError(
+        "append_trial is retired: v1 ledger writes are blocked before mutation; use append_trial_v2"
+    )
 def _contract_ledger_path(root: Path, receipt: dict) -> Path:
     """Derive the sole v2 ledger destination from the receipt's sealed contract."""
     try:

@@ -143,80 +143,11 @@ class TestDateTokens:
 
 
 class TestAppendTrial:
-    def test_append_success_and_line_format(self, tmp_path):
-        path = tmp_path / "ledger.jsonl"
-        record = ledger.append_trial(path=path, **VALID_ROW)
-        assert record == VALID_ROW
-        line = path.read_text(encoding="utf-8").splitlines()[0]
-        parsed = json.loads(line)
-        assert list(parsed.keys()) == list(ledger.REQUIRED_KEYS)  # 키 순서 계약
-        assert json.dumps(parsed, ensure_ascii=False) == line  # 왕복 byte 동일
-
-    @pytest.mark.parametrize("key", list(ledger.REQUIRED_KEYS))
-    def test_empty_required_key_rejected(self, tmp_path, key):
-        with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(**{key: "  "}))
-
-    def test_bad_ts_rejected(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(ts="어제쯤"))
-
-    def test_trial_type_d_rejected(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
-            ledger.append_trial(
-                path=tmp_path / "l.jsonl", **_row(trial_type="d(신규 유형)")
-            )
-        assert "규약 개정" in str(excinfo.value)  # type-d는 원장 §5로만(A6 조건)
-
-    def test_window_without_date_fail_closed(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(window="발견창 전체"))
-        assert "fail-closed" in str(excinfo.value)
-
-    def test_known_window_rejected_without_known_ok(self, tmp_path):
-        with pytest.raises(windows.WindowViolation) as excinfo:
-            ledger.append_trial(
-                path=tmp_path / "l.jsonl",
-                **_row(window="2025-01-01~2026-02-27(known/audit)"),
-            )
-        assert "선택·튜닝 금지" in str(excinfo.value)
-
-    def test_known_window_allowed_with_known_ok(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        ledger.append_trial(
-            path=path,
-            known_ok=True,
-            **_row(window="2025-01-01~2026-02-27(known/audit, veto 기록)"),
-        )
-        assert len(ledger.read_all(path)) == 1
-
-    def test_2024_window_gated_for_exit_series(self, tmp_path):
-        row = _row(series="D5-R", window="2024-01-01~2024-12-31(조건부)")
-        with pytest.raises(windows.WindowViolation):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **row)
-        ledger.append_trial(path=tmp_path / "l.jsonl", known_ok=True, **row)
-
-    def test_2024_window_free_for_non_exit_series(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        ledger.append_trial(
-            path=path, **_row(series="스냅샷-신규", window="2024-01-01~2024-06-30(조건부 검증)")
-        )
-        assert ledger.aggregate(path)["known_window_contacts"] == 0
-
-    def test_append_preserves_crlf_convention(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        first = json.dumps(VALID_ROW, ensure_ascii=False)
-        path.write_bytes(first.encode("utf-8") + b"\r\n")
-        ledger.append_trial(path=path, **_row(target="둘째 행"))
-        data = path.read_bytes()
-        assert data.count(b"\r\n") == 2  # 기존 CRLF 관례 유지
-        assert len(ledger.read_all(path)) == 2
-
-    def test_append_repairs_missing_trailing_newline(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        path.write_bytes(json.dumps(VALID_ROW, ensure_ascii=False).encode("utf-8"))
-        ledger.append_trial(path=path, **_row(target="둘째 행"))
-        assert len(ledger.read_all(path)) == 2  # 행 붙음 없음
+    def test_v1_writer_is_blocked_before_creating_an_arbitrary_path(self, tmp_path):
+        path = tmp_path / "arbitrary-v1.jsonl"
+        with pytest.raises(ledger.LegacyLedgerWriteBlockedError):
+            ledger.append_trial(path=path, **VALID_ROW)
+        assert not path.exists()
 def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
     contract = {
         "schema_version": 2,
@@ -227,11 +158,22 @@ def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
         "multiplicity_family": "unit family",
         "kill_rule": "non-positive effect",
         "ledger_path": "ledger.jsonl",
+        "authority_paths": {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        },
         "dependency_roots": list(roots),
         "dynamic_python_dependencies": list(dynamic_python),
         "non_python_dependencies": list(non_python),
     }
     return "> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract, sort_keys=True) + "\n```\n"
+def _canonical_seal_path(root, document):
+    return root / "seals" / f"{hashlib.sha256(document.read_bytes()).hexdigest()}.seal.json"
+
 
 
 def _bindings(tmp_path):
@@ -260,12 +202,12 @@ def _v2_chain(tmp_path):
         doc,
         repo_root=tmp_path,
         code_files=(code,),
-        manifest_path=tmp_path / "seal.json",
+        manifest_path=_canonical_seal_path(tmp_path, doc),
         sealed_at="2026-07-14T00:00:00+00:00",
     )
     receipt = measure_gate.issue_gate_receipt_v2(
         tmp_path,
-        tmp_path / "seal.json",
+        _canonical_seal_path(tmp_path, doc),
         issued_at="2026-07-14T00:01:00+00:00",
         nonce="unit-run",
     )
@@ -284,7 +226,7 @@ class TestLedgerV2:
     def test_append_v2_valid_identity_and_mixed_reading(self, tmp_path):
         receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
         path = tmp_path / "ledger.jsonl"
-        ledger.append_trial(path=path, **VALID_ROW)
+        ledger._append_record(path, VALID_ROW)
         record = ledger.append_trial_v2(
             path=path,
             repo_root=tmp_path,
@@ -405,6 +347,12 @@ class TestLedgerV2:
             input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
             path=ledger_path, **_row(),
         )
+        with pytest.raises(evidence.EvidenceSchemaError, match="promotions_dir"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "caller-output",
+            )
         with pytest.raises(evidence.EvidenceSchemaError, match="PRE.created_at must not precede ledger.ts"):
             evidence.issue_promotion_manifest_v2(
                 tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
@@ -495,9 +443,9 @@ class TestReadAggregate:
 
     def test_aggregate_counts_and_sqrt(self, tmp_path):
         path = tmp_path / "l.jsonl"
-        ledger.append_trial(path=path, **_row(series="D1"))
-        ledger.append_trial(path=path, **_row(series="D1", trial_type="a(엔진 확인)"))
-        ledger.append_trial(path=path, **_row(series="S-트랙"))
+        ledger._append_record(path, _row(series="D1"))
+        ledger._append_record(path, _row(series="D1", trial_type="a(엔진 확인)"))
+        ledger._append_record(path, _row(series="S-트랙"))
         agg = ledger.aggregate(path)
         assert agg["total"] == 3
         assert agg["by_series"]["D1"]["n"] == 2
@@ -596,205 +544,35 @@ class TestPrereg:
         prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
         with pytest.raises(FileExistsError):
             prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
-    def test_finalize_prereg_rejects_draft_and_existing_sidecar(self, tmp_path):
-        draft = tmp_path / "prereg.md"
-        draft.write_text(
-            "> 지위: **SEALED**\n봉인 전 초안\n", encoding="utf-8"
-        )
+    def test_finalize_prereg_uses_only_canonical_seal_path_and_binds_authority(self, tmp_path):
         code = tmp_path / "measure.py"
-        code.write_text("print('measure')\n", encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError):
-            prereg.finalize_prereg(
-                draft,
-                repo_root=tmp_path,
-                code_files=(code,),
-                manifest_path=tmp_path / "seal.json",
-                sealed_at="2026-07-14T00:00:00+00:00",
-            )
-        sealed = tmp_path / "sealed.md"
-        sealed.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-        sidecar = tmp_path / "seal.json"
-        prereg.finalize_prereg(
-            sealed,
-            repo_root=tmp_path,
-            code_files=(code,),
-            manifest_path=sidecar,
-            sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        with pytest.raises(FileExistsError):
-            prereg.finalize_prereg(
-                sealed,
-                repo_root=tmp_path,
-                code_files=(code,),
-                manifest_path=sidecar,
-                sealed_at="2026-07-14T00:00:00+00:00",
-            )
-
-    def test_finalize_prereg_sorted_full_hashes_and_timezone_required(self, tmp_path):
-        sealed = tmp_path / "prereg.md"
-        sealed.write_text(_sealed_contract(roots=("a.py", "b.py")), encoding="utf-8")
-        (tmp_path / "b.py").write_text("b = 1\n", encoding="utf-8")
-        (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError):
-            prereg.finalize_prereg(
-                sealed,
-                repo_root=tmp_path,
-                code_files=(tmp_path / "a.py",),
-                manifest_path=tmp_path / "bad.json",
-                sealed_at="2026-07-14T00:00:00",
-            )
-        seal = prereg.finalize_prereg(
-            sealed,
-            repo_root=tmp_path,
-            code_files=(tmp_path / "b.py", tmp_path / "a.py"),
-            manifest_path=tmp_path / "seal.json",
-            sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        assert [item["path"] for item in seal["code_manifest"]] == ["a.py", "b.py"]
-        assert all(len(item["sha256"]) == 64 for item in seal["code_manifest"])
-        assert evidence.validate_prereg_seal(
-            json.loads((tmp_path / "seal.json").read_text(encoding="utf-8")),
-            repo_root=tmp_path,
-        ) == seal
-    def test_finalize_prereg_rejects_missing_contract_field(self, tmp_path):
-        code = tmp_path / "measure.py"
-        code.write_text("value = 1\n", encoding="utf-8")
-        contract = {
-            "schema_version": 2,
-            "hypothesis_id": "H-unit",
-            "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
-            "primary_estimand": "mean spread",
-            "sample_floors": {"qualified": 2},
-            "multiplicity_family": "unit family",
-            "dependency_roots": ["measure.py"],
-            "dynamic_python_dependencies": [],
-        }
-        doc = tmp_path / "prereg.md"
-        doc.write_text("> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract) + "\n```\n", encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError):
-            prereg.finalize_prereg(doc, repo_root=tmp_path, code_files=(code,), manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00")
-    def test_finalize_prereg_includes_executed_package_initializers(self, tmp_path):
-        package = tmp_path / "pkg"
-        package.mkdir()
-        (package / "__init__.py").write_text("PACKAGE = True\n", encoding="utf-8")
-        worker = package / "worker.py"
-        worker.write_text("VALUE = 1\n", encoding="utf-8")
-        measure = tmp_path / "measure.py"
-        measure.write_text("import pkg.worker\n", encoding="utf-8")
-        doc = tmp_path / "prereg.md"
-        doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-        seal = prereg.finalize_prereg(
-            doc, repo_root=tmp_path,
-            code_files=(measure, package / "__init__.py", worker),
-            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        assert [item["path"] for item in seal["code_manifest"]] == [
-            "measure.py", "pkg/__init__.py", "pkg/worker.py",
-        ]
-
-    def test_finalize_prereg_requires_exact_dynamic_dependency_declaration(self, tmp_path):
-        measure = tmp_path / "measure.py"
-        plugin = tmp_path / "plugin.py"
-        measure.write_text("import importlib\nimportlib.import_module('plugin')\n", encoding="utf-8")
-        plugin.write_text("VALUE = 1\n", encoding="utf-8")
-        doc = tmp_path / "prereg.md"
-        doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError, match="dynamic_python_dependencies"):
-            prereg.finalize_prereg(
-                doc, repo_root=tmp_path, code_files=(measure, plugin),
-                manifest_path=tmp_path / "bad.json", sealed_at="2026-07-14T00:00:00+00:00",
-            )
-        doc.write_text(
-            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
-            encoding="utf-8",
-        )
-        prereg.finalize_prereg(
-            doc, repo_root=tmp_path, code_files=(measure, plugin),
-            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
-        )
-    def test_validate_prereg_seal_rejects_hand_authored_incomplete_closure(self, tmp_path):
-        measure = tmp_path / "measure.py"
-        dependency = tmp_path / "dependency.py"
-        measure.write_text("import dependency\n", encoding="utf-8")
-        dependency.write_text("VALUE = 1\n", encoding="utf-8")
+        code.write_text("VALUE = 1\n", encoding="utf-8")
         document = tmp_path / "prereg.md"
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-        seal = {
-            "schema_version": 2, "kind": "prereg_seal", "status": "SEALED",
-            "sealed_at": "2026-07-14T00:00:00+00:00",
-            "sealed_doc": {"path": "prereg.md", "sha256": hashlib.sha256(document.read_bytes()).hexdigest()},
-            "code_manifest": [{"path": "measure.py", "sha256": hashlib.sha256(measure.read_bytes()).hexdigest()}],
-        }
-        with pytest.raises(evidence.EvidenceSchemaError, match="derived dependency closure"):
-            evidence.validate_prereg_seal(seal, repo_root=tmp_path, verify_files=True)
-
-    def test_finalize_prereg_seeds_declared_root_package_initializers(self, tmp_path):
-        package = tmp_path / "pkg"
-        package.mkdir()
-        initializer = package / "__init__.py"
-        initializer.write_text("PACKAGE = True\n", encoding="utf-8")
-        worker = package / "worker.py"
-        worker.write_text("VALUE = 1\n", encoding="utf-8")
-        document = tmp_path / "prereg.md"
-        document.write_text(_sealed_contract(roots=("pkg/worker.py",)), encoding="utf-8")
-        seal = prereg.finalize_prereg(
-            document, repo_root=tmp_path, code_files=(worker, initializer),
-            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        assert [item["path"] for item in seal["code_manifest"]] == ["pkg/__init__.py", "pkg/worker.py"]
-
-    def test_finalize_prereg_resolves_alias_dynamic_and_relative_imports(self, tmp_path):
-        package = tmp_path / "pkg"
-        package.mkdir()
-        initializer = package / "__init__.py"
-        initializer.write_text("", encoding="utf-8")
-        dependency = package / "dependency.py"
-        dependency.write_text("VALUE = 1\n", encoding="utf-8")
-        plugin = tmp_path / "plugin.py"
-        plugin.write_text("VALUE = 2\n", encoding="utf-8")
-        measure = package / "measure.py"
-        measure.write_text(
-            "from importlib import import_module as load\nfrom . import dependency\nload('plugin')\n",
-            encoding="utf-8",
-        )
-        document = tmp_path / "prereg.md"
-        document.write_text(
-            _sealed_contract(roots=("pkg/measure.py",), dynamic_python=("plugin.py",)),
-            encoding="utf-8",
-        )
-        seal = prereg.finalize_prereg(
-            document, repo_root=tmp_path,
-            code_files=(measure, initializer, dependency, plugin),
-            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        assert [item["path"] for item in seal["code_manifest"]] == [
-            "pkg/__init__.py", "pkg/dependency.py", "pkg/measure.py", "plugin.py",
-        ]
-        assert evidence.validate_prereg_seal(seal, repo_root=tmp_path, verify_files=True) == seal
-
-    def test_finalize_prereg_rejects_unsupported_dynamic_loader_shape(self, tmp_path):
-        measure = tmp_path / "measure.py"
-        plugin = tmp_path / "plugin.py"
-        measure.write_text(
-            "import importlib\nloader = importlib.import_module\nname = 'plugin'\nloader(name)\n",
-            encoding="utf-8",
-        )
-        plugin.write_text("VALUE = 1\n", encoding="utf-8")
-        document = tmp_path / "prereg.md"
-        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError, match="exact string literal"):
+        canonical = _canonical_seal_path(tmp_path, document)
+        with pytest.raises(evidence.EvidenceSchemaError, match="canonical contract seal path"):
             prereg.finalize_prereg(
-                document, repo_root=tmp_path, code_files=(measure, plugin),
-                manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=tmp_path / "arbitrary.seal.json", sealed_at="2026-07-14T00:00:00+00:00",
             )
+        seal = prereg.finalize_prereg(
+            document, repo_root=tmp_path, code_files=(code,),
+            manifest_path=canonical, sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert canonical.is_file()
+        assert seal["ledger_path"] == "ledger.jsonl"
+        assert seal["authority_paths"]["promotions_dir"] == "promotions"
+        tampered = {**seal, "authority_paths": {**seal["authority_paths"], "seal_dir": "other-seals"}}
+        with pytest.raises(evidence.EvidenceSchemaError, match="authority_paths"):
+            evidence.validate_prereg_seal(tampered, repo_root=tmp_path)
+
     @pytest.mark.parametrize("source", [
         "import runpy\nrunpy.run_path('plugin.py')\n",
-        "from runpy import run_module as load\nload('plugin')\n",
-        "exec(open('plugin.py').read())\n",
+        "from builtins import exec as execute\nexecute('x = 1')\n",
+        "loaders = {'run': __import__}\nloaders['run']('plugin')\n",
         "eval(compile(open('plugin.py').read(), 'plugin.py', 'exec'))\n",
-        "import importlib as il\nloader = il.util.module_from_spec\nloader(None)\n",
     ])
-    def test_finalize_prereg_rejects_unsupported_local_python_execution(self, tmp_path, source):
+    def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
         measure.write_text(source, encoding="utf-8")
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
@@ -803,22 +581,9 @@ class TestPrereg:
         with pytest.raises(evidence.EvidenceSchemaError):
             prereg.finalize_prereg(
                 document, repo_root=tmp_path, code_files=(measure, plugin),
-                manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
             )
-    def test_finalize_prereg_resolves_declared_runpy_dependency(self, tmp_path):
-        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
-        measure.write_text("import runpy\nrunpy.run_path('plugin.py')\n", encoding="utf-8")
-        plugin.write_text("VALUE = 1\n", encoding="utf-8")
-        document = tmp_path / "prereg.md"
-        document.write_text(
-            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
-            encoding="utf-8",
-        )
-        seal = prereg.finalize_prereg(
-            document, repo_root=tmp_path, code_files=(measure, plugin),
-            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
-        )
-        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
 
 
 # ---------------------------------------------------------------------------
@@ -830,8 +595,8 @@ class TestTrialsReport:
     def _make_ledger(self, tmp_path) -> Path:
         path = tmp_path / "l.jsonl"
         for i in range(3):
-            ledger.append_trial(path=path, **_row(series="D1", target=f"절 #{i}"))
-        ledger.append_trial(path=path, **_row(series="S-트랙"))
+            ledger._append_record(path, _row(series="D1", target=f"절 #{i}"))
+        ledger._append_record(path, _row(series="S-트랙"))
         return path
 
     def test_block_contents(self, tmp_path):

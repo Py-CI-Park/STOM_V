@@ -19,6 +19,7 @@ import ast
 import hashlib
 import json
 import re
+import os
 from pathlib import Path, PurePosixPath
 
 from alpha_lab.discipline import windows
@@ -36,7 +37,7 @@ DEFAULT_KILL_CRITERIA: tuple[str, ...] = (
     "kill-3(재현 게이트): 스칼라/벡터 등가 대조 미달 → 해당 경로 금지, 전 경로 미달 시 중단",
 )
 _CONTRACT_FENCE = re.compile(r"```json prereg-contract-v2\s*\n(?P<contract>.*?)\n```", re.DOTALL)
-_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "ledger_path", "dependency_roots", "dynamic_python_dependencies", "non_python_dependencies"}
+_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "ledger_path", "authority_paths", "dependency_roots", "dynamic_python_dependencies", "non_python_dependencies"}
 
 
 def _front_sections(params: dict) -> list[str]:
@@ -214,6 +215,45 @@ def write_skeleton(path, **kwargs) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
     return target
+_AUTHORITY_PATH_KEYS = {
+    "seal_dir", "promotions_dir", "catalog_dir", "target_db", "journal_dir", "backup_dir",
+}
+
+
+def _contract_authority_paths(value: object, root: Path) -> dict[str, str]:
+    if not isinstance(value, dict) or set(value) != _AUTHORITY_PATH_KEYS:
+        raise EvidenceSchemaError("authority_paths must contain exactly the six v2 authority paths")
+    paths: dict[str, str] = {}
+    for field in sorted(_AUTHORITY_PATH_KEYS):
+        path, resolved = _repo_path(value[field], f"authority_paths.{field}", root)
+        if field == "target_db":
+            if not resolved.is_file():
+                raise EvidenceSchemaError("authority_paths.target_db must name an existing non-protected file")
+            protected = {"_database", "_database_v3k_shadow", "backup", "_log"}
+            if protected.intersection(PurePosixPath(path).parts):
+                raise EvidenceSchemaError("authority_paths.target_db must not name a protected DB path")
+        elif resolved.exists() and not resolved.is_dir():
+            raise EvidenceSchemaError(f"authority_paths.{field} must name a directory when it exists")
+        paths[field] = path
+    if len(set(paths.values())) != len(paths):
+        raise EvidenceSchemaError("authority_paths values must be distinct")
+    return paths
+
+
+def _repo_path(value: object, field: str, root: Path) -> tuple[str, Path]:
+    if not isinstance(value, str) or not value or "\\" in value or any(
+        part in ("", ".", "..") for part in value.split("/")
+    ):
+        raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
+    path = PurePosixPath(value)
+    if path.is_absolute():
+        raise EvidenceSchemaError(f"{field} must be a safe repository-relative POSIX path")
+    resolved = (root / Path(*path.parts)).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise EvidenceSchemaError(f"{field} resolves outside repo_root") from exc
+    return path.as_posix(), resolved
 def _contract_repo_path(value: object, field: str, root: Path) -> str:
     if not isinstance(value, str) or not value or "\\" in value or any(part in ("", ".", "..") for part in value.split("/")):
         raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
@@ -250,6 +290,7 @@ def _parse_contract(text: str, root: Path) -> dict:
         raise EvidenceSchemaError(f"invalid discovery_window: {exc}") from exc
     ledger_path = _contract_ledger_path(contract["ledger_path"], root)
     contract["ledger_path"] = ledger_path
+    contract["authority_paths"] = _contract_authority_paths(contract["authority_paths"], root)
     floors = contract["sample_floors"]
     if not isinstance(floors, dict) or not floors or any(not isinstance(name, str) or not name.strip() or not isinstance(floor, int) or isinstance(floor, bool) or floor <= 0 for name, floor in floors.items()):
         raise EvidenceSchemaError("sample_floors must be a non-empty object of positive integer floors")
@@ -387,14 +428,19 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     """Resolve literal dynamic dependencies; unsupported local execution is forbidden."""
     calls, aliases = _dynamic_call_kinds(tree)
     found: set[Path] = set()
-    forbidden = {"exec", "eval", "compile", "builtins.exec", "builtins.eval", "builtins.compile"}
+    forbidden = {
+        "exec", "eval", "compile", "open", "runpy.run_module", "runpy.run_path",
+        "builtins.exec", "builtins.eval", "builtins.compile", "builtins.open",
+    }
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         raw_name = _dotted_name(node.func, {})
         canonical = _dotted_name(node.func, aliases)
+        if isinstance(node.func, ast.Subscript):
+            raise EvidenceSchemaError(f"indirect subscript execution is unsupported: {path}")
         if raw_name in forbidden or canonical in forbidden:
-            raise EvidenceSchemaError(f"exec/eval/compile local Python execution is unsupported: {path}")
+            raise EvidenceSchemaError(f"indirect local Python execution is unsupported: {path}")
         kind = calls.get(raw_name) if raw_name else None
         kind = kind or (calls.get(canonical) if canonical else None)
         if kind is None:
@@ -418,13 +464,14 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             location = Path(target.value)
             candidate = (path.parent / location).resolve() if not location.is_absolute() else location.resolve()
             if not candidate.is_file() or candidate.suffix != ".py":
-                candidate = None
-        if candidate is not None:
-            try:
-                candidate.relative_to(root)
-            except ValueError:
-                continue
-            found.add(candidate)
+                raise EvidenceSchemaError(f"dynamic import/load target must resolve to a local .py file: {path}")
+        if candidate is None:
+            raise EvidenceSchemaError(f"dynamic import/load target cannot be resolved locally: {path}")
+        try:
+            candidate.relative_to(root)
+        except ValueError as exc:
+            raise EvidenceSchemaError(f"dynamic import/load target resolves outside repo_root: {path}") from exc
+        found.add(candidate)
     return found
 
 
@@ -484,7 +531,7 @@ def derive_prereg_code_manifest(text: str, repo_root: Path | str) -> set[str]:
 
 
 def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
-    """Create a v2 prereg seal after contract and dependency-closure validation."""
+    """Create a v2 prereg seal only at its contract-owned canonical destination."""
     root, document = Path(repo_root).resolve(), Path(doc_path).resolve()
     try:
         doc_relative = document.relative_to(root).as_posix()
@@ -497,6 +544,7 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
         raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
     if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
         raise EvidenceSchemaError("preregistration document retains draft marker")
+    contract = _parse_contract(text, root)
     declared = []
     for index, code_file in enumerate(code_files):
         candidate = Path(code_file).resolve()
@@ -512,12 +560,21 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
     if set(declared) != expected:
         raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
     manifest = [{"path": item, "sha256": hashlib.sha256((root / Path(*PurePosixPath(item).parts)).read_bytes()).hexdigest()} for item in sorted(expected)]
-    seal = {"schema_version": 2, "kind": "prereg_seal", "status": "SEALED", "sealed_at": sealed_at, "sealed_doc": {"path": doc_relative, "sha256": hashlib.sha256(document.read_bytes()).hexdigest()}, "code_manifest": manifest}
+    sealed_doc = {"path": doc_relative, "sha256": hashlib.sha256(document.read_bytes()).hexdigest()}
+    canonical_output = root / Path(*PurePosixPath(contract["authority_paths"]["seal_dir"]).parts) / f"{sealed_doc['sha256']}.seal.json"
+    if Path(manifest_path).resolve() != canonical_output:
+        raise EvidenceSchemaError("manifest_path must equal the canonical contract seal path")
+    seal = {
+        "schema_version": 2, "kind": "prereg_seal", "status": "SEALED", "sealed_at": sealed_at,
+        "sealed_doc": sealed_doc, "ledger_path": contract["ledger_path"],
+        "authority_paths": contract["authority_paths"], "code_manifest": manifest,
+    }
     validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
-    output = Path(manifest_path)
-    if output.exists():
-        raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {output}")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with open(output, "x", encoding="utf-8", newline="\n") as handle:
+    if canonical_output.exists():
+        raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
+    canonical_output.parent.mkdir(parents=True, exist_ok=True)
+    with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
         handle.write(canonical_json_bytes(validated).decode("utf-8"))
+        handle.flush()
+        os.fsync(handle.fileno())
     return dict(validated)

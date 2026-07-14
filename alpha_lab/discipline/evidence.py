@@ -24,6 +24,8 @@ class PreregSealV2(TypedDict):
     status: str
     sealed_at: str
     sealed_doc: dict[str, str]
+    ledger_path: str
+    authority_paths: dict[str, str]
     code_manifest: list[dict[str, str]]
 
 
@@ -174,15 +176,20 @@ def validate_measurement_bindings(
 
 
 def _validate_prereg_seal_authority(result: PreregSealV2, root: Path) -> None:
-    """Bind a live seal manifest to the sealed document's derived closure."""
+    """Bind a live seal manifest to the sealed document's derived closure and paths."""
     document = root / Path(*PurePosixPath(result["sealed_doc"]["path"]).parts)
     text = document.read_text(encoding="utf-8")
     if "> 지위: **SEALED**" not in text:
         raise EvidenceSchemaError("sealed_doc is not explicitly SEALED")
     if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
         raise EvidenceSchemaError("sealed_doc retains draft marker")
-    from alpha_lab.discipline.prereg import derive_prereg_code_manifest
+    from alpha_lab.discipline.prereg import _parse_contract, derive_prereg_code_manifest
 
+    contract = _parse_contract(text, root)
+    if result["ledger_path"] != contract["ledger_path"]:
+        raise EvidenceSchemaError("seal ledger_path does not match sealed contract")
+    if result["authority_paths"] != contract["authority_paths"]:
+        raise EvidenceSchemaError("seal authority_paths do not match sealed contract")
     expected = sorted(derive_prereg_code_manifest(text, root))
     actual = [item["path"] for item in result["code_manifest"]]
     if actual != expected:
@@ -191,15 +198,18 @@ def _validate_prereg_seal_authority(result: PreregSealV2, root: Path) -> None:
 
 def validate_prereg_seal(value: object, *, repo_root: Path | str, verify_files: bool = True) -> PreregSealV2:
     root = Path(repo_root).resolve()
-    seal = _require_exact_keys(value, {"schema_version", "kind", "status", "sealed_at", "sealed_doc", "code_manifest"}, "prereg seal")
+    seal = _require_exact_keys(value, {"schema_version", "kind", "status", "sealed_at", "sealed_doc", "ledger_path", "authority_paths", "code_manifest"}, "prereg seal")
     if seal["schema_version"] != 2 or seal["kind"] != "prereg_seal" or seal["status"] != "SEALED":
         raise EvidenceSchemaError("prereg seal must be schema_version=2, kind=prereg_seal, status=SEALED")
+    from alpha_lab.discipline.prereg import _contract_authority_paths, _contract_ledger_path
     result: PreregSealV2 = {
         "schema_version": 2,
         "kind": "prereg_seal",
         "status": "SEALED",
         "sealed_at": _require_timestamp(seal["sealed_at"], "sealed_at"),
         "sealed_doc": _validate_file_ref(seal["sealed_doc"], "sealed_doc", root, verify_files=verify_files),
+        "ledger_path": _contract_ledger_path(seal["ledger_path"], root),
+        "authority_paths": _contract_authority_paths(seal["authority_paths"], root),
         "code_manifest": _validate_manifest(seal["code_manifest"], "code_manifest", root, verify_files=verify_files),
     }
     if verify_files:
@@ -266,6 +276,12 @@ def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, 
     if sha256_canonical(seal_value) != seal_manifest["sha256"]:
         raise EvidenceSchemaError("seal_manifest SHA-256 does not match canonical contents")
     seal = validate_prereg_seal(seal_value, repo_root=root, verify_files=True)
+    canonical_seal = (
+        root / Path(*PurePosixPath(seal["authority_paths"]["seal_dir"]).parts)
+        / f"{seal['sealed_doc']['sha256']}.seal.json"
+    )
+    if seal_path != canonical_seal:
+        raise EvidenceSchemaError("seal_manifest path is not the sealed contract canonical path")
     require_timestamp_order(("sealed_at", seal["sealed_at"]), ("issued_at", issued_at))
     prereg = _validate_file_ref(receipt["prereg"], "prereg", root, verify_files=True)
     if prereg != seal["sealed_doc"]:
@@ -369,6 +385,7 @@ class PromotionManifestV2(TypedDict):
     result_artifacts: list[dict[str, str]]
     candidate_set: list[dict[str, str]]
     candidate_set_sha256: str
+    authority_paths: dict[str, str]
 
 
 class PromotionResultV2(TypedDict):
@@ -407,6 +424,15 @@ def _canonical_ledger_path(root: Path, receipt: Mapping[str, Any]) -> Path:
     return (root / Path(*PurePosixPath(contract["ledger_path"]).parts)).resolve()
 
 
+def _canonical_authority_paths(root: Path, receipt: Mapping[str, Any]) -> dict[str, str]:
+    try:
+        seal = _load_json_file(root, receipt["seal_manifest"], "seal_manifest")
+        validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
+    except (EvidenceSchemaError, KeyError, TypeError) as exc:
+        raise EvidenceSchemaError(f"cannot derive canonical authority paths from sealed contract: {exc}") from exc
+    return dict(validated["authority_paths"])
+
+
 def issue_promotion_manifest_v2(
     repo_root: Path | str,
     *,
@@ -415,7 +441,7 @@ def issue_promotion_manifest_v2(
     ledger_path: Path | str,
     evidence_id: str,
     created_at: str,
-    output_dir: Path | str,
+    output_dir: Path | str | None = None,
 ) -> PromotionManifestV2:
     """Issue the only canonical PRE manifest from sealed authorities and one ledger row."""
     root = Path(repo_root).resolve()
@@ -431,9 +457,10 @@ def issue_promotion_manifest_v2(
     canonical_ledger = _canonical_ledger_path(root, receipt)
     if source_ledger != canonical_ledger:
         raise EvidenceSchemaError("ledger_path is not the sealed contract ledger_path")
-    output = Path(output_dir).resolve()
-    if output != root / "promotions":
-        raise EvidenceSchemaError("output_dir must be the canonical promotions directory")
+    authority_paths = _canonical_authority_paths(root, receipt)
+    output = root / Path(*PurePosixPath(authority_paths["promotions_dir"]).parts)
+    if output_dir is not None and Path(output_dir).resolve() != output:
+        raise EvidenceSchemaError("output_dir must equal the sealed contract promotions_dir")
     evidence_id, created_at = require_full_sha256(evidence_id, "evidence_id"), _require_timestamp(created_at, "created_at")
     from alpha_lab.discipline import ledger as authority_ledger
     try:
@@ -464,6 +491,7 @@ def issue_promotion_manifest_v2(
         "gate_receipt": ref(receipt_file), "gate_claim": ref(claim_file),
         "input_artifacts": identity["input_artifacts"], "result_artifacts": identity["result_artifacts"],
         "candidate_set": identity["candidate_set"], "candidate_set_sha256": identity["candidate_set_sha256"],
+        "authority_paths": authority_paths,
     }
     output_file = output / f"{evidence_id}.pre.json"
     if output_file.exists():
@@ -487,7 +515,7 @@ def validate_promotion_manifest_v2(
     keys = {
         "schema_version", "kind", "status", "created_at", "evidence_id", "ledger",
         "gate_receipt", "gate_claim", "input_artifacts", "result_artifacts",
-        "candidate_set", "candidate_set_sha256",
+        "candidate_set", "candidate_set_sha256", "authority_paths",
     }
     manifest = _require_exact_keys(value, keys, "promotion manifest")
     if (manifest["schema_version"], manifest["kind"], manifest["status"]) != (2, "promotion_manifest", "PRE"):
@@ -506,6 +534,7 @@ def validate_promotion_manifest_v2(
         "result_artifacts": _validate_manifest(manifest["result_artifacts"], "result_artifacts", root, verify_files=verify_files),
         "candidate_set": manifest["candidate_set"],
         "candidate_set_sha256": require_full_sha256(manifest["candidate_set_sha256"], "candidate_set_sha256"),
+        "authority_paths": manifest["authority_paths"],
     }
     _, _, candidates, candidate_hash = validate_measurement_bindings(
         input_artifacts=result["input_artifacts"], result_artifacts=result["result_artifacts"],
@@ -521,6 +550,11 @@ def validate_promotion_manifest_v2(
     receipt_id = require_full_sha256(receipt_id, "gate_receipt.receipt_id")
     if result["gate_receipt"]["path"] != f"receipts/{receipt_id}.json":
         raise EvidenceSchemaError("gate_receipt path is not canonical")
+    receipt = validate_gate_receipt(
+        _load_json_file(root, result["gate_receipt"], "gate_receipt"), repo_root=root)
+    authority_paths = _canonical_authority_paths(root, receipt)
+    if result["authority_paths"] != authority_paths:
+        raise EvidenceSchemaError("promotion manifest authority_paths do not match sealed contract")
     if result["gate_claim"]["path"] != f"claims/{receipt_id}.json":
         raise EvidenceSchemaError("gate_claim path is not canonical")
     return result
@@ -552,7 +586,11 @@ def verify_promotion_manifest_v2(
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("promotion manifest must be readable JSON") from exc
     manifest = validate_promotion_manifest_v2(raw, repo_root=root, verify_files=True)
-    if manifest_file != root / "promotions" / f"{manifest['evidence_id']}.pre.json":
+    expected_manifest_path = (
+        root / Path(*PurePosixPath(manifest["authority_paths"]["promotions_dir"]).parts)
+        / f"{manifest['evidence_id']}.pre.json"
+    )
+    if manifest_file != expected_manifest_path:
         raise EvidenceSchemaError("promotion manifest path is not canonical")
     receipt = validate_gate_receipt(
         _load_json_file(root, manifest["gate_receipt"], "gate_receipt"), repo_root=root
