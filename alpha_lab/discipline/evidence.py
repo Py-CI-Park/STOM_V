@@ -507,17 +507,23 @@ def issue_promotion_manifest_v2(
         "authority_paths": authority_paths,
     }
     output_file = output / f"{evidence_id}.pre.json"
-    if output_file.exists():
-        raise FileExistsError("canonical promotion manifest cannot be reused or overwritten")
     output.mkdir(parents=True, exist_ok=True)
     validated = validate_promotion_manifest_v2(manifest, repo_root=root, verify_files=True)
-    with open(output_file, "x", encoding="utf-8", newline="\n") as handle:
-        handle.write(canonical_json_bytes(validated).decode("utf-8"))
-        handle.flush()
-        os.fsync(handle.fileno())
-    verified, _ = verify_promotion_manifest_v2(output_file, repo_root=root)
-    if verified != validated:
-        raise EvidenceSchemaError("issued promotion manifest failed self-validation")
+    from alpha_lab.discipline.prereg import authority_mutation_guard
+    with authority_mutation_guard(root, authority_paths, fields=("promotions_dir",)) as guard:
+        guard.hold_path(output_file)
+        guard.validate_file(output_file)
+        if output_file.exists():
+            raise FileExistsError("canonical promotion manifest cannot be reused or overwritten")
+        with open(output_file, "x", encoding="utf-8", newline="\n") as handle:
+            guard.validate_file(output_file)
+            handle.write(canonical_json_bytes(validated).decode("utf-8"))
+            handle.flush()
+            os.fsync(handle.fileno())
+        guard.validate_file(output_file)
+        verified, _ = verify_promotion_manifest_v2(output_file, repo_root=root)
+        if verified != validated:
+            raise EvidenceSchemaError("issued promotion manifest failed self-validation")
     return validated
 
 def validate_promotion_manifest_v2(
@@ -956,8 +962,13 @@ def validate_promotion_result_v2(
 
 def verify_promotion_result_v2(
     result_path: Path | str, *, repo_root: Path | str,
+    target_connection: sqlite3.Connection | None = None,
+    locked_post_state: Mapping[str, Any] | None = None,
 ) -> tuple[PromotionResultV2, PromotionManifestV2, str]:
     """Verify the canonical POST, its exact PRE anchor, and live byte authorities."""
+    if (target_connection is None) != (locked_post_state is None):
+        raise EvidenceSchemaError(
+            "retained target connection and locked POST state must be supplied together")
     root = Path(repo_root).resolve()
     source = Path(result_path).resolve()
     try:
@@ -1072,7 +1083,20 @@ def verify_promotion_result_v2(
         raise EvidenceSchemaError("promotion result backup SHA-256 does not match bytes")
     target = root / Path(*PurePosixPath(result["target_db"]["path"]).parts)
     pre_state = capture_sqlite_logical_state(backup)
-    post_state = capture_sqlite_logical_state(target)
+    if target_connection is None:
+        post_state = capture_sqlite_logical_state(target)
+    else:
+        main_path = next(
+            (Path(row[2]).resolve() for row in target_connection.execute("PRAGMA database_list")
+             if row[1] == "main" and row[2]),
+            None,
+        )
+        if main_path != target.resolve():
+            raise EvidenceSchemaError("retained target connection does not address the sealed target DB")
+        observed_post_state = capture_sqlite_logical_state(target, connection=target_connection)
+        if observed_post_state != locked_post_state:
+            raise EvidenceSchemaError("retained target connection does not match locked POST state")
+        post_state = observed_post_state
     computed_delta = build_promotion_logical_delta(pre_state, post_state, result["inserted"])
     if computed_delta != result["logical_delta"]:
         raise EvidenceSchemaError("promotion result logical delta does not match canonical SQLite states")

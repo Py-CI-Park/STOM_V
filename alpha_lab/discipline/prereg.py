@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import ast
 import hashlib
 import json
@@ -22,6 +23,7 @@ import re
 import os
 import stat
 from pathlib import Path, PurePosixPath
+from typing import Iterator
 
 from alpha_lab.discipline import windows
 from alpha_lab.discipline.evidence import (
@@ -351,6 +353,236 @@ def revalidate_authority_paths(
                     "authority_paths destinations must be case-normalized, semantically distinct, and physically distinct"
                 )
     return paths
+class _AuthorityMutationGuard:
+    """Keep authority directories stable while a canonical mutation is in flight."""
+
+    def __init__(self, root: Path, authority_paths: dict[str, str], fields: tuple[str, ...]):
+        self.root = root
+        self.authority_paths = authority_paths
+        self.fields = fields
+        self._dir_fds: dict[str, int] = {}
+        self._target_dir_fds: dict[str, int] = {}
+        self._target_identities: dict[str, tuple[int, int]] = {}
+        self._windows_handles: list[object] = []
+
+    def _open_windows(self, path: Path, *, directory: bool = True) -> None:
+        import ctypes
+
+        class _FileInfo(ctypes.Structure):
+            _fields_ = [
+                ("attributes", ctypes.c_uint32),
+                ("created_low", ctypes.c_uint32),
+                ("created_high", ctypes.c_uint32),
+                ("accessed_low", ctypes.c_uint32),
+                ("accessed_high", ctypes.c_uint32),
+                ("written_low", ctypes.c_uint32),
+                ("written_high", ctypes.c_uint32),
+                ("volume_serial", ctypes.c_uint32),
+                ("size_high", ctypes.c_uint32),
+                ("size_low", ctypes.c_uint32),
+                ("links", ctypes.c_uint32),
+                ("index_high", ctypes.c_uint32),
+                ("index_low", ctypes.c_uint32),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        handle = kernel32.CreateFileW(
+            str(path), 0x80000000, 0x3, None, 3, 0x02200000, None
+        )
+        invalid = ctypes.c_void_p(-1).value
+        if handle in (None, invalid):
+            raise EvidenceSchemaError(f"cannot lock authority identity: {path}")
+        info = _FileInfo()
+        if not kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+            kernel32.CloseHandle(handle)
+            raise EvidenceSchemaError(f"cannot inspect locked authority identity: {path}")
+        if info.attributes & 0x400 or directory and not info.attributes & 0x10:
+            kernel32.CloseHandle(handle)
+            raise EvidenceSchemaError(f"authority path must not traverse a reparse point: {path}")
+        size = kernel32.GetFinalPathNameByHandleW(handle, None, 0, 0)
+        if not size:
+            kernel32.CloseHandle(handle)
+            raise EvidenceSchemaError(f"cannot resolve locked authority identity: {path}")
+        buffer = ctypes.create_unicode_buffer(size + 1)
+        if not kernel32.GetFinalPathNameByHandleW(handle, buffer, len(buffer), 0):
+            kernel32.CloseHandle(handle)
+            raise EvidenceSchemaError(f"cannot resolve locked authority identity: {path}")
+        self._windows_handles.append(handle)
+
+    @staticmethod
+    def _path_key(path: Path) -> str:
+        return os.path.normcase(os.path.normpath(os.path.abspath(path)))
+
+    def _hold_posix_parent_chain(self, parent: Path) -> int:
+        try:
+            relative = parent.relative_to(self.root)
+        except ValueError as exc:
+            raise EvidenceSchemaError(f"mutation parent must be inside repo_root: {parent}") from exc
+        flags = os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0)
+        root_fd = os.open(self.root, flags)
+        self._dir_fds[f"target:{len(self._dir_fds)}"] = root_fd
+        current_fd, current_path = root_fd, self.root
+        for part in relative.parts:
+            try:
+                metadata = os.stat(part, dir_fd=current_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                try:
+                    os.mkdir(part, dir_fd=current_fd)
+                except FileExistsError:
+                    pass
+                try:
+                    metadata = os.stat(part, dir_fd=current_fd, follow_symlinks=False)
+                except FileNotFoundError as exc:
+                    raise EvidenceSchemaError(
+                        f"authority parent component disappeared during creation: {current_path / part}"
+                    ) from exc
+            if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+                raise EvidenceSchemaError(
+                    f"authority parent component must be a non-symlink directory: {current_path / part}"
+                )
+            try:
+                child_fd = os.open(part, flags, dir_fd=current_fd)
+            except OSError as exc:
+                raise EvidenceSchemaError(
+                    f"cannot securely hold authority parent component: {current_path / part}"
+                ) from exc
+            opened = os.fstat(child_fd)
+            if (opened.st_dev, opened.st_ino) != (metadata.st_dev, metadata.st_ino):
+                os.close(child_fd)
+                raise EvidenceSchemaError(
+                    f"authority parent component identity changed: {current_path / part}"
+                )
+            self._dir_fds[f"target:{len(self._dir_fds)}"] = child_fd
+            current_fd, current_path = child_fd, current_path / part
+        return current_fd
+
+    def _hold_windows_parent_chain(self, parent: Path) -> None:
+        try:
+            relative = parent.relative_to(self.root)
+        except ValueError as exc:
+            raise EvidenceSchemaError(f"mutation parent must be inside repo_root: {parent}") from exc
+        current = self.root
+        self._open_windows(current)
+        for part in relative.parts:
+            current /= part
+            try:
+                os.mkdir(current)
+            except FileExistsError:
+                pass
+            self._open_windows(current)
+
+    def _hold_directory(self, field: str, path: Path) -> None:
+        if not path.exists():
+            return
+        if not path.is_dir():
+            raise EvidenceSchemaError(f"authority_paths.{field} must name a directory")
+        if os.name == "nt":
+            self._open_windows(path)
+        else:
+            flags = os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0)
+            self._dir_fds[field] = os.open(path, flags)
+
+    def hold_path(self, path: Path | str) -> None:
+        """Hold or securely establish a target's parent without creating the target."""
+        target = Path(path)
+        parent = target.parent
+        if os.name == "nt":
+            self._hold_windows_parent_chain(parent)
+            if target.exists():
+                self._open_windows(target, directory=False)
+            return
+
+        parent_fd = self._hold_posix_parent_chain(parent)
+        self._target_dir_fds[self._path_key(parent)] = parent_fd
+        if target.exists():
+            try:
+                fd = os.open(
+                    target.name, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0), dir_fd=parent_fd
+                )
+            except OSError as exc:
+                raise EvidenceSchemaError(f"cannot securely hold mutation target: {target}") from exc
+            try:
+                metadata = os.fstat(fd)
+                self._target_identities[self._path_key(target)] = (
+                    metadata.st_dev, metadata.st_ino
+                )
+            finally:
+                os.close(fd)
+
+    def dir_fd(self, field: str) -> int:
+        """Return a POSIX authority directory descriptor for open-relative mutation."""
+        if os.name == "nt" or field not in self._dir_fds:
+            raise EvidenceSchemaError(f"no POSIX directory handle for {field}")
+        return self._dir_fds[field]
+
+    def open_relative(self, field: str, name: str, flags: int, mode: int = 0o666) -> int:
+        """Open one basename beneath a held POSIX authority directory."""
+        if Path(name).name != name:
+            raise EvidenceSchemaError("authority-relative mutation must use a basename")
+        return os.open(name, flags | getattr(os, "O_NOFOLLOW", 0), mode,
+                       dir_fd=self.dir_fd(field))
+    def open_path(self, path: Path | str, flags: int, mode: int = 0o666) -> int:
+        """Open one target beneath a held POSIX parent directory."""
+        target = Path(path)
+        key = self._path_key(target.parent)
+        if os.name == "nt" or key not in self._target_dir_fds:
+            raise EvidenceSchemaError(f"no held POSIX parent for {target}")
+        fd = os.open(target.name, flags | getattr(os, "O_NOFOLLOW", 0), mode,
+                     dir_fd=self._target_dir_fds[key])
+        expected = self._target_identities.get(self._path_key(target))
+        if expected is not None:
+            metadata = os.fstat(fd)
+            if (metadata.st_dev, metadata.st_ino) != expected:
+                os.close(fd)
+                raise EvidenceSchemaError(f"opened mutation target identity changed: {target}")
+        return fd
+
+    def validate_file(self, path: Path | str) -> None:
+        """Reject a target that no longer has the identity held by this guard."""
+        target = Path(path)
+        if target.exists():
+            _validate_physical_ancestry(
+                self.root, PurePosixPath(target.relative_to(self.root).as_posix()),
+                target.resolve(), "mutation target",
+            )
+        revalidate_authority_paths(self.root, self.authority_paths)
+
+    def close(self) -> None:
+        for fd in self._dir_fds.values():
+            os.close(fd)
+        self._dir_fds.clear()
+        self._target_dir_fds.clear()
+        self._target_identities.clear()
+        if os.name == "nt":
+            import ctypes
+            for handle in self._windows_handles:
+                ctypes.windll.kernel32.CloseHandle(handle)
+        self._windows_handles.clear()
+
+
+@contextlib.contextmanager
+def authority_mutation_guard(
+    repo_root: Path | str, authority_paths: object, fields: tuple[str, ...] | None = None,
+) -> Iterator[_AuthorityMutationGuard]:
+    """Lock and revalidate canonical authority identities across a mutation window."""
+    root = Path(repo_root).resolve()
+    paths = revalidate_authority_paths(root, authority_paths)
+    selected = tuple(sorted(paths) if fields is None else fields)
+    if not selected or any(field not in paths for field in selected):
+        raise EvidenceSchemaError("authority mutation fields must be non-empty authority path keys")
+    guard = _AuthorityMutationGuard(root, paths, selected)
+    try:
+        for field in selected:
+            target = root / Path(*PurePosixPath(paths[field]).parts)
+            guard._hold_directory(field, target.parent if field == "target_db" else target)
+            if field == "target_db":
+                guard.hold_path(target)
+        revalidate_authority_paths(root, paths)
+        yield guard
+        revalidate_authority_paths(root, paths)
+    finally:
+        guard.close()
 
 
 def recheck_authority_paths(value: object, root: Path | str) -> dict[str, str]:
@@ -555,6 +787,24 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
     """Resolve only direct, literal dynamic imports; reject executable indirection."""
+    if any(isinstance(node, ast.Lambda) for node in ast.walk(tree)):
+        raise EvidenceSchemaError(f"lambda executable dependencies are unsupported: {path}")
+    parameter_names = {
+        argument.arg
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
+        for argument in (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs)
+    }
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in parameter_names
+        ):
+            raise EvidenceSchemaError(
+                f"unresolved executable receiver parameter is unsupported: {path}"
+            )
     calls, aliases = _dynamic_call_kinds(tree)
     found: set[Path] = set()
     executable = {
@@ -807,13 +1057,14 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
         "authority_paths": contract["authority_paths"], "code_manifest": manifest,
     }
     validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
-    if canonical_output.exists():
-        raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
-    canonical_output.parent.mkdir(parents=True, exist_ok=True)
-    revalidate_authority_paths(root, contract["authority_paths"])
-    _contract_ledger_path(contract["ledger_path"], root)
-    with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
-        handle.write(canonical_json_bytes(validated).decode("utf-8"))
-        handle.flush()
-        os.fsync(handle.fileno())
+    with authority_mutation_guard(root, contract["authority_paths"], fields=("seal_dir",)) as guard:
+        guard.hold_path(canonical_output)
+        guard.validate_file(canonical_output)
+        if canonical_output.exists():
+            raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
+        with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
+            guard.validate_file(canonical_output)
+            handle.write(canonical_json_bytes(validated).decode("utf-8"))
+            handle.flush()
+            os.fsync(handle.fileno())
     return dict(validated)

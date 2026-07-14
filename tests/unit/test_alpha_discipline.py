@@ -8,8 +8,10 @@
 from __future__ import annotations
 
 import datetime as dt
+import contextlib
 import hashlib
 import json
+import os
 import multiprocessing
 from pathlib import Path
 import shutil
@@ -623,6 +625,79 @@ class TestPrereg:
         with pytest.raises(evidence.EvidenceSchemaError, match="authority_paths"):
             evidence.validate_prereg_seal(tampered, repo_root=tmp_path)
 
+    def test_finalize_prereg_rejects_parent_swap_before_write(self, tmp_path, monkeypatch):
+        code = tmp_path / "measure.py"
+        code.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        events = []
+
+        class SwappedGuard:
+            def hold_path(self, path):
+                events.append(("hold", Path(path)))
+            def validate_file(self, path):
+                events.append(("validate", Path(path)))
+                raise evidence.EvidenceSchemaError("authority parent identity changed")
+
+        @contextlib.contextmanager
+        def swapped_guard(*args, **kwargs):
+            yield SwappedGuard()
+
+        monkeypatch.setattr(prereg, "authority_mutation_guard", swapped_guard)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=canonical, sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        assert events and not canonical.exists()
+    def test_hold_path_establishes_missing_parent_and_rejects_substitution(self, tmp_path, monkeypatch):
+        target_db = tmp_path / "measure.py"
+        target_db.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "promotion_journal/nested",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        target = tmp_path / "promotion_journal" / "nested" / "seal.json"
+
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(target)
+            assert target.parent.is_dir()
+            if os.name == "nt":
+                assert guard._windows_handles
+            else:
+                assert guard._path_key(target.parent) in guard._target_dir_fds
+            assert not target.exists()
+
+        (tmp_path / "promotion_journal" / "nested").rmdir()
+        (tmp_path / "promotion_journal").rmdir()
+        replacement = tmp_path / "replacement"
+        replacement.mkdir()
+        original_mkdir = os.mkdir
+        substituted = False
+
+        def substitute_component(path, *args, **kwargs):
+            nonlocal substituted
+            result = original_mkdir(path, *args, **kwargs)
+            if not substituted and Path(path).name == "promotion_journal":
+                candidate = tmp_path / "promotion_journal"
+                candidate.rmdir()
+                try:
+                    candidate.symlink_to(replacement, target_is_directory=True)
+                except OSError:
+                    pytest.skip("symlink/junction creation is unavailable")
+                substituted = True
+            return result
+
+        monkeypatch.setattr(prereg.os, "mkdir", substitute_component)
+        with pytest.raises(evidence.EvidenceSchemaError, match="non-symlink|reparse|securely hold"):
+            with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+                guard.hold_path(target)
+        assert substituted
     @pytest.mark.parametrize("source", [
         "import runpy\nrunpy.run_path('plugin.py')\n",
         "from builtins import exec as execute\nexecute('x = 1')\n",
@@ -632,6 +707,7 @@ class TestPrereg:
         "import importlib\nload = importlib.import_module\nload('plugin')\n",
         "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
         "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
+        "import importlib\nlist(map(lambda module: module.import_module(\"local_plugin\"), [importlib]))\n",
         "import importlib\nimportlib.import_module('builtins').eval('1 + 1')\n",
         "import builtins\nimport importlib\nlist(map(builtins.getattr(importlib, 'import_module'), ['local_plugin']))\n",
         "type(object).__getattribute__(object, '__class__')\n",
