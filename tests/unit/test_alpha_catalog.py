@@ -315,82 +315,14 @@ def test_gitignore_appends_preserving_content(tmp_path: Path):
     text = (run / ".gitignore").read_text(encoding="utf-8")
     assert text.startswith("*.parquet\n")
     assert "research_assets.db*" in text
-def _promotion_manifest(evidence_id: str = "a" * 64) -> dict:
-    return {
-        "schema_version": 2,
-        "kind": "promotion_manifest",
-        "status": "PRE",
-        "created_at": "2026-07-14T00:00:00+00:00",
-        "evidence_id": evidence_id,
-        "ledger": {"path": "n_trials_ledger.jsonl", "record_sha256": "b" * 64},
-        "candidates": [{
-            "name": "ALP_TEST",
-            "buy_sha256": "c" * 64,
-            "sell_sha256": "d" * 64,
-        }],
-    }
-
-
-def test_build_all_adds_pre_and_post_promotion_status(run_dir: Path):
-    manifest_path = run_dir / "promotion_manifest.json"
-    manifest = _promotion_manifest()
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    pre = builder.build_all(
-        run_dir, write_receipt=False, repo_root=run_dir,
-        promotion_manifest_path=manifest_path)
-    assert pre["promotion_status"] == {
-        "schema_version": 2,
-        "phase": "PRE",
-        "valid": True,
-        "evidence_id": "a" * 64,
-        "source_kind": "promotion_manifest",
-        "source_path": "promotion_manifest.json",
-        "source_sha256": builder.sha256_canonical(manifest),
-    }
-    result = {
-        "schema_version": 2,
-        "kind": "promotion_result",
-        "status": "POST",
-        "completed_at": "2026-07-14T00:01:00+00:00",
-        "evidence_id": "a" * 64,
-        "promotion_manifest_sha256": builder.sha256_canonical(manifest),
-        "inserted": [],
-        "conflicts": [],
-        "backup_path": None,
-    }
-    result_path = run_dir / "promotion_result.json"
-    result_path.write_text(json.dumps(result), encoding="utf-8")
-    post = builder.build_all(
-        run_dir, write_receipt=False, repo_root=run_dir,
-        promotion_result_path=result_path)
-    assert post["promotion_status"]["phase"] == "POST"
-    assert post["promotion_status"]["source_kind"] == "promotion_result"
-
-
-def test_build_all_invalid_promotion_fails_before_catalog_mutation(run_dir: Path):
-    builder.build_all(run_dir, write_receipt=False)
+def test_build_all_rejects_shape_only_promotion_before_catalog_mutation(run_dir: Path):
     db_path = run_dir / "research_assets.db"
-    db_before = db_path.read_bytes()
-    receipt_path = run_dir / "v2_receipt.json"
-    gitignore = run_dir / ".gitignore"
-    gitignore_before = gitignore.read_bytes()
-    invalid_path = run_dir / "invalid_promotion.json"
-    invalid = _promotion_manifest()
-    invalid["evidence_id"] = "A" * 64
-    invalid_path.write_text(json.dumps(invalid), encoding="utf-8")
+    builder.build_all(run_dir, write_receipt=False)
+    before = db_path.read_bytes()
+    manifest_path = run_dir / "promotion_manifest.json"
+    manifest_path.write_text(json.dumps({"schema_version": 2, "kind": "promotion_manifest"}), encoding="utf-8")
     with pytest.raises(ValueError):
         builder.build_all(
-            run_dir, receipt_path=receipt_path, repo_root=run_dir,
-            promotion_manifest_path=invalid_path)
-    assert db_path.read_bytes() == db_before
-    assert gitignore.read_bytes() == gitignore_before
-    assert not receipt_path.exists()
-    valid_path = run_dir / "valid_promotion.json"
-    valid_path.write_text(json.dumps(_promotion_manifest()), encoding="utf-8")
-    with pytest.raises(ValueError):
-        builder.build_all(
-            run_dir, receipt_path=receipt_path, repo_root=run_dir,
-            promotion_manifest_path=valid_path,
-            promotion_result_path=invalid_path)
-    assert db_path.read_bytes() == db_before
-    assert not receipt_path.exists()
+            run_dir, write_receipt=False, repo_root=run_dir,
+            promotion_manifest_path=manifest_path)
+    assert db_path.read_bytes() == before

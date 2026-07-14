@@ -315,3 +315,181 @@ def build_evidence_identity(
         "negative_or_kill": negative_or_kill,
     }
     return sha256_canonical(identity), identity
+class PromotionManifestV2(TypedDict):
+    schema_version: int
+    kind: str
+    status: str
+    created_at: str
+    evidence_id: str
+    ledger: dict[str, str]
+    gate_receipt: dict[str, str]
+    gate_claim: dict[str, str]
+    input_artifacts: list[dict[str, str]]
+    result_artifacts: list[dict[str, str]]
+    candidate_set: list[dict[str, str]]
+    candidate_set_sha256: str
+    candidates: list[dict[str, str]]
+
+
+class PromotionResultV2(TypedDict):
+    schema_version: int
+    kind: str
+    status: str
+    completed_at: str
+    evidence_id: str
+    promotion_manifest_path: str
+    promotion_manifest_sha256: str
+    inserted: list[dict[str, Any]]
+    conflicts: list[dict[str, Any]]
+    backup_path: str | None
+
+
+def _validate_promotion_candidates(value: object) -> list[dict[str, str]]:
+    if not isinstance(value, list) or not value:
+        raise EvidenceSchemaError("promotion candidates must be a non-empty list")
+    candidates = []
+    for index, item in enumerate(value):
+        candidate = _require_exact_keys(
+            item, {"name", "buy_sha256", "sell_sha256"}, f"candidates[{index}]"
+        )
+        if not isinstance(candidate["name"], str) or not candidate["name"].startswith("ALP_"):
+            raise EvidenceSchemaError(f"candidates[{index}].name must start with ALP_")
+        candidates.append({
+            "name": candidate["name"],
+            "buy_sha256": require_full_sha256(candidate["buy_sha256"], f"candidates[{index}].buy_sha256"),
+            "sell_sha256": require_full_sha256(candidate["sell_sha256"], f"candidates[{index}].sell_sha256"),
+        })
+    names = [candidate["name"] for candidate in candidates]
+    if names != sorted(names) or len(names) != len(set(names)):
+        raise EvidenceSchemaError("promotion candidates must be sorted and unique")
+    return candidates
+
+
+def validate_promotion_manifest_v2(
+    value: object, *, repo_root: Path | str, verify_files: bool = True,
+) -> PromotionManifestV2:
+    """Validate a PRE promotion authority and its immutable direct bindings."""
+    root = Path(repo_root).resolve()
+    keys = {
+        "schema_version", "kind", "status", "created_at", "evidence_id", "ledger",
+        "gate_receipt", "gate_claim", "input_artifacts", "result_artifacts",
+        "candidate_set", "candidate_set_sha256", "candidates",
+    }
+    manifest = _require_exact_keys(value, keys, "promotion manifest")
+    if (manifest["schema_version"], manifest["kind"], manifest["status"]) != (2, "promotion_manifest", "PRE"):
+        raise EvidenceSchemaError("promotion manifest must be strict PRE v2")
+    ledger = _require_exact_keys(manifest["ledger"], {"path", "sha256", "record_sha256"}, "ledger")
+    result: PromotionManifestV2 = {
+        "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
+        "created_at": _require_timestamp(manifest["created_at"], "created_at"),
+        "evidence_id": require_full_sha256(manifest["evidence_id"], "evidence_id"),
+        "ledger": _validate_file_ref(
+            {"path": ledger["path"], "sha256": ledger["sha256"]},
+            "ledger", root, verify_files=verify_files),
+        "gate_receipt": _validate_file_ref(manifest["gate_receipt"], "gate_receipt", root, verify_files=verify_files),
+        "gate_claim": _validate_file_ref(manifest["gate_claim"], "gate_claim", root, verify_files=verify_files),
+        "input_artifacts": _validate_manifest(manifest["input_artifacts"], "input_artifacts", root, verify_files=verify_files),
+        "result_artifacts": _validate_manifest(manifest["result_artifacts"], "result_artifacts", root, verify_files=verify_files),
+        "candidate_set": [],
+        "candidate_set_sha256": require_full_sha256(manifest["candidate_set_sha256"], "candidate_set_sha256"),
+        "candidates": _validate_promotion_candidates(manifest["candidates"]),
+    }
+    _, _, candidates, candidate_hash = validate_measurement_bindings(
+        input_artifacts=result["input_artifacts"], result_artifacts=result["result_artifacts"],
+        candidate_set=manifest["candidate_set"], negative_or_kill=False, repo_root=root,
+        verify_files=verify_files,
+    )
+    result["ledger"]["record_sha256"] = require_full_sha256(
+        ledger["record_sha256"], "ledger.record_sha256")
+    result["candidate_set"] = candidates
+    if result["candidate_set_sha256"] != candidate_hash:
+        raise EvidenceSchemaError("candidate_set_sha256 does not match candidate_set")
+    receipt_id = _load_json_file(root, result["gate_receipt"], "gate_receipt").get("receipt_id")
+    receipt_id = require_full_sha256(receipt_id, "gate_receipt.receipt_id")
+    if result["gate_receipt"]["path"] != f"receipts/{receipt_id}.json":
+        raise EvidenceSchemaError("gate_receipt path is not canonical")
+    if result["gate_claim"]["path"] != f"claims/{receipt_id}.json":
+        raise EvidenceSchemaError("gate_claim path is not canonical")
+    return result
+
+
+def _load_json_file(root: Path, ref: Mapping[str, str], field: str) -> dict[str, Any]:
+    path = root / Path(*PurePosixPath(ref["path"]).parts)
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError(f"{field} must be readable JSON") from exc
+    if not isinstance(value, dict):
+        raise EvidenceSchemaError(f"{field} must be a JSON object")
+    return value
+
+
+def verify_promotion_manifest_v2(
+    manifest_path: Path | str, *, repo_root: Path | str,
+) -> tuple[PromotionManifestV2, str]:
+    """Verify the complete PRE authority chain, including live artifact bytes."""
+    root = Path(repo_root).resolve()
+    manifest_file = Path(manifest_path).resolve()
+    try:
+        manifest_rel = manifest_file.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise EvidenceSchemaError("promotion manifest resolves outside repo_root") from exc
+    try:
+        raw = json.loads(manifest_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("promotion manifest must be readable JSON") from exc
+    manifest = validate_promotion_manifest_v2(raw, repo_root=root, verify_files=True)
+    receipt = validate_gate_receipt(
+        _load_json_file(root, manifest["gate_receipt"], "gate_receipt"), repo_root=root
+    )
+    usage = validate_gate_usage(_load_json_file(root, manifest["gate_claim"], "gate_claim"), receipt=receipt)
+    evidence_id, identity = build_evidence_identity(
+        receipt, usage, input_artifacts=manifest["input_artifacts"],
+        result_artifacts=manifest["result_artifacts"], candidate_set=manifest["candidate_set"],
+        negative_or_kill=False, repo_root=root,
+    )
+    if evidence_id != manifest["evidence_id"]:
+        raise EvidenceSchemaError("promotion manifest evidence_id does not reconstruct")
+    ledger_path = root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts)
+    rows = []
+    for line_number, line in enumerate(ledger_path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise EvidenceSchemaError(f"ledger row {line_number} is not JSON") from exc
+        if isinstance(row, dict) and row.get("schema_version") == 2 and row.get("evidence_id") == evidence_id:
+            rows.append(row)
+    if len(rows) != 1 or sha256_canonical(rows[0]) != manifest["ledger"]["record_sha256"]:
+        raise EvidenceSchemaError("promotion manifest does not bind exactly one ledger v2 row")
+    if rows[0].get("evidence") != identity:
+        raise EvidenceSchemaError("ledger evidence does not match promotion evidence")
+    return manifest, sha256_canonical(raw)
+
+
+def validate_promotion_result_v2(
+    value: object, *, repo_root: Path | str,
+) -> PromotionResultV2:
+    keys = {
+        "schema_version", "kind", "status", "completed_at", "evidence_id",
+        "promotion_manifest_path", "promotion_manifest_sha256", "inserted",
+        "conflicts", "backup_path",
+    }
+    result = _require_exact_keys(value, keys, "promotion result")
+    if (result["schema_version"], result["kind"], result["status"]) != (2, "promotion_result", "POST"):
+        raise EvidenceSchemaError("promotion result must be strict POST v2")
+    manifest_path, _ = _repo_path(result["promotion_manifest_path"], "promotion_manifest_path", Path(repo_root).resolve())
+    if not isinstance(result["inserted"], list) or not isinstance(result["conflicts"], list):
+        raise EvidenceSchemaError("promotion result inserted and conflicts must be lists")
+    if result["backup_path"] is not None and not isinstance(result["backup_path"], str):
+        raise EvidenceSchemaError("promotion result backup_path must be a string or null")
+    return {
+        "schema_version": 2, "kind": "promotion_result", "status": "POST",
+        "completed_at": _require_timestamp(result["completed_at"], "completed_at"),
+        "evidence_id": require_full_sha256(result["evidence_id"], "evidence_id"),
+        "promotion_manifest_path": manifest_path,
+        "promotion_manifest_sha256": require_full_sha256(result["promotion_manifest_sha256"], "promotion_manifest_sha256"),
+        "inserted": result["inserted"], "conflicts": result["conflicts"],
+        "backup_path": result["backup_path"],
+    }

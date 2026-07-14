@@ -18,8 +18,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
-    require_full_sha256,
     sha256_canonical,
+    validate_promotion_result_v2,
+    verify_promotion_manifest_v2,
 )
 
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
@@ -260,108 +261,62 @@ def ensure_gitignore(run_dir: Path) -> Dict[str, str]:
     gi.write_text(existing + block, encoding="utf-8")
     action = "appended(기존 내용 보존)" if existing else "created"
     return {"path": str(gi), "action": action, "pattern": _GI_PATTERN}
-def _require_promotion_timestamp(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp") from exc
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
-    return value
-
-
-def _promotion_source_ref(path: Path | str, repo_root: Path) -> tuple[dict[str, Any], str]:
-    try:
-        resolved = Path(path).resolve()
-        relative = resolved.relative_to(repo_root.resolve())
-    except ValueError as exc:
-        raise EvidenceSchemaError("promotion source must be inside repo_root") from exc
-    try:
-        value = json.loads(resolved.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise EvidenceSchemaError("promotion source must be readable JSON") from exc
-    return value, relative.as_posix()
-def _require_relative_posix_path(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
-    path = PurePosixPath(value)
-    if path.is_absolute() or ".." in path.parts or "\\" in value or path.as_posix() != value:
-        raise EvidenceSchemaError(f"{field} must be a safe repository-relative POSIX path")
-    return value
-
-
-
-
-def _validate_candidates(value: object) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        raise EvidenceSchemaError("promotion candidates must be a non-empty list")
-    candidates: list[dict[str, str]] = []
-    for item in value:
-        if not isinstance(item, dict) or set(item) != {"name", "buy_sha256", "sell_sha256"}:
-            raise EvidenceSchemaError("each promotion candidate must have name, buy_sha256, and sell_sha256")
-        name = item["name"]
-        if not isinstance(name, str) or not name.startswith("ALP_"):
-            raise EvidenceSchemaError("promotion candidate names must start with ALP_")
-        candidates.append({
-            "name": name,
-            "buy_sha256": require_full_sha256(item["buy_sha256"], "candidate.buy_sha256"),
-            "sell_sha256": require_full_sha256(item["sell_sha256"], "candidate.sell_sha256"),
-        })
-    names = [item["name"] for item in candidates]
-    if names != sorted(names) or len(names) != len(set(names)):
-        raise EvidenceSchemaError("promotion candidates must be sorted by unique name")
-    return candidates
-
-
 def _promotion_status(
     repo_root: Path,
     promotion_manifest_path: Path | str | None,
     promotion_result_path: Path | str | None,
 ) -> dict[str, Any] | None:
+    """Verify promotion provenance before allowing any catalog mutation."""
     if promotion_manifest_path is not None and promotion_result_path is not None:
         raise EvidenceSchemaError("promotion manifest and result inputs are mutually exclusive")
     if promotion_manifest_path is None and promotion_result_path is None:
         return None
-    path = promotion_manifest_path or promotion_result_path
-    assert path is not None
-    value, relative_path = _promotion_source_ref(path, repo_root)
-    if not isinstance(value, dict):
-        raise EvidenceSchemaError("promotion source must be an object")
     if promotion_manifest_path is not None:
-        keys = {"schema_version", "kind", "status", "created_at", "evidence_id", "ledger", "candidates"}
-        if set(value) != keys or value.get("schema_version") != 2 or value.get("kind") != "promotion_manifest" or value.get("status") != "PRE":
-            raise EvidenceSchemaError("promotion manifest must be a strict PRE v2 manifest")
-        _require_promotion_timestamp(value["created_at"], "created_at")
-        evidence_id = require_full_sha256(value["evidence_id"], "evidence_id")
-        ledger = value["ledger"]
-        if not isinstance(ledger, dict) or set(ledger) != {"path", "record_sha256"}:
-            raise EvidenceSchemaError("promotion manifest ledger must contain path and record_sha256")
-        _require_relative_posix_path(ledger["path"], "ledger.path")
-        require_full_sha256(ledger["record_sha256"], "ledger.record_sha256")
-        _validate_candidates(value["candidates"])
-        phase, source_kind = "PRE", "promotion_manifest"
+        manifest, digest = verify_promotion_manifest_v2(
+            promotion_manifest_path, repo_root=repo_root)
+        source = Path(promotion_manifest_path).resolve()
+        phase, kind, evidence_id = "PRE", "promotion_manifest", manifest["evidence_id"]
     else:
-        keys = {"schema_version", "kind", "status", "completed_at", "evidence_id", "promotion_manifest_sha256", "inserted", "conflicts", "backup_path"}
-        if set(value) != keys or value.get("schema_version") != 2 or value.get("kind") != "promotion_result" or value.get("status") != "POST":
-            raise EvidenceSchemaError("promotion result must be a strict POST v2 result")
-        _require_promotion_timestamp(value["completed_at"], "completed_at")
-        evidence_id = require_full_sha256(value["evidence_id"], "evidence_id")
-        require_full_sha256(value["promotion_manifest_sha256"], "promotion_manifest_sha256")
-        if not isinstance(value["inserted"], list) or not isinstance(value["conflicts"], list) or value["backup_path"] is not None and not isinstance(value["backup_path"], str):
-            raise EvidenceSchemaError("promotion result inserted/conflicts/backup_path are invalid")
-        phase, source_kind = "POST", "promotion_result"
+        source = Path(promotion_result_path).resolve()
+        try:
+            raw = json.loads(source.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise EvidenceSchemaError("promotion result must be readable JSON") from exc
+        result = validate_promotion_result_v2(raw, repo_root=repo_root)
+        manifest_path = repo_root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts)
+        manifest, manifest_digest = verify_promotion_manifest_v2(
+            manifest_path, repo_root=repo_root)
+        if (
+            result["evidence_id"] != manifest["evidence_id"]
+            or result["promotion_manifest_sha256"] != manifest_digest
+        ):
+            raise EvidenceSchemaError("promotion result does not bind the verified PRE manifest")
+        expected_names = {candidate["name"] for candidate in manifest["candidates"]}
+        inserted_names = set()
+        for item in result["inserted"]:
+            if not isinstance(item, dict) or set(item) != {
+                "name", "tables", "buy_sha256", "sell_sha256", "meta"
+            } or item["name"] not in expected_names or item["tables"] != ["stockbuy", "stocksell"]:
+                raise EvidenceSchemaError("promotion result inserted structure is invalid")
+            inserted_names.add(item["name"])
+        conflict_names = set()
+        for item in result["conflicts"]:
+            if not isinstance(item, dict) or set(item) != {"name", "reason", "tables"}:
+                raise EvidenceSchemaError("promotion result conflicts structure is invalid")
+            if item["name"] not in expected_names or item["reason"] != "name_exists":
+                raise EvidenceSchemaError("promotion result conflict does not bind a candidate")
+            conflict_names.add(item["name"])
+        if inserted_names | conflict_names != expected_names or inserted_names & conflict_names:
+            raise EvidenceSchemaError("promotion result must account for every PRE candidate exactly once")
+        digest, phase, kind, evidence_id = sha256_canonical(raw), "POST", "promotion_result", result["evidence_id"]
+    try:
+        relative = source.relative_to(repo_root.resolve()).as_posix()
+    except ValueError as exc:
+        raise EvidenceSchemaError("promotion source must be inside repo_root") from exc
     return {
-        "schema_version": 2,
-        "phase": phase,
-        "valid": True,
-        "evidence_id": evidence_id,
-        "source_kind": source_kind,
-        "source_path": relative_path,
-        "source_sha256": sha256_canonical(value),
+        "schema_version": 2, "phase": phase, "valid": True, "evidence_id": evidence_id,
+        "source_kind": kind, "source_path": relative, "source_sha256": digest,
     }
-
 
 
 

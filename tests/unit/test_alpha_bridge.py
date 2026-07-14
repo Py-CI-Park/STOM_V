@@ -81,16 +81,27 @@ def fake_db(tmp_path):
 def backup_dir(tmp_path):
     return tmp_path / "backups"
 
+
+def _file_snapshot(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+
 def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
-    """Create a complete synthetic v2 chain entirely under pytest's tmp path."""
-    prereg = tmp_path / "prereg.md"
-    code = tmp_path / "measure.py"
+    """Create a complete authoritative v2 chain entirely under tmp_path."""
+    prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
+    source, artifact = tmp_path / "source.json", tmp_path / "result.json"
     prereg.write_text("> 지위: **SEALED**\n", encoding="utf-8")
     code.write_text("MEASURE = 1\n", encoding="utf-8")
-    file_ref = lambda path: {
-        "path": path.relative_to(tmp_path).as_posix(),
-        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-    }
+    source.write_text("source", encoding="utf-8")
+    artifact.write_text("result", encoding="utf-8")
+    def file_ref(path):
+        return {"path": path.relative_to(tmp_path).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
     seal = {
         "schema_version": 2, "kind": "prereg_seal", "status": "SEALED",
         "sealed_at": "2026-07-14T00:00:00+00:00",
@@ -98,46 +109,57 @@ def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
     }
     seal_path = tmp_path / "seal.json"
     seal_path.write_text(json.dumps(seal), encoding="utf-8")
-    seal_ref = {"path": "seal.json", "sha256": sha256_canonical(seal)}
+    absolute_code = str(code)
     receipt = {
         "schema_version": 2, "kind": "measure_gate_receipt", "status": "PASS",
         "issued_at": "2026-07-14T00:01:00+00:00", "nonce": "run-1",
-        "repo_head": "a" * 40, "seal_manifest": seal_ref, "prereg": file_ref(prereg),
-        "code_manifest_sha256": sha256_canonical(seal["code_manifest"]),
+        "repo_head": "a" * 40,
+        "seal_manifest": {"path": "seal.json", "sha256": sha256_canonical(seal)},
+        "prereg": file_ref(prereg), "code_manifest_sha256": sha256_canonical(seal["code_manifest"]),
         "code_manifest": seal["code_manifest"],
-        "checks": {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
+        "checks": {
+            "repo": {"pass": True, "detail": "true", "reason": ""},
+            "sealed_doc": {"pass": True, "rel": "prereg.md", "last_commit": "b" * 40},
+            "code_clean": {"pass": True, "reasons": [], "files": {
+                absolute_code: {"tracked": True, "clean": True, "last_commit": "c" * 40, "reason": ""}}},
+            "sha_seal": {"pass": True, "checked": True, "files": {
+                absolute_code: {"expected": file_ref(code)["sha256"], "actual": file_ref(code)["sha256"],
+                                "match": True, "reason": ""}}},
+        },
     }
-    receipt["receipt_id"] = sha256_canonical({
-        key: receipt[key] for key in (
-            "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256",
-        )
-    })
-    receipt_path = tmp_path / "receipt.json"
+    receipt["receipt_id"] = sha256_canonical({key: receipt[key] for key in (
+        "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256")})
+    (tmp_path / "receipts").mkdir()
+    receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
     usage = {
-        "schema_version": 2, "kind": "measure_gate_usage", "receipt_id": receipt["receipt_id"],
-        "receipt_sha256": sha256_canonical(receipt), "consumer": "test-run",
-        "consumed_at": "2026-07-14T00:02:00+00:00",
+        "schema_version": 2, "kind": "measure_gate_usage",
+        "issuer": {"receipt_id": receipt["receipt_id"], "receipt_sha256": sha256_canonical(receipt),
+                   "issued_at": receipt["issued_at"], "repo_head": receipt["repo_head"]},
+        "claim": {"receipt_id": receipt["receipt_id"], "path": f"claims/{receipt['receipt_id']}.json"},
+        "consumer": "test-run", "consumed_at": "2026-07-14T00:02:00+00:00",
     }
-    usage_path = tmp_path / "usage.json"
+    (tmp_path / "claims").mkdir()
+    usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
     usage_path.write_text(json.dumps(usage), encoding="utf-8")
-    evidence_id, evidence = build_evidence_identity(receipt, usage)
-    row = {
-        "ts": "2026-07-14T00:03:00+00:00", "series": "B", "window": "2022-03-23~2023-12-31",
-        "trial_type": "b(test)", "target": "candidate", "result": "pass", "session": "test",
-        "schema_version": 2, "evidence_id": evidence_id, "evidence": evidence,
-    }
+    candidates = [{"name": item["name"], "sha256": hashlib.sha256(b"candidate").hexdigest()}]
+    evidence_id, evidence = build_evidence_identity(
+        receipt, usage, input_artifacts=[file_ref(source)], result_artifacts=[file_ref(artifact)],
+        candidate_set=candidates, negative_or_kill=False, repo_root=tmp_path)
+    row = {"ts": "2026-07-14T00:03:00+00:00", "series": "B", "window": "window",
+           "trial_type": "b(test)", "target": "candidate", "result": "pass", "session": "test",
+           "schema_version": 2, "evidence_id": evidence_id, "evidence": evidence}
     ledger_path = tmp_path / "ledger.jsonl"
-    ledger_path.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+    ledger_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
     manifest = {
         "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
         "created_at": "2026-07-14T00:04:00+00:00", "evidence_id": evidence_id,
-        "ledger": {"path": "ledger.jsonl", "record_sha256": sha256_canonical(row)},
-        "candidates": [{
-            "name": item["name"],
-            "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
-            "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
-        }],
+        "ledger": {**file_ref(ledger_path), "record_sha256": sha256_canonical(row)}, "gate_receipt": file_ref(receipt_path),
+        "gate_claim": file_ref(usage_path), "input_artifacts": [file_ref(source)],
+        "result_artifacts": [file_ref(artifact)], "candidate_set": candidates,
+        "candidate_set_sha256": sha256_canonical(candidates), "candidates": [{
+            "name": item["name"], "buy_sha256": hashlib.sha256(item["buy_expr"].encode()).hexdigest(),
+            "sell_sha256": hashlib.sha256(item["sell_expr"].encode()).hexdigest()}],
     }
     manifest_path = tmp_path / "promotion.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -145,19 +167,16 @@ def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
     catalog_path.write_text(json.dumps({"promotion_status": {
         "schema_version": 2, "phase": "PRE", "valid": True, "evidence_id": evidence_id,
         "source_kind": "promotion_manifest", "source_path": "promotion.json",
-        "source_sha256": sha256_canonical(manifest),
-    }}), encoding="utf-8")
-    return {
-        "manifest": manifest_path, "ledger": ledger_path, "receipt": receipt_path,
-        "usage": usage_path, "catalog": catalog_path, "evidence_id": evidence_id,
-    }
+        "source_sha256": sha256_canonical(manifest)}}), encoding="utf-8")
+    return {"manifest": manifest_path, "ledger": ledger_path, "receipt": receipt_path,
+            "usage": usage_path, "catalog": catalog_path, "evidence_id": evidence_id}
 
 
 class TestPromotionV2:
     def test_verifies_complete_synthetic_chain_read_only(self, tmp_path, monkeypatch):
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item)
-        before = {path: path.read_bytes() for path in tmp_path.iterdir()}
+        before = _file_snapshot(tmp_path)
 
         import alpha_lab.bridge.registrar as registrar
         monkeypatch.setattr(registrar.sqlite3, "connect", lambda *args, **kwargs: pytest.fail("sqlite write/read invoked"))
@@ -179,7 +198,7 @@ class TestPromotionV2:
             "checks": {"manifest": True, "ledger": True, "evidence_chain": True, "catalog_pre": True},
             "reasons": [],
         }
-        assert {path: path.read_bytes() for path in tmp_path.iterdir()} == before
+        assert _file_snapshot(tmp_path) == before
 
     def test_register_rejects_invalid_evidence_before_db_or_backup(self, fake_db, backup_dir, tmp_path):
         before = fake_db.read_bytes()
@@ -222,170 +241,15 @@ class TestHistoricalAuthorityDocuments:
             assert "promotion_authority: **NONE**" in text
             assert "no one-use gate receipt may be reconstructed after measurement" in text
 
-class TestNamePrefixEnforcement:
-    def test_rejects_name_without_prefix(self, fake_db, backup_dir):
-        with pytest.raises(ValueError):
-            register_conditions(
-                fake_db, [_item(name="P1_leaf_001")],
-                backup_dir=backup_dir, now=NOW,
-            )
-
-    def test_rejects_mixed_batch_before_any_write(self, fake_db, backup_dir):
-        """배치에 위반 1건이라도 있으면 전체 거부 — DB·백업 모두 미발생."""
-        before_buy = _all_rows(fake_db, "stockbuy")
-        with pytest.raises(ValueError):
-            register_conditions(
-                fake_db,
-                [_item(), _item(name="BAD_name")],
-                backup_dir=backup_dir, now=NOW,
-            )
-        assert _all_rows(fake_db, "stockbuy") == before_buy
-        assert not backup_dir.exists() or not list(backup_dir.iterdir())
-
-    def test_rejects_duplicate_names_in_batch(self, fake_db, backup_dir):
-        with pytest.raises(ValueError):
-            register_conditions(
-                fake_db, [_item(), _item()],
-                backup_dir=backup_dir, now=NOW,
-            )
-
-    def test_rejects_empty_exprs(self, fake_db, backup_dir):
-        with pytest.raises(ValueError):
-            register_conditions(
-                fake_db, [_item(buy_expr="")],
-                backup_dir=backup_dir, now=NOW,
-            )
-        with pytest.raises(ValueError):
-            register_conditions(
-                fake_db, [_item(sell_expr=None)],
-                backup_dir=backup_dir, now=NOW,
-            )
-
-    def test_missing_db_file_raises(self, tmp_path, backup_dir):
-        with pytest.raises(FileNotFoundError):
-            register_conditions(
-                tmp_path / "no_such.db", [_item()],
-                backup_dir=backup_dir, now=NOW,
-            )
-
-
-class TestRegisterInserts:
-    def test_inserts_pair_into_both_tables(self, fake_db, backup_dir):
-        item = _item()
-        result = register_conditions(
-            fake_db, [item], backup_dir=backup_dir, now=NOW,
-        )
-        assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
-        assert result["conflicts"] == []
-        assert (item["name"], item["buy_expr"]) in _all_rows(fake_db, "stockbuy")
-        assert (item["name"], item["sell_expr"]) in _all_rows(fake_db, "stocksell")
-
-    def test_result_shape(self, fake_db, backup_dir):
-        result = register_conditions(
-            fake_db, [_item()], backup_dir=backup_dir, now=NOW,
-        )
-        assert set(result.keys()) == {"inserted", "conflicts", "backup_path"}
-        entry = result["inserted"][0]
-        assert entry["tables"] == ["stockbuy", "stocksell"]
-        assert len(entry["buy_sha256"]) == 64
-        assert len(entry["sell_sha256"]) == 64
-        assert entry["meta"] == {"origin": "P1", "leaf_id": 7}
-
-
-class TestBackup:
-    def test_backup_created_before_write_with_prewrite_bytes(
-        self, fake_db, backup_dir,
-    ):
-        before_bytes = fake_db.read_bytes()
-        result = register_conditions(
-            fake_db, [_item()], backup_dir=backup_dir, now=NOW,
-        )
-        backup_path = result["backup_path"]
-        assert backup_path is not None
-        from pathlib import Path
-
-        backup = Path(backup_path)
-        assert backup.exists()
-        assert backup.parent == backup_dir
-        assert backup.read_bytes() == before_bytes
-        assert fake_db.read_bytes() != before_bytes
-
-    def test_no_backup_when_nothing_to_insert(self, fake_db, backup_dir):
-        register_conditions(fake_db, [_item()], backup_dir=backup_dir, now=NOW)
-        result2 = register_conditions(
-            fake_db, [_item()], backup_dir=backup_dir, now=NOW,
-        )
-        assert result2["backup_path"] is None
-        assert len(list(backup_dir.iterdir())) == 1
-
-
-class TestIdempotency:
-    def test_rerun_inserts_zero_and_reports_conflicts(self, fake_db, backup_dir):
-        item = _item()
-        first = register_conditions(
-            fake_db, [item], backup_dir=backup_dir, now=NOW,
-        )
-        assert len(first["inserted"]) == 1
-        rows_after_first = {
-            table: _all_rows(fake_db, table) for table in ("stockbuy", "stocksell")
-        }
-        second = register_conditions(
-            fake_db, [item], backup_dir=backup_dir, now=NOW,
-        )
-        assert second["inserted"] == []
-        assert [c["name"] for c in second["conflicts"]] == [item["name"]]
-        for table in ("stockbuy", "stocksell"):
-            assert _all_rows(fake_db, table) == rows_after_first[table]
-
-
-class TestConflictReporting:
-    def test_partial_existing_name_blocks_whole_pair(self, fake_db, backup_dir):
-        """이름이 한쪽 테이블에만 있어도 쌍 전체를 스킵(부분 삽입 금지)."""
-        name = "ALP_P2_cell_009"
-        con = sqlite3.connect(str(fake_db))
-        con.execute(
-            'INSERT INTO "stockbuy" ("index", "전략코드") VALUES (?, ?)',
-            (name, "선점된 코드"),
-        )
-        con.commit()
-        con.close()
-        result = register_conditions(
-            fake_db, [_item(name=name)], backup_dir=backup_dir, now=NOW,
-        )
-        assert result["inserted"] == []
-        conflict = result["conflicts"][0]
-        assert conflict["name"] == name
-        assert conflict["reason"] == "name_exists"
-        assert conflict["tables"] == ["stockbuy"]
-        sell_names = [row[0] for row in _all_rows(fake_db, "stocksell")]
-        assert name not in sell_names
-
-    def test_mixed_batch_inserts_only_new(self, fake_db, backup_dir):
-        old = _item(name="ALP_old")
-        register_conditions(fake_db, [old], backup_dir=backup_dir, now=NOW)
-        new = _item(name="ALP_new")
-        result = register_conditions(
-            fake_db, [old, new], backup_dir=backup_dir, now=NOW,
-        )
-        assert [e["name"] for e in result["inserted"]] == ["ALP_new"]
-        assert [c["name"] for c in result["conflicts"]] == ["ALP_old"]
-
-
-class TestInsertOnly:
-    def test_existing_rows_never_modified(self, fake_db, backup_dir):
-        before = {
-            table: _all_rows(fake_db, table) for table in ("stockbuy", "stocksell")
-        }
-        register_conditions(
-            fake_db,
-            [_item(), _item(name="ALP_second", meta=None)],
-            backup_dir=backup_dir, now=NOW,
-        )
-        for table in ("stockbuy", "stocksell"):
-            after = _all_rows(fake_db, table)
-            assert after[: len(before[table])] == before[table]
-            assert len(after) == len(before[table]) + 2
-
+class TestLegacyRegistrarBlocked:
+    def test_public_legacy_registrar_fails_before_db_access(self, fake_db, backup_dir, monkeypatch):
+        import alpha_lab.bridge.registrar as registrar
+        before = fake_db.read_bytes()
+        monkeypatch.setattr(registrar.sqlite3, "connect", lambda *args, **kwargs: pytest.fail("DB accessed"))
+        with pytest.raises(RuntimeError, match="legacy-promotion-blocked"):
+            register_conditions(fake_db, [_item()], backup_dir=backup_dir, now=NOW)
+        assert fake_db.read_bytes() == before
+        assert not backup_dir.exists()
 
 class TestReceipts:
     def _record(self, name: str = "ALP_P1_leaf_001") -> dict:

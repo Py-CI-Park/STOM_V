@@ -25,13 +25,9 @@ from typing import Any
 
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
-    build_evidence_identity,
-    require_full_sha256,
     sha256_canonical,
-    validate_gate_receipt,
-    validate_gate_usage,
+    verify_promotion_manifest_v2,
 )
-from alpha_lab.discipline.ledger import LedgerSchemaError, read_all
 
 logger = logging.getLogger(__name__)
 
@@ -79,57 +75,8 @@ def _repo_relative_path(path: Path, repo_root: Path, field: str) -> str:
         raise EvidenceSchemaError(f"{field} resolves outside repo_root") from exc
 
 
-def _validate_promotion_manifest(value: object, repo_root: Path) -> tuple[dict[str, Any], str]:
-    required = {
-        "schema_version", "kind", "status", "created_at", "evidence_id", "ledger", "candidates",
-    }
-    if not isinstance(value, dict) or set(value) != required:
-        raise EvidenceSchemaError("promotion manifest has invalid keys")
-    if value["schema_version"] != 2 or value["kind"] != "promotion_manifest" or value["status"] != "PRE":
-        raise EvidenceSchemaError("promotion manifest must be schema_version=2, kind=promotion_manifest, status=PRE")
-    if not isinstance(value["created_at"], str):
-        raise EvidenceSchemaError("promotion manifest created_at must be a timezone-aware ISO-8601 timestamp")
-    try:
-        created_at = dt.datetime.fromisoformat(value["created_at"].replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise EvidenceSchemaError("promotion manifest created_at must be a timezone-aware ISO-8601 timestamp") from exc
-    if created_at.tzinfo is None or created_at.utcoffset() is None:
-        raise EvidenceSchemaError("promotion manifest created_at must be a timezone-aware ISO-8601 timestamp")
-    require_full_sha256(value["evidence_id"], "promotion manifest evidence_id")
-    ledger = value["ledger"]
-    if not isinstance(ledger, dict) or set(ledger) != {"path", "record_sha256"}:
-        raise EvidenceSchemaError("promotion manifest ledger has invalid keys")
-    ledger_path = ledger["path"]
-    if (
-        not isinstance(ledger_path, str)
-        or not ledger_path
-        or "\\" in ledger_path
-        or PurePosixPath(ledger_path).is_absolute()
-        or any(part in ("", ".", "..") for part in ledger_path.split("/"))
-    ):
-        raise EvidenceSchemaError("ledger.path must be a safe repository-relative POSIX path")
-    _repo_relative_path(repo_root / Path(*PurePosixPath(ledger_path).parts), repo_root, "ledger.path")
-    require_full_sha256(ledger["record_sha256"], "ledger.record_sha256")
-    candidates = value["candidates"]
-    if not isinstance(candidates, list) or not candidates:
-        raise EvidenceSchemaError("promotion manifest candidates must be a non-empty list")
-    normalized: list[dict[str, str]] = []
-    for index, candidate in enumerate(candidates):
-        if not isinstance(candidate, dict) or set(candidate) != {"name", "buy_sha256", "sell_sha256"}:
-            raise EvidenceSchemaError(f"candidate[{index}] has invalid keys")
-        name = candidate["name"]
-        if not isinstance(name, str) or not name.startswith(NAME_PREFIX):
-            raise EvidenceSchemaError(f"candidate[{index}].name must start with {NAME_PREFIX}")
-        normalized.append({
-            "name": name,
-            "buy_sha256": require_full_sha256(candidate["buy_sha256"], f"candidate[{index}].buy_sha256"),
-            "sell_sha256": require_full_sha256(candidate["sell_sha256"], f"candidate[{index}].sell_sha256"),
-        })
-    names = [candidate["name"] for candidate in normalized]
-    if names != sorted(names) or len(names) != len(set(names)):
-        raise EvidenceSchemaError("promotion manifest candidates must be sorted and unique")
-    return dict(value), sha256_canonical(value)
-
+class LegacyPromotionBlockedError(RuntimeError):
+    """Raised when the retired unauthorised registrar entry point is used."""
 
 def _validate_catalog_pre_receipt(
     value: object, *, evidence_id: str, manifest_path: Path, manifest_sha256: str, repo_root: Path,
@@ -164,60 +111,29 @@ def verify_promotion_manifest(
     gate_usage_path: Path | str,
     catalog_receipt_path: Path | str,
 ) -> dict[str, Any]:
-    """Read and validate the complete v2 promotion chain without mutating any path."""
+    """Validate the canonical PRE chain and the catalog's PRE provenance."""
     checks: dict[str, bool] = {}
     try:
         root = Path(repo_root).resolve()
-        manifest_file = Path(manifest_path)
-        manifest, manifest_sha256 = _validate_promotion_manifest(
-            _load_json(manifest_file, "promotion manifest"), root
-        )
-        checks["manifest"] = True
-        evidence_id = manifest["evidence_id"]
-
-        ledger_file = Path(ledger_path)
-        expected_ledger_path = _repo_relative_path(ledger_file, root, "ledger_path")
-        if manifest["ledger"]["path"] != expected_ledger_path:
-            raise EvidenceSchemaError("promotion manifest ledger.path does not match supplied ledger_path")
-        try:
-            read_all(ledger_file)
-        except LedgerSchemaError as exc:
-            raise EvidenceSchemaError(f"ledger is not a valid v2 ledger: {exc}") from exc
-        matching_rows: list[dict[str, Any]] = []
-        for line_number, line in enumerate(ledger_file.read_text(encoding="utf-8").splitlines(), start=1):
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError as exc:
-                raise EvidenceSchemaError(f"ledger row {line_number} is not JSON") from exc
-            if isinstance(row, dict) and row.get("schema_version") == 2 and row.get("evidence_id") == evidence_id:
-                matching_rows.append(row)
-        if len(matching_rows) != 1:
-            raise EvidenceSchemaError("ledger must contain exactly one matching v2 evidence row")
-        row = matching_rows[0]
-        if sha256_canonical(row) != manifest["ledger"]["record_sha256"]:
-            raise EvidenceSchemaError("ledger.record_sha256 does not match matching ledger row")
-        checks["ledger"] = True
-
-        receipt = validate_gate_receipt(_load_json(Path(gate_receipt_path), "gate receipt"), repo_root=root)
-        usage = validate_gate_usage(_load_json(Path(gate_usage_path), "gate usage"), receipt=receipt)
-        reconstructed_id, identity = build_evidence_identity(receipt, usage)
-        if reconstructed_id != evidence_id or row.get("evidence") != identity:
-            raise EvidenceSchemaError("ledger evidence does not reconstruct the promotion evidence_id")
-        checks["evidence_chain"] = True
-
+        manifest, manifest_sha256 = verify_promotion_manifest_v2(
+            manifest_path, repo_root=root)
+        checks.update({"manifest": True, "ledger": True, "evidence_chain": True})
+        for supplied, ref, field in (
+            (ledger_path, manifest["ledger"], "ledger_path"),
+            (gate_receipt_path, manifest["gate_receipt"], "gate_receipt_path"),
+            (gate_usage_path, manifest["gate_claim"], "gate_usage_path"),
+        ):
+            if _repo_relative_path(Path(supplied), root, field) != ref["path"]:
+                raise EvidenceSchemaError(f"{field} does not match promotion manifest")
         _validate_catalog_pre_receipt(
             _load_json(Path(catalog_receipt_path), "catalog receipt"),
-            evidence_id=evidence_id,
-            manifest_path=manifest_file,
-            manifest_sha256=manifest_sha256,
-            repo_root=root,
+            evidence_id=manifest["evidence_id"], manifest_path=Path(manifest_path),
+            manifest_sha256=manifest_sha256, repo_root=root,
         )
         checks["catalog_pre"] = True
         return _promotion_result(
-            passed=True, evidence_id=evidence_id, candidates=manifest["candidates"], checks=checks,
-        )
+            passed=True, evidence_id=manifest["evidence_id"],
+            candidates=manifest["candidates"], checks=checks)
     except (EvidenceSchemaError, OSError, ValueError) as exc:
         return _promotion_result(passed=False, checks=checks, reasons=[str(exc)])
 
@@ -265,14 +181,21 @@ def register_conditions_v2(
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp") from exc
     if completed.tzinfo is None or completed.utcoffset() is None:
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp")
-    legacy_result = register_conditions(db_path, items, backup_dir=backup_dir, now=now)
+    legacy_result = _register_conditions(db_path, items, backup_dir=backup_dir, now=now)
+    try:
+        manifest_relative = Path(manifest_path).resolve().relative_to(
+            Path(repo_root).resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("manifest_path resolves outside repo_root") from exc
     return {
         "schema_version": 2,
         "kind": "promotion_result",
         "status": "POST",
         "completed_at": completed_at,
         "evidence_id": verdict["evidence_id"],
-        "promotion_manifest_sha256": sha256_canonical(_load_json(Path(manifest_path), "promotion manifest")),
+        "promotion_manifest_path": manifest_relative,
+        "promotion_manifest_sha256": sha256_canonical(
+            _load_json(Path(manifest_path), "promotion manifest")),
         **legacy_result,
     }
 
@@ -373,7 +296,7 @@ def _apply_inserts(con: sqlite3.Connection, to_insert: list) -> list:
     return inserted
 
 
-def register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
+def _register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
     """조건식 배치를 전략 DB에 INSERT-only로 등록한다.
 
     items: [{name, buy_expr, sell_expr, meta}] — name은 'ALP_' 접두 강제.
@@ -417,3 +340,8 @@ def register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
         "conflicts": conflicts,
         "backup_path": str(backup_path) if backup_path else None,
     }
+def register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
+    """Retired legacy entry point; v2 provenance is the sole write authority."""
+    raise LegacyPromotionBlockedError(
+        "legacy-promotion-blocked: use register_conditions_v2 with verified PRE provenance"
+    )
