@@ -12,6 +12,8 @@ from __future__ import annotations
 import fnmatch
 import json
 import os
+import uuid
+from dataclasses import dataclass
 import sqlite3
 import tempfile
 from datetime import datetime, timezone
@@ -602,25 +604,113 @@ def _publish_no_replace(source: Path, destination: Path) -> None:
     _fsync_directory(destination.parent)
 
 
-def _reserve_publication(db_path: Path, receipt_path: Path) -> Path:
-    """Serialize publishers without claiming either authority artifact name."""
-    reservation = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
-    descriptor = os.open(reservation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+@dataclass
+class _PublicationReservation:
+    """An OS-locked reservation file retained across a publisher crash."""
+
+    path: Path
+    descriptor: int
+    token: bytes
+
+
+def _lock_reservation(descriptor: int) -> None:
+    """Take a non-blocking whole-file lock without replacing a live owner."""
+    if os.name == "nt":
+        import msvcrt
+
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        try:
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+        except OSError as exc:
+            raise FileExistsError("catalog publication reservation is held by a live owner") from exc
+        return
+    import fcntl
+
     try:
-        os.write(descriptor, b"catalog publication reservation\n")
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as exc:
+        raise FileExistsError("catalog publication reservation is held by a live owner") from exc
+
+
+def _unlock_reservation(descriptor: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+        return
+    import fcntl
+
+    fcntl.flock(descriptor, fcntl.LOCK_UN)
+
+
+def _reserve_publication(db_path: Path, receipt_path: Path) -> _PublicationReservation:
+    """Acquire the durable reservation, including an abandoned crash reservation."""
+    path = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
+    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, "O_BINARY", 0), 0o600)
+    try:
+        # msvcrt byte locks require a byte to lock. This does not claim ownership:
+        # the unique token is written only after the OS lock succeeds.
+        if os.fstat(descriptor).st_size == 0:
+            os.write(descriptor, b"\0")
+            os.fsync(descriptor)
+        _lock_reservation(descriptor)
+        token = (uuid.uuid4().hex + "\n").encode("ascii")
+        os.ftruncate(descriptor, 0)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        os.write(descriptor, token)
         os.fsync(descriptor)
-    finally:
+    except BaseException:
         os.close(descriptor)
-    _fsync_directory(reservation.parent)
-    return reservation
+        raise
+    _fsync_directory(path.parent)
+    return _PublicationReservation(path, descriptor, token)
 
 
-def _release_reservation(reservation: Path) -> None:
+def _abandon_reservation(reservation: _PublicationReservation) -> None:
+    """Model process termination: release the OS lock but retain its file."""
+    _unlock_reservation(reservation.descriptor)
+    os.close(reservation.descriptor)
+
+
+def _release_reservation(reservation: _PublicationReservation) -> None:
+    """Remove only this owner's reservation after its DB/receipt publication."""
+    if os.name != "nt":
+        # Unlink while the lock is still held: a newcomer can only lock a new inode.
+        try:
+            reservation.path.unlink()
+        except FileNotFoundError:
+            pass
+        finally:
+            _unlock_reservation(reservation.descriptor)
+            os.close(reservation.descriptor)
+        _fsync_directory(reservation.path.parent)
+        return
+
+    # Windows does not reliably permit deleting a file through an open CRT handle.
+    # Mark release under the lock so a successor replacing the token cannot be
+    # mistaken for this owner after the handle is closed.
+    released_marker = b"RELEASED:" + reservation.token
     try:
-        reservation.unlink()
+        os.lseek(reservation.descriptor, 0, os.SEEK_SET)
+        current = os.read(
+            reservation.descriptor, os.fstat(reservation.descriptor).st_size)
+        if current != reservation.token:
+            raise RuntimeError("catalog publication reservation ownership changed")
+        os.ftruncate(reservation.descriptor, 0)
+        os.lseek(reservation.descriptor, 0, os.SEEK_SET)
+        os.write(reservation.descriptor, released_marker)
+        os.fsync(reservation.descriptor)
+    finally:
+        _unlock_reservation(reservation.descriptor)
+        os.close(reservation.descriptor)
+
+    try:
+        if reservation.path.read_bytes() == released_marker:
+            reservation.path.unlink()
     except FileNotFoundError:
         return
-    _fsync_directory(reservation.parent)
+    _fsync_directory(reservation.path.parent)
 
 
 # ---------------------------------------------------------------------------
@@ -651,7 +741,7 @@ def build_all(
     db_path, receipt_path = _catalog_output_paths(
         root, db_path, receipt_path, promotion_status)
     receipt = new_receipt(run_dir, db_path)
-    reservation: Path | None = None
+    reservation: _PublicationReservation | None = None
     receipt_temp: Path | None = None
     if promotion_status is None:
         receipt["catalog_authority"] = {

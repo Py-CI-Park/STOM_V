@@ -531,11 +531,11 @@ def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
                 path.unlink()
 
 
-def test_concurrent_publication_reservation_has_one_winner(tmp_path: Path):
+def test_live_publication_owner_cannot_be_stolen(tmp_path: Path):
     db_path = tmp_path / "evidence.pre.db"
     receipt_path = tmp_path / "evidence.pre.receipt.json"
     barrier = threading.Barrier(2)
-    wins: list[Path] = []
+    wins: list[builder._PublicationReservation] = []
     failures: list[BaseException] = []
 
     def reserve() -> None:
@@ -553,6 +553,83 @@ def test_concurrent_publication_reservation_has_one_winner(tmp_path: Path):
     try:
         assert len(wins) == 1
         assert len(failures) == 1
+        assert wins[0].path.exists()
     finally:
         for reservation in wins:
             builder._release_reservation(reservation)
+
+
+def test_abandoned_publication_reservation_is_recovered_after_crash(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    crashed_owner = builder._reserve_publication(db_path, receipt_path)
+
+    builder._abandon_reservation(crashed_owner)
+
+    assert crashed_owner.path.exists()
+    retry_owner = builder._reserve_publication(db_path, receipt_path)
+    try:
+        assert retry_owner.path == crashed_owner.path
+        assert retry_owner.token != crashed_owner.token
+    finally:
+        builder._release_reservation(retry_owner)
+    assert not crashed_owner.path.exists()
+
+
+def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    status = {
+        **_authority_status("PRE"),
+        "schema_version": 2,
+        "valid": True,
+        "evidence_id": "a" * 64,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "b" * 64,
+        "catalog_dir": "promotion_catalogs",
+        "source_artifacts": [],
+    }
+    db_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.db"
+    receipt_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.receipt.json"
+    original_publish = builder._publish_no_replace
+    original_release = builder._release_reservation
+
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: status)
+    monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "_revalidate_authority_paths", lambda *args, **kwargs: None)
+    monkeypatch.setattr(builder, "_promotion_receipt", lambda *args, **kwargs: {"schema_version": 2})
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+
+    class SimulatedCrash(BaseException):
+        pass
+
+    def publish_db_then_crash(source: Path, destination: Path) -> None:
+        original_publish(source, destination)
+        if destination == db_path:
+            raise SimulatedCrash()
+
+    monkeypatch.setattr(builder, "_publish_no_replace", publish_db_then_crash)
+    monkeypatch.setattr(builder, "_release_reservation", builder._abandon_reservation)
+    with pytest.raises(SimulatedCrash):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+
+    db_bytes = db_path.read_bytes()
+    reservation_path = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
+    assert reservation_path.exists()
+    assert not receipt_path.exists()
+
+    monkeypatch.setattr(builder, "_publish_no_replace", original_publish)
+    monkeypatch.setattr(builder, "_release_reservation", original_release)
+    builder.build_all(
+        run_dir, repo_root=run_dir,
+        promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+    )
+
+    assert db_path.read_bytes() == db_bytes
+    assert receipt_path.exists()
+    assert not reservation_path.exists()
