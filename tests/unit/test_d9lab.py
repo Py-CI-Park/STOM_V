@@ -12,6 +12,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
@@ -287,53 +288,18 @@ def test_consolidate_r1_parity_and_floors(tmp_path, monkeypatch):
     assert cons["parity_gate_pass"] is True
     assert cons["n_observable"] == 2 * len(days)
     assert set(cons["floors"].keys()) == {"new", "reentry", "pooled"}
-def _d9_ledger_result():
-    per_subpop = {
-        name: {
-            "classification": "distinct_positive",
-            "delta_pp": 0.2,
-            "ci_low_pp": 0.1,
-            "ci_high_pp": 0.3,
-            "p_two_sided": 0.01,
-            "fdr_survive": True,
-            "mde_pp": 0.1,
-            "floor_pass": True,
-            "n_transition": 200,
-        }
-        for name in ("new", "reentry", "pooled")
-    }
-    return {
-        "proceed_to_judgment": True,
-        "judgment": {"subpops": list(per_subpop), "per_subpop": per_subpop},
-    }
+def test_legacy_append_n_trials_is_blocked_before_file_mutation(tmp_path, monkeypatch):
+    def fail_legacy_write(**_kwargs):
+        raise AssertionError("retired ledger writer was called")
 
-
-def test_append_n_trials_uses_canonical_ledger_and_validates_rows(tmp_path, monkeypatch):
-    calls = []
-    append_trial = ledger.append_trial
-
-    def spy_append_trial(**kwargs):
-        calls.append(kwargs)
-        return append_trial(**kwargs)
-
-    monkeypatch.setattr(ledger, "append_trial", spy_append_trial)
+    monkeypatch.setattr(ledger, "append_trial", fail_legacy_write)
     ledger_path = tmp_path / "n_trials.jsonl"
 
-    assert report.append_n_trials(ledger_path, _d9_ledger_result()) == 3
-    rows = ledger.read_all(ledger_path)
+    assert "append_n_trials" not in report.__all__
+    with pytest.raises(
+        report.LegacyEvidenceWriteBlockedError,
+        match="legacy-evidence-write-blocked",
+    ):
+        report.append_n_trials(ledger_path, object())
 
-    assert len(calls) == len(rows) == 3
-    assert [row["series"] for row in rows] == ["D5_D9"] * 3
-
-
-def test_append_n_trials_does_not_append_when_judgment_not_ready(tmp_path, monkeypatch):
-    calls = []
-    monkeypatch.setattr(ledger, "append_trial", lambda **kwargs: calls.append(kwargs))
-    ledger_path = tmp_path / "n_trials.jsonl"
-
-    assert report.append_n_trials(
-        ledger_path, {"proceed_to_judgment": False, "judgment": None},
-    ) == 0
-
-    assert calls == []
-    assert ledger.read_all(ledger_path) == []
+    assert not ledger_path.exists()

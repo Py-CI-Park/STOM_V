@@ -1,17 +1,19 @@
-"""D9 산출물 렌더 — R1/R3 마크다운 리포트 + n_trials 원장 append (봉인본 §11·§14-9).
+"""D9 산출물 렌더 — R1/R3 마크다운 리포트 (봉인본 §11·§14-9).
 
-강제 딱지(§9): known-오염(L3=RR8_12 출구 조건부, 청산 레버 2024 known) + 잔여 불확실성
-(클램프·결측 초·2개 연도 얇음). R3 판정표는 결론 먼저·쉬운 설명 병기.
-n_trials 는 측정 완료 시 3건(type-b, 분모 3 고정) append(§14-9, 선계상 없음).
+Legacy n_trials ledger writes are retired; report and analysis APIs remain read-only.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Dict, List, Mapping
+from typing import List, Mapping
 
-from alpha_lab.discipline import ledger
+__all__ = [
+    "CONTAMINATION_LABEL", "LegacyEvidenceWriteBlockedError",
+    "render_r1_report", "render_r3_report",
+]
 
-__all__ = ["CONTAMINATION_LABEL", "append_n_trials", "render_r1_report", "render_r3_report"]
+class LegacyEvidenceWriteBlockedError(RuntimeError):
+    """Raised when retired D9 evidence-writing compatibility API is called."""
+
 
 CONTAMINATION_LABEL = (
     "본 결과의 채점 라벨(L3)은 챔피언 RR8_12 출구(sell_sha 8ef01e0e…, 청산 레버·v4 계열)로 "
@@ -134,35 +136,12 @@ def render_r3_report(result: Mapping[str, object], *, smoke: bool = False) -> st
     return "\n".join(L) + "\n"
 
 
-def append_n_trials(
-    ledger_path, result: Mapping[str, object], *,
-    session: str = "alpha-restart-d5-d9", window: str = "2022-03-23~2023-12-31(발견창)",
-) -> int:
-    """서브모집단 3건 series D5_D9 type-b append(분모 3 고정, §14-9 — 측정 완료 시).
-
-    판정 정지(게이트 미통과) 시 append 0(선계상 없음).
-    """
-    if not result.get("proceed_to_judgment") or result.get("judgment") is None:
-        return 0
-    j = result["judgment"]
-    ts = datetime.now(timezone.utc).isoformat()
-    rows: List[dict] = []
-    for name in j["subpops"]:
-        r = j["per_subpop"][name]
-        rows.append({
-            "ts": ts, "series": "D5_D9", "window": window,
-            "trial_type": "b(오프라인 봉인 판정)",
-            "target": (f"D9 전이 온셋 {name} vs 서지 기준선 L3 평균 Δ ≥+0.10%p ∧ "
-                       "일자블록 CI 0배제 ∧ BH-FDR(분모3) ∧ 연도 동부호 (사전등록 §7, type-b)"),
-            "result": (f"{r['classification']} — Δ {_fmt(r['delta_pp'])}%p, "
-                       f"CI[{_fmt(r['ci_low_pp'])},{_fmt(r['ci_high_pp'])}], "
-                       f"양측p {r['p_two_sided']:.4f}, FDR생존 {r['fdr_survive']}, "
-                       f"MDE {_fmt(r['mde_pp'])}%p, 하한 {r['floor_pass']}, n {r['n_transition']}"),
-            "session": session,
-        })
-    for row in rows:
-        ledger.append_trial(**row, path=ledger_path)
-    return len(rows)
+def append_n_trials(*_args, **_kwargs) -> None:
+    """Retired compatibility shim; legacy D9 ledger writes are prohibited."""
+    raise LegacyEvidenceWriteBlockedError(
+        "legacy-evidence-write-blocked: D9 legacy ledger writes are retired; "
+        "use the authenticated v2 evidence chain"
+    )
 
 
 def _pct(v) -> str:
