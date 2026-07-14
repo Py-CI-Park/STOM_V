@@ -10,11 +10,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from alpha_lab.clause_lab import clauses, gate, judge, parser
+from alpha_lab.clause_lab import clauses, gate, judge, parser, report
 from alpha_lab.clause_lab.clauses import (
     CLAUSE_SPECS, FAMILIES, PURE_DUPLICATE_PAIRS, RAW_EXPR,
     build_local_definitions, evaluate_clause_bits,
 )
+from alpha_lab.discipline import ledger
 
 _STRAT = Path("_database/strategy.db")
 
@@ -214,3 +215,40 @@ def test_parser_validates_sealed_buy_code():
 def test_verify_buy_sha_rejects_tamper():
     with pytest.raises(ValueError):
         parser.verify_buy_sha("tampered code")
+def test_append_n_trials_uses_canonical_ledger_and_validates_rows(tmp_path, monkeypatch):
+    judgment = {
+        "fdr_denominator": 2,
+        "qualified_nums": [1, 2],
+        "per_clause": {
+            n: {
+                "text": f"clause {n}",
+                "classification": "load_bearing",
+                "delta_pp": 0.2,
+                "ci_low_pp": 0.1,
+                "ci_high_pp": 0.3,
+                "p_two_sided": 0.01,
+                "fdr_survive": True,
+                "mde_pp": 0.1,
+                "year_delta": {2022: {"sign": 1}, 2023: {"sign": 1}},
+                "n_sat": 2000,
+                "n_unsat": 2000,
+                "floor_pass": True,
+            }
+            for n in (1, 2)
+        },
+    }
+    calls = []
+    append_trial = ledger.append_trial
+
+    def spy_append_trial(**kwargs):
+        calls.append(kwargs)
+        return append_trial(**kwargs)
+
+    monkeypatch.setattr(ledger, "append_trial", spy_append_trial)
+    ledger_path = tmp_path / "n_trials.jsonl"
+
+    assert report.append_n_trials(ledger_path, judgment) == 2
+    rows = ledger.read_all(ledger_path)
+
+    assert len(calls) == len(rows) == 2
+    assert [row["series"] for row in rows] == ["D1", "D1"]

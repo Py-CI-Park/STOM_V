@@ -6,10 +6,10 @@ n_trials 는 측정 완료 시 3건(type-b, 분모 3 고정) append(§14-9, 선�
 """
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Dict, List, Mapping
+
+from alpha_lab.discipline import ledger
 
 __all__ = ["CONTAMINATION_LABEL", "append_n_trials", "render_r1_report", "render_r3_report"]
 
@@ -160,9 +160,8 @@ def append_n_trials(
                        f"MDE {_fmt(r['mde_pp'])}%p, 하한 {r['floor_pass']}, n {r['n_transition']}"),
             "session": session,
         })
-    with open(ledger_path, "a", encoding="utf-8") as f:
-        for row in rows:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    for row in rows:
+        ledger.append_trial(**row, path=ledger_path)
     return len(rows)
 
 

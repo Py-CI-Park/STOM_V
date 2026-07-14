@@ -8,7 +8,6 @@
 """
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
@@ -17,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from alpha_lab.clause_lab.clauses import CLAUSE_SPECS, spec_by_num
+from alpha_lab.discipline import ledger
 
 __all__ = [
     "append_n_trials",
@@ -296,7 +296,6 @@ def append_n_trials(
                        "(사전등록 §7, 후보 단위 type-b)"),
             "result": result, "session": session,
         })
-    with open(ledger_path, "a", encoding="utf-8") as f:
-        for row in rows:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    for row in rows:
+        ledger.append_trial(**row, path=ledger_path)
     return len(rows)
