@@ -164,7 +164,7 @@ def _b(v: Any) -> Optional[int]:
 
 
 # ---------------------------------------------------------------------------
-# strategies — w2 랭킹 4개 섹션 union + B1 등록 영수증 1행 + sha 보강.
+# strategies — w2 랭킹 4개 섹션 union + B1 역사적 영수증 1행 + sha 보강.
 # ---------------------------------------------------------------------------
 
 _W2_SECTIONS: Tuple[Tuple[str, str], ...] = (
@@ -180,7 +180,7 @@ def load_strategies(
     con: sqlite3.Connection, w2: Optional[dict], d1: Optional[dict],
     b1: Optional[dict], receipt: Dict[str, Any],
 ) -> None:
-    """W2 랭킹 union 적재 후 B1 행 추가·RR8_12 원문 sha 보강."""
+    """W2 랭킹 union 적재 후 B1 역사적·비권위 행 추가·RR8_12 원문 sha 보강."""
     if w2 is not None:
         merged = _merge_w2_sections(w2, receipt)
         legacy = set(
@@ -251,7 +251,7 @@ def _strategy_row(name: str, ent: dict, legacy: set) -> tuple:
 def _insert_b1_strategy(
     con: sqlite3.Connection, b1: Optional[dict], receipt: Dict[str, Any],
 ) -> None:
-    """B1 등록 영수증에서 ALP_D5R_B1_S 행 추가(랭킹 아님 — 실전 이관 후보)."""
+    """B1 역사적 영수증에서 비권위 행을 추가한다(랭킹·승격 근거 아님)."""
     if b1 is None:
         return
     inserted = ((b1.get("register") or {}).get("inserted") or [{}])[0]
@@ -268,11 +268,11 @@ def _insert_b1_strategy(
         " api_compat, source_sha256, lineage, rank_metrics_json, status_tag)"
         " VALUES (?,?,?,?,?,?,?,?)",
         (name, "b1_registration_receipt", "alpha_lab_d5r",
-         "current(등록 영수증)", json.dumps(sha, ensure_ascii=False),
+         "historical/non-authoritative(등록 영수증)", json.dumps(sha, ensure_ascii=False),
          meta.get("sell_note"),
          json.dumps({"register": b1.get("register"), "post": b1.get("post")},
                     ensure_ascii=False),
-         "감독형 실전 이관 매도식 — 30거래일 채점 전 성공 주장 금지"),
+         "역사적 B1 등록 영수증 — 비권위이며 v2 승격 근거가 아님"),
     )
 
 

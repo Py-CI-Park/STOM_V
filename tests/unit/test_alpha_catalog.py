@@ -241,9 +241,11 @@ def test_build_all_strategy_details(run_dir: Path):
     tag, = con.execute(
         "SELECT status_tag FROM strategies WHERE name='#1'").fetchone()
     assert "외부 벤치마크" in tag
-    assert con.execute(
-        "SELECT COUNT(*) FROM strategies WHERE name='ALP_D5R_B1_S'"
-    ).fetchone()[0] == 1
+    b1 = con.execute(
+        "SELECT api_compat, status_tag FROM strategies WHERE name='ALP_D5R_B1_S'"
+    ).fetchone()
+    assert b1[0] == "historical/non-authoritative(등록 영수증)"
+    assert "비권위" in b1[1]
     # 분류 필드 부재 절(22)은 판정부 inconclusive_nums 목록으로 보강된다.
     assert con.execute(
         "SELECT classification FROM clauses WHERE clause_num=22"
