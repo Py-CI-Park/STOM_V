@@ -23,6 +23,14 @@ import math
 from pathlib import Path
 
 from alpha_lab.discipline import windows
+from alpha_lab.discipline.evidence import (
+    EvidenceSchemaError,
+    build_evidence_identity,
+    require_full_sha256,
+    sha256_canonical,
+    validate_gate_receipt,
+    validate_gate_usage,
+)
 
 _ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = (
@@ -45,6 +53,7 @@ REQUIRED_KEYS: tuple[str, ...] = (
     "result",
     "session",
 )
+V2_REQUIRED_KEYS = REQUIRED_KEYS + ("schema_version", "evidence_id", "evidence")
 
 # 원장 규약 §3.1 — 시행 유형 a/b/c. type-d 신설은 규약 개정(원장 §5)으로만.
 ALLOWED_TRIAL_PREFIXES: tuple[str, ...] = ("a", "b", "c")
@@ -55,8 +64,14 @@ class LedgerSchemaError(Exception):
 
 
 def _serialize(record: dict) -> str:
-    """REQUIRED_KEYS 순서로 1행 직렬화 — 기존 행과 byte 호환."""
-    ordered = {key: record[key] for key in REQUIRED_KEYS}
+    """Serialize v1 byte-compatibly and v2 with its appended contract keys."""
+    if record.get("schema_version", 1) in (None, 1):
+        ordered = {key: record[key] for key in REQUIRED_KEYS}
+    elif record.get("schema_version") == 2:
+        _validate_v2_record(record)
+        ordered = {key: record[key] for key in V2_REQUIRED_KEYS}
+    else:
+        raise LedgerSchemaError(f"unsupported ledger schema_version: {record.get('schema_version')!r}")
     return json.dumps(ordered, ensure_ascii=False)
 
 
@@ -79,6 +94,59 @@ def _validate_schema(record: dict) -> None:
         raise LedgerSchemaError(
             f"trial_type은 a/b/c로 시작해야 합니다(예: 'b(오프라인 봉인 판정)'). "
             f"type-d 등 신설은 원장 §5 규약 개정으로만: {record['trial_type']!r}"
+        )
+def _validate_v2_record(record: dict) -> None:
+    if set(record) != set(V2_REQUIRED_KEYS):
+        raise LedgerSchemaError(f"v2 ledger row has invalid keys: {sorted(record)!r}")
+    _validate_schema(record)
+    if record["schema_version"] != 2:
+        raise LedgerSchemaError("v2 ledger row schema_version must be exactly 2")
+    try:
+        evidence_id = require_full_sha256(record["evidence_id"], "evidence_id")
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(str(exc)) from exc
+    evidence = record["evidence"]
+    identity_keys = {
+        "prereg_sha256",
+        "seal_manifest_sha256",
+        "code_manifest_sha256",
+        "gate_receipt_id",
+        "gate_receipt_sha256",
+        "gate_usage_sha256",
+    }
+    if not isinstance(evidence, dict) or set(evidence) != identity_keys:
+        raise LedgerSchemaError("v2 ledger evidence has invalid keys")
+    try:
+        for key in identity_keys:
+            require_full_sha256(evidence[key], f"evidence.{key}")
+        if evidence_id != sha256_canonical(evidence):
+            raise LedgerSchemaError("v2 ledger evidence_id does not match evidence")
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(str(exc)) from exc
+
+
+def _append_record(target_path: Path, record: dict) -> None:
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    line = _serialize(record)
+    eol, prefix = b"\n", b""
+    if target_path.exists():
+        existing = target_path.read_bytes()
+        if b"\r\n" in existing:
+            eol = b"\r\n"
+        if existing and not existing.endswith(b"\n"):
+            prefix = eol
+    with open(target_path, "ab") as handle:
+        handle.write(prefix + line.encode("utf-8") + eol)
+
+
+def _validate_append_fields(record: dict, known_ok: bool) -> None:
+    _validate_schema(record)
+    contact = _known_contact_zones(record["window"], record["series"])
+    if contact and not known_ok:
+        raise windows.WindowViolation(
+            f"known 창 접촉 기입 거부(fail-closed): window={record['window']!r} 이(가) "
+            f"{sorted(contact)} 에 접촉합니다. veto/감사 기록이 맞으면 "
+            f'known_ok=True를 명시하십시오. 원장 §1: "{windows.LEDGER_QUOTE_KNOWN}"'
         )
 
 
@@ -135,27 +203,57 @@ def append_trial(
         "result": result,
         "session": session,
     }
-    _validate_schema(record)
-    contact = _known_contact_zones(window, series)
-    if contact and not known_ok:
-        raise windows.WindowViolation(
-            f"known 창 접촉 기입 거부(fail-closed): window={window!r} 이(가) "
-            f"{sorted(contact)} 에 접촉합니다. veto/감사 기록이 맞으면 "
-            f'known_ok=True를 명시하십시오. 원장 §1: "{windows.LEDGER_QUOTE_KNOWN}"'
-        )
+    _validate_append_fields(record, known_ok)
     target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-    line = _serialize(record)
-    eol, prefix = b"\n", b""
-    if target_path.exists():
-        existing = target_path.read_bytes()
-        if b"\r\n" in existing:
-            eol = b"\r\n"  # 기존 원장 관례(CRLF) 유지 — 파일 내 EOL 혼재 방지
-        if existing and not existing.endswith(b"\n"):
-            prefix = eol  # 마지막 행 미종결 파일 보호(행 붙음 방지)
-    with open(target_path, "ab") as handle:
-        handle.write(prefix + line.encode("utf-8") + eol)
+    _append_record(target_path, record)
     return dict(record)
+def append_trial_v2(
+    *,
+    ts: str,
+    series: str,
+    window: str,
+    trial_type: str,
+    target: str,
+    result: str,
+    session: str,
+    repo_root: Path | str,
+    gate_receipt_path: Path | str,
+    gate_usage_path: Path | str,
+    path: Path | str | None = None,
+    known_ok: bool = False,
+) -> dict:
+    """Append a v2 evidence-bound trial after validating its immutable claim."""
+    root = Path(repo_root).resolve()
+    try:
+        receipt_value = json.loads(Path(gate_receipt_path).read_text(encoding="utf-8"))
+        usage_value = json.loads(Path(gate_usage_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LedgerSchemaError(f"v2 gate receipt or usage cannot be read: {exc}") from exc
+    try:
+        receipt = validate_gate_receipt(receipt_value, repo_root=root)
+        usage = validate_gate_usage(usage_value, receipt=receipt)
+        evidence_id, evidence = build_evidence_identity(receipt, usage)
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(f"invalid v2 evidence chain: {exc}") from exc
+    record = {
+        "ts": ts,
+        "series": series,
+        "window": window,
+        "trial_type": trial_type,
+        "target": target,
+        "result": result,
+        "session": session,
+        "schema_version": 2,
+        "evidence_id": evidence_id,
+        "evidence": evidence,
+    }
+    _validate_append_fields(record, known_ok)
+    _validate_v2_record(record)
+    target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
+    _append_record(target_path, record)
+    return dict(record)
+
+
 
 
 def read_all(path=None) -> list[dict]:
@@ -182,6 +280,15 @@ def read_all(path=None) -> list[dict]:
         missing = [key for key in REQUIRED_KEYS if key not in record]
         if missing:
             raise LedgerSchemaError(f"원장 {lineno}행 필수 키 누락: {missing}")
+        if record.get("schema_version", 1) == 2:
+            try:
+                _validate_v2_record(record)
+            except LedgerSchemaError as exc:
+                raise LedgerSchemaError(f"원장 {lineno}행 v2 스키마 위반: {exc}") from exc
+        elif record.get("schema_version", 1) not in (None, 1):
+            raise LedgerSchemaError(
+                f"원장 {lineno}행 지원하지 않는 schema_version: {record.get('schema_version')!r}"
+            )
         entries.append(record)
     return entries
 

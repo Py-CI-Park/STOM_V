@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from alpha_lab.discipline import ledger, lint, prereg, trials_report, windows
+from alpha_lab.discipline import evidence, ledger, lint, prereg, trials_report, windows
 
 ROOT = Path(__file__).resolve().parents[2]
 REAL_LEDGER = (
@@ -214,6 +214,114 @@ class TestAppendTrial:
         path.write_bytes(json.dumps(VALID_ROW, ensure_ascii=False).encode("utf-8"))
         ledger.append_trial(path=path, **_row(target="둘째 행"))
         assert len(ledger.read_all(path)) == 2  # 행 붙음 없음
+def _v2_chain(tmp_path):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    doc = tmp_path / "prereg.md"
+    code = tmp_path / "measure.py"
+    doc.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
+    code.write_text("value = 1\n", encoding="utf-8")
+    seal = prereg.finalize_prereg(
+        doc,
+        repo_root=tmp_path,
+        code_files=(code,),
+        manifest_path=tmp_path / "seal.json",
+        sealed_at="2026-07-14T00:00:00+00:00",
+    )
+    seal_manifest = {
+        "path": "seal.json",
+        "sha256": evidence.sha256_canonical(seal),
+    }
+    receipt = {
+        "schema_version": 2,
+        "kind": "measure_gate_receipt",
+        "status": "PASS",
+        "receipt_id": "",
+        "issued_at": "2026-07-14T00:01:00+00:00",
+        "nonce": "unit-run",
+        "repo_head": "a" * 40,
+        "seal_manifest": seal_manifest,
+        "prereg": seal["sealed_doc"],
+        "code_manifest_sha256": evidence.sha256_canonical(seal["code_manifest"]),
+        "code_manifest": seal["code_manifest"],
+        "checks": {"repo": {}, "sealed_doc": {}, "code_clean": {}, "sha_seal": {}},
+    }
+    receipt["receipt_id"] = evidence.sha256_canonical(
+        {
+            "issued_at": receipt["issued_at"],
+            "nonce": receipt["nonce"],
+            "repo_head": receipt["repo_head"],
+            "seal_manifest": receipt["seal_manifest"],
+            "prereg": receipt["prereg"],
+            "code_manifest_sha256": receipt["code_manifest_sha256"],
+        }
+    )
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_bytes(evidence.canonical_json_bytes(receipt))
+    usage = {
+        "schema_version": 2,
+        "kind": "measure_gate_usage",
+        "receipt_id": receipt["receipt_id"],
+        "receipt_sha256": evidence.sha256_canonical(receipt),
+        "consumer": "unit-batch",
+        "consumed_at": "2026-07-14T00:02:00+00:00",
+    }
+    usage_path = tmp_path / "usage.json"
+    usage_path.write_bytes(evidence.canonical_json_bytes(usage))
+    return receipt_path, usage_path
+
+
+class TestLedgerV2:
+    def test_append_v2_valid_identity_and_mixed_reading(self, tmp_path):
+        receipt_path, usage_path = _v2_chain(tmp_path)
+        path = tmp_path / "ledger.jsonl"
+        ledger.append_trial(path=path, **VALID_ROW)
+        record = ledger.append_trial_v2(
+            path=path,
+            repo_root=tmp_path,
+            gate_receipt_path=receipt_path,
+            gate_usage_path=usage_path,
+            **_row(ts="2026-07-14T00:03:00"),
+        )
+        assert list(record) == list(ledger.V2_REQUIRED_KEYS)
+        assert record["evidence_id"] == evidence.sha256_canonical(record["evidence"])
+        assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
+
+    def test_append_v2_rejects_usage_mismatch_and_changed_code(self, tmp_path):
+        receipt_path, usage_path = _v2_chain(tmp_path)
+        usage = json.loads(usage_path.read_text(encoding="utf-8"))
+        usage["receipt_id"] = "b" * 64
+        usage_path.write_text(json.dumps(usage), encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(
+                repo_root=tmp_path,
+                gate_receipt_path=receipt_path,
+                gate_usage_path=usage_path,
+                path=tmp_path / "ledger.jsonl",
+                **_row(),
+            )
+        receipt_path, usage_path = _v2_chain(tmp_path / "second")
+        (tmp_path / "second" / "measure.py").write_text("value = 2\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(
+                repo_root=tmp_path / "second",
+                gate_receipt_path=receipt_path,
+                gate_usage_path=usage_path,
+                path=tmp_path / "ledger2.jsonl",
+                **_row(),
+            )
+
+    def test_malformed_v2_read_fails_closed_with_line_number(self, tmp_path):
+        path = tmp_path / "ledger.jsonl"
+        broken = {
+            **VALID_ROW,
+            "schema_version": 2,
+            "evidence_id": "a" * 64,
+            "evidence": {},
+        }
+        path.write_text(json.dumps(broken, ensure_ascii=False) + "\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
+            ledger.read_all(path)
+        assert "1행" in str(excinfo.value)
 
 
 class TestReadAggregate:
@@ -337,6 +445,66 @@ class TestPrereg:
         prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
         with pytest.raises(FileExistsError):
             prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
+    def test_finalize_prereg_rejects_draft_and_existing_sidecar(self, tmp_path):
+        draft = tmp_path / "prereg.md"
+        draft.write_text(
+            "> 지위: **SEALED**\n봉인 전 초안\n", encoding="utf-8"
+        )
+        code = tmp_path / "measure.py"
+        code.write_text("print('measure')\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                draft,
+                repo_root=tmp_path,
+                code_files=(code,),
+                manifest_path=tmp_path / "seal.json",
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        sealed = tmp_path / "sealed.md"
+        sealed.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
+        sidecar = tmp_path / "seal.json"
+        prereg.finalize_prereg(
+            sealed,
+            repo_root=tmp_path,
+            code_files=(code,),
+            manifest_path=sidecar,
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        with pytest.raises(FileExistsError):
+            prereg.finalize_prereg(
+                sealed,
+                repo_root=tmp_path,
+                code_files=(code,),
+                manifest_path=sidecar,
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_sorted_full_hashes_and_timezone_required(self, tmp_path):
+        sealed = tmp_path / "prereg.md"
+        sealed.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
+        (tmp_path / "b.py").write_text("b = 1\n", encoding="utf-8")
+        (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                sealed,
+                repo_root=tmp_path,
+                code_files=(tmp_path / "a.py",),
+                manifest_path=tmp_path / "bad.json",
+                sealed_at="2026-07-14T00:00:00",
+            )
+        seal = prereg.finalize_prereg(
+            sealed,
+            repo_root=tmp_path,
+            code_files=(tmp_path / "b.py", tmp_path / "a.py"),
+            manifest_path=tmp_path / "seal.json",
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == ["a.py", "b.py"]
+        assert all(len(item["sha256"]) == 64 for item in seal["code_manifest"])
+        assert evidence.validate_prereg_seal(
+            json.loads((tmp_path / "seal.json").read_text(encoding="utf-8")),
+            repo_root=tmp_path,
+        ) == seal
 
 
 # ---------------------------------------------------------------------------

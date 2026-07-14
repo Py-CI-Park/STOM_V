@@ -16,8 +16,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
 
 from alpha_lab.discipline import windows
+from alpha_lab.discipline.evidence import (
+    EvidenceSchemaError,
+    canonical_json_bytes,
+    validate_prereg_seal,
+)
 
 _FILL = "(기입)"
 
@@ -203,3 +209,65 @@ def write_skeleton(path, **kwargs) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
     return target
+def finalize_prereg(
+    doc_path: Path | str,
+    *,
+    repo_root: Path | str,
+    code_files: tuple[Path | str, ...],
+    manifest_path: Path | str,
+    sealed_at: str,
+) -> dict:
+    """Exclusively create a validated v2 sidecar for an already sealed prereg."""
+    root = Path(repo_root).resolve()
+    document = Path(doc_path).resolve()
+    try:
+        doc_relative = document.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise EvidenceSchemaError("doc_path must resolve inside repo_root") from exc
+    if not document.is_file():
+        raise EvidenceSchemaError("doc_path must name an existing preregistration document")
+    text = document.read_text(encoding="utf-8")
+    if "> 지위: **SEALED**" not in text:
+        raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
+    for marker in ("봉인 전 초안", "(기입)", "(미주입"):
+        if marker in text:
+            raise EvidenceSchemaError(f"preregistration document retains draft marker: {marker}")
+    if not code_files:
+        raise EvidenceSchemaError("code_files must be non-empty")
+    manifest: list[dict[str, str]] = []
+    for index, code_file in enumerate(code_files):
+        candidate = Path(code_file).resolve()
+        try:
+            relative = candidate.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
+        if not candidate.is_file():
+            raise EvidenceSchemaError(f"code_files[{index}] must name a file")
+        manifest.append(
+            {"path": relative, "sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()}
+        )
+    manifest.sort(key=lambda item: item["path"])
+    if len({item["path"] for item in manifest}) != len(manifest):
+        raise EvidenceSchemaError("code_files must resolve to unique paths")
+    seal = {
+        "schema_version": 2,
+        "kind": "prereg_seal",
+        "status": "SEALED",
+        "sealed_at": sealed_at,
+        "sealed_doc": {
+            "path": doc_relative,
+            "sha256": hashlib.sha256(document.read_bytes()).hexdigest(),
+        },
+        "code_manifest": manifest,
+    }
+    validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
+    output = Path(manifest_path)
+    if output.exists():
+        raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(output, "x", encoding="utf-8", newline="\n") as handle:
+            handle.write(canonical_json_bytes(validated).decode("utf-8"))
+    except FileExistsError:
+        raise
+    return dict(validated)
