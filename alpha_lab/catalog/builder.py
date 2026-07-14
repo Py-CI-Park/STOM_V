@@ -264,6 +264,54 @@ def ensure_gitignore(run_dir: Path) -> Dict[str, str]:
     gi.write_text(existing + block, encoding="utf-8")
     action = "appended(기존 내용 보존)" if existing else "created"
     return {"path": str(gi), "action": action, "pattern": _GI_PATTERN}
+_PROMOTION_CATALOG_DIR = "promotion_catalogs"
+_PROMOTION_RECEIPT_SUFFIX = ".receipt.json"
+
+
+def _is_in_promotion_namespace(path: Path, namespace: Path) -> bool:
+    """Resolve containment so symlinked promotion paths cannot bypass the boundary."""
+    try:
+        path.resolve().relative_to(namespace.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _catalog_output_paths(
+    run_dir: Path,
+    db_path: Path | str | None,
+    receipt_path: Path | str | None,
+    promotion_status: dict[str, Any] | None,
+) -> tuple[Path, Path]:
+    """Derive authority-specific outputs and reject cross-namespace aliases."""
+    namespace = run_dir / _PROMOTION_CATALOG_DIR
+    if promotion_status is None:
+        selected_db = Path(db_path) if db_path is not None else run_dir / "research_assets.db"
+        selected_receipt = (
+            Path(receipt_path) if receipt_path is not None
+            else run_dir / "research_assets_build_receipt.json"
+        )
+        if (
+            _is_in_promotion_namespace(selected_db, namespace)
+            or _is_in_promotion_namespace(selected_receipt, namespace)
+        ):
+            raise EvidenceSchemaError(
+                "legacy catalog outputs cannot be inside the promotion_catalogs namespace"
+            )
+        return selected_db, selected_receipt
+
+    evidence_id = promotion_status["evidence_id"]
+    canonical_db = namespace / f"{evidence_id}.db"
+    canonical_receipt = namespace / f"{evidence_id}{_PROMOTION_RECEIPT_SUFFIX}"
+    if db_path is not None and Path(db_path) != canonical_db:
+        raise EvidenceSchemaError("promotion catalog db_path must equal its canonical evidence path")
+    if receipt_path is not None and Path(receipt_path) != canonical_receipt:
+        raise EvidenceSchemaError(
+            "promotion catalog receipt_path must equal its canonical evidence path"
+        )
+    return canonical_db, canonical_receipt
+
+
 def _promotion_status(
     repo_root: Path,
     promotion_manifest_path: Path | str | None,
@@ -367,9 +415,8 @@ def build_all(
     root = Path(repo_root).resolve() if repo_root is not None else root_from_run_dir(run_dir)
     promotion_status = _promotion_status(
         root, promotion_manifest_path, promotion_result_path)
-    db_path = Path(db_path) if db_path else run_dir / "research_assets.db"
-    receipt_path = (Path(receipt_path) if receipt_path
-                    else run_dir / "research_assets_build_receipt.json")
+    db_path, receipt_path = _catalog_output_paths(
+        run_dir, db_path, receipt_path, promotion_status)
     receipt = new_receipt(run_dir, db_path)
     if promotion_status is None:
         receipt["catalog_authority"] = {
@@ -379,6 +426,7 @@ def build_all(
         working_db_path = db_path
     else:
         receipt["promotion_status"] = promotion_status
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         handle = tempfile.NamedTemporaryFile(
             prefix=f".{db_path.name}.", suffix=".tmp", dir=db_path.parent, delete=False)
         handle.close()

@@ -315,6 +315,72 @@ def test_gitignore_appends_preserving_content(tmp_path: Path):
     text = (run / ".gitignore").read_text(encoding="utf-8")
     assert text.startswith("*.parquet\n")
     assert "research_assets.db*" in text
+def _promotion_status(evidence_id: str = "a" * 64) -> dict[str, object]:
+    return {
+        "schema_version": 2,
+        "phase": "PRE",
+        "valid": True,
+        "evidence_id": evidence_id,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "b" * 64,
+    }
+
+
+def test_catalog_output_paths_keep_legacy_defaults_non_authoritative(run_dir: Path):
+    db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, None)
+
+    assert db_path == run_dir / "research_assets.db"
+    assert receipt_path == run_dir / "research_assets_build_receipt.json"
+
+
+def test_catalog_output_paths_use_evidence_bound_promotion_defaults(run_dir: Path):
+    evidence_id = "a" * 64
+    db_path, receipt_path = builder._catalog_output_paths(
+        run_dir, None, None, _promotion_status(evidence_id))
+
+    assert db_path == run_dir / "promotion_catalogs" / f"{evidence_id}.db"
+    assert receipt_path == run_dir / "promotion_catalogs" / f"{evidence_id}.receipt.json"
+
+
+@pytest.mark.parametrize("field", ["db_path", "receipt_path"])
+def test_promotion_output_aliases_are_rejected_before_mutation(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch, field: str,
+):
+    evidence_id = "a" * 64
+    canonical_db = run_dir / "promotion_catalogs" / f"{evidence_id}.db"
+    canonical_receipt = run_dir / "promotion_catalogs" / f"{evidence_id}.receipt.json"
+    alias = canonical_db.parent / "alias" / ".." / canonical_db.name
+    kwargs = {
+        "db_path": canonical_db,
+        "receipt_path": canonical_receipt,
+        field: alias,
+        "repo_root": run_dir,
+        "promotion_manifest_path": run_dir / "promotions" / "test.pre.json",
+    }
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: _promotion_status(evidence_id))
+
+    with pytest.raises(ValueError, match="canonical evidence path"):
+        builder.build_all(run_dir, **kwargs)
+
+    assert not (run_dir / "promotion_catalogs").exists()
+    assert not (run_dir / ".gitignore").exists()
+
+
+@pytest.mark.parametrize("field", ["db_path", "receipt_path"])
+def test_legacy_outputs_reject_promotion_namespace_before_mutation(
+    run_dir: Path, field: str,
+):
+    namespace_path = run_dir / "promotion_catalogs" / "untrusted.db"
+    kwargs = {field: namespace_path}
+
+    with pytest.raises(ValueError, match="cannot be inside"):
+        builder.build_all(run_dir, **kwargs)
+
+    assert not (run_dir / "promotion_catalogs").exists()
+    assert not (run_dir / ".gitignore").exists()
+
+
 def test_build_all_rejects_shape_only_promotion_before_catalog_mutation(run_dir: Path):
     db_path = run_dir / "research_assets.db"
     builder.build_all(run_dir, write_receipt=False)
