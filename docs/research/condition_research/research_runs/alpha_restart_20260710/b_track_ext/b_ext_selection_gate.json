@@ -1,0 +1,1126 @@
+{
+ "kind": "b_ext_selection_gate",
+ "note": "L3 관측 전 영속(확인③ 정본)",
+ "selected": [
+  "Tick_B_902_905",
+  "Tick_B_902_905_Study",
+  "Tick_B_902_905_Study_2",
+  "Tick_B_902_905_Update",
+  "Tick_B_902_905_Update_2",
+  "Tick_B_902_905_Update_2_Study",
+  "Tick_B_930_Dev",
+  "Tick_B_905_Study",
+  "Tick_B_905_Update",
+  "Tick_B_902",
+  "Tick_B_902_Study",
+  "Tick_B_902_Study_2",
+  "Tick_B_902_Update"
+ ],
+ "family_expand": [
+  "Tick_B_905_Study",
+  "Tick_B_905_Update",
+  "Tick_B_902",
+  "Tick_B_902_Study",
+  "Tick_B_902_Study_2",
+  "Tick_B_902_Update"
+ ],
+ "nonfamily": [],
+ "n_selected": 13,
+ "n_new_bits": 31,
+ "n_branches_measurable": 19,
+ "caps": {
+  "new_bit_cap": 40,
+  "max_family_expand": 6,
+  "max_nonfamily": 5
+ },
+ "champion_branches": {
+  "902": [
+   22,
+   6,
+   17,
+   14,
+   2,
+   10,
+   4,
+   5,
+   19,
+   13,
+   1,
+   11,
+   32,
+   7,
+   15,
+   25,
+   28,
+   3,
+   35,
+   37,
+   31,
+   30,
+   9,
+   8
+  ],
+  "905": [
+   22,
+   21,
+   16,
+   18,
+   2,
+   10,
+   4,
+   36,
+   5,
+   12,
+   20,
+   1,
+   11,
+   33,
+   7,
+   15,
+   26,
+   27,
+   3,
+   34,
+   38,
+   29,
+   24,
+   23,
+   9,
+   8
+  ]
+ },
+ "strategies": {
+  "Tick_B_902_905": {
+   "sha256": "4b1f6b370444b62a354f085384169bdafd837659f6e0cecb039d56bd8bbb1bf7",
+   "is_family": true,
+   "reuse_ratio": 0.8367,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_902_905_Study": {
+   "sha256": "b055c27ff696fced0b64a7c4a68d91d981ec69975d64ba2a12e206655cee296a",
+   "is_family": true,
+   "reuse_ratio": 0.8269,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_902_905_Study_2": {
+   "sha256": "15feb9f96176a666f58fc2e7e5d32dad6f4779c01d7f0e2419bfad41a43f6afa",
+   "is_family": true,
+   "reuse_ratio": 0.9,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_902_905_Update": {
+   "sha256": "a048fe319e0dc6e12e101867a13720773e9969b0a51d3aced43aa2846b975de9",
+   "is_family": true,
+   "reuse_ratio": 0.88,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_902_905_Update_2": {
+   "sha256": "15feb9f96176a666f58fc2e7e5d32dad6f4779c01d7f0e2419bfad41a43f6afa",
+   "is_family": true,
+   "reuse_ratio": 0.9,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_902_905_Update_2_Study": {
+   "sha256": "7515a0f59b3fe1ac2a8972a36408540f6efda7e2363ac5a3140c9a6e16ff2a71",
+   "is_family": true,
+   "reuse_ratio": 0.8654,
+   "n_branches": 2,
+   "n_measurable": 1
+  },
+  "Tick_B_930_Dev": {
+   "sha256": "15feb9f96176a666f58fc2e7e5d32dad6f4779c01d7f0e2419bfad41a43f6afa",
+   "is_family": true,
+   "reuse_ratio": 0.9,
+   "n_branches": 2,
+   "n_measurable": 2
+  },
+  "Tick_B_905_Study": {
+   "sha256": "ec0dee77e896a70b844c6dc1b947c07356e6a873fb92c1d6a8f7d1dbdf0c1ce4",
+   "is_family": true,
+   "reuse_ratio": 0.6071,
+   "n_branches": 1,
+   "n_measurable": 1
+  },
+  "Tick_B_905_Update": {
+   "sha256": "ec0dee77e896a70b844c6dc1b947c07356e6a873fb92c1d6a8f7d1dbdf0c1ce4",
+   "is_family": true,
+   "reuse_ratio": 0.6071,
+   "n_branches": 1,
+   "n_measurable": 1
+  },
+  "Tick_B_902": {
+   "sha256": "94e507f79c9a43b283c6b2816ed44a38c6758f0f984134ffec3441219d201691",
+   "is_family": true,
+   "reuse_ratio": 0.5556,
+   "n_branches": 1,
+   "n_measurable": 1
+  },
+  "Tick_B_902_Study": {
+   "sha256": "dc521a816a2b27470eb14fcdaa8031dc94d27929a2bf8d03993103d43eb0c9f0",
+   "is_family": true,
+   "reuse_ratio": 0.5714,
+   "n_branches": 1,
+   "n_measurable": 1
+  },
+  "Tick_B_902_Study_2": {
+   "sha256": "a09476df49930153b7ae7f53a10e1970b281d09e4d00fdf95297ea147f080adb",
+   "is_family": true,
+   "reuse_ratio": 0.5714,
+   "n_branches": 1,
+   "n_measurable": 1
+  },
+  "Tick_B_902_Update": {
+   "sha256": "567a7ad037d83cafdba4b1648adad070cb76cd7d9df709e56543d30aad73f8c4",
+   "is_family": true,
+   "reuse_ratio": 0.5556,
+   "n_branches": 1,
+   "n_measurable": 1
+  }
+ },
+ "new_bit_defs": {
+  "ext_000": {
+   "canon": "0 < 전일비 < 10",
+   "negated": false,
+   "symbols": [
+    "전일비"
+   ]
+  },
+  "ext_001": {
+   "canon": "0.0 <= 시가등락율",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_002": {
+   "canon": "0.5 <= 시가대비등락율",
+   "negated": false,
+   "symbols": [
+    "시가대비등락율"
+   ]
+  },
+  "ext_003": {
+   "canon": "1 < 초당순매수금액",
+   "negated": false,
+   "symbols": [
+    "초당순매수금액"
+   ]
+  },
+  "ext_004": {
+   "canon": "1.0 <= 시가등락율",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_005": {
+   "canon": "1.0 <= 시가등락율 < 4.0",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_006": {
+   "canon": "2 < 회전율",
+   "negated": false,
+   "symbols": [
+    "회전율"
+   ]
+  },
+  "ext_007": {
+   "canon": "3.0 <= 시가대비등락율",
+   "negated": false,
+   "symbols": [
+    "시가대비등락율"
+   ]
+  },
+  "ext_008": {
+   "canon": "4.0 <= 시가등락율",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_009": {
+   "canon": "90200 < 시분초 < 90500",
+   "negated": false,
+   "symbols": [
+    "시분초"
+   ]
+  },
+  "ext_010": {
+   "canon": "90200 <= 시분초 < 90500",
+   "negated": false,
+   "symbols": [
+    "시분초"
+   ]
+  },
+  "ext_011": {
+   "canon": "누적초당매도수량30 * 0.5 < 누적초당매도수량30 * 1.0",
+   "negated": false,
+   "symbols": [
+    "누적초당매도수량30"
+   ]
+  },
+  "ext_012": {
+   "canon": "누적초당매수수량30 * 0.5 < 누적초당매도수량30 < 누적초당매수수량30 * 1.0",
+   "negated": false,
+   "symbols": [
+    "누적초당매도수량30",
+    "누적초당매수수량30"
+   ]
+  },
+  "ext_013": {
+   "canon": "당일거래대금각도30 > 1",
+   "negated": false,
+   "symbols": [
+    "당일거래대금각도30"
+   ]
+  },
+  "ext_014": {
+   "canon": "시가대비등락율 < 6.0",
+   "negated": false,
+   "symbols": [
+    "시가대비등락율"
+   ]
+  },
+  "ext_015": {
+   "canon": "시가대비등락율 < 8.0",
+   "negated": false,
+   "symbols": [
+    "시가대비등락율"
+   ]
+  },
+  "ext_016": {
+   "canon": "시가등락율 < 20.0",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_017": {
+   "canon": "시가등락율 < 4.0",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_018": {
+   "canon": "시가등락율 < 8.0",
+   "negated": false,
+   "symbols": [
+    "시가등락율"
+   ]
+  },
+  "ext_019": {
+   "canon": "체결강도 >= 100",
+   "negated": false,
+   "symbols": [
+    "체결강도"
+   ]
+  },
+  "ext_020": {
+   "canon": "체결강도 >= 50",
+   "negated": false,
+   "symbols": [
+    "체결강도"
+   ]
+  },
+  "ext_021": {
+   "canon": "초당거래대금 / 초당거래대금평균30 > 3.0",
+   "negated": false,
+   "symbols": [
+    "초당거래대금",
+    "초당거래대금평균30"
+   ]
+  },
+  "ext_022": {
+   "canon": "초당거래대금 > 50",
+   "negated": false,
+   "symbols": [
+    "초당거래대금"
+   ]
+  },
+  "ext_023": {
+   "canon": "초당매수수량 > 매도총잔량 * 10 / 100",
+   "negated": false,
+   "symbols": [
+    "매도총잔량",
+    "초당매수수량"
+   ]
+  },
+  "ext_024": {
+   "canon": "초당매수수량 > 매도총잔량 * 20 / 100",
+   "negated": false,
+   "symbols": [
+    "매도총잔량",
+    "초당매수수량"
+   ]
+  },
+  "ext_025": {
+   "canon": "초당매수수량 > 매도총잔량 * 30 / 100",
+   "negated": false,
+   "symbols": [
+    "매도총잔량",
+    "초당매수수량"
+   ]
+  },
+  "ext_026": {
+   "canon": "초당매수수량 > 매도총잔량 * 50 / 100",
+   "negated": false,
+   "symbols": [
+    "매도총잔량",
+    "초당매수수량"
+   ]
+  },
+  "ext_027": {
+   "canon": "초당매수수량 > 매수총잔량 * 10 / 100",
+   "negated": false,
+   "symbols": [
+    "매수총잔량",
+    "초당매수수량"
+   ]
+  },
+  "ext_028": {
+   "canon": "초당순매수금액 < 1000",
+   "negated": false,
+   "symbols": [
+    "초당순매수금액"
+   ]
+  },
+  "ext_029": {
+   "canon": "현재가 > 고가 - (고가 - 저가) * 20 / 100",
+   "negated": false,
+   "symbols": [
+    "고가",
+    "저가",
+    "현재가"
+   ]
+  },
+  "ext_030": {
+   "canon": "회전율 > 2",
+   "negated": false,
+   "symbols": [
+    "회전율"
+   ]
+  }
+ },
+ "branches": [
+  {
+   "id": "Tick_B_902_905#0",
+   "strategy": "Tick_B_902_905",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_22",
+    "bit_25",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_37",
+    "ext_005",
+    "ext_030",
+    "ext_013",
+    "ext_021",
+    "ext_019"
+   ],
+   "is_family": true,
+   "n_atoms": 24
+  },
+  {
+   "id": "Tick_B_902_905#1",
+   "strategy": "Tick_B_902_905",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_26",
+    "bit_28",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_012",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 25
+  },
+  {
+   "id": "Tick_B_902_905_Study#0",
+   "strategy": "Tick_B_902_905_Study",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_19",
+    "bit_22",
+    "bit_25",
+    "bit_28",
+    "bit_30",
+    "bit_31",
+    "bit_37",
+    "ext_000",
+    "ext_006",
+    "ext_022",
+    "ext_021",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 25
+  },
+  {
+   "id": "Tick_B_902_905_Study#1",
+   "strategy": "Tick_B_902_905_Study",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_022",
+    "ext_011",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 27
+  },
+  {
+   "id": "Tick_B_902_905_Study_2#0",
+   "strategy": "Tick_B_902_905_Study_2",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_19",
+    "bit_22",
+    "bit_25",
+    "bit_28",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_37",
+    "ext_006",
+    "ext_021",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 24
+  },
+  {
+   "id": "Tick_B_902_905_Study_2#1",
+   "strategy": "Tick_B_902_905_Study_2",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 26
+  },
+  {
+   "id": "Tick_B_902_905_Update#0",
+   "strategy": "Tick_B_902_905_Update",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_19",
+    "bit_22",
+    "bit_25",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_37",
+    "ext_030",
+    "ext_013",
+    "ext_021",
+    "ext_019"
+   ],
+   "is_family": true,
+   "n_atoms": 24
+  },
+  {
+   "id": "Tick_B_902_905_Update#1",
+   "strategy": "Tick_B_902_905_Update",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 26
+  },
+  {
+   "id": "Tick_B_902_905_Update_2#0",
+   "strategy": "Tick_B_902_905_Update_2",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_19",
+    "bit_22",
+    "bit_25",
+    "bit_28",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_37",
+    "ext_006",
+    "ext_021",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 24
+  },
+  {
+   "id": "Tick_B_902_905_Update_2#1",
+   "strategy": "Tick_B_902_905_Update_2",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 26
+  },
+  {
+   "id": "Tick_B_902_905_Update_2_Study#1",
+   "strategy": "Tick_B_902_905_Update_2_Study",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 26
+  },
+  {
+   "id": "Tick_B_930_Dev#0",
+   "strategy": "Tick_B_930_Dev",
+   "index": 0,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_13",
+    "bit_14",
+    "bit_17",
+    "bit_19",
+    "bit_22",
+    "bit_25",
+    "bit_28",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_37",
+    "ext_006",
+    "ext_021",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 24
+  },
+  {
+   "id": "Tick_B_930_Dev#1",
+   "strategy": "Tick_B_930_Dev",
+   "index": 1,
+   "bit_cols": [
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_20",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_26",
+    "bit_27",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "bit_38",
+    "ext_010",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 26
+  },
+  {
+   "id": "Tick_B_905_Study#0",
+   "strategy": "Tick_B_905_Study",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_22",
+    "bit_26",
+    "bit_28",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "ext_009",
+    "ext_001",
+    "ext_018",
+    "ext_007",
+    "ext_015",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_025",
+    "ext_012",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 28
+  },
+  {
+   "id": "Tick_B_905_Update#0",
+   "strategy": "Tick_B_905_Update",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_15",
+    "bit_16",
+    "bit_18",
+    "bit_22",
+    "bit_26",
+    "bit_28",
+    "bit_29",
+    "bit_33",
+    "bit_34",
+    "bit_36",
+    "ext_009",
+    "ext_001",
+    "ext_018",
+    "ext_007",
+    "ext_015",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_025",
+    "ext_012",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 28
+  },
+  {
+   "id": "Tick_B_902#0",
+   "strategy": "Tick_B_902",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_14",
+    "bit_17",
+    "bit_22",
+    "bit_25",
+    "bit_31",
+    "bit_32",
+    "bit_36",
+    "ext_004",
+    "ext_017",
+    "ext_002",
+    "ext_015",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_030",
+    "ext_013",
+    "ext_021",
+    "ext_023",
+    "ext_019"
+   ],
+   "is_family": true,
+   "n_atoms": 27
+  },
+  {
+   "id": "Tick_B_902_Study#0",
+   "strategy": "Tick_B_902_Study",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_14",
+    "bit_15",
+    "bit_17",
+    "bit_22",
+    "bit_25",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "ext_004",
+    "ext_017",
+    "ext_002",
+    "ext_014",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_013",
+    "ext_021",
+    "ext_026",
+    "ext_027",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 28
+  },
+  {
+   "id": "Tick_B_902_Study_2#0",
+   "strategy": "Tick_B_902_Study_2",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_14",
+    "bit_15",
+    "bit_17",
+    "bit_22",
+    "bit_25",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "ext_008",
+    "ext_016",
+    "ext_002",
+    "ext_014",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_013",
+    "ext_021",
+    "ext_026",
+    "ext_027",
+    "ext_020"
+   ],
+   "is_family": true,
+   "n_atoms": 28
+  },
+  {
+   "id": "Tick_B_902_Update#0",
+   "strategy": "Tick_B_902_Update",
+   "index": 0,
+   "bit_cols": [
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_10",
+    "bit_14",
+    "bit_17",
+    "bit_22",
+    "bit_25",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "ext_004",
+    "ext_017",
+    "ext_002",
+    "ext_014",
+    "ext_003",
+    "ext_028",
+    "ext_029",
+    "ext_030",
+    "ext_013",
+    "ext_021",
+    "ext_024",
+    "ext_019"
+   ],
+   "is_family": true,
+   "n_atoms": 27
+  }
+ ],
+ "excluded": [
+  {
+   "strategy": "Tick_B_902_Update_2",
+   "group": "family_expand",
+   "reason": "가문 확장 상한(6) 소진"
+  },
+  {
+   "strategy": "Tick_B_905",
+   "group": "family_expand",
+   "reason": "가문 확장 상한(6) 소진"
+  },
+  {
+   "strategy": "Tick_B_902_905_2",
+   "group": "family_expand",
+   "reason": "가문 확장 상한(6) 소진"
+  },
+  {
+   "strategy": "GATE_r2_14_atk_a_0_35_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  },
+  {
+   "strategy": "TMAP_seed_902905_r2full_004_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  },
+  {
+   "strategy": "TMAP_seed_902905_r2full_007_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  },
+  {
+   "strategy": "R2R3_C_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  },
+  {
+   "strategy": "GATE_r1_6_ogap_lo_b_2_0_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  },
+  {
+   "strategy": "GATE_r4_8_burst_a_3_0_B",
+   "group": "nonfamily",
+   "reason": "원문 부재(stockbuy)"
+  }
+ ]
+}
