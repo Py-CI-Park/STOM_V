@@ -36,7 +36,7 @@ DEFAULT_KILL_CRITERIA: tuple[str, ...] = (
     "kill-3(재현 게이트): 스칼라/벡터 등가 대조 미달 → 해당 경로 금지, 전 경로 미달 시 중단",
 )
 _CONTRACT_FENCE = re.compile(r"```json prereg-contract-v2\s*\n(?P<contract>.*?)\n```", re.DOTALL)
-_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "dependency_roots", "dynamic_python_dependencies", "non_python_dependencies"}
+_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "ledger_path", "dependency_roots", "dynamic_python_dependencies", "non_python_dependencies"}
 
 
 def _front_sections(params: dict) -> list[str]:
@@ -248,6 +248,8 @@ def _parse_contract(text: str, root: Path) -> dict:
         windows.assert_measurement_window(window["start"], window["end"], "prereg contract")
     except (TypeError, ValueError, windows.WindowViolation) as exc:
         raise EvidenceSchemaError(f"invalid discovery_window: {exc}") from exc
+    ledger_path = _contract_ledger_path(contract["ledger_path"], root)
+    contract["ledger_path"] = ledger_path
     floors = contract["sample_floors"]
     if not isinstance(floors, dict) or not floors or any(not isinstance(name, str) or not name.strip() or not isinstance(floor, int) or isinstance(floor, bool) or floor <= 0 for name, floor in floors.items()):
         raise EvidenceSchemaError("sample_floors must be a non-empty object of positive integer floors")
@@ -271,6 +273,24 @@ def _parse_contract(text: str, root: Path) -> dict:
         if paths != sorted(paths) or len(set(paths)) != len(paths):
             raise EvidenceSchemaError("declared dependency paths must be sorted and unique")
     return contract
+def _contract_ledger_path(value: object, root: Path) -> str:
+    if not isinstance(value, str) or not value or "\\" in value or any(
+        part in ("", ".", "..") for part in value.split("/")
+    ):
+        raise EvidenceSchemaError("ledger_path must be a non-empty repository-relative POSIX path")
+    path = PurePosixPath(value)
+    if path.is_absolute() or not path.as_posix().endswith(".jsonl"):
+        raise EvidenceSchemaError("ledger_path must be a repository-relative .jsonl path")
+    resolved = (root / Path(*path.parts)).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise EvidenceSchemaError("ledger_path resolves outside repo_root") from exc
+    if resolved.exists() and not resolved.is_file():
+        raise EvidenceSchemaError("ledger_path must not name a directory")
+    return path.as_posix()
+
+
 
 
 def _module_file(root: Path, module: str) -> Path | None:
@@ -295,8 +315,8 @@ def _package_initializers(path: Path, root: Path) -> set[Path]:
     return initializers
 
 
-def _dynamic_call_kinds(tree: ast.AST) -> dict[str, str]:
-    """Resolve statically bound aliases for supported dynamic import/load APIs."""
+def _dynamic_call_kinds(tree: ast.AST) -> tuple[dict[str, str], dict[str, str]]:
+    """Resolve supported literal dynamic execution APIs and reject unknown variants."""
     kinds = {
         "__import__": "module",
         "builtins.__import__": "module",
@@ -304,6 +324,8 @@ def _dynamic_call_kinds(tree: ast.AST) -> dict[str, str]:
         "importlib.util.spec_from_file_location": "file",
         "importlib.machinery.SourceFileLoader": "file",
         "importlib.machinery.SourcelessFileLoader": "file",
+        "runpy.run_module": "module",
+        "runpy.run_path": "file_first",
     }
     aliases: dict[str, str] = {}
     calls = {"__import__": "module"}
@@ -315,32 +337,29 @@ def _dynamic_call_kinds(tree: ast.AST) -> dict[str, str]:
         elif isinstance(node, ast.ImportFrom) and node.module:
             for alias in node.names:
                 canonical = f"{node.module}.{alias.name}"
+                aliases[alias.asname or alias.name] = canonical
                 if canonical in kinds:
                     calls[alias.asname or alias.name] = kinds[canonical]
         elif isinstance(node, ast.Assign):
             canonical = _dotted_name(node.value, aliases)
-            if canonical in kinds:
+            if canonical:
                 for target in node.targets:
                     if isinstance(target, ast.Name):
-                        calls[target.id] = kinds[canonical]
+                        aliases[target.id] = canonical
+                        if canonical in kinds:
+                            calls[target.id] = kinds[canonical]
     for node in ast.walk(tree):
-        if not (
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "getattr"
-            and node.args
-        ):
-            continue
-        base = _dotted_name(node.args[0], aliases)
-        if base in {"importlib", "importlib.util", "importlib.machinery", "builtins"}:
-            raise EvidenceSchemaError("dynamic import/load through getattr is unsupported")
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "getattr" and node.args:
+            base = _dotted_name(node.args[0], aliases)
+            if base and (base.startswith("importlib") or base in {"builtins", "runpy"}):
+                raise EvidenceSchemaError("dynamic import/load through getattr is unsupported")
     for name, canonical in aliases.items():
         if canonical in kinds:
             calls[name] = kinds[canonical]
         for canonical_name, kind in kinds.items():
             if canonical_name.startswith(f"{canonical}."):
                 calls[f"{name}{canonical_name[len(canonical):]}"] = kind
-    return calls
+    return calls, aliases
 
 
 def _dotted_name(node: ast.AST, aliases: dict[str, str]) -> str | None:
@@ -365,29 +384,28 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
 
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
-    """Resolve supported literal dynamic imports/loaders and fail closed otherwise."""
-    calls = _dynamic_call_kinds(tree)
+    """Resolve literal dynamic dependencies; unsupported local execution is forbidden."""
+    calls, aliases = _dynamic_call_kinds(tree)
     found: set[Path] = set()
+    forbidden = {"exec", "eval", "compile", "builtins.exec", "builtins.eval", "builtins.compile"}
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
-        call_name = _dotted_name(node.func, {})
-        kind = calls.get(call_name) if call_name else None
+        raw_name = _dotted_name(node.func, {})
+        canonical = _dotted_name(node.func, aliases)
+        if raw_name in forbidden or canonical in forbidden:
+            raise EvidenceSchemaError(f"exec/eval/compile local Python execution is unsupported: {path}")
+        kind = calls.get(raw_name) if raw_name else None
+        kind = kind or (calls.get(canonical) if canonical else None)
         if kind is None:
-            canonical = call_name
-            if canonical == "__import__":
-                kind = "module"
-            elif canonical in {
-                "builtins.__import__",
-                "importlib.import_module",
-                "importlib.util.spec_from_file_location",
-                "importlib.machinery.SourceFileLoader",
-                "importlib.machinery.SourcelessFileLoader",
-            }:
-                kind = "module" if canonical in {"builtins.__import__", "importlib.import_module"} else "file"
-        if kind is None:
+            if canonical and (
+                canonical.startswith("importlib")
+                or canonical.startswith("runpy")
+                or "FileLoader" in canonical
+            ):
+                raise EvidenceSchemaError(f"unsupported dynamic import/load API or alias: {path}")
             continue
-        target = node.args[0] if kind == "module" and node.args else (
+        target = node.args[0] if kind in {"module", "file_first"} and node.args else (
             node.args[1] if kind == "file" and len(node.args) > 1 else next(
                 (keyword.value for keyword in node.keywords if keyword.arg in {"location", "path"}), None
             )

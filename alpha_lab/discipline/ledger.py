@@ -222,6 +222,20 @@ def append_trial(
     target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
     _append_record(target_path, record)
     return dict(record)
+def _contract_ledger_path(root: Path, receipt: dict) -> Path:
+    """Derive the sole v2 ledger destination from the receipt's sealed contract."""
+    try:
+        seal_path = root / Path(*receipt["seal_manifest"]["path"].split("/"))
+        seal = json.loads(seal_path.read_text(encoding="utf-8"))
+        document = root / Path(*seal["sealed_doc"]["path"].split("/"))
+        from alpha_lab.discipline.prereg import _parse_contract
+
+        contract = _parse_contract(document.read_text(encoding="utf-8"), root)
+    except (OSError, KeyError, TypeError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise LedgerSchemaError(f"cannot derive v2 ledger path from sealed contract: {exc}") from exc
+    return (root / Path(*contract["ledger_path"].split("/"))).resolve()
+
+
 def append_trial_v2(
     *,
     ts: str,
@@ -294,7 +308,9 @@ def append_trial_v2(
     }
     _validate_append_fields(record, known_ok)
     _validate_v2_record(record)
-    target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
+    target_path = _contract_ledger_path(root, receipt)
+    if path is not None and Path(path).resolve() != target_path:
+        raise LedgerSchemaError("v2 output path must equal the sealed contract ledger_path")
     _append_record(target_path, record)
     return dict(record)
 

@@ -226,6 +226,7 @@ def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
         "sample_floors": {"qualified": 2},
         "multiplicity_family": "unit family",
         "kill_rule": "non-positive effect",
+        "ledger_path": "ledger.jsonl",
         "dependency_roots": list(roots),
         "dynamic_python_dependencies": list(dynamic_python),
         "non_python_dependencies": list(non_python),
@@ -297,6 +298,14 @@ class TestLedgerV2:
         assert list(record) == list(ledger.V2_REQUIRED_KEYS)
         assert record["evidence_id"] == evidence.sha256_canonical(record["evidence"])
         assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
+    def test_append_v2_rejects_noncontract_ledger_path(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError, match="sealed contract ledger_path"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "side-ledger.jsonl", **_row(),
+            )
 
     def test_append_v2_rejects_backdated_ledger_timestamp(self, tmp_path):
         receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
@@ -340,7 +349,7 @@ class TestLedgerV2:
                 repo_root=tmp_path / "second",
                 gate_receipt_path=receipt_path,
                 gate_usage_path=usage_path,
-                path=tmp_path / "ledger2.jsonl",
+                path=tmp_path / "second" / "ledger.jsonl",
                 input_artifacts=input_artifacts,
                 result_artifacts=result_artifacts,
                 candidate_set=candidate_set,
@@ -351,16 +360,16 @@ class TestLedgerV2:
         receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
         (tmp_path / "input.json").write_text('{"input": 2}\n', encoding="utf-8")
         with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=candidates, path=tmp_path / "l.jsonl", **_row())
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=candidates, path=tmp_path / "ledger.jsonl", **_row())
         inputs, results, candidates = _bindings(tmp_path)
         with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "buy_sha256": "d" * 64, "sell_sha256": "e" * 64}], path=tmp_path / "l.jsonl", **_row())
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "buy_sha256": "d" * 64, "sell_sha256": "e" * 64}], path=tmp_path / "ledger.jsonl", **_row())
 
     def test_append_v2_allows_empty_candidates_only_for_negative_kill(self, tmp_path):
         receipt_path, usage_path, inputs, results, _ = _v2_chain(tmp_path)
         with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], path=tmp_path / "l.jsonl", **_row())
-        record = ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], negative_or_kill=True, path=tmp_path / "l.jsonl", **_row())
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], path=tmp_path / "ledger.jsonl", **_row())
+        record = ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], negative_or_kill=True, path=tmp_path / "ledger.jsonl", **_row())
         assert record["evidence"]["candidate_set_sha256"] == evidence.sha256_canonical([])
     def test_candidate_identity_requires_exact_buy_sell_hashes_and_name(self, tmp_path):
         receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
@@ -388,7 +397,7 @@ class TestLedgerV2:
                 candidate_set=[{"name": "candidate-a", "sha256": "c" * 64}],
                 negative_or_kill=False, repo_root=tmp_path,
             )
-    def test_promotion_rejects_invalid_unrelated_authority_ledger_row(self, tmp_path):
+    def test_promotion_manifest_issuer_is_exclusive_and_canonical(self, tmp_path):
         receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
         ledger_path = tmp_path / "ledger.jsonl"
         record = ledger.append_trial_v2(
@@ -396,37 +405,42 @@ class TestLedgerV2:
             input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
             path=ledger_path, **_row(),
         )
-        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-        receipt_id = receipt["receipt_id"]
-        canonical_receipt = tmp_path / "receipts" / f"{receipt_id}.json"
-        canonical_claim = tmp_path / "claims" / f"{receipt_id}.json"
-        assert canonical_receipt == receipt_path
-        assert canonical_claim == usage_path
-        ref = lambda path: {
-            "path": path.relative_to(tmp_path).as_posix(),
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        }
-        manifest = {
-            "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
-            "created_at": "2026-07-14T00:04:00+00:00",
-            "evidence_id": record["evidence_id"],
-            "ledger": {**ref(ledger_path), "record_sha256": evidence.sha256_canonical(record)},
-            "gate_receipt": ref(canonical_receipt),
-            "gate_claim": ref(usage_path),
-            "input_artifacts": inputs, "result_artifacts": results,
-            "candidate_set": candidates,
-            "candidate_set_sha256": evidence.sha256_canonical(candidates),
-        }
-        manifest_path = tmp_path / "promotion.json"
-        malformed_unrelated = {**VALID_ROW, "extra": "invalid"}
-        ledger_path.write_text(
-            ledger_path.read_text(encoding="utf-8") + json.dumps(malformed_unrelated) + "\n",
-            encoding="utf-8",
+        with pytest.raises(evidence.EvidenceSchemaError, match="PRE.created_at must not precede ledger.ts"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:02:30+00:00", output_dir=tmp_path / "promotions",
+            )
+        manifest = evidence.issue_promotion_manifest_v2(
+            tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+            ledger_path=ledger_path, evidence_id=record["evidence_id"],
+            created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
         )
-        manifest["ledger"]["sha256"] = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
-        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError, match="ledger authority validation failed"):
-            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
+        manifest_path = tmp_path / "promotions" / f"{record['evidence_id']}.pre.json"
+        assert evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)[0] == manifest
+        copied = tmp_path / "copied.json"
+        copied.write_bytes(manifest_path.read_bytes())
+        with pytest.raises(evidence.EvidenceSchemaError, match="path is not canonical"):
+            evidence.verify_promotion_manifest_v2(copied, repo_root=tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="ledger_path"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=tmp_path / "alternate.jsonl", evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
+        with pytest.raises(FileExistsError):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
+        ledger._append_record(ledger_path, record)
+        with pytest.raises(evidence.EvidenceSchemaError, match="exactly one v2 row"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
 
 
 class TestStrictV1Reads:
@@ -773,6 +787,38 @@ class TestPrereg:
                 document, repo_root=tmp_path, code_files=(measure, plugin),
                 manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
             )
+    @pytest.mark.parametrize("source", [
+        "import runpy\nrunpy.run_path('plugin.py')\n",
+        "from runpy import run_module as load\nload('plugin')\n",
+        "exec(open('plugin.py').read())\n",
+        "eval(compile(open('plugin.py').read(), 'plugin.py', 'exec'))\n",
+        "import importlib as il\nloader = il.util.module_from_spec\nloader(None)\n",
+    ])
+    def test_finalize_prereg_rejects_unsupported_local_python_execution(self, tmp_path, source):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text(source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure, plugin),
+                manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    def test_finalize_prereg_resolves_declared_runpy_dependency(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("import runpy\nrunpy.run_path('plugin.py')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+        seal = prereg.finalize_prereg(
+            document, repo_root=tmp_path, code_files=(measure, plugin),
+            manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
 
 
 # ---------------------------------------------------------------------------

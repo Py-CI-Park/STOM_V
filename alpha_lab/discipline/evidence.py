@@ -5,6 +5,7 @@ import datetime as dt
 import hashlib
 import json
 import re
+import os
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, TypedDict
 
@@ -393,6 +394,91 @@ class PromotionResultV2(TypedDict):
 
 
 
+def _canonical_ledger_path(root: Path, receipt: Mapping[str, Any]) -> Path:
+    """Derive the contract-owned v2 ledger path from a validated gate receipt."""
+    try:
+        seal = _load_json_file(root, receipt["seal_manifest"], "seal_manifest")
+        document = root / Path(*PurePosixPath(seal["sealed_doc"]["path"]).parts)
+        from alpha_lab.discipline.prereg import _parse_contract
+
+        contract = _parse_contract(document.read_text(encoding="utf-8"), root)
+    except (OSError, KeyError, TypeError, EvidenceSchemaError) as exc:
+        raise EvidenceSchemaError(f"cannot derive canonical ledger path from sealed contract: {exc}") from exc
+    return (root / Path(*PurePosixPath(contract["ledger_path"]).parts)).resolve()
+
+
+def issue_promotion_manifest_v2(
+    repo_root: Path | str,
+    *,
+    gate_receipt_path: Path | str,
+    gate_claim_path: Path | str,
+    ledger_path: Path | str,
+    evidence_id: str,
+    created_at: str,
+    output_dir: Path | str,
+) -> PromotionManifestV2:
+    """Issue the only canonical PRE manifest from sealed authorities and one ledger row."""
+    root = Path(repo_root).resolve()
+    receipt_file, claim_file, source_ledger = (Path(gate_receipt_path).resolve(), Path(gate_claim_path).resolve(), Path(ledger_path).resolve())
+    try:
+        receipt = validate_gate_receipt(json.loads(receipt_file.read_text(encoding="utf-8")), repo_root=root)
+        receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
+        if receipt_file != root / "receipts" / f"{receipt_id}.json" or claim_file != root / "claims" / f"{receipt_id}.json":
+            raise EvidenceSchemaError("gate receipt or claim path is not canonical")
+        usage = validate_gate_usage(json.loads(claim_file.read_text(encoding="utf-8")), receipt=receipt)
+    except (OSError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise EvidenceSchemaError(f"invalid canonical gate authority: {exc}") from exc
+    canonical_ledger = _canonical_ledger_path(root, receipt)
+    if source_ledger != canonical_ledger:
+        raise EvidenceSchemaError("ledger_path is not the sealed contract ledger_path")
+    output = Path(output_dir).resolve()
+    if output != root / "promotions":
+        raise EvidenceSchemaError("output_dir must be the canonical promotions directory")
+    evidence_id, created_at = require_full_sha256(evidence_id, "evidence_id"), _require_timestamp(created_at, "created_at")
+    from alpha_lab.discipline import ledger as authority_ledger
+    try:
+        rows = authority_ledger.read_all(canonical_ledger)
+    except authority_ledger.LedgerSchemaError as exc:
+        raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
+    matches = [row for row in rows if row.get("schema_version") == 2 and row["evidence_id"] == evidence_id]
+    if len(matches) != 1:
+        raise EvidenceSchemaError("canonical ledger must contain exactly one v2 row for evidence_id")
+    row, identity = matches[0], matches[0]["evidence"]
+    reconstructed_id, reconstructed = build_evidence_identity(
+        receipt, usage, input_artifacts=identity["input_artifacts"],
+        result_artifacts=identity["result_artifacts"], candidate_set=identity["candidate_set"],
+        negative_or_kill=identity["negative_or_kill"], repo_root=root,
+    )
+    if reconstructed_id != evidence_id or reconstructed != identity or identity["negative_or_kill"]:
+        raise EvidenceSchemaError("ledger row does not authorize a promotable gate-bound evidence identity")
+    require_timestamp_order(
+        ("sealed_at", _load_json_file(root, receipt["seal_manifest"], "seal_manifest")["sealed_at"]),
+        ("issued_at", receipt["issued_at"]), ("consumed_at", usage["consumed_at"]),
+        ("ledger.ts", row["ts"]), ("PRE.created_at", created_at),
+    )
+    def ref(path: Path) -> dict[str, str]:
+        return {"path": path.relative_to(root).as_posix(), "sha256": _hash_file(path, str(path))}
+    manifest: PromotionManifestV2 = {
+        "schema_version": 2, "kind": "promotion_manifest", "status": "PRE", "created_at": created_at,
+        "evidence_id": evidence_id, "ledger": {**ref(canonical_ledger), "record_sha256": sha256_canonical(row)},
+        "gate_receipt": ref(receipt_file), "gate_claim": ref(claim_file),
+        "input_artifacts": identity["input_artifacts"], "result_artifacts": identity["result_artifacts"],
+        "candidate_set": identity["candidate_set"], "candidate_set_sha256": identity["candidate_set_sha256"],
+    }
+    output_file = output / f"{evidence_id}.pre.json"
+    if output_file.exists():
+        raise FileExistsError("canonical promotion manifest cannot be reused or overwritten")
+    output.mkdir(parents=True, exist_ok=True)
+    validated = validate_promotion_manifest_v2(manifest, repo_root=root, verify_files=True)
+    with open(output_file, "x", encoding="utf-8", newline="\n") as handle:
+        handle.write(canonical_json_bytes(validated).decode("utf-8"))
+        handle.flush()
+        os.fsync(handle.fileno())
+    verified, _ = verify_promotion_manifest_v2(output_file, repo_root=root)
+    if verified != validated:
+        raise EvidenceSchemaError("issued promotion manifest failed self-validation")
+    return validated
+
 def validate_promotion_manifest_v2(
     value: object, *, repo_root: Path | str, verify_files: bool = True,
 ) -> PromotionManifestV2:
@@ -466,6 +552,8 @@ def verify_promotion_manifest_v2(
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("promotion manifest must be readable JSON") from exc
     manifest = validate_promotion_manifest_v2(raw, repo_root=root, verify_files=True)
+    if manifest_file != root / "promotions" / f"{manifest['evidence_id']}.pre.json":
+        raise EvidenceSchemaError("promotion manifest path is not canonical")
     receipt = validate_gate_receipt(
         _load_json_file(root, manifest["gate_receipt"], "gate_receipt"), repo_root=root
     )
@@ -480,6 +568,9 @@ def verify_promotion_manifest_v2(
     from alpha_lab.discipline import ledger as authority_ledger
 
     ledger_path = root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts)
+    canonical_ledger = _canonical_ledger_path(root, receipt)
+    if ledger_path.resolve() != canonical_ledger:
+        raise EvidenceSchemaError("promotion manifest ledger is not the sealed contract ledger_path")
     try:
         authority_rows = authority_ledger.read_all(ledger_path)
     except authority_ledger.LedgerSchemaError as exc:
