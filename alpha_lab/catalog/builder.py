@@ -425,25 +425,142 @@ def _validate_catalog_candidate_identity(status: dict[str, Any]) -> None:
             raise EvidenceSchemaError("POST catalog outcomes must be lists")
         for outcome in values:
             name = outcome.get("name") if isinstance(outcome, dict) else None
-            hashes = (
-                outcome.get("buy_sha256"), outcome.get("sell_sha256")
-            ) if isinstance(outcome, dict) else (None, None)
-            if name not in expected or hashes != expected[name] or name in accounted:
+            if name not in expected or name in accounted:
                 raise EvidenceSchemaError("POST catalog outcome does not match PRE candidate identity")
+            if field == "inserted":
+                hashes = outcome.get("buy_sha256"), outcome.get("sell_sha256")
+                if hashes != expected[name]:
+                    raise EvidenceSchemaError("POST inserted outcome does not match PRE candidate hashes")
             accounted.add(name)
     if accounted != set(expected):
         raise EvidenceSchemaError("POST catalog outcomes do not account for every PRE candidate")
 
-def _fsync_directory(path: Path) -> None:
-    """Persist a directory entry when the platform exposes directory fsync."""
+def _canonical_authority_records(status: dict[str, Any]) -> list[dict[str, str]]:
+    """Derive the complete, ordered authority rows from the sealed v2 chain."""
+    candidates = {
+        candidate["name"]: candidate for candidate in status["candidate_set"]
+    }
+    if not candidates or len(candidates) != len(status["candidate_set"]):
+        raise EvidenceSchemaError("catalog authority candidates must be unique and nonempty")
+    records: list[dict[str, str]] = []
+    if status["phase"] == "PRE":
+        if status["outcomes"] is not None:
+            raise EvidenceSchemaError("PRE catalog authority cannot contain outcomes")
+        for name, candidate in candidates.items():
+            records.append({
+                "name": name,
+                "buy_sha256": candidate["buy_sha256"],
+                "sell_sha256": candidate["sell_sha256"],
+                "phase": "PRE",
+                "outcome": "authorized",
+                "disposition": "pending_post",
+            })
+    elif status["phase"] == "POST" and isinstance(status["outcomes"], dict):
+        outcomes: dict[str, tuple[str, str]] = {}
+        for outcome in status["outcomes"].get("inserted", []):
+            name = outcome["name"]
+            outcomes[name] = ("inserted", "published")
+        for outcome in status["outcomes"].get("conflicts", []):
+            name = outcome["name"]
+            outcomes[name] = ("conflict", outcome["reason"])
+        if set(outcomes) != set(candidates):
+            raise EvidenceSchemaError("POST catalog authority outcomes are incomplete")
+        for name, candidate in candidates.items():
+            outcome, disposition = outcomes[name]
+            records.append({
+                "name": name,
+                "buy_sha256": candidate["buy_sha256"],
+                "sell_sha256": candidate["sell_sha256"],
+                "phase": "POST",
+                "outcome": outcome,
+                "disposition": disposition,
+            })
+    else:
+        raise EvidenceSchemaError("catalog authority phase/outcomes are invalid")
+    return sorted(records, key=lambda record: record["name"])
+
+
+def _authority_summary(records: list[dict[str, str]]) -> dict[str, Any]:
+    return {
+        "canonical_record_count": len(records),
+        "canonical_record_sha256": sha256_canonical(records),
+    }
+
+
+def _write_authority_records(
+    con: sqlite3.Connection, status: dict[str, Any],
+) -> list[dict[str, str]]:
+    """Persist only the sealed candidate identities and their phase disposition."""
+    records = _canonical_authority_records(status)
+    con.execute(
+        "CREATE TABLE catalog_authority ("
+        "name TEXT PRIMARY KEY, buy_sha256 TEXT NOT NULL, sell_sha256 TEXT NOT NULL, "
+        "phase TEXT NOT NULL, outcome TEXT NOT NULL, disposition TEXT NOT NULL)"
+    )
+    con.executemany(
+        "INSERT INTO catalog_authority "
+        "(name, buy_sha256, sell_sha256, phase, outcome, disposition) "
+        "VALUES (:name, :buy_sha256, :sell_sha256, :phase, :outcome, :disposition)",
+        records,
+    )
+    _verify_authority_records(con, records)
+    return records
+
+
+def _verify_authority_records(
+    con: sqlite3.Connection, expected: list[dict[str, str]],
+) -> None:
     try:
-        descriptor = os.open(path, os.O_RDONLY)
-    except OSError:
+        rows = con.execute(
+            "SELECT name, buy_sha256, sell_sha256, phase, outcome, disposition "
+            "FROM catalog_authority ORDER BY name"
+        ).fetchall()
+    except sqlite3.Error as exc:
+        raise EvidenceSchemaError("catalog authority DB records are missing") from exc
+    actual = [
+        dict(zip(
+            ("name", "buy_sha256", "sell_sha256", "phase", "outcome", "disposition"),
+            row,
+        ))
+        for row in rows
+    ]
+    if actual != expected:
+        raise EvidenceSchemaError("catalog authority DB records are omitted, extra, or misstated")
+
+
+def _verify_existing_authority_db(
+    existing: Path, expected_db: Path, records: list[dict[str, str]],
+) -> None:
+    if sha256_file(existing) != sha256_file(expected_db):
+        raise EvidenceSchemaError("existing catalog DB bytes do not match the rebuilt authority DB")
+    con = sqlite3.connect(existing)
+    try:
+        _verify_authority_records(con, records)
+    finally:
+        con.close()
+
+
+def _revalidate_authority_paths(
+    root: Path, status: dict[str, Any], db_path: Path, receipt_path: Path,
+) -> None:
+    source = root / Path(*PurePosixPath(status["source_path"]).parts)
+    fresh = _promotion_status(
+        root,
+        source if status["source_kind"] == "promotion_manifest" else None,
+        source if status["source_kind"] == "promotion_result" else None,
+    )
+    if fresh != status:
+        raise EvidenceSchemaError("sealed promotion authority changed during catalog build")
+    _catalog_output_paths(root, db_path, receipt_path, fresh)
+
+
+def _fsync_directory(path: Path) -> None:
+    """Persist a POSIX directory entry; Windows publication is write-through."""
+    if os.name == "nt":
         return
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
     try:
         os.fsync(descriptor)
-    except OSError:
-        pass
     finally:
         os.close(descriptor)
 
@@ -466,7 +583,20 @@ def _write_temp_bytes(directory: Path, prefix: str, payload: bytes) -> Path:
 
 
 def _publish_no_replace(source: Path, destination: Path) -> None:
-    """Publish a fully-flushed temp file without replacing an existing authority artifact."""
+    """Atomically publish without replacement, with platform-required durability."""
+    if os.name == "nt":
+        import ctypes
+
+        movefile_write_through = 0x00000008
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        if not kernel32.MoveFileExW(
+            str(source), str(destination), movefile_write_through
+        ):
+            error = ctypes.get_last_error()
+            if error in (80, 183):
+                raise FileExistsError(destination)
+            raise OSError(error, f"MoveFileExW failed publishing {destination}")
+        return
     os.link(source, destination)
     _flush_file(destination)
     _fsync_directory(destination.parent)
@@ -555,6 +685,14 @@ def build_all(
             load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
             load_cells(con, run_dir, docs[_REL_O1G], receipt)
             load_judgments(con, docs, ledger_rows, receipt)
+            if promotion_status is not None:
+                _validate_catalog_candidate_identity(promotion_status)
+                authority_records = _write_authority_records(con, promotion_status)
+                receipt["catalog_authority"] = {
+                    "authoritative": True,
+                    "phase": promotion_status["phase"],
+                    **_authority_summary(authority_records),
+                }
             con.commit()
             receipt["table_counts"] = table_counts(con)
         finally:
@@ -563,8 +701,19 @@ def build_all(
             _flush_file(working_db_path)
             _strict_source_hashes(
                 receipt, run_dir, root, promotion_status["source_artifacts"])
-            _validate_catalog_candidate_identity(promotion_status)
-            _publish_no_replace(working_db_path, db_path)
+            _revalidate_authority_paths(
+                root, promotion_status, db_path, receipt_path)
+            if receipt_path.exists() and not db_path.exists():
+                raise EvidenceSchemaError("catalog receipt exists without its authority DB")
+            if db_path.exists():
+                _verify_existing_authority_db(
+                    db_path, working_db_path, authority_records)
+                if receipt_path.exists():
+                    raise FileExistsError("catalog authority DB and receipt already exist")
+            else:
+                _revalidate_authority_paths(
+                    root, promotion_status, db_path, receipt_path)
+                _publish_no_replace(working_db_path, db_path)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status)
             validate_catalog_promotion_receipt_v2(
@@ -576,6 +725,8 @@ def build_all(
             if promotion_status is None:
                 receipt_path.write_bytes(receipt_bytes)
             else:
+                _revalidate_authority_paths(
+                    root, promotion_status, db_path, receipt_path)
                 receipt_temp = _write_temp_bytes(
                     receipt_path.parent, f".{receipt_path.name}.", receipt_bytes)
                 _publish_no_replace(receipt_temp, receipt_path)

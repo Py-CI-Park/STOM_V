@@ -25,12 +25,15 @@ from typing import Any
 
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
+    build_promotion_logical_delta,
+    capture_sqlite_logical_state,
     validate_catalog_promotion_receipt_v2,
     validate_promotion_journal_post_v2,
     validate_promotion_journal_pre_v2,
     verify_promotion_manifest_v2,
     verify_promotion_result_v2,
 )
+from alpha_lab.discipline.prereg import recheck_authority_paths
 
 
 NAME_PREFIX = "ALP_"
@@ -361,6 +364,8 @@ def register_conditions_v2(
 
     manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
     destinations = _promotion_destinations(root, manifest)
+    if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
+        raise EvidenceSchemaError("sealed authority paths changed before PRE")
     db_file = destinations["target_db"]
     if not db_file.is_file():
         raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file)
@@ -393,6 +398,8 @@ def register_conditions_v2(
             "path": _repo_relative_path(catalog_path, root, "catalog_receipt_path"),
             "sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
         }
+        if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
+            raise EvidenceSchemaError("sealed authority paths changed immediately before PRE")
         pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
         pre = {
             "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
@@ -408,30 +415,37 @@ def register_conditions_v2(
         pre_ref = {"path": pre_relative, "sha256": hashlib.sha256(pre_path.read_bytes()).hexdigest()}
         _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
         pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
-        backup_ref = None
+        backup_ref = pre["backup_ref"]
         write_con = sqlite3.connect(str(db_file))
         try:
-            write_con.execute("BEGIN IMMEDIATE")
+            write_con.execute("BEGIN EXCLUSIVE")
+            if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
+                raise EvidenceSchemaError("sealed authority paths changed under write lock")
             _assert_rollback_main_file(db_file, write_con)
             locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             if locked_pre_sha256 != pre_sha256:
                 raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
+            backup_sha256 = _copy_locked_db_exclusive(db_file, destinations["backup"])
+            if backup_sha256 != locked_pre_sha256:
+                raise EvidenceSchemaError("locked target DB backup does not match defined main-file digest")
             names_by_table = {table: _existing_names(write_con, table) for table in TABLE_BY_SIDE.values()}
             to_insert, conflicts = _split_plan(items, names_by_table)
             inserted: list[dict[str, Any]] = []
             if to_insert:
-                backup_sha256 = _copy_locked_db_exclusive(db_file, destinations["backup"])
-                if backup_sha256 != locked_pre_sha256:
-                    raise EvidenceSchemaError("locked target DB backup does not match defined main-file digest")
-                backup_ref = pre["backup_ref"]
                 inserted = _apply_inserts(write_con, to_insert)
+            write_con.commit()
+            pre_state = capture_sqlite_logical_state(destinations["backup"])
+            write_con.execute("BEGIN EXCLUSIVE")
+            _assert_rollback_main_file(db_file, write_con)
+            post_state = capture_sqlite_logical_state(db_file, connection=write_con)
+            db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             write_con.commit()
         except BaseException:
             write_con.rollback()
             raise
         finally:
             write_con.close()
-        db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
+        logical_delta = build_promotion_logical_delta(pre_state, post_state, inserted)
         post = {
             "schema_version": 2, "kind": "promotion_result", "status": "POST",
             "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
@@ -442,6 +456,7 @@ def register_conditions_v2(
             "inserted": inserted, "conflicts": conflicts, "backup_ref": backup_ref,
             "pre_intent": pre_ref, "pre_intent_anchor": pre_anchor_ref,
             "chronology": {**pre["chronology"], "post_at": completed_at},
+            "logical_delta": logical_delta,
         }
         validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
         _write_exclusive_json(post_path, post)

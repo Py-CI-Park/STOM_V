@@ -454,6 +454,75 @@ class TestPromotionV2:
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
         assert not backup_dir.exists()
+    def test_rejects_unauthorized_extra_row_from_logical_delta(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        import alpha_lab.bridge.registrar as registrar
+
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        apply = registrar._apply_inserts
+
+        def insert_extra(con, planned):
+            inserted = apply(con, planned)
+            con.execute(
+                'INSERT INTO "stockbuy" ("index", "전략코드") VALUES (?, ?)',
+                ("ALP_unapproved", "unauthorized"),
+            )
+            return inserted
+
+        monkeypatch.setattr(registrar, "_apply_inserts", insert_extra)
+        with pytest.raises(Exception, match="unauthorized candidate row"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+        assert not (tmp_path / "promotion_journal" / f"{chain['evidence_id']}.post.json").exists()
+
+    def test_post_binds_exact_logical_delta(self, fake_db, tmp_path, monkeypatch):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+
+        result = register_conditions_v2(
+            [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+        )
+
+        delta = result["logical_delta"]
+        assert set(delta) == {
+            "pre_state_sha256", "post_state_sha256", "details", "details_sha256",
+        }
+        assert delta["details"]["schema_unchanged"] is True
+        assert delta["details"]["table_changes"] == [
+            {"table": "stockbuy", "inserted": [{
+                "name": item["name"],
+                "code_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
+            }]},
+            {"table": "stocksell", "inserted": [{
+                "name": item["name"],
+                "code_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
+            }]},
+        ]
+
+    def test_rejects_wal_mode_created_after_post(self, fake_db, tmp_path, monkeypatch):
+        import alpha_lab.bridge.registrar as registrar
+
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        write = registrar._write_exclusive_json
+
+        def write_then_enable_wal(path, value):
+            write(path, value)
+            if path.name.endswith(".post.json"):
+                con = sqlite3.connect(str(fake_db))
+                try:
+                    con.execute("PRAGMA journal_mode=WAL")
+                finally:
+                    con.close()
+
+        monkeypatch.setattr(registrar, "_write_exclusive_json", write_then_enable_wal)
+        with pytest.raises(Exception, match="journal mode|WAL/SHM sidecar"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
 
     def test_copied_post_and_stale_live_db_fail_strong_verification(
         self, fake_db, backup_dir, tmp_path, monkeypatch,
@@ -477,7 +546,7 @@ class TestPromotionV2:
             con.commit()
         finally:
             con.close()
-        with pytest.raises(Exception, match="target DB SHA-256"):
+        with pytest.raises(Exception, match="unauthorized candidate row"):
             verify_promotion_result_v2(post_path, repo_root=tmp_path)
 
     def test_private_complete_writer_is_absent(self):

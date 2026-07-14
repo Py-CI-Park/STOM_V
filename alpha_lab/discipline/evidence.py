@@ -4,8 +4,10 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
-import re
 import os
+import re
+import sqlite3
+from collections import Counter
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, TypedDict
 
@@ -408,6 +410,7 @@ class PromotionResultV2(TypedDict):
     pre_intent: dict[str, str]
     pre_intent_anchor: dict[str, str]
     chronology: dict[str, str]
+    logical_delta: dict[str, Any]
 
 
 
@@ -700,6 +703,174 @@ def _validate_promotion_outcomes(
     if accounted != set(expected):
         raise EvidenceSchemaError(f"{field} must account for every PRE candidate exactly once")
     return normalized_inserted, normalized_conflicts
+def _sqlite_sidecars(db_path: Path) -> tuple[Path, Path]:
+    return Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
+
+
+def _sqlite_value(value: object) -> dict[str, str]:
+    if value is None:
+        return {"type": "null", "value": ""}
+    if isinstance(value, bytes):
+        return {"type": "blob", "value": value.hex()}
+    if isinstance(value, str):
+        return {"type": "text", "value": value}
+    return {"type": type(value).__name__, "value": str(value)}
+
+
+def _quote_identifier(identifier: str) -> str:
+    return '"' + identifier.replace('"', '""') + '"'
+
+
+def capture_sqlite_logical_state(
+    db_path: Path | str, *, connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    """Read a stable DELETE-mode SQLite logical snapshot through a read-only transaction."""
+    path = Path(db_path).resolve()
+    wal_path, shm_path = _sqlite_sidecars(path)
+    if wal_path.exists() or shm_path.exists():
+        raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+    owns_connection = connection is None
+    try:
+        con = connection or sqlite3.connect(
+            f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None,
+        )
+    except sqlite3.Error as exc:
+        raise EvidenceSchemaError(f"target SQLite DB cannot be opened read-only: {exc}") from exc
+    try:
+        if owns_connection:
+            con.execute("BEGIN")
+        mode = con.execute("PRAGMA journal_mode").fetchone()
+        if not mode or str(mode[0]).lower() != "delete":
+            raise EvidenceSchemaError("SQLite journal mode must be DELETE for verification")
+        if wal_path.exists() or shm_path.exists():
+            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        schema = [
+            {"type": row[0], "name": row[1], "table": row[2], "sql": row[3]}
+            for row in con.execute(
+                "SELECT type, name, tbl_name, sql FROM sqlite_master "
+                "WHERE type IN ('table', 'index', 'trigger', 'view') ORDER BY type, name"
+            )
+        ]
+        tables: dict[str, Any] = {}
+        for entry in schema:
+            if entry["type"] != "table":
+                continue
+            table = entry["name"]
+            columns = [
+                row[1] for row in con.execute(f"PRAGMA table_xinfo({_quote_identifier(table)})")
+                if row[6] == 0
+            ]
+            select = ", ".join(_quote_identifier(column) for column in columns)
+            order = ", ".join(_quote_identifier(column) for column in columns)
+            rows = con.execute(
+                f"SELECT {select} FROM {_quote_identifier(table)} ORDER BY {order}"
+            ).fetchall()
+            tables[table] = {
+                "columns": columns,
+                "rows": [[_sqlite_value(value) for value in row] for row in rows],
+            }
+        if wal_path.exists() or shm_path.exists():
+            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        return {"schema": schema, "tables": tables}
+    except sqlite3.Error as exc:
+        raise EvidenceSchemaError(f"target SQLite DB cannot be read logically: {exc}") from exc
+    finally:
+        if owns_connection:
+            try:
+                con.execute("COMMIT")
+            except sqlite3.Error:
+                pass
+            con.close()
+        if wal_path.exists() or shm_path.exists():
+            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+
+
+def build_promotion_logical_delta(
+    pre_state: Mapping[str, Any], post_state: Mapping[str, Any], inserted: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Prove that only the declared candidate pair rows changed from the canonical pre-state."""
+    if pre_state.get("schema") != post_state.get("schema"):
+        raise EvidenceSchemaError("promotion changed SQLite schema or schema state")
+    expected = {item["name"]: item for item in inserted}
+    changes: list[dict[str, Any]] = []
+    if set(pre_state.get("tables", {})) != set(post_state.get("tables", {})):
+        raise EvidenceSchemaError("promotion changed SQLite table state")
+    for table in sorted(pre_state["tables"]):
+        before, after = pre_state["tables"][table], post_state["tables"][table]
+        if before["columns"] != after["columns"]:
+            raise EvidenceSchemaError("promotion changed SQLite table columns")
+        before_rows = Counter(canonical_json_bytes(row).decode("utf-8") for row in before["rows"])
+        after_rows = Counter(canonical_json_bytes(row).decode("utf-8") for row in after["rows"])
+        removed, added = before_rows - after_rows, after_rows - before_rows
+        if removed:
+            raise EvidenceSchemaError("promotion removed existing SQLite rows")
+        if not added:
+            continue
+        if table not in {"stockbuy", "stocksell"}:
+            raise EvidenceSchemaError("promotion inserted unauthorized SQLite rows")
+        name_index = before["columns"].index("index") if "index" in before["columns"] else -1
+        code_index = before["columns"].index("전략코드") if "전략코드" in before["columns"] else -1
+        if name_index < 0 or code_index < 0:
+            raise EvidenceSchemaError("promotion target table lacks canonical columns")
+        added_rows = [
+            json.loads(encoded) for encoded, count in added.items() for _ in range(count)
+        ]
+        detail_rows: list[dict[str, str]] = []
+        for row in added_rows:
+            name_cell, code_cell = row[name_index], row[code_index]
+            if name_cell["type"] != "text" or code_cell["type"] != "text":
+                raise EvidenceSchemaError("promotion inserted an invalid candidate row")
+            name = name_cell["value"]
+            item = expected.get(name)
+            if item is None:
+                raise EvidenceSchemaError("promotion inserted an unauthorized candidate row")
+            expected_hash = item["buy_sha256"] if table == "stockbuy" else item["sell_sha256"]
+            if hashlib.sha256(code_cell["value"].encode("utf-8")).hexdigest() != expected_hash:
+                raise EvidenceSchemaError("promotion inserted an unauthorized candidate row")
+            detail_rows.append({"name": name, "code_sha256": expected_hash})
+        changes.append({"table": table, "inserted": sorted(detail_rows, key=lambda row: row["name"])})
+    expected_tables = {
+        "stockbuy": sorted(item["name"] for item in inserted),
+        "stocksell": sorted(item["name"] for item in inserted),
+    }
+    actual_tables = {
+        change["table"]: [row["name"] for row in change["inserted"]] for change in changes
+    }
+    if actual_tables != {table: names for table, names in expected_tables.items() if names}:
+        raise EvidenceSchemaError("promotion logical delta does not match declared inserted candidates")
+    details = {"schema_unchanged": True, "table_changes": changes}
+    return {
+        "pre_state_sha256": sha256_canonical(pre_state),
+        "post_state_sha256": sha256_canonical(post_state),
+        "details": details,
+        "details_sha256": sha256_canonical(details),
+    }
+
+
+def _validate_logical_delta(value: object) -> dict[str, Any]:
+    delta = _require_exact_keys(
+        value, {"pre_state_sha256", "post_state_sha256", "details", "details_sha256"},
+        "promotion result logical_delta",
+    )
+    details = _require_exact_keys(delta["details"], {"schema_unchanged", "table_changes"}, "promotion result logical_delta.details")
+    if details["schema_unchanged"] is not True or not isinstance(details["table_changes"], list):
+        raise EvidenceSchemaError("promotion result logical_delta details are invalid")
+    normalized_changes: list[dict[str, Any]] = []
+    for index, change in enumerate(details["table_changes"]):
+        item = _require_exact_keys(change, {"table", "inserted"}, f"promotion result logical_delta.details.table_changes[{index}]")
+        if item["table"] not in {"stockbuy", "stocksell"} or not isinstance(item["inserted"], list):
+            raise EvidenceSchemaError("promotion result logical_delta table change is invalid")
+        rows = [_require_exact_keys(row, {"name", "code_sha256"}, "promotion result logical_delta row") for row in item["inserted"]]
+        normalized_changes.append({"table": item["table"], "inserted": rows})
+    normalized_details = {"schema_unchanged": True, "table_changes": normalized_changes}
+    if sha256_canonical(normalized_details) != require_full_sha256(delta["details_sha256"], "promotion result logical_delta.details_sha256"):
+        raise EvidenceSchemaError("promotion result logical_delta details digest does not match details")
+    return {
+        "pre_state_sha256": require_full_sha256(delta["pre_state_sha256"], "promotion result logical_delta.pre_state_sha256"),
+        "post_state_sha256": require_full_sha256(delta["post_state_sha256"], "promotion result logical_delta.post_state_sha256"),
+        "details": normalized_details,
+        "details_sha256": delta["details_sha256"],
+    }
 
 
 def validate_promotion_result_v2(
@@ -712,6 +883,7 @@ def validate_promotion_result_v2(
         "promotion_manifest", "promotion_manifest_path", "catalog_receipt",
         "candidate_set", "candidate_set_sha256", "target_db", "inserted",
         "conflicts", "backup_ref", "pre_intent", "pre_intent_anchor", "chronology",
+        "logical_delta",
     }
     result = _require_exact_keys(value, keys, "promotion result")
     if (result["schema_version"], result["kind"], result["status"]) != (2, "promotion_result", "POST"):
@@ -757,6 +929,7 @@ def validate_promotion_result_v2(
         inserted=result["inserted"], conflicts=result["conflicts"],
         candidates=normalized_candidates, field="promotion result",
     )
+    logical_delta = _validate_logical_delta(result["logical_delta"])
     return {
         "schema_version": 2, "kind": "promotion_result", "status": "POST",
         "evidence_id": require_full_sha256(result["evidence_id"], "promotion result evidence_id"),
@@ -767,6 +940,7 @@ def validate_promotion_result_v2(
         "inserted": normalized_inserted, "conflicts": normalized_conflicts,
         "backup_ref": backup_ref, "pre_intent": pre_intent,
         "pre_intent_anchor": pre_intent_anchor, "chronology": dict(chronology),
+        "logical_delta": logical_delta,
     }
 
 
@@ -881,11 +1055,17 @@ def verify_promotion_result_v2(
         raise EvidenceSchemaError("promotion result chronology does not match live authorities")
     require_timestamp_order(*list(expected_chronology.items()))
 
-    if result["backup_ref"] is not None:
-        backup = root / Path(*PurePosixPath(result["backup_ref"]["path"]).parts)
-        if _hash_file(backup, "promotion result backup_ref") != result["backup_ref"]["sha256"]:
-            raise EvidenceSchemaError("promotion result backup SHA-256 does not match bytes")
+    if result["backup_ref"] is None:
+        raise EvidenceSchemaError("promotion result requires the canonical pre-backup")
+    backup = root / Path(*PurePosixPath(result["backup_ref"]["path"]).parts)
+    if _hash_file(backup, "promotion result backup_ref") != result["backup_ref"]["sha256"]:
+        raise EvidenceSchemaError("promotion result backup SHA-256 does not match bytes")
     target = root / Path(*PurePosixPath(result["target_db"]["path"]).parts)
+    pre_state = capture_sqlite_logical_state(backup)
+    post_state = capture_sqlite_logical_state(target)
+    computed_delta = build_promotion_logical_delta(pre_state, post_state, result["inserted"])
+    if computed_delta != result["logical_delta"]:
+        raise EvidenceSchemaError("promotion result logical delta does not match canonical SQLite states")
     if _hash_file(target, "promotion result target_db") != result["target_db"]["post_sha256"]:
         raise EvidenceSchemaError("promotion result target DB SHA-256 does not match live bytes")
     return result, manifest, _hash_file(source, "promotion result")

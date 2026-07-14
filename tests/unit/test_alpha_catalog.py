@@ -448,6 +448,72 @@ def test_promotion_sources_must_exactly_match_manifest_artifacts(tmp_path: Path)
          "sha256": builder.sha256_file(extra), "size_bytes": extra.stat().st_size})
     with pytest.raises(ValueError, match="exactly equal"):
         builder._strict_source_hashes(receipt, tmp_path, tmp_path, bound)
+def _authority_status(phase: str) -> dict[str, object]:
+    candidates = [
+        {"name": "ALP_A", "buy_sha256": "a" * 64, "sell_sha256": "b" * 64},
+        {"name": "ALP_B", "buy_sha256": "c" * 64, "sell_sha256": "d" * 64},
+    ]
+    return {
+        "phase": phase,
+        "candidate_set": candidates,
+        "outcomes": (
+            None if phase == "PRE" else {
+                "inserted": [{
+                    "name": "ALP_A", "buy_sha256": "a" * 64,
+                    "sell_sha256": "b" * 64,
+                }],
+                "conflicts": [{
+                    "name": "ALP_B", "reason": "name_exists",
+                    "existing_tables": ["stockbuy"],
+                }],
+            }
+        ),
+    }
+
+
+@pytest.mark.parametrize("phase", ["PRE", "POST"])
+def test_catalog_authority_records_bind_every_candidate_and_disposition(
+    tmp_path: Path, phase: str,
+):
+    status = _authority_status(phase)
+    records = builder._canonical_authority_records(status)
+
+    assert [record["name"] for record in records] == ["ALP_A", "ALP_B"]
+    assert records[0]["buy_sha256"] == "a" * 64
+    assert records[1]["sell_sha256"] == "d" * 64
+    assert records[0]["phase"] == phase
+    if phase == "PRE":
+        assert {record["disposition"] for record in records} == {"pending_post"}
+    else:
+        assert [(record["outcome"], record["disposition"]) for record in records] == [
+            ("inserted", "published"), ("conflict", "name_exists"),
+        ]
+
+    con = sqlite3.connect(tmp_path / f"{phase}.db")
+    try:
+        persisted = builder._write_authority_records(con, status)
+        assert builder._authority_summary(persisted) == {
+            "canonical_record_count": 2,
+            "canonical_record_sha256": builder.sha256_canonical(records),
+        }
+        con.execute(
+            "INSERT INTO catalog_authority VALUES ('extra', ?, ?, ?, ?, ?)",
+            ("e" * 64, "f" * 64, phase, "extra", "extra"),
+        )
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+        con.execute("DELETE FROM catalog_authority WHERE name = 'extra'")
+        con.execute("DELETE FROM catalog_authority WHERE name = 'ALP_B'")
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+        con.execute(
+            "INSERT INTO catalog_authority VALUES ('ALP_B', ?, ?, ?, ?, ?)",
+            ("c" * 64, "d" * 64, phase, "wrong", "wrong"),
+        )
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+    finally:
+        con.close()
 
 
 def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
