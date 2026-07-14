@@ -5,6 +5,7 @@
 | 기준 커밋 | `bb41ae4ee4e15f4a0f2f98d63df1e6cb43aa738c` |
 | 연구 브랜치 | `research/v4-condition-process-audit-20260714` |
 | 선행 보고서 | `2026-07-14_v4_condition_process_audit_initial_report.md` |
+| 집중 경로 보고서 | `2026-07-14_backtest_ai_prompt_condition_regeneration_focused_report.md` — 백테스트 결과 분석→AI 투입→프롬프트→조건식 재생성 경로의 symbol·payload·실패모드 companion 감사 |
 | 연구 질문 | 왜 조건식 생성 기능과 대시보드는 확장됐지만 검증 가능한 성과로 연결되지 않는가 |
 | 최종 판정 | **BLOCK — 개발 완료와 성능·일반화·승격 증명이 분리되어 있으며 일부 legacy/대시보드 경로가 정본 계약을 우회함** |
 | 안전 경계 | CL-R08~R10 실행·후보 생성·공식평가·보호 DB 접근 없이 코드·문서·기존 산출물만 감사 |
@@ -35,7 +36,7 @@
 |---|---|---|---|---|---|---|
 | G-01 | P0 | 검증 | 후보 발굴과 평가가 같은 기간을 재사용할 수 있음 | `candidate_start/end` 미지정 시 baseline 기간 재사용, `fresh_holdout=False` | 과적합과 실제 개선 구분 불가 | 생성 데이터와 fresh validation의 날짜·행 hash가 달라야 평가 가능 |
 | G-02 | P0 | 후보 의미 | 전체 전략 출력과 제외식 소비 계약 혼재 | prompt는 전략 코드, CLI 합성은 `if expression: 매수=False` | 의미 반전·compile 실패·잘못된 필터 | `FULL_STRATEGY`와 `BUY_EXCLUSION_EXPR` schema 완전 분리 |
-| G-03 | P0 | 선택 | promotion 실패 후보도 best가 될 수 있음 | 통과 후보 없을 때 실패 후보 중 1위 선택 | 실패 계보 재사용 | promotion 미통과 시 `NO_ELIGIBLE_PARENT` |
+| G-03 | P1 | 선택 | CLI research에서 promotion 실패 후보도 advisory `best_candidate`로 노출될 수 있음 | 통과 후보가 없을 때 실패 후보 중 1위를 advisory best로 표시 | optimizer·사용자가 개선 후보로 오인할 위험; 정본 `run_loop` official parent로 자동 승격된다는 증거는 없음 | promotion 미통과 시 official parent authority 0, advisory seed는 별도 상태·회계 |
 | D-01 | P0 | 승인 | review 후보와 current winner identity를 비교하지 않음 | `_approval_binding_payload`가 각각의 통과만 확인 | 다른 후보의 OOS 근거로 export 가능 | candidate identity tuple 완전 일치 시에만 binding 발급 |
 | E-01 | P0 | 성과 | 봉인 OOS·순비용 수익증명 없음 | `profit_proof=0`, R08 amendment 필요 | 성능 주장 불가 | R08→R09→R10 순차 receipt 없이는 승격 상태 생성 금지 |
 | G-04 | P1 | 변수 | candidate pack 승인 변수 hard block이 legacy 호출에서 OFF | `enforce_approved_b_only` 기본 False | 미승인 변수·오타 이동 | registry에 없는 Name은 저장 전 거부 |
@@ -104,7 +105,7 @@
 
 | 순서 | 묶음 | 먼저 해야 하는 이유 | 기대 효과 | 회귀 위험 |
 |---:|---|---|---|---|
-| 1 | G-02, G-03, G-01 | 잘못된 의미·실패 parent·동일기간 평가는 이후 모든 결과를 오염 | 후보 결과의 최소 신뢰성 확보 | 기존 artifact schema 호환 |
+| 1 | G-02, G-03, G-01 | 잘못된 의미·실패 advisory seed 오인·동일기간 평가는 이후 연구 판단을 오염 | 후보 결과의 최소 신뢰성 확보 | 기존 artifact schema 호환 |
 | 2 | D-01, D-02, D-03 | 잘못된 후보·run 승인과 시각적 오판 차단 | V4 의사결정 안전성 확보 | 프론트 캐시·구버전 API |
 | 3 | L-01, L-02, L-03 | 정본 계보와 재개 결정론 확보 | 실제 폐루프 학습 증명 가능 | 기존 resume 데이터 마이그레이션 |
 | 4 | G-04~G-06, A-01 | 탐색 낭비와 잘못된 피드백 감소 | 후보 품질·원인 식별 개선 | 후보 수 급감 가능 |
@@ -118,7 +119,7 @@
 |---|---|---|---|
 | 계약 정확성 | 잘못된 candidate kind 저장 건수 | 미계측 | 0 |
 | 검증 독립성 | train-validation 날짜/row overlap | 기본 경로에서 가능 | 0 |
-| 선택 안전성 | promotion fail인데 parent로 사용된 수 | 기존 artifact에서 발생 확인 | 0 |
+| 선택 안전성 | promotion fail인데 advisory best/seed로 노출된 수 | `artifacts/process-research-validation-20260701/result_engine64.json`에서 발생 확인; official parent 소비는 미증명 | advisory/official authority 완전 분리 |
 | 다양성 | unique AST·실 rowset 비율, family entropy | 라운드 간 미완전 | 사전등록 하한 이상 |
 | 증거 완전성 | 공식 평가 중 passport/manifest/receipt 완전 비율 | 런타임 실측 필요 | 100% |
 | 재개 결정론 | 중단 전후 다음 prompt/candidate hash 일치 | DR E2E 주장 존재 | 실제 profile에서도 100% |
