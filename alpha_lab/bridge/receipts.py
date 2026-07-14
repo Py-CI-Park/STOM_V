@@ -1,40 +1,41 @@
-"""alpha_lab 등록 provenance 영수증 원장 (JSONL append-only).
+"""LEGACY_NON_AUTHORITATIVE historical provenance receipt reader.
 
-전략 DB에 등록된 각 조건식의 출처를 결정론적으로 남긴다:
-{name, source: {kind: 'leaf'|'event_cell', payload}, prereg_sha,
- n_trials_context, created_at}
-
-- 'leaf'는 P1 규칙채굴 트리 잎, 'event_cell'은 P2 이벤트 스터디 셀 출처.
-- prereg_sha: 봉인된 사전등록(preregistration_v1.json)의 sha256 — 등록 시점의
-  사전등록 버전을 못박는다.
-- n_trials_context: 등록 시점까지의 통합 n_trials 원장 총합(다중검정 맥락).
-- created_at은 호출자가 주입한 now에서만 유도한다(내부 datetime.now() 금지).
-  레코드에 created_at이 미리 들어있으면 이중 출처 방지를 위해 거부한다.
+Legacy receipt JSONL files remain readable only for historical review. New
+promotion authority is the authenticated v2 evidence chain; this module must
+not create or append receipt files.
 """
 
 from __future__ import annotations
 
+import datetime as dt
 import json
-import logging
 from pathlib import Path
 
 from alpha_lab.bridge.registrar import NAME_PREFIX
 
-logger = logging.getLogger(__name__)
-
+LEGACY_NON_AUTHORITATIVE = "LEGACY_NON_AUTHORITATIVE"
 ALLOWED_SOURCE_KINDS: frozenset = frozenset({"leaf", "event_cell"})
 _REQUIRED_KEYS: tuple = ("name", "source", "prereg_sha", "n_trials_context")
+__all__ = [
+    "ALLOWED_SOURCE_KINDS",
+    "LEGACY_NON_AUTHORITATIVE",
+    "LegacyReceiptWriteBlockedError",
+    "append_receipt",
+    "read_receipts",
+    "validate_historical_receipt",
+]
 
 
-def _validate_record(record: dict) -> None:
-    """영수증 레코드 스키마 검증 — 위반 시 ValueError (파일 접근 전)."""
+class LegacyReceiptWriteBlockedError(RuntimeError):
+    """Raised when code attempts to write a LEGACY_NON_AUTHORITATIVE receipt."""
+
+
+def _validate_receipt_fields(record: dict) -> None:
     if not isinstance(record, dict):
         raise ValueError("record는 dict여야 합니다: %r" % (record,))
     for key in _REQUIRED_KEYS:
         if key not in record:
             raise ValueError("영수증 필수 키 누락: %r" % key)
-    if "created_at" in record:
-        raise ValueError("created_at은 now 인자에서만 유도합니다(사전 지정 거부)")
     name = record["name"]
     if not isinstance(name, str) or not name.startswith(NAME_PREFIX):
         raise ValueError("영수증 name은 %r 접두가 강제됩니다: %r" % (NAME_PREFIX, name))
@@ -53,26 +54,28 @@ def _validate_record(record: dict) -> None:
         raise ValueError("n_trials_context는 0 이상의 int: %r" % (n_ctx,))
 
 
-def append_receipt(path, record: dict, *, now) -> dict:
-    """영수증 1건을 JSONL로 append하고, 기록된(불변 확장) 레코드를 반환한다.
+def validate_historical_receipt(record: dict) -> None:
+    """Validate one historical LEGACY_NON_AUTHORITATIVE receipt record."""
+    _validate_receipt_fields(record)
+    created_at = record.get("created_at")
+    if not isinstance(created_at, str) or not created_at:
+        raise ValueError("historical created_at은 비어있지 않은 str이어야 합니다")
+    try:
+        dt.datetime.fromisoformat(created_at)
+    except ValueError as exc:
+        raise ValueError("historical created_at은 ISO-8601이어야 합니다") from exc
 
-    입력 record는 변형하지 않는다(불변) — created_at을 덧붙인 새 dict를 쓴다.
-    """
-    _validate_record(record)
-    written = {**record, "created_at": now.isoformat()}
-    line = json.dumps(
-        written, sort_keys=True, ensure_ascii=False, separators=(",", ": ")
+
+def append_receipt(path, record: dict, *, now) -> dict:
+    """Always block legacy receipt writes before inspecting or mutating ``path``."""
+    raise LegacyReceiptWriteBlockedError(
+        "legacy-receipt-write-blocked: receipts are LEGACY_NON_AUTHORITATIVE; "
+        "use the authenticated v2 evidence chain"
     )
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with open(target, "ab") as handle:
-        handle.write((line + "\n").encode("utf-8"))
-    logger.info("append_receipt path=%s name=%s", target, written["name"])
-    return written
 
 
 def read_receipts(path) -> list:
-    """영수증 원장을 기록 순서대로 list[dict]로 읽는다. 파일 없으면 []."""
+    """Read and strictly validate historical receipt records, or return [] if absent."""
     target = Path(path)
     if not target.exists():
         return []
@@ -81,5 +84,7 @@ def read_receipts(path) -> list:
         for raw in handle:
             line = raw.strip()
             if line:
-                records.append(json.loads(line))
+                record = json.loads(line)
+                validate_historical_receipt(record)
+                records.append(record)
     return records

@@ -19,7 +19,14 @@ from pathlib import Path
 import pytest
 
 from alpha_lab.bridge import inspect_promotion_journal_v2
-from alpha_lab.bridge.receipts import ALLOWED_SOURCE_KINDS, append_receipt, read_receipts
+from alpha_lab.bridge.receipts import (
+    ALLOWED_SOURCE_KINDS,
+    LEGACY_NON_AUTHORITATIVE,
+    LegacyReceiptWriteBlockedError,
+    append_receipt,
+    read_receipts,
+    validate_historical_receipt,
+)
 from alpha_lab.bridge.registrar import (
     NAME_PREFIX,
     register_conditions,
@@ -521,24 +528,38 @@ class TestHistoricalAuthorityDocuments:
             assert "promotion_authority: **NONE**" in text
             assert "no one-use gate receipt may be reconstructed after measurement" in text
 
-    def test_b1_registration_script_is_historical_non_executable_notice(self):
+    @pytest.mark.parametrize(
+        ("script_name", "artifacts"),
+        [
+            ("register_b1.py", ("b1_registration_receipt.json",)),
+            ("finalize_and_ledger.py", ("_ab_verdict.json", "b1_registration_receipt.json")),
+        ],
+    )
+    def test_b1_scripts_are_historical_non_executable_notices(self, script_name, artifacts):
         root = Path(__file__).resolve().parents[2]
         text = (
             root
             / "docs/research/condition_research/research_runs"
-            / "alpha_restart_20260710/d5r_b1_live/register_b1.py"
+            / "alpha_restart_20260710/d5r_b1_live"
+            / script_name
         ).read_text(encoding="utf-8")
         assert "HISTORICAL EVIDENCE" in text
         assert "NON-EXECUTABLE ARCHIVE" in text
-        assert "b1_registration_receipt.json" in text
+        for artifact in artifacts:
+            assert artifact in text
         assert "fresh v2 evidence chain" in text
         assert "authorized non-protected target" in text
         for forbidden in (
             "sqlite3",
             "register_conditions",
             "--write",
-            "_database/strategy.db",
+            "_database",
+            "strategy.db",
             "scratchpad",
+            "json.dump",
+            "write_text(",
+            "open(",
+            "append(",
         ):
             assert forbidden not in text
 class TestLegacyRegistrarBlocked:
@@ -558,51 +579,38 @@ class TestReceipts:
             "source": {"kind": "leaf", "payload": {"rule": "등락율>2", "depth": 3}},
             "prereg_sha": "a" * 64,
             "n_trials_context": 1234,
+            "created_at": NOW.isoformat(),
         }
 
-    def test_round_trip_appends_and_reads_in_order(self, tmp_path):
+    def test_append_is_blocked_before_receipt_path_creation(self, tmp_path):
+        path = tmp_path / "new" / "receipts.jsonl"
+
+        with pytest.raises(
+            LegacyReceiptWriteBlockedError, match="legacy-receipt-write-blocked"
+        ):
+            append_receipt(path, self._record(), now=NOW)
+
+        assert not path.exists()
+        assert not path.parent.exists()
+        assert LEGACY_NON_AUTHORITATIVE == "LEGACY_NON_AUTHORITATIVE"
+
+    def test_reads_and_validates_historical_receipt(self, tmp_path):
         path = tmp_path / "receipts.jsonl"
-        written1 = append_receipt(path, self._record("ALP_a"), now=NOW)
-        written2 = append_receipt(
-            path,
-            {**self._record("ALP_b"), "source": {"kind": "event_cell", "payload": {}}},
-            now=NOW,
-        )
-        loaded = read_receipts(path)
-        assert loaded == [written1, written2]
-        assert [r["name"] for r in loaded] == ["ALP_a", "ALP_b"]
-        assert loaded[0]["created_at"] == NOW.isoformat()
-        assert loaded[1]["source"]["kind"] == "event_cell"
+        record = self._record()
+        path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+        assert validate_historical_receipt(record) is None
+        assert read_receipts(path) == [record]
+
+    def test_historical_validation_rejects_invalid_records(self, tmp_path):
+        path = tmp_path / "receipts.jsonl"
+        record = self._record()
+        record["source"] = {"kind": "oracle", "payload": {}}
+        path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="source.kind"):
+            read_receipts(path)
+        assert "leaf" in ALLOWED_SOURCE_KINDS and "event_cell" in ALLOWED_SOURCE_KINDS
 
     def test_missing_file_reads_empty(self, tmp_path):
         assert read_receipts(tmp_path / "none.jsonl") == []
-
-    def test_invalid_source_kind_rejected(self, tmp_path):
-        record = self._record()
-        bad = {**record, "source": {"kind": "oracle", "payload": {}}}
-        with pytest.raises(ValueError):
-            append_receipt(tmp_path / "r.jsonl", bad, now=NOW)
-        assert "leaf" in ALLOWED_SOURCE_KINDS and "event_cell" in ALLOWED_SOURCE_KINDS
-
-    def test_missing_required_key_rejected(self, tmp_path):
-        record = self._record()
-        del record["prereg_sha"]
-        with pytest.raises(ValueError):
-            append_receipt(tmp_path / "r.jsonl", record, now=NOW)
-
-    def test_preset_created_at_rejected(self, tmp_path):
-        bad = {**self._record(), "created_at": "2020-01-01T00:00:00"}
-        with pytest.raises(ValueError):
-            append_receipt(tmp_path / "r.jsonl", bad, now=NOW)
-
-    def test_input_record_not_mutated(self, tmp_path):
-        record = self._record()
-        snapshot = copy.deepcopy(record)
-        append_receipt(tmp_path / "r.jsonl", record, now=NOW)
-        assert record == snapshot
-
-    def test_name_prefix_enforced_in_receipt(self, tmp_path):
-        bad = {**self._record(), "name": "P1_leaf_001"}
-        with pytest.raises(ValueError):
-            append_receipt(tmp_path / "r.jsonl", bad, now=NOW)
-        assert NAME_PREFIX == "ALP_"
