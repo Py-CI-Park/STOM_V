@@ -6,6 +6,9 @@
 import datetime as dt
 import hashlib
 import json
+import os
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -22,11 +25,25 @@ from alpha_lab.registry import (
 )
 
 NOW = dt.datetime(2026, 7, 5, 9, 30, 0)
+DEFAULT_LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT = (
+    registry.LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT
+)
+
+
 @pytest.fixture(autouse=True)
 def legacy_non_authoritative_ledger_root(tmp_path, monkeypatch):
     """Keep legacy-ledger tests inside their isolated archive root."""
     monkeypatch.setattr(registry, "LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT", tmp_path)
 
+
+def test_default_legacy_archive_root_is_external_runtime_location():
+    assert DEFAULT_LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT == (
+        Path(tempfile.gettempdir())
+        / registry.LEGACY_NON_AUTHORITATIVE_ARCHIVE_DIRECTORY
+    )
+    assert not DEFAULT_LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT.is_relative_to(
+        Path(registry.__file__).resolve().parents[1]
+    )
 
 
 
@@ -124,11 +141,13 @@ class TestTrialsLedger:
 
     def test_append_only_preserves_first_line(self, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
+        mapped = registry._legacy_archive_ledger_path(ledger)
         append_trials(ledger, program="P1", batch="first", n=3, now=NOW)
-        first_bytes = ledger.read_bytes()
+        first_bytes = mapped.read_bytes()
         append_trials(ledger, program="P5", batch="second", n=4, now=NOW)
-        data = ledger.read_bytes()
+        data = mapped.read_bytes()
         assert data.startswith(first_bytes)
+        assert not ledger.exists()
         lines = data.decode("utf-8").splitlines()
         assert len(lines) == 2
         rec0 = json.loads(lines[0])
@@ -138,9 +157,15 @@ class TestTrialsLedger:
 
     def test_now_injection_reflected(self, tmp_path):
         ledger = tmp_path / "ledger.jsonl"
-        injected = dt.datetime(2031, 1, 2, 3, 4, 5)
-        append_trials(ledger, program="P3", batch="b", n=1, now=injected)
-        rec = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
+        append_trials(
+            ledger,
+            program="P3",
+            batch="b",
+            n=1,
+            now=dt.datetime(2031, 1, 2, 3, 4, 5),
+        )
+        mapped = registry._legacy_archive_ledger_path(ledger)
+        rec = json.loads(mapped.read_text(encoding="utf-8").splitlines()[0])
         assert rec["ts"] == "2031-01-02T03:04:05"
         assert rec["program"] == "P3"
         assert rec["meta"] is None
@@ -151,46 +176,59 @@ class TestTrialsLedger:
         with pytest.raises(ValueError):
             total_trials(ledger, "P9")
 
-    def test_canonical_authority_alias_rejected_without_mutation(self, tmp_path, monkeypatch):
+    def test_arbitrary_logical_path_writes_only_fixed_mapped_archive(self, tmp_path):
+        logical = tmp_path.parent / "run-local" / "ledger.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+
+        append_trials(logical, program="P1", batch="legacy", n=1, now=NOW)
+
+        assert mapped.parent == tmp_path
+        assert mapped.name == (
+            f"{hashlib.sha256(str(logical.resolve()).encode('utf-8')).hexdigest()}.jsonl"
+        )
+        assert mapped.exists()
+        assert not logical.exists()
+        assert total_trials(logical) == 1
+
+    def test_distinct_logical_paths_map_to_distinct_archives(self, tmp_path):
+        first = tmp_path.parent / "run-one" / "ledger.jsonl"
+        second = tmp_path.parent / "run-two" / "ledger.jsonl"
+
+        append_trials(first, program="P1", batch="first", n=3, now=NOW)
+        append_trials(second, program="P2", batch="second", n=4, now=NOW)
+
+        assert (
+            registry._legacy_archive_ledger_path(first)
+            != registry._legacy_archive_ledger_path(second)
+        )
+        assert total_trials(first) == 3
+        assert total_trials(second) == 4
+        assert not first.exists()
+        assert not second.exists()
+
+    def test_canonical_authority_logical_path_maps_without_mutation(
+        self, tmp_path, monkeypatch
+    ):
         canonical = tmp_path / "authority" / "n_trials_ledger.jsonl"
         canonical.parent.mkdir()
         canonical.write_bytes(b'{"existing": "authority"}\n')
         monkeypatch.setattr(authority_ledger, "DEFAULT_LEDGER_PATH", canonical)
-        canonical_alias = canonical.parent / "." / canonical.name
         before = canonical.read_bytes()
 
-        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
-            append_trials(
-                canonical_alias, program="P1", batch="legacy", n=1, now=NOW
-            )
-
-        assert canonical.read_bytes() == before
-    def test_arbitrary_path_rejected_before_mutation(self, tmp_path):
-        arbitrary = tmp_path.parent / "arbitrary-ledger.jsonl"
-
-        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
-            append_trials(arbitrary, program="P1", batch="legacy", n=1, now=NOW)
-
-        assert not arbitrary.exists()
-
-    def test_contract_preregistration_ledger_rejected_before_mutation(self, tmp_path):
-        contract_ledger = (
-            tmp_path.parent
-            / "docs"
-            / "research"
-            / "condition_research"
-            / "research_runs"
-            / "preregistration"
-            / "n_trials_ledger.jsonl"
+        append_trials(
+            canonical.parent / "." / canonical.name,
+            program="P1",
+            batch="legacy",
+            n=1,
+            now=NOW,
         )
 
-        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
-            append_trials(contract_ledger, program="P1", batch="legacy", n=1, now=NOW)
+        mapped = registry._legacy_archive_ledger_path(canonical)
+        assert mapped != canonical
+        assert canonical.read_bytes() == before
+        assert total_trials(canonical) == 1
 
-        assert not contract_ledger.exists()
-        assert not contract_ledger.parent.exists()
-
-    def test_symlinked_archive_path_rejected_before_mutation(self, tmp_path):
+    def test_logical_symlink_is_canonicalized_without_writing_through_it(self, tmp_path):
         actual = tmp_path / "actual"
         actual.mkdir()
         alias = tmp_path / "alias"
@@ -199,28 +237,93 @@ class TestTrialsLedger:
         except OSError as error:
             pytest.skip(f"symlink unavailable: {error}")
 
-        ledger = alias / "ledger.jsonl"
-        with pytest.raises(ValueError, match="symlink"):
-            append_trials(ledger, program="P1", batch="legacy", n=1, now=NOW)
+        append_trials(alias / "ledger.jsonl", program="P1", batch="legacy", n=1, now=NOW)
 
+        assert (
+            registry._legacy_archive_ledger_path(alias / "ledger.jsonl")
+            == registry._legacy_archive_ledger_path(actual / "ledger.jsonl")
+        )
         assert not (actual / "ledger.jsonl").exists()
 
-    def test_total_rejects_path_outside_legacy_archive(self, tmp_path):
-        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
-            total_trials(tmp_path.parent / "outside-ledger.jsonl")
+    def test_symlinked_archive_root_rejected_before_mutation(self, tmp_path, monkeypatch):
+        actual = tmp_path / "actual-root"
+        actual.mkdir()
+        alias = tmp_path / "alias-root"
+        try:
+            alias.symlink_to(actual, target_is_directory=True)
+        except OSError as error:
+            pytest.skip(f"symlink unavailable: {error}")
+        monkeypatch.setattr(registry, "LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT", alias)
 
+        with pytest.raises(ValueError, match="root must not use a symlink"):
+            append_trials(
+                tmp_path / "logical.jsonl",
+                program="P1",
+                batch="legacy",
+                n=1,
+                now=NOW,
+            )
+
+        assert not tuple(actual.iterdir())
+
+    def test_symlinked_mapped_destination_rejected_before_mutation(self, tmp_path):
+        logical = tmp_path.parent / "logical.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        target = tmp_path / "target.jsonl"
+        target.write_bytes(b"unchanged\n")
+        try:
+            mapped.symlink_to(target)
+        except OSError as error:
+            pytest.skip(f"symlink unavailable: {error}")
+
+        with pytest.raises(ValueError, match="destination must not use a symlink"):
+            append_trials(logical, program="P1", batch="legacy", n=1, now=NOW)
+
+        assert target.read_bytes() == b"unchanged\n"
+    def test_hardlinked_mapped_destination_rejected_before_mutation(self, tmp_path):
+        logical = tmp_path.parent / "logical-hardlink.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        target = tmp_path / "target-hardlink.jsonl"
+        target.write_bytes(b"unchanged\n")
+        os.link(target, mapped)
+
+        with pytest.raises(ValueError, match="destination must not use a hardlink"):
+            append_trials(logical, program="P1", batch="legacy", n=1, now=NOW)
+        with pytest.raises(ValueError, match="destination must not use a hardlink"):
+            total_trials(logical)
+
+        assert target.read_bytes() == b"unchanged\n"
+
+    def test_hardlinked_authority_destination_rejected_before_mutation(
+        self, tmp_path, monkeypatch
+    ):
+        canonical = tmp_path / "authority.jsonl"
+        canonical.write_bytes(b'{"existing": "authority"}\n')
+        monkeypatch.setattr(authority_ledger, "DEFAULT_LEDGER_PATH", canonical)
+        logical = tmp_path.parent / "logical.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        os.link(canonical, mapped)
+
+        with pytest.raises(ValueError, match="canonical authority ledger"):
+            append_trials(logical, program="P1", batch="legacy", n=1, now=NOW)
+        with pytest.raises(ValueError, match="canonical authority ledger"):
+            total_trials(logical)
+
+        assert canonical.read_bytes() == b'{"existing": "authority"}\n'
 
     def test_isolated_legacy_ledger_is_append_only_not_v2_authority(self, tmp_path):
         legacy = tmp_path / "legacy-runs" / "trial_counter.jsonl"
+        mapped = registry._legacy_archive_ledger_path(legacy)
         append_trials(legacy, program="P1", batch="first", n=3, now=NOW)
-        first_bytes = legacy.read_bytes()
+        first_bytes = mapped.read_bytes()
         append_trials(legacy, program="P2", batch="second", n=4, now=NOW)
 
-        assert legacy.read_bytes().startswith(first_bytes)
+        assert mapped.read_bytes().startswith(first_bytes)
+        assert not legacy.exists()
         assert total_trials(legacy) == 7
         assert registry.LEGACY_NON_AUTHORITATIVE_SCHEMA != authority_ledger.REQUIRED_KEYS
         with pytest.raises(authority_ledger.LedgerSchemaError, match="필수 키 누락"):
-            authority_ledger.read_all(legacy)
+            authority_ledger.read_all(mapped)
 
 class TestV2ProgramTags:
     """알파 랩 v2 additive 태그(V2M·V2F) — 기존 4태그 불변 + 신규 허용."""

@@ -9,7 +9,8 @@ append_trials와 LEGACY_NON_AUTHORITATIVE_SCHEMA는 별도 탐색 실행의 역�
 카운터(JSONL)만 위한 레거시 형식이다. 이는 v2 엄격 스키마·manifest issuer를
 갖지 않으므로 승격 권한 원장이 될 수 없고, canonical 권한 원장에는 기록할 수
 없다. canonical 권한 원장의 유일한 기입 API는
-alpha_lab.discipline.ledger.append_trial이다.
+alpha_lab.discipline.ledger.append_trial_v2이다. 레거시 호출자의 ledger_path는
+논리 namespace 키일 뿐이며, 출력은 고정 비권한 archive 안의 sha256 매핑 파일이다.
 
 규율: 현재시각은 호출자가 now 인자로 주입한다(내부 datetime.now() 금지).
 파일 입출력은 바이트 단위로 처리해 OS 개행 변환 없이 sha 결정성을 보장한다.
@@ -19,7 +20,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import tempfile
 from pathlib import Path
+
 from alpha_lab.discipline import ledger as authority_ledger
 
 # v1 프로그램 4태그 + 알파 랩 v2 additive 태그(V2M=채굴 리프, V2F=필터 A/B)
@@ -43,41 +46,63 @@ LEGACY_NON_AUTHORITATIVE_SCHEMA: tuple[str, ...] = (
 )
 # Historical v1 counter records are confined to this non-authoritative archive.
 # New preregistration contracts must use alpha_lab.discipline.ledger instead.
+LEGACY_NON_AUTHORITATIVE_ARCHIVE_DIRECTORY = (
+    "stom_alpha_legacy_non_authoritative_archive"
+)
 LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT = (
-    Path(__file__).resolve().parents[1]
-    / "docs"
-    / "research"
-    / "condition_research"
-    / "legacy_non_authoritative_archive"
+    Path(tempfile.gettempdir()) / LEGACY_NON_AUTHORITATIVE_ARCHIVE_DIRECTORY
 )
 
 
 def _legacy_archive_ledger_path(ledger_path) -> Path:
-    """Return a real archive-contained ledger path, rejecting aliases and escapes."""
-    root = Path(LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT)
+    """Map a canonical logical path to one fixed, isolated archive file."""
     try:
-        root_lexical = Path(root.absolute())
-        root_resolved = root.resolve(strict=False)
-        target_lexical = Path(Path(ledger_path).absolute())
-        target_resolved = target_lexical.resolve(strict=False)
-        target_resolved.relative_to(root_resolved)
+        root_lexical = Path(LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT).absolute()
+        root_resolved = root_lexical.resolve(strict=False)
+        logical_path = Path(ledger_path).absolute().resolve(strict=False)
+    except OSError:
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE ledger path cannot be canonicalized"
+        ) from None
+    if root_lexical != root_resolved:
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE archive root must not use a symlink"
+        )
+    if root_lexical.exists() and not root_lexical.is_dir():
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE archive root must be a directory"
+        )
+    digest = hashlib.sha256(str(logical_path).encode("utf-8")).hexdigest()
+    target = root_lexical / f"{digest}.jsonl"
+    try:
+        resolved_target = target.resolve(strict=False)
+        resolved_target.relative_to(root_resolved)
     except (OSError, ValueError):
         raise ValueError(
-            "LEGACY_NON_AUTHORITATIVE ledger path must be beneath "
-            f"{LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT}"
+            "LEGACY_NON_AUTHORITATIVE archive destination escapes its fixed root"
         ) from None
-    if target_lexical != target_resolved:
+    if target != resolved_target:
         raise ValueError(
-            "LEGACY_NON_AUTHORITATIVE ledger path must not use a symlink"
+            "LEGACY_NON_AUTHORITATIVE archive destination must not use a symlink"
+        )
+    return target
+
+
+def _validate_legacy_archive_destination(target: Path) -> None:
+    """Reject mapped archive aliases before either reads or writes."""
+    if _targets_canonical_authority_ledger(target):
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE ledger must not alias the canonical authority ledger"
         )
     try:
-        target_lexical.relative_to(root_lexical)
-    except ValueError:
+        if target.exists() and target.stat().st_nlink != 1:
+            raise ValueError(
+                "LEGACY_NON_AUTHORITATIVE archive destination must not use a hardlink"
+            )
+    except OSError:
         raise ValueError(
-            "LEGACY_NON_AUTHORITATIVE ledger path must be beneath "
-            f"{LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT}"
+            "LEGACY_NON_AUTHORITATIVE archive destination cannot be inspected"
         ) from None
-    return target_resolved
 
 
 def _targets_canonical_authority_ledger(target: Path) -> bool:
@@ -154,8 +179,9 @@ def append_trials(
 
     이 API와 LEGACY_NON_AUTHORITATIVE_SCHEMA는 분리된 과거 탐색 실행의
     append-only 기록 전용이며 v2 엄격 스키마·manifest issuer가 없다.
-    고정된 비권한 archive root 밖, symlink 별칭, canonical 승격 권한 원장
-    (또는 그 symlink/hardlink 별칭)을 대상으로 하면 쓰기 전에 ValueError로
+    ledger_path는 canonicalized logical namespace key이며, 실제 출력은 고정된
+    비권한 archive root의 sha256 매핑 파일뿐이다. archive root·매핑 대상의
+    symlink/hardlink 및 canonical 승격 권한 원장 별칭은 쓰기 전에 ValueError로
     거부한다. program은 ALLOWED_PROGRAMS만 허용하며 now는 호출자가 주입하는
     datetime(ts = now.isoformat())다.
     """
@@ -166,11 +192,9 @@ def append_trials(
     if isinstance(n, bool) or not isinstance(n, int) or n < 0:
         raise ValueError(f"n은 0 이상의 int여야 합니다: {n!r}")
     target = _legacy_archive_ledger_path(ledger_path)
-    if _targets_canonical_authority_ledger(target):
-        raise ValueError(
-            "LEGACY_NON_AUTHORITATIVE append_trials는 canonical 승격 권한 원장에 "
-            "기록할 수 없습니다; alpha_lab.discipline.ledger.append_trial만 사용하십시오"
-        )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target = _legacy_archive_ledger_path(ledger_path)
+    _validate_legacy_archive_destination(target)
     record = {
         "ts": now.isoformat(),
         "program": program,
@@ -181,7 +205,6 @@ def append_trials(
     line = json.dumps(
         record, sort_keys=True, ensure_ascii=False, separators=(",", ": ")
     )
-    target.parent.mkdir(parents=True, exist_ok=True)
     with open(target, "ab") as handle:
         handle.write((line + "\n").encode("utf-8"))
 
@@ -191,13 +214,15 @@ def total_trials(ledger_path, program: str | None = None) -> int:
 
     program 지정 시 해당 프로그램만 합산한다. 원장 파일이 없으면 0. 알 수 없는
     program 필터는 ValueError(오타 필터가 조용히 0을 반환해 합산을 오도하는 것을 방지).
-    archive 밖 또는 symlink 별칭은 읽기에도 허용하지 않는다.
+    ledger_path는 논리 namespace key이며, 매핑 archive 대상의 alias는 읽기에도
+    허용하지 않는다.
     """
     if program is not None and program not in ALLOWED_PROGRAMS:
         raise ValueError(
             f"허용되지 않은 program 필터: {program!r} (허용: {sorted(ALLOWED_PROGRAMS)})"
         )
     target = _legacy_archive_ledger_path(ledger_path)
+    _validate_legacy_archive_destination(target)
     if not target.exists():
         return 0
     total = 0
