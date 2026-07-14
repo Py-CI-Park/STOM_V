@@ -149,7 +149,7 @@ class TestAppendTrial:
         with pytest.raises(ledger.LegacyLedgerWriteBlockedError):
             ledger.append_trial(path=path, **VALID_ROW)
         assert not path.exists()
-def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
+def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths=None) -> str:
     contract = {
         "schema_version": 2,
         "hypothesis_id": "H-unit",
@@ -159,7 +159,7 @@ def _sealed_contract(*, roots, dynamic_python=(), non_python=()) -> str:
         "multiplicity_family": "unit family",
         "kill_rule": "non-positive effect",
         "ledger_path": "ledger.jsonl",
-        "authority_paths": {
+        "authority_paths": authority_paths if authority_paths is not None else {
             "seal_dir": "seals",
             "promotions_dir": "promotions",
             "catalog_dir": "catalog",
@@ -632,6 +632,9 @@ class TestPrereg:
         "import importlib\nload = importlib.import_module\nload('plugin')\n",
         "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
         "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
+        "import importlib\nimportlib.import_module('builtins').eval('1 + 1')\n",
+        "type(object).__getattribute__(object, '__class__')\n",
+        "import pickle\npickle.loads(b'payload')\n",
     ])
     def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
@@ -674,7 +677,7 @@ class TestPrereg:
             "journal_dir": "journal",
             "backup_dir": "backups",
         }
-        assert prereg.recheck_authority_paths(authority, tmp_path) == authority
+        assert prereg.revalidate_authority_paths(tmp_path, authority) == authority
 
         protected = {**authority, "target_db": "_DATABASE/measure.py"}
         (tmp_path / "_DATABASE").mkdir()
@@ -688,8 +691,27 @@ class TestPrereg:
 
         hardlink = tmp_path / "hardlink.py"
         hardlink.hardlink_to(target)
+        document = tmp_path / "hardlink-prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                authority_paths={**authority, "target_db": "hardlink.py"},
+            ),
+            encoding="utf-8",
+        )
+        canonical = _canonical_seal_path(tmp_path, document)
+        original_document = document.read_bytes()
         with pytest.raises(evidence.EvidenceSchemaError, match="hardlink"):
-            prereg.recheck_authority_paths({**authority, "target_db": "hardlink.py"}, tmp_path)
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(target,),
+                manifest_path=canonical,
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        assert document.read_bytes() == original_document
+        assert not canonical.exists()
+        hardlink.unlink()
 
         linked = tmp_path / "linked"
         try:
@@ -698,6 +720,13 @@ class TestPrereg:
             pytest.skip("symlink creation is unavailable")
         with pytest.raises(evidence.EvidenceSchemaError, match="symlink or reparse"):
             prereg.recheck_authority_paths({**authority, "seal_dir": "linked"}, tmp_path)
+        seals = tmp_path / "seals"
+        seals.mkdir()
+        assert prereg.revalidate_authority_paths(tmp_path, authority) == authority
+        seals.rmdir()
+        seals.write_text("swapped", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="directory"):
+            prereg.revalidate_authority_paths(tmp_path, authority)
 
 # ---------------------------------------------------------------------------
 # trials_report — 시행 병기 블록 (소비 전용)
