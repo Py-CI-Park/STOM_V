@@ -28,6 +28,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from alpha_lab.discipline.evidence import (
+    EvidenceSchemaError,
+    require_full_sha256,
+    sha256_canonical,
+    validate_gate_receipt,
+    validate_prereg_seal,
+)
+
 # 읽기 전용 git 서브커맨드 화이트리스트 — 이 밖은 코드상 실행 불가.
 _ALLOWED_GIT = frozenset({"rev-parse", "log", "status", "ls-files"})
 _GIT_TIMEOUT_SEC = 30
@@ -211,6 +219,132 @@ def _gate_result(repo_root: Path | str, gate_pass: bool, reasons: list[str],
         "checks": checks,
         "verdict": "기동 허용" if gate_pass else "기동 거부 — 사유 해소 후 재실행",
     }
+def _require_timestamp(value: str, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
+    return value
+
+
+def _relative_file_ref(path: Path | str, repo_root: Path) -> dict[str, str]:
+    try:
+        resolved = Path(path).resolve()
+        relative = resolved.relative_to(repo_root)
+    except ValueError as exc:
+        raise EvidenceSchemaError("path must be inside repo_root") from exc
+    if not resolved.is_file():
+        raise EvidenceSchemaError(f"file does not exist: {path}")
+    return {"path": relative.as_posix(), "sha256": file_sha256(resolved)}
+
+
+def _current_head(repo_root: Path) -> str:
+    rc, head = _run_git(repo_root, "rev-parse", "HEAD")
+    if rc != 0 or len(head) != 40 or any(char not in "0123456789abcdef" for char in head):
+        raise EvidenceSchemaError("repository HEAD must be a lowercase 40-character git SHA")
+    return head
+
+
+def issue_gate_receipt_v2(
+    repo_root: Path | str,
+    seal_manifest_path: Path | str,
+    *,
+    receipt_path: Path | str,
+    issued_at: str,
+    nonce: str,
+) -> dict[str, Any]:
+    """Issue an immutable v2 receipt for the complete sealed code manifest."""
+    root = Path(repo_root).resolve()
+    _require_timestamp(issued_at, "issued_at")
+    if not isinstance(nonce, str) or not nonce:
+        raise EvidenceSchemaError("nonce must be non-empty")
+    seal_file_ref = _relative_file_ref(seal_manifest_path, root)
+    try:
+        seal_value = json.loads(Path(seal_manifest_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("seal manifest must be readable JSON") from exc
+    seal_ref = {"path": seal_file_ref["path"], "sha256": sha256_canonical(seal_value)}
+    seal = validate_prereg_seal(seal_value, repo_root=root, verify_files=True)
+    prereg_path = root / Path(*Path(seal["sealed_doc"]["path"]).parts)
+    code_paths = tuple(str(root / Path(*Path(item["path"]).parts))
+                       for item in seal["code_manifest"])
+    expected = {path: item["sha256"] for path, item in zip(code_paths, seal["code_manifest"])}
+    gate = run_gate(root, prereg_path, code_paths, expected, require_sha=True)
+    if not gate["gate_pass"]:
+        raise EvidenceSchemaError("v2 gate failed: " + "; ".join(gate["reasons"]))
+    head = _current_head(root)
+    code_manifest_sha256 = sha256_canonical(seal["code_manifest"])
+    receipt_id = sha256_canonical({
+        "issued_at": issued_at,
+        "nonce": nonce,
+        "repo_head": head,
+        "seal_manifest": seal_ref,
+        "prereg": seal["sealed_doc"],
+        "code_manifest_sha256": code_manifest_sha256,
+    })
+    receipt = {
+        "schema_version": 2,
+        "kind": "measure_gate_receipt",
+        "status": "PASS",
+        "receipt_id": receipt_id,
+        "issued_at": issued_at,
+        "nonce": nonce,
+        "repo_head": head,
+        "seal_manifest": seal_ref,
+        "prereg": seal["sealed_doc"],
+        "code_manifest_sha256": code_manifest_sha256,
+        "code_manifest": seal["code_manifest"],
+        "checks": gate["checks"],
+    }
+    out = Path(receipt_path)
+    try:
+        with out.open("x", encoding="utf-8") as handle:
+            json.dump(receipt, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    except FileExistsError as exc:
+        raise EvidenceSchemaError("receipt_path already exists") from exc
+    return receipt
+
+
+def claim_gate_receipt_v2(
+    receipt_path: Path | str,
+    *,
+    repo_root: Path | str,
+    usage_path: Path | str,
+    consumer: str,
+    consumed_at: str,
+) -> dict[str, Any]:
+    """Atomically claim a valid v2 receipt exactly once."""
+    root = Path(repo_root).resolve()
+    _require_timestamp(consumed_at, "consumed_at")
+    if not isinstance(consumer, str) or not consumer:
+        raise EvidenceSchemaError("consumer must be non-empty")
+    try:
+        receipt = json.loads(Path(receipt_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("receipt must be readable JSON") from exc
+    receipt = validate_gate_receipt(receipt, repo_root=root)
+    if _current_head(root) != receipt["repo_head"]:
+        raise EvidenceSchemaError("receipt repo_head does not match current HEAD")
+    usage = {
+        "schema_version": 2,
+        "kind": "measure_gate_usage",
+        "receipt_id": require_full_sha256(receipt["receipt_id"], "receipt_id"),
+        "receipt_sha256": sha256_canonical(receipt),
+        "consumer": consumer,
+        "consumed_at": consumed_at,
+    }
+    try:
+        with Path(usage_path).open("x", encoding="utf-8") as handle:
+            json.dump(usage, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    except FileExistsError as exc:
+        raise EvidenceSchemaError("gate receipt has already been claimed") from exc
+    return usage
+
+
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -240,17 +374,38 @@ def main(argv: list[str] | None = None) -> int:
     default_root = Path(__file__).resolve().parents[2]
     parser.add_argument("--repo-root", default=str(default_root),
                         help=f"git repo 루트(기본: {default_root})")
-    parser.add_argument("--sealed-doc", required=True, help="봉인 사전등록 md 경로")
-    parser.add_argument("--code", action="append", required=True,
-                        help="측정 코드 파일(반복 지정)")
+    parser.add_argument("--sealed-doc", help="봉인 사전등록 md 경로(v1)")
+    parser.add_argument("--code", action="append", default=[],
+                        help="측정 코드 파일(v1, 반복 지정)")
     parser.add_argument("--expect", action="append", default=[],
-                        help="sha 봉인 대조: <경로>=<sha256> (반복 지정)")
+                        help="sha 봉인 대조: <경로>=<sha256> (v1, 반복 지정)")
     parser.add_argument("--manifest", default=None,
-                        help="sha 봉인 매니페스트 json({경로: sha256})")
+                        help="sha 봉인 매니페스트 json(v1)")
     parser.add_argument("--require-sha", action="store_true",
-                        help="sha 봉인 기록 미제공 시에도 fail 처리(fail-closed)")
-    parser.add_argument("--json-out", default=None, help="결과 json 저장 경로(선택)")
+                        help="sha 봉인 기록 미제공 시에도 fail 처리(v1)")
+    parser.add_argument("--json-out", default=None, help="결과 json 저장 경로(v1)")
+    parser.add_argument("--seal-manifest", default=None, help="v2 prereg seal manifest")
+    parser.add_argument("--receipt-out", default=None, help="v2 receipt output path")
+    parser.add_argument("--issued-at", default=None, help="v2 receipt issue timestamp")
+    parser.add_argument("--nonce", default=None, help="v2 non-empty run nonce")
     args = parser.parse_args(argv)
+    if args.seal_manifest:
+        if (args.sealed_doc or args.code or args.expect or args.manifest
+                or args.require_sha or args.json_out):
+            parser.error("--seal-manifest cannot be combined with v1 gate options")
+        if not (args.receipt_out and args.issued_at and args.nonce):
+            parser.error("--seal-manifest requires --receipt-out, --issued-at, and --nonce")
+        try:
+            receipt = issue_gate_receipt_v2(
+                args.repo_root, args.seal_manifest, receipt_path=args.receipt_out,
+                issued_at=args.issued_at, nonce=args.nonce)
+        except (OSError, ValueError, EvidenceSchemaError) as exc:
+            print(f"[measure-gate] v2 receipt issue failed: {exc}", file=sys.stderr)
+            return 2
+        print(json.dumps(receipt, ensure_ascii=False, indent=1))
+        return 0
+    if not args.sealed_doc or not args.code:
+        parser.error("--sealed-doc and at least one --code are required for v1")
     try:
         expected = _parse_expected(args.expect, args.manifest)
     except (OSError, ValueError, json.JSONDecodeError) as exc:

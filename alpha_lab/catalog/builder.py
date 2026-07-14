@@ -13,8 +13,14 @@ import fnmatch
 import json
 import sqlite3
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from alpha_lab.discipline.evidence import (
+    EvidenceSchemaError,
+    require_full_sha256,
+    sha256_canonical,
+)
 
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
 from alpha_lab.catalog.loaders import (
@@ -254,6 +260,109 @@ def ensure_gitignore(run_dir: Path) -> Dict[str, str]:
     gi.write_text(existing + block, encoding="utf-8")
     action = "appended(기존 내용 보존)" if existing else "created"
     return {"path": str(gi), "action": action, "pattern": _GI_PATTERN}
+def _require_promotion_timestamp(value: object, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise EvidenceSchemaError(f"{field} must be a timezone-aware ISO-8601 timestamp")
+    return value
+
+
+def _promotion_source_ref(path: Path | str, repo_root: Path) -> tuple[dict[str, Any], str]:
+    try:
+        resolved = Path(path).resolve()
+        relative = resolved.relative_to(repo_root.resolve())
+    except ValueError as exc:
+        raise EvidenceSchemaError("promotion source must be inside repo_root") from exc
+    try:
+        value = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("promotion source must be readable JSON") from exc
+    return value, relative.as_posix()
+def _require_relative_posix_path(value: object, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
+    path = PurePosixPath(value)
+    if path.is_absolute() or ".." in path.parts or "\\" in value or path.as_posix() != value:
+        raise EvidenceSchemaError(f"{field} must be a safe repository-relative POSIX path")
+    return value
+
+
+
+
+def _validate_candidates(value: object) -> list[dict[str, str]]:
+    if not isinstance(value, list) or not value:
+        raise EvidenceSchemaError("promotion candidates must be a non-empty list")
+    candidates: list[dict[str, str]] = []
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {"name", "buy_sha256", "sell_sha256"}:
+            raise EvidenceSchemaError("each promotion candidate must have name, buy_sha256, and sell_sha256")
+        name = item["name"]
+        if not isinstance(name, str) or not name.startswith("ALP_"):
+            raise EvidenceSchemaError("promotion candidate names must start with ALP_")
+        candidates.append({
+            "name": name,
+            "buy_sha256": require_full_sha256(item["buy_sha256"], "candidate.buy_sha256"),
+            "sell_sha256": require_full_sha256(item["sell_sha256"], "candidate.sell_sha256"),
+        })
+    names = [item["name"] for item in candidates]
+    if names != sorted(names) or len(names) != len(set(names)):
+        raise EvidenceSchemaError("promotion candidates must be sorted by unique name")
+    return candidates
+
+
+def _promotion_status(
+    repo_root: Path,
+    promotion_manifest_path: Path | str | None,
+    promotion_result_path: Path | str | None,
+) -> dict[str, Any] | None:
+    if promotion_manifest_path is not None and promotion_result_path is not None:
+        raise EvidenceSchemaError("promotion manifest and result inputs are mutually exclusive")
+    if promotion_manifest_path is None and promotion_result_path is None:
+        return None
+    path = promotion_manifest_path or promotion_result_path
+    assert path is not None
+    value, relative_path = _promotion_source_ref(path, repo_root)
+    if not isinstance(value, dict):
+        raise EvidenceSchemaError("promotion source must be an object")
+    if promotion_manifest_path is not None:
+        keys = {"schema_version", "kind", "status", "created_at", "evidence_id", "ledger", "candidates"}
+        if set(value) != keys or value.get("schema_version") != 2 or value.get("kind") != "promotion_manifest" or value.get("status") != "PRE":
+            raise EvidenceSchemaError("promotion manifest must be a strict PRE v2 manifest")
+        _require_promotion_timestamp(value["created_at"], "created_at")
+        evidence_id = require_full_sha256(value["evidence_id"], "evidence_id")
+        ledger = value["ledger"]
+        if not isinstance(ledger, dict) or set(ledger) != {"path", "record_sha256"}:
+            raise EvidenceSchemaError("promotion manifest ledger must contain path and record_sha256")
+        _require_relative_posix_path(ledger["path"], "ledger.path")
+        require_full_sha256(ledger["record_sha256"], "ledger.record_sha256")
+        _validate_candidates(value["candidates"])
+        phase, source_kind = "PRE", "promotion_manifest"
+    else:
+        keys = {"schema_version", "kind", "status", "completed_at", "evidence_id", "promotion_manifest_sha256", "inserted", "conflicts", "backup_path"}
+        if set(value) != keys or value.get("schema_version") != 2 or value.get("kind") != "promotion_result" or value.get("status") != "POST":
+            raise EvidenceSchemaError("promotion result must be a strict POST v2 result")
+        _require_promotion_timestamp(value["completed_at"], "completed_at")
+        evidence_id = require_full_sha256(value["evidence_id"], "evidence_id")
+        require_full_sha256(value["promotion_manifest_sha256"], "promotion_manifest_sha256")
+        if not isinstance(value["inserted"], list) or not isinstance(value["conflicts"], list) or value["backup_path"] is not None and not isinstance(value["backup_path"], str):
+            raise EvidenceSchemaError("promotion result inserted/conflicts/backup_path are invalid")
+        phase, source_kind = "POST", "promotion_result"
+    return {
+        "schema_version": 2,
+        "phase": phase,
+        "valid": True,
+        "evidence_id": evidence_id,
+        "source_kind": source_kind,
+        "source_path": relative_path,
+        "source_sha256": sha256_canonical(value),
+    }
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -265,13 +374,22 @@ def build_all(
     db_path: Path | str | None = None,
     receipt_path: Path | str | None = None,
     write_receipt: bool = True,
+    *,
+    repo_root: Path | str | None = None,
+    promotion_manifest_path: Path | str | None = None,
+    promotion_result_path: Path | str | None = None,
 ) -> Dict[str, Any]:
     """카탈로그 전체 빌드 — DB·영수증 생성 후 영수증 dict 반환."""
     run_dir = Path(run_dir)
+    root = Path(repo_root).resolve() if repo_root is not None else root_from_run_dir(run_dir)
+    promotion_status = _promotion_status(
+        root, promotion_manifest_path, promotion_result_path)
     db_path = Path(db_path) if db_path else run_dir / "research_assets.db"
     receipt_path = (Path(receipt_path) if receipt_path
                     else run_dir / "research_assets_build_receipt.json")
     receipt = new_receipt(run_dir, db_path)
+    if promotion_status is not None:
+        receipt["promotion_status"] = promotion_status
     con = sqlite3.connect(db_path)
     try:
         create_schema(con)

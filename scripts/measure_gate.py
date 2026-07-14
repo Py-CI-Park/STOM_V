@@ -25,6 +25,9 @@ _MODULE_PATH = _ROOT / "alpha_lab" / "discipline" / "measure_gate.py"
 
 def _load_module():
     """discipline 모듈을 패키지 초기화 없이 파일 경로로 로드한다."""
+    root = str(_ROOT)
+    if root not in sys.path:
+        sys.path.insert(0, root)
     spec = importlib.util.spec_from_file_location(
         "alpha_discipline_measure_gate", str(_MODULE_PATH))
     if spec is None or spec.loader is None:
