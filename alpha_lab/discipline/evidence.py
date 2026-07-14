@@ -378,7 +378,7 @@ class PromotionManifestV2(TypedDict):
     status: str
     created_at: str
     evidence_id: str
-    ledger: dict[str, str]
+    ledger: dict[str, Any]
     gate_receipt: dict[str, str]
     gate_claim: dict[str, str]
     input_artifacts: list[dict[str, str]]
@@ -467,10 +467,15 @@ def issue_promotion_manifest_v2(
         rows = authority_ledger.read_all(canonical_ledger)
     except authority_ledger.LedgerSchemaError as exc:
         raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
-    matches = [row for row in rows if row.get("schema_version") == 2 and row["evidence_id"] == evidence_id]
+    matches = [
+        (ordinal, row)
+        for ordinal, row in enumerate(rows, start=1)
+        if row.get("schema_version") == 2 and row["evidence_id"] == evidence_id
+    ]
     if len(matches) != 1:
         raise EvidenceSchemaError("canonical ledger must contain exactly one v2 row for evidence_id")
-    row, identity = matches[0], matches[0]["evidence"]
+    row_ordinal, row = matches[0]
+    identity = row["evidence"]
     reconstructed_id, reconstructed = build_evidence_identity(
         receipt, usage, input_artifacts=identity["input_artifacts"],
         result_artifacts=identity["result_artifacts"], candidate_set=identity["candidate_set"],
@@ -487,7 +492,12 @@ def issue_promotion_manifest_v2(
         return {"path": path.relative_to(root).as_posix(), "sha256": _hash_file(path, str(path))}
     manifest: PromotionManifestV2 = {
         "schema_version": 2, "kind": "promotion_manifest", "status": "PRE", "created_at": created_at,
-        "evidence_id": evidence_id, "ledger": {**ref(canonical_ledger), "record_sha256": sha256_canonical(row)},
+        "evidence_id": evidence_id, "ledger": {
+            "path": canonical_ledger.relative_to(root).as_posix(),
+            "row_ordinal": row_ordinal,
+            "record_sha256": sha256_canonical(row),
+            "evidence_id": evidence_id,
+        },
         "gate_receipt": ref(receipt_file), "gate_claim": ref(claim_file),
         "input_artifacts": identity["input_artifacts"], "result_artifacts": identity["result_artifacts"],
         "candidate_set": identity["candidate_set"], "candidate_set_sha256": identity["candidate_set_sha256"],
@@ -520,14 +530,25 @@ def validate_promotion_manifest_v2(
     manifest = _require_exact_keys(value, keys, "promotion manifest")
     if (manifest["schema_version"], manifest["kind"], manifest["status"]) != (2, "promotion_manifest", "PRE"):
         raise EvidenceSchemaError("promotion manifest must be strict PRE v2")
-    ledger = _require_exact_keys(manifest["ledger"], {"path", "sha256", "record_sha256"}, "ledger")
+    ledger = _require_exact_keys(
+        manifest["ledger"], {"path", "row_ordinal", "record_sha256", "evidence_id"}, "ledger"
+    )
+    ledger_path, _ = _repo_path(ledger["path"], "ledger.path", root)
+    row_ordinal = ledger["row_ordinal"]
+    if isinstance(row_ordinal, bool) or not isinstance(row_ordinal, int) or row_ordinal < 1:
+        raise EvidenceSchemaError("ledger.row_ordinal must be a positive integer")
     result: PromotionManifestV2 = {
         "schema_version": 2, "kind": "promotion_manifest", "status": "PRE",
         "created_at": _require_timestamp(manifest["created_at"], "created_at"),
         "evidence_id": require_full_sha256(manifest["evidence_id"], "evidence_id"),
-        "ledger": _validate_file_ref(
-            {"path": ledger["path"], "sha256": ledger["sha256"]},
-            "ledger", root, verify_files=verify_files),
+        "ledger": {
+            "path": ledger_path,
+            "row_ordinal": row_ordinal,
+            "record_sha256": require_full_sha256(
+                ledger["record_sha256"], "ledger.record_sha256"
+            ),
+            "evidence_id": require_full_sha256(ledger["evidence_id"], "ledger.evidence_id"),
+        },
         "gate_receipt": _validate_file_ref(manifest["gate_receipt"], "gate_receipt", root, verify_files=verify_files),
         "gate_claim": _validate_file_ref(manifest["gate_claim"], "gate_claim", root, verify_files=verify_files),
         "input_artifacts": _validate_manifest(manifest["input_artifacts"], "input_artifacts", root, verify_files=verify_files),
@@ -541,8 +562,8 @@ def validate_promotion_manifest_v2(
         candidate_set=manifest["candidate_set"], negative_or_kill=False, repo_root=root,
         verify_files=verify_files,
     )
-    result["ledger"]["record_sha256"] = require_full_sha256(
-        ledger["record_sha256"], "ledger.record_sha256")
+    if result["ledger"]["evidence_id"] != result["evidence_id"]:
+        raise EvidenceSchemaError("ledger.evidence_id must match promotion manifest evidence_id")
     result["candidate_set"] = candidates
     if result["candidate_set_sha256"] != candidate_hash:
         raise EvidenceSchemaError("candidate_set_sha256 does not match candidate_set")
@@ -613,15 +634,19 @@ def verify_promotion_manifest_v2(
         authority_rows = authority_ledger.read_all(ledger_path)
     except authority_ledger.LedgerSchemaError as exc:
         raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
-    rows = [
-        row for row in authority_rows
-        if row.get("schema_version") == 2 and row.get("evidence_id") == evidence_id
-    ]
-    if len(rows) != 1 or sha256_canonical(rows[0]) != manifest["ledger"]["record_sha256"]:
-        raise EvidenceSchemaError("promotion manifest does not bind exactly one ledger v2 row")
-    if rows[0]["evidence"] != identity:
+    row_ordinal = manifest["ledger"]["row_ordinal"]
+    if row_ordinal > len(authority_rows):
+        raise EvidenceSchemaError("promotion manifest ledger row_ordinal is outside the canonical ledger")
+    row = authority_rows[row_ordinal - 1]
+    if (
+        row.get("schema_version") != 2
+        or row.get("evidence_id") != evidence_id
+        or sha256_canonical(row) != manifest["ledger"]["record_sha256"]
+    ):
+        raise EvidenceSchemaError("promotion manifest does not bind its committed ledger row")
+    if row["evidence"] != identity:
         raise EvidenceSchemaError("ledger evidence does not match promotion evidence")
-    require_timestamp_order(("ledger.ts", rows[0]["ts"]), ("PRE.created_at", manifest["created_at"]))
+    require_timestamp_order(("ledger.ts", row["ts"]), ("PRE.created_at", manifest["created_at"]))
     return manifest, _hash_file(manifest_file, "promotion manifest")
 
 
@@ -829,18 +854,26 @@ def verify_promotion_result_v2(
         _load_json_file(root, receipt["seal_manifest"], "seal_manifest"), repo_root=root)
     from alpha_lab.discipline import ledger as authority_ledger
 
+    ledger_path = root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts)
     try:
-        rows = authority_ledger.read_all(root / Path(*PurePosixPath(manifest["ledger"]["path"]).parts))
+        rows = authority_ledger.read_all(ledger_path)
     except authority_ledger.LedgerSchemaError as exc:
         raise EvidenceSchemaError(f"ledger authority validation failed: {exc}") from exc
-    rows = [row for row in rows if row.get("evidence_id") == evidence_id]
-    if len(rows) != 1 or sha256_canonical(rows[0]) != manifest["ledger"]["record_sha256"]:
-        raise EvidenceSchemaError("promotion result cannot revalidate its exact ledger authority")
+    row_ordinal = manifest["ledger"]["row_ordinal"]
+    if row_ordinal > len(rows):
+        raise EvidenceSchemaError("promotion result ledger row_ordinal is outside the canonical ledger")
+    row = rows[row_ordinal - 1]
+    if (
+        row.get("schema_version") != 2
+        or row.get("evidence_id") != evidence_id
+        or sha256_canonical(row) != manifest["ledger"]["record_sha256"]
+    ):
+        raise EvidenceSchemaError("promotion result cannot revalidate its committed ledger row")
     expected_chronology = {
         "sealed_at": seal["sealed_at"],
         "issued_at": receipt["issued_at"],
         "consumed_at": usage["consumed_at"],
-        "ledger_at": rows[0]["ts"],
+        "ledger_at": row["ts"],
         "pre_at": pre["prepared_at"],
         "post_at": result["completed_at"],
     }

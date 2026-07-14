@@ -17,9 +17,11 @@ known_ok=True 명시 없이는 거부(fail-closed, 원장 §1 veto 전용).
 
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import json
 import math
+import os
 from pathlib import Path
 
 from alpha_lab.discipline import windows
@@ -141,6 +143,33 @@ def _validate_v2_record(record: dict) -> None:
             raise LedgerSchemaError("v2 ledger evidence_id does not match evidence")
     except EvidenceSchemaError as exc:
         raise LedgerSchemaError(str(exc)) from exc
+
+
+@contextlib.contextmanager
+def _canonical_ledger_lock(target_path: Path):
+    """Serialize every v2 scan-and-append against the ledger's companion lock."""
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = target_path.with_name(f"{target_path.name}.lock")
+    with open(lock_path, "a+b") as handle:
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            unlock = lambda: msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            unlock = lambda: fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        try:
+            yield
+        finally:
+            unlock()
 
 
 def _append_record(target_path: Path, record: dict) -> None:
@@ -299,7 +328,31 @@ def append_trial_v2(
     target_path = _contract_ledger_path(root, receipt)
     if path is not None and Path(path).resolve() != target_path:
         raise LedgerSchemaError("v2 output path must equal the sealed contract ledger_path")
-    _append_record(target_path, record)
+    with _canonical_ledger_lock(target_path):
+        _validate_v2_record(record)
+        try:
+            existing_rows = read_all(target_path)
+        except LedgerSchemaError as exc:
+            raise LedgerSchemaError(
+                f"canonical ledger validation failed before append: {exc}"
+            ) from exc
+        duplicate = next(
+            (
+                row
+                for row in existing_rows
+                if row.get("schema_version") == 2
+                and (
+                    row["evidence"]["gate_receipt_id"] == receipt_id
+                    or row["evidence"]["gate_usage_sha256"] == evidence["gate_usage_sha256"]
+                )
+            ),
+            None,
+        )
+        if duplicate is not None:
+            raise LedgerSchemaError(
+                "canonical ledger already contains a v2 row for this gate receipt claim"
+            )
+        _append_record(target_path, record)
     return dict(record)
 
 

@@ -20,6 +20,7 @@ import hashlib
 import json
 import re
 import os
+import stat
 from pathlib import Path, PurePosixPath
 
 from alpha_lab.discipline import windows
@@ -220,24 +221,64 @@ _AUTHORITY_PATH_KEYS = {
 }
 
 
-def _contract_authority_paths(value: object, root: Path) -> dict[str, str]:
+def _has_reparse_point(root: Path, relative: PurePosixPath) -> bool:
+    """Reject link/junction authority aliases even when they resolve inside root."""
+    current = root
+    for part in relative.parts:
+        current /= part
+        if not current.exists() and not current.is_symlink():
+            break
+        metadata = os.lstat(current)
+        if current.is_symlink() or getattr(metadata, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+            return True
+    return False
+
+
+def recheck_authority_paths(value: object, root: Path | str) -> dict[str, str]:
+    """Fail closed unless every v2 authority destination remains independent."""
+    root = Path(root).resolve()
     if not isinstance(value, dict) or set(value) != _AUTHORITY_PATH_KEYS:
         raise EvidenceSchemaError("authority_paths must contain exactly the six v2 authority paths")
+
     paths: dict[str, str] = {}
+    resolved_paths: dict[str, Path] = {}
+    protected = {"_database", "_database_v3k_shadow", "backup", "_log"}
     for field in sorted(_AUTHORITY_PATH_KEYS):
         path, resolved = _repo_path(value[field], f"authority_paths.{field}", root)
+        if _has_reparse_point(root, PurePosixPath(path)):
+            raise EvidenceSchemaError(f"authority_paths.{field} must not traverse a symlink or reparse point")
         if field == "target_db":
             if not resolved.is_file():
                 raise EvidenceSchemaError("authority_paths.target_db must name an existing non-protected file")
-            protected = {"_database", "_database_v3k_shadow", "backup", "_log"}
-            if protected.intersection(PurePosixPath(path).parts):
+            if resolved.stat().st_nlink > 1:
+                raise EvidenceSchemaError("authority_paths.target_db must not be a hardlink")
+            if protected.intersection(part.casefold() for part in PurePosixPath(path).parts):
                 raise EvidenceSchemaError("authority_paths.target_db must not name a protected DB path")
         elif resolved.exists() and not resolved.is_dir():
             raise EvidenceSchemaError(f"authority_paths.{field} must name a directory when it exists")
-        paths[field] = path
-    if len(set(paths.values())) != len(paths):
-        raise EvidenceSchemaError("authority_paths values must be distinct")
+        paths[field], resolved_paths[field] = path, resolved
+
+    fields = sorted(paths)
+    for index, left in enumerate(fields):
+        left_parts = tuple(part.casefold() for part in PurePosixPath(paths[left]).parts)
+        for right in fields[index + 1:]:
+            right_parts = tuple(part.casefold() for part in PurePosixPath(paths[right]).parts)
+            if (
+                left_parts == right_parts
+                or left_parts[:len(right_parts)] == right_parts
+                or right_parts[:len(left_parts)] == left_parts
+            ):
+                raise EvidenceSchemaError("authority_paths destinations must be case-normalized and semantically distinct")
+            if resolved_paths[left].exists() and resolved_paths[right].exists() and os.path.samefile(
+                resolved_paths[left], resolved_paths[right]
+            ):
+                raise EvidenceSchemaError("authority_paths destinations must be physically distinct")
     return paths
+
+
+def _contract_authority_paths(value: object, root: Path) -> dict[str, str]:
+    """Backward-compatible internal name used by evidence validation."""
+    return recheck_authority_paths(value, root)
 
 
 def _repo_path(value: object, field: str, root: Path) -> tuple[str, Path]:
@@ -248,7 +289,10 @@ def _repo_path(value: object, field: str, root: Path) -> tuple[str, Path]:
     path = PurePosixPath(value)
     if path.is_absolute():
         raise EvidenceSchemaError(f"{field} must be a safe repository-relative POSIX path")
-    resolved = (root / Path(*path.parts)).resolve()
+    try:
+        resolved = (root / Path(*path.parts)).resolve()
+    except (OSError, RuntimeError) as exc:
+        raise EvidenceSchemaError(f"{field} cannot safely resolve") from exc
     try:
         resolved.relative_to(root)
     except ValueError as exc:
@@ -425,13 +469,53 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
 
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
-    """Resolve literal dynamic dependencies; unsupported local execution is forbidden."""
+    """Resolve only direct, literal dynamic imports; reject executable indirection."""
     calls, aliases = _dynamic_call_kinds(tree)
     found: set[Path] = set()
-    forbidden = {
-        "exec", "eval", "compile", "open", "runpy.run_module", "runpy.run_path",
-        "builtins.exec", "builtins.eval", "builtins.compile", "builtins.open",
+    executable = {
+        "__import__", "builtins.__import__", "importlib.import_module",
+        "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
+        "importlib.machinery.SourcelessFileLoader", "runpy.run_module", "runpy.run_path",
+        "exec", "eval", "compile", "open", "builtins.exec", "builtins.eval",
+        "builtins.compile", "builtins.open",
     }
+    forbidden = executable - {
+        "__import__", "builtins.__import__", "importlib.import_module",
+        "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
+        "importlib.machinery.SourcelessFileLoader",
+    }
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    local_callables = {
+        node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+    }
+    safe_aliases = set(aliases) | local_callables | {
+        "__import__", "exec", "eval", "compile", "open",
+    }
+    unsafe_aliases: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
+            if isinstance(node.value, ast.Lambda) or (
+                isinstance(node.value, ast.Name) and node.value.id in local_callables
+            ):
+                safe_aliases.update(targets)
+            else:
+                unsafe_aliases.update(targets)
+
+    # Dynamic callables may only occur as the direct function of a supported call.
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Name, ast.Attribute)):
+            continue
+        canonical = _dotted_name(node, aliases)
+        if canonical not in executable:
+            continue
+        parent = parents.get(node)
+        if isinstance(parent, ast.Attribute) and parent.value is node:
+            continue
+        if isinstance(parent, ast.Call) and parent.func is node:
+            continue
+        raise EvidenceSchemaError(f"higher-order dynamic execution/import is unsupported: {path}")
+
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
@@ -439,6 +523,16 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         canonical = _dotted_name(node.func, aliases)
         if isinstance(node.func, ast.Subscript):
             raise EvidenceSchemaError(f"indirect subscript execution is unsupported: {path}")
+        if isinstance(node.func, ast.Attribute) and node.func.attr in {"exec_module", "load_module", "get_code"}:
+            raise EvidenceSchemaError(f"loader execution through an unresolved callable is unsupported: {path}")
+        if isinstance(node.func, ast.Name) and node.func.id in unsafe_aliases:
+            raise EvidenceSchemaError(f"unresolved callable alias is unsupported: {path}")
+        if isinstance(node.func, ast.Name) and node.func.id not in safe_aliases and node.func.id not in {
+            "abs", "all", "any", "bool", "dict", "enumerate", "float", "int", "isinstance",
+            "len", "list", "map", "max", "min", "next", "print", "range", "repr", "set",
+            "sorted", "str", "sum", "tuple", "type", "zip",
+        }:
+            raise EvidenceSchemaError(f"unresolved callable alias is unsupported: {path}")
         if raw_name in forbidden or canonical in forbidden:
             raise EvidenceSchemaError(f"indirect local Python execution is unsupported: {path}")
         kind = calls.get(raw_name) if raw_name else None
@@ -573,6 +667,7 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
     if canonical_output.exists():
         raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
     canonical_output.parent.mkdir(parents=True, exist_ok=True)
+    recheck_authority_paths(contract["authority_paths"], root)
     with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
         handle.write(canonical_json_bytes(validated).decode("utf-8"))
         handle.flush()

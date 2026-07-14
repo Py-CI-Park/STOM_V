@@ -8,12 +8,13 @@
 from __future__ import annotations
 
 import datetime as dt
-import json
-from pathlib import Path
-
 import hashlib
+import json
+import multiprocessing
+from pathlib import Path
 import shutil
 import subprocess
+
 import pytest
 
 from alpha_lab.discipline import evidence, ledger, lint, measure_gate, prereg, trials_report, windows
@@ -220,6 +221,15 @@ def _v2_chain(tmp_path):
     )
     usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
     return receipt_path, usage_path, *_bindings(tmp_path)
+def _append_v2_worker(queue, kwargs):
+    try:
+        ledger.append_trial_v2(**kwargs)
+    except ledger.LedgerSchemaError as exc:
+        queue.put(("rejected", str(exc)))
+    else:
+        queue.put(("appended", ""))
+
+
 
 
 class TestLedgerV2:
@@ -240,6 +250,37 @@ class TestLedgerV2:
         assert list(record) == list(ledger.V2_REQUIRED_KEYS)
         assert record["evidence_id"] == evidence.sha256_canonical(record["evidence"])
         assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
+    def test_append_v2_replay_is_rejected_without_a_second_row(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        kwargs = {
+            "repo_root": tmp_path, "gate_receipt_path": receipt_path, "gate_usage_path": usage_path,
+            "input_artifacts": inputs, "result_artifacts": results, "candidate_set": candidates,
+            "path": tmp_path / "ledger.jsonl", **_row(),
+        }
+        ledger.append_trial_v2(**kwargs)
+        with pytest.raises(ledger.LedgerSchemaError, match="gate receipt claim"):
+            ledger.append_trial_v2(**kwargs)
+        assert len(ledger.read_all(tmp_path / "ledger.jsonl")) == 1
+
+    def test_append_v2_concurrent_claim_attempts_create_one_row(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        kwargs = {
+            "repo_root": tmp_path, "gate_receipt_path": receipt_path, "gate_usage_path": usage_path,
+            "input_artifacts": inputs, "result_artifacts": results, "candidate_set": candidates,
+            "path": tmp_path / "ledger.jsonl", **_row(),
+        }
+        context = multiprocessing.get_context("spawn")
+        queue = context.Queue()
+        processes = [context.Process(target=_append_v2_worker, args=(queue, kwargs)) for _ in range(2)]
+        for process in processes:
+            process.start()
+        outcomes = [queue.get(timeout=30)[0] for _ in processes]
+        for process in processes:
+            process.join(timeout=30)
+            assert process.exitcode == 0
+        assert sorted(outcomes) == ["appended", "rejected"]
+        assert len(ledger.read_all(tmp_path / "ledger.jsonl")) == 1
+
     def test_append_v2_rejects_noncontract_ledger_path(self, tmp_path):
         receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
         with pytest.raises(ledger.LedgerSchemaError, match="sealed contract ledger_path"):
@@ -366,6 +407,22 @@ class TestLedgerV2:
         )
         manifest_path = tmp_path / "promotions" / f"{record['evidence_id']}.pre.json"
         assert evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)[0] == manifest
+        assert set(manifest["ledger"]) == {
+            "path", "row_ordinal", "record_sha256", "evidence_id",
+        }
+        ledger._append_record(ledger_path, VALID_ROW)
+        assert evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)[0] == manifest
+        rows = ledger_path.read_text(encoding="utf-8").splitlines()
+        ledger_path.write_text("\n".join(reversed(rows)) + "\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="committed ledger row"):
+            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
+        ledger_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        tampered = json.loads(rows[0])
+        tampered["result"] = "tampered"
+        ledger_path.write_text(json.dumps(tampered, ensure_ascii=False) + "\n" + rows[1] + "\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
+        ledger_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
         copied = tmp_path / "copied.json"
         copied.write_bytes(manifest_path.read_bytes())
         with pytest.raises(evidence.EvidenceSchemaError, match="path is not canonical"):
@@ -571,6 +628,10 @@ class TestPrereg:
         "from builtins import exec as execute\nexecute('x = 1')\n",
         "loaders = {'run': __import__}\nloaders['run']('plugin')\n",
         "eval(compile(open('plugin.py').read(), 'plugin.py', 'exec'))\n",
+        "from functools import partial\nimport importlib\nload = partial(importlib.import_module, 'plugin')\nload()\n",
+        "import importlib\nload = importlib.import_module\nload('plugin')\n",
+        "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
+        "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
     ])
     def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
@@ -585,6 +646,58 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
+    def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("from importlib import import_module\nplugin = import_module('plugin')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
+    def test_recheck_authority_paths_rejects_case_nested_hardlink_and_symlink_aliases(self, tmp_path):
+        target = tmp_path / "measure.py"
+        target.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        assert prereg.recheck_authority_paths(authority, tmp_path) == authority
+
+        protected = {**authority, "target_db": "_DATABASE/measure.py"}
+        (tmp_path / "_DATABASE").mkdir()
+        (tmp_path / "_DATABASE" / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="protected"):
+            prereg.recheck_authority_paths(protected, tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="semantically distinct"):
+            prereg.recheck_authority_paths({**authority, "promotions_dir": "Seals"}, tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="semantically distinct"):
+            prereg.recheck_authority_paths({**authority, "promotions_dir": "seals/archive"}, tmp_path)
+
+        hardlink = tmp_path / "hardlink.py"
+        hardlink.hardlink_to(target)
+        with pytest.raises(evidence.EvidenceSchemaError, match="hardlink"):
+            prereg.recheck_authority_paths({**authority, "target_db": "hardlink.py"}, tmp_path)
+
+        linked = tmp_path / "linked"
+        try:
+            linked.symlink_to(tmp_path / "seals", target_is_directory=True)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink or reparse"):
+            prereg.recheck_authority_paths({**authority, "seal_dir": "linked"}, tmp_path)
 
 # ---------------------------------------------------------------------------
 # trials_report — 시행 병기 블록 (소비 전용)
