@@ -18,6 +18,7 @@ import datetime as dt
 import hashlib
 import json
 import logging
+import os
 import shutil
 import sqlite3
 from pathlib import Path, PurePosixPath
@@ -26,6 +27,9 @@ from typing import Any
 from alpha_lab.discipline.evidence import (
     EvidenceSchemaError,
     sha256_canonical,
+    validate_catalog_promotion_receipt_v2,
+    validate_promotion_journal_post_v2,
+    validate_promotion_journal_pre_v2,
     verify_promotion_manifest_v2,
 )
 
@@ -80,26 +84,23 @@ class LegacyPromotionBlockedError(RuntimeError):
 
 def _validate_catalog_pre_receipt(
     value: object, *, evidence_id: str, manifest_path: Path, manifest_sha256: str, repo_root: Path,
-) -> None:
-    if not isinstance(value, dict):
-        raise EvidenceSchemaError("catalog receipt must be an object")
-    status = value.get("promotion_status")
-    required = {
-        "schema_version", "phase", "valid", "evidence_id", "source_kind", "source_path", "source_sha256",
-    }
-    if not isinstance(status, dict) or set(status) != required:
-        raise EvidenceSchemaError("catalog receipt promotion_status has invalid keys")
+) -> dict[str, Any]:
+    """Require the builder's strict PRE receipt, bound to live DB and source bytes."""
+    receipt = value.get("promotion_receipt") if isinstance(value, dict) else None
+    if receipt is None:
+        receipt = value
+    validated = validate_catalog_promotion_receipt_v2(receipt, repo_root=repo_root)
+    if validated["phase"] != "PRE":
+        raise EvidenceSchemaError("catalog receipt must be PRE authority")
+    if validated["evidence_id"] != evidence_id:
+        raise EvidenceSchemaError("catalog PRE receipt evidence_id does not match promotion manifest")
     expected_path = _repo_relative_path(manifest_path, repo_root, "manifest_path")
-    if status != {
-        "schema_version": 2,
-        "phase": "PRE",
-        "valid": True,
-        "evidence_id": evidence_id,
-        "source_kind": "promotion_manifest",
-        "source_path": expected_path,
-        "source_sha256": manifest_sha256,
-    }:
-        raise EvidenceSchemaError("catalog PRE promotion_status does not match promotion manifest")
+    expected_ref = {"path": expected_path, "sha256": manifest_sha256}
+    if validated["promotion_manifest"] != expected_ref:
+        raise EvidenceSchemaError("catalog PRE receipt does not bind exact promotion manifest bytes")
+    if validated["upstream"] != {"kind": "promotion_manifest", **expected_ref}:
+        raise EvidenceSchemaError("catalog PRE receipt upstream does not bind exact promotion manifest bytes")
+    return validated
 
 
 def verify_promotion_manifest(
@@ -133,9 +134,97 @@ def verify_promotion_manifest(
         checks["catalog_pre"] = True
         return _promotion_result(
             passed=True, evidence_id=manifest["evidence_id"],
-            candidates=manifest["candidates"], checks=checks)
+            candidates=manifest["candidate_set"], checks=checks)
     except (EvidenceSchemaError, OSError, ValueError) as exc:
         return _promotion_result(passed=False, checks=checks, reasons=[str(exc)])
+
+
+def _journal_paths(repo_root: Path, journal_dir: Path | str, evidence_id: str) -> tuple[Path, Path, str, str]:
+    directory = Path(journal_dir)
+    if directory.is_absolute():
+        raise ValueError("journal_dir must be repository-relative")
+    root = repo_root.resolve()
+    journal_root = (root / directory).resolve()
+    try:
+        journal_relative = journal_root.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise ValueError("journal_dir resolves outside repo_root") from exc
+    if not journal_relative or journal_relative == ".":
+        raise ValueError("journal_dir must not be repo_root")
+    return (
+        journal_root / f"{evidence_id}.pre.json",
+        journal_root / f"{evidence_id}.post.json",
+        f"{journal_relative}/{evidence_id}.pre.json",
+        f"{journal_relative}/{evidence_id}.post.json",
+    )
+
+
+def _write_exclusive_json(path: Path, value: dict[str, Any]) -> None:
+    """Append-only journal write: no replacement and durable file bytes."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    try:
+        descriptor = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise ValueError(f"promotion journal already exists: {path}") from exc
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        raise
+
+
+def _journal_chronology(manifest: dict[str, Any], repo_root: Path, pre_at: str) -> dict[str, str]:
+    receipt = _load_json(repo_root / manifest["gate_receipt"]["path"], "gate receipt")
+    usage = _load_json(repo_root / manifest["gate_claim"]["path"], "gate usage")
+    seal = _load_json(repo_root / receipt["seal_manifest"]["path"], "seal manifest")
+    ledger_rows = [
+        json.loads(line) for line in (
+            repo_root / manifest["ledger"]["path"]
+        ).read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
+    rows = [row for row in ledger_rows if row.get("evidence_id") == manifest["evidence_id"]]
+    if len(rows) != 1:
+        raise EvidenceSchemaError("promotion journal cannot locate exact ledger authority row")
+    return {
+        "sealed_at": seal["sealed_at"],
+        "issued_at": receipt["issued_at"],
+        "consumed_at": usage["consumed_at"],
+        "ledger_at": rows[0]["ts"],
+        "pre_at": pre_at,
+    }
+
+
+def inspect_promotion_journal_v2(
+    *, repo_root: Path | str, journal_dir: Path | str, evidence_id: str,
+) -> dict[str, Any]:
+    """Read journal state without touching a strategy DB or attempting recovery."""
+    root = Path(repo_root).resolve()
+    pre_path, post_path, pre_relative, post_relative = _journal_paths(root, journal_dir, evidence_id)
+    if not pre_path.exists() and not post_path.exists():
+        return {"status": "ABSENT", "pre_path": pre_relative, "post_path": post_relative}
+    if not pre_path.exists():
+        raise EvidenceSchemaError("promotion journal POST exists without PRE intent")
+    pre = validate_promotion_journal_pre_v2(_load_json(pre_path, "promotion journal PRE"))
+    if pre["evidence_id"] != evidence_id:
+        raise EvidenceSchemaError("promotion journal PRE evidence_id does not match canonical path")
+    if not post_path.exists():
+        return {
+            "status": "INCOMPLETE_REQUIRES_RECONCILIATION",
+            "pre_path": pre_relative,
+            "post_path": post_relative,
+            "pre": pre,
+        }
+    post = validate_promotion_journal_post_v2(
+        _load_json(post_path, "promotion journal POST"), pre=pre)
+    return {
+        "status": "COMPLETE", "pre_path": pre_relative, "post_path": post_relative,
+        "pre": pre, "post": post,
+    }
 
 
 def register_conditions_v2(
@@ -148,16 +237,15 @@ def register_conditions_v2(
     gate_receipt_path: Path | str,
     gate_usage_path: Path | str,
     catalog_receipt_path: Path | str,
+    journal_dir: Path | str,
     backup_dir: Path | str,
     now,
 ) -> dict[str, Any]:
-    """Register only candidates proven by a complete PRE promotion evidence chain."""
+    """Persist PRE intent before any DB access, then record an exclusive POST outcome."""
+    root = Path(repo_root).resolve()
     verdict = verify_promotion_manifest(
-        manifest_path,
-        repo_root=repo_root,
-        ledger_path=ledger_path,
-        gate_receipt_path=gate_receipt_path,
-        gate_usage_path=gate_usage_path,
+        manifest_path, repo_root=root, ledger_path=ledger_path,
+        gate_receipt_path=gate_receipt_path, gate_usage_path=gate_usage_path,
         catalog_receipt_path=catalog_receipt_path,
     )
     if verdict["pass"] is not True:
@@ -169,11 +257,10 @@ def register_conditions_v2(
         raise ValueError("v2 item names must exactly match promotion manifest candidates")
     for name, item in actual.items():
         candidate = expected[name]
-        if (
-            _sha256_text(item["buy_expr"]) != candidate["buy_sha256"]
-            or _sha256_text(item["sell_expr"]) != candidate["sell_sha256"]
-        ):
+        if (_sha256_text(item["buy_expr"]) != candidate["buy_sha256"]
+                or _sha256_text(item["sell_expr"]) != candidate["sell_sha256"]):
             raise ValueError("v2 candidate expression hash mismatch: %s" % name)
+
     completed_at = now.isoformat() if hasattr(now, "isoformat") else str(now)
     try:
         completed = dt.datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
@@ -181,22 +268,65 @@ def register_conditions_v2(
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp") from exc
     if completed.tzinfo is None or completed.utcoffset() is None:
         raise ValueError("v2 promotion completed_at must be a timezone-aware ISO-8601 timestamp")
+
+    manifest, manifest_sha256 = verify_promotion_manifest_v2(manifest_path, repo_root=root)
+    catalog_path = Path(catalog_receipt_path).resolve()
+    catalog_receipt = _validate_catalog_pre_receipt(
+        _load_json(catalog_path, "catalog receipt"), evidence_id=manifest["evidence_id"],
+        manifest_path=Path(manifest_path), manifest_sha256=manifest_sha256, repo_root=root,
+    )
+    db_relative = _repo_relative_path(Path(db_path), root, "db_path")
+    if any(db_relative == protected or db_relative.startswith(f"{protected}/")
+           for protected in ("_database", "_database_v3k_shadow")):
+        raise ValueError("v2 promotion refuses protected strategy DB")
+    _repo_relative_path(Path(backup_dir), root, "backup_dir")
+    pre_path, post_path, pre_relative, post_relative = _journal_paths(
+        root, journal_dir, manifest["evidence_id"])
+    existing = inspect_promotion_journal_v2(
+        repo_root=root, journal_dir=journal_dir, evidence_id=manifest["evidence_id"])
+    if existing["status"] != "ABSENT":
+        raise ValueError(f"promotion journal refuses rerun: {existing['status']}")
+
+    manifest_ref = {"path": _repo_relative_path(Path(manifest_path), root, "manifest_path"),
+                    "sha256": manifest_sha256}
+    catalog_ref = {"path": _repo_relative_path(catalog_path, root, "catalog_receipt_path"),
+                   "sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest()}
+    pre_at = completed_at
+    pre = {
+        "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
+        "evidence_id": manifest["evidence_id"], "prepared_at": pre_at,
+        "promotion_manifest": manifest_ref, "catalog_receipt": catalog_ref,
+        "candidate_set": manifest["candidate_set"],
+        "candidate_set_sha256": manifest["candidate_set_sha256"],
+        "chronology": _journal_chronology(manifest, root, pre_at),
+    }
+    validate_promotion_journal_pre_v2(pre)
+    _write_exclusive_json(pre_path, pre)
+
     legacy_result = _register_conditions(db_path, items, backup_dir=backup_dir, now=now)
-    try:
-        manifest_relative = Path(manifest_path).resolve().relative_to(
-            Path(repo_root).resolve()).as_posix()
-    except ValueError as exc:
-        raise ValueError("manifest_path resolves outside repo_root") from exc
+    backup_ref = None
+    if legacy_result["backup_path"] is not None:
+        backup = Path(legacy_result["backup_path"])
+        backup_ref = {
+            "path": _repo_relative_path(backup, root, "backup_path"),
+            "sha256": hashlib.sha256(backup.read_bytes()).hexdigest(),
+        }
+    post = {
+        "schema_version": 2, "kind": "promotion_journal", "status": "POST",
+        "evidence_id": manifest["evidence_id"], "completed_at": completed_at,
+        "promotion_manifest": manifest_ref, "catalog_receipt": catalog_ref,
+        "candidate_set_sha256": manifest["candidate_set_sha256"],
+        "inserted": legacy_result["inserted"], "conflicts": legacy_result["conflicts"],
+        "backup_ref": backup_ref, "db_pre_sha256": legacy_result["db_pre_sha256"],
+        "db_post_sha256": legacy_result["db_post_sha256"],
+        "chronology": {**pre["chronology"], "post_at": completed_at},
+    }
+    validate_promotion_journal_post_v2(post, pre=pre)
+    _write_exclusive_json(post_path, post)
     return {
-        "schema_version": 2,
-        "kind": "promotion_result",
-        "status": "POST",
-        "completed_at": completed_at,
-        "evidence_id": verdict["evidence_id"],
-        "promotion_manifest_path": manifest_relative,
-        "promotion_manifest_sha256": sha256_canonical(
-            _load_json(Path(manifest_path), "promotion manifest")),
-        **legacy_result,
+        **post,
+        "journal_pre_path": pre_relative,
+        "journal_post_path": post_relative,
     }
 
 
@@ -311,6 +441,7 @@ def _register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
     db_file = Path(db_path)
     if not db_file.exists():
         raise FileNotFoundError("전략 DB 파일이 없습니다: %s" % db_file)
+    db_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
 
     read_con = _open_readonly(db_file)
     try:
@@ -339,6 +470,8 @@ def _register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
         "inserted": inserted,
         "conflicts": conflicts,
         "backup_path": str(backup_path) if backup_path else None,
+        "db_pre_sha256": db_pre_sha256,
+        "db_post_sha256": hashlib.sha256(db_file.read_bytes()).hexdigest(),
     }
 def register_conditions(db_path, items: list, *, backup_dir, now) -> dict:
     """Retired legacy entry point; v2 provenance is the sole write authority."""

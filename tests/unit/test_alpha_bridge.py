@@ -23,8 +23,9 @@ from alpha_lab.bridge.registrar import (
     verify_promotion_manifest,
 )
 from alpha_lab.discipline.evidence import build_evidence_identity, sha256_canonical
+from alpha_lab.catalog import builder
 
-NOW = dt.datetime(2026, 7, 5, 12, 0, 0)
+NOW = dt.datetime(2026, 7, 14, 0, 5, 0, tzinfo=dt.timezone.utc)
 
 SEED_ROWS = {
     "stockbuy": [("기존매수전략", "if 등락율 > 1: 매수")],
@@ -91,7 +92,7 @@ def _file_snapshot(root: Path) -> dict[str, bytes]:
 
 
 
-def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
+def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
     """Create a complete authoritative v2 chain entirely under tmp_path."""
     prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
     source, artifact = tmp_path / "source.json", tmp_path / "result.json"
@@ -142,7 +143,11 @@ def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
     (tmp_path / "claims").mkdir()
     usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
     usage_path.write_text(json.dumps(usage), encoding="utf-8")
-    candidates = [{"name": item["name"], "sha256": hashlib.sha256(b"candidate").hexdigest()}]
+    candidates = [{
+        "name": item["name"],
+        "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
+        "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
+    }]
     evidence_id, evidence = build_evidence_identity(
         receipt, usage, input_artifacts=[file_ref(source)], result_artifacts=[file_ref(artifact)],
         candidate_set=candidates, negative_or_kill=False, repo_root=tmp_path)
@@ -157,17 +162,22 @@ def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
         "ledger": {**file_ref(ledger_path), "record_sha256": sha256_canonical(row)}, "gate_receipt": file_ref(receipt_path),
         "gate_claim": file_ref(usage_path), "input_artifacts": [file_ref(source)],
         "result_artifacts": [file_ref(artifact)], "candidate_set": candidates,
-        "candidate_set_sha256": sha256_canonical(candidates), "candidates": [{
-            "name": item["name"], "buy_sha256": hashlib.sha256(item["buy_expr"].encode()).hexdigest(),
-            "sell_sha256": hashlib.sha256(item["sell_expr"].encode()).hexdigest()}],
+        "candidate_set_sha256": sha256_canonical(candidates),
     }
     manifest_path = tmp_path / "promotion.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    for name in ("load_assets", "load_ledger_mirror", "load_clauses", "load_strategies",
+                 "load_cells", "load_judgments"):
+        monkeypatch.setattr(builder, name, lambda *args, **kwargs: None)
+    monkeypatch.setattr(builder, "_strict_source_hashes",
+                        lambda receipt, run_dir, root: [file_ref(source)])
+    monkeypatch.setattr(builder, "ensure_gitignore",
+                        lambda run_dir: {"path": "", "action": "test", "pattern": ""})
     catalog_path = tmp_path / "catalog.json"
-    catalog_path.write_text(json.dumps({"promotion_status": {
-        "schema_version": 2, "phase": "PRE", "valid": True, "evidence_id": evidence_id,
-        "source_kind": "promotion_manifest", "source_path": "promotion.json",
-        "source_sha256": sha256_canonical(manifest)}}), encoding="utf-8")
+    builder.build_all(
+        tmp_path, db_path=tmp_path / "catalog.db", receipt_path=catalog_path,
+        repo_root=tmp_path, promotion_manifest_path=manifest_path,
+    )
     return {"manifest": manifest_path, "ledger": ledger_path, "receipt": receipt_path,
             "usage": usage_path, "catalog": catalog_path, "evidence_id": evidence_id}
 
@@ -175,7 +185,7 @@ def _write_v2_promotion_chain(tmp_path, item: dict) -> dict:
 class TestPromotionV2:
     def test_verifies_complete_synthetic_chain_read_only(self, tmp_path, monkeypatch):
         item = _item()
-        chain = _write_v2_promotion_chain(tmp_path, item)
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         before = _file_snapshot(tmp_path)
 
         import alpha_lab.bridge.registrar as registrar
@@ -207,25 +217,29 @@ class TestPromotionV2:
                 fake_db, [_item()], manifest_path=tmp_path / "missing.json", repo_root=tmp_path,
                 ledger_path=tmp_path / "ledger.jsonl", gate_receipt_path=tmp_path / "receipt.json",
                 gate_usage_path=tmp_path / "usage.json", catalog_receipt_path=tmp_path / "catalog.json",
-                backup_dir=backup_dir, now=NOW,
+                journal_dir="promotion_journal", backup_dir=backup_dir, now=NOW,
             )
         assert fake_db.read_bytes() == before
         assert not backup_dir.exists()
 
-    def test_registers_verified_manifest_with_legacy_insert_semantics(self, fake_db, backup_dir, tmp_path):
+    def test_registers_verified_manifest_with_legacy_insert_semantics(
+        self, fake_db, backup_dir, tmp_path, monkeypatch,
+    ):
         item = _item()
-        chain = _write_v2_promotion_chain(tmp_path, item)
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         result = register_conditions_v2(
             fake_db, [item], manifest_path=chain["manifest"], repo_root=tmp_path,
             ledger_path=chain["ledger"], gate_receipt_path=chain["receipt"],
             gate_usage_path=chain["usage"], catalog_receipt_path=chain["catalog"],
-            backup_dir=backup_dir, now=NOW.replace(tzinfo=dt.timezone.utc),
+            journal_dir="promotion_journal", backup_dir=backup_dir,
+            now=NOW.replace(tzinfo=dt.timezone.utc),
         )
         assert result["status"] == "POST"
         assert result["evidence_id"] == chain["evidence_id"]
-        assert result["promotion_manifest_sha256"] == sha256_canonical(
-            json.loads(chain["manifest"].read_text(encoding="utf-8"))
-        )
+        assert result["promotion_manifest"] == {
+            "path": "promotion.json",
+            "sha256": hashlib.sha256(chain["manifest"].read_bytes()).hexdigest(),
+        }
         assert [entry["name"] for entry in result["inserted"]] == [item["name"]]
 
 

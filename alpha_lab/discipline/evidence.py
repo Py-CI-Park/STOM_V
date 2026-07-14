@@ -467,7 +467,7 @@ def verify_promotion_manifest_v2(
     if rows[0]["evidence"] != identity:
         raise EvidenceSchemaError("ledger evidence does not match promotion evidence")
     require_timestamp_order(("ledger.ts", rows[0]["ts"]), ("PRE.created_at", manifest["created_at"]))
-    return manifest, sha256_canonical(raw)
+    return manifest, _hash_file(manifest_file, "promotion manifest")
 
 
 def validate_promotion_result_v2(
@@ -550,7 +550,7 @@ def verify_promotion_result_v2(
         conflict_names.add(name)
     if inserted_names & conflict_names or inserted_names | conflict_names != set(expected):
         raise EvidenceSchemaError("promotion result must account for every PRE candidate exactly once")
-    return result, manifest, sha256_canonical(raw)
+    return result, manifest, _hash_file(source, "promotion result")
 
 
 def validate_catalog_promotion_receipt_v2(
@@ -581,11 +581,11 @@ def validate_catalog_promotion_receipt_v2(
     upstream_path, upstream_file = _repo_path(upstream["path"], "catalog receipt upstream.path", root)
     upstream_sha256 = require_full_sha256(upstream["sha256"], "catalog receipt upstream.sha256")
     try:
-        upstream_raw = json.loads(upstream_file.read_text(encoding="utf-8"))
+        json.loads(upstream_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise EvidenceSchemaError("catalog receipt upstream must be readable JSON") from exc
-    if sha256_canonical(upstream_raw) != upstream_sha256:
-        raise EvidenceSchemaError("catalog receipt upstream SHA does not match exact authority JSON")
+    if _hash_file(upstream_file, "catalog receipt upstream") != upstream_sha256:
+        raise EvidenceSchemaError("catalog receipt upstream SHA does not match exact authority bytes")
     upstream_ref = {"path": upstream_path, "sha256": upstream_sha256}
     if receipt["phase"] == "PRE":
         if upstream_path != manifest_ref["path"]:
@@ -605,3 +605,136 @@ def validate_catalog_promotion_receipt_v2(
             "kind": expected_kind, **upstream_ref,
         }, "promotion_manifest": manifest_ref, "catalog_db": db_ref, "source_hashes": sources,
     }
+def validate_promotion_journal_pre_v2(value: object) -> dict[str, Any]:
+    """Validate the durable, pre-mutation journal intent envelope."""
+    keys = {
+        "schema_version", "kind", "status", "evidence_id", "prepared_at",
+        "promotion_manifest", "catalog_receipt", "candidate_set",
+        "candidate_set_sha256", "chronology",
+    }
+    pre = _require_exact_keys(value, keys, "promotion journal PRE")
+    if (pre["schema_version"], pre["kind"], pre["status"]) != (
+        2, "promotion_journal", "PRE"
+    ):
+        raise EvidenceSchemaError("promotion journal PRE must be strict v2")
+    candidates = pre["candidate_set"]
+    if not isinstance(candidates, list):
+        raise EvidenceSchemaError("promotion journal PRE candidate_set must be a list")
+    normalized_candidates: list[dict[str, str]] = []
+    for index, candidate in enumerate(candidates):
+        item = _require_exact_keys(
+            candidate, {"name", "buy_sha256", "sell_sha256"},
+            f"promotion journal PRE candidate_set[{index}]",
+        )
+        if not isinstance(item["name"], str) or not item["name"]:
+            raise EvidenceSchemaError("promotion journal PRE candidate name must be non-empty")
+        normalized_candidates.append({
+            "name": item["name"],
+            "buy_sha256": require_full_sha256(item["buy_sha256"], "promotion journal PRE buy_sha256"),
+            "sell_sha256": require_full_sha256(item["sell_sha256"], "promotion journal PRE sell_sha256"),
+        })
+    if normalized_candidates != sorted(normalized_candidates, key=lambda item: item["name"]):
+        raise EvidenceSchemaError("promotion journal PRE candidate_set must be sorted")
+    if len({item["name"] for item in normalized_candidates}) != len(normalized_candidates):
+        raise EvidenceSchemaError("promotion journal PRE candidate_set names must be unique")
+    chronology = _require_exact_keys(
+        pre["chronology"],
+        {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at"},
+        "promotion journal PRE chronology",
+    )
+    require_timestamp_order(
+        ("sealed_at", chronology["sealed_at"]),
+        ("issued_at", chronology["issued_at"]),
+        ("consumed_at", chronology["consumed_at"]),
+        ("ledger_at", chronology["ledger_at"]),
+        ("pre_at", chronology["pre_at"]),
+    )
+    if pre["prepared_at"] != chronology["pre_at"]:
+        raise EvidenceSchemaError("promotion journal PRE prepared_at must equal chronology.pre_at")
+    return {
+        "schema_version": 2, "kind": "promotion_journal", "status": "PRE",
+        "evidence_id": require_full_sha256(pre["evidence_id"], "promotion journal PRE evidence_id"),
+        "prepared_at": _require_timestamp(pre["prepared_at"], "promotion journal PRE prepared_at"),
+        "promotion_manifest": _require_exact_keys(
+            pre["promotion_manifest"], {"path", "sha256"}, "promotion journal PRE manifest"),
+        "catalog_receipt": _require_exact_keys(
+            pre["catalog_receipt"], {"path", "sha256"}, "promotion journal PRE catalog receipt"),
+        "candidate_set": normalized_candidates,
+        "candidate_set_sha256": require_full_sha256(
+            pre["candidate_set_sha256"], "promotion journal PRE candidate_set_sha256"),
+        "chronology": dict(chronology),
+    }
+
+
+def validate_promotion_journal_post_v2(value: object, *, pre: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate a durable POST outcome against its exact PRE intent."""
+    keys = {
+        "schema_version", "kind", "status", "evidence_id", "completed_at",
+        "promotion_manifest", "catalog_receipt", "candidate_set_sha256",
+        "inserted", "conflicts", "backup_ref", "db_pre_sha256", "db_post_sha256",
+        "chronology",
+    }
+    post = _require_exact_keys(value, keys, "promotion journal POST")
+    if (post["schema_version"], post["kind"], post["status"]) != (2, "promotion_journal", "POST"):
+        raise EvidenceSchemaError("promotion journal POST must be strict v2")
+    validated_pre = validate_promotion_journal_pre_v2(pre)
+    if post["evidence_id"] != validated_pre["evidence_id"]:
+        raise EvidenceSchemaError("promotion journal POST evidence_id does not match PRE")
+    if post["promotion_manifest"] != validated_pre["promotion_manifest"]:
+        raise EvidenceSchemaError("promotion journal POST manifest does not match PRE")
+    if post["catalog_receipt"] != validated_pre["catalog_receipt"]:
+        raise EvidenceSchemaError("promotion journal POST catalog receipt does not match PRE")
+    if post["candidate_set_sha256"] != validated_pre["candidate_set_sha256"]:
+        raise EvidenceSchemaError("promotion journal POST candidate set does not match PRE")
+    chronology = _require_exact_keys(
+        post["chronology"],
+        {"sealed_at", "issued_at", "consumed_at", "ledger_at", "pre_at", "post_at"},
+        "promotion journal POST chronology",
+    )
+    if {key: chronology[key] for key in validated_pre["chronology"]} != validated_pre["chronology"]:
+        raise EvidenceSchemaError("promotion journal POST chronology does not preserve PRE")
+    require_timestamp_order(
+        ("sealed_at", chronology["sealed_at"]),
+        ("issued_at", chronology["issued_at"]),
+        ("consumed_at", chronology["consumed_at"]),
+        ("ledger_at", chronology["ledger_at"]),
+        ("pre_at", chronology["pre_at"]),
+        ("post_at", chronology["post_at"]),
+    )
+    if post["completed_at"] != chronology["post_at"]:
+        raise EvidenceSchemaError("promotion journal POST completed_at must equal chronology.post_at")
+    if not isinstance(post["inserted"], list) or not isinstance(post["conflicts"], list):
+        raise EvidenceSchemaError("promotion journal POST outcomes must be lists")
+    expected = {candidate["name"]: candidate for candidate in validated_pre["candidate_set"]}
+    accounted: set[str] = set()
+    for index, item in enumerate(post["inserted"]):
+        item = _require_exact_keys(
+            item, {"name", "tables", "buy_sha256", "sell_sha256", "meta"},
+            f"promotion journal POST inserted[{index}]",
+        )
+        candidate = expected.get(item["name"])
+        if (candidate is None or item["tables"] != ["stockbuy", "stocksell"]
+                or item["buy_sha256"] != candidate["buy_sha256"]
+                or item["sell_sha256"] != candidate["sell_sha256"]
+                or item["name"] in accounted):
+            raise EvidenceSchemaError("promotion journal POST inserted does not bind PRE candidate")
+        accounted.add(item["name"])
+    for index, item in enumerate(post["conflicts"]):
+        item = _require_exact_keys(
+            item, {"name", "reason", "tables"}, f"promotion journal POST conflicts[{index}]")
+        if (item["name"] not in expected or item["name"] in accounted
+                or item["reason"] != "name_exists"
+                or item["tables"] != ["stockbuy", "stocksell"]):
+            raise EvidenceSchemaError("promotion journal POST conflict does not bind PRE candidate")
+        accounted.add(item["name"])
+    if accounted != set(expected):
+        raise EvidenceSchemaError("promotion journal POST must account for every PRE candidate")
+    require_full_sha256(post["db_pre_sha256"], "promotion journal POST db_pre_sha256")
+    require_full_sha256(post["db_post_sha256"], "promotion journal POST db_post_sha256")
+    backup_ref = post["backup_ref"]
+    if backup_ref is not None:
+        _require_exact_keys(backup_ref, {"path", "sha256"}, "promotion journal POST backup_ref")
+        require_full_sha256(backup_ref["sha256"], "promotion journal POST backup_ref.sha256")
+        if not isinstance(backup_ref["path"], str) or not backup_ref["path"]:
+            raise EvidenceSchemaError("promotion journal POST backup_ref.path must be non-empty")
+    return dict(post)
