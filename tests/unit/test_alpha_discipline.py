@@ -11,6 +11,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
+import hashlib
 import pytest
 
 from alpha_lab.discipline import evidence, ledger, lint, prereg, trials_report, windows
@@ -214,12 +215,34 @@ class TestAppendTrial:
         path.write_bytes(json.dumps(VALID_ROW, ensure_ascii=False).encode("utf-8"))
         ledger.append_trial(path=path, **_row(target="둘째 행"))
         assert len(ledger.read_all(path)) == 2  # 행 붙음 없음
+def _sealed_contract(*, roots, non_python=()) -> str:
+    contract = {
+        "schema_version": 2,
+        "hypothesis_id": "H-unit",
+        "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+        "primary_estimand": "mean spread",
+        "sample_floors": {"qualified": 2},
+        "multiplicity_family": "unit family",
+        "kill_rule": "non-positive effect",
+        "dependency_roots": list(roots),
+        "non_python_dependencies": list(non_python),
+    }
+    return "> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract, sort_keys=True) + "\n```\n"
+
+
+def _bindings(tmp_path):
+    input_file, result_file = tmp_path / "input.json", tmp_path / "result.json"
+    input_file.write_text('{"input": 1}\n', encoding="utf-8")
+    result_file.write_text('{"result": 1}\n', encoding="utf-8")
+    ref = lambda file: {"path": file.name, "sha256": hashlib.sha256(file.read_bytes()).hexdigest()}
+    return [ref(input_file)], [ref(result_file)], [{"name": "candidate-a", "sha256": "c" * 64}]
+
 def _v2_chain(tmp_path):
     tmp_path.mkdir(parents=True, exist_ok=True)
     doc = tmp_path / "prereg.md"
     code = tmp_path / "measure.py"
-    doc.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
     code.write_text("value = 1\n", encoding="utf-8")
+    doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
     seal = prereg.finalize_prereg(
         doc,
         repo_root=tmp_path,
@@ -267,12 +290,12 @@ def _v2_chain(tmp_path):
     }
     usage_path = tmp_path / "usage.json"
     usage_path.write_bytes(evidence.canonical_json_bytes(usage))
-    return receipt_path, usage_path
+    return receipt_path, usage_path, *_bindings(tmp_path)
 
 
 class TestLedgerV2:
     def test_append_v2_valid_identity_and_mixed_reading(self, tmp_path):
-        receipt_path, usage_path = _v2_chain(tmp_path)
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
         path = tmp_path / "ledger.jsonl"
         ledger.append_trial(path=path, **VALID_ROW)
         record = ledger.append_trial_v2(
@@ -280,6 +303,9 @@ class TestLedgerV2:
             repo_root=tmp_path,
             gate_receipt_path=receipt_path,
             gate_usage_path=usage_path,
+            input_artifacts=input_artifacts,
+            result_artifacts=result_artifacts,
+            candidate_set=candidate_set,
             **_row(ts="2026-07-14T00:03:00"),
         )
         assert list(record) == list(ledger.V2_REQUIRED_KEYS)
@@ -287,7 +313,7 @@ class TestLedgerV2:
         assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
 
     def test_append_v2_rejects_usage_mismatch_and_changed_code(self, tmp_path):
-        receipt_path, usage_path = _v2_chain(tmp_path)
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
         usage = json.loads(usage_path.read_text(encoding="utf-8"))
         usage["receipt_id"] = "b" * 64
         usage_path.write_text(json.dumps(usage), encoding="utf-8")
@@ -296,10 +322,13 @@ class TestLedgerV2:
                 repo_root=tmp_path,
                 gate_receipt_path=receipt_path,
                 gate_usage_path=usage_path,
+                input_artifacts=input_artifacts,
+                result_artifacts=result_artifacts,
+                candidate_set=candidate_set,
                 path=tmp_path / "ledger.jsonl",
                 **_row(),
             )
-        receipt_path, usage_path = _v2_chain(tmp_path / "second")
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path / "second")
         (tmp_path / "second" / "measure.py").write_text("value = 2\n", encoding="utf-8")
         with pytest.raises(ledger.LedgerSchemaError):
             ledger.append_trial_v2(
@@ -307,9 +336,47 @@ class TestLedgerV2:
                 gate_receipt_path=receipt_path,
                 gate_usage_path=usage_path,
                 path=tmp_path / "ledger2.jsonl",
+                input_artifacts=input_artifacts,
+                result_artifacts=result_artifacts,
+                candidate_set=candidate_set,
                 **_row(),
             )
 
+    def test_append_v2_rejects_artifact_tamper_and_candidate_mismatch(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        (tmp_path / "input.json").write_text('{"input": 2}\n', encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=candidates, path=tmp_path / "l.jsonl", **_row())
+        inputs, results, candidates = _bindings(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "sha256": "d" * 64}], path=tmp_path / "l.jsonl", **_row())
+
+    def test_append_v2_allows_empty_candidates_only_for_negative_kill(self, tmp_path):
+        receipt_path, usage_path, inputs, results, _ = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], path=tmp_path / "l.jsonl", **_row())
+        record = ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], negative_or_kill=True, path=tmp_path / "l.jsonl", **_row())
+        assert record["evidence"]["candidate_set_sha256"] == evidence.sha256_canonical([])
+
+
+class TestStrictV1Reads:
+    @pytest.mark.parametrize("bad", [
+        {**VALID_ROW, "extra": "no"},
+        _row(target=1),
+        _row(ts="not-a-timestamp"),
+        _row(trial_type="d(disallowed)"),
+    ])
+    def test_malformed_v1_rows_fail_closed(self, tmp_path, bad):
+        path = tmp_path / "ledger.jsonl"
+        path.write_text(json.dumps(bad, ensure_ascii=False) + "\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.read_all(path)
+
+    def test_valid_historical_v1_roundtrip(self, tmp_path):
+        path = tmp_path / "ledger.jsonl"
+        raw = json.dumps(VALID_ROW, ensure_ascii=False)
+        path.write_text(raw + "\n", encoding="utf-8")
+        assert ledger._serialize(ledger.read_all(path)[0]) == raw
     def test_malformed_v2_read_fails_closed_with_line_number(self, tmp_path):
         path = tmp_path / "ledger.jsonl"
         broken = {
@@ -461,7 +528,7 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
         sealed = tmp_path / "sealed.md"
-        sealed.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
+        sealed.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
         sidecar = tmp_path / "seal.json"
         prereg.finalize_prereg(
             sealed,
@@ -481,7 +548,7 @@ class TestPrereg:
 
     def test_finalize_prereg_sorted_full_hashes_and_timezone_required(self, tmp_path):
         sealed = tmp_path / "prereg.md"
-        sealed.write_text("> 지위: **SEALED**\n완성본\n", encoding="utf-8")
+        sealed.write_text(_sealed_contract(roots=("a.py", "b.py")), encoding="utf-8")
         (tmp_path / "b.py").write_text("b = 1\n", encoding="utf-8")
         (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
         with pytest.raises(evidence.EvidenceSchemaError):
@@ -505,6 +572,23 @@ class TestPrereg:
             json.loads((tmp_path / "seal.json").read_text(encoding="utf-8")),
             repo_root=tmp_path,
         ) == seal
+    def test_finalize_prereg_rejects_missing_contract_field(self, tmp_path):
+        code = tmp_path / "measure.py"
+        code.write_text("value = 1\n", encoding="utf-8")
+        contract = {
+            "schema_version": 2,
+            "hypothesis_id": "H-unit",
+            "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+            "primary_estimand": "mean spread",
+            "sample_floors": {"qualified": 2},
+            "multiplicity_family": "unit family",
+            "dependency_roots": ["measure.py"],
+            "non_python_dependencies": [],
+        }
+        doc = tmp_path / "prereg.md"
+        doc.write_text("> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract) + "\n```\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(doc, repo_root=tmp_path, code_files=(code,), manifest_path=tmp_path / "seal.json", sealed_at="2026-07-14T00:00:00+00:00")
 
 
 # ---------------------------------------------------------------------------

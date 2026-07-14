@@ -33,6 +33,11 @@ class EvidenceIdentityV2(TypedDict):
     gate_receipt_id: str
     gate_receipt_sha256: str
     gate_usage_sha256: str
+    input_artifacts: list[dict[str, str]]
+    result_artifacts: list[dict[str, str]]
+    candidate_set: list[dict[str, str]]
+    candidate_set_sha256: str
+    negative_or_kill: bool
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -111,6 +116,38 @@ def _validate_manifest(value: object, field: str, repo_root: Path, *, verify_fil
     if paths != sorted(paths) or len(paths) != len(set(paths)):
         raise EvidenceSchemaError(f"{field} paths must be sorted and unique")
     return manifest
+def validate_measurement_bindings(
+    *,
+    input_artifacts: object,
+    result_artifacts: object,
+    candidate_set: object,
+    negative_or_kill: object,
+    repo_root: Path | str,
+    verify_files: bool = True,
+) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]], str]:
+    """Validate immutable measurement artifacts and the canonical candidate set."""
+    root = Path(repo_root).resolve()
+    inputs = _validate_manifest(input_artifacts, "input_artifacts", root, verify_files=verify_files)
+    results = _validate_manifest(result_artifacts, "result_artifacts", root, verify_files=verify_files)
+    if not isinstance(candidate_set, list):
+        raise EvidenceSchemaError("candidate_set must be a list")
+    candidates: list[dict[str, str]] = []
+    for index, item in enumerate(candidate_set):
+        candidate = _require_exact_keys(item, {"name", "sha256"}, f"candidate_set[{index}]")
+        name = candidate["name"]
+        if not isinstance(name, str) or not name.strip():
+            raise EvidenceSchemaError(f"candidate_set[{index}].name must be non-empty")
+        candidates.append(
+            {"name": name, "sha256": require_full_sha256(candidate["sha256"], f"candidate_set[{index}].sha256")}
+        )
+    names = [candidate["name"] for candidate in candidates]
+    if names != sorted(names) or len(names) != len(set(names)):
+        raise EvidenceSchemaError("candidate_set names must be sorted and unique")
+    if not isinstance(negative_or_kill, bool):
+        raise EvidenceSchemaError("negative_or_kill must be boolean")
+    if not candidates and not negative_or_kill:
+        raise EvidenceSchemaError("candidate_set may be empty only for a negative_or_kill measurement")
+    return inputs, results, candidates, sha256_canonical(candidates)
 
 
 def validate_prereg_seal(value: object, *, repo_root: Path | str, verify_files: bool = True) -> PreregSealV2:
@@ -186,9 +223,26 @@ def validate_gate_usage(value: object, *, receipt: Mapping[str, Any]) -> dict[st
     return dict(usage)
 
 
-def build_evidence_identity(receipt: Mapping[str, Any], usage: Mapping[str, Any]) -> tuple[str, EvidenceIdentityV2]:
+def build_evidence_identity(
+    receipt: Mapping[str, Any],
+    usage: Mapping[str, Any],
+    *,
+    input_artifacts: object,
+    result_artifacts: object,
+    candidate_set: object,
+    negative_or_kill: object,
+    repo_root: Path | str,
+) -> tuple[str, EvidenceIdentityV2]:
+    """Build an evidence identity bound to gate, measurement artifacts, and candidates."""
     receipt_dict = dict(receipt)
     usage_dict = validate_gate_usage(usage, receipt=receipt_dict)
+    inputs, results, candidates, candidate_set_sha256 = validate_measurement_bindings(
+        input_artifacts=input_artifacts,
+        result_artifacts=result_artifacts,
+        candidate_set=candidate_set,
+        negative_or_kill=negative_or_kill,
+        repo_root=repo_root,
+    )
     identity: EvidenceIdentityV2 = {
         "prereg_sha256": require_full_sha256(receipt_dict.get("prereg", {}).get("sha256") if isinstance(receipt_dict.get("prereg"), dict) else None, "prereg_sha256"),
         "seal_manifest_sha256": require_full_sha256(receipt_dict.get("seal_manifest", {}).get("sha256") if isinstance(receipt_dict.get("seal_manifest"), dict) else None, "seal_manifest_sha256"),
@@ -196,5 +250,10 @@ def build_evidence_identity(receipt: Mapping[str, Any], usage: Mapping[str, Any]
         "gate_receipt_id": require_full_sha256(receipt_dict.get("receipt_id"), "gate_receipt_id"),
         "gate_receipt_sha256": sha256_canonical(receipt_dict),
         "gate_usage_sha256": sha256_canonical(usage_dict),
+        "input_artifacts": inputs,
+        "result_artifacts": results,
+        "candidate_set": candidates,
+        "candidate_set_sha256": candidate_set_sha256,
+        "negative_or_kill": negative_or_kill,
     }
     return sha256_canonical(identity), identity

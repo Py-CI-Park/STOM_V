@@ -30,6 +30,7 @@ from alpha_lab.discipline.evidence import (
     sha256_canonical,
     validate_gate_receipt,
     validate_gate_usage,
+    validate_measurement_bindings,
 )
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -66,6 +67,7 @@ class LedgerSchemaError(Exception):
 def _serialize(record: dict) -> str:
     """Serialize v1 byte-compatibly and v2 with its appended contract keys."""
     if record.get("schema_version", 1) in (None, 1):
+        _validate_v1_record(record)
         ordered = {key: record[key] for key in REQUIRED_KEYS}
     elif record.get("schema_version") == 2:
         _validate_v2_record(record)
@@ -95,6 +97,10 @@ def _validate_schema(record: dict) -> None:
             f"trial_type은 a/b/c로 시작해야 합니다(예: 'b(오프라인 봉인 판정)'). "
             f"type-d 등 신설은 원장 §5 규약 개정으로만: {record['trial_type']!r}"
         )
+def _validate_v1_record(record: object) -> None:
+    if not isinstance(record, dict) or set(record) != set(REQUIRED_KEYS):
+        raise LedgerSchemaError("필수 키 누락 또는 추가 키 존재: v1 ledger row must contain exactly the seven required keys")
+    _validate_schema(record)
 def _validate_v2_record(record: dict) -> None:
     if set(record) != set(V2_REQUIRED_KEYS):
         raise LedgerSchemaError(f"v2 ledger row has invalid keys: {sorted(record)!r}")
@@ -107,18 +113,26 @@ def _validate_v2_record(record: dict) -> None:
         raise LedgerSchemaError(str(exc)) from exc
     evidence = record["evidence"]
     identity_keys = {
-        "prereg_sha256",
-        "seal_manifest_sha256",
-        "code_manifest_sha256",
-        "gate_receipt_id",
-        "gate_receipt_sha256",
-        "gate_usage_sha256",
+        "prereg_sha256", "seal_manifest_sha256", "code_manifest_sha256",
+        "gate_receipt_id", "gate_receipt_sha256", "gate_usage_sha256",
+        "input_artifacts", "result_artifacts", "candidate_set", "candidate_set_sha256",
+        "negative_or_kill",
     }
     if not isinstance(evidence, dict) or set(evidence) != identity_keys:
         raise LedgerSchemaError("v2 ledger evidence has invalid keys")
     try:
-        for key in identity_keys:
+        for key in ("prereg_sha256", "seal_manifest_sha256", "code_manifest_sha256", "gate_receipt_id", "gate_receipt_sha256", "gate_usage_sha256", "candidate_set_sha256"):
             require_full_sha256(evidence[key], f"evidence.{key}")
+        inputs, results, candidates, candidate_hash = validate_measurement_bindings(
+            input_artifacts=evidence["input_artifacts"],
+            result_artifacts=evidence["result_artifacts"],
+            candidate_set=evidence["candidate_set"],
+            negative_or_kill=evidence["negative_or_kill"],
+            repo_root=_ROOT,
+            verify_files=False,
+        )
+        if inputs != evidence["input_artifacts"] or results != evidence["result_artifacts"] or candidates != evidence["candidate_set"] or candidate_hash != evidence["candidate_set_sha256"]:
+            raise LedgerSchemaError("v2 ledger measurement bindings are not canonical")
         if evidence_id != sha256_canonical(evidence):
             raise LedgerSchemaError("v2 ledger evidence_id does not match evidence")
     except EvidenceSchemaError as exc:
@@ -219,6 +233,10 @@ def append_trial_v2(
     repo_root: Path | str,
     gate_receipt_path: Path | str,
     gate_usage_path: Path | str,
+    input_artifacts: list[dict[str, str]],
+    result_artifacts: list[dict[str, str]],
+    candidate_set: list[dict[str, str]],
+    negative_or_kill: bool = False,
     path: Path | str | None = None,
     known_ok: bool = False,
 ) -> dict:
@@ -232,7 +250,15 @@ def append_trial_v2(
     try:
         receipt = validate_gate_receipt(receipt_value, repo_root=root)
         usage = validate_gate_usage(usage_value, receipt=receipt)
-        evidence_id, evidence = build_evidence_identity(receipt, usage)
+        evidence_id, evidence = build_evidence_identity(
+            receipt,
+            usage,
+            input_artifacts=input_artifacts,
+            result_artifacts=result_artifacts,
+            candidate_set=candidate_set,
+            negative_or_kill=negative_or_kill,
+            repo_root=root,
+        )
     except EvidenceSchemaError as exc:
         raise LedgerSchemaError(f"invalid v2 evidence chain: {exc}") from exc
     record = {
@@ -277,15 +303,19 @@ def read_all(path=None) -> list[dict]:
             raise LedgerSchemaError(
                 f"원장 {lineno}행 JSON 파싱 불가(fail-closed): {exc}"
             ) from exc
-        missing = [key for key in REQUIRED_KEYS if key not in record]
-        if missing:
-            raise LedgerSchemaError(f"원장 {lineno}행 필수 키 누락: {missing}")
+        if not isinstance(record, dict):
+            raise LedgerSchemaError(f"원장 {lineno}행 객체가 아닙니다")
         if record.get("schema_version", 1) == 2:
             try:
                 _validate_v2_record(record)
             except LedgerSchemaError as exc:
                 raise LedgerSchemaError(f"원장 {lineno}행 v2 스키마 위반: {exc}") from exc
-        elif record.get("schema_version", 1) not in (None, 1):
+        elif record.get("schema_version", 1) in (None, 1):
+            try:
+                _validate_v1_record(record)
+            except LedgerSchemaError as exc:
+                raise LedgerSchemaError(f"원장 {lineno}행 v1 스키마 위반: {exc}") from exc
+        else:
             raise LedgerSchemaError(
                 f"원장 {lineno}행 지원하지 않는 schema_version: {record.get('schema_version')!r}"
             )

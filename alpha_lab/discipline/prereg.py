@@ -15,8 +15,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import ast
 import hashlib
+import json
+import re
+from pathlib import Path, PurePosixPath
 
 from alpha_lab.discipline import windows
 from alpha_lab.discipline.evidence import (
@@ -32,6 +35,8 @@ DEFAULT_KILL_CRITERIA: tuple[str, ...] = (
     "kill-2(표본 하한 미달): 자격 표본이 §5 하한 미달 → inconclusive 종결(분모 제외, kill-1 아님)",
     "kill-3(재현 게이트): 스칼라/벡터 등가 대조 미달 → 해당 경로 금지, 전 경로 미달 시 중단",
 )
+_CONTRACT_FENCE = re.compile(r"```json prereg-contract-v2\s*\n(?P<contract>.*?)\n```", re.DOTALL)
+_CONTRACT_KEYS = {"schema_version", "hypothesis_id", "discovery_window", "primary_estimand", "sample_floors", "multiplicity_family", "kill_rule", "dependency_roots", "non_python_dependencies"}
 
 
 def _front_sections(params: dict) -> list[str]:
@@ -209,17 +214,105 @@ def write_skeleton(path, **kwargs) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
     return target
-def finalize_prereg(
-    doc_path: Path | str,
-    *,
-    repo_root: Path | str,
-    code_files: tuple[Path | str, ...],
-    manifest_path: Path | str,
-    sealed_at: str,
-) -> dict:
-    """Exclusively create a validated v2 sidecar for an already sealed prereg."""
-    root = Path(repo_root).resolve()
-    document = Path(doc_path).resolve()
+def _contract_repo_path(value: object, field: str, root: Path) -> str:
+    if not isinstance(value, str) or not value or "\\" in value or any(part in ("", ".", "..") for part in value.split("/")):
+        raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
+    path = PurePosixPath(value)
+    resolved = (root / Path(*path.parts)).resolve()
+    if path.is_absolute() or not resolved.is_file():
+        raise EvidenceSchemaError(f"{field} must name an existing repository file")
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise EvidenceSchemaError(f"{field} resolves outside repo_root") from exc
+    return path.as_posix()
+
+
+def _parse_contract(text: str, root: Path) -> dict:
+    matches = _CONTRACT_FENCE.findall(text)
+    if len(matches) != 1:
+        raise EvidenceSchemaError("preregistration requires exactly one prereg-contract-v2 JSON fence")
+    try:
+        contract = json.loads(matches[0])
+    except json.JSONDecodeError as exc:
+        raise EvidenceSchemaError("prereg-contract-v2 must contain valid JSON") from exc
+    if not isinstance(contract, dict) or set(contract) != _CONTRACT_KEYS or contract["schema_version"] != 2:
+        raise EvidenceSchemaError("prereg-contract-v2 has invalid keys or schema_version")
+    for field in ("hypothesis_id", "primary_estimand", "multiplicity_family", "kill_rule"):
+        if not isinstance(contract[field], str) or not contract[field].strip():
+            raise EvidenceSchemaError(f"{field} must be a non-empty string")
+    window = contract["discovery_window"]
+    if not isinstance(window, dict) or set(window) != {"start", "end"}:
+        raise EvidenceSchemaError("discovery_window must contain exactly start and end")
+    try:
+        windows.assert_measurement_window(window["start"], window["end"], "prereg contract")
+    except (TypeError, ValueError, windows.WindowViolation) as exc:
+        raise EvidenceSchemaError(f"invalid discovery_window: {exc}") from exc
+    floors = contract["sample_floors"]
+    if not isinstance(floors, dict) or not floors or any(not isinstance(name, str) or not name.strip() or not isinstance(floor, int) or isinstance(floor, bool) or floor <= 0 for name, floor in floors.items()):
+        raise EvidenceSchemaError("sample_floors must be a non-empty object of positive integer floors")
+    roots, dependencies = contract["dependency_roots"], contract["non_python_dependencies"]
+    if not isinstance(roots, list) or not roots or not isinstance(dependencies, list):
+        raise EvidenceSchemaError("dependency_roots must be non-empty and non_python_dependencies must be a list")
+    root_paths = [_contract_repo_path(item, f"dependency_roots[{index}]", root) for index, item in enumerate(roots)]
+    dependency_paths = [_contract_repo_path(item, f"non_python_dependencies[{index}]", root) for index, item in enumerate(dependencies)]
+    if any(not item.endswith(".py") for item in root_paths) or any(item.endswith(".py") for item in dependency_paths):
+        raise EvidenceSchemaError("dependency_roots must be Python and non_python_dependencies must not be Python")
+    if root_paths != sorted(root_paths) or len(set(root_paths)) != len(root_paths) or dependency_paths != sorted(dependency_paths) or len(set(dependency_paths)) != len(dependency_paths):
+        raise EvidenceSchemaError("declared dependency paths must be sorted and unique")
+    return contract
+
+
+def _module_file(root: Path, module: str) -> Path | None:
+    if not module:
+        return None
+    base = root.joinpath(*module.split("."))
+    for candidate in (base.with_suffix(".py"), base / "__init__.py"):
+        if candidate.is_file():
+            return candidate.resolve()
+    return None
+
+
+def _local_imports(path: Path, root: Path) -> set[Path]:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        raise EvidenceSchemaError(f"cannot parse dependency Python file {path}: {exc}") from exc
+    package = list(path.relative_to(root).parent.parts)
+    found: set[Path] = set()
+    for node in ast.walk(tree):
+        modules: list[str] = []
+        if isinstance(node, ast.Import):
+            modules = [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            prefix = package[:len(package) - node.level + 1] if node.level else []
+            if node.level and node.level > len(package) + 1:
+                raise EvidenceSchemaError(f"relative import escapes repo package: {path}")
+            base = prefix + (node.module.split(".") if node.module else [])
+            if base:
+                modules.append(".".join(base))
+            modules.extend(".".join(base + [alias.name]) for alias in node.names)
+        for module in modules:
+            candidate = _module_file(root, module)
+            if candidate is not None:
+                found.add(candidate)
+    return found
+
+
+def _derived_python_closure(root: Path, dependency_roots: list[str]) -> set[str]:
+    pending = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
+    closure: set[Path] = set()
+    while pending:
+        current = pending.pop()
+        if current not in closure:
+            closure.add(current)
+            pending.extend(_local_imports(current, root) - closure)
+    return {path.relative_to(root).as_posix() for path in closure}
+
+
+def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
+    """Create a v2 prereg seal after contract and dependency-closure validation."""
+    root, document = Path(repo_root).resolve(), Path(doc_path).resolve()
     try:
         doc_relative = document.relative_to(root).as_posix()
     except ValueError as exc:
@@ -229,45 +322,30 @@ def finalize_prereg(
     text = document.read_text(encoding="utf-8")
     if "> 지위: **SEALED**" not in text:
         raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
-    for marker in ("봉인 전 초안", "(기입)", "(미주입"):
-        if marker in text:
-            raise EvidenceSchemaError(f"preregistration document retains draft marker: {marker}")
-    if not code_files:
-        raise EvidenceSchemaError("code_files must be non-empty")
-    manifest: list[dict[str, str]] = []
+    if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
+        raise EvidenceSchemaError("preregistration document retains draft marker")
+    contract = _parse_contract(text, root)
+    declared = []
     for index, code_file in enumerate(code_files):
         candidate = Path(code_file).resolve()
-        try:
-            relative = candidate.relative_to(root).as_posix()
-        except ValueError as exc:
-            raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
         if not candidate.is_file():
             raise EvidenceSchemaError(f"code_files[{index}] must name a file")
-        manifest.append(
-            {"path": relative, "sha256": hashlib.sha256(candidate.read_bytes()).hexdigest()}
-        )
-    manifest.sort(key=lambda item: item["path"])
-    if len({item["path"] for item in manifest}) != len(manifest):
+        try:
+            declared.append(candidate.relative_to(root).as_posix())
+        except ValueError as exc:
+            raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
+    if len(declared) != len(set(declared)):
         raise EvidenceSchemaError("code_files must resolve to unique paths")
-    seal = {
-        "schema_version": 2,
-        "kind": "prereg_seal",
-        "status": "SEALED",
-        "sealed_at": sealed_at,
-        "sealed_doc": {
-            "path": doc_relative,
-            "sha256": hashlib.sha256(document.read_bytes()).hexdigest(),
-        },
-        "code_manifest": manifest,
-    }
+    expected = _derived_python_closure(root, contract["dependency_roots"]) | set(contract["non_python_dependencies"])
+    if set(declared) != expected:
+        raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
+    manifest = [{"path": item, "sha256": hashlib.sha256((root / Path(*PurePosixPath(item).parts)).read_bytes()).hexdigest()} for item in sorted(expected)]
+    seal = {"schema_version": 2, "kind": "prereg_seal", "status": "SEALED", "sealed_at": sealed_at, "sealed_doc": {"path": doc_relative, "sha256": hashlib.sha256(document.read_bytes()).hexdigest()}, "code_manifest": manifest}
     validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
     output = Path(manifest_path)
     if output.exists():
         raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with open(output, "x", encoding="utf-8", newline="\n") as handle:
-            handle.write(canonical_json_bytes(validated).decode("utf-8"))
-    except FileExistsError:
-        raise
+    with open(output, "x", encoding="utf-8", newline="\n") as handle:
+        handle.write(canonical_json_bytes(validated).decode("utf-8"))
     return dict(validated)
