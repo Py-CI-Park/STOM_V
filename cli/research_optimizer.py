@@ -290,6 +290,22 @@ def _selected_candidate_count(actual_rowset_selection: dict[str, Any]) -> Any:
     return actual_rowset_selection.get('successful_candidate_count')
 
 
+def _failure_candidate_lineage(round_result: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        json_safe_value({
+            'strategy_name': candidate.get('strategy_name'),
+            'status': candidate.get('status'),
+            'fallback_used': candidate.get('fallback_used'),
+            'fallback_reason': candidate.get('fallback_reason'),
+            'source_candidate': candidate.get('source_candidate'),
+            'candidate_result': candidate.get('candidate_result'),
+            'promotion': candidate.get('promotion'),
+        })
+        for candidate in round_result.get('candidates') or []
+        if isinstance(candidate, dict)
+    ]
+
+
 def _failure_metadata(
     *,
     failed_round: int | None = None,
@@ -314,6 +330,7 @@ def _failure_metadata(
             if actual_selection
             else round_payload.get('selected_candidate_count')
         ),
+        'failed_candidate_lineage': _failure_candidate_lineage(round_payload),
     }
     for key in _ROUND_FAILURE_METADATA_KEYS:
         if key in {'requested_candidate_count', 'selected_candidate_count'}:
@@ -473,6 +490,7 @@ def run_wide_v2_optimizer(
 
             if round_result.get('status') != 'ok':
                 round_state['failure_message'] = round_result.get('message')
+                round_state['failed_candidate_lineage'] = _failure_candidate_lineage(round_result)
                 rounds.append(json_safe_value(round_state))
                 status = 'error'
                 stop_reason = _failure_stop_reason(round_result)
@@ -492,6 +510,7 @@ def run_wide_v2_optimizer(
                     rowset_stop_reason,
                     actual_rowset_selection,
                 )
+                round_state['failed_candidate_lineage'] = _failure_candidate_lineage(round_result)
                 rounds.append(json_safe_value(round_state))
                 status = 'error'
                 stop_reason = rowset_stop_reason

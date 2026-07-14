@@ -74,6 +74,10 @@ class TestConfigFromDictEquivalence:
         assert cfg.provider == "openrouter"
         assert not hasattr(cfg, "totally_unknown_key")
 
+    def test_unknown_strict_keys_are_rejected(self):
+        with pytest.raises(ValueError, match="unknown strict LoopConfig keys"):
+            config_from_dict({"strict_candidate_payload_v22": True})
+
 
 class TestConfigFromDictValidation:
     """경계 검증 — 명백히 잘못된 값은 ValueError."""

@@ -18,7 +18,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from ai_strategy_loop.controller.evidence_contract import CandidateIdentityV2
 from ai_strategy_loop.controller.telemetry import telemetry_contract
 
 # 계약 버전. 깨는 변경(필드 제거/타입 변경) 시 +1. seam의 단일 진실원.
@@ -52,6 +53,42 @@ class BestInfo(BaseModel):
     buy_name: Optional[str] = None
     sell_name: Optional[str] = None
 
+class CandidateIdentityV2Projection(BaseModel):
+    """Lossless API/state projection of the evidence-contract authority."""
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        populate_by_name=True,
+        serialize_by_alias=True,
+    )
+
+    run_id: str
+    gen_no: int
+    candidate_id: str
+    buy_body_sha256: str
+    sell_body_sha256: str
+    profile_sha256: str
+    config_sha256: str
+    data_sha256: str
+    cost_sha256: str
+    fill_sha256: str
+    schema_version: int = Field(11, alias="schema", serialization_alias="schema")
+    @model_validator(mode="after")
+    def _validate_evidence_contract(self) -> "CandidateIdentityV2Projection":
+        CandidateIdentityV2.from_dict(self.model_dump(by_alias=True))
+        return self
+
+    @classmethod
+    def from_identity(cls, identity: CandidateIdentityV2) -> "CandidateIdentityV2Projection":
+        return cls(**identity.to_dict())
+
+    def to_identity(self) -> CandidateIdentityV2:
+        return CandidateIdentityV2.from_dict(self.model_dump(by_alias=True))
+
+    def identity_dict(self) -> Dict[str, Any]:
+        return self.to_identity().to_dict()
+
+
 
 class WinnerInfo(BaseModel):
     """하드 게이트를 통과한 우승 세대 요약 (졸업/export 후보).
@@ -63,6 +100,7 @@ class WinnerInfo(BaseModel):
     score: Optional[float] = None
     buy_name: Optional[str] = None
     sell_name: Optional[str] = None
+    candidate_identity: Optional[CandidateIdentityV2Projection] = None
 
 
 class GenerationInfo(BaseModel):
@@ -102,6 +140,7 @@ class GenerationInfo(BaseModel):
     max_hold_count: float = 0.0
     # P2b-2 가정 루프 가시화 — generations.hypotheses_json 파싱. 토글 OFF/구 상태는 [].
     hypotheses: List[Dict[str, Any]] = Field(default_factory=list)
+    candidate_identity: Optional[CandidateIdentityV2Projection] = None
 
 
 class LatestInfo(BaseModel):

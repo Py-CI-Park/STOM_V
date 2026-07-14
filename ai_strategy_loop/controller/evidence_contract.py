@@ -75,6 +75,9 @@ __all__ = [
     "OUTCOME_GO",
     "OUTCOME_NO_GO",
     "OUTCOME_INDETERMINATE_EXTERNAL_EFFECT",
+    # G002 — approval/export candidate binding (additive, default unwired).
+    "CandidateIdentityV2",
+    "CANDIDATE_IDENTITY_V2_SCHEMA",
 ]
 
 
@@ -908,3 +911,59 @@ def compute_rendered_prompt_id(
 OUTCOME_GO = "GO"
 OUTCOME_NO_GO = "NO_GO"
 OUTCOME_INDETERMINATE_EXTERNAL_EFFECT = "INDETERMINATE_EXTERNAL_EFFECT"
+# ---------------------------------------------------------------------
+# G002 — immutable candidate identity for strict approval/export binding.
+# ---------------------------------------------------------------------
+
+CANDIDATE_IDENTITY_V2_SCHEMA = 11
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class CandidateIdentityV2:
+    """The complete immutable identity of an evaluated candidate.
+
+    This is evidence-contract authority. Dashboard/controller DTOs may only
+    project it losslessly; they must never reconstruct it from names or state.
+    """
+
+    run_id: str
+    gen_no: int
+    candidate_id: str
+    buy_body_sha256: str
+    sell_body_sha256: str
+    profile_sha256: str
+    config_sha256: str
+    data_sha256: str
+    cost_sha256: str
+    fill_sha256: str
+    schema: int = CANDIDATE_IDENTITY_V2_SCHEMA
+
+    def __post_init__(self) -> None:
+        set_ = object.__setattr__
+        set_(self, "run_id", _require_nonempty_str(self.run_id, "run_id"))
+        set_(self, "gen_no", _require_non_negative_int(self.gen_no, "gen_no"))
+        set_(self, "candidate_id", _require_id(
+            self.candidate_id, "candidate_id", ID_PREFIX_CANDIDATE
+        ))
+        for field_name in (
+            "buy_body_sha256",
+            "sell_body_sha256",
+            "profile_sha256",
+            "config_sha256",
+            "data_sha256",
+            "cost_sha256",
+            "fill_sha256",
+        ):
+            set_(self, field_name, _require_sha256(getattr(self, field_name), field_name))
+        set_(self, "schema", _require_non_negative_int(self.schema, "schema"))
+        if self.schema != CANDIDATE_IDENTITY_V2_SCHEMA:
+            raise ValueError(
+                f"candidate_identity_schema_must_equal:{CANDIDATE_IDENTITY_V2_SCHEMA}"
+            )
+
+    def to_dict(self) -> dict:
+        return _to_dict(self)
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "CandidateIdentityV2":
+        return _from_dict(cls, data)

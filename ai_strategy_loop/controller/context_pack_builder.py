@@ -242,6 +242,7 @@ def produce_research_candidate_pack(
     context_pack: Optional[Mapping[str, Any]] = None,
     final_owner_enabled: bool = False,
     methodology_version: str = "clr04_v1",
+    strict_candidate_payload_v2: bool = False,
 ) -> Optional[dict]:
     """Context Pack + pack_producer 로 research_candidate_pack 을 만든다.
 
@@ -265,7 +266,20 @@ def produce_research_candidate_pack(
         raw_lines = sources.get("axis_prompt_lines") if isinstance(sources, Mapping) else None
         lines = [str(line) for line in raw_lines] if raw_lines else None
     if not final_owner_enabled:
-        return produce_candidate_pack(context, provider, lanes=lanes, axis_prompt_lines=lines)
+        if strict_candidate_payload_v2:
+            return produce_candidate_pack(
+                context,
+                provider,
+                lanes=lanes,
+                axis_prompt_lines=lines,
+                strict_candidate_payload_v2=True,
+            )
+        return produce_candidate_pack(
+            context,
+            provider,
+            lanes=lanes,
+            axis_prompt_lines=lines,
+        )
     result = produce_candidate_pack_result(
         context,
         provider,
@@ -273,5 +287,6 @@ def produce_research_candidate_pack(
         axis_prompt_lines=lines,
         final_owner_enabled=True,
         methodology_version=methodology_version,
+        strict_candidate_payload_v2=strict_candidate_payload_v2,
     )
     return result["candidate_pack"]

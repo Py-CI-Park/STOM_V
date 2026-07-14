@@ -205,6 +205,8 @@ def _candidate_failure_reasons(
     *,
     default_timeframe: str | None = None,
     enforce_approved_b_only: bool = False,
+    strict_research_profile: bool = False,
+    approved_b_registry: ApprovedBRegistryV2 | None = None,
 ) -> list[str]:
     reasons: list[str] = []
     lane = candidate.get('lane')
@@ -220,8 +222,13 @@ def _candidate_failure_reasons(
         reasons.extend(_expression_leakage_reasons(expression))
         timeframe = _candidate_timeframe(candidate, default_timeframe)
         reasons.extend(_b_only_blocking_reasons(
-            expression, timeframe=timeframe, kind='buy', enforce_approved_b_only=enforce_approved_b_only,
+            expression, timeframe=timeframe, kind='buy',
+            enforce_approved_b_only=enforce_approved_b_only or strict_research_profile,
         ))
+        if strict_research_profile:
+            reasons.extend(_strict_registry_reasons(
+                candidate, expression=expression, timeframe=timeframe, registry=approved_b_registry,
+            ))
         if not is_raw_duplicate:
             fingerprint_reasons, _fingerprint = _semantic_fingerprint_reasons(
                 expression, timeframe=timeframe, seen_fingerprints=seen_fingerprints,
@@ -263,7 +270,12 @@ def _candidate_failure_reasons(
 
 
 def validate_multi_hypothesis_candidate_pack(
-    candidate_pack: dict, *, min_candidates: int = 2, enforce_approved_b_only: bool = False,
+    candidate_pack: dict,
+    *,
+    min_candidates: int = 2,
+    enforce_approved_b_only: bool = False,
+    strict_research_profile: bool = False,
+    approved_b_registry: ApprovedBRegistryV2 | None = None,
 ) -> dict:
     """Validate a side-effect-free LLM multi-hypothesis candidate pack."""
 
@@ -290,6 +302,10 @@ def validate_multi_hypothesis_candidate_pack(
     pack_default_timeframe = candidate_pack.get('timeframe')
     pack_id = candidate_pack.get('candidate_pack_id') or candidate_pack.get('pack_id') or ''
     pack_blockers = []
+    if strict_research_profile:
+        pack_blockers.extend(_strict_pack_profile_reasons(
+            candidate_pack, registry=approved_b_registry,
+        ))
     if candidate_pack.get('schema_version') not in (1, '1', None):
         pack_blockers.append('unsupported_schema_version')
     if _truthy_authority_paths(_pack_authority_scope(candidate_pack)):
@@ -306,6 +322,8 @@ def validate_multi_hypothesis_candidate_pack(
         reasons = _candidate_failure_reasons(
             candidate, seen_expressions, seen_fingerprints, default_timeframe=pack_default_timeframe,
             enforce_approved_b_only=enforce_approved_b_only,
+            strict_research_profile=strict_research_profile,
+            approved_b_registry=approved_b_registry,
         )
         expression = str(candidate.get('expression') or '').strip()
         if reasons:
@@ -392,6 +410,7 @@ class ApprovedBRegistryV2:
     approved_features: frozenset
     timeframe: str
     registry_id: str
+    registry_sha256: str = ''
 
     def contains(self, feature_name: str) -> bool:
         return feature_name in self.approved_features
@@ -408,8 +427,14 @@ def build_approved_b_registry(
     payload = json.dumps(
         {'timeframe': timeframe, 'approved_features': sorted(normalized)}, sort_keys=True,
     )
-    registry_id = 'b_registry_' + hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
-    return ApprovedBRegistryV2(approved_features=normalized, timeframe=timeframe, registry_id=registry_id)
+    registry_sha256 = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+    registry_id = 'b_registry_' + registry_sha256[:16]
+    return ApprovedBRegistryV2(
+        approved_features=normalized,
+        timeframe=timeframe,
+        registry_id=registry_id,
+        registry_sha256=registry_sha256,
+    )
 
 
 def reconcile_approved_b_features(
@@ -441,18 +466,93 @@ def reconcile_approved_b_features(
     return reasons
 
 
+def _strict_pack_profile_reasons(
+    candidate_pack: dict, *, registry: ApprovedBRegistryV2 | None,
+) -> list[str]:
+    """Validate strict-profile registry identity before any candidate is retained."""
+    reasons: list[str] = []
+    timeframe = candidate_pack.get('timeframe')
+    if timeframe in (None, ''):
+        reasons.append('strict_profile_missing_timeframe')
+    elif timeframe not in _KNOWN_TIMEFRAMES:
+        reasons.append(f'strict_profile_unknown_timeframe:{timeframe}')
+    if registry is None:
+        return reasons + ['strict_profile_missing_registry']
+    registry_id = candidate_pack.get('approved_b_registry_id')
+    registry_sha256 = candidate_pack.get('approved_b_registry_sha256')
+    if not registry_id:
+        reasons.append('strict_profile_missing_registry_id')
+    elif registry_id != registry.registry_id:
+        reasons.append('strict_profile_registry_id_mismatch')
+    if not registry_sha256:
+        reasons.append('strict_profile_missing_registry_sha256')
+    elif registry_sha256 != registry.registry_sha256:
+        reasons.append('strict_profile_registry_hash_mismatch')
+    if timeframe in _KNOWN_TIMEFRAMES and timeframe != registry.timeframe:
+        reasons.append('strict_profile_registry_timeframe_mismatch')
+    return reasons
+
+
+def _strict_registry_reasons(
+    candidate: dict,
+    *,
+    expression: str,
+    timeframe: str,
+    registry: ApprovedBRegistryV2 | None,
+) -> list[str]:
+    """Reject candidate-level leakage and registry divergence in strict research."""
+    reasons: list[str] = []
+    raw_timeframe = candidate.get('timeframe')
+    if raw_timeframe not in (None, '') and raw_timeframe not in _KNOWN_TIMEFRAMES:
+        reasons.append(f'strict_profile_unknown_candidate_timeframe:{raw_timeframe}')
+    if registry is None:
+        return reasons
+    registry_id = candidate.get('approved_b_registry_id')
+    registry_sha256 = candidate.get('approved_b_registry_sha256')
+    if registry_id and registry_id != registry.registry_id:
+        reasons.append('strict_profile_candidate_registry_id_mismatch')
+    if registry_sha256 and registry_sha256 != registry.registry_sha256:
+        reasons.append('strict_profile_candidate_registry_hash_mismatch')
+    reasons.extend(reconcile_approved_b_features(
+        expression, timeframe=timeframe, registry=registry,
+    ))
+    return reasons
+
+
+def validate_strict_research_candidate_pack(
+    candidate_pack: dict,
+    *,
+    approved_b_registry: ApprovedBRegistryV2,
+    min_candidates: int = 2,
+) -> dict:
+    """Fail closed on registry provenance, timeframe, unknown variables, and S_/R_ leakage."""
+    return validate_multi_hypothesis_candidate_pack(
+        candidate_pack,
+        min_candidates=min_candidates,
+        enforce_approved_b_only=True,
+        strict_research_profile=True,
+        approved_b_registry=approved_b_registry,
+    )
+
+
 def expression_result_from_candidate_pack(
     candidate_pack: dict,
     *,
     planned_count: int = 3,
     min_candidates: int = 2,
     enforce_approved_b_only: bool = False,
+    strict_research_profile: bool = False,
+    approved_b_registry: ApprovedBRegistryV2 | None = None,
 ) -> dict:
     # `enforce_approved_b_only` defaults to False (no behavior change). Flipping it on
     # hard-blocks `non_approved_variable` candidates and requires the timeframe-specific
     # approved-B_* registry to be reconciled first -- tracked as a CL-R07 prerequisite.
     validation = validate_multi_hypothesis_candidate_pack(
-        candidate_pack, min_candidates=min_candidates, enforce_approved_b_only=enforce_approved_b_only,
+        candidate_pack,
+        min_candidates=min_candidates,
+        enforce_approved_b_only=enforce_approved_b_only,
+        strict_research_profile=strict_research_profile,
+        approved_b_registry=approved_b_registry,
     )
     if not validation['valid']:
         return {

@@ -13,6 +13,7 @@ from cli.condition_generator import (
     mark_diagnostic_fallback,
     reconcile_approved_b_features,
     validate_multi_hypothesis_candidate_pack,
+    validate_strict_research_candidate_pack,
     save_condition_code,
 )
 
@@ -395,3 +396,46 @@ def test_mark_diagnostic_fallback_result_is_excluded_from_ai_performance_account
     fallback = mark_diagnostic_fallback(baseline, reason='llm_candidate_pack_missing')
     assert is_ai_performance_eligible(fallback) is False
     assert is_ai_performance_eligible(baseline) is True
+
+
+def _strict_pack(registry):
+    pack = _valid_candidate_pack()
+    pack['timeframe'] = registry.timeframe
+    pack['approved_b_registry_id'] = registry.registry_id
+    pack['approved_b_registry_sha256'] = registry.registry_sha256
+    return pack
+
+
+def test_strict_profile_rejects_unknown_registry_variable_and_result_leakage():
+    registry = build_approved_b_registry(['B_registered'], timeframe='min')
+    pack = _strict_pack(registry)
+    pack['candidates'][0]['expression'] = 'B_unknown > 1'
+    pack['candidates'][1]['expression'] = 'S_수익률 > 1'
+
+    validation = validate_strict_research_candidate_pack(
+        pack, approved_b_registry=registry,
+    )
+
+    failures = {
+        item['candidate']['hypothesis_id']: item['failure_reasons']
+        for item in validation['invalid_candidates']
+    }
+    assert 'registry_rejected_variable:B_unknown' in failures['A']
+    assert 'leaky_result_variable:S_수익률' in failures['B']
+
+
+def test_strict_profile_requires_matching_registry_hash_and_timeframe():
+    registry = build_approved_b_registry(['B_registered'], timeframe='min')
+    hash_mismatch = _strict_pack(registry)
+    hash_mismatch['approved_b_registry_sha256'] = 'not-the-registry-hash'
+    hash_validation = validate_strict_research_candidate_pack(
+        hash_mismatch, approved_b_registry=registry,
+    )
+    assert 'strict_profile_registry_hash_mismatch' in hash_validation['failure_reasons']
+
+    timeframe_mismatch = _strict_pack(registry)
+    timeframe_mismatch['timeframe'] = 'tick'
+    timeframe_validation = validate_strict_research_candidate_pack(
+        timeframe_mismatch, approved_b_registry=registry,
+    )
+    assert 'strict_profile_registry_timeframe_mismatch' in timeframe_validation['failure_reasons']

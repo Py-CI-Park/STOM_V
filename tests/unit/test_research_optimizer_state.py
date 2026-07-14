@@ -11,6 +11,7 @@ from cli.research_optimizer_state import (
     round_runtime_output_path,
     select_global_best_candidate,
 )
+from cli.research_ranking import select_strict_official_candidates
 
 
 def _candidate(name, expression, score, *, selected=False, status='ok', index=1):
@@ -59,6 +60,8 @@ def test_optimizer_config_defaults_are_mvp_safe():
     assert config.iteration_v2_mode == 'best_feature_mix_v5'
     assert config.iteration_v2_trade_amount_feature == 'B_당일거래대금'
     assert config.run_id == 'WideV2Run'
+    assert config.strict_research_profile is False
+    assert config.research_schema_version == 11
 
 
 def test_round_runtime_output_path_derives_round_specific_json():
@@ -232,3 +235,94 @@ def test_compute_improvement_returns_none_for_missing_or_non_finite_scores():
     assert compute_improvement({'adjusted_score': math.inf}, {'adjusted_score': 1.0}) is None
     assert compute_improvement({'adjusted_score': 2.0}, {'adjusted_score': math.nan}) is None
     assert compute_improvement({'promotion_score': None}, {'adjusted_score': 1.0}) is None
+
+
+def test_strict_official_selector_keeps_failed_and_fallback_candidates_advisory():
+    failed = _candidate('Failed', '현재가 > 1', 100, index=1)
+    failed['promotion'] = {'passed': False, 'score': 100}
+    fallback = _candidate('Fallback', '현재가 > 2', 99, index=2)
+    fallback['promotion'] = {'passed': True, 'score': 99}
+    fallback['fallback_used'] = True
+
+    result = select_strict_official_candidates([failed, fallback])
+
+    assert result['official_best_candidate'] is None
+    assert result['official_parent_candidate'] is None
+    assert result['best_advisory_candidate']['strategy_name'] == 'Failed'
+    assert result['official_authority'] == 0
+    assert result['stop_reason'] == 'NO_ELIGIBLE_PARENT'
+    assert {item['strategy_name'] for item in result['diagnostic_candidates']} == {'Failed', 'Fallback'}
+    assert {item['official_authority'] for item in result['diagnostic_candidates']} == {0}
+
+
+def test_strict_official_selector_returns_only_promotion_passed_candidate():
+    failed = _candidate('Failed', '현재가 > 1', 100, index=1)
+    failed['promotion'] = {'passed': False, 'score': 100}
+    eligible = _candidate('Eligible', '현재가 > 2', 1, index=2)
+    eligible['promotion'] = {'passed': True, 'score': 1}
+
+    result = select_strict_official_candidates([failed, eligible])
+
+    assert [item['strategy_name'] for item in result['official_eligible_candidates']] == ['Eligible']
+    assert result['official_best_candidate']['strategy_name'] == 'Eligible'
+    assert result['official_parent_candidate']['strategy_name'] == 'Eligible'
+    assert result['stop_reason'] is None
+
+
+def test_strict_official_selector_cannot_replace_canonical_final_owner():
+    canonical = _candidate('Canonical', '현재가 > 1', 1, index=1)
+    canonical.update({'promotion': {'passed': True, 'score': 1}, 'hypothesis_id': 'hyp-canonical'})
+    higher_scored_peer = _candidate('Peer', '현재가 > 2', 100, index=2)
+    higher_scored_peer.update({'promotion': {'passed': True, 'score': 100}, 'hypothesis_id': 'hyp-peer'})
+
+    result = select_strict_official_candidates(
+        [canonical, higher_scored_peer],
+        authoritative_candidate_id='hyp-canonical',
+    )
+
+    assert result['official_best_candidate']['strategy_name'] == 'Canonical'
+    assert result['authoritative_candidate_id'] == 'hyp-canonical'
+    peer_diagnostic = next(
+        item for item in result['diagnostic_candidates'] if item['strategy_name'] == 'Peer'
+    )
+    assert peer_diagnostic['reason'] == 'canonical_final_owner_mismatch'
+
+
+def test_strict_official_selector_rejects_nested_fallback_and_failed_result():
+    nested_fallback = _candidate('NestedFallback', '현재가 > 1', 10, index=1)
+    nested_fallback.update({
+        'promotion': {'passed': True, 'score': 10},
+        'candidate_result': {'status': 'ok', 'fallback_used': True},
+    })
+    nested_failure = _candidate('NestedFailure', '현재가 > 2', 9, index=2)
+    nested_failure.update({
+        'promotion': {'passed': True, 'score': 9},
+        'source_candidate': {'candidate_result': {'status': 'error'}},
+    })
+
+    result = select_strict_official_candidates([nested_fallback, nested_failure])
+
+    assert result['official_best_candidate'] is None
+    reasons = {
+        item['strategy_name']: item['reason']
+        for item in result['diagnostic_candidates']
+    }
+    assert reasons == {
+        'NestedFallback': 'diagnostic_fallback',
+        'NestedFailure': 'candidate_result_status_not_ok',
+    }
+
+
+def test_strict_official_selector_rejects_malformed_provenance_types():
+    malformed = _candidate('Malformed', '현재가 > 1', 10, index=1)
+    malformed.update({
+        'promotion': {'passed': True, 'score': 10},
+        'candidate_result': 'not-a-mapping',
+        'fallback_used': 'false',
+        'strict_response_validation': 'valid',
+    })
+
+    result = select_strict_official_candidates([malformed])
+
+    assert result['official_best_candidate'] is None
+    assert result['diagnostic_candidates'][0]['reason'] == 'candidate_result_invalid'

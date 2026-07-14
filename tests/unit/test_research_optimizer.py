@@ -439,6 +439,15 @@ def test_optimizer_maps_candidate_iteration_failure_to_runtime_failure():
             'status': 'error',
             'phase': 'candidate_iteration',
             'message': 'no candidate evaluated successfully',
+            'candidates': [{
+                'strategy_name': 'failed-fallback',
+                'status': 'error',
+                'fallback_used': True,
+                'fallback_reason': 'provider_failed',
+                'source_candidate': {'hypothesis_id': 'h-failed'},
+                'candidate_result': {'status': 'error'},
+                'promotion': {'passed': False},
+            }],
         }
     ]
 
@@ -469,6 +478,10 @@ def test_optimizer_maps_candidate_iteration_failure_to_runtime_failure():
     assert result['failure_phase'] == 'candidate_iteration'
     assert result['failure_message'] == 'no candidate evaluated successfully'
     assert result['rounds'][0]['failure_message'] == 'no candidate evaluated successfully'
+    lineage = result['rounds'][0]['failed_candidate_lineage']
+    assert lineage[0]['strategy_name'] == 'failed-fallback'
+    assert lineage[0]['fallback_used'] is True
+    assert result['failed_candidate_lineage'] == lineage
 
 
 def test_optimizer_maps_insufficient_retention_candidates_to_insufficient_candidates():

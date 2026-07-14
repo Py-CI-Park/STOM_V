@@ -42,6 +42,7 @@ from datetime import datetime, timezone  # noqa: E402
 from typing import Any, Callable, Deque, Dict, List, Optional, Tuple  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from ai_strategy_loop.controller.contract import CandidateIdentityV2Projection  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
 from cli.warm_session import WarmBacktestSession  # noqa: E402
 from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
@@ -51,6 +52,7 @@ from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     FEEDBACK_ENVELOPE_SCHEMA,
     RUN_RECEIPT_SCHEMA,
     CandidatePassport,
+    CandidateIdentityV2,
     canonical_json,
     EvaluationManifest,
     FeedbackConsumption,
@@ -899,6 +901,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
+            strict_candidate_payload_v2=getattr(
+                config, "strict_candidate_payload_v2", False
+            ),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}
@@ -1173,6 +1178,24 @@ def _publish_live(
         cumulative_tokens=cumulative_tokens,
         page_data=page_data_payload,
     )
+    if isinstance(_timing, dict):
+        identities = _timing.get("candidate_identities") or {}
+        identity_projections = {
+            gen_no: CandidateIdentityV2Projection.model_validate(identity)
+            for gen_no, identity in identities.items()
+        }
+        snapshot.generations = [
+            row.model_copy(
+                update={"candidate_identity": identity_projections[row.gen_no]}
+            )
+            if row.gen_no in identity_projections
+            else row
+            for row in snapshot.generations
+        ]
+        if snapshot.winner is not None and snapshot.winner.gen in identity_projections:
+            snapshot.winner = snapshot.winner.model_copy(
+                update={"candidate_identity": identity_projections[snapshot.winner.gen]}
+            )
     publish_loop_state(snapshot)
 
 
@@ -1370,6 +1393,24 @@ def run_loop(
         "active_step": None,
         "telemetry_buf": TelemetryRing(),
     }
+    if evidence_store is not None:
+        try:
+            restored_identities = {}
+            for payload in evidence_store.passports_for_run(rid):
+                passport = CandidatePassport.from_dict(payload)
+                manifest_payload = evidence_store.get_manifest(passport.manifest_id)
+                if manifest_payload is None:
+                    raise ValueError("candidate identity manifest missing on resume")
+                manifest = EvaluationManifest.from_dict(manifest_payload)
+                restored_identities[int(passport.gen_no)] = (
+                    _evidence_build_candidate_identity(
+                        config, rid, passport, manifest=manifest
+                    )
+                )
+            _timing["candidate_identities"] = restored_identities
+        except (TypeError, ValueError):
+            logger.exception("evidence: candidate identity resume restore failed")
+            _timing["candidate_identities"] = {}
 
     # warm 엔진 모드: 전체유니버스 엔진/데이터를 1회 prepare하고 세대마다 run()만 호출한다.
     #   prepare 실패(데이터 부재 등)는 cold(run_backtest_for) 경로로 자동 폴백한다.
@@ -1649,6 +1690,10 @@ def run_loop(
                     buy_name, sell_name, _evidence_buy_code, _evidence_sell_code,
                     evidence_prev_passport_id, evidence_manifest_id,
                 )
+                if evidence_manifest_id is not None:
+                    _timing.setdefault("candidate_identities", {})[gen_no] = (
+                        _evidence_build_candidate_identity(config, rid, _evidence_passport)
+                    )
                 # DR-04 -- run-wide AST/rowset dedup, BEFORE the backtest runs
                 #   (candidate_dedup_enabled=False keeps this a no-op; dedup_archive
                 #   stays None so nothing below ever executes -- byte-동일).
@@ -3212,6 +3257,33 @@ def _evidence_build_passport(
         ),
         created_at=_evidence_utc_now(),
     )
+
+
+def _evidence_build_candidate_identity(
+    config: Any,
+    run_id: str,
+    passport: CandidatePassport,
+    *,
+    manifest: Optional[EvaluationManifest] = None,
+) -> Dict[str, Any]:
+    identity_manifest = manifest or _evidence_build_manifest(config, run_id)
+    if (
+        identity_manifest.run_id != run_id
+        or identity_manifest.manifest_id != passport.manifest_id
+    ):
+        raise ValueError("candidate identity manifest binding mismatch")
+    return CandidateIdentityV2(
+        run_id=run_id,
+        gen_no=passport.gen_no,
+        candidate_id=passport.candidate_id,
+        buy_body_sha256=passport.buy_sha256,
+        sell_body_sha256=passport.sell_sha256,
+        profile_sha256=text_sha256(identity_manifest.profile),
+        config_sha256=identity_manifest.config_hash,
+        data_sha256=text_sha256(str(identity_manifest.data)),
+        cost_sha256=sha256_hex(canonical_json(identity_manifest.cost)),
+        fill_sha256=sha256_hex(canonical_json(identity_manifest.fill)),
+    ).to_dict()
 
 
 def _evidence_build_backtest_receipt(

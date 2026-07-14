@@ -27,6 +27,11 @@ from typing import Any, Callable, Dict, Optional, Tuple
 from . import token_check
 from .liquidity_gate import has_liquidity_gate
 from .prompt import build_messages, extract_code, render_messages
+from .candidate_output_contract import (
+    FULL_STRATEGY,
+    STRATEGY_SAVER_CONSUMER,
+    validate_candidate_payload,
+)
 from .token_check import DedupTracker
 from .variable_scope import check_variable_scope
 
@@ -94,6 +99,7 @@ def generate_strategy(
     card_directive_lines: Optional[list] = None,
     band_seed_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
+    strict_candidate_payload_v2: bool = False,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -221,6 +227,7 @@ def generate_strategy(
             feature_hint_lines=feature_hint_lines,
             card_directive_lines=card_directive_lines,
             band_seed_lines=band_seed_lines,
+            strict_candidate_payload_v2=strict_candidate_payload_v2,
         )
 
         # --- 1) LLM 호출 ---
@@ -334,7 +341,21 @@ def generate_strategy(
                 logger.info("prompt 로깅 실패(무시): %s", _e)
 
         # --- 2) 코드 추출 ---
-        code = extract_code(text)
+        if strict_candidate_payload_v2:
+            payload_validation = validate_candidate_payload(
+                text,
+                expected_output_kind=FULL_STRATEGY,
+                expected_side=kind,
+                expected_timeframe=timeframe,
+                expected_consumer=STRATEGY_SAVER_CONSUMER,
+            )
+            if not payload_validation["valid"]:
+                prior_error = payload_validation["failure_reason"]
+                logger.info("attempt %d: %s", attempt, prior_error)
+                continue
+            code = payload_validation["body"]
+        else:
+            code = extract_code(text)
         if not code:
             prior_error = "응답에서 코드 블록을 찾지 못함"
             logger.info("attempt %d: %s", attempt, prior_error)

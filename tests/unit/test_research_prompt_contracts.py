@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -20,7 +21,120 @@ from ai_strategy_loop.brain.prompt import (  # noqa: E402
     extract_code,
     validate_research_candidate_response,
 )
+from ai_strategy_loop.brain.candidate_output_contract import (  # noqa: E402
+    BUY_EXCLUSION_EXPR,
+    FULL_STRATEGY,
+    RESEARCH_FILTER_CONSUMER,
+    STRATEGY_SAVER_CONSUMER,
+    make_candidate_payload,
+    validate_candidate_payload,
+)
 
+def _payload_response(**kwargs):
+    import json
+
+    return f"```json\n{json.dumps(make_candidate_payload(**kwargs).as_dict(), ensure_ascii=False)}\n```"
+
+
+def test_candidate_payload_v2_rejects_cross_kind_side_timeframe_and_hash_before_admission():
+    common = {
+        "output_kind": FULL_STRATEGY,
+        "side": "buy",
+        "timeframe": "tick",
+        "body": "매수 = False\nif 매수:\n    self.Buy()",
+        "expected_consumer": STRATEGY_SAVER_CONSUMER,
+    }
+    response = _payload_response(**common)
+    assert validate_candidate_payload(
+        response,
+        expected_output_kind=FULL_STRATEGY,
+        expected_side="buy",
+        expected_timeframe="tick",
+        expected_consumer=STRATEGY_SAVER_CONSUMER,
+    )["valid"] is True
+
+    cases = [
+        (BUY_EXCLUSION_EXPR, "buy", "tick", RESEARCH_FILTER_CONSUMER, "candidate_payload_output_kind_mismatch"),
+        (FULL_STRATEGY, "sell", "tick", STRATEGY_SAVER_CONSUMER, "candidate_payload_side_mismatch"),
+        (FULL_STRATEGY, "buy", "min", STRATEGY_SAVER_CONSUMER, "candidate_payload_timeframe_mismatch"),
+        (FULL_STRATEGY, "buy", "tick", RESEARCH_FILTER_CONSUMER, "candidate_payload_cross_kind_consumer"),
+    ]
+    for output_kind, side, timeframe, consumer, reason in cases:
+        result = validate_candidate_payload(
+            _payload_response(
+                output_kind=output_kind, side=side, timeframe=timeframe,
+                body=common["body"], expected_consumer=consumer,
+            ),
+            expected_output_kind=FULL_STRATEGY,
+            expected_side="buy",
+            expected_timeframe="tick",
+            expected_consumer=STRATEGY_SAVER_CONSUMER,
+        )
+        assert reason in result["failure_reason"]
+
+    drift = make_candidate_payload(**common).as_dict()
+    drift["canonical_body_sha256"] = "0" * 64
+    result = validate_candidate_payload(
+        f"```json\n{__import__('json').dumps(drift, ensure_ascii=False)}\n```",
+        expected_output_kind=FULL_STRATEGY, expected_side="buy",
+        expected_timeframe="tick", expected_consumer=STRATEGY_SAVER_CONSUMER,
+    )
+    assert "candidate_payload_body_sha256_mismatch" in result["failure_reason"]
+
+
+def test_candidate_payload_v2_rejects_extra_content_duplicate_keys_and_unsafe_predicates():
+    common = {
+        "output_kind": BUY_EXCLUSION_EXPR,
+        "side": "buy",
+        "timeframe": "min",
+        "body": "B_거래대금 > 100",
+        "expected_consumer": RESEARCH_FILTER_CONSUMER,
+    }
+    valid = _payload_response(**common)
+    kwargs = {
+        "expected_output_kind": BUY_EXCLUSION_EXPR,
+        "expected_side": "buy",
+        "expected_timeframe": "min",
+        "expected_consumer": RESEARCH_FILTER_CONSUMER,
+    }
+
+    assert "candidate_payload_missing_or_extra_content" in validate_candidate_payload(
+        "설명\n" + valid, **kwargs
+    )["failure_reason"]
+
+    payload_json = json.dumps(make_candidate_payload(**common).as_dict(), ensure_ascii=False)
+    duplicate = payload_json.replace(
+        '"schema_version": 11',
+        '"schema_version": 11, "schema_version": 11',
+        1,
+    )
+    assert "candidate_payload_duplicate_key" in validate_candidate_payload(
+        f"```json\n{duplicate}\n```", **kwargs
+    )["failure_reason"]
+
+    for unsafe_body in ("self.Buy()", "B_거래대금", "__import__('os').system('echo unsafe')"):
+        assert "candidate_payload_invalid_boolean_predicate" in validate_candidate_payload(
+            _payload_response(**{**common, "body": unsafe_body}),
+            **kwargs,
+        )["failure_reason"]
+
+
+def test_v2_prompt_contract_is_rendered_consistently_in_system_and_user_messages():
+    messages = prompt_mod.build_messages(
+        "sell", timeframe="min", strict_candidate_payload_v2=True,
+    )
+    for message in messages:
+        assert "CandidatePayloadV2 output contract (mandatory)" in message["content"]
+        assert "output_kind must be 'full_strategy'; side must be 'sell'; timeframe must be 'min'." in message["content"]
+
+    repair = build_repair_research_messages(
+        "buy", timeframe="tick", parent_code="매수 = False",
+        analysis_card={"analysis_id": "a", "candidate_id": "p"},
+        strict_candidate_payload_v2=True,
+    )
+    for message in repair:
+        assert "output_kind must be 'buy_exclusion_expr'; side must be 'buy'; timeframe must be 'tick'." in message["content"]
+        assert "eval-mode Boolean predicate" in message["content"]
 def test_research_context_pack_includes_full_stom_sources_and_parent_hashes():
     parent_buy = "if 현재가 > 시가:\n    self.Buy()"
     parent_sell = "if 수익률 < -1:\n    self.Sell()"

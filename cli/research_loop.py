@@ -37,6 +37,7 @@ from ai_strategy_loop.controller.replay_profile import (
 )
 from ai_strategy_loop.fitness.slippage_profiles import slippage_profiles_from_csv
 from cli.condition_generator import (
+    build_approved_b_registry,
     expression_result_from_candidate_pack,
     generate_condition_expressions_from_analysis,
     mark_diagnostic_fallback,
@@ -77,6 +78,7 @@ from cli.research_ranking import (
     _rank_candidate_results,
     _rank_key,
     _rank_score,
+    select_strict_official_candidates,
 )
 from cli.research_retention import (
     annotate_candidate_retention,
@@ -217,6 +219,12 @@ class ResearchLoopConfig:
     # byte-동일) -- llm_candidate_pack_enabled 자체가 False면 이 플래그는 아무
     # 효과도 없다(팩 생산 자체가 스킵되므로).
     final_owner_selection_enabled: bool = False
+    # Validation-coupled strict profile. Default-OFF preserves legacy research.
+    # The approved feature tuple is reconciled into a content-addressed registry
+    # before any LLM candidate can reach strategy storage or evaluation.
+    strict_research_profile: bool = False
+    strict_candidate_payload_v2: bool = False
+    approved_b_features: tuple[str, ...] = ()
     # 변이축 효과 원장(JSONL) 경로. 설정 시 (a) LLM 팩 생산 프롬프트에 축
     # 사전확률 라인(AxisLedger.to_prompt_lines)을 주입하고, (b) 라운드 후보
     # 평가 완료 후 각 후보의 부모 대비 delta를 AxisLedger.record로 기록한다.
@@ -1023,6 +1031,23 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             condition_discovery_process=projection.get('process'),
             condition_discovery_preset=projection.get('preset'),
         )
+    if config.strict_research_profile:
+        missing_strict_contracts = [
+            name
+            for name, enabled in (
+                ('llm_candidate_pack_enabled', config.llm_candidate_pack_enabled),
+                ('strict_candidate_payload_v2', config.strict_candidate_payload_v2),
+                ('final_owner_selection_enabled', config.final_owner_selection_enabled),
+                ('approved_b_features', bool(config.approved_b_features)),
+            )
+            if not enabled
+        ]
+        if missing_strict_contracts:
+            return _error(
+                'strict_research_profile_incomplete',
+                'strict research profile requires an atomic typed candidate contract',
+                missing_strict_contracts=missing_strict_contracts,
+            )
     slots_override_error = _candidate_slots_override_error(config)
     if slots_override_error:
         # fail-closed: 슬롯 확장 opt-in 필드가 설정됐지만 유효하지 않으면
@@ -1472,6 +1497,9 @@ def _apply_llm_candidate_pack(
             lanes=_llm_pack_lanes(config),
             axis_prompt_lines=axis_lines or None,
             final_owner_enabled=bool(getattr(config, 'final_owner_selection_enabled', False)),
+            strict_candidate_payload_v2=bool(
+                getattr(config, 'strict_candidate_payload_v2', False)
+            ),
         )
     except Exception as exc:
         wiring['failure_reason'] = f'llm_pack_production_error:{exc}'
@@ -2554,6 +2582,8 @@ def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=N
     planned_candidate_count = _iteration_candidate_count(config, iteration_plan)
     research_loop_enabled = bool((iteration_plan.get('research_loop') or {}).get('enabled'))
     candidate_pack_result = {}
+    strict_profile = bool(getattr(config, 'strict_research_profile', False))
+    strict_authoritative_candidate_id = None
     if research_loop_enabled:
         candidate_pack = (
             analysis_result.get('research_candidate_pack')
@@ -2562,13 +2592,96 @@ def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=N
             or {}
         )
         if candidate_pack:
-            candidate_pack_result = expression_result_from_candidate_pack(
-                candidate_pack,
-                planned_count=planned_candidate_count,
-                min_candidates=2,
-            )
+            strict_profile = bool(getattr(config, 'strict_research_profile', False))
+            approved_registry = None
+            if strict_profile:
+                approved_registry = build_approved_b_registry(
+                    getattr(config, 'approved_b_features', ()),
+                    timeframe=str(candidate_pack.get('timeframe') or 'min'),
+                )
+                try:
+                    from ai_strategy_loop.brain.pack_producer import _candidate_pool_proposal
+                    from ai_strategy_loop.controller.candidate_pool import (
+                        select_official_candidate,
+                    )
+                    recomputed_owner_selection = select_official_candidate(
+                        [
+                            _candidate_pool_proposal(candidate)
+                            for candidate in candidate_pack.get('candidates') or []
+                        ],
+                        timeframe=str(candidate_pack.get('timeframe') or 'min'),
+                        methodology_version='clr04_v1',
+                    )
+                except (TypeError, ValueError):
+                    recomputed_owner_selection = None
+                final_owner_selection = candidate_pack.get('final_owner_selection')
+                if isinstance(final_owner_selection, dict):
+                    final_owner = final_owner_selection.get('selected')
+                    if isinstance(final_owner, dict):
+                        strict_authoritative_candidate_id = str(
+                            final_owner.get('candidate_id') or ''
+                        ).strip() or None
+                if strict_authoritative_candidate_id is None:
+                    candidate_pack_result = {
+                        'status': 'error',
+                        'source': 'llm_multi_hypothesis_candidate_pack',
+                        'fallback_used': False,
+                        'fallback_reason': 'canonical_final_owner_missing',
+                        'expressions': [],
+                        'selected_candidates': [],
+                        'candidate_count': 0,
+                    }
+                elif (
+                    recomputed_owner_selection is None
+                    or final_owner_selection != recomputed_owner_selection
+                    or final_owner_selection.get('pool_blockers')
+                ):
+                    strict_authoritative_candidate_id = None
+                    candidate_pack_result = {
+                        'status': 'error',
+                        'source': 'llm_multi_hypothesis_candidate_pack',
+                        'fallback_used': False,
+                        'fallback_reason': 'canonical_final_owner_provenance_mismatch',
+                        'expressions': [],
+                        'selected_candidates': [],
+                        'candidate_count': 0,
+                    }
+            if not candidate_pack_result:
+                candidate_pack_result = expression_result_from_candidate_pack(
+                    candidate_pack,
+                    planned_count=planned_candidate_count,
+                    min_candidates=2,
+                    strict_research_profile=strict_profile,
+                    approved_b_registry=approved_registry,
+                )
+            if (
+                strict_profile
+                and candidate_pack_result.get('status') == 'ok'
+                and strict_authoritative_candidate_id not in {
+                    str(candidate.get('hypothesis_id') or '')
+                    for candidate in candidate_pack_result.get('selected_candidates') or []
+                }
+            ):
+                candidate_pack_result = {
+                    **candidate_pack_result,
+                    'status': 'error',
+                    'fallback_reason': 'canonical_final_owner_not_admitted',
+                    'expressions': [],
+                    'selected_candidates': [],
+                    'candidate_count': 0,
+                }
     if candidate_pack_result.get('status') == 'ok':
         expression_result = candidate_pack_result
+    elif strict_profile:
+        expression_result = candidate_pack_result or {
+            'status': 'error',
+            'source': 'llm_multi_hypothesis_candidate_pack',
+            'fallback_used': False,
+            'fallback_reason': 'llm_candidate_pack_missing',
+            'expressions': [],
+            'selected_candidates': [],
+            'candidate_count': 0,
+        }
     else:
         expression_result = generate_condition_expressions_from_analysis(
             analysis_result,
@@ -3147,6 +3260,14 @@ def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=N
         ),
         None,
     )
+    strict_official_selection = None
+    if getattr(config, 'strict_research_profile', False):
+        strict_official_selection = select_strict_official_candidates(
+            ranked_candidates,
+            config,
+            authoritative_candidate_id=strict_authoritative_candidate_id,
+        )
+        best_candidate = strict_official_selection['official_best_candidate']
 
     has_best_candidate = best_candidate is not None
     axis_ledger_recording = _record_axis_ledger_entries(
@@ -3156,9 +3277,21 @@ def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=N
         baseline_result=baseline_result,
     )
     result_payload = {
-        'status': 'ok' if has_best_candidate else 'error',
+        'status': (
+            'ok'
+            if has_best_candidate
+            else ('no_improvement' if strict_official_selection is not None else 'error')
+        ),
         'phase': 'candidates_evaluated' if has_best_candidate else 'candidate_iteration',
-        'message': None if has_best_candidate else 'no candidate evaluated successfully',
+        'message': (
+            None
+            if has_best_candidate
+            else (
+                'NO_ELIGIBLE_PARENT'
+                if strict_official_selection is not None
+                else 'no candidate evaluated successfully'
+            )
+        ),
         'strategy_name': config.name,
         'config': asdict(config),
         'baseline_csv': baseline_csv,
@@ -3174,6 +3307,11 @@ def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=N
         'candidates': ranked_candidates,
         'best_candidate': best_candidate,
         'actual_rowset_selection': actual_rowset_selection,
+        **(
+            {'strict_official_selection': strict_official_selection}
+            if strict_official_selection is not None
+            else {}
+        ),
         **_v5_candidate_pool_metadata(iteration_v5, retention_selection),
         'cleanup_summary': cleanup_summary,
         'failure_policy': failure_policy,

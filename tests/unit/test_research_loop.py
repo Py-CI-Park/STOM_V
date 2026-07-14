@@ -117,6 +117,9 @@ def test_research_loop_config_has_iteration_fields():
     assert 'candidate_name_prefix' in names
     assert 'cleanup_best_candidate' in names
     assert 'keep_loser_candidates' in names
+    assert 'strict_research_profile' in names
+    assert 'strict_candidate_payload_v2' in names
+    assert 'approved_b_features' in names
 
 
 def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
@@ -149,6 +152,39 @@ def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
         )
     )
     assert invalid_count['phase'] == 'invalid_candidate_count'
+
+
+def test_strict_research_profile_requires_atomic_candidate_contract(tmp_path):
+    incomplete = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='StrictIncomplete',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            strict_research_profile=True,
+        )
+    )
+    assert incomplete['phase'] == 'strict_research_profile_incomplete'
+    assert set(incomplete['missing_strict_contracts']) == {
+        'llm_candidate_pack_enabled',
+        'strict_candidate_payload_v2',
+        'final_owner_selection_enabled',
+        'approved_b_features',
+    }
+
+    complete = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='StrictComplete',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            run_candidate=False,
+            strict_research_profile=True,
+            strict_candidate_payload_v2=True,
+            llm_candidate_pack_enabled=True,
+            final_owner_selection_enabled=True,
+            approved_b_features=('B_시가총액',),
+        )
+    )
+    assert complete['status'] == 'ok'
 
 
 def test_promotion_review_blocks_all_research_loop_generation_modes(tmp_path):

@@ -118,7 +118,11 @@ def _rank_score(candidate: dict) -> dict:
         )
         if strict_validation:
             score['prompt_validation'] = strict_validation
-        candidate_result = candidate.get('candidate_result') or {}
+        candidate_result = (
+            candidate.get('candidate_result')
+            if isinstance(candidate.get('candidate_result'), dict)
+            else {}
+        )
         score['official_backtest_result'] = {
             'status': candidate_result.get('status') or candidate.get('status'),
             'promotion_passed': score['promotion_passed'],
@@ -187,3 +191,138 @@ def _rank_candidate_results(
             best_candidate = candidate
 
     return ranked_candidates, best_candidate
+
+
+def _direct_promotion_passed(candidate: dict) -> bool:
+    """Strict authority is based on the candidate's own promotion receipt only."""
+    promotion = candidate.get('promotion')
+    return isinstance(promotion, dict) and promotion.get('passed') is True
+
+
+def _strict_candidate_blockers(candidate: dict) -> list[str]:
+    blockers = []
+
+    def mappings(value):
+        if isinstance(value, dict):
+            yield value
+            for child in value.values():
+                yield from mappings(child)
+        elif isinstance(value, (list, tuple)):
+            for child in value:
+                yield from mappings(child)
+
+    containers = list(mappings(candidate))
+    if candidate.get('status') != 'ok':
+        blockers.append('candidate_status_not_ok')
+    if any(
+        'candidate_result' in container
+        and not isinstance(container.get('candidate_result'), dict)
+        for container in containers
+    ):
+        blockers.append('candidate_result_invalid')
+    if any(
+        isinstance(container.get('candidate_result'), dict)
+        and container['candidate_result'].get('status') not in (None, 'ok')
+        for container in containers
+    ):
+        blockers.append('candidate_result_status_not_ok')
+    if any(
+        'fallback_used' in container
+        and not isinstance(container.get('fallback_used'), bool)
+        for container in containers
+    ):
+        blockers.append('fallback_provenance_invalid')
+    if any(container.get('fallback_used') is True for container in containers):
+        blockers.append('diagnostic_fallback')
+    if any(
+        'strict_response_validation' in container
+        and not isinstance(container.get('strict_response_validation'), dict)
+        for container in containers
+    ):
+        blockers.append('strict_response_validation_invalid')
+    if any(
+        isinstance(container.get('strict_response_validation'), dict)
+        and container['strict_response_validation'].get('valid') is not True
+        for container in containers
+    ):
+        blockers.append('strict_response_invalid')
+    if not _direct_promotion_passed(candidate):
+        blockers.append('promotion_not_passed')
+    return blockers
+
+
+def select_strict_official_candidates(
+    candidates: list[dict],
+    config=None,
+    *,
+    authoritative_candidate_id: str | None = None,
+) -> dict:
+    """Separate strict selector for official-parent authority.
+
+    The legacy ranking API intentionally keeps its advisory ordering behavior.
+    This selector exposes no official parent unless the candidate's direct
+    promotion receipt explicitly says ``passed is True``. When the canonical
+    proposal selector supplied an identity, only that candidate may become the
+    official parent; the CLI must not silently elect a different proposal.
+    """
+    ranked_candidates, _ = _rank_candidate_results(candidates, config)
+    official_candidates = [
+        candidate
+        for candidate in ranked_candidates
+        if (
+            not _strict_candidate_blockers(candidate)
+            and (
+                authoritative_candidate_id is None
+                or _research_metadata_value(candidate, 'hypothesis_id')
+                == authoritative_candidate_id
+            )
+        )
+    ]
+    official_candidates.sort(key=_rank_key)
+    official_best_candidate = official_candidates[0] if official_candidates else None
+    advisory_candidates = [
+        candidate
+        for candidate in ranked_candidates
+        if (
+            candidate not in official_candidates
+            and candidate.get('status') == 'ok'
+            and 'diagnostic_fallback' not in _strict_candidate_blockers(candidate)
+        )
+    ]
+    advisory_candidates.sort(key=_rank_key)
+    best_advisory_candidate = advisory_candidates[0] if advisory_candidates else None
+    diagnostics = [
+        {
+            'strategy_name': candidate.get('strategy_name'),
+            'index': candidate.get('index'),
+            'reason': (
+                'canonical_final_owner_mismatch'
+                if (
+                    authoritative_candidate_id is not None
+                    and _research_metadata_value(candidate, 'hypothesis_id')
+                    != authoritative_candidate_id
+                )
+                else (
+                    _strict_candidate_blockers(candidate)[0]
+                    if _strict_candidate_blockers(candidate)
+                    else 'advisory_only'
+                )
+            ),
+            'official_authority': 0,
+        }
+        for candidate in ranked_candidates
+        if candidate not in official_candidates
+    ]
+    return {
+        'schema_version': 11,
+        'ranked_candidates': ranked_candidates,
+        'official_eligible_candidates': official_candidates,
+        'advisory_candidates': advisory_candidates,
+        'official_best_candidate': official_best_candidate,
+        'official_parent_candidate': official_best_candidate,
+        'best_advisory_candidate': best_advisory_candidate,
+        'diagnostic_candidates': diagnostics,
+        'official_authority': 1 if official_best_candidate is not None else 0,
+        'authoritative_candidate_id': authoritative_candidate_id,
+        'stop_reason': None if official_best_candidate is not None else 'NO_ELIGIBLE_PARENT',
+    }

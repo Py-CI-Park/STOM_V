@@ -214,6 +214,7 @@ def test_append_full_chain_and_query_by_run_gen_id(tmp_path):
         store.append_receipt(receipt)
 
         assert store.get_passport(passport.passport_id) == passport.to_dict()
+        assert store.get_manifest(manifest.manifest_id) == manifest.to_dict()
         by_run = store.passports_for_run("run-1")
         assert {p["passport_id"] for p in by_run} == {passport.passport_id, target.passport_id}
         by_gen = store.passports_for_gen("run-1", 0)

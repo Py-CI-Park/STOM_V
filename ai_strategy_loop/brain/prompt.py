@@ -20,6 +20,13 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from ai_strategy_loop.controller.evidence_contract import compute_rendered_prompt_id
 from .time_cap_bucket import time_cap_bucket_prompt_lines
+from .candidate_output_contract import (
+    BUY_EXCLUSION_EXPR,
+    FULL_STRATEGY,
+    RESEARCH_FILTER_CONSUMER,
+    STRATEGY_SAVER_CONSUMER,
+    render_candidate_payload_contract,
+)
 
 # v1 자산 디렉토리 (저장소 고정 위치).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -658,12 +665,15 @@ def build_repair_research_messages(
     analysis_card: Mapping[str, Any],
     research_context_pack: Optional[Mapping[str, Any]] = None,
     prompt_version: str = REPAIR_RESEARCH_PROMPT_VERSION,
+    strict_candidate_payload_v2: bool = False,
 ) -> List[Dict[str, str]]:
     """Build a strict one-analysis-card/one-axis repair prompt."""
 
     _validate_kind_and_timeframe(kind, timeframe)
     if prompt_version != REPAIR_RESEARCH_PROMPT_VERSION:
         raise ValueError(f"unsupported repair prompt_version: {prompt_version!r}")
+    if strict_candidate_payload_v2 and kind != "buy":
+        raise ValueError("buy_exclusion_expr research payloads require kind='buy'")
     label = _kind_label(kind)
     metadata_contract = {
         "schema_version": 1,
@@ -686,11 +696,35 @@ def build_repair_research_messages(
         else []
     )
     user = "\n".join([
-        f"STOM {label['ko']}전략 repair 후보를 하나만 작성하라.",
-        "입력은 부모 전략 1개와 분석 카드 1개다. 전면 재작성 금지.",
+        (
+            f"STOM {label['ko']}전략 repair 후보를 하나만 작성하라."
+            if not strict_candidate_payload_v2
+            else "부모 전략의 단일 원인을 겨냥하는 매수 제외 Boolean predicate 하나만 작성하라."
+        ),
+        (
+            "입력은 부모 전략 1개와 분석 카드 1개다. 전면 재작성 금지."
+            if not strict_candidate_payload_v2
+            else "입력 부모 전략은 근거 전용이다. 전략 본문·주문문·함수 호출을 출력하지 마라."
+        ),
         "분석 카드의 원인 1개만 고치고, 변경 축도 1개만 허용한다.",
-        "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다.",
-        "metadata는 lane/prompt_version/kind/timeframe/parent_id/analysis_card_id/intended_hypothesis/risk_note를 포함한다.",
+        (
+            "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다."
+            if not strict_candidate_payload_v2
+            else "응답 형식은 CandidatePayloadV2 JSON 객체 하나만 허용한다."
+        ),
+        (
+            "metadata는 lane/prompt_version/kind/timeframe/parent_id/analysis_card_id/intended_hypothesis/risk_note를 포함한다."
+            if not strict_candidate_payload_v2 else ""
+        ),
+        *(
+            [render_candidate_payload_contract(
+                output_kind=BUY_EXCLUSION_EXPR,
+                side="buy",
+                timeframe=timeframe,
+                expected_consumer=RESEARCH_FILTER_CONSUMER,
+            )]
+            if strict_candidate_payload_v2 else []
+        ),
         *context_lines,
         "분석 카드:",
         f"```json\n{_format_json_block(dict(analysis_card))}\n```",
@@ -698,10 +732,18 @@ def build_repair_research_messages(
         "부모 전략:",
         f"```python\n{parent_code}\n```",
         "",
-        "metadata 예시:",
-        f"```json\n{_format_json_block(metadata_contract)}\n```",
+        "metadata 예시:" if not strict_candidate_payload_v2 else "",
+        f"```json\n{_format_json_block(metadata_contract)}\n```" if not strict_candidate_payload_v2 else "",
     ])
-    return [{"role": "system", "content": _build_system_message()}, {"role": "user", "content": user}]
+    system_content = _build_system_message()
+    if strict_candidate_payload_v2:
+        system_content += "\n\n" + render_candidate_payload_contract(
+            output_kind=BUY_EXCLUSION_EXPR,
+            side="buy",
+            timeframe=timeframe,
+            expected_consumer=RESEARCH_FILTER_CONSUMER,
+        )
+    return [{"role": "system", "content": system_content}, {"role": "user", "content": user}]
 
 
 def build_discovery_research_messages(
@@ -712,12 +754,15 @@ def build_discovery_research_messages(
     novelty_context: Mapping[str, Any],
     research_context_pack: Optional[Mapping[str, Any]] = None,
     prompt_version: str = DISCOVERY_RESEARCH_PROMPT_VERSION,
+    strict_candidate_payload_v2: bool = False,
 ) -> List[Dict[str, str]]:
     """Build a strict one-gap/one-candidate discovery prompt."""
 
     _validate_kind_and_timeframe(kind, timeframe)
     if prompt_version != DISCOVERY_RESEARCH_PROMPT_VERSION:
         raise ValueError(f"unsupported discovery prompt_version: {prompt_version!r}")
+    if strict_candidate_payload_v2 and kind != "buy":
+        raise ValueError("buy_exclusion_expr research payloads require kind='buy'")
     label = _kind_label(kind)
     metadata_contract = {
         "schema_version": 1,
@@ -741,11 +786,35 @@ def build_discovery_research_messages(
         else []
     )
     user = "\n".join([
-        f"STOM {label['ko']}전략 discovery 후보를 하나만 작성하라.",
+        (
+            f"STOM {label['ko']}전략 discovery 후보를 하나만 작성하라."
+            if not strict_candidate_payload_v2
+            else "coverage gap을 겨냥한 새로운 매수 제외 Boolean predicate 하나만 작성하라."
+        ),
         "입력은 coverage gap 1개와 novelty context 1개다. 기존 후보 복제 금지.",
-        "새 후보는 structural fingerprint, coverage regime, entry/exit family가 달라야 한다.",
-        "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다.",
-        "metadata는 lane/prompt_version/kind/timeframe/coverage_gap_id/discovery_target_coverage/intended_hypothesis/novelty_rationale/risk_note를 포함한다.",
+        (
+            "새 후보는 structural fingerprint, coverage regime, entry/exit family가 달라야 한다."
+            if not strict_candidate_payload_v2
+            else "새 predicate는 기존 제외식과 다른 변수 조합 또는 임계 축을 사용해야 한다."
+        ),
+        (
+            "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다."
+            if not strict_candidate_payload_v2
+            else "응답 형식은 CandidatePayloadV2 JSON 객체 하나만 허용한다."
+        ),
+        (
+            "metadata는 lane/prompt_version/kind/timeframe/coverage_gap_id/discovery_target_coverage/intended_hypothesis/novelty_rationale/risk_note를 포함한다."
+            if not strict_candidate_payload_v2 else ""
+        ),
+        *(
+            [render_candidate_payload_contract(
+                output_kind=BUY_EXCLUSION_EXPR,
+                side="buy",
+                timeframe=timeframe,
+                expected_consumer=RESEARCH_FILTER_CONSUMER,
+            )]
+            if strict_candidate_payload_v2 else []
+        ),
         *context_lines,
         "coverage gap:",
         f"```json\n{_format_json_block(dict(coverage_gap))}\n```",
@@ -753,10 +822,18 @@ def build_discovery_research_messages(
         "novelty context:",
         f"```json\n{_format_json_block(dict(novelty_context))}\n```",
         "",
-        "metadata 예시:",
-        f"```json\n{_format_json_block(metadata_contract)}\n```",
+        "metadata 예시:" if not strict_candidate_payload_v2 else "",
+        f"```json\n{_format_json_block(metadata_contract)}\n```" if not strict_candidate_payload_v2 else "",
     ])
-    return [{"role": "system", "content": _build_system_message()}, {"role": "user", "content": user}]
+    system_content = _build_system_message()
+    if strict_candidate_payload_v2:
+        system_content += "\n\n" + render_candidate_payload_contract(
+            output_kind=BUY_EXCLUSION_EXPR,
+            side="buy",
+            timeframe=timeframe,
+            expected_consumer=RESEARCH_FILTER_CONSUMER,
+        )
+    return [{"role": "system", "content": system_content}, {"role": "user", "content": user}]
 
 
 def validate_research_candidate_response(
@@ -955,6 +1032,7 @@ def build_messages(
     feature_hint_lines: Optional[List[str]] = None,
     card_directive_lines: Optional[List[str]] = None,
     band_seed_lines: Optional[List[str]] = None,
+    strict_candidate_payload_v2: bool = False,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -1042,6 +1120,13 @@ def build_messages(
 
     label = _kind_label(kind)
     system_content = _build_system_message()
+    if strict_candidate_payload_v2:
+        system_content += "\n\n" + render_candidate_payload_contract(
+            output_kind=FULL_STRATEGY,
+            side=kind,
+            timeframe=timeframe,
+            expected_consumer=STRATEGY_SAVER_CONSUMER,
+        )
 
     user_lines = [
         f"STOM {label['ko']}전략을 정규 형태로 한 개 작성하라.",
@@ -1051,8 +1136,22 @@ def build_messages(
         f"- `{label['state']} = True` 또는 `{label['state']} = False`로 상태를 시작하고,",
         f"  조건 분기 후 마지막에 반드시 `if {label['state']}: {label['action']}`로 끝낸다.",
         "- import/exec/eval/open/compile/dunder 등 금지 토큰을 절대 쓰지 않는다.",
-        "- 설명 없이 ```python 코드 블록 하나만 출력한다.",
+        (
+            "- 설명 없이 ```python 코드 블록 하나만 출력한다."
+            if not strict_candidate_payload_v2
+            else "- CandidatePayloadV2 JSON 객체 하나만 출력한다."
+        ),
     ]
+    if strict_candidate_payload_v2:
+        user_lines += [
+            "",
+            render_candidate_payload_contract(
+                output_kind=FULL_STRATEGY,
+                side=kind,
+                timeframe=timeframe,
+                expected_consumer=STRATEGY_SAVER_CONSUMER,
+            ),
+        ]
     user_lines += _timeframe_lines(timeframe)
     if sparse_positive_prompt_enabled:
         user_lines += _sparse_positive_lines(kind)

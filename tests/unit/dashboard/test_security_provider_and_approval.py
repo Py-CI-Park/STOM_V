@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sqlite3
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -15,6 +16,8 @@ from fastapi.testclient import TestClient
 from ai_strategy_loop.controller import contract as contract_module
 from ai_strategy_loop.controller import state as state_module
 from ai_strategy_loop.dashboard.app import create_app
+from ai_strategy_loop.controller import evidence_contract
+from ai_strategy_loop.dashboard import app as app_module
 from ai_strategy_loop.provider.chatgpt_oauth.constants import DEFAULT_MODEL
 
 
@@ -135,12 +138,15 @@ def _approval_message(binding: dict[str, Any]) -> dict[str, Any]:
         "buy_code_hash",
         "sell_code_hash",
     )
-    return {
+    message = {
         "action": "final_approval",
         **{key: binding[key] for key in keys},
         "user_buy": "ReviewedBuy",
         "user_sell": "ReviewedSell",
     }
+    if binding.get("candidate_identity") is not None:
+        message["candidate_identity"] = binding["candidate_identity"]
+    return message
 
 
 def test_final_approval_binds_live_evidence_and_exports_once(
@@ -336,3 +342,183 @@ def test_final_approval_rejects_source_code_changed_after_binding_check(
     assert result["status"] == "error"
     assert result["code"] == "source_code_hash_mismatch"
     assert destination_db.exists() is False
+def _strict_identity(
+    *,
+    run_id: str,
+    gen_no: int,
+    buy_code: str = "buy = 1",
+    sell_code: str = "sell = 1",
+) -> dict[str, Any]:
+    digest = lambda value: hashlib.sha256(value.encode("utf-8")).hexdigest()
+    buy_hash = digest(buy_code)
+    sell_hash = digest(sell_code)
+    return evidence_contract.CandidateIdentityV2(
+        run_id=run_id,
+        gen_no=gen_no,
+        candidate_id=evidence_contract.compute_candidate_id(
+            buy_hash, sell_hash, "strict-test", "day"
+        ),
+        buy_body_sha256=buy_hash,
+        sell_body_sha256=sell_hash,
+        profile_sha256=digest("profile"),
+        config_sha256=digest("config"),
+        data_sha256=digest("data"),
+        cost_sha256=digest("cost"),
+        fill_sha256=digest("fill"),
+    ).to_dict()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "reason"),
+    [
+        ("missing", "candidate_identity_missing"),
+        ("candidate", "review_winner_identity_mismatch"),
+        ("profile_sha256", "review_winner_identity_mismatch"),
+        ("config_sha256", "review_winner_identity_mismatch"),
+        ("data_sha256", "review_winner_identity_mismatch"),
+        ("cost_sha256", "review_winner_identity_mismatch"),
+        ("fill_sha256", "review_winner_identity_mismatch"),
+        ("buy_code", "winner_source_identity_mismatch"),
+    ],
+)
+def test_strict_candidate_identity_fails_closed_on_every_binding_mismatch(
+    monkeypatch,
+    tmp_path: Path,
+    mutation: str,
+    reason: str,
+) -> None:
+    run_id = "strict-run"
+    buy_name = "same-name-buy"
+    sell_name = "same-name-sell"
+    loop_db = tmp_path / "loop.db"
+    _make_loop_db(loop_db, buy_name, sell_name)
+    monkeypatch.setattr(state_module, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
+    identity = _strict_identity(run_id=run_id, gen_no=2)
+    winner_identity = dict(identity)
+    generation_identity = dict(identity)
+    review_identity: dict[str, Any] | None = dict(identity)
+    if mutation == "candidate":
+        review_identity["candidate_id"] = evidence_contract.compute_candidate_id(
+            hashlib.sha256(b"other buy").hexdigest(),
+            hashlib.sha256(b"other sell").hexdigest(),
+            "strict-test",
+            "day",
+        )
+    elif mutation == "missing":
+        review_identity = None
+    elif mutation == "buy_code":
+        winner_identity["buy_body_sha256"] = hashlib.sha256(b"other code").hexdigest()
+        generation_identity["buy_body_sha256"] = winner_identity["buy_body_sha256"]
+        assert review_identity is not None
+        review_identity["buy_body_sha256"] = winner_identity["buy_body_sha256"]
+    else:
+        assert review_identity is not None
+        review_identity[mutation] = hashlib.sha256(b"other value").hexdigest()
+
+    state_module.publish_loop_state(
+        contract_module.LoopState(
+            run_id=run_id,
+            status="complete",
+            current_gen=2,
+            winner=contract_module.WinnerInfo(
+                gen=2,
+                score=1.0,
+                buy_name=buy_name,
+                sell_name=sell_name,
+                candidate_identity=winner_identity,
+            ),
+            generations=[
+                contract_module.GenerationInfo(
+                    gen_no=2,
+                    status="ok",
+                    gate_passed=True,
+                    candidate_identity=generation_identity,
+                )
+            ],
+        )
+    )
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
+    review: dict[str, Any] = {
+        "promote_checklist": [{"name": "gate", "status": "pass"}],
+    }
+    if review_identity is not None:
+        review["candidate_identity"] = review_identity
+
+    binding = app_module._approval_binding_payload(review, str(loop_db))
+
+    assert binding == {"available": False, "reason": reason}
+
+
+def test_candidate_identity_v2_lossless_projection_roundtrip() -> None:
+    identity = _strict_identity(run_id="roundtrip-run", gen_no=3)
+
+    projection = contract_module.CandidateIdentityV2Projection.model_validate(identity)
+
+    assert projection.identity_dict() == identity
+    assert projection.to_identity().to_dict() == identity
+
+
+@pytest.mark.parametrize(
+    ("submitted", "expected"),
+    [
+        (None, "candidate_identity_missing"),
+        ("forged", "decision_winner_identity_mismatch"),
+        ("exact", None),
+    ],
+)
+def test_strict_decision_identity_rejects_missing_or_forged_payload(
+    monkeypatch,
+    submitted,
+    expected,
+) -> None:
+    identity = _strict_identity(run_id="decision-run", gen_no=4)
+    forged = dict(identity)
+    forged["profile_sha256"] = hashlib.sha256(b"forged profile").hexdigest()
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
+    monkeypatch.setattr(
+        app_module,
+        "_current_state_payload",
+        lambda: {
+            "run_id": "decision-run",
+            "winner": {"gen": 4, "candidate_identity": identity},
+            "generations": [{"gen_no": 4, "candidate_identity": identity}],
+        },
+    )
+    payload = None if submitted is None else (forged if submitted == "forged" else identity)
+
+    assert app_module._decision_identity_error(payload) == expected
+
+
+def test_strict_record_decision_persists_canonical_state_snapshot(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    identity = _strict_identity(run_id="record-run", gen_no=5)
+    state = {
+        "run_id": "record-run",
+        "winner": {
+            "gen": 5,
+            "buy_name": "winner-buy",
+            "sell_name": "winner-sell",
+            "candidate_identity": identity,
+        },
+        "generations": [{"gen_no": 5, "candidate_identity": identity}],
+    }
+    decisions_path = tmp_path / "decisions.jsonl"
+    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
+    monkeypatch.setattr(app_module, "_current_state_payload", lambda: state)
+    monkeypatch.setattr(app_module, "_decisions_file", lambda: str(decisions_path))
+
+    result = app_module._record_decision("hold", "bounded test", identity)
+
+    assert result["status"] == "ok"
+    candidate = result["recorded"]["candidate"]
+    assert candidate == {
+        "run_id": "record-run",
+        "gen_no": 5,
+        "buy_name": "winner-buy",
+        "sell_name": "winner-sell",
+        "candidate_identity": identity,
+    }
+    persisted = json.loads(decisions_path.read_text(encoding="utf-8").strip())
+    assert persisted["candidate"] == candidate

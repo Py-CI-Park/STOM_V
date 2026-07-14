@@ -15,6 +15,7 @@ from pydantic import (
 from pydantic_core import PydanticCustomError
 
 from ai_strategy_loop.config import LoopConfig
+from ai_strategy_loop.controller.contract import CandidateIdentityV2Projection
 from ai_strategy_loop.dashboard.security import Capability
 
 
@@ -74,11 +75,13 @@ class FinalApprovalControl(_ControlPayload):
     evidence_hash: Sha256Text
     buy_code_hash: Sha256Text
     sell_code_hash: Sha256Text
+    candidate_identity: CandidateIdentityV2Projection | None = None
 
 
 class DecisionRecordPayload(_ControlPayload):
     verdict: Literal["promote", "complement", "hold", "reject"]
     note: Annotated[str, StringConstraints(max_length=500)] = ""
+    candidate_identity: CandidateIdentityV2Projection | None = None
 
 
 ControlPayload = Annotated[

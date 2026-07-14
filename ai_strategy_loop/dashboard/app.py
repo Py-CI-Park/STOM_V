@@ -45,6 +45,7 @@ from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
 from ai_strategy_loop.controller import contract as C  # noqa: E402
+from ai_strategy_loop.controller.evidence_contract import content_sha256  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.progress_contract import (  # noqa: E402
     build_backtest_progress,
@@ -92,6 +93,12 @@ _DASHBOARD_FAVICON_SVG = (
 
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
+_STRICT_CANDIDATE_IDENTITY_ENV = "STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY"
+
+
+def _strict_candidate_identity_enabled() -> bool:
+    """Keep the new binding default-OFF until its explicit dashboard capability is enabled."""
+    return os.environ.get(_STRICT_CANDIDATE_IDENTITY_ENV) == "1"
 
 # W1-A 이후: CORS allowlist 미들웨어는 제거됨. DashboardSecurity.authorize_http 의
 #   strict same-origin(Origin == 서빙 host) 검사가 cross-origin 요청을 4403/403 으로
@@ -2062,6 +2069,7 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     if sel and sel.get("selected_candidate"):
         c = sel["selected_candidate"]
         out["selected"] = c
+        out["selected_run_id"] = sel.get("run_id")
         lines.append(
             f"동결 후보: gen{c.get('gen_no')} {c.get('buy_name')} — train 손익"
             f" {(c.get('profit') or 0):,.0f} · MDD {c.get('mdd')}"
@@ -2297,6 +2305,25 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     else:
         _check("V4 walk-forward", "pending", "")
     out["promote_checklist"] = checklist
+    if _strict_candidate_identity_enabled():
+        review_state = _current_state_payload()
+        winner = (review_state.get("winner") or {})
+        selected = out.get("selected")
+        selected_matches_winner = (
+            isinstance(selected, dict)
+            and isinstance(winner, dict)
+            and int(selected.get("gen_no", -1)) == int(winner.get("gen", -2))
+            and str(out.get("selected_run_id") or "") == str(review_state.get("run_id") or "")
+            and str(selected.get("buy_name") or "") == str(winner.get("buy_name") or "")
+            and (
+                not selected.get("sell_name")
+                or str(selected.get("sell_name")) == str(winner.get("sell_name") or "")
+            )
+        )
+        if selected_matches_winner and isinstance(winner.get("candidate_identity"), dict):
+            out["candidate_identity"] = dict(winner["candidate_identity"])
+        else:
+            out["candidate_identity_error"] = "frozen_review_candidate_mismatch"
     return out
 
 
@@ -2309,6 +2336,24 @@ def _canonical_hash(payload: Dict[str, Any]) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+def _candidate_identity_from_payload(
+    payload: Any,
+    *,
+    run_id: str,
+    gen_no: int,
+) -> tuple[Dict[str, Any] | None, str | None]:
+    if not isinstance(payload, dict):
+        return None, "candidate_identity_missing"
+    try:
+        projection = C.CandidateIdentityV2Projection.model_validate(payload)
+        identity = projection.to_identity()
+    except (TypeError, ValueError):
+        return None, "candidate_identity_invalid"
+    if identity.run_id != run_id or identity.gen_no != gen_no:
+        return None, "candidate_identity_coordinate_mismatch"
+    return identity.to_dict(), None
+
+
 
 
 def _approval_binding_payload(
@@ -2341,6 +2386,40 @@ def _approval_binding_payload(
         return {"available": False, "reason": "hard_gates_not_passed"}
     if not winner_buy or not winner_sell:
         return {"available": False, "reason": "server_winner_names_missing"}
+    strict_identity = _strict_candidate_identity_enabled()
+    winner_identity = None
+    generation_identity = None
+    if strict_identity:
+        winner_identity, winner_identity_error = _candidate_identity_from_payload(
+            winner.get("candidate_identity"),
+            run_id=run_id,
+            gen_no=winner_gen,
+        )
+        generation_identity, generation_identity_error = _candidate_identity_from_payload(
+            generation.get("candidate_identity"),
+            run_id=run_id,
+            gen_no=winner_gen,
+        )
+        if (
+            winner_identity_error
+            or generation_identity_error
+            or winner_identity != generation_identity
+        ):
+            return {
+                "available": False,
+                "reason": winner_identity_error or generation_identity_error
+                or "winner_generation_identity_mismatch",
+            }
+        review_identity, review_identity_error = _candidate_identity_from_payload(
+            review.get("candidate_identity"),
+            run_id=run_id,
+            gen_no=winner_gen,
+        )
+        if review_identity_error or review_identity != winner_identity:
+            return {
+                "available": False,
+                "reason": review_identity_error or "review_winner_identity_mismatch",
+            }
     checklist = review.get("promote_checklist")
     if not isinstance(checklist, list) or not checklist:
         return {"available": False, "reason": "frozen_review_missing"}
@@ -2362,6 +2441,12 @@ def _approval_binding_payload(
         sell_code = _read_strategy_code(source_db, winner_sell, "sell")
     except (KeyError, sqlite3.Error) as exc:
         return {"available": False, "reason": "winner_code_unavailable", "message": str(exc)}
+    if strict_identity and (
+        winner_identity is None
+        or winner_identity["buy_body_sha256"] != hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
+        or winner_identity["sell_body_sha256"] != hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
+    ):
+        return {"available": False, "reason": "winner_source_identity_mismatch"}
 
     review_hash = _canonical_hash(review)
     buy_code_hash = hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
@@ -2378,11 +2463,18 @@ def _approval_binding_payload(
         "buy_code_hash": buy_code_hash,
         "sell_code_hash": sell_code_hash,
     }
-    return {
+    if strict_identity:
+        evidence["candidate_identity"] = winner_identity
+    result = {
         "available": True,
         **evidence,
         "evidence_hash": _canonical_hash(evidence),
     }
+    if strict_identity:
+        result["candidate_identity_hash"] = content_sha256(
+            C.CandidateIdentityV2.from_dict(winner_identity)
+        )
+    return result
 
 
 def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
@@ -2631,7 +2723,61 @@ def _decisions_payload() -> Dict[str, Any]:
     return out
 
 
-def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
+def _validated_decision_snapshot(
+    candidate_identity: Dict[str, Any] | None,
+) -> tuple[Dict[str, Any] | None, str | None]:
+    if not _strict_candidate_identity_enabled():
+        return None, None
+    state = _current_state_payload()
+    winner = state.get("winner")
+    if not isinstance(winner, dict):
+        return None, "decision_winner_identity_unavailable"
+    run_id = str(state.get("run_id") or "")
+    winner_gen = int(winner.get("gen", -1))
+    identity, error = _candidate_identity_from_payload(
+        candidate_identity, run_id=run_id, gen_no=winner_gen
+    )
+    if error:
+        return None, error
+    winner_identity, winner_error = _candidate_identity_from_payload(
+        winner.get("candidate_identity"), run_id=run_id, gen_no=winner_gen
+    )
+    if winner_error or identity != winner_identity:
+        return None, winner_error or "decision_winner_identity_mismatch"
+    generation = next(
+        (
+            row
+            for row in state.get("generations") or []
+            if isinstance(row, dict) and int(row.get("gen_no", -1)) == winner_gen
+        ),
+        None,
+    )
+    if not isinstance(generation, dict):
+        return None, "decision_generation_identity_unavailable"
+    generation_identity, generation_error = _candidate_identity_from_payload(
+        generation.get("candidate_identity"), run_id=run_id, gen_no=winner_gen
+    )
+    if generation_error or identity != generation_identity:
+        return None, generation_error or "decision_generation_identity_mismatch"
+    return {
+        "run_id": run_id,
+        "gen_no": winner_gen,
+        "buy_name": winner.get("buy_name"),
+        "sell_name": winner.get("sell_name"),
+        "candidate_identity": identity,
+    }, None
+
+
+def _decision_identity_error(candidate_identity: Dict[str, Any] | None) -> str | None:
+    _, error = _validated_decision_snapshot(candidate_identity)
+    return error
+
+
+def _record_decision(
+    verdict: str,
+    note: str,
+    candidate_identity: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
     """F3/P-D — V6 운용 결정을 기록한다(연구 거버넌스 — 유일한 쓰기 라우트).
 
     append-only: 수정·삭제 없음(결정 번복도 새 레코드로 — 이력 보존).
@@ -2640,6 +2786,13 @@ def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
     if verdict not in ("promote", "complement", "hold", "reject"):
         return {"status": "invalid",
                 "allowed": ["promote", "complement", "hold", "reject"]}
+    validated_candidate, identity_error = _validated_decision_snapshot(candidate_identity)
+    if identity_error is not None:
+        return {
+            "status": "error",
+            "code": "decision_identity_unavailable",
+            "message": identity_error,
+        }
     try:
         candidate = None
         try:
@@ -2653,8 +2806,15 @@ def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
                          "mdd": c.get("mdd"), "trade_count": c.get("trade_count")}
         except Exception:  # noqa: BLE001 - 후보 스냅샷은 보조.
             pass
-        record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
-                  "candidate": candidate}
+        if _strict_candidate_identity_enabled():
+            candidate = validated_candidate
+        record = {
+            "ts": time.time(),
+            "verdict": verdict,
+            "note": (note or "")[:500],
+            "candidate": candidate,
+            "candidate_identity": candidate_identity,
+        }
         decisions_file = _decisions_file()
         os.makedirs(os.path.dirname(decisions_file), exist_ok=True)
         with open(decisions_file, "a", encoding="utf-8") as fh:
@@ -3358,7 +3518,16 @@ def create_app(
     @app.post("/record_decision")
     def record_decision(payload: DecisionRecordPayload) -> Dict[str, Any]:
         """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
-        return _record_decision(payload.verdict, payload.note)
+        result = _record_decision(
+            payload.verdict,
+            payload.note,
+            payload.candidate_identity.identity_dict()
+            if payload.candidate_identity is not None
+            else None,
+        )
+        if _strict_candidate_identity_enabled() and result.get("status") != "ok":
+            return JSONResponse(status_code=409, content=result)
+        return result
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:
@@ -3937,6 +4106,12 @@ def _do_final_approval(
             "code": "approval_binding_unavailable",
             "message": str(binding.get("reason") or "approval binding unavailable"),
         }
+    if _strict_candidate_identity_enabled() and msg.candidate_identity is None:
+        return {
+            "status": "error",
+            "code": "approval_binding_unavailable",
+            "message": "candidate_identity_missing",
+        }
     supplied = {
         "run_id": msg.run_id,
         "current_gen": msg.current_gen,
@@ -3946,6 +4121,8 @@ def _do_final_approval(
         "buy_code_hash": msg.buy_code_hash,
         "sell_code_hash": msg.sell_code_hash,
     }
+    if _strict_candidate_identity_enabled():
+        supplied["candidate_identity"] = msg.candidate_identity.identity_dict()
     if any(binding.get(key) != value for key, value in supplied.items()):
         return {
             "status": "error",

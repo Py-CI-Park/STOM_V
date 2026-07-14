@@ -692,13 +692,29 @@ class LoopConfig:
     #   토글 선언 규약을 통일하고 from_dict 도달성을 확보한다. 기본 OFF면 byte-동일.
     candidate_dedup_enabled: bool = False
     seed_plan_enabled: bool = False
+    # CandidatePayloadV2 strict output envelope. Default-OFF preserves legacy
+    # code-fence prompts; certification profiles opt in atomically.
+    strict_candidate_payload_v2: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
-        """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""
+        """dict에서 LoopConfig 생성.
+
+        Legacy unknown keys remain ignored, but unknown strict-profile keys are
+        rejected so a typo cannot silently downgrade a fail-closed profile.
+        """
         if not data:
             return cls()
         known = {f.name for f in fields(cls)}
+        unknown_strict = sorted(
+            str(key)
+            for key in data
+            if key not in known and str(key).startswith("strict_")
+        )
+        if unknown_strict:
+            raise ValueError(
+                "unknown strict LoopConfig keys: " + ", ".join(unknown_strict)
+            )
         filtered = {k: v for k, v in data.items() if k in known}
         return cls(**filtered)
 

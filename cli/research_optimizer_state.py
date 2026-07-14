@@ -53,6 +53,8 @@ class WideV2OptimizerConfig:
     leaderboard_output_path: str | None = None
     summary_output_path: str | None = None
     report_path: str | None = None
+    strict_research_profile: bool = False
+    research_schema_version: int = 11
 
     @property
     def run_id(self) -> str:

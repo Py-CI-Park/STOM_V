@@ -40,6 +40,12 @@ from .prompt import (
     estimate_research_context_pack_budget,
     validate_research_candidate_response,
 )
+from .candidate_output_contract import (
+    BUY_EXCLUSION_EXPR,
+    RESEARCH_FILTER_CONSUMER,
+    canonical_body_sha256,
+    validate_candidate_payload,
+)
 
 PACK_PRODUCER_VERSION = "pack_producer_v1"
 CANDIDATE_PACK_VERSION = "multi_hypothesis_candidate_pack_v1"
@@ -215,6 +221,7 @@ def _build_lane_messages(
     coverage_gap: Mapping[str, Any],
     novelty_context: Mapping[str, Any],
     research_context_pack: Optional[Mapping[str, Any]],
+    strict_candidate_payload_v2: bool = False,
 ) -> list[dict]:
     if lane == "repair":
         # repair 대상 부모 전문은 요청 kind 쪽 코드다 — sell repair 에
@@ -225,6 +232,7 @@ def _build_lane_messages(
             parent_code=parents[kind]["code"],
             analysis_card=analysis_card,
             research_context_pack=research_context_pack,
+            strict_candidate_payload_v2=strict_candidate_payload_v2,
         )
     return build_discovery_research_messages(
         kind,
@@ -232,6 +240,7 @@ def _build_lane_messages(
         coverage_gap=coverage_gap,
         novelty_context=novelty_context,
         research_context_pack=research_context_pack,
+        strict_candidate_payload_v2=strict_candidate_payload_v2,
     )
 
 
@@ -364,6 +373,7 @@ def _fill_lane(
     seen_expressions: set[str],
     seen_hypothesis_ids: set[str],
     retry_max: int,
+    strict_candidate_payload_v2: bool = False,
 ) -> dict:
     """레인 하나를 채운다. provider 예외는 terminal=True 로 즉시 반환한다."""
 
@@ -383,6 +393,7 @@ def _fill_lane(
             coverage_gap=coverage_gap,
             novelty_context=novelty_context,
             research_context_pack=research_context_pack,
+            strict_candidate_payload_v2=strict_candidate_payload_v2,
         )
         payload_budget = estimate_research_context_pack_budget(messages)
         try:
@@ -397,13 +408,49 @@ def _fill_lane(
                 "terminal": True,
             }
         response_text = raw if isinstance(raw, str) else ("" if raw is None else str(raw))
-        validation = validate_research_candidate_response(
-            response_text,
-            expected_lane=lane,
-            expected_prompt_version=_LANE_PROMPT_VERSIONS[lane],
-            expected_kind=kind,
-            expected_timeframe=timeframe,
-        )
+        if strict_candidate_payload_v2:
+            payload_validation = validate_candidate_payload(
+                response_text,
+                expected_output_kind=BUY_EXCLUSION_EXPR,
+                expected_side="buy",
+                expected_timeframe=timeframe,
+                expected_consumer=RESEARCH_FILTER_CONSUMER,
+            )
+            metadata = {
+                "intended_hypothesis": f"{lane} buy exclusion predicate",
+                "risk_note": "research filter exclusion may reduce coverage",
+                "mutation_axis": str(analysis_card.get("mutation_axis") or "buy_exclusion"),
+                "parent_id": str(analysis_card.get("candidate_id") or analysis_card.get("parent_id") or ""),
+                "analysis_card_id": str(analysis_card.get("analysis_id") or analysis_card.get("analysis_card_id") or ""),
+                "coverage_gap_id": str(coverage_gap.get("coverage_gap_id") or coverage_gap.get("id") or ""),
+                "discovery_target_coverage": coverage_gap.get("coverage_bucket_keys") or [],
+                "novelty_rationale": "payload-bound discovery exclusion",
+                "novelty": novelty_context.get("novelty") or novelty_context,
+            }
+            validation = {
+                "valid": payload_validation["valid"],
+                "failure_reason": payload_validation["failure_reason"],
+                "code": payload_validation["body"],
+                "metadata": metadata,
+                "schema_version": 11,
+                "lane": lane,
+                "prompt_version": _LANE_PROMPT_VERSIONS[lane],
+                "kind": "buy",
+                "timeframe": timeframe,
+                "code_block_count": 0,
+                "metadata_present": True,
+                "metadata_block_count": 1,
+                "metadata_json_safe": True,
+                "authority": "candidate_payload_v2",
+            }
+        else:
+            validation = validate_research_candidate_response(
+                response_text,
+                expected_lane=lane,
+                expected_prompt_version=_LANE_PROMPT_VERSIONS[lane],
+                expected_kind=kind,
+                expected_timeframe=timeframe,
+            )
         candidate: Optional[dict] = None
         extra_failures: list[str] = []
         if validation["valid"]:
@@ -418,6 +465,17 @@ def _fill_lane(
                 seen_expressions=seen_expressions,
                 seen_hypothesis_ids=seen_hypothesis_ids,
             )
+            if candidate is not None and strict_candidate_payload_v2:
+                candidate["candidate_payload_v2"] = {
+                    "schema_version": 11,
+                    "output_kind": payload_validation["output_kind"],
+                    "side": payload_validation["side"],
+                    "timeframe": payload_validation["timeframe"],
+                    "expected_consumer": payload_validation["expected_consumer"],
+                    "canonical_body_sha256": canonical_body_sha256(
+                        payload_validation["body"]
+                    ),
+                }
         accepted_flag = candidate is not None and not extra_failures
         failure_parts = [part for part in (validation["failure_reason"], *extra_failures) if part]
         combined_failure = "|".join(dict.fromkeys(failure_parts))
@@ -578,6 +636,7 @@ def produce_candidate_pack_result(
     retry_max_per_lane: int = RETRY_MAX_PER_LANE,
     final_owner_enabled: bool = False,
     methodology_version: str = "clr04_v1",
+    strict_candidate_payload_v2: bool = False,
 ) -> dict:
     """repair/discovery 레인별로 provider 를 호출해 후보팩 결과 봉투를 만든다.
 
@@ -602,6 +661,14 @@ def produce_candidate_pack_result(
         return _error_envelope(["provider_not_callable"], shortfall={})
 
     kind = str(context.get("kind") or "buy")
+    if strict_candidate_payload_v2 and kind != "buy":
+        return _error_envelope(
+            ["candidate_payload_side_mismatch"],
+            shortfall={
+                lane: {"requested": count, "accepted": 0, "missing": count}
+                for lane, count in lane_counts.items() if count > 0
+            },
+        )
     timeframe = str(context.get("timeframe") or "")
     parents = {side: _parent_side(context, side) for side in ("buy", "sell")}
     raw_context_pack = context.get("research_context_pack")
@@ -639,6 +706,7 @@ def produce_candidate_pack_result(
             coverage_gap=coverage_gap,
             novelty_context=novelty_context,
             research_context_pack=research_context_pack,
+            strict_candidate_payload_v2=strict_candidate_payload_v2,
             seen_expressions=seen_expressions,
             seen_hypothesis_ids=seen_hypothesis_ids,
             retry_max=retry_max_per_lane,
@@ -771,6 +839,7 @@ def produce_candidate_pack(
     lanes: Optional[Mapping[str, int]] = None,
     axis_prompt_lines: Optional[list[str]] = None,
     retry_max_per_lane: int = RETRY_MAX_PER_LANE,
+    strict_candidate_payload_v2: bool = False,
 ) -> Optional[dict]:
     """research_candidate_pack dict 를 반환한다. terminal 실패면 None.
 
@@ -786,5 +855,6 @@ def produce_candidate_pack(
         lanes=lanes,
         axis_prompt_lines=axis_prompt_lines,
         retry_max_per_lane=retry_max_per_lane,
+        strict_candidate_payload_v2=strict_candidate_payload_v2,
     )
     return result["candidate_pack"]

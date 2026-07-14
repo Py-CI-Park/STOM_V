@@ -339,6 +339,13 @@ class EvidenceStore:
         ).fetchone()
         return self._payload(row) if row is not None else None
 
+    def get_manifest(self, manifest_id: str) -> Optional[Dict[str, Any]]:
+        row = self._con.execute(
+            "SELECT payload_json FROM evaluation_manifests WHERE manifest_id = ?",
+            (manifest_id,),
+        ).fetchone()
+        return self._payload(row) if row is not None else None
+
     def passports_for_run(self, run_id: str) -> List[Dict[str, Any]]:
         rows = self._con.execute(
             "SELECT payload_json FROM candidate_passports WHERE run_id = ? "

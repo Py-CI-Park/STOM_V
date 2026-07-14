@@ -31,9 +31,13 @@ P5/M5 (graduation holdout):
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass, field
-from datetime import date, timedelta
-from typing import List, Optional
+import hashlib
+import json
+import math
+from dataclasses import asdict, dataclass, field
+from datetime import date, datetime, timedelta, timezone
+from enum import Enum
+from typing import Any, List, Optional
 
 
 @dataclass
@@ -48,6 +52,214 @@ class HoldoutSplit:
     train_end: int
     holdout_start: Optional[int]
     holdout_end: Optional[int]
+class EvaluationRole(str, Enum):
+    """The only evaluation roles accepted by the strict validation contract."""
+
+    TRAIN = "train"
+    HOLDOUT = "holdout"
+
+
+EVALUATION_PASS = "PASS"
+EVALUATION_FAIL = "FAIL"
+EVALUATION_INDETERMINATE = "INDETERMINATE"
+
+
+@dataclass(frozen=True)
+class EvaluationDescriptorV2:
+    """Immutable, role-scoped evaluation identity for strict validation.
+
+    Hashes are SHA-256 digests of the exact data, universe and row selections.
+    A holdout descriptor is intentionally unusable until it is frozen and a
+    capability receipt has been issued.
+    """
+
+    role: EvaluationRole
+    period_start: int
+    period_end: int
+    data_sha256: Optional[str]
+    universe_sha256: Optional[str]
+    row_sha256: Optional[str]
+    metric_unit: Optional[str]
+    metric_version: Optional[str]
+    frozen: bool = False
+    row_keys: tuple[str, ...] = ()
+
+    def fingerprint(self) -> str:
+        """Return a stable descriptor digest suitable for a capability binding."""
+
+        payload = asdict(self)
+        payload["role"] = self.role.value
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+
+@dataclass(frozen=True)
+class HoldoutAccessCapabilityV1:
+    """A freeze-bound reader capability; it confers no promotion authority."""
+
+    descriptor_hash: str
+    freeze_receipt_id: str
+    issued: bool
+
+
+def _strict_result(status: str, blockers: List[str]) -> dict:
+    return {
+        "status": status,
+        "blockers": list(dict.fromkeys(blockers)),
+        # A valid descriptor/access/metric only proves evidence readability.
+        # Promotion needs a separate threshold decision, and holdout evidence
+        # must never become next-generation feedback.
+        "promotion_eligible": False,
+        "feedback_eligible": False,
+    }
+def _is_sha256(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+
+
+def issue_holdout_access_capability(
+    descriptor: EvaluationDescriptorV2,
+    freeze_receipt_id: Optional[str],
+) -> HoldoutAccessCapabilityV1:
+    """Issue a reader capability only for a frozen holdout descriptor."""
+
+    if descriptor.role is not EvaluationRole.HOLDOUT:
+        raise ValueError("holdout capability requires a holdout descriptor")
+    if not descriptor.frozen:
+        raise PermissionError("holdout capability cannot be issued before freeze")
+    if not isinstance(freeze_receipt_id, str) or not freeze_receipt_id.strip():
+        raise ValueError("holdout capability requires a freeze receipt ID")
+    return HoldoutAccessCapabilityV1(
+        descriptor_hash=descriptor.fingerprint(),
+        freeze_receipt_id=freeze_receipt_id,
+        issued=True,
+    )
+
+
+def validate_holdout_access(
+    descriptor: EvaluationDescriptorV2,
+    capability: Optional[HoldoutAccessCapabilityV1],
+) -> dict:
+    """Fail closed when a holdout reader lacks a matching post-freeze capability."""
+
+    blockers: List[str] = []
+    if descriptor.role is not EvaluationRole.HOLDOUT:
+        blockers.append("holdout_access_requires_holdout_descriptor")
+    if not descriptor.frozen:
+        blockers.append("holdout_access_before_freeze")
+    if capability is None or not capability.issued:
+        blockers.append("holdout_access_capability_not_issued")
+    elif capability.descriptor_hash != descriptor.fingerprint():
+        blockers.append("holdout_access_capability_descriptor_mismatch")
+    elif not capability.freeze_receipt_id.strip():
+        blockers.append("holdout_access_capability_missing_freeze_receipt")
+    return _strict_result(EVALUATION_PASS if not blockers else EVALUATION_FAIL, blockers)
+
+
+def validate_evaluation_descriptors(
+    train: EvaluationDescriptorV2,
+    holdout: EvaluationDescriptorV2,
+) -> dict:
+    """Verify strict train/holdout separation without any fallback inference."""
+
+    blockers: List[str] = []
+    if train.role is not EvaluationRole.TRAIN:
+        blockers.append("train_descriptor_role_invalid")
+    if holdout.role is not EvaluationRole.HOLDOUT:
+        blockers.append("holdout_descriptor_role_invalid")
+    if train.period_start > train.period_end or holdout.period_start > holdout.period_end:
+        blockers.append("evaluation_period_invalid")
+    elif max(train.period_start, holdout.period_start) <= min(train.period_end, holdout.period_end):
+        blockers.append("evaluation_period_overlap")
+    train_rows = tuple(str(value).strip() for value in train.row_keys)
+    holdout_rows = tuple(str(value).strip() for value in holdout.row_keys)
+    if not train_rows or not holdout_rows:
+        blockers.append("evaluation_row_membership_missing")
+    elif (
+        any(not value for value in (*train_rows, *holdout_rows))
+        or len(set(train_rows)) != len(train_rows)
+        or len(set(holdout_rows)) != len(holdout_rows)
+    ):
+        blockers.append("evaluation_row_membership_invalid")
+    elif set(train_rows).intersection(holdout_rows):
+        blockers.append("evaluation_row_membership_overlap")
+    for name in ("data_sha256", "universe_sha256", "row_sha256"):
+        train_hash = getattr(train, name)
+        holdout_hash = getattr(holdout, name)
+        if not train_hash or not holdout_hash:
+            blockers.append(f"evaluation_{name}_missing")
+        elif not _is_sha256(train_hash) or not _is_sha256(holdout_hash):
+            blockers.append(f"evaluation_{name}_invalid")
+        elif name == "row_sha256" and train_hash == holdout_hash:
+            blockers.append("evaluation_row_sha256_overlap")
+    return _strict_result(EVALUATION_PASS if not blockers else EVALUATION_FAIL, blockers)
+
+
+def validate_holdout_metric(
+    metric: Any,
+    *,
+    actual_unit: Optional[str],
+    expected_unit: Optional[str],
+    actual_version: Optional[str] = None,
+    expected_version: Optional[str] = None,
+    metric_timestamp: Optional[datetime] = None,
+    max_age: Optional[timedelta] = None,
+    now: Optional[datetime] = None,
+) -> dict:
+    """Validate one strict metric; absent, invalid, incompatible or stale is indeterminate."""
+
+    blockers: List[str] = []
+    if metric is None:
+        blockers.append("metric_missing")
+    elif isinstance(metric, bool):
+        blockers.append("metric_invalid")
+    else:
+        try:
+            numeric = float(metric)
+        except (TypeError, ValueError):
+            blockers.append("metric_invalid")
+        else:
+            if not math.isfinite(numeric):
+                blockers.append("metric_nonfinite")
+    if not actual_unit or not expected_unit or actual_unit != expected_unit:
+        blockers.append("metric_unit_mismatch")
+    if expected_version is not None and actual_version != expected_version:
+        blockers.append("metric_version_mismatch")
+    reference = now or datetime.now(timezone.utc)
+    if metric_timestamp is None:
+        blockers.append("metric_timestamp_missing")
+    elif not isinstance(metric_timestamp, datetime):
+        blockers.append("metric_timestamp_invalid")
+    elif metric_timestamp.tzinfo is None or metric_timestamp.utcoffset() is None:
+        blockers.append("metric_timestamp_timezone_missing")
+    elif not isinstance(reference, datetime) or reference.tzinfo is None or reference.utcoffset() is None:
+        blockers.append("metric_reference_time_invalid")
+    elif metric_timestamp > reference:
+        blockers.append("metric_timestamp_future")
+    if max_age is None:
+        blockers.append("metric_max_age_missing")
+    elif not isinstance(max_age, timedelta) or max_age < timedelta(0):
+        blockers.append("metric_max_age_invalid")
+    elif (
+        isinstance(metric_timestamp, datetime)
+        and metric_timestamp.tzinfo is not None
+        and isinstance(reference, datetime)
+        and reference.tzinfo is not None
+        and metric_timestamp <= reference
+        and reference - metric_timestamp > max_age
+    ):
+        blockers.append("metric_stale")
+    return _strict_result(
+        EVALUATION_PASS if not blockers else EVALUATION_INDETERMINATE,
+        blockers,
+    )
 
 
 def _to_date(yyyymmdd: int) -> date:
