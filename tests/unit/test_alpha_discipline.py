@@ -149,7 +149,7 @@ class TestAppendTrial:
         with pytest.raises(ledger.LegacyLedgerWriteBlockedError):
             ledger.append_trial(path=path, **VALID_ROW)
         assert not path.exists()
-def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths=None) -> str:
+def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths=None, ledger_path="ledger.jsonl") -> str:
     contract = {
         "schema_version": 2,
         "hypothesis_id": "H-unit",
@@ -158,7 +158,7 @@ def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths
         "sample_floors": {"qualified": 2},
         "multiplicity_family": "unit family",
         "kill_rule": "non-positive effect",
-        "ledger_path": "ledger.jsonl",
+        "ledger_path": ledger_path,
         "authority_paths": authority_paths if authority_paths is not None else {
             "seal_dir": "seals",
             "promotions_dir": "promotions",
@@ -633,6 +633,7 @@ class TestPrereg:
         "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
         "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
         "import importlib\nimportlib.import_module('builtins').eval('1 + 1')\n",
+        "import builtins\nimport importlib\nlist(map(builtins.getattr(importlib, 'import_module'), ['local_plugin']))\n",
         "type(object).__getattribute__(object, '__class__')\n",
         "import pickle\npickle.loads(b'payload')\n",
     ])
@@ -712,6 +713,24 @@ class TestPrereg:
         assert document.read_bytes() == original_document
         assert not canonical.exists()
         hardlink.unlink()
+        ledger_source = tmp_path / "ledger-source.jsonl"
+        ledger_source.write_text("{}\n", encoding="utf-8")
+        ledger_alias = tmp_path / "ledger-alias.jsonl"
+        ledger_alias.hardlink_to(ledger_source)
+        document = tmp_path / "ledger-hardlink-prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), ledger_path="ledger-alias.jsonl"),
+            encoding="utf-8",
+        )
+        with pytest.raises(evidence.EvidenceSchemaError, match="ledger_path.*hardlink"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(target,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        ledger_alias.unlink()
 
         linked = tmp_path / "linked"
         try:

@@ -238,16 +238,30 @@ def _has_reparse_point(root: Path, relative: PurePosixPath) -> bool:
 
 
 def _physical_path(path: Path) -> str:
-    """Return the OS's normalized physical spelling, including Windows long names."""
+    """Return an existing path's Windows physical spelling when the OS provides one."""
     value = os.path.realpath(path)
     if os.name == "nt":
         import ctypes
 
-        size = ctypes.windll.kernel32.GetLongPathNameW(value, None, 0)
+        kernel32 = ctypes.windll.kernel32
+        size = kernel32.GetLongPathNameW(value, None, 0)
         if size:
             buffer = ctypes.create_unicode_buffer(size)
-            if ctypes.windll.kernel32.GetLongPathNameW(value, buffer, size):
+            if kernel32.GetLongPathNameW(value, buffer, size):
                 value = buffer.value
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        handle = kernel32.CreateFileW(
+            value, 0x80, 0x7, None, 3, 0x02000000, None
+        )
+        if handle not in (None, ctypes.c_void_p(-1).value):
+            try:
+                size = kernel32.GetFinalPathNameByHandleW(handle, None, 0, 0)
+                if size:
+                    buffer = ctypes.create_unicode_buffer(size + 1)
+                    if kernel32.GetFinalPathNameByHandleW(handle, buffer, len(buffer), 0):
+                        value = buffer.value.removeprefix("\\\\?\\")
+            finally:
+                kernel32.CloseHandle(handle)
     return os.path.normcase(os.path.normpath(value))
 
 
@@ -256,6 +270,33 @@ def _same_physical_file(left: Path, right: Path) -> bool:
         return left.exists() and right.exists() and os.path.samefile(left, right)
     except OSError as exc:
         raise EvidenceSchemaError("authority path physical identity cannot be verified") from exc
+
+
+def _validate_physical_ancestry(
+    root: Path, relative: PurePosixPath, resolved: Path, field: str
+) -> None:
+    """Reject existing reparse, protected, and hardlink identities before mutation."""
+    protected = [
+        candidate for candidate in (root / name for name in _PROTECTED_ROOT_NAMES)
+        if candidate.exists()
+    ]
+    protected_identities = {_physical_path(candidate) for candidate in protected}
+    current = root
+    for part in relative.parts:
+        current /= part
+        if not current.exists() and not current.is_symlink():
+            break
+        metadata = os.lstat(current)
+        if current.is_symlink() or getattr(
+            metadata, "st_file_attributes", 0
+        ) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+            raise EvidenceSchemaError(f"{field} must not traverse a symlink or reparse point")
+        if _physical_path(current) in protected_identities or any(
+            _same_physical_file(current, candidate) for candidate in protected
+        ):
+            raise EvidenceSchemaError(f"{field} aliases a protected physical identity")
+    if resolved.exists() and resolved.is_file() and resolved.stat().st_nlink > 1:
+        raise EvidenceSchemaError(f"{field} must not be a hardlink")
 
 
 def revalidate_authority_paths(
@@ -268,18 +309,10 @@ def revalidate_authority_paths(
 
     paths: dict[str, str] = {}
     resolved_paths: dict[str, Path] = {}
-    protected_paths = [
-        candidate for candidate in (root / name for name in _PROTECTED_ROOT_NAMES)
-        if candidate.exists()
-    ]
     for field in sorted(_AUTHORITY_PATH_KEYS):
         path, resolved = _repo_path(
             authority_paths[field], f"authority_paths.{field}", root
         )
-        if _has_reparse_point(root, PurePosixPath(path)):
-            raise EvidenceSchemaError(
-                f"authority_paths.{field} must not traverse a symlink or reparse point"
-            )
         if _PROTECTED_ROOT_NAMES.intersection(
             part.casefold() for part in PurePosixPath(path).parts
         ):
@@ -291,18 +324,13 @@ def revalidate_authority_paths(
                 raise EvidenceSchemaError(
                     "authority_paths.target_db must name an existing non-protected file"
                 )
-            if resolved.stat().st_nlink > 1:
-                raise EvidenceSchemaError(
-                    "authority_paths.target_db must not be a hardlink"
-                )
         elif resolved.exists() and not resolved.is_dir():
             raise EvidenceSchemaError(
                 f"authority_paths.{field} must name a directory when it exists"
             )
-        if any(_same_physical_file(resolved, protected) for protected in protected_paths):
-            raise EvidenceSchemaError(
-                f"authority_paths.{field} aliases a protected physical identity"
-            )
+        _validate_physical_ancestry(
+            root, PurePosixPath(path), resolved, f"authority_paths.{field}"
+        )
         paths[field], resolved_paths[field] = path, resolved
 
     fields = sorted(paths)
@@ -420,8 +448,6 @@ def _contract_ledger_path(value: object, root: Path) -> str:
     path = PurePosixPath(value)
     if path.is_absolute() or not path.as_posix().endswith(".jsonl"):
         raise EvidenceSchemaError("ledger_path must be a repository-relative .jsonl path")
-    if _has_reparse_point(root, path):
-        raise EvidenceSchemaError("ledger_path must not traverse a symlink or reparse point")
     if _PROTECTED_ROOT_NAMES.intersection(part.casefold() for part in path.parts):
         raise EvidenceSchemaError("ledger_path must not name a protected path")
     resolved = (root / Path(*path.parts)).resolve()
@@ -431,6 +457,7 @@ def _contract_ledger_path(value: object, root: Path) -> str:
         raise EvidenceSchemaError("ledger_path resolves outside repo_root") from exc
     if resolved.exists() and not resolved.is_file():
         raise EvidenceSchemaError("ledger_path must not name a directory")
+    _validate_physical_ancestry(root, path, resolved, "ledger_path")
     return path.as_posix()
 
 
@@ -537,17 +564,33 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         "exec", "eval", "compile", "open", "builtins.exec", "builtins.eval",
         "builtins.compile", "builtins.open",
     }
-    forbidden = executable - {
+    allowed_direct = {
         "__import__", "builtins.__import__", "importlib.import_module",
         "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
         "importlib.machinery.SourcelessFileLoader",
     }
+    forbidden = executable - allowed_direct
+    forbidden_callables = {
+        "getattr", "builtins.getattr", "operator.attrgetter", "operator.itemgetter",
+        "pickle.load", "pickle.loads", "dill.load", "dill.loads",
+        "cloudpickle.load", "cloudpickle.loads", "marshal.load", "marshal.loads",
+        "shelve.open", "joblib.load", "numpy.load", "pandas.read_pickle",
+        "torch.load", "yaml.load", "yaml.full_load", "yaml.unsafe_load",
+    }
+    dangerous_prefixes = (
+        "subprocess.", "multiprocessing.", "ctypes.", "cffi.", "ffi.", "win32api.",
+        "asyncio.create_subprocess", "concurrent.futures.ProcessPoolExecutor",
+        "os.system", "os.popen", "os.exec", "os.spawn", "os.posix_spawn", "os.startfile",
+    )
+    loader_methods = {"exec_module", "load_module", "get_code", "create_module"}
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
     local_callables = {
         node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
     }
-    safe_aliases = set(aliases) | local_callables | {
-        "__import__", "exec", "eval", "compile", "open",
+    safe_aliases = local_callables | {
+        name for name, canonical in aliases.items()
+        if canonical in allowed_direct
+        or _module_file(root, canonical.rsplit(".", 1)[0]) is not None
     }
     unsafe_aliases: set[str] = set()
     for node in ast.walk(tree):
@@ -560,19 +603,40 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             else:
                 unsafe_aliases.update(targets)
 
-    # Dynamic callables may only occur as the direct function of a supported call.
+    # Dangerous capabilities may only be invoked directly through a sealed API.
+    # Passing one to map/filter/partial or storing it as a value is executable
+    # indirection, even when the eventual target would be a literal local module.
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Name, ast.Attribute)):
             continue
         canonical = _dotted_name(node, aliases)
-        if canonical not in executable:
-            continue
         parent = parents.get(node)
         if isinstance(parent, ast.Attribute) and parent.value is node:
             continue
-        if isinstance(parent, ast.Call) and parent.func is node:
+        is_loader_method = isinstance(node, ast.Attribute) and node.attr in loader_methods
+        is_dangerous = (
+            canonical in executable
+            or canonical in forbidden_callables
+            or bool(canonical and canonical.startswith(dangerous_prefixes))
+            or bool(canonical and canonical.startswith(
+                ("pickle.", "dill.", "cloudpickle.", "marshal.", "shelve.", "joblib.")
+            ))
+            or bool(canonical and (
+                canonical.startswith("importlib.machinery.") or "Loader" in canonical
+            ))
+            or is_loader_method
+        )
+        if not is_dangerous:
             continue
-        raise EvidenceSchemaError(f"higher-order dynamic execution/import is unsupported: {path}")
+        if (
+            canonical in allowed_direct
+            and isinstance(parent, ast.Call)
+            and parent.func is node
+        ):
+            continue
+        raise EvidenceSchemaError(
+            f"higher-order or unsafe executable callable is unsupported: {path}"
+        )
 
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -747,6 +811,7 @@ def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: 
         raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
     canonical_output.parent.mkdir(parents=True, exist_ok=True)
     revalidate_authority_paths(root, contract["authority_paths"])
+    _contract_ledger_path(contract["ledger_path"], root)
     with open(canonical_output, "x", encoding="utf-8", newline="\n") as handle:
         handle.write(canonical_json_bytes(validated).decode("utf-8"))
         handle.flush()
