@@ -311,6 +311,95 @@ class TestTrialsLedger:
 
         assert canonical.read_bytes() == b'{"existing": "authority"}\n'
 
+    def test_path_swap_after_open_rejects_before_append(self, tmp_path, monkeypatch):
+        logical = tmp_path.parent / "race.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        replacement = tmp_path / "replacement.jsonl"
+        replacement.write_bytes(b"replacement\n")
+        validate = registry._validate_open_legacy_archive_handle
+
+        def swap_then_validate(fd, target):
+            os.replace(replacement, target)
+            validate(fd, target)
+
+        monkeypatch.setattr(
+            registry, "_validate_open_legacy_archive_handle", swap_then_validate
+        )
+        with pytest.raises((ValueError, PermissionError)) as excinfo:
+            append_trials(logical, program="P1", batch="race", n=1, now=NOW)
+        if os.name == "nt" and isinstance(excinfo.value, PermissionError):
+            assert mapped.read_bytes() == b""
+            assert replacement.read_bytes() == b"replacement\n"
+        else:
+            assert isinstance(excinfo.value, ValueError)
+            assert mapped.read_bytes() == b"replacement\n"
+
+    def test_hardlink_created_after_open_rejects_before_append(
+        self, tmp_path, monkeypatch
+    ):
+        logical = tmp_path.parent / "race-hardlink.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        twin = tmp_path / "twin.jsonl"
+        validate = registry._validate_open_legacy_archive_handle
+
+        def link_then_validate(fd, target):
+            os.link(target, twin)
+            validate(fd, target)
+
+        monkeypatch.setattr(
+            registry, "_validate_open_legacy_archive_handle", link_then_validate
+        )
+        with pytest.raises(ValueError, match="one regular unlinked file"):
+            append_trials(logical, program="P1", batch="race", n=1, now=NOW)
+
+        assert mapped.read_bytes() == b""
+        assert twin.read_bytes() == b""
+
+    def test_symlink_swap_after_open_rejects_before_append(self, tmp_path, monkeypatch):
+        logical = tmp_path.parent / "race-symlink.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        replacement = tmp_path / "replacement.jsonl"
+        replacement.write_bytes(b"replacement\n")
+        validate = registry._validate_open_legacy_archive_handle
+
+        def swap_then_validate(fd, target):
+            target.unlink()
+            target.symlink_to(replacement)
+            validate(fd, target)
+
+        monkeypatch.setattr(
+            registry, "_validate_open_legacy_archive_handle", swap_then_validate
+        )
+        try:
+            with pytest.raises(ValueError, match="one regular unlinked file"):
+                append_trials(logical, program="P1", batch="race", n=1, now=NOW)
+        except OSError as error:
+            pytest.skip(f"symlink unavailable: {error}")
+
+        assert replacement.read_bytes() == b"replacement\n"
+        assert mapped.is_symlink()
+    def test_windows_fallback_rejects_normal_path_swap_before_append(
+        self, tmp_path, monkeypatch
+    ):
+        logical = tmp_path.parent / "race-windows.jsonl"
+        mapped = registry._legacy_archive_ledger_path(logical)
+        mapped.write_bytes(b"original\n")
+        replacement = tmp_path / "replacement.jsonl"
+        replacement.write_bytes(b"replacement\n")
+        open_file = os.open
+        monkeypatch.delattr(registry.os, "O_NOFOLLOW", raising=False)
+
+        def swap_before_existing_open(path, flags, mode=0o777):
+            if Path(path) == mapped and not flags & os.O_EXCL:
+                os.replace(replacement, mapped)
+            return open_file(path, flags, mode)
+
+        monkeypatch.setattr(registry.os, "open", swap_before_existing_open)
+
+        with pytest.raises(ValueError, match="destination changed before open"):
+            append_trials(logical, program="P1", batch="race", n=1, now=NOW)
+
+        assert mapped.read_bytes() == b"replacement\n"
     def test_isolated_legacy_ledger_is_append_only_not_v2_authority(self, tmp_path):
         legacy = tmp_path / "legacy-runs" / "trial_counter.jsonl"
         mapped = registry._legacy_archive_ledger_path(legacy)
