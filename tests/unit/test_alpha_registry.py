@@ -22,6 +22,12 @@ from alpha_lab.registry import (
 )
 
 NOW = dt.datetime(2026, 7, 5, 9, 30, 0)
+@pytest.fixture(autouse=True)
+def legacy_non_authoritative_ledger_root(tmp_path, monkeypatch):
+    """Keep legacy-ledger tests inside their isolated archive root."""
+    monkeypatch.setattr(registry, "LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT", tmp_path)
+
+
 
 
 def _payload_a() -> dict:
@@ -159,6 +165,50 @@ class TestTrialsLedger:
             )
 
         assert canonical.read_bytes() == before
+    def test_arbitrary_path_rejected_before_mutation(self, tmp_path):
+        arbitrary = tmp_path.parent / "arbitrary-ledger.jsonl"
+
+        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
+            append_trials(arbitrary, program="P1", batch="legacy", n=1, now=NOW)
+
+        assert not arbitrary.exists()
+
+    def test_contract_preregistration_ledger_rejected_before_mutation(self, tmp_path):
+        contract_ledger = (
+            tmp_path.parent
+            / "docs"
+            / "research"
+            / "condition_research"
+            / "research_runs"
+            / "preregistration"
+            / "n_trials_ledger.jsonl"
+        )
+
+        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
+            append_trials(contract_ledger, program="P1", batch="legacy", n=1, now=NOW)
+
+        assert not contract_ledger.exists()
+        assert not contract_ledger.parent.exists()
+
+    def test_symlinked_archive_path_rejected_before_mutation(self, tmp_path):
+        actual = tmp_path / "actual"
+        actual.mkdir()
+        alias = tmp_path / "alias"
+        try:
+            alias.symlink_to(actual, target_is_directory=True)
+        except OSError as error:
+            pytest.skip(f"symlink unavailable: {error}")
+
+        ledger = alias / "ledger.jsonl"
+        with pytest.raises(ValueError, match="symlink"):
+            append_trials(ledger, program="P1", batch="legacy", n=1, now=NOW)
+
+        assert not (actual / "ledger.jsonl").exists()
+
+    def test_total_rejects_path_outside_legacy_archive(self, tmp_path):
+        with pytest.raises(ValueError, match="LEGACY_NON_AUTHORITATIVE"):
+            total_trials(tmp_path.parent / "outside-ledger.jsonl")
+
 
     def test_isolated_legacy_ledger_is_append_only_not_v2_authority(self, tmp_path):
         legacy = tmp_path / "legacy-runs" / "trial_counter.jsonl"

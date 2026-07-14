@@ -41,6 +41,43 @@ LEGACY_NON_AUTHORITATIVE_SCHEMA: tuple[str, ...] = (
     "n",
     "meta",
 )
+# Historical v1 counter records are confined to this non-authoritative archive.
+# New preregistration contracts must use alpha_lab.discipline.ledger instead.
+LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT = (
+    Path(__file__).resolve().parents[1]
+    / "docs"
+    / "research"
+    / "condition_research"
+    / "legacy_non_authoritative_archive"
+)
+
+
+def _legacy_archive_ledger_path(ledger_path) -> Path:
+    """Return a real archive-contained ledger path, rejecting aliases and escapes."""
+    root = Path(LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT)
+    try:
+        root_lexical = Path(root.absolute())
+        root_resolved = root.resolve(strict=False)
+        target_lexical = Path(Path(ledger_path).absolute())
+        target_resolved = target_lexical.resolve(strict=False)
+        target_resolved.relative_to(root_resolved)
+    except (OSError, ValueError):
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE ledger path must be beneath "
+            f"{LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT}"
+        ) from None
+    if target_lexical != target_resolved:
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE ledger path must not use a symlink"
+        )
+    try:
+        target_lexical.relative_to(root_lexical)
+    except ValueError:
+        raise ValueError(
+            "LEGACY_NON_AUTHORITATIVE ledger path must be beneath "
+            f"{LEGACY_NON_AUTHORITATIVE_LEDGER_ROOT}"
+        ) from None
+    return target_resolved
 
 
 def _targets_canonical_authority_ledger(target: Path) -> bool:
@@ -117,9 +154,10 @@ def append_trials(
 
     이 API와 LEGACY_NON_AUTHORITATIVE_SCHEMA는 분리된 과거 탐색 실행의
     append-only 기록 전용이며 v2 엄격 스키마·manifest issuer가 없다.
-    canonical 승격 권한 원장(또는 그 symlink/hardlink 별칭)을 대상으로 하면
-    쓰기 전에 ValueError로 거부한다. program은 ALLOWED_PROGRAMS만 허용하며
-    now는 호출자가 주입하는 datetime(ts = now.isoformat())다.
+    고정된 비권한 archive root 밖, symlink 별칭, canonical 승격 권한 원장
+    (또는 그 symlink/hardlink 별칭)을 대상으로 하면 쓰기 전에 ValueError로
+    거부한다. program은 ALLOWED_PROGRAMS만 허용하며 now는 호출자가 주입하는
+    datetime(ts = now.isoformat())다.
     """
     if program not in ALLOWED_PROGRAMS:
         raise ValueError(
@@ -127,7 +165,7 @@ def append_trials(
         )
     if isinstance(n, bool) or not isinstance(n, int) or n < 0:
         raise ValueError(f"n은 0 이상의 int여야 합니다: {n!r}")
-    target = Path(ledger_path)
+    target = _legacy_archive_ledger_path(ledger_path)
     if _targets_canonical_authority_ledger(target):
         raise ValueError(
             "LEGACY_NON_AUTHORITATIVE append_trials는 canonical 승격 권한 원장에 "
@@ -149,16 +187,17 @@ def append_trials(
 
 
 def total_trials(ledger_path, program: str | None = None) -> int:
-    """LEGACY_NON_AUTHORITATIVE 탐색 카운터의 n 총합을 반환한다.
+    """고정 LEGACY_NON_AUTHORITATIVE archive의 n 총합을 반환한다.
 
     program 지정 시 해당 프로그램만 합산한다. 원장 파일이 없으면 0. 알 수 없는
     program 필터는 ValueError(오타 필터가 조용히 0을 반환해 합산을 오도하는 것을 방지).
+    archive 밖 또는 symlink 별칭은 읽기에도 허용하지 않는다.
     """
     if program is not None and program not in ALLOWED_PROGRAMS:
         raise ValueError(
             f"허용되지 않은 program 필터: {program!r} (허용: {sorted(ALLOWED_PROGRAMS)})"
         )
-    target = Path(ledger_path)
+    target = _legacy_archive_ledger_path(ledger_path)
     if not target.exists():
         return 0
     total = 0
