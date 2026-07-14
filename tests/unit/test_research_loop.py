@@ -4890,3 +4890,44 @@ def _np_asarray(values):
     import numpy as np
 
     return np.asarray(values, dtype=float)
+
+# ---------------------------------------------------------------------------
+# DR-05 회귀 가드 — AnalysisCardV3 루프 배선이 死코드(inert)가 아님을 보장한다.
+#   (아키텍트 리뷰 발견: _build_analysis_card_v3 가 정의만 있고 호출부가 없었음.)
+# ---------------------------------------------------------------------------
+def test_dr05_analysis_card_v3_is_actually_wired_into_loop():
+    """_build_analysis_card_v3 와 지시 렌더러가 loop.py 안에서 실제로 호출되어야 한다.
+
+    호출부 없는 정의-only 헬퍼(inert) 회귀를 막는다: loop 소스에 정의(1회) 외에
+    최소 1개의 호출부가 있어야 하고, 매수 프롬프트 환류 채널(card_directive_lines)이
+    배선되어 있어야 한다.
+    """
+    import inspect
+
+    import ai_strategy_loop.controller.loop as loop_mod
+
+    src = inspect.getsource(loop_mod)
+    # def + >=1 call → 최소 2회 등장(死코드면 1회뿐).
+    assert src.count("_build_analysis_card_v3(") >= 2
+    # 카드 지시가 실제로 다음 세대 매수 프롬프트로 환류되는 채널이 배선돼 있어야 한다.
+    assert 'gen_kwargs["card_directive_lines"] = next_card_directive_lines' in src
+    # 지시/문서 힌트 두 렌더러가 루프에서 호출되어야 한다.
+    assert "render_directives_from_card_v3(" in src
+    assert "render_directive_hints_from_card_v3(" in src
+
+
+def test_dr05_card_directive_lines_inject_into_buy_prompt_only():
+    """card_directive_lines 는 매수(build_messages kind=='buy')에만 주입되고 매도엔 무영향.
+
+    토글 OFF(None)면 매수에서도 미주입이라 byte-identical(하위호환)을 보존한다.
+    """
+    from ai_strategy_loop.brain.prompt import build_messages
+
+    lines = ["[card:deadbeef][prefer] B_signal 상단 노림"]
+    buy = build_messages("buy", card_directive_lines=lines)
+    assert any("deadbeef" in m["content"] for m in buy)
+    sell = build_messages("sell", card_directive_lines=lines)
+    assert not any("deadbeef" in m["content"] for m in sell)
+    # 토글 OFF(None) → 매수 프롬프트에 카드 지시 블록이 추가되지 않는다(byte 보존).
+    buy_off = build_messages("buy", card_directive_lines=None)
+    assert not any("AnalysisCardV3" in m["content"] for m in buy_off)

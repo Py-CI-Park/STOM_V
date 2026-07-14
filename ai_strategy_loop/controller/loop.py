@@ -674,6 +674,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    prev_judged_hypotheses: Optional[list] = None,
                    segment_avoid_lines: Optional[list] = None,
                    feature_hint_lines: Optional[list] = None,
+                   card_directive_lines: Optional[list] = None,
                    band_seed_lines: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
@@ -888,6 +889,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를
             #   byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
             feature_hint_lines=(feature_hint_lines if kind == "buy" else None),
+            # DR-05 AnalysisCardV3 지시 환류 — build_messages가 kind=='buy'일 때만 반영하므로
+            #   매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를 byte-identical 보존한다.
+            #   토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
+            card_directive_lines=(card_directive_lines if kind == "buy" else None),
             # A-5 밴드 시드 힌트 — 매수 전용(kind=='buy'), 토글 OFF/아티팩트 없음이면
             #   호출부가 None을 넘겨 미주입(byte-동일).
             band_seed_lines=(band_seed_lines if kind == "buy" else None),
@@ -1323,6 +1328,12 @@ def run_loop(
     #   환류한다. 토글(feature_importance_feedback_enabled) OFF면 항상 None이라 산출·주입이
     #   전혀 안 일어난다(byte-동일). 백테 실패 세대(CSV 없음)는 None으로 비운다.
     next_feature_hint_lines: Optional[list] = None
+    # DR-05 AnalysisCardV3 지시 환류: 이 세대 카드(analysis_card_v3)의 actionable_directives를
+    #   render_directives_from_card_v3로 뽑은 매수 프롬프트용 지시 라인. 다음 세대 매수
+    #   프롬프트로 환류한다(avoid/prefer 힌트와 동일 채널). 토글(analysis_card_v3_enabled)
+    #   OFF면 항상 None이라 산출·주입이 전혀 안 일어난다(byte-동일). 백테 실패 세대(CSV 없음)는
+    #   None으로 비운다.
+    next_card_directive_lines: Optional[list] = None
     # P2a 가정 루프: 직전 세대 피드백이 '이 다음 세대'를 겨냥해 세운 가정 목록.
     #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
     #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
@@ -1562,6 +1573,12 @@ def run_loop(
                 if (getattr(config, "feature_importance_feedback_enabled", False)
                         and next_feature_hint_lines):
                     gen_kwargs["feature_hint_lines"] = next_feature_hint_lines
+                # DR-05 AnalysisCardV3 지시 환류: 토글 ON + 이 세대 카드에서 지시 라인을
+                #   확보했을 때만 _generate_pair로 넘겨 매수 프롬프트에 환류한다. OFF(기본)거나
+                #   라인이 비면 키를 넣지 않아 호출 시그니처가 byte-identical(다른 배선과 동일).
+                if (getattr(config, "analysis_card_v3_enabled", False)
+                        and next_card_directive_lines):
+                    gen_kwargs["card_directive_lines"] = next_card_directive_lines
                 # A-5 밴드 시드 힌트: run 시작 시 1회 로드한 정적 힌트를 매 세대 매수
                 #   프롬프트에 전달한다. OFF/아티팩트 없음이면 키를 넣지 않아 호출
                 #   시그니처가 기존과 byte-identical 하다(하위호환).
@@ -1811,6 +1828,9 @@ def run_loop(
                 #   힌트를 비워 다음 세대가 오래된 힌트를 환류받지 않게 한다(토글 OFF면
                 #   어차피 항상 None).
                 next_feature_hint_lines = None
+                # DR-05 — 실패 세대는 CSV가 없어 카드 산출도 불가하다. 지시 라인을 비워
+                #   다음 세대가 오래된 카드 지시를 환류받지 않게 한다(토글 OFF면 항상 None).
+                next_card_directive_lines = None
                 gen_no += 1
                 continue
 
@@ -2056,6 +2076,32 @@ def run_loop(
             #   데이터 없음/부족/읽기 실패는 빈 힌트로 흡수). OFF(기본)면 헬퍼를 호출조차
             #   안 해 None 유지(byte-동일). holdout 가드: outcome.csv_path는 train CSV다.
             next_feature_hint_lines = _build_feature_hints(config, outcome)
+            # DR-05 AnalysisCardV3 환류: 토글 ON일 때만 이 세대 결과 CSV에서 '영속·해시 카드'를
+            #   만들어, actionable_directives를 매수 프롬프트 지시(prefer)로 환류하고 문서 힌트를
+            #   로그로 남긴다. 카드/지시/문서힌트 세 산출은 '같은' content_hash를 그대로 읽어
+            #   렌더한다(재계산 금지 — 동일-해시 계약). OFF(기본)면 _build_analysis_card_v3가 None이라
+            #   아무 일도 안 일어난다(byte-동일). 매수 프롬프트 환류는 avoid/prefer 힌트와 동일
+            #   채널 규약(kind=='buy' 전용, 다음 세대 주입)이다. 렌더 실패는 흡수한다(분석 보조 경로).
+            next_card_directive_lines = None
+            _card_v3 = _build_analysis_card_v3(config, outcome)
+            if _card_v3 is not None:
+                try:
+                    from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: PLC0415
+                        render_directive_hints_from_card_v3,
+                    )
+                    from ai_strategy_loop.brain.segment_feedback import (  # noqa: PLC0415
+                        render_directives_from_card_v3,
+                    )
+
+                    next_card_directive_lines = render_directives_from_card_v3(_card_v3) or None
+                    _card_doc_hints = render_directive_hints_from_card_v3(_card_v3)
+                    logger.info(
+                        "AnalysisCardV3 gen %s card=%s 지시=%d 문서힌트=%d",
+                        gen_no, _card_v3.content_hash[:12],
+                        len(next_card_directive_lines or []), len(_card_doc_hints or []),
+                    )
+                except Exception as exc:  # noqa: BLE001 - 카드 렌더 실패는 루프를 막지 않음(분석 보조 경로).
+                    logger.info("AnalysisCardV3 렌더 실패(무시): %s", exc)
             # P2a 가정 방출: 부검 NL과 동일 인자(게이트 통과/MDD/손익/거래수)로 이 세대가
             #   '다음 세대용'으로 세우는 가정을 만든다. is_refine은 다음 세대가 부모를 갖는지
             #   (현재 best가 출발점이 되는지)로 본다. 토글 OFF면 None이라 가정이 carry되지

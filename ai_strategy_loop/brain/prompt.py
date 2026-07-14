@@ -953,6 +953,7 @@ def build_messages(
     few_shot_examples: Optional[List[str]] = None,
     segment_avoid_lines: Optional[List[str]] = None,
     feature_hint_lines: Optional[List[str]] = None,
+    card_directive_lines: Optional[List[str]] = None,
     band_seed_lines: Optional[List[str]] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
@@ -1218,6 +1219,17 @@ def build_messages(
                 "직전 백테에서 시총/시간대 구간마다 승패를 강하게 가른 진입 변수와 방향이다. "
                 "해당 구간 진입 조건에 이 변수의 제시된 방향(상단/하단)을 우선 반영하라:\n"
                 + "\n".join(feature_hint_lines)
+            )
+        # DR-05 AnalysisCardV3 지시(매수 전용): 이 카드가 표본/CI/다중검정(FDR)·train-only
+        #   게이트를 모두 통과시킨 actionable_directives 만 실었으므로, 그 지시를 매수
+        #   프롬프트에 'prefer' 가이드로 추가한다. None/빈 리스트면 미추가(byte 보존).
+        #   호출부가 매수일 때만 채운다(feature_hint 규약과 동일 — 매도 무영향).
+        if card_directive_lines:
+            user_lines.append(
+                "최근 백테 분석 카드 지시(AnalysisCardV3 — 통계 게이트 통과 지시): 아래는 "
+                "직전 백테 결과가 표본·신뢰구간·다중검정(FDR)·train-only 게이트를 모두 통과해 "
+                "채택된 실행 지시다. 다음 세대 매수 조건에 이 지시를 우선 반영하라:\n"
+                + "\n".join(card_directive_lines)
             )
         # A-5 백파인더 밴드 시드 힌트(매수 전용) — 채굴 아티팩트(band_seeds.json)의
         #   승자 셋업 NL 가이드. lookahead/survivorship 편향이 있는 생성 시드 전용이므로

@@ -91,6 +91,7 @@ def generate_strategy(
     pattern_cards: Optional[list] = None,
     segment_avoid_lines: Optional[list] = None,
     feature_hint_lines: Optional[list] = None,
+    card_directive_lines: Optional[list] = None,
     band_seed_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
@@ -218,6 +219,7 @@ def generate_strategy(
             few_shot_examples=few_shot_examples,
             segment_avoid_lines=segment_avoid_lines,
             feature_hint_lines=feature_hint_lines,
+            card_directive_lines=card_directive_lines,
             band_seed_lines=band_seed_lines,
         )
 
