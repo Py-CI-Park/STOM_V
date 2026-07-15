@@ -11,6 +11,7 @@ import copy
 import datetime as dt
 import hashlib
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -430,6 +431,37 @@ class TestPromotionV2:
             )
 
         assert fake_db.read_bytes() == before
+        assert not (tmp_path / "promotion_journal").exists()
+        assert not (tmp_path / "backups").exists()
+    @pytest.mark.skipif(os.name != "nt", reason="Windows retained-handle authority guard")
+    def test_rejects_prepositioned_rollback_journal_hardlink_before_connect(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        journal_path = Path(f"{fake_db}-journal")
+        sentinel = tmp_path / "protected-rollback-journal"
+        sentinel.write_bytes(b"protected rollback journal sentinel")
+        os.link(sentinel, journal_path)
+        before_db = fake_db.read_bytes()
+        before_sentinel = sentinel.read_bytes()
+        connect = registrar.sqlite3.connect
+
+        def reject_target_connect(path, *args, **kwargs):
+            if Path(path) == fake_db:
+                pytest.fail("SQLite target connect must follow rollback-journal identity validation")
+            return connect(path, *args, **kwargs)
+
+        monkeypatch.setattr(registrar.sqlite3, "connect", reject_target_connect)
+
+        with pytest.raises(Exception, match="hardlinked"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+
+        assert fake_db.read_bytes() == before_db
+        assert sentinel.read_bytes() == before_sentinel
+        assert journal_path.read_bytes() == before_sentinel
         assert not (tmp_path / "promotion_journal").exists()
         assert not (tmp_path / "backups").exists()
     def test_canonical_post_is_catalog_direct_input(self, fake_db, backup_dir, tmp_path, monkeypatch):

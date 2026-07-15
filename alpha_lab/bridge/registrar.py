@@ -312,15 +312,65 @@ def _copy_locked_db_exclusive(db_path: Path, backup_path: Path) -> str:
     except FileExistsError as exc:
         raise EvidenceSchemaError("reserved promotion backup already exists") from exc
     return hashlib.sha256(backup_path.read_bytes()).hexdigest()
-def _sqlite_sidecars(db_path: Path) -> tuple[Path, Path]:
-    return Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
+def _sqlite_auxiliary_paths(db_path: Path) -> tuple[Path, Path, Path]:
+    return Path(f"{db_path}-journal"), Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
 
 
-def _assert_rollback_main_file(db_path: Path, con: sqlite3.Connection | None = None) -> None:
-    """Reject WAL state; the main-file SHA-256 is the defined promotion snapshot."""
-    wal_path, shm_path = _sqlite_sidecars(db_path)
-    if wal_path.exists() or shm_path.exists():
-        raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
+def _hold_sqlite_auxiliary_paths(mutation_guard, db_path: Path) -> None:
+    """Retain every existing SQLite auxiliary identity before SQLite can open the DB."""
+    for path in _sqlite_auxiliary_paths(db_path):
+        mutation_guard.hold_path(path)
+        try:
+            descriptor = mutation_guard.open_path(
+                path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+        except FileNotFoundError:
+            continue
+        try:
+            _validate_retained_target(path, descriptor)
+        finally:
+            os.close(descriptor)
+
+
+def _validate_sqlite_auxiliary_identity(mutation_guard, path: Path) -> None:
+    mutation_guard.validate_file(path)
+    descriptor = mutation_guard.open_path(
+        path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    try:
+        _validate_retained_target(path, descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _assert_sqlite_auxiliary_cleanup(mutation_guard, db_path: Path) -> None:
+    """Require DELETE-mode SQLite to remove every auxiliary file before guard release."""
+    for path in _sqlite_auxiliary_paths(db_path):
+        if path.exists():
+            _validate_sqlite_auxiliary_identity(mutation_guard, path)
+            raise EvidenceSchemaError(
+                f"SQLite auxiliary sidecar was not safely cleaned up: {path.name}")
+
+
+def _assert_rollback_main_file(
+    db_path: Path,
+    con: sqlite3.Connection | None = None,
+    mutation_guard=None,
+) -> None:
+    """Require DELETE mode and control every SQLite auxiliary path."""
+    journal_path, wal_path, shm_path = _sqlite_auxiliary_paths(db_path)
+
+    def validate_existing(path: Path) -> None:
+        if mutation_guard is None:
+            raise EvidenceSchemaError("SQLite auxiliary paths require an authority mutation guard")
+        _validate_sqlite_auxiliary_identity(mutation_guard, path)
+
+    if journal_path.exists():
+        validate_existing(journal_path)
+        if con is None:
+            raise EvidenceSchemaError("SQLite rollback journal sidecar state is not promotable")
+    for path in (wal_path, shm_path):
+        if path.exists():
+            validate_existing(path)
+            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
     close = con is None
     if con is None:
         con = sqlite3.connect(str(db_path))
@@ -328,8 +378,14 @@ def _assert_rollback_main_file(db_path: Path, con: sqlite3.Connection | None = N
         row = con.execute("PRAGMA journal_mode").fetchone()
         if not row or str(row[0]).lower() != "delete":
             raise EvidenceSchemaError("SQLite journal mode must be DELETE for promotion")
-        if wal_path.exists() or shm_path.exists():
-            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
+        if journal_path.exists():
+            validate_existing(journal_path)
+            if close:
+                raise EvidenceSchemaError("SQLite rollback journal sidecar state is not promotable")
+        for path in (wal_path, shm_path):
+            if path.exists():
+                validate_existing(path)
+                raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not promotable")
     finally:
         if close:
             con.close()
@@ -410,13 +466,14 @@ def register_conditions_v2(
     target_descriptor: int | None = None
     try:
         mutation_guard.hold_path(db_file)
+        _hold_sqlite_auxiliary_paths(mutation_guard, db_file)
         try:
             target_descriptor = mutation_guard.open_path(
                 db_file, os.O_RDWR | getattr(os, "O_BINARY", 0))
         except FileNotFoundError as exc:
             raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file) from exc
         _validate_retained_target(db_file, target_descriptor)
-        _assert_rollback_main_file(db_file)
+        _assert_rollback_main_file(db_file, mutation_guard=mutation_guard)
         for path in (pre_path, anchor_path, post_path, destinations["backup"], catalog_path):
             mutation_guard.hold_path(path)
         guard = _acquire_promotion_guard(guard_path)
@@ -431,7 +488,7 @@ def register_conditions_v2(
             raise EvidenceSchemaError("promotion manifest changed before guarded PRE recheck")
         catalog_path = destinations["catalog"]
         _validate_retained_target(db_file, target_descriptor)
-        _assert_rollback_main_file(db_file)
+        _assert_rollback_main_file(db_file, mutation_guard=mutation_guard)
         _validate_catalog_pre_receipt(
             _load_json(catalog_path, "catalog receipt"),
             evidence_id=manifest["evidence_id"],
@@ -443,7 +500,7 @@ def register_conditions_v2(
         if existing["status"] != "ABSENT" or destinations["backup"].exists():
             raise ValueError("promotion journal or reserved backup refuses rerun")
         _validate_retained_target(db_file, target_descriptor)
-        _assert_rollback_main_file(db_file)
+        _assert_rollback_main_file(db_file, mutation_guard=mutation_guard)
         manifest_ref = {
             "path": _repo_relative_path(Path(manifest_path), root, "manifest_path"),
             "sha256": manifest_sha256,
@@ -483,7 +540,8 @@ def register_conditions_v2(
             write_con.execute("BEGIN EXCLUSIVE")
             if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
                 raise EvidenceSchemaError("sealed authority paths changed under write lock")
-            _assert_rollback_main_file(db_file, write_con)
+            _assert_rollback_main_file(
+                db_file, write_con, mutation_guard=mutation_guard)
             locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             if locked_pre_sha256 != pre_sha256:
                 raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
@@ -495,8 +553,11 @@ def register_conditions_v2(
             inserted: list[dict[str, Any]] = []
             if to_insert:
                 inserted = _apply_inserts(write_con, to_insert)
+            _assert_rollback_main_file(
+                db_file, write_con, mutation_guard=mutation_guard)
             write_con.commit()
-            _assert_rollback_main_file(db_file, write_con)
+            _assert_rollback_main_file(
+                db_file, write_con, mutation_guard=mutation_guard)
             post_state = capture_sqlite_logical_state(db_file, connection=write_con)
             db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             logical_delta = build_promotion_logical_delta(
@@ -533,9 +594,12 @@ def register_conditions_v2(
             write_con.close()
         return verified
     finally:
-        _release_promotion_guard(guard_path, guard)
-        os.close(target_descriptor)
-        authority_guard.__exit__(None, None, None)
+        try:
+            _assert_sqlite_auxiliary_cleanup(mutation_guard, db_file)
+        finally:
+            _release_promotion_guard(guard_path, guard)
+            os.close(target_descriptor)
+            authority_guard.__exit__(None, None, None)
 
 
 def _validate_items(items: list) -> None:
