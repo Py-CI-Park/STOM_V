@@ -876,31 +876,188 @@ def _bound_names(target: ast.AST) -> set[str]:
 
 
 def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], path: Path) -> None:
-    """Reject module-scope receiver calls unless their receiver is statically imported."""
-    bound_by_iteration: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
-            bound_by_iteration.update(_bound_names(node.target))
+    """Reject receiver calls whose root is not a sealed local or static import."""
 
-    class _ModuleScopeCalls(ast.NodeVisitor):
+    class _Bindings(ast.NodeVisitor):
+        """Collect bindings without treating nested executable scopes as local."""
+
+        def __init__(self) -> None:
+            self.events: dict[str, list[tuple[str, ast.AST | None]]] = {}
+
+        def _record(self, names: set[str], kind: str, value: ast.AST | None = None) -> None:
+            for name in names:
+                self.events.setdefault(name, []).append((kind, value))
+
+        def visit_Import(self, node: ast.Import) -> None:
+            for alias in node.names:
+                self._record({alias.asname or alias.name.split(".", 1)[0]}, "import")
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            for alias in node.names:
+                self._record({alias.asname or alias.name}, "import")
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            names = set().union(*(_bound_names(target) for target in node.targets))
+            self._record(names, "alias", node.value)
+            self.visit(node.value)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._record(
+                _bound_names(node.target), "alias" if node.value is not None else "unsafe", node.value
+            )
+            if node.value is not None:
+                self.visit(node.value)
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            self._record(_bound_names(node.target), "alias", node.value)
+            self.visit(node.value)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._record(_bound_names(node.target), "unsafe")
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            for target in node.targets:
+                self._record(_bound_names(target), "unsafe")
+
+        def visit_For(self, node: ast.For) -> None:
+            self._record(_bound_names(node.target), "unsafe")
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            for item in node.items:
+                if item.optional_vars is not None:
+                    self._record(_bound_names(item.optional_vars), "unsafe")
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                self._record({node.name}, "unsafe")
+            self.generic_visit(node)
+
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-            return
+            self._record({node.name}, "sealed")
 
-        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-            return
+        visit_AsyncFunctionDef = visit_FunctionDef
+        visit_ClassDef = visit_FunctionDef
 
         def visit_Lambda(self, node: ast.Lambda) -> None:
             return
 
+        def visit_ListComp(self, node: ast.ListComp) -> None:
+            for child in ast.walk(node):
+                if isinstance(child, ast.NamedExpr):
+                    self.visit_NamedExpr(child)
+
+        visit_SetComp = visit_ListComp
+        visit_DictComp = visit_ListComp
+        visit_GeneratorExp = visit_ListComp
+
+    def _receiver_root(node: ast.AST) -> str | None:
+        while isinstance(node, ast.Attribute):
+            node = node.value
+        return node.id if isinstance(node, ast.Name) else None
+
+    def _scope_bindings(
+        statements: list[ast.stmt], parameters: set[str], inherited: set[str]
+    ) -> set[str]:
+        collector = _Bindings()
+        for statement in statements:
+            collector.visit(statement)
+        safe = set(inherited)
+        safe.difference_update(parameters)
+        safe_events = {"import", "sealed"}
+        for name, events in collector.events.items():
+            if all(kind in safe_events for kind, _ in events):
+                safe.add(name)
+            else:
+                safe.discard(name)
+        changed = True
+        while changed:
+            changed = False
+            for name, events in collector.events.items():
+                if name in safe or any(kind not in {"alias"} for kind, _ in events):
+                    continue
+                if all(_receiver_root(value) in safe for _, value in events):
+                    safe.add(name)
+                    changed = True
+        return safe
+
+    def _parameters(args: ast.arguments) -> set[str]:
+        return {
+            argument.arg
+            for argument in (*args.posonlyargs, *args.args, *args.kwonlyargs)
+        } | ({args.vararg.arg} if args.vararg else set()) | ({args.kwarg.arg} if args.kwarg else set())
+
+    class _ModuleScopeCalls(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.safe_scopes: list[set[str]] = []
+
+        @property
+        def safe(self) -> set[str]:
+            return self.safe_scopes[-1]
+
+        def _visit_scope(
+            self, statements: list[ast.stmt], parameters: set[str] | None = None
+        ) -> None:
+            inherited = self.safe if self.safe_scopes else set()
+            self.safe_scopes.append(_scope_bindings(statements, parameters or set(), inherited))
+            for statement in statements:
+                self.visit(statement)
+            self.safe_scopes.pop()
+
+        def visit_Module(self, node: ast.Module) -> None:
+            self._visit_scope(node.body)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for default in (*node.args.defaults, *node.args.kw_defaults):
+                if default is not None:
+                    self.visit(default)
+            self._visit_scope(node.body, _parameters(node.args))
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
         def visit_ClassDef(self, node: ast.ClassDef) -> None:
-            return
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for base in node.bases:
+                self.visit(base)
+            for keyword in node.keywords:
+                self.visit(keyword.value)
+            self._visit_scope(node.body)
+
+        def _visit_comprehension(self, node: ast.AST, generators: list[ast.comprehension]) -> None:
+            self.safe_scopes.append(set(self.safe))
+            for generator in generators:
+                self.visit(generator.iter)
+                self.safe_scopes[-1].difference_update(_bound_names(generator.target))
+                for condition in generator.ifs:
+                    self.visit(condition)
+            if isinstance(node, ast.DictComp):
+                self.visit(node.key)
+                self.visit(node.value)
+            else:
+                self.visit(node.elt)
+            self.safe_scopes.pop()
+
+        def visit_ListComp(self, node: ast.ListComp) -> None:
+            self._visit_comprehension(node, node.generators)
+
+        visit_SetComp = visit_ListComp
+        visit_GeneratorExp = visit_ListComp
+
+        def visit_DictComp(self, node: ast.DictComp) -> None:
+            self._visit_comprehension(node, node.generators)
 
         def visit_Call(self, node: ast.Call) -> None:
             if isinstance(node.func, ast.Attribute):
-                receiver = node.func.value
-                raw = receiver.id if isinstance(receiver, ast.Name) else None
-                resolved = _dotted_name(receiver, aliases)
-                if raw in bound_by_iteration or raw is not None and raw not in aliases or resolved is None:
+                root = _receiver_root(node.func.value)
+                if root is None or root not in self.safe:
                     raise EvidenceSchemaError(
                         f"unresolved executable receiver is unsupported: {path}"
                     )

@@ -714,6 +714,10 @@ class TestPrereg:
         "import builtins\nimport importlib\nlist(map(builtins.getattr(importlib, 'import_module'), ['local_plugin']))\n",
         "type(object).__getattribute__(object, '__class__')\n",
         "import pickle\npickle.loads(b'payload')\n",
+        "import importlib\ndef run():\n    for loader in (importlib,):\n        loader.import_module('plugin')\nrun()\n",
+        "import importlib\nclass Executed:\n    for loader in (importlib,):\n        loader.import_module('plugin')\n",
+        "import importlib\ndef outer():\n    class Holder:\n        pass\n    holder = Holder()\n    holder.importlib.import_module('plugin')\nouter()\n",
+        "import importlib\n[loader.import_module('plugin') for (loader,) in ((importlib,),)]\n",
     ])
     def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
@@ -730,7 +734,7 @@ class TestPrereg:
 
     def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
-        measure.write_text("from importlib import import_module\nplugin = import_module('plugin')\n", encoding="utf-8")
+        measure.write_text("from importlib import import_module\ndef sealed_local():\n    return 'ok'\nsealed_local()\nplugin = import_module('plugin')\n", encoding="utf-8")
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
         document = tmp_path / "prereg.md"
         document.write_text(
