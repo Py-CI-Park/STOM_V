@@ -115,7 +115,7 @@ def test_child_wrap_preserves_args_and_exit_code(tmp_path):
     child = _write_child(tmp_path, "fail_child.py", _FAIL_CHILD)
     argv_dump = tmp_path / "argv.txt"
     run_dir = tmp_path / "run_fail"
-    cmd = [sys.executable, "-P", "-m", "alpha_lab.runlab.child_wrap",
+    cmd = [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
            "--interval", "0.1", str(run_dir), str(child),
            str(argv_dump), "alpha", "--beta=1"]
     proc = subprocess.run(cmd, cwd=str(tmp_path), env=_child_env(),
@@ -128,14 +128,14 @@ def test_child_wrap_preserves_args_and_exit_code(tmp_path):
     assert contract.read_pid(run_dir) > 0
 
 
-def test_sanitize_runtime_env_seals_to_root_and_disables_user_site(tmp_path):
+def test_sanitize_runtime_env_discards_all_caller_pythonpath_entries(tmp_path):
     repo_root = tmp_path / "repo"
     external = tmp_path / "external"
     nested = repo_root / "extra"
     env = {
         "PYTHONNOUSERSITE": "0",
         "PYTHONPATH": os.pathsep.join(
-            [str(nested), str(repo_root), str(external), str(external)]),
+            ["", "relative", str(nested), str(repo_root), str(external)]),
     }
 
     sanitized = contract.sanitize_runtime_env(env, repo_root)
@@ -144,12 +144,22 @@ def test_sanitize_runtime_env_seals_to_root_and_disables_user_site(tmp_path):
     assert sanitized["PYTHONNOUSERSITE"] == "1"
 
 
-@pytest.mark.parametrize("pythonpath", ["", "relative"])
-def test_sanitize_runtime_env_rejects_empty_and_relative_entries(
-        tmp_path, pythonpath):
-    with pytest.raises(ValueError, match="empty|relative"):
-        contract.sanitize_runtime_env({"PYTHONPATH": pythonpath},
-                                      tmp_path / "repo")
+def test_sanitize_runtime_env_adds_deduped_interpreter_paths_after_root(
+        tmp_path, monkeypatch):
+    repo_root = tmp_path / "repo"
+    purelib = tmp_path / "purelib"
+    platlib = tmp_path / "platlib"
+    caller = tmp_path / "caller"
+    monkeypatch.setattr(
+        contract, "interpreter_site_paths",
+        lambda: (str(purelib.resolve()), str(purelib.resolve()),
+                 str(platlib.resolve())))
+    sanitized = contract.sanitize_runtime_env(
+        {"PYTHONPATH": str(caller)}, repo_root,
+        include_interpreter_site_paths=True)
+
+    assert sanitized["PYTHONPATH"].split(os.pathsep) == [
+        str(repo_root.resolve()), str(purelib.resolve()), str(platlib.resolve())]
 
 
 def test_detached_runner_passes_root_only_safe_path_wrapper_to_popen(
@@ -176,14 +186,14 @@ def test_detached_runner_passes_root_only_safe_path_wrapper_to_popen(
         env={"PYTHONPATH": os.pathsep.join(
             [str(nested), str(repo_root), str(external)])})
 
-    assert captured["cmd"][1:4] == (
-        "-P", "-m", "alpha_lab.runlab.child_wrap")
+    assert captured["cmd"][1:5] == (
+        "-P", "-S", "-m", "alpha_lab.runlab.child_wrap")
     assert captured["cwd"] == external.resolve()
     assert captured["env"]["PYTHONPATH"] == str(repo_root.resolve())
     assert captured["env"]["PYTHONNOUSERSITE"] == "1"
 
 
-def test_child_wrap_passes_root_only_safe_path_target_to_popen(
+def test_child_wrap_passes_trusted_target_paths_to_popen(
         tmp_path, monkeypatch):
     from alpha_lab.runlab import child_wrap
 
@@ -215,8 +225,9 @@ def test_child_wrap_passes_root_only_safe_path_target_to_popen(
     monkeypatch.setattr(child_wrap.subprocess, "Popen", fake_popen)
 
     assert child_wrap._run(run_dir, str(tmp_path / "target.py"), [], 0.1) == 0
-    assert captured["cmd"][:2] == [sys.executable, "-P"]
-    assert captured["env"]["PYTHONPATH"] == str(repo_root.resolve())
+    assert captured["cmd"][:3] == [sys.executable, "-P", "-S"]
+    assert captured["env"]["PYTHONPATH"].split(os.pathsep) == [
+        str(repo_root.resolve()), *contract.interpreter_site_paths()]
     assert str(external.resolve()) not in captured["env"]["PYTHONPATH"]
     assert captured["env"]["PYTHONNOUSERSITE"] == "1"
 
@@ -244,17 +255,45 @@ def test_direct_child_wrap_safe_path_blocks_cwd_wrapper_and_target_paths(
         encoding="utf-8")
 
     proc = subprocess.run(
-        [sys.executable, "-P", "-m", "alpha_lab.runlab.child_wrap",
+        [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
          "--interval", "0.1", str(run_dir), str(child), str(output)],
         cwd=str(fake_cwd), env=_child_env(), capture_output=True, timeout=60)
 
     assert proc.returncode == 0, proc.stderr.decode(errors="replace")
     assert not (fake_cwd / "fake_wrapper_ran.txt").exists()
     child_path = json.loads(output.read_text(encoding="utf-8"))
+    expected_target_paths = [str(_ROOT.resolve())]
+    expected_target_paths.extend(
+        path for path in contract.interpreter_site_paths()
+        if path not in expected_target_paths)
+    assert child_path[:len(expected_target_paths)] == expected_target_paths
     assert str(fake_cwd.resolve()) not in child_path
     assert str(child_parent.resolve()) not in child_path
     assert str(external_site.resolve()) not in child_path
     assert child_path.count(str(_ROOT.resolve())) == 1
+def test_direct_child_wrap_skips_repo_sitecustomize_after_finalization(tmp_path):
+    marker_module = _ROOT / "sitecustomize.py"
+    marker_output = tmp_path / "sitecustomize-ran.txt"
+    assert not marker_module.exists(), "test requires no pre-existing root hook"
+    marker_module.write_text(
+        "import os\n"
+        "from pathlib import Path\n"
+        "Path(os.environ['RUNLAB_SITECUSTOMIZE_MARKER']).write_text('ran')\n",
+        encoding="utf-8")
+    child = _write_child(tmp_path, "ok_child.py", "pass\n")
+    run_dir = tmp_path / "run_sitecustomize"
+    env = _child_env()
+    env["RUNLAB_SITECUSTOMIZE_MARKER"] = str(marker_output)
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
+             "--interval", "0.1", str(run_dir), str(child)],
+            cwd=str(tmp_path), env=env, capture_output=True, timeout=60)
+    finally:
+        marker_module.unlink()
+
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    assert not marker_output.exists()
 
 
 # ── watchdog: pid 생존 확인(ctypes) ─────────────────────────────────────────

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import sysconfig
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,27 +39,42 @@ _IO_RETRY = 5
 _IO_RETRY_SLEEP_SEC = 0.05
 
 
-def sanitize_runtime_env(env: Optional[Dict[str, str]],
-                         repo_root: Path) -> Dict[str, str]:
-    """Return a child environment with only the canonical repository root.
+def interpreter_site_paths() -> tuple[str, ...]:
+    """Return this interpreter's absolute purelib/platlib roots once, in order."""
+    paths = sysconfig.get_paths()
+    trusted = []
+    for key in ("purelib", "platlib"):
+        raw = paths.get(key)
+        if not raw:
+            continue
+        path = Path(raw)
+        if not path.is_absolute():
+            continue
+        resolved = str(path.resolve())
+        if resolved not in trusted:
+            trusted.append(resolved)
+    return tuple(trusted)
 
-    Empty and relative ``PYTHONPATH`` entries are rejected because they enable
-    current-directory imports. All other inherited entries, including nested
-    repository paths and external directories, are discarded. ``-P`` on both
-    process layers complements this seal by disabling interpreter-added paths.
+
+def sanitize_runtime_env(env: Optional[Dict[str, str]], repo_root: Path, *,
+                         include_interpreter_site_paths: bool = False,
+                         ) -> Dict[str, str]:
+    """Return a child environment with only trusted import roots.
+
+    Caller-provided ``PYTHONPATH`` is always discarded. The wrapper receives
+    only the exact repository root; the target additionally receives this
+    interpreter's purelib/platlib roots after that root so installed
+    dependencies work while ``-S`` prevents site startup hooks and ``.pth``
+    processing.
     """
     merged = dict(os.environ if env is None else env)
-    root = Path(repo_root).resolve()
-    raw = merged.get("PYTHONPATH")
+    roots = [str(Path(repo_root).resolve())]
+    if include_interpreter_site_paths:
+        for path in interpreter_site_paths():
+            if path not in roots:
+                roots.append(path)
 
-    if raw is not None:
-        for entry in raw.split(os.pathsep):
-            if not entry:
-                raise ValueError("PYTHONPATH contains an empty entry")
-            if not Path(entry).is_absolute():
-                raise ValueError(f"PYTHONPATH contains a relative entry: {entry!r}")
-
-    merged["PYTHONPATH"] = str(root)
+    merged["PYTHONPATH"] = os.pathsep.join(roots)
     merged["PYTHONNOUSERSITE"] = "1"
     return merged
 

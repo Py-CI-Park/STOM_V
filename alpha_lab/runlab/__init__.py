@@ -5,7 +5,7 @@
 
 구성:
   detached_runner  Windows 세션 독립 기동기(창구). CLI:
-                   python -m alpha_lab.runlab.detached_runner <run_dir> <스크립트> -- [인자...]
+                   python -P -S -m alpha_lab.runlab.detached_runner <run_dir> <스크립트> -- [인자...]
   child_wrap       대상 스크립트 무수정 래퍼 — 심박 갱신+종료코드 기록.
   watchdog         보고 전용 판정(RUNNING/STALLED/DEAD/EXITED/MISSING).
                    자동 재시작 금지 — 재기동 결정은 사람/메인 세션 몫.

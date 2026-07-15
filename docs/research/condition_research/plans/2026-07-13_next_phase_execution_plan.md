@@ -47,7 +47,7 @@
 [3] 인자 대조      봉인 문서의 게이트 요건(예: 스팟 재검 일자)을 CLI --help와 대조해 필요한 인자를 빠짐없이 구성
                    ※ 실측 사고: O-3 최초 기동 때 --spot-days 누락으로 G3 미실행 → 스팟 재추출로 보완했음.
                      measure_gate는 코드 무결성만 검사하고 인자 완전성은 안 본다 — 이 단계가 그 구멍을 막는다
-[4] 분리 기동      STOM_ALLOW_MINIMAL_SETTING=1 python -m alpha_lab.runlab.detached_runner \
+[4] 분리 기동      STOM_ALLOW_MINIMAL_SETTING=1 python -P -S -m alpha_lab.runlab.detached_runner \
                      <run_dir> <스크립트> -- <인자...>
                    (run_dir 권장: 산출 디렉토리 아래 run_ctl/runN — .gitignore에 run_ctl/ 포함 확인)
 [5] 감시           python scripts/batch_watch.py <run_dir>  (보고 전용 — 자동 재시작 금지)
