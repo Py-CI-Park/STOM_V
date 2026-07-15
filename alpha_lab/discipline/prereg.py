@@ -843,6 +843,123 @@ def _module_file(root: Path, module: str) -> Path | None:
         elif module_file.is_file():
             return module_file.resolve()
     return None
+def _unambiguous_final_bindings(module_path: Path) -> set[str]:
+    """Return names with one statically provable module-level final binding."""
+    try:
+        tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
+    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        raise EvidenceSchemaError(
+            f"cannot inspect local module bindings: {module_path}"
+        ) from exc
+
+    class _Bindings(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.events: dict[str, int] = {}
+
+        def _record(self, names: set[str]) -> None:
+            for name in names:
+                self.events[name] = self.events.get(name, 0) + 1
+
+        def visit_Import(self, node: ast.Import) -> None:
+            self._record({alias.asname or alias.name.split(".", 1)[0] for alias in node.names})
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            self._record({alias.asname or alias.name for alias in node.names})
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._record(set().union(*(_bound_names(target) for target in node.targets)))
+            self.visit(node.value)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._record(_bound_names(node.target))
+            if node.value is not None:
+                self.visit(node.value)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._record(_bound_names(node.target))
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            self._record(_bound_names(node.target))
+            self.visit(node.value)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            for target in node.targets:
+                self._record(_bound_names(target))
+
+        def visit_For(self, node: ast.For) -> None:
+            self._record(_bound_names(node.target))
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            for item in node.items:
+                if item.optional_vars is not None:
+                    self._record(_bound_names(item.optional_vars))
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                self._record({node.name})
+            self.generic_visit(node)
+
+        def visit_Match(self, node: ast.Match) -> None:
+            for case in node.cases:
+                self._record(_pattern_bound_names(case.pattern))
+            self.generic_visit(node)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            self._record({node.name})
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+        visit_ClassDef = visit_FunctionDef
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            return
+
+    bindings = _Bindings()
+    for statement in tree.body:
+        bindings.visit(statement)
+    return {name for name, count in bindings.events.items() if count == 1}
+
+
+def _validate_local_absolute_imports(root: Path, tree: ast.AST) -> None:
+    """Fail closed when an absolute local import cannot be sealed exactly."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            requests = ((alias.name, ()) for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            requests = ((node.module, tuple(alias.name for alias in node.names)),)
+        else:
+            continue
+        for module, fromlist in requests:
+            top_level = module.split(".", 1)[0]
+            if not _repo_top_level_candidate(root, top_level):
+                continue
+            resolved = _module_file(root, module)
+            if resolved is None:
+                raise EvidenceSchemaError(
+                    f"unresolved local absolute import: {module}"
+                )
+            if not fromlist:
+                continue
+            exports = _unambiguous_final_bindings(resolved)
+            is_package = resolved.name == "__init__.py"
+            for name in fromlist:
+                child = _module_file(root, f"{module}.{name}")
+                if child is not None:
+                    if not is_package:
+                        raise EvidenceSchemaError(
+                            f"local non-package module cannot provide submodule: {module}.{name}"
+                        )
+                    continue
+                if name not in exports:
+                    raise EvidenceSchemaError(
+                        f"unresolved local fromlist import: {module}.{name}"
+                    )
+
 
 
 def _package_initializers(path: Path, root: Path) -> set[Path]:
@@ -2235,6 +2352,7 @@ def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path], set[st
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
         raise EvidenceSchemaError(f"cannot parse dependency Python file {path}: {exc}") from exc
     _reject_import_resolution_global_binding(tree, path)
+    _validate_local_absolute_imports(root, tree)
     package = list(path.relative_to(root).parent.parts)
     found: set[Path] = set()
     for node in ast.walk(tree):

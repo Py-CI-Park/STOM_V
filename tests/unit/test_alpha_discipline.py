@@ -1498,7 +1498,7 @@ class TestPrereg:
             (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
         with pytest.raises(
             evidence.EvidenceSchemaError,
-            match="unresolved callable alias|function-body object mutation",
+            match="unresolved callable alias|function-body object mutation|unresolved local fromlist import",
         ):
             prereg.finalize_prereg(
                 document,
@@ -1539,7 +1539,7 @@ class TestPrereg:
         if relative:
             (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
         with pytest.raises(
-            evidence.EvidenceSchemaError, match="wildcard import is unsupported|sealed mutation"
+            evidence.EvidenceSchemaError, match="wildcard import is unsupported|sealed mutation|unresolved local fromlist import"
         ):
             prereg.finalize_prereg(
                 document,
@@ -2146,6 +2146,128 @@ class TestPrereg:
         )
 
         assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
+    def test_absolute_local_dotted_import_rejects_absence_then_seals_post_added_module(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import alpha_lab.future_plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved local absolute import: alpha_lab\.future_plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+        (package / "future_plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/future_plugin.py"}
+
+    def test_absolute_nested_local_dotted_import_seals_every_initializer(self, tmp_path):
+        package = tmp_path / "alpha_lab" / "nested"
+        package.mkdir(parents=True)
+        (tmp_path / "alpha_lab" / "__init__.py").write_text("", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import alpha_lab.nested.plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {
+            "measure.py",
+            "alpha_lab/__init__.py",
+            "alpha_lab/nested/__init__.py",
+            "alpha_lab/nested/plugin.py",
+        }
+
+    @pytest.mark.parametrize("source", [
+        "plugin = __import__('alpha_lab.plugin')\n",
+        "import importlib\nplugin = importlib.import_module('alpha_lab.plugin')\n",
+    ], ids=("builtin", "importlib"))
+    def test_absolute_dynamic_local_dotted_import_seals_full_module(self, tmp_path, source):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=("alpha_lab/plugin.py",)
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/plugin.py"}
+
+    def test_local_package_fromlist_rejects_missing_submodule_or_binding(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("from alpha_lab import missing\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved local fromlist import: alpha_lab\.missing",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_local_package_fromlist_seals_resolved_submodule(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("from alpha_lab import plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/plugin.py"}
+
+    @pytest.mark.parametrize(("module_name", "module_source"), [
+        ("alpha_lab", "EXPORTED = 1\n"),
+        ("carrier", "EXPORTED = 1\n"),
+    ], ids=("package_initializer", "non_package_module"))
+    def test_local_fromlist_allows_only_proven_final_binding(
+        self, tmp_path, module_name, module_source
+    ):
+        if module_name == "alpha_lab":
+            module = tmp_path / module_name
+            module.mkdir()
+            source = module / "__init__.py"
+            expected = {"measure.py", "alpha_lab/__init__.py"}
+        else:
+            source = tmp_path / f"{module_name}.py"
+            expected = {"measure.py", "carrier.py"}
+        source.write_text(module_source, encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"from {module_name} import EXPORTED\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == expected
+        source.write_text("EXPORTED = 1\nEXPORTED = 2\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"unresolved local fromlist import: {module_name}\.EXPORTED",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
     def test_recheck_authority_paths_rejects_case_nested_hardlink_and_symlink_aliases(self, tmp_path):
         target = tmp_path / "measure.py"
         target.write_text("VALUE = 1\n", encoding="utf-8")
