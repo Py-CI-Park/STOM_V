@@ -36,7 +36,7 @@ from alpha_lab.catalog.loaders import (
 )
 from alpha_lab.catalog.schema import create_schema, reset_tables, table_counts
 from alpha_lab.catalog.sources import (
-    add_note, new_receipt, read_json, record_source, sha256_file,
+    add_note, new_receipt, read_json, record_source, sha256_file, snapshot_sources,
 )
 
 # 공유 원천(1회만 읽고 여러 테이블이 소비) — rel 경로 키.
@@ -353,34 +353,38 @@ def _repo_ref(path: Path, root: Path, field: str) -> dict[str, str]:
 def _strict_source_hashes(
     receipt: Dict[str, Any], run_dir: Path, root: Path,
     expected: list[dict[str, str]] | None = None,
+    verified_run_dir: Path | None = None,
 ) -> list[dict[str, str]]:
-    """Require complete sources and, for authority builds, an exact sealed artifact set."""
+    """Require complete sources bound to the verified snapshots used for parsing."""
     if receipt["missing"] or receipt["skipped"]:
         raise EvidenceSchemaError("promotion catalog requires no missing, skipped, or unparsable sources")
     sources: list[dict[str, str]] = []
+    hash_dir = verified_run_dir or run_dir
     for item in receipt["sources"]:
         if set(item) - {"path", "status", "sha256", "size_bytes", "note"} or item.get("status") != "loaded":
             raise EvidenceSchemaError("promotion catalog requires every source to be loaded")
-        path = run_dir / item["path"]
+        path = hash_dir / item["path"]
         if not isinstance(item.get("sha256"), str) or sha256_file(path) != item["sha256"]:
             raise EvidenceSchemaError("promotion catalog source hash is incomplete or stale")
-        source = _repo_ref(path, root, "catalog source")
-        if source["sha256"] != item["sha256"]:
-            raise EvidenceSchemaError("catalog source hash does not bind the loaded source")
-        sources.append(source)
+        source_path = run_dir / item["path"]
+        try:
+            relative = source_path.resolve().relative_to(root).as_posix()
+        except ValueError as exc:
+            raise EvidenceSchemaError("catalog source must be inside repo_root") from exc
+        sources.append({"path": relative, "sha256": item["sha256"]})
     if not sources or len({item["path"] for item in sources}) != len(sources):
         raise EvidenceSchemaError("promotion catalog source hashes must be complete and unique")
     sources = sorted(sources, key=lambda item: item["path"])
-    if expected is not None:
-        if sources != expected:
-            raise EvidenceSchemaError(
-                "promotion catalog sources must exactly equal manifest input_artifacts and result_artifacts"
-            )
+    if expected is not None and sources != expected:
+        raise EvidenceSchemaError(
+            "promotion catalog sources must exactly equal manifest input_artifacts and result_artifacts"
+        )
     return sources
 
 
 def _promotion_receipt(
     receipt: Dict[str, Any], *, root: Path, db_path: Path, status: dict[str, Any],
+    verified_run_dir: Path | None = None, verified_db_sha256: str | None = None,
 ) -> dict[str, Any]:
     upstream = {"kind": status["source_kind"], "path": status["source_path"], "sha256": status["source_sha256"]}
     manifest_path = (
@@ -394,6 +398,10 @@ def _promotion_receipt(
             root / Path(*PurePosixPath(result["promotion_manifest_path"]).parts), root, "promotion manifest")
     else:
         manifest_ref = _repo_ref(root / Path(*PurePosixPath(manifest_path).parts), root, "promotion manifest")
+    try:
+        catalog_db_path = db_path.resolve().relative_to(root).as_posix()
+    except ValueError as exc:
+        raise EvidenceSchemaError("catalog DB must be inside repo_root") from exc
     return {
         "schema_version": 2,
         "kind": "catalog_promotion_receipt",
@@ -402,9 +410,13 @@ def _promotion_receipt(
         "evidence_id": status["evidence_id"],
         "upstream": upstream,
         "promotion_manifest": manifest_ref,
-        "catalog_db": _repo_ref(db_path, root, "catalog DB"),
+        "catalog_db": {
+            "path": catalog_db_path,
+            "sha256": verified_db_sha256 or sha256_file(db_path),
+        },
         "source_hashes": _strict_source_hashes(
-            receipt, Path(receipt["run_dir"]), root, status["source_artifacts"]),
+            receipt, Path(receipt["run_dir"]), root, status["source_artifacts"],
+            verified_run_dir),
     }
 
 def _validate_catalog_candidate_identity(status: dict[str, Any]) -> None:
@@ -621,6 +633,18 @@ def _validate_retained_file_identity(path: Path, descriptor: int, label: str) ->
         or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
     ):
         raise EvidenceSchemaError(f"{label} identity changed or is not a single-link regular file")
+def _sha256_retained_file(path: Path, descriptor: int, label: str) -> str:
+    """Hash a retained authority file only after confirming its pathname identity."""
+    _validate_retained_file_identity(path, descriptor, label)
+    import hashlib
+    digest = hashlib.sha256()
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    while chunk := os.read(descriptor, 1 << 20):
+        digest.update(chunk)
+    _validate_retained_file_identity(path, descriptor, label)
+    return digest.hexdigest()
+
+
 
 
 def _create_authority_temp(
@@ -811,6 +835,23 @@ def _release_reservation(reservation: _PublicationReservation) -> None:
 # build_all — 전체 오케스트레이션(멱등).
 # ---------------------------------------------------------------------------
 
+def _manifest_snapshot_expectations(
+    run_dir: Path, root: Path, artifacts: list[dict[str, str]],
+) -> dict[str, str]:
+    """Translate sealed repo artifact paths to run-relative snapshot paths."""
+    expected: dict[str, str] = {}
+    for artifact in artifacts:
+        source = root / Path(*PurePosixPath(artifact["path"]).parts)
+        try:
+            rel = source.relative_to(run_dir.resolve()).as_posix()
+        except ValueError as exc:
+            raise EvidenceSchemaError("catalog manifest source must be inside run_dir") from exc
+        if rel in expected or not isinstance(artifact.get("sha256"), str):
+            raise EvidenceSchemaError("catalog manifest sources must be unique and hashed")
+        expected[rel] = artifact["sha256"]
+    return expected
+
+
 def build_all(
     run_dir: Path | str,
     db_path: Path | str | None = None,
@@ -831,10 +872,18 @@ def build_all(
     db_path, receipt_path = _catalog_output_paths(
         root, db_path, receipt_path, promotion_status)
     receipt = new_receipt(run_dir, db_path)
+    source_snapshot_dir: Path | None = None
+    content_run_dir = run_dir
     reservation: _PublicationReservation | None = None
     receipt_temp: Path | None = None
     authority_guard = None
     working_db_descriptor: int | None = None
+    if promotion_status is not None:
+        source_snapshot_dir = snapshot_sources(
+            run_dir, Path(tempfile.gettempdir()),
+            _manifest_snapshot_expectations(
+                run_dir.resolve(), root, promotion_status["source_artifacts"]))
+        content_run_dir = source_snapshot_dir
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
@@ -875,13 +924,13 @@ def build_all(
         try:
             create_schema(con)
             reset_tables(con)
-            docs = {rel: read_json(receipt, run_dir, rel) for rel in _SHARED_RELS}
+            docs = {rel: read_json(receipt, content_run_dir, rel) for rel in _SHARED_RELS}
             load_assets(con, run_dir, receipt)
             ledger_rows = load_ledger_mirror(
-                con, run_dir, receipt, strict=promotion_status is not None)
+                con, content_run_dir, receipt, strict=promotion_status is not None)
             load_clauses(con, docs[_REL_D1], receipt)
             load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
-            load_cells(con, run_dir, docs[_REL_O1G], receipt)
+            load_cells(con, content_run_dir, docs[_REL_O1G], receipt)
             load_judgments(con, docs, ledger_rows, receipt)
             if promotion_status is not None:
                 _validate_catalog_candidate_identity(promotion_status)
@@ -899,13 +948,13 @@ def build_all(
             _validate_retained_file_identity(
                 working_db_path, working_db_descriptor, "catalog authority temporary file")
             _flush_file(working_db_path)
+            working_db_sha256 = _sha256_retained_file(
+                working_db_path, working_db_descriptor, "catalog authority temporary file")
             _strict_source_hashes(
-                receipt, run_dir, root, promotion_status["source_artifacts"])
+                receipt, run_dir, root, promotion_status["source_artifacts"], source_snapshot_dir)
             if mutation_guard is not None:
                 mutation_guard.validate_file(db_path)
                 mutation_guard.validate_file(receipt_path)
-            _revalidate_authority_paths(
-                root, promotion_status, db_path, receipt_path)
             if receipt_path.exists() and not db_path.exists():
                 raise EvidenceSchemaError("catalog receipt exists without its authority DB")
             if db_path.exists():
@@ -914,8 +963,6 @@ def build_all(
                 if receipt_path.exists():
                     raise FileExistsError("catalog authority DB and receipt already exist")
             else:
-                _revalidate_authority_paths(
-                    root, promotion_status, db_path, receipt_path)
                 if mutation_guard is not None:
                     mutation_guard.validate_file(db_path)
                 _validate_retained_file_identity(
@@ -925,8 +972,12 @@ def build_all(
                     working_db_path, db_path, mutation_guard,
                     source_descriptor=working_db_descriptor)
                 mutation_guard.validate_file(db_path)
+            if sha256_file(db_path) != working_db_sha256:
+                raise EvidenceSchemaError(
+                    "published catalog DB bytes do not match the verified working DB")
             receipt["promotion_receipt"] = _promotion_receipt(
-                receipt, root=root, db_path=db_path, status=promotion_status)
+                receipt, root=root, db_path=db_path, status=promotion_status,
+                verified_run_dir=source_snapshot_dir, verified_db_sha256=working_db_sha256)
             validate_catalog_promotion_receipt_v2(
                 receipt["promotion_receipt"], repo_root=root)
         if promotion_status is None:
@@ -936,8 +987,6 @@ def build_all(
             if promotion_status is None:
                 receipt_path.write_bytes(receipt_bytes)
             else:
-                _revalidate_authority_paths(
-                    root, promotion_status, db_path, receipt_path)
                 if mutation_guard is not None:
                     mutation_guard.validate_file(receipt_path)
                 receipt_temp = _write_temp_bytes(
@@ -952,6 +1001,13 @@ def build_all(
             working_db_descriptor = None
         if receipt_temp is not None and receipt_temp.exists():
             receipt_temp.unlink()
+        if source_snapshot_dir is not None and source_snapshot_dir.exists():
+            for path in sorted(source_snapshot_dir.rglob("*"), reverse=True):
+                if path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    path.rmdir()
+            source_snapshot_dir.rmdir()
         if promotion_status is not None and working_db_path.exists():
             working_db_path.unlink()
         if reservation is not None:

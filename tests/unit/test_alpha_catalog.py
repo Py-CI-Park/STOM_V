@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import os
@@ -13,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from alpha_lab.catalog import builder, schema
+from alpha_lab.catalog import builder, schema, sources
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
 
 # ---------------------------------------------------------------------------
@@ -179,6 +180,52 @@ def run_dir(tmp_path: Path) -> Path:
         encoding="utf-8")
     _write_stats_dbs(run)
     return run
+def test_json_parse_uses_verified_bytes_when_source_path_is_swapped(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    path = tmp_path / "source.json"
+    original = b'{"value":"verified"}'
+    path.write_bytes(original)
+    receipt = {"sources": [], "missing": [], "skipped": [], "notes": []}
+    original_loads = sources.json.loads
+
+    def swap_then_parse(payload: str) -> object:
+        path.write_text('{"value":"replacement"}', encoding="utf-8")
+        return original_loads(payload)
+
+    monkeypatch.setattr(sources.json, "loads", swap_then_parse)
+    assert sources.read_json(receipt, tmp_path, "source.json") == {"value": "verified"}
+    assert receipt["sources"] == [{
+        "path": "source.json", "status": "loaded",
+        "sha256": hashlib.sha256(original).hexdigest(),
+        "size_bytes": len(original),
+    }]
+
+
+def test_sqlite_snapshot_remains_the_verified_database_after_source_swap(tmp_path: Path):
+    source = tmp_path / "source.db"
+    con = sqlite3.connect(source)
+    con.execute("CREATE TABLE source_rows (value TEXT)")
+    con.execute("INSERT INTO source_rows VALUES ('verified')")
+    con.commit()
+    con.close()
+    expected = builder.sha256_file(source)
+    snapshot = sources.snapshot_sources(tmp_path, tmp_path, {"source.db": expected})
+    try:
+        con = sqlite3.connect(source)
+        con.execute("DROP TABLE source_rows")
+        con.execute("CREATE TABLE source_rows (value TEXT)")
+        con.execute("INSERT INTO source_rows VALUES ('replacement')")
+        con.commit()
+        con.close()
+        snap_con = sqlite3.connect(f"file:{(snapshot / 'source.db').as_posix()}?mode=ro", uri=True)
+        try:
+            assert snap_con.execute("SELECT value FROM source_rows").fetchone()[0] == "verified"
+        finally:
+            snap_con.close()
+    finally:
+        (snapshot / "source.db").unlink()
+        snapshot.rmdir()
 
 
 # ---------------------------------------------------------------------------

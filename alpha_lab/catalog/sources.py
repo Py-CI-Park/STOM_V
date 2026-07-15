@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import stat
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -31,11 +34,81 @@ def new_receipt(run_dir: Path, db_path: Path) -> Dict[str, Any]:
 
 def sha256_file(path: Path) -> str:
     """파일 sha256 — 대용량(parquet 수 MB)도 청크 단위로 안전하게."""
+    with open(path, "rb") as handle:
+        return _sha256_handle(handle.fileno())
+
+
+def _sha256_handle(descriptor: int) -> str:
     h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    while chunk := os.read(descriptor, 1 << 20):
+        h.update(chunk)
     return h.hexdigest()
+
+
+def _retained_regular_file(path: Path, descriptor: int, label: str) -> os.stat_result:
+    opened = os.fstat(descriptor)
+    named = os.stat(path, follow_symlinks=False)
+    if (
+        not stat.S_ISREG(opened.st_mode)
+        or opened.st_nlink != 1
+        or not stat.S_ISREG(named.st_mode)
+        or named.st_nlink != 1
+        or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
+    ):
+        raise OSError(f"{label} identity changed or is not a single-link regular file")
+    return opened
+
+
+def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    try:
+        _retained_regular_file(path, descriptor, label)
+        chunks: list[bytes] = []
+        h = hashlib.sha256()
+        while chunk := os.read(descriptor, 1 << 20):
+            chunks.append(chunk)
+            h.update(chunk)
+        _retained_regular_file(path, descriptor, label)
+        return b"".join(chunks), h.hexdigest()
+    finally:
+        os.close(descriptor)
+
+
+def snapshot_sources(
+    run_dir: Path, destination: Path, expected: Dict[str, str],
+) -> Path:
+    """Copy manifest sources from retained handles after checking their sealed bytes."""
+    snapshot_dir = Path(tempfile.mkdtemp(prefix=".catalog-sources.", dir=destination))
+    try:
+        for rel, expected_sha256 in expected.items():
+            source = Path(run_dir) / rel
+            payload, digest = _read_verified_bytes(source, f"catalog source '{rel}'")
+            if digest != expected_sha256:
+                raise ValueError(f"catalog source '{rel}' does not match manifest sha256")
+            target = snapshot_dir / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            descriptor = os.open(
+                target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600)
+            try:
+                view = memoryview(payload)
+                while view:
+                    written = os.write(descriptor, view)
+                    if written == 0:
+                        raise OSError("catalog source snapshot write made no progress")
+                    view = view[written:]
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+        return snapshot_dir
+    except BaseException:
+        for path in sorted(snapshot_dir.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+        snapshot_dir.rmdir()
+        raise
 
 
 def rel_to(run_dir: Path, path: Path) -> str:
@@ -48,7 +121,8 @@ def rel_to(run_dir: Path, path: Path) -> str:
 
 def record_source(
     receipt: Dict[str, Any], run_dir: Path, path: Path,
-    status: str = "loaded", note: str = "",
+    status: str = "loaded", note: str = "", *, sha256: Optional[str] = None,
+    size_bytes: Optional[int] = None,
 ) -> None:
     """원천 파일 1건을 영수증 sources에 기록(동일 경로 중복 기록 방지)."""
     rel = rel_to(run_dir, path)
@@ -58,25 +132,33 @@ def record_source(
     entry: Dict[str, Any] = {"path": rel, "status": status}
     if note:
         entry["note"] = note
-    if path.is_file():
+    if sha256 is not None:
+        entry["sha256"] = sha256
+        entry["size_bytes"] = size_bytes
+    elif path.is_file():
         entry["sha256"] = sha256_file(path)
         entry["size_bytes"] = path.stat().st_size
     receipt["sources"].append(entry)
 
 
 def read_json(receipt: Dict[str, Any], run_dir: Path, rel: str) -> Optional[dict]:
-    """run 상대 json을 읽는다 — 없으면 missing, 깨졌으면 skipped 기록 후 None."""
+    """Retain, hash, and parse one JSON source from the exact same bytes."""
     path = Path(run_dir) / rel
-    if not path.is_file():
+    try:
+        payload, digest = _read_verified_bytes(path, f"catalog json source '{rel}'")
+    except FileNotFoundError:
         receipt["missing"].append(rel)
         receipt["sources"].append({"path": rel, "status": "missing"})
         return None
+    except OSError as exc:
+        receipt["skipped"].append({"path": rel, "reason": f"json 원천 확인 실패: {exc}"})
+        return None
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        data = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         receipt["skipped"].append({"path": rel, "reason": f"json 파싱 실패: {exc}"})
         return None
-    record_source(receipt, run_dir, path)
+    record_source(receipt, run_dir, path, sha256=digest, size_bytes=len(payload))
     return data if isinstance(data, dict) else {"_root": data}
 
 
