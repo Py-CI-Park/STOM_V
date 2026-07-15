@@ -884,8 +884,10 @@ def _assignment_receiver(node: ast.AST, aliases: dict[str, str]) -> str | None:
     return None
 
 
-def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], path: Path) -> None:
-    """Reject receiver calls whose root is not a sealed local or static import."""
+def _reject_unresolved_module_receivers(
+    tree: ast.AST, aliases: dict[str, str], path: Path, root: Path
+) -> None:
+    """Reject receiver calls that cross a local sealed module's declared API."""
 
     class _Bindings(ast.NodeVisitor):
         """Collect bindings without treating nested executable scopes as local."""
@@ -970,6 +972,34 @@ def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], 
         while isinstance(node, ast.Attribute):
             node = node.value
         return node.id if isinstance(node, ast.Name) else None
+    def _attribute_depth(node: ast.Attribute) -> int:
+        depth = 0
+        current: ast.AST = node
+        while isinstance(current, ast.Attribute):
+            depth += 1
+            current = current.value
+        return depth
+
+    local_module_receivers = {
+        name for name, canonical in aliases.items()
+        if _module_file(root, canonical) is not None
+    }
+    local_symbol_receivers: set[str] = set()
+    package = list(path.relative_to(root).parent.parts)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        prefix = package[:len(package) - node.level + 1] if node.level else []
+        module = ".".join(prefix + (node.module.split(".") if node.module else []))
+        if _module_file(root, module) is None:
+            continue
+        for alias in node.names:
+            bound = alias.asname or alias.name
+            imported = f"{module}.{alias.name}" if module else alias.name
+            if _module_file(root, imported) is not None:
+                local_module_receivers.add(bound)
+            else:
+                local_symbol_receivers.add(bound)
 
 
     class _SealedLocalApis(ast.NodeVisitor):
@@ -1133,6 +1163,12 @@ def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], 
             if isinstance(node.func, ast.Attribute):
                 receiver = _dotted_name(node.func, aliases)
                 root = _receiver_root(node.func)
+                if root in local_symbol_receivers or (
+                    root in local_module_receivers and _attribute_depth(node.func) != 1
+                ):
+                    raise EvidenceSchemaError(
+                        f"unresolved executable receiver is unsupported: {path}"
+                    )
                 if (
                     receiver is None
                     or root is None
@@ -1186,7 +1222,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
                 f"unresolved executable receiver parameter is unsupported: {path}"
             )
     calls, aliases = _dynamic_call_kinds(tree)
-    _reject_unresolved_module_receivers(tree, aliases, path)
+    _reject_unresolved_module_receivers(tree, aliases, path, root)
     found: set[Path] = set()
     executable = {
         "__import__", "builtins.__import__", "importlib.import_module",

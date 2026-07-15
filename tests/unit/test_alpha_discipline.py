@@ -742,6 +742,71 @@ class TestPrereg:
     def test_dynamic_dependency_rejects_attribute_capability_carriers(self, tmp_path, source):
         with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
             prereg._dynamic_local_dependencies(ast.parse(source), tmp_path / "measure.py", tmp_path)
+    @pytest.mark.parametrize(("carrier_source", "receiver"), [
+        (
+            "import importlib\ndef holder():\n    pass\nholder.loader = importlib\n",
+            "carrier.holder.loader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Holder:\n    pass\nHolder.loader = importlib\n",
+            "carrier.Holder.loader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Holder:\n    pass\nholder = Holder()\nholder.__dict__['loader'] = importlib\n",
+            "carrier.holder.__dict__['loader'].import_module('plugin')",
+        ),
+    ])
+    def test_finalize_prereg_rejects_cross_module_capability_carriers(
+        self, tmp_path, carrier_source, receiver
+    ):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text(f"import carrier\n{receiver}\n", encoding="utf-8")
+        carrier.write_text(carrier_source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_direct_local_module_function_is_scanned_for_omitted_dynamic_plugin(self, tmp_path):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.safe_func()\n", encoding="utf-8")
+        carrier.write_text(
+            "import importlib\ndef safe_func():\n    return importlib.import_module('plugin')\n",
+            encoding="utf-8",
+        )
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=("plugin.py",)
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path) == {
+            "measure.py", "carrier.py", "plugin.py"
+        }
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match="dynamic_python_dependencies"
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
 
     def test_dynamic_dependency_allows_static_module_and_sealed_local_calls(self, tmp_path):
         source = "import numpy as np\ndef sealed_local():\n    return np.mean([1, 2])\nsealed_local()\n"
