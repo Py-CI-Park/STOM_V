@@ -1,0 +1,195 @@
+{
+  "baseline": {
+    "buy_prompt_contains_all_free_text": true,
+    "leakage_count": 4,
+    "path": "legacy_free_text_buy_only",
+    "routed_buy": [
+      {
+        "directive_id": "fd_b2f92618599ac045889d7bd8143fab3b7fee6fecf73d48c811916a4be1007361",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BUY winner: require volume confirmation."
+      },
+      {
+        "directive_id": "fd_9d5616262177ded16b25dbdbb63394fe79d260d1414c147c6d185a56da4df021",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BUY loser: allow every price move."
+      },
+      {
+        "directive_id": "fd_47fa8db0f2855201874b5cca69916effb1a94a96326e08538bb719cea79b57e8",
+        "role": "HOLDOUT",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "HOLDOUT BUY: optimize on evaluation data."
+      },
+      {
+        "directive_id": "fd_f26724ef1be4fdf622314070d98d985a7e3c212b6e35848393ccc59eca3dfd3b",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "STALE BUY: reuse retired threshold."
+      },
+      {
+        "directive_id": "fd_b53b6d4b4861a1492640bb136f89bfd348aa0af05d3105dd1ebffb46eac9ed66",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BLOCKED BUY: override risk controls."
+      },
+      {
+        "directive_id": "fd_774d821f8c6869e4908ea0979dd570c72a56a253f0f14aea288891889d92a7cf",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "SELL",
+        "statement": "SELL winner: exit after trailing reversal."
+      }
+    ],
+    "routed_buy_count": 6,
+    "routed_sell": [],
+    "routed_sell_count": 0,
+    "same_scope_conflicts_unreduced": 1,
+    "sell_prompt_contains_free_text": false
+  },
+  "claim": "Process routing and contamination evidence only; no strategy return improvement is claimed.",
+  "csv_analysis": {
+    "actionable_directives_count": 0,
+    "analysis_card_content_hash": "41612bcba5fa96fef2becef3588ef8c3e360d2364fa04008ad61fe1a4a27cbf4",
+    "analysis_card_quality": "ok",
+    "analysis_card_v3_count": 1,
+    "csv_sha256": "569a46b9e58f9c19efec97617031f04848e4f7b9dfe0b30c4c2c7526e820baad",
+    "feature_findings_count": 34,
+    "performance_proved": false,
+    "read_only": true,
+    "row_count": 204,
+    "schema": "v4_process_contract_ab.csv_analysis.v1"
+  },
+  "fixed_input": {
+    "directives": [
+      {
+        "created_generation": 6,
+        "directive_id": "fd_b2f92618599ac045889d7bd8143fab3b7fee6fecf73d48c811916a4be1007361",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 7,
+        "priority": 20,
+        "role": "TRAIN",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BUY winner: require volume confirmation.",
+        "status": "READY"
+      },
+      {
+        "created_generation": 6,
+        "directive_id": "fd_9d5616262177ded16b25dbdbb63394fe79d260d1414c147c6d185a56da4df021",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 7,
+        "priority": 1,
+        "role": "TRAIN",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BUY loser: allow every price move.",
+        "status": "READY"
+      },
+      {
+        "created_generation": 6,
+        "directive_id": "fd_774d821f8c6869e4908ea0979dd570c72a56a253f0f14aea288891889d92a7cf",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 7,
+        "priority": 10,
+        "role": "TRAIN",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "SELL",
+        "statement": "SELL winner: exit after trailing reversal.",
+        "status": "READY"
+      },
+      {
+        "created_generation": 6,
+        "directive_id": "fd_47fa8db0f2855201874b5cca69916effb1a94a96326e08538bb719cea79b57e8",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 7,
+        "priority": 10,
+        "role": "HOLDOUT",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "HOLDOUT BUY: optimize on evaluation data.",
+        "status": "READY"
+      },
+      {
+        "created_generation": 6,
+        "directive_id": "fd_f26724ef1be4fdf622314070d98d985a7e3c212b6e35848393ccc59eca3dfd3b",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 6,
+        "priority": 10,
+        "role": "TRAIN",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "STALE BUY: reuse retired threshold.",
+        "status": "READY"
+      },
+      {
+        "created_generation": 6,
+        "directive_id": "fd_b53b6d4b4861a1492640bb136f89bfd348aa0af05d3105dd1ebffb46eac9ed66",
+        "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expires_generation": 7,
+        "priority": 10,
+        "role": "TRAIN",
+        "schema_version": 11,
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BLOCKED BUY: override risk controls.",
+        "status": "BLOCKED"
+      }
+    ],
+    "evidence_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "generation": 7,
+    "scope": "analysis_card_v3_prompt"
+  },
+  "performance_proved": false,
+  "schema": "v4_process_contract_ab.v1",
+  "strict": {
+    "buy_prompt_contains_only_authorized": true,
+    "excluded_by_reason": {
+      "BLOCKED_STATUS": 1,
+      "CONFLICTING_SCOPE_DIRECTIVE": 1,
+      "HOLDOUT_EVALUATION_ONLY": 1,
+      "STALE_GENERATION": 1
+    },
+    "leakage_count": 0,
+    "path": "typed_feedback_envelope",
+    "routed_buy": [
+      {
+        "directive_id": "fd_b2f92618599ac045889d7bd8143fab3b7fee6fecf73d48c811916a4be1007361",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "BUY",
+        "statement": "BUY winner: require volume confirmation."
+      }
+    ],
+    "routed_buy_count": 1,
+    "routed_sell": [
+      {
+        "directive_id": "fd_774d821f8c6869e4908ea0979dd570c72a56a253f0f14aea288891889d92a7cf",
+        "role": "TRAIN",
+        "scope": "analysis_card_v3_prompt",
+        "side": "SELL",
+        "statement": "SELL winner: exit after trailing reversal."
+      }
+    ],
+    "routed_sell_count": 1,
+    "same_scope_conflicts_reduced": 1,
+    "sell_prompt_contains_only_authorized": true
+  }
+}
