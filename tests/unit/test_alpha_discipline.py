@@ -791,7 +791,38 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
-    def test_direct_local_module_function_is_scanned_for_omitted_dynamic_plugin(self, tmp_path):
+    @pytest.mark.parametrize(("carrier_source", "measure_source"), [
+        (
+            "def exported(name):\n    return name\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+        (
+            "class exported:\n    def __init__(self, name):\n        self.name = name\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+        (
+            "class Carrier:\n    pass\nexported = Carrier.__dict__\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+    ])
+    def test_finalize_prereg_rejects_direct_local_imported_callable_carriers(
+        self, tmp_path, carrier_source, measure_source
+    ):
+        measure, carrier = tmp_path / "measure.py", tmp_path / "carrier.py"
+        measure.write_text(measure_source, encoding="utf-8")
+        carrier.write_text(carrier_source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    def test_finalize_prereg_allows_direct_local_module_function_and_scans_plugin(self, tmp_path):
         measure, carrier, plugin = (
             tmp_path / "measure.py",
             tmp_path / "carrier.py",

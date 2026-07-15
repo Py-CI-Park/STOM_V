@@ -884,6 +884,33 @@ def _assignment_receiver(node: ast.AST, aliases: dict[str, str]) -> str | None:
     return None
 
 
+def _local_importfrom_receivers(
+    tree: ast.AST, path: Path, root: Path
+) -> tuple[set[str], set[str]]:
+    """Return module and direct-symbol bindings from repository-local imports."""
+    package = list(path.relative_to(root).parent.parts)
+    module_receivers: set[str] = set()
+    symbol_receivers: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        if node.level and node.level > len(package) + 1:
+            raise EvidenceSchemaError(f"relative import escapes repo package: {path}")
+        prefix = package[:len(package) - node.level + 1] if node.level else []
+        base = prefix + (node.module.split(".") if node.module else [])
+        module = ".".join(base)
+        if _module_file(root, module) is None:
+            continue
+        for alias in node.names:
+            imported = ".".join((*base, alias.name))
+            bound = alias.asname or alias.name
+            if _module_file(root, imported) is not None:
+                module_receivers.add(bound)
+            else:
+                symbol_receivers.add(bound)
+    return module_receivers, symbol_receivers
+
+
 def _reject_unresolved_module_receivers(
     tree: ast.AST, aliases: dict[str, str], path: Path, root: Path
 ) -> None:
@@ -984,22 +1011,8 @@ def _reject_unresolved_module_receivers(
         name for name, canonical in aliases.items()
         if _module_file(root, canonical) is not None
     }
-    local_symbol_receivers: set[str] = set()
-    package = list(path.relative_to(root).parent.parts)
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ImportFrom):
-            continue
-        prefix = package[:len(package) - node.level + 1] if node.level else []
-        module = ".".join(prefix + (node.module.split(".") if node.module else []))
-        if _module_file(root, module) is None:
-            continue
-        for alias in node.names:
-            bound = alias.asname or alias.name
-            imported = f"{module}.{alias.name}" if module else alias.name
-            if _module_file(root, imported) is not None:
-                local_module_receivers.add(bound)
-            else:
-                local_symbol_receivers.add(bound)
+    imported_modules, local_symbol_receivers = _local_importfrom_receivers(tree, path, root)
+    local_module_receivers.update(imported_modules)
 
 
     class _SealedLocalApis(ast.NodeVisitor):
@@ -1258,10 +1271,18 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     local_callables = {
         node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
     }
+    _, local_symbol_receivers = _local_importfrom_receivers(tree, path, root)
+    # A direct symbol imported from a repository-local module has no runtime
+    # provenance here: it may be a function, class, or dynamically supplied
+    # capability.  Local calls must retain the module carrier syntax so the
+    # receiver scanner can validate the declared API path.
     safe_aliases = local_callables | {
         name for name, canonical in aliases.items()
-        if canonical in allowed_direct
-        or _module_file(root, canonical.rsplit(".", 1)[0]) is not None
+        if name not in local_symbol_receivers
+        and (
+            canonical in allowed_direct
+            or _module_file(root, canonical.rsplit(".", 1)[0]) is not None
+        )
     }
     unsafe_aliases: set[str] = set()
     for node in ast.walk(tree):
