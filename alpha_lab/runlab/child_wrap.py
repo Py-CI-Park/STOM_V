@@ -1,13 +1,13 @@
 """대상 스크립트 무수정 래퍼 — 심박 갱신 + 종료코드 기록(WBS v3 P1-4).
 
 사용(보통은 detached_runner가 이 모듈을 분리 기동한다 — 직접 호출도 가능):
-    python -P -S -m alpha_lab.runlab.child_wrap [--interval 5] <run_dir> <대상스크립트.py> [인자...]
+    python -I -S <absolute bootstrap.py> child-wrap [--interval 5] <run_dir> <대상스크립트.py> [인자...]
 
 동작:
   1) run_dir에 pid.txt(자기 PID)·heartbeat.txt를 즉시 기록.
-  2) 대상 스크립트를 [현재 python, -P, -S, 대상, 인자...] 자식 프로세스로 기동
-     (stdout/stderr → run_dir/log.txt append — 대상 스크립트 무수정 원칙,
-     기존 체크포인트 러너를 그대로 감쌀 수 있다).
+  2) 대상 스크립트를 [현재 python, -I, -S, bootstrap.py, target, 대상, 인자...]로
+     자식 프로세스로 기동(stdout/stderr → run_dir/log.txt append — 대상 스크립트 무수정
+     원칙, 기존 체크포인트 러너를 그대로 감쌀 수 있다).
   3) 자식이 도는 동안 --interval 초마다 heartbeat.txt 갱신.
   4) 자식 종료 시 status.json에 state=exited·exit_code 기록 후 같은 코드로 종료.
 
@@ -29,15 +29,11 @@ from alpha_lab.runlab import contract
 # 기동 실패(대상 자체를 못 띄움) 시 관례적 종료코드.
 _SPAWN_FAIL_EXIT_CODE = 127
 
-def _repo_root() -> Path:
-    """워크트리 루트(ROOT) — 이 파일 기준 2단계 상위."""
-    return Path(__file__).resolve().parents[2]
-
 
 def _parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     """인자 파싱 — run_dir·target 뒤 전부를 대상 인자로 넘긴다(REMAINDER)."""
     ap = argparse.ArgumentParser(
-        prog="python -P -S -m alpha_lab.runlab.child_wrap",
+        prog="python -I -S <absolute bootstrap.py> child-wrap",
         description="대상 스크립트를 감싸 심박·종료코드를 run_dir에 기록한다")
     ap.add_argument("--interval", type=float, default=5.0,
                     help="심박 갱신 주기(초, 기본 5)")
@@ -65,15 +61,15 @@ def _run(run_dir: Path, target: str, target_args: Sequence[str],
     contract.write_pid(run_dir, os.getpid())
     contract.touch_heartbeat(run_dir)
     started = contract.utc_now_iso()
-    cmd = [sys.executable, "-P", "-S", str(target), *target_args]
-    child_env = contract.sanitize_runtime_env(
-        os.environ, _repo_root(), include_interpreter_site_paths=True)
+    bootstrap = Path(__file__).resolve().with_name("bootstrap.py")
+    cmd = [sys.executable, "-I", "-S", str(bootstrap), "target", str(target),
+           *target_args]
     base = {"pid": os.getpid(), "target": str(target),
             "target_args": list(target_args), "started_utc": started,
             "interval_sec": interval}
     with open(run_dir / contract.LOG_FILE, "ab") as log:
         try:
-            proc = subprocess.Popen(cmd, env=child_env, stdin=subprocess.DEVNULL,
+            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
                                     stdout=log, stderr=subprocess.STDOUT)
         except OSError as err:
             contract.write_status(run_dir, contract.STATE_EXITED,

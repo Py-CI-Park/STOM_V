@@ -19,10 +19,10 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-
+import sysconfig
 import pytest
 
-from alpha_lab.runlab import contract, detached_runner, watchdog
+from alpha_lab.runlab import contract, watchdog
 from alpha_lab.runlab.detached_runner import launch_detached
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -44,11 +44,6 @@ _FAIL_CHILD = (
     "time.sleep(0.2)\n"
     "sys.exit(3)\n"
 )
-_PATH_CHILD = (
-    "import json, sys\n"
-    "from pathlib import Path\n"
-    "Path(sys.argv[1]).write_text(json.dumps(sys.path), encoding='utf-8')\n"
-)
 
 
 def _write_child(tmp_path: Path, name: str, body: str) -> Path:
@@ -58,11 +53,22 @@ def _write_child(tmp_path: Path, name: str, body: str) -> Path:
 
 
 def _child_env() -> dict:
-    """직접 래퍼 호출도 지원 계약의 sealed 환경으로 기동한다."""
+    """격리 bootstrap 검증용 환경 — caller PYTHONPATH를 전달하지 않는다."""
     env = dict(os.environ)
-    env["PYTHONPATH"] = str(_ROOT)
-    env["PYTHONNOUSERSITE"] = "1"
+    env.pop("PYTHONPATH", None)
     return env
+
+
+def _bootstrap_cmd(mode: str, *args: str) -> list[str]:
+    bootstrap = _ROOT / "alpha_lab" / "runlab" / "bootstrap.py"
+    return [sys.executable, "-I", "-S", str(bootstrap), mode, *args]
+
+
+def _isolated_startup_paths() -> list[str]:
+    proc = subprocess.run(
+        [sys.executable, "-I", "-S", "-c", "import json, sys; print(json.dumps(sys.path))"],
+        capture_output=True, check=True, text=True, timeout=30)
+    return [str(Path(path).resolve()) for path in json.loads(proc.stdout) if path]
 
 
 def _force_kill_tree(pid) -> None:
@@ -115,9 +121,9 @@ def test_child_wrap_preserves_args_and_exit_code(tmp_path):
     child = _write_child(tmp_path, "fail_child.py", _FAIL_CHILD)
     argv_dump = tmp_path / "argv.txt"
     run_dir = tmp_path / "run_fail"
-    cmd = [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
-           "--interval", "0.1", str(run_dir), str(child),
-           str(argv_dump), "alpha", "--beta=1"]
+    cmd = _bootstrap_cmd(
+        "child-wrap", "--interval", "0.1", str(run_dir), str(child),
+        str(argv_dump), "alpha", "--beta=1")
     proc = subprocess.run(cmd, cwd=str(tmp_path), env=_child_env(),
                           capture_output=True, timeout=60)
     assert proc.returncode == 3, proc.stderr.decode(errors="replace")
@@ -126,174 +132,86 @@ def test_child_wrap_preserves_args_and_exit_code(tmp_path):
     assert argv_dump.read_text(encoding="utf-8") == "alpha|--beta=1"
     assert (run_dir / contract.HEARTBEAT_FILE).exists()
     assert contract.read_pid(run_dir) > 0
+# ── bootstrap: caller path/site hook 차단 + 신뢰 루트 우선순위 ───────────────
 
 
-def test_sanitize_runtime_env_discards_all_caller_pythonpath_entries(tmp_path):
-    repo_root = tmp_path / "repo"
-    external = tmp_path / "external"
-    nested = repo_root / "extra"
-    env = {
-        "PYTHONNOUSERSITE": "0",
-        "PYTHONPATH": os.pathsep.join(
-            ["", "relative", str(nested), str(repo_root), str(external)]),
-    }
-
-    sanitized = contract.sanitize_runtime_env(env, repo_root)
-
-    assert sanitized["PYTHONPATH"] == str(repo_root.resolve())
-    assert sanitized["PYTHONNOUSERSITE"] == "1"
-
-
-def test_sanitize_runtime_env_adds_deduped_interpreter_paths_after_root(
-        tmp_path, monkeypatch):
-    repo_root = tmp_path / "repo"
-    purelib = tmp_path / "purelib"
-    platlib = tmp_path / "platlib"
-    caller = tmp_path / "caller"
-    monkeypatch.setattr(
-        contract, "interpreter_site_paths",
-        lambda: (str(purelib.resolve()), str(purelib.resolve()),
-                 str(platlib.resolve())))
-    sanitized = contract.sanitize_runtime_env(
-        {"PYTHONPATH": str(caller)}, repo_root,
-        include_interpreter_site_paths=True)
-
-    assert sanitized["PYTHONPATH"].split(os.pathsep) == [
-        str(repo_root.resolve()), str(purelib.resolve()), str(platlib.resolve())]
-
-
-def test_detached_runner_passes_root_only_safe_path_wrapper_to_popen(
-        tmp_path, monkeypatch):
-    captured = {}
-    repo_root = detached_runner._repo_root()
-    external = tmp_path / "external"
-    nested = repo_root / "extra"
-
-    class FakeProc:
-        pid = 4321
-
-    def fake_popen(cmd, log_path, cwd, env):
-        captured["cmd"] = cmd
-        captured["cwd"] = cwd
-        captured["env"] = env
-        return FakeProc(), 0
-
-    monkeypatch.setattr(detached_runner.os, "name", "nt")
-    monkeypatch.setattr(detached_runner, "_popen_detached", fake_popen)
-
-    detached_runner.launch_detached(
-        tmp_path / "run", tmp_path / "target.py", cwd=external,
-        env={"PYTHONPATH": os.pathsep.join(
-            [str(nested), str(repo_root), str(external)])})
-
-    assert captured["cmd"][1:5] == (
-        "-P", "-S", "-m", "alpha_lab.runlab.child_wrap")
-    assert captured["cwd"] == external.resolve()
-    assert captured["env"]["PYTHONPATH"] == str(repo_root.resolve())
-    assert captured["env"]["PYTHONNOUSERSITE"] == "1"
+def test_bootstrap_seals_imports_against_cwd_pythonpath_and_sitecustomize(tmp_path):
+    shadow = tmp_path / "shadow"
+    shadow.mkdir()
+    (shadow / "sitecustomize.py").write_text(
+        "from pathlib import Path\nPath('sitecustomize-ran').write_text('bad')\n",
+        encoding="utf-8")
+    shadow_alpha = shadow / "alpha_lab"
+    shadow_alpha.mkdir()
+    (shadow_alpha / "__init__.py").write_text("raise RuntimeError('shadowed')\n",
+                                              encoding="utf-8")
+    (shadow / "pytest.py").write_text("raise RuntimeError('shadowed')\n",
+                                      encoding="utf-8")
+    target = tmp_path / "inspect_isolation.py"
+    target.write_text(
+        "import ctypes, json, sys, unicodedata\n"
+        "from pathlib import Path\n"
+        "import alpha_lab, pytest\n"
+        "print(json.dumps({'path': sys.path, 'alpha': alpha_lab.__file__, "
+        "'pytest': pytest.__file__, 'ctypes': ctypes.__file__, "
+        "'unicode': unicodedata.unidata_version}))\n",
+        encoding="utf-8")
+    env = _child_env()
+    env["PYTHONPATH"] = str(shadow)
+    proc = subprocess.run(_bootstrap_cmd("target", str(target)), cwd=str(shadow),
+                          env=env, capture_output=True, timeout=60)
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    payload = json.loads(proc.stdout)
+    trusted = _isolated_startup_paths()
+    for key in ("purelib", "platlib"):
+        path = str(Path(sysconfig.get_paths()[key]).resolve())
+        if path not in trusted:
+            trusted.append(path)
+    assert payload["path"] == [*trusted, str(_ROOT)]
+    assert Path(payload["alpha"]).resolve().is_relative_to(_ROOT)
+    pytest_path = Path(payload["pytest"]).resolve()
+    assert any(pytest_path.is_relative_to(Path(path)) for path in trusted)
+    assert any(Path(payload["ctypes"]).resolve().is_relative_to(Path(path))
+               for path in trusted)
+    assert payload["unicode"]
+    assert not pytest_path.is_relative_to(shadow)
+    assert not (shadow / "sitecustomize-ran").exists()
 
 
-def test_child_wrap_passes_trusted_target_paths_to_popen(
-        tmp_path, monkeypatch):
+def test_wrapper_command_uses_isolated_bootstrap_and_removes_pythonpath(monkeypatch,
+                                                                         tmp_path):
+    from alpha_lab.runlab import detached_runner
+
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path / "shadow"))
+    cmd = detached_runner._wrapper_cmd(
+        tmp_path / "run", tmp_path / "target.py", (), None, 5.0)
+    assert cmd[1:5] == ("-I", "-S",
+                        str(_ROOT / "alpha_lab" / "runlab" / "bootstrap.py"),
+                        "child-wrap")
+    assert "PYTHONPATH" not in detached_runner._prepare_env(None)
+
+
+def test_child_target_command_uses_isolated_bootstrap(monkeypatch, tmp_path):
     from alpha_lab.runlab import child_wrap
 
-    captured = {}
-    repo_root = child_wrap._repo_root()
-    external = tmp_path / "external"
-    nested = repo_root / "extra"
-    external.mkdir()
-    (external / "sitecustomize.py").write_text(
-        "raise RuntimeError('external sitecustomize executed')\n",
-        encoding="utf-8")
-    run_dir = tmp_path / "run"
-    run_dir.mkdir()
+    seen = {}
 
-    class FakeProc:
-        pid = 5432
+    class DummyProcess:
+        pid = 1
 
         def poll(self):
             return 0
 
     def fake_popen(cmd, **kwargs):
-        captured["cmd"] = cmd
-        captured["env"] = kwargs["env"]
-        return FakeProc()
+        seen["cmd"] = cmd
+        return DummyProcess()
 
-    monkeypatch.setenv(
-        "PYTHONPATH",
-        os.pathsep.join([str(nested), str(repo_root), str(external)]))
     monkeypatch.setattr(child_wrap.subprocess, "Popen", fake_popen)
+    assert child_wrap._run(tmp_path, str(tmp_path / "target.py"), [], 0.1) == 0
+    assert seen["cmd"][1:5] == ["-I", "-S",
+                                 str(_ROOT / "alpha_lab" / "runlab" / "bootstrap.py"),
+                                 "target"]
 
-    assert child_wrap._run(run_dir, str(tmp_path / "target.py"), [], 0.1) == 0
-    assert captured["cmd"][:3] == [sys.executable, "-P", "-S"]
-    assert captured["env"]["PYTHONPATH"].split(os.pathsep) == [
-        str(repo_root.resolve()), *contract.interpreter_site_paths()]
-    assert str(external.resolve()) not in captured["env"]["PYTHONPATH"]
-    assert captured["env"]["PYTHONNOUSERSITE"] == "1"
-
-
-def test_direct_child_wrap_safe_path_blocks_cwd_wrapper_and_target_paths(
-        tmp_path):
-    fake_cwd = tmp_path / "external_cwd"
-    fake_wrapper = fake_cwd / "alpha_lab" / "runlab" / "child_wrap.py"
-    fake_wrapper.parent.mkdir(parents=True)
-    (fake_cwd / "alpha_lab" / "__init__.py").write_text("", encoding="utf-8")
-    (fake_wrapper.parent / "__init__.py").write_text("", encoding="utf-8")
-    fake_wrapper.write_text(
-        "from pathlib import Path\n"
-        "Path('fake_wrapper_ran.txt').write_text('ran', encoding='utf-8')\n",
-        encoding="utf-8")
-    child_parent = tmp_path / "external_target"
-    child_parent.mkdir()
-    child = _write_child(child_parent, "path_child.py", _PATH_CHILD)
-    output = tmp_path / "sys_path.json"
-    run_dir = tmp_path / "run_path"
-    external_site = tmp_path / "external_site"
-    external_site.mkdir()
-    (external_site / "sitecustomize.py").write_text(
-        "raise RuntimeError('external sitecustomize executed')\n",
-        encoding="utf-8")
-
-    proc = subprocess.run(
-        [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
-         "--interval", "0.1", str(run_dir), str(child), str(output)],
-        cwd=str(fake_cwd), env=_child_env(), capture_output=True, timeout=60)
-
-    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
-    assert not (fake_cwd / "fake_wrapper_ran.txt").exists()
-    child_path = json.loads(output.read_text(encoding="utf-8"))
-    expected_target_paths = [str(_ROOT.resolve())]
-    expected_target_paths.extend(
-        path for path in contract.interpreter_site_paths()
-        if path not in expected_target_paths)
-    assert child_path[:len(expected_target_paths)] == expected_target_paths
-    assert str(fake_cwd.resolve()) not in child_path
-    assert str(child_parent.resolve()) not in child_path
-    assert str(external_site.resolve()) not in child_path
-    assert child_path.count(str(_ROOT.resolve())) == 1
-def test_direct_child_wrap_skips_repo_sitecustomize_after_finalization(tmp_path):
-    marker_module = _ROOT / "sitecustomize.py"
-    marker_output = tmp_path / "sitecustomize-ran.txt"
-    assert not marker_module.exists(), "test requires no pre-existing root hook"
-    marker_module.write_text(
-        "import os\n"
-        "from pathlib import Path\n"
-        "Path(os.environ['RUNLAB_SITECUSTOMIZE_MARKER']).write_text('ran')\n",
-        encoding="utf-8")
-    child = _write_child(tmp_path, "ok_child.py", "pass\n")
-    run_dir = tmp_path / "run_sitecustomize"
-    env = _child_env()
-    env["RUNLAB_SITECUSTOMIZE_MARKER"] = str(marker_output)
-    try:
-        proc = subprocess.run(
-            [sys.executable, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
-             "--interval", "0.1", str(run_dir), str(child)],
-            cwd=str(tmp_path), env=env, capture_output=True, timeout=60)
-    finally:
-        marker_module.unlink()
-
-    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
-    assert not marker_output.exists()
 
 
 # ── watchdog: pid 생존 확인(ctypes) ─────────────────────────────────────────

@@ -14,7 +14,7 @@ exited+exit_code) / log.txt — 정의는 contract.py.
 
 실사용 예 — D5(D9 전이 온셋) 측정 437일 배치를 세션 독립으로 기동
 (PowerShell 한 줄, 2026-07-12 실전 완주 실증 — exit 0):
-    $env:STOM_ALLOW_MINIMAL_SETTING="1"; python -P -S -m alpha_lab.runlab.detached_runner docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/run_ctl/run1 scripts/d5_d9_measure.py -- --phase all
+    $bootstrap = (Resolve-Path alpha_lab/runlab/bootstrap.py).Path; $env:STOM_ALLOW_MINIMAL_SETTING="1"; python -I -S $bootstrap detached-runner docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/run_ctl/run1 scripts/d5_d9_measure.py -- --phase all
 (옵션 --interval/--cwd/--python-exe는 run_dir 앞에 두고, 대상 스크립트 인자는
 '--' 뒤에 둔다. 대상 스크립트는 무수정 그대로 감싼다 — 체크포인트 러너 호환.)
 """
@@ -54,16 +54,22 @@ def _repo_root() -> Path:
 
 
 def _prepare_env(env: Optional[Dict[str, str]]) -> Dict[str, str]:
-    """Seal the wrapper's import path before it is spawned."""
-    return contract.sanitize_runtime_env(env, _repo_root())
+    """자식 환경에서 caller PYTHONPATH를 제거한다(-I/-S bootstrap이 경로를 봉인)."""
+    merged = dict(os.environ if env is None else env)
+    merged.pop("PYTHONPATH", None)
+    return merged
 
+
+def _bootstrap_path() -> Path:
+    """추적된 절대 bootstrap 경로."""
+    return _repo_root() / "alpha_lab" / "runlab" / "bootstrap.py"
 
 
 def _wrapper_cmd(run_dir: Path, target: Path, target_args: Sequence[str],
                  python_exe: Optional[str], interval: float) -> Tuple[str, ...]:
-    """child_wrap을 safe-path 모드로 기동한다(대상은 절대경로)."""
+    """격리 bootstrap을 통한 child_wrap 기동 명령줄을 조립한다."""
     py = python_exe or sys.executable
-    return (py, "-P", "-S", "-m", "alpha_lab.runlab.child_wrap",
+    return (py, "-I", "-S", str(_bootstrap_path()), "child-wrap",
             "--interval", str(interval), str(run_dir), str(target),
             *[str(a) for a in target_args])
 
@@ -117,20 +123,13 @@ def launch_detached(run_dir, target, target_args: Sequence[str] = (), *,
                           target=str(target_path), cwd=str(work_dir),
                           cmd=list(cmd))
     try:
-        child_env = _prepare_env(env)
-    except ValueError as err:
-        contract.write_status(run_path, contract.STATE_LAUNCHED,
-                              target=str(target_path), cwd=str(work_dir),
-                              cmd=list(cmd), error=f"환경 검증 실패: {err}")
-        raise
-    try:
-        proc, flags = _popen_detached(cmd, log_path, work_dir, child_env)
+        proc, flags = _popen_detached(cmd, log_path, work_dir,
+                                      _prepare_env(env))
     except OSError as err:
         contract.write_status(run_path, contract.STATE_LAUNCHED,
                               target=str(target_path), cwd=str(work_dir),
                               cmd=list(cmd), error=f"기동 실패: {err}")
         raise
-
     contract.write_pid(run_path, proc.pid)
     return LaunchResult(
         pid=proc.pid, run_dir=run_path, log_path=log_path,
@@ -143,7 +142,7 @@ def launch_detached(run_dir, target, target_args: Sequence[str] = (), *,
 def _parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     """CLI 인자 — 옵션은 run_dir 앞, 대상 인자는 '--' 뒤(REMAINDER)."""
     ap = argparse.ArgumentParser(
-        prog="python -P -S -m alpha_lab.runlab.detached_runner",
+        prog="python -I -S <absolute bootstrap.py> detached-runner",
         description="배치를 세션 독립(detached)으로 기동한다 — 보고는 batch_watch.py")
     ap.add_argument("--interval", type=float, default=_DEFAULT_HEARTBEAT_SEC,
                     help="심박 갱신 주기(초, 기본 5)")

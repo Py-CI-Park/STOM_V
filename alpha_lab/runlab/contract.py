@@ -7,7 +7,10 @@
   status.json    상태 기계 launched → running → exited(+exit_code).
   log.txt        래퍼·대상 스크립트의 stdout/stderr 통합 로그(append 전용).
 
-원칙: 표준 라이브러리만 사용(psutil 등 외부 의존 금지). status.json은
+원칙: 표준 라이브러리만 사용(psutil 등 외부 의존 금지). 모든 runlab 진입은
+`python -I -S <absolute bootstrap.py> <mode>`로 시작해, bootstrap이 기동 시
+캡처한 interpreter sys.path를 정규화해 보존하고 purelib/platlib을 보완한 뒤 저장소
+루트를 마지막에 봉인한다. status.json은
 임시파일+os.replace 원자 교체로 쓴다 — 워치독이 반쯤 쓰인 json을 읽지 않게.
 Windows에서 읽는 쪽이 파일을 잡고 있으면 os.replace가 공유 위반으로 실패할 수
 있어 짧은 재시도를 둔다(실측 대비 보험).
@@ -16,7 +19,6 @@ from __future__ import annotations
 
 import json
 import os
-import sysconfig
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,47 +39,6 @@ STATE_WRAPPER_ERROR = "wrapper_error"
 # 원자 교체/읽기 재시도 폭 — 워치독과의 순간 충돌만 흡수하면 충분하다.
 _IO_RETRY = 5
 _IO_RETRY_SLEEP_SEC = 0.05
-
-
-def interpreter_site_paths() -> tuple[str, ...]:
-    """Return this interpreter's absolute purelib/platlib roots once, in order."""
-    paths = sysconfig.get_paths()
-    trusted = []
-    for key in ("purelib", "platlib"):
-        raw = paths.get(key)
-        if not raw:
-            continue
-        path = Path(raw)
-        if not path.is_absolute():
-            continue
-        resolved = str(path.resolve())
-        if resolved not in trusted:
-            trusted.append(resolved)
-    return tuple(trusted)
-
-
-def sanitize_runtime_env(env: Optional[Dict[str, str]], repo_root: Path, *,
-                         include_interpreter_site_paths: bool = False,
-                         ) -> Dict[str, str]:
-    """Return a child environment with only trusted import roots.
-
-    Caller-provided ``PYTHONPATH`` is always discarded. The wrapper receives
-    only the exact repository root; the target additionally receives this
-    interpreter's purelib/platlib roots after that root so installed
-    dependencies work while ``-S`` prevents site startup hooks and ``.pth``
-    processing.
-    """
-    merged = dict(os.environ if env is None else env)
-    roots = [str(Path(repo_root).resolve())]
-    if include_interpreter_site_paths:
-        for path in interpreter_site_paths():
-            if path not in roots:
-                roots.append(path)
-
-    merged["PYTHONPATH"] = os.pathsep.join(roots)
-    merged["PYTHONNOUSERSITE"] = "1"
-    return merged
-
 
 
 def utc_now_iso() -> str:

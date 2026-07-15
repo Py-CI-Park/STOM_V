@@ -4,8 +4,9 @@
 핸드오프 v3 §7). 배치를 세션에서 분리(DETACHED_PROCESS)해 구조적으로 제거한다.
 
 구성:
-  detached_runner  Windows 세션 독립 기동기(창구). CLI:
-                   python -P -S -m alpha_lab.runlab.detached_runner <run_dir> <스크립트> -- [인자...]
+  bootstrap        격리 진입점. CLI:
+                   python -I -S <absolute bootstrap.py> detached-runner <run_dir> <스크립트> -- [인자...]
+  detached_runner  Windows 세션 독립 기동기(창구).
   child_wrap       대상 스크립트 무수정 래퍼 — 심박 갱신+종료코드 기록.
   watchdog         보고 전용 판정(RUNNING/STALLED/DEAD/EXITED/MISSING).
                    자동 재시작 금지 — 재기동 결정은 사람/메인 세션 몫.
@@ -35,8 +36,8 @@ from alpha_lab.runlab.watchdog import (
     wait_for_exited,
 )
 
-# detached_runner 재수출은 지연 임포트(PEP 562) — `python -m ...detached_runner`
-# 실행 시 "found in sys.modules" RuntimeWarning을 막는다.
+# detached_runner 재수출은 지연 임포트(bootstrap의 경로 봉인 뒤) — 실행 시
+# "found in sys.modules" RuntimeWarning을 막는다.
 _LAZY_DETACHED = ("LaunchResult", "launch_detached")
 
 
