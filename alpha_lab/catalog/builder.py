@@ -551,7 +551,7 @@ def _verify_existing_authority_db(
 ) -> None:
     if sha256_file(existing) != sha256_file(expected_db):
         raise EvidenceSchemaError("existing catalog DB bytes do not match the rebuilt authority DB")
-    con = sqlite3.connect(existing)
+    con = sqlite3.connect(f"{existing.as_uri()}?mode=ro", uri=True, isolation_level=None)
     try:
         _verify_authority_records(con, records)
     finally:
@@ -1003,6 +1003,7 @@ def build_all(
             if receipt_path.exists() and not db_path.exists():
                 raise EvidenceSchemaError("catalog receipt exists without its authority DB")
             if db_path.exists():
+                mutation_guard.hold_write_denied_file(db_path)
                 _verify_existing_authority_db(
                     db_path, working_db_path, authority_records)
                 if receipt_path.exists():
@@ -1016,6 +1017,8 @@ def build_all(
                 _publish_no_replace(
                     working_db_path, db_path, mutation_guard,
                     source_descriptor=working_db_descriptor)
+                mutation_guard.validate_file(db_path)
+                mutation_guard.hold_write_denied_file(db_path)
                 mutation_guard.validate_file(db_path)
             published_db_descriptor = mutation_guard.open_path(
                 db_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
@@ -1045,6 +1048,7 @@ def build_all(
                 mutation_guard.validate_file(receipt_temp)
                 _publish_no_replace(receipt_temp, receipt_path, mutation_guard)
                 mutation_guard.validate_file(receipt_path)
+                mutation_guard.hold_write_denied_file(receipt_path)
                 published_receipt_descriptor = mutation_guard.open_path(
                     receipt_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
                 _validate_published_catalog_pair(

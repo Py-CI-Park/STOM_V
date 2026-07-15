@@ -473,6 +473,8 @@ class _ReservationGuard:
     def hold_path(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
 
+    def hold_write_denied_file(self, path: Path) -> None:
+        return None
     def __enter__(self) -> "_ReservationGuard":
         return self
 
@@ -581,6 +583,63 @@ def test_strict_ledger_loader_rejects_unrelated_malformed_row(tmp_path: Path):
     with pytest.raises(ValueError):
         builder.load_ledger_mirror(con, tmp_path, receipt, strict=True)
     con.close()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_retained_snapshot_ledger_and_sqlite_deny_same_inode_overwrite(tmp_path: Path):
+    snapshot = tmp_path / "snapshot"
+    snapshot.mkdir()
+    ledger = snapshot / "n_trials_ledger.jsonl"
+    ledger.write_text('{"ts":"2026-01-01T00:00:00+00:00"}\n', encoding="utf-8")
+    catalog = snapshot / "source.db"
+    con = sqlite3.connect(catalog)
+    try:
+        con.execute("CREATE TABLE snapshot_authority (value TEXT NOT NULL)")
+        con.execute("INSERT INTO snapshot_authority VALUES ('verified')")
+        con.commit()
+    finally:
+        con.close()
+    originals = {path: path.read_bytes() for path in (ledger, catalog)}
+
+    with sources.retain_snapshot_sources(snapshot):
+        assert json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])["ts"]
+        con = sqlite3.connect(f"{catalog.as_uri()}?mode=ro", uri=True)
+        try:
+            assert con.execute("SELECT value FROM snapshot_authority").fetchone() == ("verified",)
+        finally:
+            con.close()
+        for path in (ledger, catalog):
+            with pytest.raises(OSError) as exc:
+                path.write_bytes(b"same-inode overwrite")
+            assert (
+                getattr(exc.value, "winerror", None) in {5, 32}
+                or exc.value.errno == 13
+            )
+            assert path.read_bytes() == originals[path]
+            assert sources.sha256_file(path) == hashlib.sha256(originals[path]).hexdigest()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_final_publication_pair_denies_in_place_overwrite_until_guard_release(tmp_path: Path):
+    from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+    db_path = tmp_path / "published.db"
+    receipt_path = tmp_path / "published.receipt.json"
+    db_path.write_bytes(b"verified database bytes")
+    receipt_path.write_bytes(b'{"verified":true}')
+    originals = {path: path.read_bytes() for path in (db_path, receipt_path)}
+    guard = _WindowsAuthorityGuard(tmp_path, {}, ())
+    try:
+        for path in originals:
+            guard.hold_write_denied_file(path)
+        for path in originals:
+            with pytest.raises(OSError) as exc:
+                path.write_bytes(b"same-inode overwrite")
+            assert (
+                getattr(exc.value, "winerror", None) in {5, 32}
+                or exc.value.errno == 13
+            )
+            assert path.read_bytes() == originals[path]
+    finally:
+        guard.close()
 def test_promotion_sources_must_exactly_match_manifest_artifacts(tmp_path: Path):
     source = tmp_path / "bound.json"
     extra = tmp_path / "extra.json"

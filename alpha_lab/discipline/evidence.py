@@ -1215,6 +1215,7 @@ def _verify_catalog_authority_db_from_retained_identity(
 
     with authority_mutation_guard(root, dict(authority_paths), fields=("catalog_dir",)) as guard:
         guard.hold_path(db_path)
+        guard.hold_write_denied_file(db_path)
         observed_sha256 = _hash_retained_file(guard, db_path, "catalog receipt catalog_db")
         if observed_sha256 != expected_sha256:
             raise EvidenceSchemaError("catalog receipt catalog_db SHA-256 does not match retained authority bytes")

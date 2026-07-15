@@ -840,6 +840,32 @@ class TestPrereg:
                 manifest_path=_canonical_seal_path(tmp_path, document),
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    def test_finalize_prereg_rejects_decorator_replaced_local_run_path(self, tmp_path, package):
+        package_dir = tmp_path / "carrier" if package else tmp_path
+        package_dir.mkdir(exist_ok=True)
+        measure = tmp_path / "measure.py"
+        carrier = package_dir / "__init__.py" if package else package_dir / "carrier.py"
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        carrier.write_text(
+            "import pydoc\n"
+            "def replace(function):\n    return pydoc.importfile\n"
+            "@replace\n"
+            "def run_path(path):\n    return path\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
 
     def test_finalize_prereg_rejects_unclassified_static_module_call(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
@@ -859,6 +885,8 @@ class TestPrereg:
     @pytest.mark.parametrize("source", [
         "from pydoc import importfile as print\nprint('plugin.py')\n",
         "import pydoc\ndef relay(print):\n    print('plugin.py')\nrelay(pydoc.importfile)\n",
+        "import pydoc\n[print('plugin.py') for print in [pydoc.importfile]]\n",
+        "import pydoc\nmatch pydoc.importfile:\n    case print:\n        print('plugin.py')\n",
     ])
     def test_finalize_prereg_rejects_shadowed_or_parameter_bare_callable(
         self, tmp_path, source
@@ -876,6 +904,24 @@ class TestPrereg:
                 manifest_path=_canonical_seal_path(tmp_path, document),
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
+    def test_finalize_prereg_allows_unshadowed_builtin_in_comprehension(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "values = [print(value) for value in ['ok']]\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
     @pytest.mark.parametrize(("carrier_source", "measure_source"), [
         (
             "def exported(name):\n    return name\n",

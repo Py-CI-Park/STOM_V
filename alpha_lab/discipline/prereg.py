@@ -357,8 +357,8 @@ def revalidate_authority_paths(
                     "authority_paths destinations must be case-normalized, semantically distinct, and physically distinct"
                 )
     return paths
-class _AuthorityMutationGuard:
-    """Keep authority directories stable while a canonical mutation is in flight."""
+class _WindowsAuthorityGuard:
+    """Keep authority identities stable while Windows authority work is in flight."""
 
     def __init__(self, root: Path, authority_paths: dict[str, str], fields: tuple[str, ...]):
         self.root = root
@@ -369,7 +369,9 @@ class _AuthorityMutationGuard:
         self._target_identities: dict[str, tuple[int, int]] = {}
         self._windows_handles: list[object] = []
 
-    def _open_windows(self, path: Path, *, directory: bool = True) -> None:
+    def _open_windows(
+        self, path: Path, *, directory: bool = True, deny_writes: bool = False,
+    ) -> None:
         import ctypes
 
         class _FileInfo(ctypes.Structure):
@@ -392,7 +394,7 @@ class _AuthorityMutationGuard:
         kernel32 = ctypes.windll.kernel32
         kernel32.CreateFileW.restype = ctypes.c_void_p
         handle = kernel32.CreateFileW(
-            str(path), 0x80000000, 0x3, None, 3, 0x02200000, None
+            str(path), 0x80000000, 0x1 if deny_writes else 0x3, None, 3, 0x02200000, None
         )
         invalid = ctypes.c_void_p(-1).value
         if handle in (None, invalid):
@@ -413,6 +415,13 @@ class _AuthorityMutationGuard:
             kernel32.CloseHandle(handle)
             raise EvidenceSchemaError(f"cannot resolve locked authority identity: {path}")
         self._windows_handles.append(handle)
+    def hold_write_denied_file(self, path: Path | str) -> None:
+        """Retain a file handle that denies writes and deletes until guard release."""
+        if os.name != "nt":
+            raise UnsupportedAuthorityPlatform(
+                "write-denying retained authority files are unsupported on POSIX"
+            )
+        self._open_windows(Path(path), directory=False, deny_writes=True)
 
     @staticmethod
     def _path_key(path: Path) -> str:
@@ -654,7 +663,7 @@ class _AuthorityMutationGuard:
 @contextlib.contextmanager
 def authority_mutation_guard(
     repo_root: Path | str, authority_paths: object, fields: tuple[str, ...] | None = None,
-) -> Iterator[_AuthorityMutationGuard]:
+) -> Iterator[_WindowsAuthorityGuard]:
     """Lock and revalidate canonical authority identities across a mutation window."""
     root = Path(repo_root).resolve()
     if os.name != "nt":
@@ -665,7 +674,7 @@ def authority_mutation_guard(
     selected = tuple(sorted(paths) if fields is None else fields)
     if not selected or any(field not in paths for field in selected):
         raise EvidenceSchemaError("authority mutation fields must be non-empty authority path keys")
-    guard = _AuthorityMutationGuard(root, paths, selected)
+    guard = _WindowsAuthorityGuard(root, paths, selected)
     try:
         for field in selected:
             target = root / Path(*PurePosixPath(paths[field]).parts)
@@ -892,6 +901,11 @@ def _direct_function_api_names(tree: ast.Module) -> set[str]:
             if node.name:
                 self._record({node.name}, "other")
             self.generic_visit(node)
+        def visit_Match(self, node: ast.Match) -> None:
+            for case in node.cases:
+                self._record(_pattern_bound_names(case.pattern), "other")
+            self.generic_visit(node)
+
 
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
             self._record({node.name}, "other")
@@ -904,7 +918,7 @@ def _direct_function_api_names(tree: ast.Module) -> set[str]:
 
     bindings = _Bindings()
     for statement in tree.body:
-        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)) and not statement.decorator_list:
             bindings._record({statement.name}, "function")
         else:
             bindings.visit(statement)
@@ -987,6 +1001,25 @@ def _bound_names(target: ast.AST) -> set[str]:
     if isinstance(target, ast.Starred):
         return _bound_names(target.value)
     return set()
+def _pattern_bound_names(pattern: ast.pattern) -> set[str]:
+    if isinstance(pattern, ast.MatchAs):
+        return _pattern_bound_names(pattern.pattern) | ({pattern.name} if pattern.name else set())
+    if isinstance(pattern, ast.MatchStar):
+        return {pattern.name} if pattern.name else set()
+    if isinstance(pattern, ast.MatchMapping):
+        return set().union(*(_pattern_bound_names(item) for item in pattern.patterns)) | (
+            {pattern.rest} if pattern.rest else set()
+        )
+    if isinstance(pattern, ast.MatchClass):
+        return set().union(
+            *(_pattern_bound_names(item) for item in (*pattern.patterns, *pattern.kwd_patterns))
+        )
+    if isinstance(pattern, ast.MatchSequence):
+        return set().union(*(_pattern_bound_names(item) for item in pattern.patterns))
+    if isinstance(pattern, ast.MatchOr):
+        return set().union(*(_pattern_bound_names(item) for item in pattern.patterns))
+    return set()
+
 
 
 def _assignment_receiver(node: ast.AST, aliases: dict[str, str]) -> str | None:
@@ -1089,6 +1122,11 @@ def _reject_unresolved_module_receivers(
             if node.name:
                 self._record({node.name}, "unsafe")
             self.generic_visit(node)
+        def visit_Match(self, node: ast.Match) -> None:
+            for case in node.cases:
+                self._record(_pattern_bound_names(case.pattern), "unsafe")
+            self.generic_visit(node)
+
 
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
             self._record({node.name}, "sealed")
@@ -1321,7 +1359,7 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
     return _module_file(root, ".".join(module))
 def _reject_untrusted_bare_calls(
     tree: ast.Module, path: Path, allowed_direct: set[str]
-) -> None:
+) -> set[int]:
     """Require each bare call to resolve to one exact lexical capability."""
 
     class _Bindings(ast.NodeVisitor):
@@ -1379,6 +1417,10 @@ def _reject_untrusted_bare_calls(
             if node.name:
                 self._record({node.name}, "other")
             self.generic_visit(node)
+        def visit_Match(self, node: ast.Match) -> None:
+            for case in node.cases:
+                self._record(_pattern_bound_names(case.pattern), "other")
+            self.generic_visit(node)
 
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
             self._record({node.name}, "other")
@@ -1395,7 +1437,7 @@ def _reject_untrusted_bare_calls(
         bindings = _Bindings()
         bindings._record(parameters, "other")
         for statement in statements:
-            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)) and not statement.decorator_list:
                 bindings._record({statement.name}, "function")
             else:
                 bindings.visit(statement)
@@ -1416,6 +1458,7 @@ def _reject_untrusted_bare_calls(
     class _Calls(ast.NodeVisitor):
         def __init__(self) -> None:
             self.scopes: list[dict[str, list[tuple[str, str | None]]]] = []
+            self.trusted_calls: set[int] = set()
 
         def _resolve(self, name: str) -> list[tuple[str, str | None]] | None:
             for scope in reversed(self.scopes):
@@ -1448,6 +1491,33 @@ def _reject_untrusted_bare_calls(
             for base in node.bases:
                 self.visit(base)
             self._visit_scope(node.body, set())
+        def _visit_comprehension(
+            self, node: ast.AST, generators: list[ast.comprehension]
+        ) -> None:
+            self.scopes.append({})
+            for generator in generators:
+                self.visit(generator.iter)
+                self.scopes[-1].update(
+                    {name: [("other", None)] for name in _bound_names(generator.target)}
+                )
+                for condition in generator.ifs:
+                    self.visit(condition)
+            if isinstance(node, ast.DictComp):
+                self.visit(node.key)
+                self.visit(node.value)
+            else:
+                self.visit(node.elt)
+            self.scopes.pop()
+
+        def visit_ListComp(self, node: ast.ListComp) -> None:
+            self._visit_comprehension(node, node.generators)
+
+        visit_SetComp = visit_ListComp
+        visit_GeneratorExp = visit_ListComp
+
+        def visit_DictComp(self, node: ast.DictComp) -> None:
+            self._visit_comprehension(node, node.generators)
+
 
         def visit_Call(self, node: ast.Call) -> None:
             if isinstance(node.func, ast.Name):
@@ -1464,9 +1534,12 @@ def _reject_untrusted_bare_calls(
                     raise EvidenceSchemaError(
                         f"unresolved callable alias is unsupported: {path}"
                     )
+                self.trusted_calls.add(id(node))
             self.generic_visit(node)
 
-    _Calls().visit(tree)
+    calls = _Calls()
+    calls.visit(tree)
+    return calls.trusted_calls
 
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
@@ -1505,7 +1578,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
         "importlib.machinery.SourcelessFileLoader",
     }
-    _reject_untrusted_bare_calls(tree, path, allowed_direct)
+    trusted_bare_calls = _reject_untrusted_bare_calls(tree, path, allowed_direct)
     forbidden = executable - allowed_direct
     forbidden_callables = {
         "getattr", "builtins.getattr", "operator.attrgetter", "operator.itemgetter",
@@ -1608,11 +1681,11 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             raise EvidenceSchemaError(f"loader execution through an unresolved callable is unsupported: {path}")
         if isinstance(node.func, ast.Name) and node.func.id in unsafe_aliases:
             raise EvidenceSchemaError(f"unresolved callable alias is unsupported: {path}")
-        if isinstance(node.func, ast.Name) and node.func.id not in safe_aliases and node.func.id not in {
-            "abs", "all", "any", "bool", "dict", "enumerate", "float", "int", "isinstance",
-            "len", "list", "map", "max", "min", "next", "print", "range", "repr", "set",
-            "sorted", "str", "sum", "tuple", "type", "zip",
-        }:
+        if (
+            isinstance(node.func, ast.Name)
+            and node.func.id not in safe_aliases
+            and id(node) not in trusted_bare_calls
+        ):
             raise EvidenceSchemaError(f"unresolved callable alias is unsupported: {path}")
         if raw_name in forbidden or canonical in forbidden:
             raise EvidenceSchemaError(f"indirect local Python execution is unsupported: {path}")

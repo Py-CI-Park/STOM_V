@@ -37,6 +37,28 @@ def _write_catalog_db(path: Path, *, user_version: int = 0) -> list[dict[str, st
     finally:
         con.close()
     return records
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_catalog_hash_query_validation_denies_same_inode_overwrite(tmp_path: Path):
+    from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+    catalog = tmp_path / "catalog.db"
+    records = _write_catalog_db(catalog)
+    original = catalog.read_bytes()
+    guard = _WindowsAuthorityGuard(tmp_path, {}, ())
+    try:
+        guard.hold_write_denied_file(catalog)
+        observed = evidence._hash_retained_file(guard, catalog, "catalog test")
+        evidence._verify_catalog_authority_db(catalog, records)
+        with pytest.raises(OSError) as exc:
+            catalog.write_bytes(b"same-inode overwrite")
+        assert (
+            getattr(exc.value, "winerror", None) in {5, 32}
+            or exc.value.errno == 13
+        )
+        assert catalog.read_bytes() == original
+        assert evidence._hash_retained_file(guard, catalog, "catalog test") == observed
+    finally:
+        guard.close()
 
 
 def test_catalog_authority_rejects_hash_a_then_query_b(tmp_path: Path, monkeypatch):
@@ -47,6 +69,9 @@ def test_catalog_authority_rejects_hash_a_then_query_b(tmp_path: Path, monkeypat
 
     class RetainedGuard:
         def hold_path(self, path: Path) -> None:
+            pass
+
+        def hold_write_denied_file(self, path: Path) -> None:
             pass
 
         def open_path(self, path: Path, flags: int) -> int:

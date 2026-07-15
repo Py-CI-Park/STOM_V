@@ -66,19 +66,28 @@ class RetainedSourceSnapshots:
     def __init__(self, snapshot_dir: Path):
         self.snapshot_dir = Path(snapshot_dir)
         self.descriptors: dict[Path, int] = {}
-
+        self._write_deny_guard: Any | None = None
     def __enter__(self) -> "RetainedSourceSnapshots":
-        for path in sorted(self.snapshot_dir.rglob("*")):
-            if not path.is_file():
-                continue
-            descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
-            try:
-                _retained_regular_file(path, descriptor, f"catalog snapshot '{path}'")
-            except BaseException:
-                os.close(descriptor)
-                self.close()
-                raise
-            self.descriptors[path.resolve()] = descriptor
+        from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+        self._write_deny_guard = _WindowsAuthorityGuard(
+            self.snapshot_dir.parent.resolve(), {}, ())
+        try:
+            for path in sorted(self.snapshot_dir.rglob("*")):
+                if not path.is_file():
+                    continue
+                self._write_deny_guard.hold_write_denied_file(path)
+                descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+                try:
+                    _retained_regular_file(path, descriptor, f"catalog snapshot '{path}'")
+                except BaseException:
+                    os.close(descriptor)
+                    self.close()
+                    raise
+                self.descriptors[path.resolve()] = descriptor
+        except BaseException:
+            self.close()
+            raise
         return self
 
     def descriptor_for(self, path: Path) -> int | None:
@@ -92,6 +101,9 @@ class RetainedSourceSnapshots:
         for descriptor in self.descriptors.values():
             os.close(descriptor)
         self.descriptors.clear()
+        if self._write_deny_guard is not None:
+            self._write_deny_guard.close()
+            self._write_deny_guard = None
 
     def __exit__(self, *args: object) -> None:
         self.close()
