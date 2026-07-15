@@ -27,6 +27,114 @@ BACKTEST_PROCESS_FILES = (
     "ui/ui_button_clicked_editer_unified.py",
 )
 BACKTEST_PROCESS_ARG_COUNT = 12
+WRAPPED_BACKTEST_PROCESS_CONTRACTS = {
+    "cli/runner.py": {
+        "constructor_args": (
+            "shared_cnt", "windowQ", "backQ", "soundQ", "totalQ", "liveQ", "teleQ",
+            "back_eques", "back_sques", "'백테스트'", "'S'", "dict(dict_set)",
+        ),
+        "config_handoff": (
+            "config.betting", "str(config.avg_time)", "str(config.start_date)", "str(config.end_date)",
+            "str(config.start_time)", "str(config.end_time)", "config.buy_strategy", "config.sell_strategy",
+            "dict_cn", "back_count", "config.blacklist", "False", "config.back_club",
+        ),
+    },
+    "cli/warm_session.py": {
+        "constructor_args": (
+            "self.shared_cnt", "self.windowQ", "self.backQ", "self.soundQ", "self.totalQ", "self.liveQ",
+            "self.teleQ", "self.back_eques", "self.back_sques", "'백테스트'", "'S'", "dict(self.dict_set)",
+        ),
+        "config_handoff": (
+            "betting", "str(config.avg_time)", "str(config.start_date)", "str(config.end_date)",
+            "str(config.start_time)", "str(config.end_time)", "buy_strategy", "sell_strategy",
+            "self.dict_cn", "self.back_count", "config.blacklist", "False", "back_club",
+        ),
+    },
+}
+
+
+def _wrapped_backtest_processes(tree):
+    parents = {
+        id(child): parent
+        for parent in ast.walk(tree)
+        for child in ast.iter_child_nodes(parent)
+    }
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or ast_name(node.func) != "Process":
+            continue
+        if ast_name(keyword_value(node, "target")) != "_engine_with_dict_set":
+            continue
+        args = keyword_value(node, "args")
+        if not (
+            isinstance(args, (ast.Tuple, ast.List))
+            and args.elts
+            and ast_name(args.elts[0]) == "BackTest"
+        ):
+            continue
+        statement = node
+        while not isinstance(statement, ast.stmt):
+            statement = parents[id(statement)]
+        parent = parents[id(statement)]
+        preceding_statement = None
+        for _, value in ast.iter_fields(parent):
+            if isinstance(value, list) and statement in value:
+                index = value.index(statement)
+                preceding_statement = value[index - 1] if index else None
+                break
+        yield node, args, preceding_statement
+
+
+def _ast_values(nodes):
+    return tuple(ast.unparse(node) for node in nodes)
+
+
+def wrapped_backtest_process_contract_failures():
+    failures = []
+    for relative_path, contract in WRAPPED_BACKTEST_PROCESS_CONTRACTS.items():
+        text = read_text(relative_path)
+        processes = list(_wrapped_backtest_processes(ast.parse(text)))
+        if not processes:
+            failures.append(f"{relative_path}: missing wrapped _engine_with_dict_set BackTest Process")
+            continue
+        for node, args, _ in processes:
+            constructor_args = args.elts[2:]
+            if len(args.elts) != 14:
+                failures.append(
+                    f"{relative_path}:{node.lineno} wrapped BackTest args count {len(args.elts)} != 14"
+                )
+            if _ast_values(constructor_args) != contract["constructor_args"]:
+                failures.append(
+                    f"{relative_path}:{node.lineno} wrapped BackTest compact constructor args mismatch"
+                )
+    return failures
+
+
+def _is_expected_backq_handoff(statement, expected):
+    if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+        return False
+    call = statement.value
+    if ast.unparse(call.func) not in ("backQ.put", "self.backQ.put"):
+        return False
+    return (
+        len(call.args) == 1
+        and isinstance(call.args[0], (ast.Tuple, ast.List))
+        and _ast_values(call.args[0].elts) == expected
+    )
+
+
+def wrapped_backtest_queue_handoff_failures():
+    failures = []
+    for relative_path, contract in WRAPPED_BACKTEST_PROCESS_CONTRACTS.items():
+        text = read_text(relative_path)
+        processes = list(_wrapped_backtest_processes(ast.parse(text)))
+        if not processes:
+            continue
+        for node, _, preceding_statement in processes:
+            if not _is_expected_backq_handoff(preceding_statement, contract["config_handoff"]):
+                failures.append(
+                    f"{relative_path}:{node.lineno} missing immediate 13-field wrapped BackTest backQ config handoff"
+                )
+    return failures
 
 
 def ast_name(node):
@@ -221,6 +329,20 @@ def main():
         not backtest_arg_failures,
         "BackTest 프로세스 생성자가 소형 큐 기반 인자 계약을 유지합니다.",
         "BackTest Process args contract mismatch: " + "; ".join(backtest_arg_failures),
+        failures,
+    )
+    wrapped_backtest_arg_failures = wrapped_backtest_process_contract_failures()
+    check(
+        not wrapped_backtest_arg_failures,
+        "래퍼 BackTest 프로세스 생성자가 소형 큐 기반 인자 계약을 유지합니다.",
+        "Wrapped BackTest Process args contract mismatch: " + "; ".join(wrapped_backtest_arg_failures),
+        failures,
+    )
+    wrapped_backtest_handoff_failures = wrapped_backtest_queue_handoff_failures()
+    check(
+        not wrapped_backtest_handoff_failures,
+        "래퍼 BackTest 실행 설정이 즉시 13필드 backQ 초기 메시지로 전달됩니다.",
+        "Wrapped BackTest config handoff mismatch: " + ", ".join(wrapped_backtest_handoff_failures),
         failures,
     )
     backtest_handoff_failures = backtest_queue_handoff_failures()

@@ -108,15 +108,37 @@ def run_process_contract_ab() -> dict[str, Any]:
     strict_buy_prompt = _message_text(build_messages("buy", card_directive_lines=envelope))
     strict_sell_prompt = _message_text(build_messages("sell", card_directive_lines=envelope))
 
-    # Free text is injected wholesale into the legacy BUY-only slot.  Entries
-    # not authorized by the strict resolver are thus process contamination.
-    strict_ids = {directive.directive_id for directive in strict_actionable}
-    baseline_leaks = [directive for directive in directives if directive.directive_id not in strict_ids]
+    # Legacy free text is injected into the BUY destination without typed routing.
+    # Compare that routed set with the resolved BUY set so a valid SELL directive
+    # misrouted to BUY is counted as contamination as well.
+    baseline_buy_directives = tuple(directives)
+    strict_buy_directives = tuple(
+        directive for directive in strict_actionable if directive.side is FeedbackSide.BUY
+    )
+    strict_sell_directives = tuple(
+        directive for directive in strict_actionable if directive.side is FeedbackSide.SELL
+    )
+    strict_buy_ids = {directive.directive_id for directive in strict_buy_directives}
+    baseline_buy_contamination = tuple(
+        directive
+        for directive in baseline_buy_directives
+        if directive.directive_id not in strict_buy_ids
+    )
+    strict_sell_ids = {directive.directive_id for directive in strict_sell_directives}
+    unauthorized_sell_directives = tuple(
+        directive
+        for directive in directives
+        if directive.directive_id not in strict_sell_ids
+    )
+    conflicted_directives = tuple(
+        item.directive
+        for item in resolution.directives
+        if item.reason_code == "CONFLICTING_SCOPE_DIRECTIVE"
+    )
     blocked_by_reason: dict[str, int] = {}
     for item in resolution.directives:
         if not item.actionable:
             blocked_by_reason[item.reason_code] = blocked_by_reason.get(item.reason_code, 0) + 1
-
     result = {
         "schema": SCHEMA,
         "performance_proved": False,
@@ -129,33 +151,43 @@ def run_process_contract_ab() -> dict[str, Any]:
         },
         "baseline": {
             "path": "legacy_free_text_buy_only",
-            "routed_buy": _route(directives, FeedbackSide.BUY) + _route(directives, FeedbackSide.SELL),
+            "routed_buy": _route(baseline_buy_directives, FeedbackSide.BUY)
+            + _route(baseline_buy_directives, FeedbackSide.SELL),
             "routed_sell": [],
-            "routed_buy_count": len(directives),
+            "routed_buy_count": len(baseline_buy_directives),
             "routed_sell_count": 0,
-            "leakage_count": len(baseline_leaks),
-            "same_scope_conflicts_unreduced": 1,
+            "leakage_count": len(baseline_buy_contamination),
+            "unauthorized_buy_directive_ids": [
+                directive.directive_id for directive in baseline_buy_contamination
+            ],
+            "same_scope_conflicts_unreduced": len(conflicted_directives),
             "buy_prompt_contains_all_free_text": all(line in legacy_buy_prompt for line in legacy_lines),
             "sell_prompt_contains_free_text": any(line in legacy_sell_prompt for line in legacy_lines),
         },
         "strict": {
             "path": "typed_feedback_envelope",
-            "routed_buy": _route(strict_actionable, FeedbackSide.BUY),
-            "routed_sell": _route(strict_actionable, FeedbackSide.SELL),
-            "routed_buy_count": len(_route(strict_actionable, FeedbackSide.BUY)),
-            "routed_sell_count": len(_route(strict_actionable, FeedbackSide.SELL)),
+            "routed_buy": _route(strict_buy_directives, FeedbackSide.BUY),
+            "routed_sell": _route(strict_sell_directives, FeedbackSide.SELL),
+            "routed_buy_count": len(strict_buy_directives),
+            "routed_sell_count": len(strict_sell_directives),
             "leakage_count": 0,
-            "same_scope_conflicts_reduced": 1,
+            "same_scope_conflicts_reduced": len(conflicted_directives),
             "excluded_by_reason": dict(sorted(blocked_by_reason.items())),
             "buy_prompt_contains_only_authorized": (
                 "BUY winner: require volume confirmation." in strict_buy_prompt
                 and "SELL winner: exit after trailing reversal." not in strict_buy_prompt
-                and all(item.statement not in strict_buy_prompt for item in baseline_leaks)
+                and all(
+                    item.statement not in strict_buy_prompt
+                    for item in baseline_buy_contamination
+                )
             ),
             "sell_prompt_contains_only_authorized": (
                 "SELL winner: exit after trailing reversal." in strict_sell_prompt
                 and "BUY winner: require volume confirmation." not in strict_sell_prompt
-                and all(item.statement not in strict_sell_prompt for item in baseline_leaks)
+                and all(
+                    item.statement not in strict_sell_prompt
+                    for item in unauthorized_sell_directives
+                )
             ),
         },
     }
@@ -168,7 +200,7 @@ def analyze_csv(csv_path: str | Path) -> dict[str, Any]:
 
     from ai_strategy_loop.autopsy.analysis_card import build_analysis_card_v3
 
-    path = Path(csv_path)
+    path = _canonical_path(csv_path, argument="--csv")
     raw_bytes = path.read_bytes()
     frame = pd.read_csv(path)
     canonical_columns = {"수익률", "수익금", "최고수익률", "최저수익률", "매수시간", "종목코드"}
@@ -201,9 +233,36 @@ def analyze_csv(csv_path: str | Path) -> dict[str, Any]:
     }
 
 
+def _canonical_path(value: str | Path, *, argument: str) -> Path:
+    """Return an absolute path without accepting ambiguous Win32 aliases."""
+    raw_path = Path(value).expanduser()
+    if not raw_path.is_absolute() and ".." in raw_path.parts:
+        raise ValueError(f"{argument} must not contain relative parent traversal")
+    if any(part not in (raw_path.anchor, "") and part.rstrip(" .") != part for part in raw_path.parts):
+        raise ValueError(f"{argument} must not contain Win32 trailing dot/space aliases")
+    if any(part not in (raw_path.anchor, "") and ":" in part for part in raw_path.parts):
+        raise ValueError(f"{argument} must not contain NTFS alternate-data-stream syntax")
+    return raw_path.resolve(strict=False)
+
+
+def _path_key(path: Path) -> str:
+    """Compare canonical paths using Win32 case and component alias rules."""
+    normalized_parts = (part.rstrip(" .") for part in path.parts)
+    return "/".join(normalized_parts).replace("\\", "/").casefold()
+
+
 def _protected_output_path(path: Path) -> bool:
-    parts = {part.lower() for part in path.parts}
-    return ".gjc" in parts or "_database" in parts or ("backtest" in parts and "graph" in parts) or {"ai_strategy_loop", "state"}.issubset(parts)
+    parts = tuple(part.casefold() for part in path.parts)
+    name = path.name.casefold()
+    protected_roots = {"_database", "_database_v3k_shadow", "_log", "backup", ".gjc"}
+    return (
+        any(part in protected_roots for part in parts)
+        or name.endswith(".db")
+        or (name.startswith("v3k_settings") and name.endswith(".json"))
+        or ("backtest", "graph") in zip(parts, parts[1:])
+        or (".omx", "reports") in zip(parts, parts[1:])
+        or ("ai_strategy_loop", "state") in zip(parts, parts[1:])
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -212,14 +271,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", help="Explicit JSON output path; absent means stdout only.")
     args = parser.parse_args(argv)
 
+    try:
+        csv_path = _canonical_path(args.csv, argument="--csv") if args.csv else None
+        output_path = _canonical_path(args.output, argument="--output") if args.output else None
+    except ValueError as exc:
+        parser.error(str(exc))
+    if output_path and _protected_output_path(output_path):
+        parser.error("--output must not target a protected path")
+    if output_path and csv_path and _path_key(output_path) == _path_key(csv_path):
+        parser.error("--output must not alias --csv")
+
     result = run_process_contract_ab()
-    if args.csv:
-        result["csv_analysis"] = analyze_csv(args.csv)
+    if csv_path:
+        result["csv_analysis"] = analyze_csv(csv_path)
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n"
-    if args.output:
-        output_path = Path(args.output)
-        if _protected_output_path(output_path):
-            parser.error("--output must not target a protected path")
+    if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(encoded, encoding="utf-8")
     else:

@@ -1,6 +1,9 @@
 """Contract tests for CL-R06 2x2 buy/sell attribution (todo 12)."""
 
 from __future__ import annotations
+
+import pytest
+
 from ai_strategy_loop.controller.ablation_matrix import compute_attribution
 
 
@@ -92,6 +95,44 @@ def test_arm_missing_a_required_metric_key_is_also_treated_as_missing():
     assert result['valid'] is False
     assert result['reason'] == 'attribution_invalid'
     assert result['missing_arms'] == ['B']
+
+@pytest.mark.parametrize(
+    ('arm_key', 'metric', 'non_finite'),
+    [
+        (arm_key, metric, non_finite)
+        for non_finite in (float('nan'), float('inf'), float('-inf'))
+        for arm_key, metric in zip(
+            ('A', 'B', 'C', 'D'),
+            ('profit', 'mdd', 'trade_count', 'daily_freq'),
+        )
+    ],
+    ids=[
+        f'{arm_key}-{metric}-{non_finite_name}'
+        for non_finite_name in ('nan', 'positive-infinity', 'negative-infinity')
+        for arm_key, metric in zip(
+            ('A', 'B', 'C', 'D'),
+            ('profit', 'mdd', 'trade_count', 'daily_freq'),
+        )
+    ],
+)
+def test_non_finite_required_metric_refuses_attribution(
+    arm_key: str,
+    metric: str,
+    non_finite: float,
+):
+    arms = {
+        'A': _arm(100.0, 20.0, 50, 2.0),
+        'B': _arm(130.0, 15.0, 55, 2.2),
+        'C': _arm(110.0, 25.0, 52, 2.1),
+        'D': _arm(150.0, 18.0, 60, 2.5),
+    }
+    arms[arm_key][metric] = non_finite
+
+    assert compute_attribution(arms) == {
+        'valid': False,
+        'reason': 'attribution_invalid',
+        'missing_arms': [arm_key],
+    }
 
 
 def test_identical_inputs_yield_identical_attribution_regardless_of_dict_key_order():

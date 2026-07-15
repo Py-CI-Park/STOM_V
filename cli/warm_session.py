@@ -656,14 +656,16 @@ class WarmBacktestSession:
         BackTest 프로세스는 이번 run 전용이므로 self._procs에 넣지 않고 별도로 reap한다.
         """
         config = self.config
+        self.backQ.put((
+            betting, str(config.avg_time), str(config.start_date), str(config.end_date),
+            str(config.start_time), str(config.end_time), buy_strategy, sell_strategy,
+            self.dict_cn, self.back_count, config.blacklist, False, back_club,
+        ))
         proc = Process(
             target=_engine_with_dict_set,
             args=(BackTest, dict(self.dict_set),
-                  self.shared_cnt, self.windowQ, self.soundQ, self.totalQ, self.liveQ, self.teleQ,
-                  self.back_eques, self.back_sques, '백테스트', 'S', dict(self.dict_set),
-                  betting, str(config.avg_time), str(config.start_date), str(config.end_date),
-                  str(config.start_time), str(config.end_time), buy_strategy, sell_strategy,
-                  self.dict_cn, self.back_count, config.blacklist, False, back_club, self.backQ),
+                  self.shared_cnt, self.windowQ, self.backQ, self.soundQ, self.totalQ, self.liveQ, self.teleQ,
+                  self.back_eques, self.back_sques, '백테스트', 'S', dict(self.dict_set)),
         )
         proc.start()
         return proc

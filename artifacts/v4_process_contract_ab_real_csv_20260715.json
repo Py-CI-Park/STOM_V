@@ -1,7 +1,7 @@
 {
   "baseline": {
     "buy_prompt_contains_all_free_text": true,
-    "leakage_count": 4,
+    "leakage_count": 5,
     "path": "legacy_free_text_buy_only",
     "routed_buy": [
       {
@@ -51,7 +51,14 @@
     "routed_sell": [],
     "routed_sell_count": 0,
     "same_scope_conflicts_unreduced": 1,
-    "sell_prompt_contains_free_text": false
+    "sell_prompt_contains_free_text": false,
+    "unauthorized_buy_directive_ids": [
+      "fd_9d5616262177ded16b25dbdbb63394fe79d260d1414c147c6d185a56da4df021",
+      "fd_774d821f8c6869e4908ea0979dd570c72a56a253f0f14aea288891889d92a7cf",
+      "fd_47fa8db0f2855201874b5cca69916effb1a94a96326e08538bb719cea79b57e8",
+      "fd_f26724ef1be4fdf622314070d98d985a7e3c212b6e35848393ccc59eca3dfd3b",
+      "fd_b53b6d4b4861a1492640bb136f89bfd348aa0af05d3105dd1ebffb46eac9ed66"
+    ]
   },
   "claim": "Process routing and contamination evidence only; no strategy return improvement is claimed.",
   "csv_analysis": {

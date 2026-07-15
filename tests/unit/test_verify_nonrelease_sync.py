@@ -96,6 +96,34 @@ def _base_files() -> dict[str, str]:
                       ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
             ))
         """,
+        "cli/runner.py": """
+            backQ.put((
+                config.betting, str(config.avg_time), str(config.start_date), str(config.end_date),
+                str(config.start_time), str(config.end_time), config.buy_strategy, config.sell_strategy,
+                dict_cn, back_count, config.blacklist, False, config.back_club,
+            ))
+            proc_backtest = Process(
+                target=_engine_with_dict_set,
+                args=(BackTest, dict(dict_set),
+                      shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
+                      back_eques, back_sques, '백테스트', 'S', dict(dict_set))
+            )
+        """,
+        "cli/warm_session.py": """
+            def _spawn_backtest(self, buy_strategy, sell_strategy, betting, back_club):
+                config = self.config
+                self.backQ.put((
+                    betting, str(config.avg_time), str(config.start_date), str(config.end_date),
+                    str(config.start_time), str(config.end_time), buy_strategy, sell_strategy,
+                    self.dict_cn, self.back_count, config.blacklist, False, back_club,
+                ))
+                proc = Process(
+                    target=_engine_with_dict_set,
+                    args=(BackTest, dict(self.dict_set),
+                          self.shared_cnt, self.windowQ, self.backQ, self.soundQ, self.totalQ, self.liveQ,
+                          self.teleQ, self.back_eques, self.back_sques, '백테스트', 'S', dict(self.dict_set))
+                )
+        """,
         "ui/set_setup_tap.py": """
             def setup():
                 if uses_serial_key():
@@ -348,6 +376,43 @@ def test_verify_nonrelease_sync_fails_when_backtest_config_handoff_is_missing(tm
 
     assert result == 1
     assert "BackTest config handoff mismatch" in output
+
+def test_verify_nonrelease_sync_fails_when_runner_wrapped_backtest_args_are_out_of_sequence(tmp_path, monkeypatch):
+    files = _base_files()
+    files["cli/runner.py"] = files["cli/runner.py"].replace(
+        "shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,",
+        "shared_cnt, windowQ, soundQ, backQ, totalQ, liveQ, teleQ,",
+    )
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "Wrapped BackTest Process args contract mismatch" in output
+    assert "cli/runner.py" in output
+    assert "wrapped BackTest compact constructor args mismatch" in output
+
+
+def test_verify_nonrelease_sync_fails_when_warm_wrapped_backtest_handoff_is_missing(tmp_path, monkeypatch):
+    files = _base_files()
+    files["cli/warm_session.py"] = """
+        def _spawn_backtest(self, buy_strategy, sell_strategy, betting, back_club):
+            proc = Process(
+                target=_engine_with_dict_set,
+                args=(BackTest, dict(self.dict_set),
+                      self.shared_cnt, self.windowQ, self.backQ, self.soundQ, self.totalQ, self.liveQ,
+                      self.teleQ, self.back_eques, self.back_sques, '백테스트', 'S', dict(self.dict_set))
+            )
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "Wrapped BackTest config handoff mismatch" in output
+    assert "cli/warm_session.py" in output
+    assert "missing immediate 13-field wrapped BackTest backQ config handoff" in output
+
 
 
 def test_verify_nonrelease_sync_fails_when_process_kill_calls_sys_exit(tmp_path, monkeypatch):

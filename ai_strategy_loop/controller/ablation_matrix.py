@@ -28,6 +28,7 @@ positive number always means "improvement" for every metric in the matrix.
 
 
 from __future__ import annotations
+import math
 
 
 REQUIRED_ARM_KEYS = ('A', 'B', 'C', 'D')
@@ -50,6 +51,10 @@ def _arm_metrics(arm: dict) -> dict[str, float]:
     return {key: float(arm[key]) for key in REQUIRED_METRIC_KEYS}
 
 
+def _metrics_are_finite(metrics: dict[str, float]) -> bool:
+    return all(math.isfinite(value) for value in metrics.values())
+
+
 def compute_attribution(arms: dict) -> dict:
     """Compute buy_effect, sell_effect, and interaction across a 2x2 arm set.
 
@@ -60,7 +65,8 @@ def compute_attribution(arms: dict) -> dict:
     Returns {'valid': True, 'buy_effect': {...}, 'sell_effect': {...},
     'interaction': {...}} on success, or {'valid': False,
     'reason': 'attribution_invalid', 'missing_arms': [...]} when any arm is
-    missing/errored -- in which case no effect numbers are returned.
+    missing, errored, or has a non-finite required metric -- in which case no
+    effect numbers are returned.
     """
 
     arms = arms or {}
@@ -86,10 +92,22 @@ def compute_attribution(arms: dict) -> dict:
             'missing_arms': sorted(set(missing_arms)),
         }
 
-    metrics_a = _arm_metrics(arms['A'])
-    metrics_b = _arm_metrics(arms['B'])
-    metrics_c = _arm_metrics(arms['C'])
-    metrics_d = _arm_metrics(arms['D'])
+    metrics_by_arm = {key: _arm_metrics(arms[key]) for key in REQUIRED_ARM_KEYS}
+    non_finite_arms = [
+        key for key in REQUIRED_ARM_KEYS
+        if not _metrics_are_finite(metrics_by_arm[key])
+    ]
+    if non_finite_arms:
+        return {
+            'valid': False,
+            'reason': 'attribution_invalid',
+            'missing_arms': non_finite_arms,
+        }
+
+    metrics_a = metrics_by_arm['A']
+    metrics_b = metrics_by_arm['B']
+    metrics_c = metrics_by_arm['C']
+    metrics_d = metrics_by_arm['D']
 
     buy_effect: dict[str, float] = {}
     sell_effect: dict[str, float] = {}
