@@ -1610,6 +1610,150 @@ class TestPrereg:
                 tree, aliases, tmp_path / "measure.py", tmp_path
             )
 
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("static_import", "builtin_import", "importlib_import"))
+    @pytest.mark.parametrize(("namespace_parts", "target", "target_path"), [
+        (("namespace",), "namespace.target", "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package.namespace.target",
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_code_manifest_rejects_implicit_namespace_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, namespace_parts, target, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    @pytest.mark.parametrize(("namespace_parts", "target", "target_path"), [
+        (("namespace",), "namespace.target", "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package.namespace.target",
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_local_receiver_provenance_rejects_implicit_namespace(
+        self, tmp_path, namespace_parts, target, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("def run():\n    return None\n", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        tree = ast.parse(f"import {target}\n{target}.run()\n")
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
+
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("static_import", "builtin_import", "importlib_import"))
+    @pytest.mark.parametrize("target", [
+        "namespace.target",
+        "package.namespace.target",
+    ], ids=("root_package", "nested_package"))
+    def test_code_manifest_allows_sealed_packages_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, target,
+    ):
+        package = tmp_path
+        expected = {"measure.py"}
+        for part in target.split("."):
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+            expected.add((package / "__init__.py").relative_to(tmp_path).as_posix())
+        target_path = "/".join((*target.split("."), "__init__.py"))
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == expected
+
+    @pytest.mark.parametrize(("namespace_parts", "target_path"), [
+        (("namespace",), "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_dependency_roots_reject_implicit_namespace_ancestry(
+        self, tmp_path, namespace_parts, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=(target_path,)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
     def test_code_manifest_rejects_nested_package_module_collision(self, tmp_path):
         package = tmp_path / "package"
         nested = package / "nested"

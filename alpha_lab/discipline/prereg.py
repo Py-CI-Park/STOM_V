@@ -799,7 +799,7 @@ def _contract_ledger_path(value: object, root: Path) -> str:
 
 
 def _module_file(root: Path, module: str) -> Path | None:
-    """Resolve a local module only when every package segment is unambiguous."""
+    """Resolve a local module only through sealed regular-package segments."""
     if not module:
         return None
     parts = module.split(".")
@@ -810,6 +810,10 @@ def _module_file(root: Path, module: str) -> Path | None:
         if module_file.is_file() and package_initializer.is_file():
             raise EvidenceSchemaError(
                 f"ambiguous local module/package resolution: {'.'.join(parts[:index])}"
+            )
+        if base.is_dir() and not package_initializer.is_file():
+            raise EvidenceSchemaError(
+                f"implicit namespace package is unsupported: {'.'.join(parts[:index])}"
             )
         if index < len(parts):
             if not package_initializer.is_file():
@@ -1445,6 +1449,10 @@ def _reject_unresolved_module_receivers(
             current = current.value
         return depth
 
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                _module_file(root, alias.name)
     local_module_receivers = {
         name for name, canonical in aliases.items()
         if _module_file(root, canonical) is not None
