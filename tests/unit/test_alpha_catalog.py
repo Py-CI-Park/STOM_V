@@ -231,10 +231,11 @@ def test_snapshot_preserves_verified_source_mtime_ns(tmp_path: Path):
     source.write_text('{"value":"verified"}', encoding="utf-8")
     expected_mtime_ns = 1_700_000_000_123_456_789
     os.utime(source, ns=(expected_mtime_ns, expected_mtime_ns))
+    observed_source_mtime_ns = source.stat().st_mtime_ns
     snapshot = sources.snapshot_sources(
         tmp_path, tmp_path, {"source.json": builder.sha256_file(source)})
     try:
-        assert (snapshot / "source.json").stat().st_mtime_ns == expected_mtime_ns
+        assert (snapshot / "source.json").stat().st_mtime_ns == observed_source_mtime_ns
     finally:
         (snapshot / "source.json").unlink()
         snapshot.rmdir()

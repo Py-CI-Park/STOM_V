@@ -223,8 +223,12 @@ def snapshot_sources(
             finally:
                 os.close(descriptor)
             os.utime(target, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
-            with open(target, "rb") as snapshot_handle:
-                os.fsync(snapshot_handle.fileno())
+            metadata_descriptor = os.open(
+                target, os.O_RDWR | getattr(os, "O_BINARY", 0))
+            try:
+                os.fsync(metadata_descriptor)
+            finally:
+                os.close(metadata_descriptor)
         return snapshot_dir
     except BaseException:
         for path in sorted(snapshot_dir.rglob("*"), reverse=True):
