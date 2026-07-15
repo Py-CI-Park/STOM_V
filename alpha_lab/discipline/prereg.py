@@ -938,6 +938,7 @@ def _declared_local_module_apis(module_path: Path) -> set[str]:
         ) from exc
     _, aliases = _dynamic_call_kinds(tree)
     _reject_namespace_export_mutation(tree, aliases, module_path)
+    _reject_sealed_global_mutation(tree, aliases, module_path)
     return _direct_function_api_names(tree)
 
 
@@ -1108,6 +1109,81 @@ def _reject_namespace_export_mutation(
             raise EvidenceSchemaError(
                 f"module namespace export mutation is unsupported: {path}"
             )
+def _reject_sealed_global_mutation(
+    tree: ast.AST, aliases: dict[str, str], path: Path
+) -> None:
+    """Keep sealed modules from changing exports or the shared builtins namespace."""
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Global, ast.Nonlocal)):
+            raise EvidenceSchemaError(
+                f"global or nonlocal declaration is unsupported in sealed code: {path}"
+            )
+
+    def _is_builtins_namespace(node: ast.AST) -> bool:
+        if isinstance(node, ast.Name):
+            return _dotted_name(node, aliases) in {"builtins", "__builtins__"}
+        if isinstance(node, (ast.Attribute, ast.Subscript)):
+            return _is_builtins_namespace(node.value)
+        return False
+
+    def _is_store(target: ast.AST) -> bool:
+        return isinstance(target, (ast.Attribute, ast.Subscript))
+
+    class _ModuleScopeStores(ast.NodeVisitor):
+        """Reject import-time object writes without receiver provenance inference."""
+
+        def _reject_targets(self, targets: tuple[ast.AST, ...]) -> None:
+            if any(_is_store(target) for target in targets):
+                raise EvidenceSchemaError(
+                    f"module-level object mutation is unsupported: {path}"
+                )
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            return
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+        visit_Lambda = visit_FunctionDef
+        visit_ClassDef = visit_FunctionDef
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._reject_targets(tuple(node.targets))
+            self.generic_visit(node)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._reject_targets((node.target,))
+            self.generic_visit(node)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._reject_targets((node.target,))
+            self.generic_visit(node)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            self._reject_targets(tuple(node.targets))
+            self.generic_visit(node)
+
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete)):
+            targets = (
+                node.targets if isinstance(node, (ast.Assign, ast.Delete)) else (node.target,)
+            )
+            if any(_is_builtins_namespace(target) for target in targets):
+                raise EvidenceSchemaError(
+                    f"builtins namespace mutation is unsupported: {path}"
+                )
+        elif isinstance(node, ast.Call):
+            raw = _dotted_name(node.func, {})
+            canonical = _dotted_name(node.func, aliases)
+            if raw in {"setattr", "delattr"} or canonical in {
+                "setattr", "delattr", "builtins.setattr", "builtins.delattr",
+            }:
+                raise EvidenceSchemaError(
+                    f"dynamic attribute mutation is unsupported: {path}"
+                )
+    _ModuleScopeStores().visit(tree)
+
+
 
 
 
@@ -1669,6 +1745,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     _reject_wildcard_imports(tree, path)
     calls, aliases = _dynamic_call_kinds(tree)
     _reject_namespace_export_mutation(tree, aliases, path)
+    _reject_sealed_global_mutation(tree, aliases, path)
     _reject_unresolved_module_receivers(tree, aliases, path, root)
     found: set[Path] = set()
     executable = {

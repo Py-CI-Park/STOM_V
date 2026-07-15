@@ -805,7 +805,7 @@ class TestPrereg:
 
         with pytest.raises(
             evidence.EvidenceSchemaError,
-            match="namespace export mutation|higher-order or unsafe executable callable",
+            match="namespace export mutation|module-level object mutation|higher-order or unsafe executable callable",
         ):
             prereg.finalize_prereg(
                 document,
@@ -815,13 +815,64 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
     @pytest.mark.parametrize("source", [
+        "import pydoc\ndef rebind():\n    global str\n    str = pydoc.importfile\nrebind()\nlist(map(str, ['plugin.py']))\n",
+        "import builtins\nimport pydoc\nbuiltins.str = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef namespace():\n    return globals()\nalias = namespace\nalias()['str'] = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef namespace():\n    marker = None\n    return globals()\nnamespace()['str'] = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\nsetattr(globals(), 'str', pydoc.importfile)\n",
+        "import pydoc\ndelattr(pydoc, 'render_doc')\n",
+    ], ids=(
+        "global_str_callback", "builtins_str", "alias_return_helper",
+        "multi_statement_helper", "setattr", "delattr",
+    ))
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    def test_finalize_prereg_rejects_sealed_global_export_mutation(
+        self, tmp_path, source, package
+    ):
+        carrier_dir = tmp_path / "carrier" if package else tmp_path
+        carrier_dir.mkdir(exist_ok=True)
+        carrier = carrier_dir / "__init__.py" if package else carrier_dir / "carrier.py"
+        measure = tmp_path / "measure.py"
+        measure.write_text("import carrier\n", encoding="utf-8")
+        carrier.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match=(
+            "global or nonlocal|builtins namespace|module-level object|dynamic attribute"
+        )):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_dynamic_dependency_allows_function_local_object_mutation(self, tmp_path):
+        source = (
+            "def update(state):\n"
+            "    state.value = 1\n"
+            "    state['value'] = 2\n"
+            "    local_state = {}\n"
+            "    local_state['value'] = 3\n"
+            "    return local_state\n"
+            "result = update({})\n"
+        )
+        assert prereg._dynamic_local_dependencies(
+            ast.parse(source), tmp_path / "measure.py", tmp_path
+        ) == set()
+    @pytest.mark.parametrize("source", [
         "import importlib\ndef carrier():\n    pass\ncarrier.loader = importlib\ncarrier.loader.import_module('plugin')\n",
         "import importlib\nclass Carrier:\n    pass\nCarrier.loader = importlib\nCarrier.loader.import_module('plugin')\n",
         "import importlib\ndef carrier():\n    pass\ncarrier.loader = {}\ncarrier.loader['module'] = importlib\ncarrier.loader['module'].import_module('plugin')\n",
         "import importlib\ndef carrier():\n    pass\ncarrier.holder = carrier\ncarrier.holder.loader = importlib\ncarrier.holder.loader.import_module('plugin')\n",
     ])
     def test_dynamic_dependency_rejects_attribute_capability_carriers(self, tmp_path, source):
-        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="module-level object mutation|unresolved executable receiver",
+        ):
             prereg._dynamic_local_dependencies(ast.parse(source), tmp_path / "measure.py", tmp_path)
     @pytest.mark.parametrize(("carrier_source", "receiver"), [
         (
@@ -863,7 +914,10 @@ class TestPrereg:
         document = tmp_path / "prereg.md"
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
 
-        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="module-level object mutation|unresolved executable receiver",
+        ):
             prereg.finalize_prereg(
                 document,
                 repo_root=tmp_path,
