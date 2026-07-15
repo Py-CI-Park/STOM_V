@@ -699,6 +699,106 @@ class TestPrereg:
             with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
                 guard.hold_path(target)
         assert substituted
+    @pytest.mark.parametrize(("source", "dynamic_python"), [
+        ("import package.plugin\n", ()),
+        ("__import__('package.plugin')\n", ("package/plugin.py",)),
+        (
+            "import importlib\nimportlib.import_module('package.plugin')\n",
+            ("package/plugin.py",),
+        ),
+    ])
+    def test_finalize_prereg_rejects_redirected_package_path_before_import(
+        self, tmp_path, source, dynamic_python,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text(source, encoding="utf-8")
+        initializer.write_text("__path__ = ['redirected']\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=dynamic_python),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="import-resolution/runtime identity global binding",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("initializer_source", [
+        "(__path__,) = (['redirected'],)\n",
+        "__path__ += ['redirected']\n",
+        "del __path__\n",
+        "for __path__ in (['redirected'],):\n    pass\n",
+        "[None for __path__ in (['redirected'],)]\n",
+        "(__path__ := ['redirected'])\n",
+        "match ['redirected']:\n    case __path__:\n        pass\n",
+        "from sys import path as __path__\n",
+    ])
+    def test_finalize_prereg_rejects_alternate_package_path_bindings(
+        self, tmp_path, initializer_source,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import package.plugin\n", encoding="utf-8")
+        initializer.write_text(initializer_source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="identity global binding|sealed mutation",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_allows_package_identity_global_reads(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import package.plugin\n", encoding="utf-8")
+        initializer.write_text("observed_path = __path__\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, initializer, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert "package/__init__.py" in [item["path"] for item in seal["code_manifest"]]
     @pytest.mark.parametrize("source", [
         "import runpy\nrunpy.run_path('plugin.py')\n",
         "from builtins import exec as execute\nexecute('x = 1')\n",

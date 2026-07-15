@@ -937,6 +937,7 @@ def _declared_local_module_apis(module_path: Path) -> set[str]:
             f"cannot inspect local module API: {module_path}"
         ) from exc
     _reject_sealed_store_mutation(tree, module_path)
+    _reject_import_resolution_global_binding(tree, module_path)
     _, aliases = _dynamic_call_kinds(tree)
     _reject_sealed_global_mutation(tree, aliases, module_path)
     _reject_namespace_export_mutation(tree, aliases, module_path)
@@ -1023,6 +1024,46 @@ def _pattern_bound_names(pattern: ast.pattern) -> set[str]:
     if isinstance(pattern, ast.MatchOr):
         return set().union(*(_pattern_bound_names(item) for item in pattern.patterns))
     return set()
+_IMPORT_RESOLUTION_GLOBALS = frozenset({
+    "__path__", "__package__", "__spec__", "__loader__", "__name__", "__file__",
+    "__cached__", "__builtins__",
+})
+
+
+def _reject_import_resolution_global_binding(tree: ast.AST, path: Path) -> None:
+    """Keep import resolution and runtime identity globals immutable in SEALED code."""
+    bound: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            bound.add(node.id)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                bound.add(alias.asname or alias.name.split(".", 1)[0])
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        elif isinstance(node, ast.Match):
+            for case in node.cases:
+                bound.update(_pattern_bound_names(case.pattern))
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            bound.add(node.name)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                bound.update(
+                    argument.arg
+                    for argument in (
+                        *node.args.posonlyargs,
+                        *node.args.args,
+                        *node.args.kwonlyargs,
+                    )
+                )
+                if node.args.vararg:
+                    bound.add(node.args.vararg.arg)
+                if node.args.kwarg:
+                    bound.add(node.args.kwarg.arg)
+    forbidden = bound & _IMPORT_RESOLUTION_GLOBALS
+    if forbidden:
+        raise EvidenceSchemaError(
+            f"import-resolution/runtime identity global binding is unsupported: {path}"
+        )
 
 
 
@@ -1853,6 +1894,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
                 f"unresolved executable receiver parameter is unsupported: {path}"
             )
     _reject_wildcard_imports(tree, path)
+    _reject_import_resolution_global_binding(tree, path)
     calls, aliases = _dynamic_call_kinds(tree)
     _reject_sealed_global_mutation(tree, aliases, path)
     _reject_namespace_export_mutation(tree, aliases, path)
@@ -2040,6 +2082,7 @@ def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path]]:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
         raise EvidenceSchemaError(f"cannot parse dependency Python file {path}: {exc}") from exc
+    _reject_import_resolution_global_binding(tree, path)
     package = list(path.relative_to(root).parent.parts)
     found: set[Path] = set()
     for node in ast.walk(tree):
