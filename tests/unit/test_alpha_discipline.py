@@ -1080,6 +1080,117 @@ class TestPrereg:
             )
 
 
+    @pytest.mark.parametrize("source", [
+        (
+            "class Loader:\n"
+            "    def run_path(path):\n"
+            "        return path\n"
+            "Loader.run_path('plugin.py')\n"
+        ),
+        (
+            "class Loader:\n"
+            "    class Nested:\n"
+            "        def run_path(path):\n"
+            "            return path\n"
+            "Loader.Nested.run_path('plugin.py')\n"
+        ),
+        (
+            "import runpy\n"
+            "class Loader:\n"
+            "    for Loader in (runpy,):\n"
+            "        Loader.run_path('plugin.py')\n"
+        ),
+        (
+            "def outer():\n"
+            "    class Loader:\n"
+            "        def run_path(path):\n"
+            "            return path\n"
+            "    return Loader.run_path('plugin.py')\n"
+            "outer()\n"
+        ),
+    ], ids=("class_method", "nested_class_method", "class_for_rebind", "nested_function_class"))
+    def test_finalize_prereg_rejects_unproven_class_callable_api(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "import pydoc\nmodule_value: pydoc.importfile('plugin.py')\n",
+        (
+            "import pydoc\n"
+            "class Holder:\n"
+            "    class_value: pydoc.importfile('plugin.py')\n"
+        ),
+        (
+            "import pydoc\n"
+            "def outer():\n"
+            "    def inner(value: pydoc.importfile('plugin.py')) -> int:\n"
+            "        return 1\n"
+            "    return inner('value')\n"
+        ),
+        "import pydoc\ndef annotated(value: pydoc.importfile('plugin.py'), /):\n    return value\n",
+        "import pydoc\ndef annotated(*items: pydoc.importfile('plugin.py')):\n    return items\n",
+        "import pydoc\ndef annotated(*, item: pydoc.importfile('plugin.py')):\n    return item\n",
+        "import pydoc\ndef annotated(**items: pydoc.importfile('plugin.py')):\n    return items\n",
+        "import pydoc\ndef annotated() -> pydoc.importfile('plugin.py'):\n    return None\n",
+    ], ids=("module", "class", "nested_function", "posonly", "vararg", "kwonly", "kwarg", "return"))
+    def test_finalize_prereg_rejects_executable_annotations(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_allows_simple_non_call_annotations(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "def pure(value: int, /, *items: str, named: float = 1.0, **extra: bool) -> int:\n"
+            "    return value\n"
+            "pure(1)\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-15T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
+
+    def test_dynamic_dependency_rejects_executable_type_parameter_bound(self, tmp_path):
+        tree = ast.parse("def generic():\n    pass\n")
+        function = tree.body[0]
+        function.type_params = [type(
+            "TypeParameter",
+            (),
+            {"bound": ast.parse("pydoc.importfile('plugin.py')", mode="eval").body, "default_value": None},
+        )()]
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
     def test_finalize_prereg_rejects_unclassified_static_module_call(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
         measure.write_text("import pydoc\npydoc.importfile('plugin.py')\n", encoding="utf-8")

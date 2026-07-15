@@ -1403,23 +1403,6 @@ def _reject_unresolved_module_receivers(
             local_module_apis[receiver] = _declared_local_module_apis(module_path)
 
 
-    class _SealedLocalApis(ast.NodeVisitor):
-        """Collect explicitly declared class-level callable APIs by dotted name."""
-
-        def __init__(self) -> None:
-            self.class_stack: list[str] = []
-            self.apis: set[str] = set()
-
-        def visit_ClassDef(self, node: ast.ClassDef) -> None:
-            self.class_stack.append(node.name)
-            for statement in node.body:
-                if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    self.apis.add(".".join((*self.class_stack, statement.name)))
-            self.generic_visit(node)
-            self.class_stack.pop()
-
-    sealed_apis = _SealedLocalApis()
-    sealed_apis.visit(tree)
 
     invalidated_receivers: set[str] = set()
     for node in ast.walk(tree):
@@ -1563,8 +1546,7 @@ def _reject_unresolved_module_receivers(
                     or root not in self.safe
                     or _is_invalidated(receiver)
                     or (
-                        receiver not in sealed_apis.apis
-                        and root not in local_module_receivers
+                        root not in local_module_receivers
                         and not _reviewed_static_receiver(receiver)
                     )
                 ):
@@ -1796,8 +1778,58 @@ def _reject_untrusted_bare_calls(
     return calls.trusted_calls
 
 
+def _reject_executable_annotations(tree: ast.AST, path: Path) -> None:
+    """Reject definition-time annotation expressions that execute a callable."""
+
+    def _reject(annotation: ast.AST | None) -> None:
+        if annotation is not None and any(
+            isinstance(node, ast.Call) for node in ast.walk(annotation)
+        ):
+            raise EvidenceSchemaError(
+                f"executable annotation is unsupported: {path}"
+            )
+
+    class _Annotations(ast.NodeVisitor):
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            _reject(node.annotation)
+            self.generic_visit(node)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            args = node.args
+            for argument in (
+                *args.posonlyargs,
+                *args.args,
+                *((args.vararg,) if args.vararg else ()),
+                *args.kwonlyargs,
+                *((args.kwarg,) if args.kwarg else ()),
+            ):
+                _reject(argument.annotation)
+            _reject(node.returns)
+            self._visit_type_parameters(node)
+            self.generic_visit(node)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            self._visit_type_parameters(node)
+            self.generic_visit(node)
+
+        def visit_TypeAlias(self, node: ast.AST) -> None:
+            _reject(getattr(node, "value", None))
+            self._visit_type_parameters(node)
+            self.generic_visit(node)
+
+        @staticmethod
+        def _visit_type_parameters(node: ast.AST) -> None:
+            for parameter in getattr(node, "type_params", ()):
+                _reject(getattr(parameter, "bound", None))
+                _reject(getattr(parameter, "default_value", None))
+
+    _Annotations().visit(tree)
+
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
     """Resolve only direct, literal dynamic imports; reject executable indirection."""
+    _reject_executable_annotations(tree, path)
     _reject_sealed_store_mutation(tree, path)
     if any(isinstance(node, ast.Lambda) for node in ast.walk(tree)):
         raise EvidenceSchemaError(f"lambda executable dependencies are unsupported: {path}")
