@@ -719,6 +719,13 @@ class TestPrereg:
         "import importlib\nclass Executed:\n    for loader in (importlib,):\n        loader.import_module('plugin')\n",
         "import importlib\ndef outer():\n    class Holder:\n        pass\n    holder = Holder()\n    holder.importlib.import_module('plugin')\nouter()\n",
         "import importlib\n[loader.import_module('plugin') for (loader,) in ((importlib,),)]\n",
+        "import pydoc\nlist(map(pydoc.importfile, ['plugin.py']))\n",
+        "import pydoc\nlist(filter(pydoc.importfile, ['plugin.py']))\n",
+        "import pydoc\nsorted(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\nmin(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\nmax(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\niter(pydoc.importfile, None)\n",
+        "import runpy\nimport sys\nsys.modules[__name__].run_path = runpy.run_path\nrun_path('plugin.py')\n",
     ])
     def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
@@ -733,6 +740,49 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
+    def test_finalize_prereg_rejects_decorated_callback_carrier_through_map(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "import pydoc\n"
+            "def replace(function):\n    return pydoc.importfile\n"
+            "@replace\n"
+            "def carrier(path):\n    return path\n"
+            "list(map(carrier, ['plugin.py']))\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unproven callback"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "import runpy\nimport sys\nsys.modules[__name__].run_path = runpy.run_path\nrun_path('plugin.py')\n",
+        "import runpy\nimport sys\nsys.__dict__['run_path'] = runpy.run_path\n",
+        "import runpy\nglobals()['run_path'] = runpy.run_path\n",
+        "import runpy\nlocals()['run_path'] = runpy.run_path\n",
+        "import runpy\nvars()['run_path'] = runpy.run_path\n",
+    ])
+    def test_finalize_prereg_rejects_namespace_export_mutation(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="namespace export mutation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
     @pytest.mark.parametrize("source", [
         "import importlib\ndef carrier():\n    pass\ncarrier.loader = importlib\ncarrier.loader.import_module('plugin')\n",
         "import importlib\nclass Carrier:\n    pass\nCarrier.loader = importlib\nCarrier.loader.import_module('plugin')\n",

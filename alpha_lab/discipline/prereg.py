@@ -936,6 +936,8 @@ def _declared_local_module_apis(module_path: Path) -> set[str]:
         raise EvidenceSchemaError(
             f"cannot inspect local module API: {module_path}"
         ) from exc
+    _, aliases = _dynamic_call_kinds(tree)
+    _reject_namespace_export_mutation(tree, aliases, module_path)
     return _direct_function_api_names(tree)
 
 
@@ -1029,6 +1031,87 @@ def _assignment_receiver(node: ast.AST, aliases: dict[str, str]) -> str | None:
     if isinstance(node, ast.Subscript):
         return _assignment_receiver(node.value, aliases)
     return None
+def _reject_namespace_export_mutation(
+    tree: ast.AST, aliases: dict[str, str], path: Path
+) -> None:
+    """Reject writes through runtime module namespace carriers."""
+    namespace_functions = {
+        "globals", "locals", "vars",
+        "builtins.globals", "builtins.locals", "builtins.vars",
+    }
+
+    def _is_imported_module(node: ast.AST) -> bool:
+        while isinstance(node, ast.Attribute):
+            node = node.value
+        return isinstance(node, ast.Name) and node.id in aliases
+
+    def _is_namespace(node: ast.AST) -> bool:
+        if isinstance(node, ast.Attribute) and node.attr == "__dict__":
+            return _is_namespace(node.value) or _is_imported_module(node.value)
+        if isinstance(node, ast.Subscript):
+            base = _dotted_name(node.value, aliases)
+            return base == "sys.modules" or _is_namespace(node.value)
+        if isinstance(node, ast.Call):
+            return _dotted_name(node.func, aliases) in namespace_functions
+        return False
+
+    def _is_namespace_store(target: ast.AST) -> bool:
+        return (
+            _is_namespace(target)
+            or isinstance(target, ast.Subscript) and _is_namespace(target.value)
+            or isinstance(target, ast.Attribute) and _is_namespace(target.value)
+        )
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete)):
+            targets = (
+                node.targets if isinstance(node, (ast.Assign, ast.Delete)) else (node.target,)
+            )
+            if any(_is_namespace_store(target) for target in targets):
+                raise EvidenceSchemaError(
+                    f"module namespace export mutation is unsupported: {path}"
+                )
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr in {"__setitem__", "update", "setdefault"}
+            and _is_namespace(node.func.value)
+        ):
+            raise EvidenceSchemaError(
+                f"module namespace export mutation is unsupported: {path}"
+            )
+
+
+def _reject_unproven_callback_sinks(
+    tree: ast.AST, path: Path, safe_local_callables: set[str]
+) -> None:
+    """Require callbacks at builtin implicit-call sinks to be sealed capabilities."""
+    safe_builtin_callbacks = {
+        "abs", "bool", "float", "int", "repr", "str", "tuple",
+    }
+
+    def _callback_is_proven(node: ast.AST) -> bool:
+        return isinstance(node, ast.Name) and (
+            node.id in safe_local_callables or node.id in safe_builtin_callbacks
+        )
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+            continue
+        callback: ast.AST | None = None
+        if node.func.id in {"map", "filter"} and node.args:
+            callback = node.args[0]
+        elif node.func.id in {"sorted", "min", "max"}:
+            callback = next(
+                (keyword.value for keyword in node.keywords if keyword.arg == "key"),
+                None,
+            )
+        elif node.func.id == "iter" and len(node.args) == 2:
+            callback = node.args[0]
+        if callback is not None and not _callback_is_proven(callback):
+            raise EvidenceSchemaError(
+                f"unproven callback capability is unsupported: {path}"
+            )
 
 
 def _local_importfrom_receivers(
@@ -1564,6 +1647,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             )
     _reject_wildcard_imports(tree, path)
     calls, aliases = _dynamic_call_kinds(tree)
+    _reject_namespace_export_mutation(tree, aliases, path)
     _reject_unresolved_module_receivers(tree, aliases, path, root)
     found: set[Path] = set()
     executable = {
@@ -1602,6 +1686,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     # receiver scanner can validate the declared API path.  The import also
     # wins over a same-named earlier declaration.
     safe_local_callables = local_callables - local_symbol_receivers
+    _reject_unproven_callback_sinks(tree, path, safe_local_callables)
     safe_aliases = safe_local_callables | {
         name for name, canonical in aliases.items()
         if name not in local_symbol_receivers
