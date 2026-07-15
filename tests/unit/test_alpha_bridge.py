@@ -15,6 +15,7 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import stat
 from pathlib import Path
 
 import pytest
@@ -356,6 +357,8 @@ class TestPromotionV2:
         item = _item()
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         outer = json.loads(chain["catalog"].read_text(encoding="utf-8"))
+        # Simulate administrative corruption; production receipts remain immutable.
+        os.chmod(chain["catalog"], stat.S_IWRITE)
         chain["catalog"].write_text(
             json.dumps(outer["promotion_receipt"]), encoding="utf-8",
         )
@@ -374,6 +377,8 @@ class TestPromotionV2:
         chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
         outer = json.loads(chain["catalog"].read_text(encoding="utf-8"))
         catalog_db = tmp_path / outer["promotion_receipt"]["catalog_db"]["path"]
+        # Simulate administrative corruption; production catalog DBs remain immutable.
+        os.chmod(catalog_db, stat.S_IWRITE)
         con = sqlite3.connect(str(catalog_db))
         try:
             if mutation == "empty":
@@ -390,6 +395,8 @@ class TestPromotionV2:
             con.close()
         outer["promotion_receipt"]["catalog_db"]["sha256"] = hashlib.sha256(
             catalog_db.read_bytes()).hexdigest()
+        # Simulate administrative corruption; production receipts remain immutable.
+        os.chmod(chain["catalog"], stat.S_IWRITE)
         chain["catalog"].write_text(json.dumps(outer), encoding="utf-8")
 
         verdict = verify_promotion_manifest(chain["manifest"], repo_root=tmp_path)
