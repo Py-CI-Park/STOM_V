@@ -838,6 +838,82 @@ def _reviewed_static_call(receiver: str | None) -> bool:
     return receiver in _SAFE_STATIC_CALL_EFFECTS
 
 
+def _direct_function_api_names(tree: ast.Module) -> set[str]:
+    """Return only top-level functions with one unambiguous final binding."""
+
+    class _Bindings(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.events: dict[str, list[str]] = {}
+
+        def _record(self, names: set[str], kind: str) -> None:
+            for name in names:
+                self.events.setdefault(name, []).append(kind)
+
+        def visit_Import(self, node: ast.Import) -> None:
+            self._record({alias.asname or alias.name.split(".", 1)[0] for alias in node.names}, "other")
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            self._record({alias.asname or alias.name for alias in node.names}, "other")
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._record(set().union(*(_bound_names(target) for target in node.targets)), "other")
+            self.generic_visit(node.value)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._record(_bound_names(node.target), "other")
+            if node.value is not None:
+                self.visit(node.value)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._record(_bound_names(node.target), "other")
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            self._record(_bound_names(node.target), "other")
+            self.visit(node.value)
+        def visit_Delete(self, node: ast.Delete) -> None:
+            for target in node.targets:
+                self._record(_bound_names(target), "other")
+
+        def visit_For(self, node: ast.For) -> None:
+            self._record(_bound_names(node.target), "other")
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            for item in node.items:
+                if item.optional_vars is not None:
+                    self._record(_bound_names(item.optional_vars), "other")
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                self._record({node.name}, "other")
+            self.generic_visit(node)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            self._record({node.name}, "other")
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+        visit_ClassDef = visit_FunctionDef
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            return
+
+    bindings = _Bindings()
+    for statement in tree.body:
+        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            bindings._record({statement.name}, "function")
+        else:
+            bindings.visit(statement)
+    return {
+        name for name, events in bindings.events.items()
+        if events == ["function"]
+    }
+
+
 def _declared_local_module_apis(module_path: Path) -> set[str]:
     """Return direct function APIs declared by a local module, never re-exports."""
     try:
@@ -846,11 +922,7 @@ def _declared_local_module_apis(module_path: Path) -> set[str]:
         raise EvidenceSchemaError(
             f"cannot inspect local module API: {module_path}"
         ) from exc
-    return {
-        node.name
-        for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-    }
+    return _direct_function_api_names(tree)
 
 
 def _dynamic_call_kinds(tree: ast.AST) -> tuple[dict[str, str], dict[str, str]]:
@@ -1247,6 +1319,154 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
     suffix = target[dots:]
     module = package[:len(package) - dots + 1] + (suffix.split(".") if suffix else [])
     return _module_file(root, ".".join(module))
+def _reject_untrusted_bare_calls(
+    tree: ast.Module, path: Path, allowed_direct: set[str]
+) -> None:
+    """Require each bare call to resolve to one exact lexical capability."""
+
+    class _Bindings(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.events: dict[str, list[tuple[str, str | None]]] = {}
+
+        def _record(self, names: set[str], kind: str, value: str | None = None) -> None:
+            for name in names:
+                self.events.setdefault(name, []).append((kind, value))
+
+        def visit_Import(self, node: ast.Import) -> None:
+            for alias in node.names:
+                self._record({alias.asname or alias.name.split(".", 1)[0]}, "import", alias.name)
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            for alias in node.names:
+                canonical = f"{node.module}.{alias.name}" if node.module else None
+                self._record({alias.asname or alias.name}, "import", canonical)
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._record(set().union(*(_bound_names(target) for target in node.targets)), "other")
+            self.visit(node.value)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._record(_bound_names(node.target), "other")
+            if node.value is not None:
+                self.visit(node.value)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._record(_bound_names(node.target), "other")
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            self._record(_bound_names(node.target), "other")
+            self.visit(node.value)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            for target in node.targets:
+                self._record(_bound_names(target), "other")
+
+        def visit_For(self, node: ast.For) -> None:
+            self._record(_bound_names(node.target), "other")
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            for item in node.items:
+                if item.optional_vars is not None:
+                    self._record(_bound_names(item.optional_vars), "other")
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                self._record({node.name}, "other")
+            self.generic_visit(node)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            self._record({node.name}, "other")
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+        visit_ClassDef = visit_FunctionDef
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            return
+
+    def _scope(
+        statements: list[ast.stmt], parameters: set[str]
+    ) -> dict[str, list[tuple[str, str | None]]]:
+        bindings = _Bindings()
+        bindings._record(parameters, "other")
+        for statement in statements:
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                bindings._record({statement.name}, "function")
+            else:
+                bindings.visit(statement)
+        return bindings.events
+
+    def _parameters(args: ast.arguments) -> set[str]:
+        return {
+            argument.arg
+            for argument in (*args.posonlyargs, *args.args, *args.kwonlyargs)
+        } | ({args.vararg.arg} if args.vararg else set()) | ({args.kwarg.arg} if args.kwarg else set())
+
+    builtins = {
+        "abs", "all", "any", "bool", "dict", "enumerate", "float", "int", "isinstance",
+        "len", "list", "map", "max", "min", "next", "print", "range", "repr", "set",
+        "sorted", "str", "sum", "tuple", "type", "zip",
+    }
+
+    class _Calls(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.scopes: list[dict[str, list[tuple[str, str | None]]]] = []
+
+        def _resolve(self, name: str) -> list[tuple[str, str | None]] | None:
+            for scope in reversed(self.scopes):
+                if name in scope:
+                    return scope[name]
+            return None
+
+        def _visit_scope(self, statements: list[ast.stmt], parameters: set[str]) -> None:
+            self.scopes.append(_scope(statements, parameters))
+            for statement in statements:
+                self.visit(statement)
+            self.scopes.pop()
+
+        def visit_Module(self, node: ast.Module) -> None:
+            self._visit_scope(node.body, set())
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for default in (*node.args.defaults, *node.args.kw_defaults):
+                if default is not None:
+                    self.visit(default)
+            self._visit_scope(node.body, _parameters(node.args))
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            for decorator in node.decorator_list:
+                self.visit(decorator)
+            for base in node.bases:
+                self.visit(base)
+            self._visit_scope(node.body, set())
+
+        def visit_Call(self, node: ast.Call) -> None:
+            if isinstance(node.func, ast.Name):
+                events = self._resolve(node.func.id)
+                trusted = (
+                    events is None and node.func.id in builtins
+                ) or events == [("function", None)] or (
+                    events is not None
+                    and len(events) == 1
+                    and events[0][0] == "import"
+                    and events[0][1] in allowed_direct
+                )
+                if not trusted:
+                    raise EvidenceSchemaError(
+                        f"unresolved callable alias is unsupported: {path}"
+                    )
+            self.generic_visit(node)
+
+    _Calls().visit(tree)
 
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
@@ -1285,6 +1505,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
         "importlib.machinery.SourcelessFileLoader",
     }
+    _reject_untrusted_bare_calls(tree, path, allowed_direct)
     forbidden = executable - allowed_direct
     forbidden_callables = {
         "getattr", "builtins.getattr", "operator.attrgetter", "operator.itemgetter",
@@ -1300,9 +1521,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     )
     loader_methods = {"exec_module", "load_module", "get_code", "create_module"}
     parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
-    local_callables = {
-        node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-    }
+    local_callables = _direct_function_api_names(tree)
     _, local_symbol_receivers = _local_importfrom_receivers(tree, path, root)
     # A direct symbol imported from a repository-local module has no runtime
     # provenance here: it may be a function, class, or dynamically supplied

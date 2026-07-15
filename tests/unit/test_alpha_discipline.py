@@ -798,7 +798,10 @@ class TestPrereg:
             tmp_path / "plugin.py",
         )
         measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
-        carrier.write_text("from runpy import run_path\n", encoding="utf-8")
+        carrier.write_text(
+            "def run_path(path):\n    return path\nfrom runpy import run_path\n",
+            encoding="utf-8",
+        )
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
         document = tmp_path / "prereg.md"
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
@@ -821,7 +824,10 @@ class TestPrereg:
             tmp_path / "plugin.py",
         )
         measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
-        initializer.write_text("from runpy import run_path\n", encoding="utf-8")
+        initializer.write_text(
+            "def run_path(path):\n    return path\nfrom runpy import run_path\n",
+            encoding="utf-8",
+        )
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
         document = tmp_path / "prereg.md"
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
@@ -843,6 +849,26 @@ class TestPrereg:
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
 
         with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("source", [
+        "from pydoc import importfile as print\nprint('plugin.py')\n",
+        "import pydoc\ndef relay(print):\n    print('plugin.py')\nrelay(pydoc.importfile)\n",
+    ])
+    def test_finalize_prereg_rejects_shadowed_or_parameter_bare_callable(
+        self, tmp_path, source
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
             prereg.finalize_prereg(
                 document,
                 repo_root=tmp_path,
