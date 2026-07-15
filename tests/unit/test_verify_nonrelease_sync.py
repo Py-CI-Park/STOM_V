@@ -53,43 +53,47 @@ def _base_files() -> dict[str, str]:
                 return True
         """,
         "ui/ui_button_clicked_dialog_backengine.py": """
+            ui.backQ.put((
+                betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+                ui.dict_cn, ui.back_count, bl, True, False
+            ))
             ui.proc_backtester_bs = Process(
                 target=BackTest,
-                args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                      ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
-                      startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn, ui.back_count,
-                      bl, True, False)
-            )
-            ui.proc_backtester_bs = Process(
-                target=BackTest,
-                args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                      ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
-                      startday, endday, starttime, endtime, buystg, sellstg, None, ui.back_count,
-                      bl, True, False)
+                args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                      ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set)
             )
         """,
         "ui/ui_button_clicked_editer_coin.py": """
+            ui.backQ.put((
+                betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+                None, ui.back_count, bl, False, back_club
+            ))
             ui.proc_backtester_bs = Process(
                 target=BackTest,
-                args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                      ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                      endtime, buystg, sellstg, None, ui.back_count, bl, False, back_club)
+                args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                      ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
             )
         """,
         "ui/ui_button_clicked_editer_stock.py": """
+            ui.backQ.put((
+                betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+                ui.dict_cn, ui.back_count, bl, False, back_club
+            ))
             ui.proc_backtester_bs = Process(
                 target=BackTest,
-                args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                      ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                      endtime, buystg, sellstg, ui.dict_cn, ui.back_count, bl, False, back_club)
+                args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                      ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
             )
         """,
         "ui/ui_button_clicked_editer_unified.py": """
+            ui.backQ.put((
+                betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+                dict_cn, ui.back_count, bl, False, back_club
+            ))
             setattr(ui, proc_name, Process(
                 target=BackTest,
-                args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                      ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                      endtime, buystg, sellstg, dict_cn, ui.back_count, bl, False, back_club)
+                args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                      ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
             ))
         """,
         "ui/set_setup_tap.py": """
@@ -309,6 +313,29 @@ def test_verify_nonrelease_sync_fails_when_shutdown_does_not_hide_before_cleanup
 def test_verify_nonrelease_sync_fails_when_backtest_process_args_are_incomplete(tmp_path, monkeypatch):
     files = _base_files()
     files["ui/ui_button_clicked_editer_stock.py"] = """
+        ui.backQ.put((
+            betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+            ui.dict_cn, ui.back_count, bl, False, back_club
+        ))
+        ui.proc_backtester_bs = Process(
+            target=BackTest,
+            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                  ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
+        )
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "BackTest Process args contract mismatch" in output
+    assert "BackTest Process args count 11 != 12" in output
+    assert "BackTest Process args must include ui.backQ" in output
+
+
+def test_verify_nonrelease_sync_fails_when_backtest_config_handoff_is_missing(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_button_clicked_editer_stock.py"] = """
         ui.proc_backtester_bs = Process(
             target=BackTest,
             args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
@@ -320,29 +347,7 @@ def test_verify_nonrelease_sync_fails_when_backtest_process_args_are_incomplete(
     result, output = _run_main(tmp_path, monkeypatch)
 
     assert result == 1
-    assert "BackTest Process args contract mismatch" in output
-    assert "BackTest Process args count 12 != 24" in output
-    assert "BackTest Process args must not include ui.backQ" in output
-
-
-def test_verify_nonrelease_sync_fails_when_backtest_args_are_handed_off_through_backq(tmp_path, monkeypatch):
-    files = _base_files()
-    files["ui/ui_button_clicked_editer_stock.py"] = files["ui/ui_button_clicked_editer_stock.py"].replace(
-        "            ui.proc_backtester_bs = Process(",
-        """
-            ui.backQ.put((
-                betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
-                ui.dict_cn, ui.back_count, bl, False, back_club
-            ))
-            ui.proc_backtester_bs = Process(
-        """,
-    )
-    _write_files(tmp_path, files)
-
-    result, output = _run_main(tmp_path, monkeypatch)
-
-    assert result == 1
-    assert "BackTest launch args must not be handed off through backQ" in output
+    assert "BackTest config handoff mismatch" in output
 
 
 def test_verify_nonrelease_sync_fails_when_process_kill_calls_sys_exit(tmp_path, monkeypatch):

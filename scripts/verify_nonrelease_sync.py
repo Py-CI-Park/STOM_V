@@ -26,7 +26,7 @@ BACKTEST_PROCESS_FILES = (
     "ui/ui_button_clicked_editer_stock.py",
     "ui/ui_button_clicked_editer_unified.py",
 )
-BACKTEST_PROCESS_ARG_COUNT = 24
+BACKTEST_PROCESS_ARG_COUNT = 12
 
 
 def ast_name(node):
@@ -64,21 +64,26 @@ def backtest_process_contract_failures():
                     f"{relative_path}:{node.lineno} BackTest Process args count {len(args.elts)} "
                     f"!= {BACKTEST_PROCESS_ARG_COUNT}"
                 )
-            if any(ast.get_source_segment(text, arg) == "ui.backQ" for arg in args.elts):
-                failures.append(f"{relative_path}:{node.lineno} BackTest Process args must not include ui.backQ")
+            if not any(ast.get_source_segment(text, arg) == "ui.backQ" for arg in args.elts):
+                failures.append(f"{relative_path}:{node.lineno} BackTest Process args must include ui.backQ")
 
     return failures
 
 
 def backtest_queue_handoff_failures():
     failures = []
-    for relative_path in (
-        "ui/ui_button_clicked_dialog_backengine.py",
-        "ui/ui_button_clicked_editer_coin.py",
-        "ui/ui_button_clicked_editer_stock.py",
-    ):
+    for relative_path in BACKTEST_PROCESS_FILES:
         text = read_text(relative_path)
         tree = ast.parse(text)
+        targets_backtest = any(
+            isinstance(node, ast.Call)
+            and ast_name(node.func) == "Process"
+            and ast_name(keyword_value(node, "target")) == "BackTest"
+            for node in ast.walk(tree)
+        )
+        if not targets_backtest:
+            continue
+        found_config_handoff = False
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):
                 continue
@@ -95,8 +100,15 @@ def backtest_queue_handoff_failures():
             if not node.args or not isinstance(node.args[0], (ast.Tuple, ast.List)):
                 continue
             handoff_args = node.args[0].elts
-            if [ast_name(arg) for arg in handoff_args[:3]] == ["betting", "avgtime", "startday"]:
-                failures.append(f"{relative_path}:{node.lineno}")
+            if (
+                len(handoff_args) == 13
+                and [ast_name(arg) for arg in handoff_args[:3]]
+                == ["betting", "avgtime", "startday"]
+            ):
+                found_config_handoff = True
+                break
+        if not found_config_handoff:
+            failures.append(f"{relative_path}: missing 13-field BackTest backQ config handoff")
     return failures
 
 
@@ -207,15 +219,15 @@ def main():
     backtest_arg_failures = backtest_process_contract_failures()
     check(
         not backtest_arg_failures,
-        "BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.",
+        "BackTest 프로세스 생성자가 소형 큐 기반 인자 계약을 유지합니다.",
         "BackTest Process args contract mismatch: " + "; ".join(backtest_arg_failures),
         failures,
     )
     backtest_handoff_failures = backtest_queue_handoff_failures()
     check(
         not backtest_handoff_failures,
-        "BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.",
-        "BackTest launch args must not be handed off through backQ: " + ", ".join(backtest_handoff_failures),
+        "BackTest 실행 설정이 13필드 backQ 초기 메시지로 전달됩니다.",
+        "BackTest config handoff mismatch: " + ", ".join(backtest_handoff_failures),
         failures,
     )
     check(

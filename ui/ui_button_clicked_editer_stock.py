@@ -1317,11 +1317,14 @@ def stock_backtest_start(ui):
             f'engine_avg={ui.avg_list} engine_multi={ui.multi}'
         ))
         gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
+        ui.backQ.put((
+            betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn, ui.back_count,
+            bl, False, back_club
+        ))
         ui.proc_backtester_bs = Process(
             target=BackTest,
-            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                  ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                  endtime, buystg, sellstg, ui.dict_cn, ui.back_count, bl, False, back_club)
+            args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                  ui.back_sques, '백테스트', gubun, ui.dict_set)
         )
         ui.proc_backtester_bs.start()
         stock_backtest_log(ui)

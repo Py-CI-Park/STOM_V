@@ -104,6 +104,8 @@ def test_cli_writes_json_and_prints_markdown(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="strict",
         timeout=60,
     )
     assert result.returncode == 0, result.stderr

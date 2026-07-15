@@ -1108,13 +1108,16 @@ def backtest_start(ui, ui_type):
 
         gubun = config['gubun_fn'](ui)
         dict_cn = getattr(ui, config['dict_cn']) if config['dict_cn'] else None
+        ui.backQ.put((
+            betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
+            dict_cn, ui.back_count, bl, False, back_club,
+        ))
 
         proc_name = f'proc_backtester_bs'
         setattr(ui, proc_name, Process(
             target=BackTest,
-            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                  ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                  endtime, buystg, sellstg, dict_cn, ui.back_count, bl, False, back_club)
+            args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                  ui.back_eques, ui.back_sques, '백테스트', gubun, ui.dict_set)
         ))
         getattr(ui, proc_name).start()
         backtest_log(ui, ui_type)

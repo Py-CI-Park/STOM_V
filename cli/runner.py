@@ -592,16 +592,18 @@ def run_backtest(config):
         for q in back_eques:
             q.put(('백테유형', '백테스트'))
 
-        # BackTest 프로세스 시작: V2.79 BackTest 생성자 계약을 직접 전달한다.
-        # backQ는 더 이상 실행 인자 우회 채널로 쓰지 않고, CLI child diagnostic 전용 큐로만 전달한다.
+        # BackTest 프로세스 시작: UI와 동일한 소형 생성자 계약을 사용하고
+        # 실행 설정은 backQ의 단일 초기 메시지로 전달한다.
+        backQ.put((
+            config.betting, str(config.avg_time), str(config.start_date), str(config.end_date),
+            str(config.start_time), str(config.end_time), config.buy_strategy, config.sell_strategy,
+            dict_cn, back_count, config.blacklist, False, config.back_club,
+        ))
         proc_backtest = Process(
             target=_engine_with_dict_set,
             args=(BackTest, dict(dict_set),
-                  shared_cnt, windowQ, soundQ, totalQ, liveQ, teleQ,
-                  back_eques, back_sques, '백테스트', 'S', dict(dict_set),
-                  config.betting, str(config.avg_time), str(config.start_date), str(config.end_date),
-                  str(config.start_time), str(config.end_time), config.buy_strategy, config.sell_strategy,
-                  dict_cn, back_count, config.blacklist, False, config.back_club, backQ)
+                  shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
+                  back_eques, back_sques, '백테스트', 'S', dict(dict_set))
         )
         proc_backtest.start()
         checkpoint.mark('backtest_process_started', detail={'pid': proc_backtest.pid})

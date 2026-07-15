@@ -15,7 +15,7 @@ def test_v270_removed_jisu_chart_references_are_fully_cleaned():
     assert 'DrawRealJisuChart' not in mainwindow_text, '삭제된 지수차트 드로어 객체 참조가 남아 있습니다.'
     assert 'show_jisu(' not in mainwindow_text, '삭제된 지수차트 표시 함수 참조가 남아 있습니다.'
     assert 'dialog_jisu' not in process_kill_text, '삭제된 지수차트 다이얼로그 종료/직렬화 참조가 남아 있습니다.'
-    assert "ui.dict_set['창위치'][7]" in process_kill_text, 'dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.'
+    assert "(ui.dialog_info, 7)" in process_kill_text, 'dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.'
 
 
 def test_ui_mainwindow_import_succeeds_without_deleted_jisu_module(monkeypatch):

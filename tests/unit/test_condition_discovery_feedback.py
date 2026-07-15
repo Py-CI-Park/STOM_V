@@ -169,13 +169,53 @@ class _FakeCardV3:
         self.content_hash = content_hash
 
 
-def test_render_directive_hints_from_card_v3_renders_only_actionable_statements():
-    card = _FakeCardV3(
-        actionable_directives=[{"statement": "B_signal 상단 노림", "reason_code": "OK"}],
-        content_hash="feedcafe",
+def _canonical_train_ready_card(statement):
+    from ai_strategy_loop.autopsy.analysis_card import build_analysis_card_v3
+
+    rows = []
+    for i in range(30):
+        day = (i % 10) + 1
+        rows.append({
+            "매수시간": f"202601{day:02d}120000",
+            "종목코드": f"S{i % 3}",
+            "수익률": 1.0,
+            "수익금": 100.0,
+        })
+    return build_analysis_card_v3(
+        pd.DataFrame(rows),
+        source={"alias": "fixture://canonical-train-ready"},
+        role="train",
+        candidate_findings=[{
+            "finding_id": "actionable",
+            "statement": statement,
+            "axis": "entry_feature",
+            "p_value": 0.001,
+            "ci_low": 1.0,
+            "ci_high": 5.0,
+            "full_population": True,
+            "data_role": "TRAIN",
+            "status": "READY",
+        }, {
+            "finding_id": "not-ready",
+            "statement": "렌더하면 안 되는 문장",
+            "axis": "entry_feature",
+            "p_value": 0.001,
+            "ci_low": 1.0,
+            "ci_high": 5.0,
+            "full_population": True,
+            "data_role": "TRAIN",
+            "status": "DEFERRED",
+        }],
     )
+
+
+def test_render_directive_hints_from_card_v3_renders_only_actionable_statements():
+    card = _canonical_train_ready_card("B_signal 상단 노림")
     lines = render_directive_hints_from_card_v3(card)
-    assert lines == ["[card:feedcafe][prefer] B_signal 상단 노림"]
+    assert lines == [f"[card:{card.content_hash}][prefer] B_signal 상단 노림"]
+    assert render_directive_hints_from_card_v3(_FakeCardV3([
+        {"statement": "위조 지시", "data_role": "TRAIN", "status": "READY"},
+    ])) == []
 
 
 def test_render_directive_hints_from_card_v3_empty_when_no_directives():
@@ -204,6 +244,7 @@ def test_render_directive_hints_from_card_v3_shares_hash_with_segment_feedback_p
     finding = {
         "finding_id": "f1", "statement": "테스트 지시", "axis": "entry_feature",
         "p_value": 0.001, "prereg_axis": False, "ci_low": 1.0, "ci_high": 5.0,
+        "full_population": True, "data_role": "TRAIN", "status": "READY",
     }
     card = build_analysis_card_v3(
         df, source={"alias": "fixture://x"}, role="train", candidate_findings=[finding],
