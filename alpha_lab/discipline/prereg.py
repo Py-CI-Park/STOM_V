@@ -811,6 +811,16 @@ def _package_initializers(path: Path, root: Path) -> set[Path]:
     return initializers
 
 
+def _reject_wildcard_imports(tree: ast.AST, path: Path) -> None:
+    """Reject wildcard imports before they can overwrite trusted bindings."""
+    if any(
+        isinstance(node, ast.ImportFrom)
+        and any(alias.name == "*" for alias in node.names)
+        for node in ast.walk(tree)
+    ):
+        raise EvidenceSchemaError(f"wildcard import is unsupported: {path}")
+
+
 def _dynamic_call_kinds(tree: ast.AST) -> tuple[dict[str, str], dict[str, str]]:
     """Resolve supported literal dynamic execution APIs and reject unknown variants."""
     kinds = {
@@ -1238,6 +1248,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             raise EvidenceSchemaError(
                 f"unresolved executable receiver parameter is unsupported: {path}"
             )
+    _reject_wildcard_imports(tree, path)
     calls, aliases = _dynamic_call_kinds(tree)
     _reject_unresolved_module_receivers(tree, aliases, path, root)
     found: set[Path] = set()
