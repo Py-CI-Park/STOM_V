@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from contextlib import contextmanager
 from typing import Iterator
+from dataclasses import dataclass
 
 
 def new_receipt(run_dir: Path, db_path: Path) -> Dict[str, Any]:
@@ -60,6 +61,13 @@ def _retained_regular_file(path: Path, descriptor: int, label: str) -> os.stat_r
     ):
         raise OSError(f"{label} identity changed or is not a single-link regular file")
     return opened
+@dataclass(frozen=True)
+class VerifiedFileObservation:
+    """The frozen identity and metadata of one retained snapshot file."""
+    sha256: str
+    size_bytes: int
+    mtime_utc: str
+
 class RetainedSourceSnapshots:
     """Keep every snapshot source bound to its opened single-link file identity."""
 
@@ -92,6 +100,25 @@ class RetainedSourceSnapshots:
 
     def descriptor_for(self, path: Path) -> int | None:
         return self.descriptors.get(Path(path).resolve())
+
+    def observation_for_relative(self, rel: str) -> VerifiedFileObservation | None:
+        """Return metadata from the retained snapshot, never from its live source."""
+        path = (self.snapshot_dir / rel).resolve()
+        descriptor = self.descriptor_for(path)
+        if descriptor is None:
+            return None
+        opened = _retained_regular_file(path, descriptor, f"catalog snapshot '{path}'")
+        return VerifiedFileObservation(
+            sha256=_sha256_handle(descriptor),
+            size_bytes=opened.st_size,
+            mtime_utc=datetime.fromtimestamp(
+                opened.st_mtime, tz=timezone.utc).isoformat(),
+        )
+
+    def contains_relative_path(self, rel: str) -> bool:
+        """Whether a retained snapshot contains this path or descendants of it."""
+        prefix = (self.snapshot_dir / rel).resolve()
+        return any(path == prefix or prefix in path.parents for path in self.descriptors)
 
     def validate(self) -> None:
         for path, descriptor in self.descriptors.items():

@@ -36,8 +36,9 @@ from alpha_lab.catalog.loaders import (
 )
 from alpha_lab.catalog.schema import create_schema, reset_tables, table_counts
 from alpha_lab.catalog.sources import (
-    add_note, new_receipt, read_json, record_source, retain_snapshot_sources,
-    sha256_file, snapshot_sources, validate_retained_snapshot_sources,
+    RetainedSourceSnapshots, add_note, new_receipt, read_json, record_source,
+    retain_snapshot_sources, sha256_file, snapshot_sources,
+    validate_retained_snapshot_sources,
 )
 
 # 공유 원천(1회만 읽고 여러 테이블이 소비) — rel 경로 키.
@@ -73,17 +74,32 @@ def root_from_run_dir(run_dir: Path) -> Path:
 
 def load_assets(
     con: sqlite3.Connection, run_dir: Path, receipt: Dict[str, Any],
+    retained_snapshots: RetainedSourceSnapshots | None = None,
 ) -> None:
-    """자산 레지스트리 전량 적재 — 부재 자산도 행은 남기고 missing 기록."""
+    """Load asset rows from live files or, for authority, retained snapshot bytes."""
     root = root_from_run_dir(run_dir)
     for asset in ASSET_REGISTRY:
         base = root if asset["base"] == "root" else Path(run_dir)
         path = base / str(asset["path"])
-        exists, sha, size, mtime = _stat_asset(path, str(asset["asset_id"]))
-        if exists and path.is_file() and asset["asset_id"] != "research_assets_db":
-            # 빌드 중인 자기 자신은 원천이 아니다 — 영수증 sources에서 제외
-            # (빌드 중간 상태 해시가 '원천 sha'로 남는 자기모순 방지, 검증 지적).
-            record_source(receipt, run_dir, path)
+        if retained_snapshots is None:
+            exists, sha, size, mtime = _stat_asset(path, str(asset["asset_id"]))
+        else:
+            try:
+                rel = path.resolve().relative_to(Path(run_dir).resolve()).as_posix()
+            except ValueError:
+                rel = None
+            observation = (
+                retained_snapshots.observation_for_relative(rel) if rel is not None else None)
+            if observation is not None:
+                exists, sha, size, mtime = (
+                    True, observation.sha256, observation.size_bytes, observation.mtime_utc)
+            elif rel is not None and retained_snapshots.contains_relative_path(rel):
+                exists, sha, size, mtime = True, None, None, None
+            else:
+                exists, sha, size, mtime = False, None, None, None
+        if exists and sha is not None and asset["asset_id"] != "research_assets_db":
+            # The source label remains its original run path, but its bytes are frozen.
+            record_source(receipt, run_dir, path, sha256=sha, size_bytes=size)
         elif not exists:
             receipt["missing"].append(f"[asset:{asset['asset_id']}] {asset['path']}")
         con.execute(
@@ -588,6 +604,37 @@ def _flush_file(path: Path) -> None:
         handle.flush()
         os.fsync(handle.fileno())
 
+def _set_windows_readonly(path: Path, readonly: bool) -> None:
+    """Persist and verify a Windows read-only publication attribute."""
+    if os.name != "nt":
+        return
+    import ctypes
+
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GetFileAttributesW.restype = ctypes.c_uint32
+    invalid = 0xFFFFFFFF
+    attributes = kernel32.GetFileAttributesW(str(path))
+    if attributes == invalid:
+        raise EvidenceSchemaError(f"cannot inspect catalog publication attributes: {path}")
+    desired = attributes | 0x1 if readonly else attributes & ~0x1
+    if not kernel32.SetFileAttributesW(str(path), desired):
+        raise EvidenceSchemaError(f"cannot set catalog publication immutability: {path}")
+    verified = kernel32.GetFileAttributesW(str(path))
+    if verified == invalid or bool(verified & 0x1) != readonly:
+        raise EvidenceSchemaError(f"catalog publication immutability was not retained: {path}")
+
+
+def _seal_published_catalog_pair(db_path: Path, receipt_path: Path) -> None:
+    """Seal both canonical files while their write-denying handles remain retained."""
+    _set_windows_readonly(db_path, True)
+    _set_windows_readonly(receipt_path, True)
+
+
+def recover_published_catalog_immutability(db_path: Path | str, receipt_path: Path | str) -> None:
+    """Explicit administrative recovery only; build_all never unseals publications."""
+    _set_windows_readonly(Path(db_path), False)
+    _set_windows_readonly(Path(receipt_path), False)
+
 
 def _write_temp_bytes(
     directory: Path, prefix: str, payload: bytes, mutation_guard: Any | None = None,
@@ -912,6 +959,7 @@ def build_all(
     authority_guard = None
     working_db_descriptor: int | None = None
     source_retention = None
+    retained_snapshots: RetainedSourceSnapshots | None = None
     published_db_descriptor: int | None = None
     published_receipt_descriptor: int | None = None
     if promotion_status is not None:
@@ -955,7 +1003,7 @@ def build_all(
     try:
         if source_snapshot_dir is not None:
             source_retention = retain_snapshot_sources(source_snapshot_dir)
-            source_retention.__enter__()
+            retained_snapshots = source_retention.__enter__()
             validate_retained_snapshot_sources()
         if promotion_status is not None:
             _validate_retained_file_identity(
@@ -966,7 +1014,7 @@ def build_all(
             create_schema(con)
             reset_tables(con)
             docs = {rel: read_json(receipt, content_run_dir, rel) for rel in _SHARED_RELS}
-            load_assets(con, run_dir, receipt)
+            load_assets(con, run_dir, receipt, retained_snapshots)
             ledger_rows = load_ledger_mirror(
                 con, content_run_dir, receipt, strict=promotion_status is not None)
             validate_retained_snapshot_sources()
@@ -1029,6 +1077,7 @@ def build_all(
             ) != working_db_sha256:
                 raise EvidenceSchemaError(
                     "published catalog DB bytes do not match the verified working DB")
+            _set_windows_readonly(db_path, True)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status,
                 verified_run_dir=source_snapshot_dir, verified_db_sha256=working_db_sha256)
@@ -1054,6 +1103,7 @@ def build_all(
                 _validate_published_catalog_pair(
                     db_path, published_db_descriptor, receipt_path,
                     published_receipt_descriptor, root)
+                _seal_published_catalog_pair(db_path, receipt_path)
         return receipt
     finally:
         if published_receipt_descriptor is not None:

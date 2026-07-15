@@ -259,6 +259,49 @@ def test_retained_snapshot_rejects_swap_after_snapshot_creation(tmp_path: Path):
                 elif path.is_dir():
                     path.rmdir()
             snapshot.rmdir()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_authoritative_assets_use_retained_snapshot_bytes_after_live_asset_swap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    run = tmp_path / "run"
+    run.mkdir()
+    asset = run / "asset.json"
+    frozen = b'{"version":"A"}'
+    asset.write_bytes(frozen)
+    snapshot = sources.snapshot_sources(
+        run, tmp_path, {"asset.json": hashlib.sha256(frozen).hexdigest()})
+    monkeypatch.setattr(builder, "ASSET_REGISTRY", [{
+        "asset_id": "asset", "kind": "judgment_json", "base": "run",
+        "path": "asset.json", "status_tag": "sealed",
+    }])
+    receipt = sources.new_receipt(run, tmp_path / "catalog.db")
+    con = sqlite3.connect(":memory:")
+    try:
+        schema.create_schema(con)
+        with sources.retain_snapshot_sources(snapshot) as retained:
+            # The source returns to A before end-of-build validation, but assets
+            # must still come from the retained A observation while live is B.
+            asset.write_bytes(b'{"version":"B"}')
+            builder.load_assets(con, run, receipt, retained)
+            asset.write_bytes(frozen)
+        row = con.execute(
+            "SELECT path, exists_on_disk, sha256, size_bytes FROM assets WHERE asset_id = 'asset'"
+        ).fetchone()
+        assert row == (
+            "asset.json", 1, hashlib.sha256(frozen).hexdigest(), len(frozen))
+        assert receipt["sources"] == [{
+            "path": "asset.json", "status": "loaded",
+            "sha256": hashlib.sha256(frozen).hexdigest(), "size_bytes": len(frozen),
+        }]
+    finally:
+        con.close()
+        for path in sorted(snapshot.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            else:
+                path.rmdir()
+        snapshot.rmdir()
+
 
 
 def test_duplicate_source_record_rejects_a_hash_for_b_parse(tmp_path: Path):
@@ -640,6 +683,37 @@ def test_final_publication_pair_denies_in_place_overwrite_until_guard_release(tm
             assert path.read_bytes() == originals[path]
     finally:
         guard.close()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_sealed_publication_pair_rejects_writes_after_guard_release(tmp_path: Path):
+    from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+    db_path = tmp_path / "published.db"
+    receipt_path = tmp_path / "published.receipt.json"
+    db_path.write_bytes(b"verified database bytes")
+    receipt_path.write_bytes(b'{"verified":true}')
+    guard = _WindowsAuthorityGuard(tmp_path, {}, ())
+    try:
+        guard.hold_write_denied_file(db_path)
+        guard.hold_write_denied_file(receipt_path)
+        builder._seal_published_catalog_pair(db_path, receipt_path)
+    finally:
+        guard.close()
+
+    try:
+        for path in (db_path, receipt_path):
+            with pytest.raises(OSError):
+                path.write_bytes(b"ordinary overwrite")
+            replacement = tmp_path / f"replacement-{path.name}"
+            replacement.write_bytes(b"replacement")
+            with pytest.raises(OSError):
+                replacement.replace(path)
+        builder.recover_published_catalog_immutability(db_path, receipt_path)
+        db_path.write_bytes(b"administrative recovery")
+        receipt_path.write_bytes(b"administrative recovery")
+    finally:
+        builder.recover_published_catalog_immutability(db_path, receipt_path)
+
+
 def test_promotion_sources_must_exactly_match_manifest_artifacts(tmp_path: Path):
     source = tmp_path / "bound.json"
     extra = tmp_path / "extra.json"
