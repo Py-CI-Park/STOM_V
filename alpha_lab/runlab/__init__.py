@@ -5,7 +5,13 @@
 
 구성:
   bootstrap        격리 진입점. CLI:
-                   python -I -S <absolute bootstrap.py> detached-runner <run_dir> <스크립트> -- [인자...]
+                   python -I -S <absolute bootstrap.py> detached-runner
+                   --receipt <repo>/receipts/<id>.json
+                   --claim <repo>/claims/<id>.json <run_dir> <target> -- [인자...]
+                   receipt와 claim은 필수이며 run_dir/target보다 앞에 둔다.
+                   target은 봉인된 dependency_roots의 정확한 항목이어야 한다.
+                   신뢰된 소스 전용 러너가 manifest-only 잠금 stage에서만 실행하고,
+                   비공개 이벤트 핸드오프로 child를 넘긴다. 임의 --python-exe는 지원하지 않는다.
   detached_runner  Windows 세션 독립 기동기(창구).
   child_wrap       대상 스크립트 무수정 래퍼 — 심박 갱신+종료코드 기록.
   watchdog         보고 전용 판정(RUNNING/STALLED/DEAD/EXITED/MISSING).

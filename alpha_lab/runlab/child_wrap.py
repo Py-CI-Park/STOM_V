@@ -25,6 +25,11 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from alpha_lab.runlab import contract
+from alpha_lab.runlab.sealed_execution import (
+    WindowsEvent,
+    inherited_handle_startupinfo,
+    locked_execution,
+)
 
 # 기동 실패(대상 자체를 못 띄움) 시 관례적 종료코드.
 _SPAWN_FAIL_EXIT_CODE = 127
@@ -37,6 +42,12 @@ def _parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
         description="대상 스크립트를 감싸 심박·종료코드를 run_dir에 기록한다")
     ap.add_argument("--interval", type=float, default=5.0,
                     help="심박 갱신 주기(초, 기본 5)")
+    ap.add_argument("--repo-root", required=True, help="canonical repository root")
+    ap.add_argument("--receipt", required=True, help="canonical schema-v2 receipt")
+    ap.add_argument("--claim", required=True, help="canonical schema-v2 claim")
+    ap.add_argument("--stage-root", required=True, help="manifest-only stage root")
+    ap.add_argument("--wrapper-ready-handle", default=None)
+    ap.add_argument("--parent-release-handle", default=None)
     ap.add_argument("run_dir", help="계약 파일 디렉토리")
     ap.add_argument("target", help="대상 파이썬 스크립트 경로")
     ap.add_argument("target_args", nargs=argparse.REMAINDER,
@@ -56,47 +67,72 @@ def _watch_child(proc: subprocess.Popen, run_dir: Path, interval: float) -> int:
 
 
 def _run(run_dir: Path, target: str, target_args: Sequence[str],
-         interval: float) -> int:
-    """본체 — 기동·감시·기록. 반환값이 래퍼의 종료코드가 된다."""
+         interval: float, *, repo_root: str | Path, receipt: str | Path,
+         claim: str | Path, stage_root: str | Path,
+         wrapper_ready_handle=None, parent_release_handle=None) -> int:
+    """Launch only after locked parent release and target bootstrap acknowledgement."""
     contract.write_pid(run_dir, os.getpid())
-    contract.touch_heartbeat(run_dir)
     started = contract.utc_now_iso()
-    bootstrap = Path(__file__).resolve().with_name("bootstrap.py")
-    cmd = [sys.executable, "-I", "-S", str(bootstrap), "target", str(target),
-           *target_args]
-    base = {"pid": os.getpid(), "target": str(target),
-            "target_args": list(target_args), "started_utc": started,
-            "interval_sec": interval}
-    with open(run_dir / contract.LOG_FILE, "ab") as log:
-        try:
-            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
-                                    stdout=log, stderr=subprocess.STDOUT)
-        except OSError as err:
-            contract.write_status(run_dir, contract.STATE_EXITED,
-                                  exit_code=_SPAWN_FAIL_EXIT_CODE,
-                                  error=f"대상 기동 실패: {err}", **base)
-            return _SPAWN_FAIL_EXIT_CODE
-        contract.write_status(run_dir, contract.STATE_RUNNING,
-                              child_pid=proc.pid, **base)
-        try:
-            rc = _watch_child(proc, run_dir, interval)
-        except Exception as err:  # noqa: BLE001 — 심박 IO 장애 등 래퍼측 예외.
-            # 자식 생존 확인 없이 exited를 기록하면 '거짓 종료'가 된다(검증 실증).
-            polled = proc.poll()
-            if polled is None:
-                contract.write_status(run_dir, contract.STATE_WRAPPER_ERROR,
-                                      child_pid=proc.pid,
-                                      error=f"래퍼 감시 오류(자식 생존): {err!r}",
-                                      **base)
-                return 1
-            rc = polled  # 자식은 이미 종료 — 실제 종료코드로 기록.
+    wrapper_ready = WindowsEvent.inherited(wrapper_ready_handle)
+    parent_release = WindowsEvent.inherited(parent_release_handle)
+    with locked_execution(repo_root, receipt, claim, stage_root, target) as evidence:
+        if wrapper_ready is not None:
+            wrapper_ready.set()
+            if parent_release is None or not parent_release.wait(15_000):
+                raise RuntimeError("parent did not release locked wrapper")
+        bootstrap = Path(__file__).resolve().with_name("bootstrap.py")
+        base = {"pid": os.getpid(), "target": str(target),
+                "target_args": list(target_args), "started_utc": started,
+                "interval_sec": interval}
+        with WindowsEvent.create() as target_ready, open(
+            run_dir / contract.LOG_FILE, "ab"
+        ) as log:
+            cmd = [sys.executable, "-I", "-S", str(bootstrap), "target",
+                   "--repo-root", str(evidence.repo_root), "--receipt",
+                   str(evidence.receipt_path), "--claim", str(evidence.claim_path),
+                   "--stage-root", str(Path(stage_root).resolve()),
+                   "--target-ready-handle", str(target_ready.handle), str(target),
+                   *target_args]
+            try:
+                proc = subprocess.Popen(
+                    cmd, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
+                    close_fds=True,
+                    startupinfo=inherited_handle_startupinfo((target_ready.handle,)))
+            except OSError as err:
+                contract.write_status(run_dir, contract.STATE_EXITED,
+                                      exit_code=_SPAWN_FAIL_EXIT_CODE,
+                                      error=f"대상 기동 실패: {err}", **base)
+                return _SPAWN_FAIL_EXIT_CODE
+            if not target_ready.wait(15_000):
+                proc.terminate()
+                try:
+                    proc.wait(timeout=15)
+                except subprocess.TimeoutExpired as exc:
+                    raise RuntimeError(
+                        "target acknowledgement cleanup did not confirm exit"
+                    ) from exc
+                raise RuntimeError("target did not acknowledge locked bootstrap")
+            contract.touch_heartbeat(run_dir)
+            contract.write_status(run_dir, contract.STATE_RUNNING,
+                                  child_pid=proc.pid, **base)
+            try:
+                rc = _watch_child(proc, run_dir, interval)
+            except Exception as err:
+                polled = proc.poll()
+                if polled is None:
+                    contract.write_status(run_dir, contract.STATE_WRAPPER_ERROR,
+                                          child_pid=proc.pid,
+                                          error=f"래퍼 감시 오류(자식 생존): {err!r}",
+                                          **base)
+                    return 1
+                rc = polled
     contract.write_status(run_dir, contract.STATE_EXITED, exit_code=rc,
                           child_pid=proc.pid, ended_utc=contract.utc_now_iso(),
                           **base)
     try:
         contract.touch_heartbeat(run_dir)
     except OSError:
-        pass  # exited 기록이 이미 남았다 — 심박 실패로 상태를 덮지 않는다.
+        pass
     return rc
 
 
@@ -106,7 +142,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     run_dir = Path(args.run_dir).resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
     try:
-        return _run(run_dir, args.target, args.target_args, args.interval)
+        return _run(
+            run_dir, args.target, args.target_args, args.interval,
+            repo_root=args.repo_root, receipt=args.receipt, claim=args.claim,
+            stage_root=args.stage_root,
+            wrapper_ready_handle=args.wrapper_ready_handle,
+            parent_release_handle=args.parent_release_handle)
     except Exception as err:  # noqa: BLE001 — 마지막 안전망: 기록 후 실패 종료.
         try:
             # 직전 status의 child_pid를 보존한다 — 전체 교체로 잃으면 살아 있는
