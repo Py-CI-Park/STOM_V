@@ -1039,6 +1039,7 @@ def _reject_namespace_export_mutation(
         "globals", "locals", "vars",
         "builtins.globals", "builtins.locals", "builtins.vars",
     }
+    namespace_names: set[str] = set()
 
     def _is_imported_module(node: ast.AST) -> bool:
         while isinstance(node, ast.Attribute):
@@ -1046,14 +1047,41 @@ def _reject_namespace_export_mutation(
         return isinstance(node, ast.Name) and node.id in aliases
 
     def _is_namespace(node: ast.AST) -> bool:
+        if isinstance(node, ast.Name):
+            return node.id in namespace_names
         if isinstance(node, ast.Attribute) and node.attr == "__dict__":
             return _is_namespace(node.value) or _is_imported_module(node.value)
         if isinstance(node, ast.Subscript):
             base = _dotted_name(node.value, aliases)
             return base == "sys.modules" or _is_namespace(node.value)
         if isinstance(node, ast.Call):
-            return _dotted_name(node.func, aliases) in namespace_functions
+            return (
+                _dotted_name(node.func, aliases) in namespace_functions
+                or isinstance(node.func, ast.Name) and node.func.id in namespace_helpers
+            )
         return False
+
+    namespace_helpers = {
+        statement.name
+        for statement in tree.body
+        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and not statement.decorator_list
+        and len(statement.body) == 1
+        and isinstance(statement.body[0], ast.Return)
+        and statement.body[0].value is not None
+        and _is_namespace(statement.body[0].value)
+    }
+    changed = True
+    while changed:
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
+                targets = node.targets if isinstance(node, ast.Assign) else (node.target,)
+                if _is_namespace(node.value):
+                    names = set().union(*(_bound_names(target) for target in targets))
+                    if not names.issubset(namespace_names):
+                        namespace_names.update(names)
+                        changed = True
 
     def _is_namespace_store(target: ast.AST) -> bool:
         return (
@@ -1082,36 +1110,6 @@ def _reject_namespace_export_mutation(
             )
 
 
-def _reject_unproven_callback_sinks(
-    tree: ast.AST, path: Path, safe_local_callables: set[str]
-) -> None:
-    """Require callbacks at builtin implicit-call sinks to be sealed capabilities."""
-    safe_builtin_callbacks = {
-        "abs", "bool", "float", "int", "repr", "str", "tuple",
-    }
-
-    def _callback_is_proven(node: ast.AST) -> bool:
-        return isinstance(node, ast.Name) and (
-            node.id in safe_local_callables or node.id in safe_builtin_callbacks
-        )
-
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
-            continue
-        callback: ast.AST | None = None
-        if node.func.id in {"map", "filter"} and node.args:
-            callback = node.args[0]
-        elif node.func.id in {"sorted", "min", "max"}:
-            callback = next(
-                (keyword.value for keyword in node.keywords if keyword.arg == "key"),
-                None,
-            )
-        elif node.func.id == "iter" and len(node.args) == 2:
-            callback = node.args[0]
-        if callback is not None and not _callback_is_proven(callback):
-            raise EvidenceSchemaError(
-                f"unproven callback capability is unsupported: {path}"
-            )
 
 
 def _local_importfrom_receivers(
@@ -1441,7 +1439,8 @@ def _dynamic_module_file(root: Path, target: str, path: Path) -> Path | None:
     module = package[:len(package) - dots + 1] + (suffix.split(".") if suffix else [])
     return _module_file(root, ".".join(module))
 def _reject_untrusted_bare_calls(
-    tree: ast.Module, path: Path, allowed_direct: set[str]
+    tree: ast.Module, path: Path, allowed_direct: set[str],
+    safe_local_callables: set[str],
 ) -> set[int]:
     """Require each bare call to resolve to one exact lexical capability."""
 
@@ -1618,6 +1617,28 @@ def _reject_untrusted_bare_calls(
                         f"unresolved callable alias is unsupported: {path}"
                     )
                 self.trusted_calls.add(id(node))
+                callback: ast.AST | None = None
+                if node.func.id in {"map", "filter"} and node.args:
+                    callback = node.args[0]
+                elif node.func.id in {"sorted", "min", "max"}:
+                    callback = next(
+                        (keyword.value for keyword in node.keywords if keyword.arg == "key"),
+                        None,
+                    )
+                elif node.func.id == "iter" and len(node.args) == 2:
+                    callback = node.args[0]
+                if callback is not None and (
+                    not isinstance(callback, ast.Name)
+                    or not (
+                        self._resolve(callback.id) is None
+                        and callback.id in {"abs", "bool", "float", "int", "repr", "str", "tuple"}
+                        or self._resolve(callback.id) == [("function", None)]
+                        and callback.id in safe_local_callables
+                    )
+                ):
+                    raise EvidenceSchemaError(
+                        f"unproven callback capability is unsupported: {path}"
+                    )
             self.generic_visit(node)
 
     calls = _Calls()
@@ -1662,7 +1683,6 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
         "importlib.machinery.SourcelessFileLoader",
     }
-    trusted_bare_calls = _reject_untrusted_bare_calls(tree, path, allowed_direct)
     forbidden = executable - allowed_direct
     forbidden_callables = {
         "getattr", "builtins.getattr", "operator.attrgetter", "operator.itemgetter",
@@ -1686,7 +1706,9 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     # receiver scanner can validate the declared API path.  The import also
     # wins over a same-named earlier declaration.
     safe_local_callables = local_callables - local_symbol_receivers
-    _reject_unproven_callback_sinks(tree, path, safe_local_callables)
+    trusted_bare_calls = _reject_untrusted_bare_calls(
+        tree, path, allowed_direct, safe_local_callables
+    )
     safe_aliases = safe_local_callables | {
         name for name, canonical in aliases.items()
         if name not in local_symbol_receivers

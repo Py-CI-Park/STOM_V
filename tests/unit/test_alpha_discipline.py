@@ -761,10 +761,38 @@ class TestPrereg:
                 manifest_path=_canonical_seal_path(tmp_path, document),
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
+    @pytest.mark.parametrize("source", [
+        "import pydoc\nstr = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\nint = pydoc.importfile\nlist(map(int, ['plugin.py']))\n",
+        "from pydoc import importfile as str\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef run(str):\n    list(map(str, ['plugin.py']))\nrun(pydoc.importfile)\n",
+        "import pydoc\ndef run(str=pydoc.importfile):\n    list(map(str, ['plugin.py']))\nrun()\n",
+        "import pydoc\nlist(map(str, ['plugin.py']) for str in [pydoc.importfile])\n",
+        "import pydoc\nmatch pydoc.importfile:\n    case str:\n        list(map(str, ['plugin.py']))\n",
+        "def decorate(callback):\n    return callback\n@decorate\ndef str(path):\n    return path\nlist(map(str, ['plugin.py']))\n",
+    ])
+    def test_finalize_prereg_rejects_shadowed_safe_builtin_callback(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
 
     @pytest.mark.parametrize("source", [
         "import runpy\nimport sys\nsys.modules[__name__].run_path = runpy.run_path\nrun_path('plugin.py')\n",
-        "import runpy\nimport sys\nsys.__dict__['run_path'] = runpy.run_path\n",
+        "import runpy\nimport sys\nnamespace = sys.modules[__name__]\nnamespace.run_path = runpy.run_path\n",
+        "import runpy\nimport sys\nnamespace = sys.modules[__name__].__dict__\nnamespace['run_path'] = runpy.run_path\n",
+        "import runpy\nimport sys\ndef namespace():\n    return sys.modules[__name__]\nnamespace().run_path = runpy.run_path\n",
+        "import runpy\nsys.__dict__['run_path'] = runpy.run_path\n",
         "import runpy\nglobals()['run_path'] = runpy.run_path\n",
         "import runpy\nlocals()['run_path'] = runpy.run_path\n",
         "import runpy\nvars()['run_path'] = runpy.run_path\n",
@@ -775,7 +803,10 @@ class TestPrereg:
         document = tmp_path / "prereg.md"
         document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
 
-        with pytest.raises(evidence.EvidenceSchemaError, match="namespace export mutation"):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="namespace export mutation|higher-order or unsafe executable callable",
+        ):
             prereg.finalize_prereg(
                 document,
                 repo_root=tmp_path,
@@ -958,6 +989,24 @@ class TestPrereg:
         measure = tmp_path / "measure.py"
         measure.write_text(
             "values = [print(value) for value in ['ok']]\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
+    def test_finalize_prereg_allows_unshadowed_safe_builtin_callback(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "values = list(map(str, [1, 2]))\n",
             encoding="utf-8",
         )
         document = tmp_path / "prereg.md"
