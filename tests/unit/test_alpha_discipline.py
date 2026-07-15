@@ -1158,11 +1158,69 @@ class TestPrereg:
                 manifest_path=_canonical_seal_path(tmp_path, document),
                 sealed_at="2026-07-15T00:00:00+00:00",
             )
+    @pytest.mark.parametrize("source", [
+        "__import__('plugin', globals=None, locals=None)\n",
+        "__import__('plugin', fromlist=('not_local',))\n",
+        "__import__('plugin', level=0)\n",
+        "from builtins import __import__ as load\nload('plugin', None, None)\n",
+        "import importlib\nimportlib.import_module('.plugin')\n",
+        "import importlib as loader\nloader.import_module('plugin', package='package')\n",
+        "from importlib import import_module as load\nload('plugin', None)\n",
+    ], ids=(
+        "builtin_globals_locals", "builtin_fromlist", "builtin_level",
+        "builtin_alias", "relative_target", "package_keyword", "import_module_alias",
+    ))
+    def test_finalize_prereg_rejects_non_exact_dynamic_module_imports(self, tmp_path, source):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text(source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="dynamic module import"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "value: Trigger['go']\n",
+        "class Holder:\n    value: Trigger['go']\n",
+        "def outer():\n    value: Trigger['go']\n",
+    ], ids=("module", "class", "nested_function"))
+    def test_finalize_prereg_rejects_implicit_protocol_annotations(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    def test_dynamic_dependency_rejects_implicit_protocol_type_alias(self, tmp_path):
+        tree = ast.parse("marker = None\n")
+        type_alias = type("TypeAlias", (ast.AST,), {"_fields": ("value", "type_params")})()
+        type_alias.value = ast.parse("Trigger['go']", mode="eval").body
+        type_alias.type_params = []
+        tree.body.append(type_alias)
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
 
     def test_finalize_prereg_allows_simple_non_call_annotations(self, tmp_path):
         measure = tmp_path / "measure.py"
         measure.write_text(
-            "def pure(value: int, /, *items: str, named: float = 1.0, **extra: bool) -> int:\n"
+            "module_value: (int, 'str')\n"
+            "def pure(value: int, legacy: 'str', /, *items: str, named: float = 1.0, **extra: bool) -> 'int':\n"
             "    return value\n"
             "pure(1)\n",
             encoding="utf-8",
@@ -1435,6 +1493,25 @@ class TestPrereg:
             manifest_path=_canonical_seal_path(tmp_path, document),
             sealed_at="2026-07-14T00:00:00+00:00",
         )
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
+    def test_finalize_prereg_allows_exact_builtin_dynamic_import(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("plugin = __import__('plugin')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-15T00:00:00+00:00",
+        )
+
         assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
     def test_recheck_authority_paths_rejects_case_nested_hardlink_and_symlink_aliases(self, tmp_path):
         target = tmp_path / "measure.py"

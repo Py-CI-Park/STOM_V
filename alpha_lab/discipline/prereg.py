@@ -1737,7 +1737,7 @@ def _reject_untrusted_bare_calls(
             if isinstance(node.func, ast.Name):
                 events = self._resolve(node.func.id)
                 trusted = (
-                    events is None and node.func.id in builtins
+                    events is None and node.func.id in (builtins | {"__import__"})
                 ) or events == [("function", None)] or (
                     events is not None
                     and len(events) == 1
@@ -1779,15 +1779,18 @@ def _reject_untrusted_bare_calls(
 
 
 def _reject_executable_annotations(tree: ast.AST, path: Path) -> None:
-    """Reject definition-time annotation expressions that execute a callable."""
+    """Allow only annotation syntax whose evaluation has no user protocol hooks."""
 
     def _reject(annotation: ast.AST | None) -> None:
-        if annotation is not None and any(
-            isinstance(node, ast.Call) for node in ast.walk(annotation)
-        ):
-            raise EvidenceSchemaError(
-                f"executable annotation is unsupported: {path}"
-            )
+        if annotation is None:
+            return
+        if isinstance(annotation, (ast.Name, ast.Constant)):
+            return
+        if isinstance(annotation, ast.Tuple):
+            for element in annotation.elts:
+                _reject(element)
+            return
+        raise EvidenceSchemaError(f"executable annotation is unsupported: {path}")
 
     class _Annotations(ast.NodeVisitor):
         def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
@@ -1997,6 +2000,13 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             ):
                 raise EvidenceSchemaError(f"unsupported dynamic import/load API or alias: {path}")
             continue
+        exact_module_import = (canonical or raw_name) in {
+            "__import__", "builtins.__import__", "importlib.import_module",
+        }
+        if exact_module_import and (len(node.args) != 1 or node.keywords):
+            raise EvidenceSchemaError(
+                f"dynamic module import must use one exact literal argument: {path}"
+            )
         target = node.args[0] if kind in {"module", "file_first"} and node.args else (
             node.args[1] if kind == "file" and len(node.args) > 1 else next(
                 (keyword.value for keyword in node.keywords if keyword.arg in {"location", "path"}), None
@@ -2004,6 +2014,10 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         )
         if not isinstance(target, ast.Constant) or not isinstance(target.value, str):
             raise EvidenceSchemaError(f"dynamic import/load target must be an exact string literal: {path}")
+        if exact_module_import and target.value.startswith("."):
+            raise EvidenceSchemaError(
+                f"dynamic module import target must be an absolute module name: {path}"
+            )
         if kind == "module":
             candidate = _dynamic_module_file(root, target.value, path)
         else:
