@@ -799,12 +799,25 @@ def _contract_ledger_path(value: object, root: Path) -> str:
 
 
 def _module_file(root: Path, module: str) -> Path | None:
+    """Resolve a local module only when every package segment is unambiguous."""
     if not module:
         return None
-    base = root.joinpath(*module.split("."))
-    for candidate in (base.with_suffix(".py"), base / "__init__.py"):
-        if candidate.is_file():
-            return candidate.resolve()
+    parts = module.split(".")
+    for index in range(1, len(parts) + 1):
+        base = root.joinpath(*parts[:index])
+        module_file = base.with_suffix(".py")
+        package_initializer = base / "__init__.py"
+        if module_file.is_file() and package_initializer.is_file():
+            raise EvidenceSchemaError(
+                f"ambiguous local module/package resolution: {'.'.join(parts[:index])}"
+            )
+        if index < len(parts):
+            if not package_initializer.is_file():
+                return None
+        elif package_initializer.is_file():
+            return package_initializer.resolve()
+        elif module_file.is_file():
+            return module_file.resolve()
     return None
 
 
@@ -814,7 +827,8 @@ def _package_initializers(path: Path, root: Path) -> set[Path]:
     parent = path.parent
     while parent != root:
         initializer = parent / "__init__.py"
-        if initializer.is_file():
+        module = ".".join(parent.relative_to(root).parts)
+        if _module_file(root, module) == initializer.resolve():
             initializers.add(initializer.resolve())
         parent = parent.parent
     return initializers

@@ -1560,6 +1560,116 @@ class TestPrereg:
             evidence.EvidenceSchemaError, match="dynamic_python_dependencies"
         ):
             prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    @pytest.mark.parametrize(("source", "dynamic_python"), [
+        ("import package.plugin\n", ()),
+        ("__import__('package.plugin')\n", ("package/plugin.py",)),
+        (
+            "import importlib\nimportlib.import_module('package.plugin')\n",
+            ("package/plugin.py",),
+        ),
+    ])
+    def test_code_manifest_rejects_package_module_collision_for_every_import_form(
+        self, tmp_path, source, dynamic_python,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "measure.py").write_text(source, encoding="utf-8")
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=dynamic_python
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    def test_local_receiver_provenance_rejects_package_module_collision(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        source = "import package.plugin\npackage.plugin.run()\n"
+        tree = ast.parse(source)
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
+
+    def test_code_manifest_rejects_nested_package_module_collision(self, tmp_path):
+        package = tmp_path / "package"
+        nested = package / "nested"
+        nested.mkdir(parents=True)
+        (tmp_path / "measure.py").write_text(
+            "import package.nested.plugin\n", encoding="utf-8"
+        )
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "nested.py").write_text("DECOY = True\n", encoding="utf-8")
+        (nested / "__init__.py").write_text("", encoding="utf-8")
+        (nested / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package\.nested",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    def test_code_manifest_rejects_collision_in_package_initializer_closure(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("package/plugin.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_code_manifest_resolves_nonambiguous_module_and_package(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, module, initializer, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "module.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import module\nimport package.plugin\n", encoding="utf-8")
+        module.write_text("VALUE = 1\n", encoding="utf-8")
+        initializer.write_text("", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "module.py", "package/__init__.py", "package/plugin.py"}
 
     def test_dynamic_dependency_allows_static_module_and_sealed_local_calls(self, tmp_path):
         source = "import numpy as np\ndef sealed_local():\n    return np.mean([1, 2])\nsealed_local()\n"
