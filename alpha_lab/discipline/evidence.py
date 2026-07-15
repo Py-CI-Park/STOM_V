@@ -720,8 +720,12 @@ def _validate_promotion_outcomes(
     if accounted != set(expected):
         raise EvidenceSchemaError(f"{field} must account for every PRE candidate exactly once")
     return normalized_inserted, normalized_conflicts
-def _sqlite_sidecars(db_path: Path) -> tuple[Path, Path]:
-    return Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
+def _sqlite_sidecars(db_path: Path) -> tuple[Path, Path, Path]:
+    return (
+        Path(f"{db_path}-journal"),
+        Path(f"{db_path}-wal"),
+        Path(f"{db_path}-shm"),
+    )
 
 
 def _sqlite_value(value: object) -> dict[str, str]:
@@ -741,11 +745,11 @@ def _quote_identifier(identifier: str) -> str:
 def capture_sqlite_logical_state(
     db_path: Path | str, *, connection: sqlite3.Connection | None = None,
 ) -> dict[str, Any]:
-    """Read a stable SQLite logical snapshot, including persistent pragma state."""
+    """Read a stable snapshot; only a supplied retained writer may use MEMORY mode."""
     path = Path(db_path).resolve()
-    wal_path, shm_path = _sqlite_sidecars(path)
-    if wal_path.exists() or shm_path.exists():
-        raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+    journal_path, wal_path, shm_path = _sqlite_sidecars(path)
+    if journal_path.exists() or wal_path.exists() or shm_path.exists():
+        raise EvidenceSchemaError("SQLite filesystem sidecar state is not verifiable")
     owns_connection = connection is None
     try:
         con = connection or sqlite3.connect(
@@ -757,10 +761,15 @@ def capture_sqlite_logical_state(
         if owns_connection:
             con.execute("BEGIN")
         mode = con.execute("PRAGMA journal_mode").fetchone()
-        if not mode or str(mode[0]).lower() != "delete":
-            raise EvidenceSchemaError("SQLite journal mode must be DELETE for verification")
-        if wal_path.exists() or shm_path.exists():
-            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        allowed_modes = {"delete"} if owns_connection else {"delete", "memory"}
+        if not mode or str(mode[0]).lower() not in allowed_modes:
+            if owns_connection:
+                raise EvidenceSchemaError("SQLite journal mode must be DELETE for verification")
+            raise EvidenceSchemaError(
+                "retained SQLite connection journal mode must be DELETE or MEMORY for verification"
+            )
+        if journal_path.exists() or wal_path.exists() or shm_path.exists():
+            raise EvidenceSchemaError("SQLite filesystem sidecar state is not verifiable")
         persistent_state = {
             "user_version": con.execute("PRAGMA user_version").fetchone()[0],
             "application_id": con.execute("PRAGMA application_id").fetchone()[0],

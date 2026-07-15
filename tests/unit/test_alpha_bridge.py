@@ -348,6 +348,8 @@ class TestPromotionV2:
         pre_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.json"
         anchor_path = tmp_path / "promotion_journal" / f"{chain['evidence_id']}.pre.sha256"
         assert anchor_path.read_bytes() == hashlib.sha256(pre_path.read_bytes()).hexdigest().encode("ascii")
+        for suffix in ("-journal", "-wal", "-shm"):
+            assert not Path(f"{fake_db}{suffix}").exists()
     def test_rejects_bare_inner_catalog_receipt_before_db_access(
         self, fake_db, tmp_path, monkeypatch,
     ):
@@ -425,7 +427,7 @@ class TestPromotionV2:
         Path(f"{fake_db}{suffix}").write_bytes(b"ambiguous")
         before = fake_db.read_bytes()
 
-        with pytest.raises(Exception, match="WAL/SHM sidecar"):
+        with pytest.raises(Exception, match="filesystem auxiliary sidecars"):
             register_conditions_v2(
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
@@ -434,7 +436,7 @@ class TestPromotionV2:
         assert not (tmp_path / "promotion_journal").exists()
         assert not (tmp_path / "backups").exists()
     @pytest.mark.skipif(os.name != "nt", reason="Windows retained-handle authority guard")
-    def test_rejects_prepositioned_rollback_journal_hardlink_before_connect(
+    def test_rejects_prepositioned_rollback_journal_without_opening_it(
         self, fake_db, tmp_path, monkeypatch,
     ):
         item = _item()
@@ -449,12 +451,12 @@ class TestPromotionV2:
 
         def reject_target_connect(path, *args, **kwargs):
             if Path(path) == fake_db:
-                pytest.fail("SQLite target connect must follow rollback-journal identity validation")
+                pytest.fail("SQLite target connect must not open a prepositioned sidecar")
             return connect(path, *args, **kwargs)
 
         monkeypatch.setattr(registrar.sqlite3, "connect", reject_target_connect)
 
-        with pytest.raises(Exception, match="hardlinked"):
+        with pytest.raises(Exception, match="filesystem auxiliary sidecars"):
             register_conditions_v2(
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )
