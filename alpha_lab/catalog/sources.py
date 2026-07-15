@@ -32,6 +32,7 @@ def new_receipt(run_dir: Path, db_path: Path) -> Dict[str, Any]:
         "skipped": [],
         "notes": [],
         "gitignore": None,
+        "inventory": [],
     }
 
 
@@ -167,7 +168,10 @@ def _active_descriptor(path: Path) -> int | None:
 
 
 
-def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
+def _read_verified_bytes_with_stat(
+    path: Path, label: str,
+) -> tuple[bytes, str, os.stat_result]:
+    """Read bytes and return the stat metadata from the same verified identity."""
     descriptor = _active_descriptor(path)
     close_descriptor = descriptor is None
     if descriptor is None:
@@ -180,11 +184,16 @@ def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
         while chunk := os.read(descriptor, 1 << 20):
             chunks.append(chunk)
             h.update(chunk)
-        _retained_regular_file(path, descriptor, label)
-        return b"".join(chunks), h.hexdigest()
+        opened = _retained_regular_file(path, descriptor, label)
+        return b"".join(chunks), h.hexdigest(), opened
     finally:
         if close_descriptor:
             os.close(descriptor)
+
+
+def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
+    payload, digest, _ = _read_verified_bytes_with_stat(path, label)
+    return payload, digest
 
 
 def snapshot_sources(
@@ -195,7 +204,8 @@ def snapshot_sources(
     try:
         for rel, expected_sha256 in expected.items():
             source = Path(run_dir) / rel
-            payload, digest = _read_verified_bytes(source, f"catalog source '{rel}'")
+            payload, digest, source_stat = _read_verified_bytes_with_stat(
+                source, f"catalog source '{rel}'")
             if digest != expected_sha256:
                 raise ValueError(f"catalog source '{rel}' does not match manifest sha256")
             target = snapshot_dir / rel
@@ -212,6 +222,9 @@ def snapshot_sources(
                 os.fsync(descriptor)
             finally:
                 os.close(descriptor)
+            os.utime(target, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
+            with open(target, "rb") as snapshot_handle:
+                os.fsync(snapshot_handle.fileno())
         return snapshot_dir
     except BaseException:
         for path in sorted(snapshot_dir.rglob("*"), reverse=True):
@@ -254,6 +267,24 @@ def record_source(
         entry["sha256"] = sha256
         entry["size_bytes"] = size_bytes
     receipt["sources"].append(entry)
+def record_inventory(
+    receipt: Dict[str, Any], run_dir: Path, path: Path, *,
+    asset_id: str, exists_on_disk: bool, sha256: Optional[str] = None,
+    size_bytes: Optional[int] = None, mtime_utc: Optional[str] = None,
+) -> None:
+    """Record registry/output inventory without enlarging the sealed source set."""
+    entry: Dict[str, Any] = {
+        "asset_id": asset_id,
+        "path": rel_to(run_dir, path),
+        "exists_on_disk": exists_on_disk,
+    }
+    if sha256 is not None:
+        entry["sha256"] = sha256
+    if size_bytes is not None:
+        entry["size_bytes"] = size_bytes
+    if mtime_utc is not None:
+        entry["mtime_utc"] = mtime_utc
+    receipt.setdefault("inventory", []).append(entry)
 
 
 def read_json(receipt: Dict[str, Any], run_dir: Path, rel: str) -> Optional[dict]:

@@ -36,7 +36,7 @@ from alpha_lab.catalog.loaders import (
 )
 from alpha_lab.catalog.schema import create_schema, reset_tables, table_counts
 from alpha_lab.catalog.sources import (
-    RetainedSourceSnapshots, add_note, new_receipt, read_json, record_source,
+    RetainedSourceSnapshots, add_note, new_receipt, read_json, record_inventory,
     retain_snapshot_sources, sha256_file, snapshot_sources,
     validate_retained_snapshot_sources,
 )
@@ -75,13 +75,19 @@ def root_from_run_dir(run_dir: Path) -> Path:
 def load_assets(
     con: sqlite3.Connection, run_dir: Path, receipt: Dict[str, Any],
     retained_snapshots: RetainedSourceSnapshots | None = None,
+    catalog_db_path: Path | None = None,
 ) -> None:
     """Load asset rows from live files or, for authority, retained snapshot bytes."""
     root = root_from_run_dir(run_dir)
     for asset in ASSET_REGISTRY:
+        is_catalog_output = asset["asset_id"] == "research_assets_db"
         base = root if asset["base"] == "root" else Path(run_dir)
-        path = base / str(asset["path"])
-        if retained_snapshots is None:
+        path = Path(catalog_db_path) if is_catalog_output and catalog_db_path is not None else base / str(asset["path"])
+        if is_catalog_output:
+            # The DB being assembled is an output, never an input observation.  Its
+            # row must remain stable when an abandoned publication is rebuilt.
+            exists, sha, size, mtime = False, None, None, None
+        elif retained_snapshots is None:
             exists, sha, size, mtime = _stat_asset(path, str(asset["asset_id"]))
         else:
             try:
@@ -97,11 +103,9 @@ def load_assets(
                 exists, sha, size, mtime = True, None, None, None
             else:
                 exists, sha, size, mtime = False, None, None, None
-        if exists and sha is not None and asset["asset_id"] != "research_assets_db":
-            # The source label remains its original run path, but its bytes are frozen.
-            record_source(receipt, run_dir, path, sha256=sha, size_bytes=size)
-        elif not exists:
-            receipt["missing"].append(f"[asset:{asset['asset_id']}] {asset['path']}")
+        record_inventory(
+            receipt, run_dir, path, asset_id=str(asset["asset_id"]),
+            exists_on_disk=exists, sha256=sha, size_bytes=size, mtime_utc=mtime)
         con.execute(
             "INSERT OR REPLACE INTO assets (asset_id, kind, path,"
             " produced_commit, seal_doc, window, status_tag, regen_cmd,"
@@ -562,16 +566,63 @@ def _verify_authority_records(
         raise EvidenceSchemaError("catalog authority DB records are omitted, extra, or misstated")
 
 
+def _logical_catalog_state(path: Path, descriptor: int, label: str) -> dict[str, Any]:
+    """Read the complete logical SQLite state while the pathname identity is retained."""
+    _validate_retained_file_identity(path, descriptor, label)
+    con = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None)
+    try:
+        objects = con.execute(
+            "SELECT type, name, tbl_name, sql FROM sqlite_master "
+            "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name"
+        ).fetchall()
+        tables = [name for kind, name, _, _ in objects if kind == "table"]
+        rows: dict[str, list[tuple[Any, ...]]] = {}
+        table_info: dict[str, list[tuple[Any, ...]]] = {}
+        for table in tables:
+            quoted = '"' + table.replace('"', '""') + '"'
+            table_info[table] = con.execute(
+                f"PRAGMA table_xinfo({quoted})").fetchall()
+            rows[table] = sorted(
+                con.execute(f"SELECT * FROM {quoted}").fetchall(),
+                key=lambda row: repr(row),
+            )
+        pragmas = {
+            name: con.execute(f"PRAGMA {name}").fetchone()[0]
+            for name in ("application_id", "auto_vacuum", "encoding", "user_version")
+        }
+        return {
+            "objects": objects,
+            "table_info": table_info,
+            "rows": rows,
+            "pragmas": pragmas,
+        }
+    finally:
+        con.close()
+        _validate_retained_file_identity(path, descriptor, label)
+
+
 def _verify_existing_authority_db(
-    existing: Path, expected_db: Path, records: list[dict[str, str]],
-) -> None:
-    if sha256_file(existing) != sha256_file(expected_db):
-        raise EvidenceSchemaError("existing catalog DB bytes do not match the rebuilt authority DB")
+    existing: Path, existing_descriptor: int, expected_db: Path, expected_descriptor: int,
+    records: list[dict[str, str]],
+) -> str:
+    """Accept a crashed canonical DB only when its full logical state equals rebuild."""
+    existing_state = _logical_catalog_state(
+        existing, existing_descriptor, "published catalog authority DB")
+    expected_state = _logical_catalog_state(
+        expected_db, expected_descriptor, "catalog authority temporary file")
+    if existing_state != expected_state:
+        raise EvidenceSchemaError(
+            "catalog publication reconciliation failed: existing catalog DB logical state "
+            "does not match the rebuilt authority DB")
+    _validate_retained_file_identity(
+        existing, existing_descriptor, "published catalog authority DB")
     con = sqlite3.connect(f"{existing.as_uri()}?mode=ro", uri=True, isolation_level=None)
     try:
         _verify_authority_records(con, records)
     finally:
         con.close()
+    return _sha256_retained_file(
+        existing, existing_descriptor, "published catalog authority DB")
 
 
 def _revalidate_authority_paths(
@@ -723,6 +774,37 @@ def _validate_published_catalog_pair(
     _validate_retained_file_identity(db_path, db_descriptor, "published catalog authority DB")
     _validate_retained_file_identity(
         receipt_path, receipt_descriptor, "published catalog authority receipt")
+def _reconcile_published_catalog_pair(
+    db_path: Path, db_descriptor: int, receipt_path: Path, receipt_descriptor: int,
+    working_db_sha256: str, authority_records: list[dict[str, str]],
+    expected_promotion_receipt: dict[str, Any], root: Path,
+) -> dict[str, Any]:
+    """Seal an interrupted publication only when both retained files still match."""
+    try:
+        if _sha256_retained_file(
+            db_path, db_descriptor, "published catalog authority DB",
+        ) != working_db_sha256:
+            raise EvidenceSchemaError(
+                "published catalog DB bytes do not match the rebuilt authority DB")
+        con = sqlite3.connect(
+            f"{db_path.as_uri()}?mode=ro", uri=True, isolation_level=None)
+        try:
+            _verify_authority_records(con, authority_records)
+        finally:
+            con.close()
+        _validate_published_catalog_pair(
+            db_path, db_descriptor, receipt_path, receipt_descriptor, root)
+        published = json.loads(_read_retained_file_bytes(
+            receipt_path, receipt_descriptor, "published catalog authority receipt"))
+        if published.get("promotion_receipt") != expected_promotion_receipt:
+            raise EvidenceSchemaError(
+                "published catalog receipt does not match the rebuilt authority receipt")
+    except (OSError, sqlite3.Error, UnicodeDecodeError, json.JSONDecodeError,
+            EvidenceSchemaError) as exc:
+        raise EvidenceSchemaError(
+            f"catalog publication reconciliation failed: {exc}") from exc
+    _seal_published_catalog_pair(db_path, receipt_path)
+    return published
 
 
 
@@ -1014,7 +1096,7 @@ def build_all(
             create_schema(con)
             reset_tables(con)
             docs = {rel: read_json(receipt, content_run_dir, rel) for rel in _SHARED_RELS}
-            load_assets(con, run_dir, receipt, retained_snapshots)
+            load_assets(con, run_dir, receipt, retained_snapshots, db_path)
             ledger_rows = load_ledger_mirror(
                 con, content_run_dir, receipt, strict=promotion_status is not None)
             validate_retained_snapshot_sources()
@@ -1050,12 +1132,17 @@ def build_all(
                 mutation_guard.validate_file(receipt_path)
             if receipt_path.exists() and not db_path.exists():
                 raise EvidenceSchemaError("catalog receipt exists without its authority DB")
-            if db_path.exists():
+            canonical_db_sha256 = working_db_sha256
+            existing_db = db_path.exists()
+            if existing_db:
                 mutation_guard.hold_write_denied_file(db_path)
-                _verify_existing_authority_db(
-                    db_path, working_db_path, authority_records)
-                if receipt_path.exists():
-                    raise FileExistsError("catalog authority DB and receipt already exist")
+                published_db_descriptor = mutation_guard.open_path(
+                    db_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+                _validate_retained_file_identity(
+                    db_path, published_db_descriptor, "published catalog authority DB")
+                canonical_db_sha256 = _verify_existing_authority_db(
+                    db_path, published_db_descriptor, working_db_path,
+                    working_db_descriptor, authority_records)
             else:
                 if mutation_guard is not None:
                     mutation_guard.validate_file(db_path)
@@ -1068,19 +1155,23 @@ def build_all(
                 mutation_guard.validate_file(db_path)
                 mutation_guard.hold_write_denied_file(db_path)
                 mutation_guard.validate_file(db_path)
-            published_db_descriptor = mutation_guard.open_path(
-                db_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+            if published_db_descriptor is None:
+                published_db_descriptor = mutation_guard.open_path(
+                    db_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
             _validate_retained_file_identity(
                 db_path, published_db_descriptor, "published catalog authority DB")
-            if _sha256_retained_file(
-                db_path, published_db_descriptor, "published catalog authority DB",
-            ) != working_db_sha256:
+            published_db_sha256 = _sha256_retained_file(
+                db_path, published_db_descriptor, "published catalog authority DB")
+            if published_db_sha256 != canonical_db_sha256:
+                raise EvidenceSchemaError(
+                    "published catalog DB bytes do not match the verified canonical DB")
+            if not existing_db and published_db_sha256 != working_db_sha256:
                 raise EvidenceSchemaError(
                     "published catalog DB bytes do not match the verified working DB")
             _set_windows_readonly(db_path, True)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status,
-                verified_run_dir=source_snapshot_dir, verified_db_sha256=working_db_sha256)
+                verified_run_dir=source_snapshot_dir, verified_db_sha256=canonical_db_sha256)
             validate_catalog_promotion_receipt_v2(
                 receipt["promotion_receipt"], repo_root=root)
         if promotion_status is None:
@@ -1092,6 +1183,14 @@ def build_all(
             else:
                 if mutation_guard is not None:
                     mutation_guard.validate_file(receipt_path)
+                if receipt_path.exists():
+                    mutation_guard.hold_write_denied_file(receipt_path)
+                    published_receipt_descriptor = mutation_guard.open_path(
+                        receipt_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+                    return _reconcile_published_catalog_pair(
+                        db_path, published_db_descriptor, receipt_path,
+                        published_receipt_descriptor, canonical_db_sha256,
+                        authority_records, receipt["promotion_receipt"], root)
                 receipt_temp = _write_temp_bytes(
                     receipt_path.parent, f".{receipt_path.name}.", receipt_bytes, mutation_guard)
                 mutation_guard.validate_file(receipt_temp)

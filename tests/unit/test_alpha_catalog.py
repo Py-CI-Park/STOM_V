@@ -226,6 +226,18 @@ def test_sqlite_snapshot_remains_the_verified_database_after_source_swap(tmp_pat
     finally:
         (snapshot / "source.db").unlink()
         snapshot.rmdir()
+def test_snapshot_preserves_verified_source_mtime_ns(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_text('{"value":"verified"}', encoding="utf-8")
+    expected_mtime_ns = 1_700_000_000_123_456_789
+    os.utime(source, ns=(expected_mtime_ns, expected_mtime_ns))
+    snapshot = sources.snapshot_sources(
+        tmp_path, tmp_path, {"source.json": builder.sha256_file(source)})
+    try:
+        assert (snapshot / "source.json").stat().st_mtime_ns == expected_mtime_ns
+    finally:
+        (snapshot / "source.json").unlink()
+        snapshot.rmdir()
 
 def test_retained_snapshot_rejects_swap_after_snapshot_creation(tmp_path: Path):
     source = tmp_path / "source.json"
@@ -289,10 +301,14 @@ def test_authoritative_assets_use_retained_snapshot_bytes_after_live_asset_swap(
         ).fetchone()
         assert row == (
             "asset.json", 1, hashlib.sha256(frozen).hexdigest(), len(frozen))
-        assert receipt["sources"] == [{
-            "path": "asset.json", "status": "loaded",
-            "sha256": hashlib.sha256(frozen).hexdigest(), "size_bytes": len(frozen),
-        }]
+        assert receipt["sources"] == []
+        inventory = receipt["inventory"]
+        assert len(inventory) == 1
+        assert inventory[0]["asset_id"] == "asset"
+        assert inventory[0]["path"] == "asset.json"
+        assert inventory[0]["exists_on_disk"] is True
+        assert inventory[0]["sha256"] == hashlib.sha256(frozen).hexdigest()
+        assert inventory[0]["size_bytes"] == len(frozen)
     finally:
         con.close()
         for path in sorted(snapshot.rglob("*"), reverse=True):
@@ -988,3 +1004,98 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
     assert receipt_path.exists()
     assert reservation_path.exists()
     assert reservation_path.read_bytes() == b"UNOWNED\n"
+def test_catalog_asset_inventory_does_not_expand_sealed_sources(run_dir: Path):
+    receipt = sources.new_receipt(run_dir, run_dir / "catalog.db")
+    con = sqlite3.connect(":memory:")
+    try:
+        schema.create_schema(con)
+        builder.load_assets(con, run_dir, receipt, catalog_db_path=run_dir / "catalog.db")
+    finally:
+        con.close()
+
+    assert receipt["sources"] == []
+    assert len(receipt["inventory"]) == len(ASSET_REGISTRY)
+    assert any(
+        item["asset_id"] == "research_assets_db"
+        for item in receipt["inventory"]
+    )
+
+
+def test_build_all_recovers_receipt_published_crash_by_sealing_pair(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    status = {
+        **_authority_status("PRE"),
+        "schema_version": 2,
+        "valid": True,
+        "evidence_id": "c" * 64,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "d" * 64,
+        "catalog_dir": "promotion_catalogs",
+        "source_artifacts": [],
+        "authority_paths": {"catalog_dir": "promotion_catalogs"},
+    }
+    db_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.db"
+    receipt_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.receipt.json"
+    original_seal = builder._seal_published_catalog_pair
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: status)
+    monkeypatch.setattr(
+        builder, "authority_mutation_guard", lambda *args, **kwargs: _ReservationGuard())
+    monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "_promotion_receipt", lambda *args, **kwargs: {
+        "schema_version": 2, "catalog_db": {"sha256": kwargs["verified_db_sha256"]},
+    })
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+
+    class SimulatedCrash(BaseException):
+        pass
+
+    monkeypatch.setattr(
+        builder, "_seal_published_catalog_pair",
+        lambda *args: (_ for _ in ()).throw(SimulatedCrash()),
+    )
+    monkeypatch.setattr(builder, "_release_reservation", builder._abandon_reservation)
+    with pytest.raises(SimulatedCrash):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+
+    assert db_path.exists() and receipt_path.exists()
+    monkeypatch.setattr(builder, "_seal_published_catalog_pair", original_seal)
+    monkeypatch.setattr(builder, "_release_reservation", builder._release_reservation)
+    builder.build_all(
+        run_dir, repo_root=run_dir,
+        promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+    )
+    assert db_path.exists() and receipt_path.exists()
+def test_existing_authority_db_recovery_compares_logical_catalog_state(tmp_path: Path):
+    records = builder._canonical_authority_records(_authority_status("PRE"))
+    existing = tmp_path / "existing.db"
+    rebuilt = tmp_path / "rebuilt.db"
+    for path in (existing, rebuilt):
+        con = sqlite3.connect(path)
+        try:
+            builder._write_authority_records(con, _authority_status("PRE"))
+            con.commit()
+        finally:
+            con.close()
+    con = sqlite3.connect(existing)
+    try:
+        con.execute("PRAGMA user_version=1")
+        con.execute("PRAGMA user_version=0")
+        con.commit()
+    finally:
+        con.close()
+    existing_descriptor = os.open(existing, os.O_RDONLY)
+    rebuilt_descriptor = os.open(rebuilt, os.O_RDONLY)
+    try:
+        assert builder._verify_existing_authority_db(
+            existing, existing_descriptor, rebuilt, rebuilt_descriptor, records,
+        ) == builder._sha256_retained_file(
+            existing, existing_descriptor, "published catalog authority DB")
+    finally:
+        os.close(existing_descriptor)
+        os.close(rebuilt_descriptor)
