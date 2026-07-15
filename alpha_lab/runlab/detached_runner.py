@@ -14,7 +14,7 @@ exited+exit_code) / log.txt — 정의는 contract.py.
 
 실사용 예 — D5(D9 전이 온셋) 측정 437일 배치를 세션 독립으로 기동
 (PowerShell 한 줄, 2026-07-12 실전 완주 실증 — exit 0):
-    $env:STOM_ALLOW_MINIMAL_SETTING="1"; python -m alpha_lab.runlab.detached_runner docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/run_ctl/run1 scripts/d5_d9_measure.py -- --phase all
+    $env:STOM_ALLOW_MINIMAL_SETTING="1"; python -P -m alpha_lab.runlab.detached_runner docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/run_ctl/run1 scripts/d5_d9_measure.py -- --phase all
 (옵션 --interval/--cwd/--python-exe는 run_dir 앞에 두고, 대상 스크립트 인자는
 '--' 뒤에 둔다. 대상 스크립트는 무수정 그대로 감싼다 — 체크포인트 러너 호환.)
 """
@@ -61,9 +61,9 @@ def _prepare_env(env: Optional[Dict[str, str]]) -> Dict[str, str]:
 
 def _wrapper_cmd(run_dir: Path, target: Path, target_args: Sequence[str],
                  python_exe: Optional[str], interval: float) -> Tuple[str, ...]:
-    """child_wrap 기동 명령줄 조립(대상 스크립트는 절대경로로 넘긴다)."""
+    """child_wrap을 safe-path 모드로 기동한다(대상은 절대경로)."""
     py = python_exe or sys.executable
-    return (py, "-m", "alpha_lab.runlab.child_wrap",
+    return (py, "-P", "-m", "alpha_lab.runlab.child_wrap",
             "--interval", str(interval), str(run_dir), str(target),
             *[str(a) for a in target_args])
 
@@ -143,7 +143,7 @@ def launch_detached(run_dir, target, target_args: Sequence[str] = (), *,
 def _parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     """CLI 인자 — 옵션은 run_dir 앞, 대상 인자는 '--' 뒤(REMAINDER)."""
     ap = argparse.ArgumentParser(
-        prog="python -m alpha_lab.runlab.detached_runner",
+        prog="python -P -m alpha_lab.runlab.detached_runner",
         description="배치를 세션 독립(detached)으로 기동한다 — 보고는 batch_watch.py")
     ap.add_argument("--interval", type=float, default=_DEFAULT_HEARTBEAT_SEC,
                     help="심박 갱신 주기(초, 기본 5)")
