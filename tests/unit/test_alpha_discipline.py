@@ -755,6 +755,18 @@ class TestPrereg:
             "import importlib\nclass Holder:\n    pass\nholder = Holder()\nholder.__dict__['loader'] = importlib\n",
             "carrier.holder.__dict__['loader'].import_module('plugin')",
         ),
+        (
+            "import importlib\ndef exported():\n    pass\nexported.import_module = importlib.import_module\n",
+            "loader = carrier.exported\nloader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Exported:\n    pass\nExported.import_module = importlib.import_module\n",
+            "loader = carrier.Exported\nloader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Exported:\n    pass\nexported = Exported()\nexported.__dict__['import_module'] = importlib.import_module\n",
+            "loader = carrier.exported\nloader.import_module('plugin')",
+        ),
     ])
     def test_finalize_prereg_rejects_cross_module_capability_carriers(
         self, tmp_path, carrier_source, receiver
@@ -813,6 +825,17 @@ class TestPrereg:
         assert prereg._dynamic_local_dependencies(
             ast.parse(source), tmp_path / "measure.py", tmp_path
         ) == set()
+    def test_dynamic_dependency_allows_direct_static_module_alias(self, tmp_path):
+        plugin = tmp_path / "plugin.py"
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        source = (
+            "import importlib as imported_module\n"
+            "loader = imported_module\n"
+            "loader.import_module('plugin')\n"
+        )
+        assert prereg._dynamic_local_dependencies(
+            ast.parse(source), tmp_path / "measure.py", tmp_path
+        ) == {plugin.resolve()}
     def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
         measure.write_text("from importlib import import_module\ndef sealed_local():\n    return 'ok'\nsealed_local()\nplugin = import_module('plugin')\n", encoding="utf-8")

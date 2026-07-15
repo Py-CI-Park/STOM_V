@@ -1028,7 +1028,11 @@ def _reject_unresolved_module_receivers(
     while changed:
         changed = False
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Assign) or _receiver_root(node.value) not in static_imports:
+            if (
+                not isinstance(node, ast.Assign)
+                or not isinstance(node.value, ast.Name)
+                or node.value.id not in static_imports
+            ):
                 continue
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id not in static_imports:
