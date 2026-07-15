@@ -549,15 +549,34 @@ def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
     first = builder._write_temp_bytes(tmp_path, ".first.", b"first")
     second = builder._write_temp_bytes(tmp_path, ".second.", b"second")
     destination = tmp_path / "canonical.db"
+    guard = _ReservationGuard()
     try:
-        builder._publish_no_replace(first, destination)
+        builder._publish_no_replace(first, destination, guard)
         with pytest.raises(FileExistsError):
-            builder._publish_no_replace(second, destination)
+            builder._publish_no_replace(second, destination, guard)
         assert destination.read_bytes() == b"first"
+        assert destination.stat().st_nlink == 1
+        assert first.stat().st_nlink == 1
     finally:
         for path in (first, second):
             if path.exists():
                 path.unlink()
+def test_retained_catalog_temp_rejects_protected_hardlink_swap(tmp_path: Path):
+    protected = tmp_path / "protected.db"
+    protected.write_bytes(b"protected authority bytes")
+    guard = _ReservationGuard()
+    candidate, descriptor = builder._create_authority_temp(tmp_path, ".candidate.", guard)
+    try:
+        with pytest.raises((builder.EvidenceSchemaError, PermissionError)):
+            os.unlink(candidate)
+            os.link(protected, candidate)
+            builder._validate_retained_file_identity(
+                candidate, descriptor, "catalog authority temporary file")
+        assert protected.read_bytes() == b"protected authority bytes"
+    finally:
+        os.close(descriptor)
+        if candidate.exists():
+            candidate.unlink()
 
 
 def test_live_publication_owner_cannot_be_stolen(tmp_path: Path):
@@ -669,8 +688,15 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
     class SimulatedCrash(BaseException):
         pass
 
-    def publish_db_then_crash(source: Path, destination: Path) -> None:
-        original_publish(source, destination)
+    def publish_db_then_crash(
+        source: Path,
+        destination: Path,
+        mutation_guard: _ReservationGuard,
+        *,
+        source_descriptor: int | None = None,
+    ) -> None:
+        original_publish(
+            source, destination, mutation_guard, source_descriptor=source_descriptor)
         if destination == db_path:
             raise SimulatedCrash()
 

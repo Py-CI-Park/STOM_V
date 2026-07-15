@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 from alpha_lab.bridge import inspect_promotion_journal_v2
+from alpha_lab.bridge import registrar
 from alpha_lab.bridge.receipts import (
     ALLOWED_SOURCE_KINDS,
     LEGACY_NON_AUTHORITATIVE,
@@ -282,6 +283,49 @@ class TestPromotionV2:
             )
         assert fake_db.read_bytes() == before
         assert not backup_dir.exists()
+    def test_unsupported_platform_fails_at_guard_entry_before_any_sqlite_connect(
+        self, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        missing_db = tmp_path / "missing.sqlite"
+        manifest = {"authority_paths": {"target_db": "strategy.sqlite"}}
+        verdict = {
+            "pass": True,
+            "candidates": [{
+                "name": item["name"],
+                "buy_sha256": hashlib.sha256(item["buy_expr"].encode("utf-8")).hexdigest(),
+                "sell_sha256": hashlib.sha256(item["sell_expr"].encode("utf-8")).hexdigest(),
+            }],
+        }
+        connects: list[object] = []
+
+        def reject_unsupported_platform(*args, **kwargs):
+            raise builder.EvidenceSchemaError(
+                "authority mutation guard is unsupported on this platform")
+
+        monkeypatch.setattr(registrar, "verify_promotion_manifest", lambda *args, **kwargs: verdict)
+        monkeypatch.setattr(registrar, "verify_promotion_manifest_v2", lambda *args, **kwargs: (manifest, "a" * 64))
+        monkeypatch.setattr(registrar, "_promotion_destinations", lambda *args: {
+            "target_db": missing_db,
+            "catalog": tmp_path / "catalog.json",
+            "pre": tmp_path / "journal.pre.json",
+            "anchor": tmp_path / "journal.pre.sha256",
+            "post": tmp_path / "journal.post.json",
+            "backup": tmp_path / "backup.sqlite",
+        })
+        monkeypatch.setattr(registrar, "recheck_authority_paths", lambda *args: manifest["authority_paths"])
+        monkeypatch.setattr(registrar, "authority_mutation_guard", reject_unsupported_platform)
+        monkeypatch.setattr(
+            registrar.sqlite3, "connect",
+            lambda *args, **kwargs: connects.append(args) or pytest.fail("SQLite connect must not run"),
+        )
+
+        with pytest.raises(builder.EvidenceSchemaError, match="unsupported on this platform"):
+            registrar.register_conditions_v2(
+                [item], manifest_path=tmp_path / "manifest.json", repo_root=tmp_path, now=NOW,
+            )
+
+        assert connects == []
 
     def test_registers_verified_manifest_with_legacy_insert_semantics(
         self, fake_db, backup_dir, tmp_path, monkeypatch,

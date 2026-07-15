@@ -606,10 +606,21 @@ def _write_temp_bytes(
     return path
 
 
-def _validate_opened_regular_file(descriptor: int, label: str) -> None:
-    metadata = os.fstat(descriptor)
-    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
-        raise EvidenceSchemaError(f"{label} must be a regular single-link file")
+def _validate_retained_file_identity(path: Path, descriptor: int, label: str) -> None:
+    """Require a retained file handle and its pathname to name one safe inode."""
+    opened = os.fstat(descriptor)
+    try:
+        named = os.stat(path, follow_symlinks=False)
+    except FileNotFoundError as exc:
+        raise EvidenceSchemaError(f"{label} disappeared while retained") from exc
+    if (
+        not stat.S_ISREG(opened.st_mode)
+        or opened.st_nlink != 1
+        or not stat.S_ISREG(named.st_mode)
+        or named.st_nlink != 1
+        or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
+    ):
+        raise EvidenceSchemaError(f"{label} identity changed or is not a single-link regular file")
 
 
 def _create_authority_temp(
@@ -623,7 +634,8 @@ def _create_authority_temp(
         except FileExistsError:
             continue
         try:
-            _validate_opened_regular_file(descriptor, "catalog authority temporary file")
+            _validate_retained_file_identity(
+                path, descriptor, "catalog authority temporary file")
             mutation_guard.validate_file(path)
         except BaseException:
             os.close(descriptor)
@@ -632,25 +644,47 @@ def _create_authority_temp(
     raise FileExistsError("cannot create unique catalog publication temporary file")
 
 
-def _publish_no_replace(source: Path, destination: Path) -> None:
-    """Atomically publish without replacement, with platform-required durability."""
-    if os.name == "nt":
-        import ctypes
-
-        movefile_write_through = 0x00000008
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-        if not kernel32.MoveFileExW(
-            str(source), str(destination), movefile_write_through
-        ):
-            error = ctypes.get_last_error()
-            if error in (80, 183):
-                raise FileExistsError(destination)
-            raise OSError(error, f"MoveFileExW failed publishing {destination}")
-        return
-    os.link(source, destination)
-    _flush_file(destination)
+def _publish_no_replace(
+    source: Path,
+    destination: Path,
+    mutation_guard: Any,
+    *,
+    source_descriptor: int | None = None,
+) -> None:
+    """Exclusively copy a retained authority file into a durable canonical path."""
+    close_source = source_descriptor is None
+    if source_descriptor is None:
+        source_descriptor = mutation_guard.open_path(
+            source, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    destination_descriptor: int | None = None
+    try:
+        destination_descriptor = mutation_guard.open_path(
+            destination,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0),
+            0o600,
+        )
+        _validate_retained_file_identity(
+            source, source_descriptor, "catalog authority publication source")
+        os.lseek(source_descriptor, 0, os.SEEK_SET)
+        while chunk := os.read(source_descriptor, 1024 * 1024):
+            view = memoryview(chunk)
+            while view:
+                written = os.write(destination_descriptor, view)
+                if written == 0:
+                    raise OSError("catalog authority publication write made no progress")
+                view = view[written:]
+        os.fsync(destination_descriptor)
+    finally:
+        if destination_descriptor is not None:
+            os.close(destination_descriptor)
+        if close_source:
+            os.close(source_descriptor)
+    published = os.stat(destination, follow_symlinks=False)
+    if not stat.S_ISREG(published.st_mode) or published.st_nlink != 1:
+        raise EvidenceSchemaError(
+            "catalog authority publication destination is not a single-link regular file")
+    mutation_guard.validate_file(destination)
     _fsync_directory(destination.parent)
-
 
 @dataclass
 class _PublicationReservation:
@@ -728,7 +762,7 @@ def _reserve_publication(
         descriptor = mutation_guard.open_path(
             path, os.O_RDWR | getattr(os, "O_BINARY", 0), 0o600)
     try:
-        _validate_opened_regular_file(descriptor, "catalog publication reservation")
+        _validate_retained_file_identity(path, descriptor, "catalog publication reservation")
         # POSIX flock and Win32 LockFileEx both acquire an empty reservation inode
         # before any owner token bytes are written.
         _lock_reservation(descriptor)
@@ -800,6 +834,7 @@ def build_all(
     reservation: _PublicationReservation | None = None
     receipt_temp: Path | None = None
     authority_guard = None
+    working_db_descriptor: int | None = None
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
@@ -824,9 +859,8 @@ def build_all(
         mutation_guard.validate_file(db_path)
         mutation_guard.validate_file(receipt_path)
         try:
-            working_db_path, descriptor = _create_authority_temp(
+            working_db_path, working_db_descriptor = _create_authority_temp(
                 db_path.parent, f".{db_path.name}.", mutation_guard)
-            os.close(descriptor)
         except BaseException:
             _release_reservation(reservation)
             if authority_guard is not None:
@@ -834,6 +868,8 @@ def build_all(
             raise
     try:
         if promotion_status is not None:
+            _validate_retained_file_identity(
+                working_db_path, working_db_descriptor, "catalog authority temporary file")
             mutation_guard.validate_file(working_db_path)
         con = sqlite3.connect(working_db_path)
         try:
@@ -860,6 +896,8 @@ def build_all(
         finally:
             con.close()
         if promotion_status is not None:
+            _validate_retained_file_identity(
+                working_db_path, working_db_descriptor, "catalog authority temporary file")
             _flush_file(working_db_path)
             _strict_source_hashes(
                 receipt, run_dir, root, promotion_status["source_artifacts"])
@@ -880,8 +918,12 @@ def build_all(
                     root, promotion_status, db_path, receipt_path)
                 if mutation_guard is not None:
                     mutation_guard.validate_file(db_path)
+                _validate_retained_file_identity(
+                    working_db_path, working_db_descriptor, "catalog authority temporary file")
                 mutation_guard.validate_file(working_db_path)
-                _publish_no_replace(working_db_path, db_path)
+                _publish_no_replace(
+                    working_db_path, db_path, mutation_guard,
+                    source_descriptor=working_db_descriptor)
                 mutation_guard.validate_file(db_path)
             receipt["promotion_receipt"] = _promotion_receipt(
                 receipt, root=root, db_path=db_path, status=promotion_status)
@@ -901,10 +943,13 @@ def build_all(
                 receipt_temp = _write_temp_bytes(
                     receipt_path.parent, f".{receipt_path.name}.", receipt_bytes, mutation_guard)
                 mutation_guard.validate_file(receipt_temp)
-                _publish_no_replace(receipt_temp, receipt_path)
+                _publish_no_replace(receipt_temp, receipt_path, mutation_guard)
                 mutation_guard.validate_file(receipt_path)
         return receipt
     finally:
+        if working_db_descriptor is not None:
+            os.close(working_db_descriptor)
+            working_db_descriptor = None
         if receipt_temp is not None and receipt_temp.exists():
             receipt_temp.unlink()
         if promotion_status is not None and working_db_path.exists():

@@ -18,6 +18,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import stat
 import shutil
 import sqlite3
 from pathlib import Path, PurePosixPath
@@ -348,6 +349,22 @@ def _release_promotion_guard(lock_path: Path, descriptor: int) -> None:
     lock_path.unlink()
 
 
+def _validate_retained_target(db_path: Path, descriptor: int) -> None:
+    """Require the retained strategy DB handle and its pathname to remain one inode."""
+    opened = os.fstat(descriptor)
+    try:
+        named = os.stat(db_path, follow_symlinks=False)
+    except FileNotFoundError as exc:
+        raise EvidenceSchemaError("sealed strategy DB disappeared while retained") from exc
+    if (
+        not stat.S_ISREG(opened.st_mode)
+        or opened.st_nlink != 1
+        or not stat.S_ISREG(named.st_mode)
+        or named.st_nlink != 1
+        or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
+    ):
+        raise EvidenceSchemaError("sealed strategy DB identity changed or is not a single-link regular file")
+
 def register_conditions_v2(
     items: list,
     *,
@@ -385,19 +402,27 @@ def register_conditions_v2(
     if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
         raise EvidenceSchemaError("sealed authority paths changed before PRE")
     db_file = destinations["target_db"]
-    if not db_file.is_file():
-        raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file)
-    _assert_rollback_main_file(db_file)
     pre_path, anchor_path, post_path, pre_relative, anchor_relative, post_relative = _journal_paths(root, manifest)
     catalog_path = destinations["catalog"]
     guard_path = pre_path.with_suffix(".lock")
     authority_guard = authority_mutation_guard(root, manifest["authority_paths"])
     mutation_guard = authority_guard.__enter__()
+    target_descriptor: int | None = None
     try:
+        mutation_guard.hold_path(db_file)
+        try:
+            target_descriptor = mutation_guard.open_path(
+                db_file, os.O_RDWR | getattr(os, "O_BINARY", 0))
+        except FileNotFoundError as exc:
+            raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file) from exc
+        _validate_retained_target(db_file, target_descriptor)
+        _assert_rollback_main_file(db_file)
         for path in (pre_path, anchor_path, post_path, destinations["backup"], catalog_path):
             mutation_guard.hold_path(path)
         guard = _acquire_promotion_guard(guard_path)
     except BaseException:
+        if target_descriptor is not None:
+            os.close(target_descriptor)
         authority_guard.__exit__(None, None, None)
         raise
     try:
@@ -405,6 +430,7 @@ def register_conditions_v2(
         if rechecked_manifest != manifest or rechecked_sha256 != manifest_sha256:
             raise EvidenceSchemaError("promotion manifest changed before guarded PRE recheck")
         catalog_path = destinations["catalog"]
+        _validate_retained_target(db_file, target_descriptor)
         _assert_rollback_main_file(db_file)
         _validate_catalog_pre_receipt(
             _load_json(catalog_path, "catalog receipt"),
@@ -416,6 +442,7 @@ def register_conditions_v2(
         existing = inspect_promotion_journal_v2(repo_root=root, manifest_path=manifest_path)
         if existing["status"] != "ABSENT" or destinations["backup"].exists():
             raise ValueError("promotion journal or reserved backup refuses rerun")
+        _validate_retained_target(db_file, target_descriptor)
         _assert_rollback_main_file(db_file)
         manifest_ref = {
             "path": _repo_relative_path(Path(manifest_path), root, "manifest_path"),
@@ -445,6 +472,7 @@ def register_conditions_v2(
         _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
         pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
         backup_ref = pre["backup_ref"]
+        _validate_retained_target(db_file, target_descriptor)
         write_con = sqlite3.connect(str(db_file))
         try:
             mode = write_con.execute("PRAGMA locking_mode=EXCLUSIVE").fetchone()
@@ -506,6 +534,7 @@ def register_conditions_v2(
         return verified
     finally:
         _release_promotion_guard(guard_path, guard)
+        os.close(target_descriptor)
         authority_guard.__exit__(None, None, None)
 
 
