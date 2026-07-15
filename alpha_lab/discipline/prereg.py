@@ -2120,7 +2120,69 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     return found
 
 
-def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path]]:
+def _absolute_import_modules(tree: ast.AST) -> set[str]:
+    """Return every statically or literally dynamically declared absolute lookup."""
+    modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            modules.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+            if node.module:
+                modules.add(node.module)
+                modules.update(f"{node.module}.{alias.name}" for alias in node.names)
+            else:
+                modules.update(alias.name for alias in node.names)
+    calls, aliases = _dynamic_call_kinds(tree)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        raw_name = _dotted_name(node.func, {})
+        canonical = _dotted_name(node.func, aliases)
+        if (calls.get(raw_name or "") or calls.get(canonical or "")) != "module":
+            continue
+        if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+            if not node.args[0].value.startswith("."):
+                modules.add(node.args[0].value)
+    return modules
+
+
+def _script_parent_candidates(parent: Path, module: str) -> set[Path]:
+    """Return local artifacts CPython can find before the repository root."""
+    if not module:
+        return set()
+    base = parent / module.split(".", 1)[0]
+    candidates = {base.with_suffix(".py"), base}
+    candidates.update(base.with_suffix(suffix) for suffix in _IMPORTABLE_ARTIFACT_SUFFIXES)
+    return {candidate for candidate in candidates if candidate.is_file() or candidate.is_dir()}
+
+
+def _reject_direct_script_shadowing(
+    root: Path, imports_by_parent: dict[Path, set[str]],
+) -> None:
+    """Reject local candidates visible only to direct-script execution."""
+    candidates_by_module: dict[str, dict[Path, set[Path]]] = {}
+    for parent, modules in imports_by_parent.items():
+        if parent == root:
+            continue
+        for module in modules:
+            candidates = _script_parent_candidates(parent, module)
+            if candidates:
+                candidates_by_module.setdefault(module, {})[parent] = candidates
+    for module, parents in candidates_by_module.items():
+        if len(parents) > 1:
+            locations = ", ".join(str(parent) for parent in sorted(parents))
+            raise EvidenceSchemaError(
+                f"ambiguous direct-script import across dependency-root parents: "
+                f"{module}: {locations}"
+            )
+        parent, candidates = next(iter(parents.items()))
+        locations = ", ".join(str(candidate) for candidate in sorted(candidates))
+        raise EvidenceSchemaError(
+            f"unsealed direct-script local import candidate: {module}: {locations}"
+        )
+
+
+def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path], set[str]]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
@@ -2145,21 +2207,35 @@ def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path]]:
             if candidate is not None:
                 found.add(candidate)
                 found.update(_package_initializers(candidate, root))
-    return found, _dynamic_local_dependencies(tree, path, root)
+    return found, _dynamic_local_dependencies(tree, path, root), _absolute_import_modules(tree)
 
 
 def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[set[str], set[str]]:
     roots = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
-    pending = roots + [initializer for item in roots for initializer in _package_initializers(item, root)]
+    pending = [
+        (candidate, dependency_root.parent)
+        for dependency_root in roots
+        for candidate in (dependency_root, *_package_initializers(dependency_root, root))
+    ]
     closure: set[Path] = set()
     dynamic: set[Path] = set()
+    imports_by_parent: dict[Path, set[str]] = {}
+    seen: set[tuple[Path, Path]] = set()
     while pending:
-        current = pending.pop()
-        if current not in closure:
-            closure.add(current)
-            imports, dynamic_imports = _local_imports(current, root)
-            dynamic.update(dynamic_imports)
-            pending.extend((imports | dynamic_imports | set().union(*(_package_initializers(item, root) for item in dynamic_imports))) - closure)
+        current, script_parent = pending.pop()
+        context = (current, script_parent)
+        if context in seen:
+            continue
+        seen.add(context)
+        closure.add(current)
+        imports, dynamic_imports, absolute_imports = _local_imports(current, root)
+        imports_by_parent.setdefault(script_parent, set()).update(absolute_imports)
+        dynamic.update(dynamic_imports)
+        dependencies = imports | dynamic_imports | set().union(
+            *(_package_initializers(item, root) for item in dynamic_imports)
+        )
+        pending.extend((item, script_parent) for item in dependencies)
+    _reject_direct_script_shadowing(root, imports_by_parent)
     return (
         {path.relative_to(root).as_posix() for path in closure},
         {path.relative_to(root).as_posix() for path in dynamic},

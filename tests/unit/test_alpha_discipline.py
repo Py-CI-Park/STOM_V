@@ -1865,6 +1865,96 @@ class TestPrereg:
         assert prereg.derive_prereg_code_manifest(
             document.read_text(encoding="utf-8"), tmp_path
         ) == {"code/entry.py"}
+    def test_direct_script_rejects_legacy_plugin_pyc_sibling(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import plugin\n", encoding="utf-8")
+        (code / "plugin.pyc").write_bytes(b"legacy bytecode")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    @pytest.mark.parametrize("kind", ("source", "package", "namespace", "extension"))
+    def test_direct_script_rejects_local_import_sibling_kinds(self, tmp_path, kind):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import plugin\n", encoding="utf-8")
+        if kind == "source":
+            (code / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        elif kind == "extension":
+            (code / f"plugin{importlib.machinery.EXTENSION_SUFFIXES[0]}").write_bytes(b"extension")
+        else:
+            plugin = code / "plugin"
+            plugin.mkdir()
+            if kind == "package":
+                (plugin / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_rejects_shadow_in_imported_dependency(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import shared\n", encoding="utf-8")
+        (code / "alpha.py").write_text("DECOY = True\n", encoding="utf-8")
+        (tmp_path / "shared.py").write_text("import alpha\n", encoding="utf-8")
+        (tmp_path / "alpha.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: alpha",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_rejects_multiple_dependency_root_parent_ambiguity(self, tmp_path):
+        for directory in ("one", "two"):
+            script_dir = tmp_path / directory
+            script_dir.mkdir()
+            (script_dir / "entry.py").write_text("import plugin\n", encoding="utf-8")
+            (script_dir / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("one/entry.py", "two/entry.py")),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous direct-script import across dependency-root parents: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_allows_repo_package_without_sibling(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import alpha.plugin\n", encoding="utf-8")
+        alpha = tmp_path / "alpha"
+        alpha.mkdir()
+        (alpha / "__init__.py").write_text("", encoding="utf-8")
+        (alpha / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"code/entry.py", "alpha/__init__.py", "alpha/plugin.py"}
     def test_code_manifest_rejects_nested_package_module_collision(self, tmp_path):
         package = tmp_path / "package"
         nested = package / "nested"
