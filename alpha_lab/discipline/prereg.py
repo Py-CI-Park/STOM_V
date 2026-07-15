@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import importlib.machinery
 import contextlib
 import ast
 import hashlib
@@ -226,6 +227,10 @@ _AUTHORITY_PATH_KEYS = {
     "seal_dir", "promotions_dir", "catalog_dir", "target_db", "journal_dir", "backup_dir",
 }
 _PROTECTED_ROOT_NAMES = frozenset({"_database", "_database_v3k_shadow", "backup", "_log"})
+_IMPORTABLE_ARTIFACT_SUFFIXES = frozenset((
+    *importlib.machinery.BYTECODE_SUFFIXES,
+    *importlib.machinery.EXTENSION_SUFFIXES,
+))
 
 
 def _has_reparse_point(root: Path, relative: PurePosixPath) -> bool:
@@ -798,6 +803,19 @@ def _contract_ledger_path(value: object, root: Path) -> str:
 
 
 
+def _reject_importable_artifacts(base: Path) -> None:
+    """Reject bytecode/native artifacts that could win local import resolution."""
+    candidates = (
+        *(base.with_suffix(suffix) for suffix in _IMPORTABLE_ARTIFACT_SUFFIXES),
+        *(base / f"__init__{suffix}" for suffix in _IMPORTABLE_ARTIFACT_SUFFIXES),
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            raise EvidenceSchemaError(
+                f"unsupported local bytecode/native import artifact: {candidate}"
+            )
+
+
 def _module_file(root: Path, module: str) -> Path | None:
     """Resolve a local module only through sealed regular-package segments."""
     if not module:
@@ -807,6 +825,7 @@ def _module_file(root: Path, module: str) -> Path | None:
         base = root.joinpath(*parts[:index])
         module_file = base.with_suffix(".py")
         package_initializer = base / "__init__.py"
+        _reject_importable_artifacts(base)
         if module_file.is_file() and package_initializer.is_file():
             raise EvidenceSchemaError(
                 f"ambiguous local module/package resolution: {'.'.join(parts[:index])}"

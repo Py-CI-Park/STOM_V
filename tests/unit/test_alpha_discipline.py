@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import datetime as dt
 import contextlib
+import importlib.machinery
 import hashlib
 import json
 import os
@@ -1609,6 +1610,98 @@ class TestPrereg:
             prereg._reject_unresolved_module_receivers(
                 tree, aliases, tmp_path / "measure.py", tmp_path
             )
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("from {target} import VALUE\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("import", "import_from", "builtin_dynamic", "importlib_dynamic"))
+    @pytest.mark.parametrize(("parts", "target"), [
+        ((), "plugin"),
+        (("package",), "package.plugin"),
+        (("package", "nested"), "package.nested.plugin"),
+    ], ids=("root", "regular_package", "nested_package"))
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ], ids=("bytecode", "extension"))
+    def test_code_manifest_rejects_importable_artifact_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, parts, target, suffix,
+    ):
+        package = tmp_path
+        for part in parts:
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        plugin = package / "plugin.py"
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        plugin.with_suffix(suffix).write_bytes(b"unsealed executable artifact")
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        target_path = plugin.relative_to(tmp_path).as_posix()
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="bytecode/native import artifact",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    @pytest.mark.parametrize("artifact_part", [0, 1, 2], ids=(
+        "root_package", "nested_package", "module",
+    ))
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ])
+    def test_local_receiver_provenance_rejects_artifact_in_every_import_segment(
+        self, tmp_path, artifact_part, suffix,
+    ):
+        package = tmp_path
+        package_parts = ("package", "nested")
+        for part in package_parts:
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        plugin = package / "plugin.py"
+        plugin.write_text("def run():\n    return None\n", encoding="utf-8")
+        segments = (
+            tmp_path / "package",
+            tmp_path / "package" / "nested",
+            plugin,
+        )
+        artifact = (
+            segments[artifact_part] / f"__init__{suffix}"
+            if artifact_part < 2
+            else plugin.with_suffix(suffix)
+        )
+        artifact.write_bytes(b"unsealed executable artifact")
+        source = "import package.nested.plugin\npackage.nested.plugin.run()\n"
+        tree = ast.parse(source)
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="bytecode/native import artifact",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
 
     @pytest.mark.parametrize(("source_template", "dynamic_python"), [
         ("import {target}\n", ()),
@@ -1754,10 +1847,15 @@ class TestPrereg:
             prereg.derive_prereg_code_manifest(
                 document.read_text(encoding="utf-8"), tmp_path
             )
-    def test_dependency_root_under_plain_directory_is_allowed(self, tmp_path):
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ], ids=("bytecode", "extension"))
+    def test_unimported_dependency_root_artifact_is_inert(self, tmp_path, suffix):
         code = tmp_path / "code"
         code.mkdir()
         (code / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (code / "entry.py").with_suffix(suffix).write_bytes(b"inert artifact")
         (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
         document = tmp_path / "prereg.md"
         document.write_text(
