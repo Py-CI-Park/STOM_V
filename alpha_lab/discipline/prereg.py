@@ -819,6 +819,38 @@ def _reject_wildcard_imports(tree: ast.AST, path: Path) -> None:
         for node in ast.walk(tree)
     ):
         raise EvidenceSchemaError(f"wildcard import is unsupported: {path}")
+_SAFE_STATIC_CALL_EFFECTS = {
+    # Pure numerical reductions explicitly needed by sealed measurement code.
+    "numpy.mean": "pure",
+    # Dynamic imports are safe only because _dynamic_local_dependencies below
+    # requires a literal local target and adds that target to the manifest.
+    "__import__": "tracked_dynamic",
+    "builtins.__import__": "tracked_dynamic",
+    "importlib.import_module": "tracked_dynamic",
+    "importlib.util.spec_from_file_location": "tracked_dynamic",
+    "importlib.machinery.SourceFileLoader": "tracked_dynamic",
+    "importlib.machinery.SourcelessFileLoader": "tracked_dynamic",
+}
+
+
+def _reviewed_static_call(receiver: str | None) -> bool:
+    """Return whether a static-module callable has a reviewed safe effect."""
+    return receiver in _SAFE_STATIC_CALL_EFFECTS
+
+
+def _declared_local_module_apis(module_path: Path) -> set[str]:
+    """Return direct function APIs declared by a local module, never re-exports."""
+    try:
+        tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
+    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        raise EvidenceSchemaError(
+            f"cannot inspect local module API: {module_path}"
+        ) from exc
+    return {
+        node.name
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
 
 
 def _dynamic_call_kinds(tree: ast.AST) -> tuple[dict[str, str], dict[str, str]]:
@@ -1023,6 +1055,11 @@ def _reject_unresolved_module_receivers(
     }
     imported_modules, local_symbol_receivers = _local_importfrom_receivers(tree, path, root)
     local_module_receivers.update(imported_modules)
+    local_module_apis: dict[str, set[str]] = {}
+    for receiver in local_module_receivers:
+        module_path = _module_file(root, aliases.get(receiver, receiver))
+        if module_path is not None:
+            local_module_apis[receiver] = _declared_local_module_apis(module_path)
 
 
     class _SealedLocalApis(ast.NodeVisitor):
@@ -1042,25 +1079,6 @@ def _reject_unresolved_module_receivers(
 
     sealed_apis = _SealedLocalApis()
     sealed_apis.visit(tree)
-
-    static_imports: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            static_imports.update(alias.asname or alias.name.split(".", 1)[0] for alias in node.names)
-    changed = True
-    while changed:
-        changed = False
-        for node in ast.walk(tree):
-            if (
-                not isinstance(node, ast.Assign)
-                or not isinstance(node.value, ast.Name)
-                or node.value.id not in static_imports
-            ):
-                continue
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id not in static_imports:
-                    static_imports.add(target.id)
-                    changed = True
 
     invalidated_receivers: set[str] = set()
     for node in ast.walk(tree):
@@ -1088,9 +1106,8 @@ def _reject_unresolved_module_receivers(
             for invalidated in invalidated_receivers
         )
 
-    def _static_import_receiver(node: ast.Attribute) -> bool:
-        root = _receiver_root(node)
-        return root in static_imports if root is not None else False
+    def _reviewed_static_receiver(receiver: str | None) -> bool:
+        return _reviewed_static_call(receiver)
 
 
     def _scope_bindings(
@@ -1191,7 +1208,10 @@ def _reject_unresolved_module_receivers(
                 receiver = _dotted_name(node.func, aliases)
                 root = _receiver_root(node.func)
                 if root in local_symbol_receivers or (
-                    root in local_module_receivers and _attribute_depth(node.func) != 1
+                    root in local_module_receivers and (
+                        _attribute_depth(node.func) != 1
+                        or node.func.attr not in local_module_apis.get(root, set())
+                    )
                 ):
                     raise EvidenceSchemaError(
                         f"unresolved executable receiver is unsupported: {path}"
@@ -1203,7 +1223,8 @@ def _reject_unresolved_module_receivers(
                     or _is_invalidated(receiver)
                     or (
                         receiver not in sealed_apis.apis
-                        and not _static_import_receiver(node.func)
+                        and root not in local_module_receivers
+                        and not _reviewed_static_receiver(receiver)
                     )
                 ):
                     raise EvidenceSchemaError(

@@ -791,6 +791,65 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
+    def test_finalize_prereg_rejects_local_module_reexported_run_path(self, tmp_path):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        carrier.write_text("from runpy import run_path\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_rejects_package_initializer_reexported_run_path(self, tmp_path):
+        package = tmp_path / "carrier"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        initializer.write_text("from runpy import run_path\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_rejects_unclassified_static_module_call(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("import pydoc\npydoc.importfile('plugin.py')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
     @pytest.mark.parametrize(("carrier_source", "measure_source"), [
         (
             "def exported(name):\n    return name\n",
