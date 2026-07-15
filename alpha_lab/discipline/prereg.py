@@ -936,9 +936,10 @@ def _declared_local_module_apis(module_path: Path) -> set[str]:
         raise EvidenceSchemaError(
             f"cannot inspect local module API: {module_path}"
         ) from exc
+    _reject_sealed_store_mutation(tree, module_path)
     _, aliases = _dynamic_call_kinds(tree)
-    _reject_namespace_export_mutation(tree, aliases, module_path)
     _reject_sealed_global_mutation(tree, aliases, module_path)
+    _reject_namespace_export_mutation(tree, aliases, module_path)
     return _direct_function_api_names(tree)
 
 
@@ -1109,15 +1110,26 @@ def _reject_namespace_export_mutation(
             raise EvidenceSchemaError(
                 f"module namespace export mutation is unsupported: {path}"
             )
+def _reject_sealed_store_mutation(tree: ast.AST, path: Path) -> None:
+    """Reject every SEALED AST mutation target before provenance analysis."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AugAssign) or (
+            isinstance(node, (ast.Attribute, ast.Subscript))
+            and isinstance(node.ctx, (ast.Store, ast.Del))
+        ):
+            raise EvidenceSchemaError(
+                f"sealed mutation (function-body object mutation or module-level object mutation) is unsupported: {path}"
+            )
+
+
 def _reject_sealed_global_mutation(
     tree: ast.AST, aliases: dict[str, str], path: Path
 ) -> None:
     """Keep SEALED code pure: no export, namespace, or object/container mutation.
 
-    Function bodies are fail-closed. Attribute/subscript writes and known mutating
-    method sinks are rejected unless a future reviewed effect system proves a
-    fresh function-local literal receiver.
+    Later checks cover mutation carriers and method sinks.
     """
+    _reject_sealed_store_mutation(tree, path)
 
     mutating_method_names = frozenset({
         "__delattr__", "__delitem__", "__iadd__", "__ior__", "__isub__",
@@ -1786,6 +1798,7 @@ def _reject_untrusted_bare_calls(
 
 def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
     """Resolve only direct, literal dynamic imports; reject executable indirection."""
+    _reject_sealed_store_mutation(tree, path)
     if any(isinstance(node, ast.Lambda) for node in ast.walk(tree)):
         raise EvidenceSchemaError(f"lambda executable dependencies are unsupported: {path}")
     parameter_names = {
@@ -1806,8 +1819,8 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             )
     _reject_wildcard_imports(tree, path)
     calls, aliases = _dynamic_call_kinds(tree)
-    _reject_namespace_export_mutation(tree, aliases, path)
     _reject_sealed_global_mutation(tree, aliases, path)
+    _reject_namespace_export_mutation(tree, aliases, path)
     _reject_unresolved_module_receivers(tree, aliases, path, root)
     found: set[Path] = set()
     executable = {

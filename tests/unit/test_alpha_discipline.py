@@ -855,6 +855,78 @@ class TestPrereg:
             )
 
     @pytest.mark.parametrize("source", [
+        "import builtins\nbuiltins.sealed_export, local = (1, 2)\n",
+        "namespace = globals()\nnamespace |= {'sealed_export': 1}\n",
+    ], ids=("builtins_tuple_destructuring", "namespace_name_ior"))
+    def test_finalize_prereg_rejects_recursive_store_and_name_augassign(
+        self, tmp_path, source
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    @pytest.mark.parametrize("statement", [
+        "for carrier.sealed_export in (1,):\n    pass\n",
+        "import contextlib\nwith contextlib.nullcontext() as carrier.sealed_export:\n    pass\n",
+    ], ids=("for_target", "with_target"))
+    def test_finalize_prereg_rejects_carrier_store_targets_before_seal(
+        self, tmp_path, package, statement
+    ):
+        carrier_dir = tmp_path / "carrier" if package else tmp_path
+        carrier_dir.mkdir(exist_ok=True)
+        carrier = carrier_dir / "__init__.py" if package else carrier_dir / "carrier.py"
+        carrier.write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import carrier\n{statement}", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_allows_pure_name_assignment_and_arithmetic(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("value = 1\nresult = value + 2\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py"]
+    def test_dynamic_dependency_rejects_comprehension_attribute_store(self, tmp_path):
+        tree = ast.parse("result = [item for item in values]\n")
+        tree.body[0].value.generators[0].target = ast.Attribute(
+            value=ast.Name(id="carrier", ctx=ast.Load()),
+            attr="sealed_export",
+            ctx=ast.Store(),
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
+    @pytest.mark.parametrize("source", [
         "def update(state):\n    state.value = 1\n",
         "def update(state):\n    state['value'] = 2\n",
         "def update(state):\n    state.update({'value': 3})\n",
@@ -1182,7 +1254,7 @@ class TestPrereg:
         if relative:
             (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
         with pytest.raises(
-            evidence.EvidenceSchemaError, match="wildcard import is unsupported"
+            evidence.EvidenceSchemaError, match="wildcard import is unsupported|sealed mutation"
         ):
             prereg.finalize_prereg(
                 document,
