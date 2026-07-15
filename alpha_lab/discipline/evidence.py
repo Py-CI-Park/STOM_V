@@ -116,6 +116,18 @@ def _hash_file(path: Path, field: str) -> str:
     if not path.is_file():
         raise EvidenceSchemaError(f"{field} does not name a file")
     return hashlib.sha256(path.read_bytes()).hexdigest()
+def _hash_retained_file(guard: Any, path: Path, field: str) -> str:
+    """Hash bytes through a held authority pathname without a direct pathname reopen."""
+    digest = hashlib.sha256()
+    try:
+        fd = guard.open_path(path, os.O_RDONLY)
+        with os.fdopen(fd, "rb") as handle:
+            for chunk in iter(lambda: handle.read(1 << 20), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise EvidenceSchemaError(f"{field} cannot be read through its retained authority handle") from exc
+    return digest.hexdigest()
+
 
 
 def _validate_file_ref(value: object, field: str, repo_root: Path, *, verify_files: bool) -> dict[str, str]:
@@ -1182,6 +1194,28 @@ def _verify_catalog_authority_db(
         or actual_records != expected_records
     ):
         raise EvidenceSchemaError("catalog authority DB records are omitted, extra, or misstated")
+def _verify_catalog_authority_db_from_retained_identity(
+    root: Path,
+    authority_paths: Mapping[str, str],
+    db_path: Path,
+    expected_sha256: str,
+    expected_records: list[dict[str, str]],
+) -> None:
+    """Bind receipt bytes and SQLite reads to one held catalog authority identity."""
+    from alpha_lab.discipline.prereg import authority_mutation_guard
+
+    with authority_mutation_guard(root, dict(authority_paths), fields=("catalog_dir",)) as guard:
+        guard.hold_path(db_path)
+        observed_sha256 = _hash_retained_file(guard, db_path, "catalog receipt catalog_db")
+        if observed_sha256 != expected_sha256:
+            raise EvidenceSchemaError("catalog receipt catalog_db SHA-256 does not match retained authority bytes")
+        _verify_catalog_authority_db(db_path, expected_records)
+        guard.validate_file(db_path)
+        if _hash_retained_file(guard, db_path, "catalog receipt catalog_db") != observed_sha256:
+            raise EvidenceSchemaError(
+                "catalog receipt catalog_db pathname identity changed during SQLite authority validation"
+            )
+
 
 
 def validate_catalog_promotion_receipt_v2(
@@ -1227,7 +1261,7 @@ def validate_catalog_promotion_receipt_v2(
             upstream_file, repo_root=root)
         if result_sha256 != upstream_sha256 or result_manifest != manifest:
             raise EvidenceSchemaError("catalog POST receipt does not bind the exact POST/PRE chain")
-    db_ref = _validate_file_ref(receipt["catalog_db"], "catalog receipt catalog_db", root, verify_files=True)
+    db_ref = _validate_file_ref(receipt["catalog_db"], "catalog receipt catalog_db", root, verify_files=False)
     catalog_dir = PurePosixPath(manifest["authority_paths"]["catalog_dir"])
     expected_db = (catalog_dir / f"{evidence_id}.{receipt['phase'].lower()}.db").as_posix()
     if db_ref["path"] != expected_db:
@@ -1240,8 +1274,11 @@ def validate_catalog_promotion_receipt_v2(
     if sources != expected_sources:
         raise EvidenceSchemaError(
             "catalog receipt source_hashes must exactly equal manifest input_artifacts and result_artifacts")
-    _verify_catalog_authority_db(
+    _verify_catalog_authority_db_from_retained_identity(
+        root,
+        manifest["authority_paths"],
         root / Path(*PurePosixPath(db_ref["path"]).parts),
+        db_ref["sha256"],
         _canonical_catalog_authority_records(manifest, verified_result, receipt["phase"]),
     )
     return {
