@@ -1275,8 +1275,10 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     # A direct symbol imported from a repository-local module has no runtime
     # provenance here: it may be a function, class, or dynamically supplied
     # capability.  Local calls must retain the module carrier syntax so the
-    # receiver scanner can validate the declared API path.
-    safe_aliases = local_callables | {
+    # receiver scanner can validate the declared API path.  The import also
+    # wins over a same-named earlier declaration.
+    safe_local_callables = local_callables - local_symbol_receivers
+    safe_aliases = safe_local_callables | {
         name for name, canonical in aliases.items()
         if name not in local_symbol_receivers
         and (
@@ -1289,7 +1291,7 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         if isinstance(node, ast.Assign):
             targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
             if isinstance(node.value, ast.Lambda) or (
-                isinstance(node.value, ast.Name) and node.value.id in local_callables
+                isinstance(node.value, ast.Name) and node.value.id in safe_local_callables
             ):
                 safe_aliases.update(targets)
             else:

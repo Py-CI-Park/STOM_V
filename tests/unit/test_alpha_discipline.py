@@ -822,6 +822,41 @@ class TestPrereg:
                 manifest_path=_canonical_seal_path(tmp_path, document),
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
+    @pytest.mark.parametrize(("declaration", "relative"), [
+        ("def exported(name):\n    return name\n", False),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", False),
+        ("def exported(name):\n    return name\n", True),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", True),
+    ])
+    def test_finalize_prereg_rejects_importfrom_shadowing_local_callable(
+        self, tmp_path, declaration, relative
+    ):
+        package = tmp_path / "package" if relative else tmp_path
+        package.mkdir(exist_ok=True)
+        initializer = package / "__init__.py"
+        if relative:
+            initializer.write_text("", encoding="utf-8")
+        measure, carrier = package / "measure.py", package / "carrier.py"
+        import_statement = "from .carrier import exported" if relative else "from carrier import exported"
+        measure.write_text(
+            f"{declaration}{import_statement}\nexported('plugin')\n", encoding="utf-8"
+        )
+        carrier.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        root = "package/measure.py" if relative else "measure.py"
+        document.write_text(_sealed_contract(roots=(root,)), encoding="utf-8")
+        code_files = (measure, carrier, initializer) if relative else (measure, carrier)
+
+        if relative:
+            (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=code_files,
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
     def test_finalize_prereg_allows_direct_local_module_function_and_scans_plugin(self, tmp_path):
         measure, carrier, plugin = (
             tmp_path / "measure.py",
