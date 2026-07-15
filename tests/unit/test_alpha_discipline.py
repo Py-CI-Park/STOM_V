@@ -1754,6 +1754,19 @@ class TestPrereg:
             prereg.derive_prereg_code_manifest(
                 document.read_text(encoding="utf-8"), tmp_path
             )
+    def test_dependency_root_under_plain_directory_is_allowed(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("code/entry.py",)), encoding="utf-8"
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"code/entry.py"}
     def test_code_manifest_rejects_nested_package_module_collision(self, tmp_path):
         package = tmp_path / "package"
         nested = package / "nested"

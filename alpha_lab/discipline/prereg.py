@@ -826,11 +826,13 @@ def _module_file(root: Path, module: str) -> Path | None:
 
 
 def _package_initializers(path: Path, root: Path) -> set[Path]:
-    """Return every local package initializer executed before *path* is imported."""
+    """Return consecutive parent initializers executed before importing *path*."""
     initializers: set[Path] = set()
     parent = path.parent
     while parent != root:
         initializer = parent / "__init__.py"
+        if not initializer.is_file():
+            break
         module = ".".join(parent.relative_to(root).parts)
         if _module_file(root, module) == initializer.resolve():
             initializers.add(initializer.resolve())
