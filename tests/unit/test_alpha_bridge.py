@@ -351,6 +351,33 @@ class TestPromotionV2:
         assert anchor_path.read_bytes() == hashlib.sha256(pre_path.read_bytes()).hexdigest().encode("ascii")
         for suffix in ("-journal", "-wal", "-shm"):
             assert not Path(f"{fake_db}{suffix}").exists()
+    @pytest.mark.skipif(os.name != "nt", reason="Windows SQLite auxiliary reservations")
+    def test_reserved_sidecars_block_hot_journal_writer_and_cleanup_on_abort(
+        self, fake_db, tmp_path, monkeypatch,
+    ):
+        item = _item()
+        chain = _write_v2_promotion_chain(tmp_path, item, monkeypatch)
+        baseline = fake_db.read_bytes()
+        write_json = registrar._write_exclusive_json
+
+        def inject_hot_journal_creator(path, value):
+            if path.name.endswith(".pre.json"):
+                with pytest.raises(OSError):
+                    with open(f"{fake_db}-journal", "wb"):
+                        pass
+                assert fake_db.read_bytes() == baseline
+                raise OSError("injected hot-journal creator was blocked")
+            return write_json(path, value)
+
+        monkeypatch.setattr(registrar, "_write_exclusive_json", inject_hot_journal_creator)
+        with pytest.raises(OSError, match="hot-journal creator"):
+            register_conditions_v2(
+                [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
+            )
+
+        assert fake_db.read_bytes() == baseline
+        for suffix in ("-journal", "-wal", "-shm"):
+            assert not Path(f"{fake_db}{suffix}").exists()
     def test_rejects_bare_inner_catalog_receipt_before_db_access(
         self, fake_db, tmp_path, monkeypatch,
     ):
@@ -564,7 +591,7 @@ class TestPromotionV2:
                     con.close()
 
         monkeypatch.setattr(registrar, "_write_exclusive_bytes", mutate_after_pre_anchor)
-        with pytest.raises(Exception, match="changed after PRE intent"):
+        with pytest.raises(Exception, match="changed after PRE intent|unable to open database file"):
             register_conditions_v2(
                 [item], manifest_path=chain["manifest"], repo_root=tmp_path, now=NOW,
             )

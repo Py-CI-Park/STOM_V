@@ -14,6 +14,8 @@ scripts/register_chart_sulsa_conditions.py 의 실측 계약을 미러한다:
 
 from __future__ import annotations
 
+import ctypes
+import errno
 import datetime as dt
 import hashlib
 import json
@@ -68,16 +70,22 @@ def _promotion_result(
 def _verify_promotion_result_locked(
     result_path: Path, *, repo_root: Path, connection: sqlite3.Connection,
     locked_post_state: dict[str, Any], locked_post_sha256: str,
+    allowed_reserved_sidecars: tuple[Path, Path, Path],
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     """Strongly verify POST while its writer still owns SQLite EXCLUSIVE."""
     result, manifest, result_sha256 = verify_promotion_result_v2(
         result_path, repo_root=repo_root, target_connection=connection,
-        locked_post_state=locked_post_state)
+        locked_post_state=locked_post_state,
+        allowed_reserved_sidecars=allowed_reserved_sidecars,
+    )
     target = repo_root / Path(*PurePosixPath(result["target_db"]["path"]).parts)
     if (
         result["target_db"]["post_sha256"] != locked_post_sha256
         or hashlib.sha256(target.read_bytes()).hexdigest() != locked_post_sha256
-        or capture_sqlite_logical_state(target, connection=connection) != locked_post_state
+        or capture_sqlite_logical_state(
+            target, connection=connection,
+            allowed_reserved_sidecars=allowed_reserved_sidecars,
+        ) != locked_post_state
     ):
         raise EvidenceSchemaError("locked POST verification does not match retained SQLite state")
     return result, manifest, result_sha256
@@ -312,13 +320,105 @@ def _copy_locked_db_exclusive(db_path: Path, backup_path: Path) -> str:
     except FileExistsError as exc:
         raise EvidenceSchemaError("reserved promotion backup already exists") from exc
     return hashlib.sha256(backup_path.read_bytes()).hexdigest()
+class _SQLiteAuxiliaryReservations:
+    """Windows handles reserving SQLite's auxiliary namespace until close."""
+
+    def __init__(self, paths: tuple[Path, Path, Path], handles: tuple[int, ...]) -> None:
+        self.paths = paths
+        self._handles = handles
+    def validate(self) -> None:
+        if len(self._handles) != len(self.paths) or any(
+            not path.is_file() or path.stat().st_size != 0 for path in self.paths
+        ):
+            raise EvidenceSchemaError("SQLite reserved sidecar contract is invalid")
+
+
+    def close(self) -> None:
+        if not self._handles:
+            return
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        error = 0
+        for handle in reversed(self._handles):
+            if not kernel32.CloseHandle(handle):
+                error = ctypes.get_last_error()
+        self._handles = ()
+        if error:
+            raise OSError(error, "CloseHandle failed for SQLite auxiliary reservation")
+
+    def __enter__(self) -> _SQLiteAuxiliaryReservations:
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.close()
+
+
 def _sqlite_auxiliary_paths(db_path: Path) -> tuple[Path, Path, Path]:
     return Path(f"{db_path}-journal"), Path(f"{db_path}-wal"), Path(f"{db_path}-shm")
 
 
-def _assert_sqlite_auxiliary_paths_absent(db_path: Path) -> None:
-    """SQLite promotion must never consult or create filesystem sidecars."""
-    present = [path.name for path in _sqlite_auxiliary_paths(db_path) if path.exists()]
+def _validate_sqlite_header_delete_mode(db_path: Path) -> None:
+    """Reject persistent WAL state without opening SQLite or creating sidecars."""
+    with open(db_path, "rb") as source:
+        header = source.read(100)
+    if (
+        len(header) != 100
+        or header[:16] != b"SQLite format 3\x00"
+        or header[18] != 1
+        or header[19] != 1
+    ):
+        raise EvidenceSchemaError("SQLite journal mode must be DELETE before promotion")
+
+
+def _reserve_sqlite_auxiliary_paths(db_path: Path) -> _SQLiteAuxiliaryReservations:
+    """Atomically reserve all SQLite sidecar names before opening the target DB."""
+    _assert_sqlite_auxiliary_paths_absent(db_path)
+    if os.name != "nt":
+        raise EvidenceSchemaError("SQLite auxiliary reservations require Windows")
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = [
+        ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p,
+        ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p,
+    ]
+    create_file.restype = ctypes.c_void_p
+    handles: list[int] = []
+    paths = _sqlite_auxiliary_paths(db_path)
+    try:
+        for path in paths:
+            handle = create_file(
+                str(path),
+                0x80000000 | 0x00010000,  # GENERIC_READ | DELETE
+                0x00000001,  # FILE_SHARE_READ: deny write and delete
+                None,
+                1,  # CREATE_NEW
+                0x00000100 | 0x04000000,  # TEMPORARY | DELETE_ON_CLOSE
+                None,
+            )
+            if handle == ctypes.c_void_p(-1).value:
+                error = ctypes.get_last_error()
+                if error in (errno.EEXIST, 80, 183):
+                    raise EvidenceSchemaError(
+                        "SQLite filesystem auxiliary sidecars are not promotable: " + path.name)
+                raise OSError(error, "CreateFileW failed for SQLite auxiliary reservation")
+            handles.append(handle)
+    except BaseException:
+        for handle in reversed(handles):
+            kernel32.CloseHandle(handle)
+        raise
+    return _SQLiteAuxiliaryReservations(paths, tuple(handles))
+
+
+def _assert_sqlite_auxiliary_paths_absent(
+    db_path: Path, reservations: _SQLiteAuxiliaryReservations | None = None,
+) -> None:
+    """Reject unmanaged sidecars; reservations are the sole permitted sidecars."""
+    if reservations is not None:
+        reservations.validate()
+    reserved = set(reservations.paths) if reservations is not None else set()
+    present = [
+        path.name for path in _sqlite_auxiliary_paths(db_path)
+        if path.exists() and path not in reserved
+    ]
     if present:
         raise EvidenceSchemaError(
             "SQLite filesystem auxiliary sidecars are not promotable: "
@@ -326,9 +426,11 @@ def _assert_sqlite_auxiliary_paths_absent(db_path: Path) -> None:
         )
 
 
-def _force_memory_journal_mode(con: sqlite3.Connection, db_path: Path) -> None:
-    """Use SQLite's connection-local in-memory rollback journal before writing."""
-    _assert_sqlite_auxiliary_paths_absent(db_path)
+def _force_memory_journal_mode(
+    con: sqlite3.Connection, db_path: Path, reservations: _SQLiteAuxiliaryReservations,
+) -> None:
+    """Use SQLite's connection-local in-memory rollback journal before PRE."""
+    _assert_sqlite_auxiliary_paths_absent(db_path, reservations)
     row = con.execute("PRAGMA journal_mode").fetchone()
     if not row or str(row[0]).lower() != "delete":
         raise EvidenceSchemaError("SQLite journal mode must be DELETE before promotion")
@@ -338,19 +440,20 @@ def _force_memory_journal_mode(con: sqlite3.Connection, db_path: Path) -> None:
     row = con.execute("PRAGMA journal_mode").fetchone()
     if not row or str(row[0]).lower() != "memory":
         raise EvidenceSchemaError("SQLite MEMORY journal mode cannot be verified for promotion")
-    _assert_sqlite_auxiliary_paths_absent(db_path)
-def _validate_sqlite_promotion_start_mode(db_path: Path) -> None:
-    """Reject non-DELETE persistent modes before creating promotion evidence."""
-    _assert_sqlite_auxiliary_paths_absent(db_path)
+    _assert_sqlite_auxiliary_paths_absent(db_path, reservations)
+
+
+def _open_sqlite_promotion_connection(
+    db_path: Path, reservations: _SQLiteAuxiliaryReservations,
+) -> sqlite3.Connection:
+    """Open and switch the sole promotion connection before evidence is created."""
     con = sqlite3.connect(str(db_path))
     try:
-        row = con.execute("PRAGMA journal_mode").fetchone()
-        if not row or str(row[0]).lower() != "delete":
-            raise EvidenceSchemaError("SQLite journal mode must be DELETE before promotion")
-        _assert_sqlite_auxiliary_paths_absent(db_path)
-    finally:
+        _force_memory_journal_mode(con, db_path, reservations)
+        return con
+    except BaseException:
         con.close()
-        _assert_sqlite_auxiliary_paths_absent(db_path)
+        raise
 
 
 
@@ -428,6 +531,8 @@ def register_conditions_v2(
     authority_guard = authority_mutation_guard(root, manifest["authority_paths"])
     mutation_guard = authority_guard.__enter__()
     target_descriptor: int | None = None
+    auxiliary_reservations: _SQLiteAuxiliaryReservations | None = None
+    write_con: sqlite3.Connection | None = None
     try:
         mutation_guard.hold_path(db_file)
         try:
@@ -436,12 +541,17 @@ def register_conditions_v2(
         except FileNotFoundError as exc:
             raise FileNotFoundError("sealed strategy DB file is missing: %s" % db_file) from exc
         _validate_retained_target(db_file, target_descriptor)
-        _assert_sqlite_auxiliary_paths_absent(db_file)
-        _validate_sqlite_promotion_start_mode(db_file)
+        _validate_sqlite_header_delete_mode(db_file)
+        auxiliary_reservations = _reserve_sqlite_auxiliary_paths(db_file)
+        write_con = _open_sqlite_promotion_connection(db_file, auxiliary_reservations)
         for path in (pre_path, anchor_path, post_path, destinations["backup"], catalog_path):
             mutation_guard.hold_path(path)
         guard = _acquire_promotion_guard(guard_path)
     except BaseException:
+        if write_con is not None:
+            write_con.close()
+        if auxiliary_reservations is not None:
+            auxiliary_reservations.close()
         if target_descriptor is not None:
             os.close(target_descriptor)
         authority_guard.__exit__(None, None, None)
@@ -452,7 +562,7 @@ def register_conditions_v2(
             raise EvidenceSchemaError("promotion manifest changed before guarded PRE recheck")
         catalog_path = destinations["catalog"]
         _validate_retained_target(db_file, target_descriptor)
-        _assert_sqlite_auxiliary_paths_absent(db_file)
+        _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         _validate_catalog_pre_receipt(
             _load_json(catalog_path, "catalog receipt"),
             evidence_id=manifest["evidence_id"],
@@ -464,7 +574,7 @@ def register_conditions_v2(
         if existing["status"] != "ABSENT" or destinations["backup"].exists():
             raise ValueError("promotion journal or reserved backup refuses rerun")
         _validate_retained_target(db_file, target_descriptor)
-        _assert_sqlite_auxiliary_paths_absent(db_file)
+        _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         manifest_ref = {
             "path": _repo_relative_path(Path(manifest_path), root, "manifest_path"),
             "sha256": manifest_sha256,
@@ -486,48 +596,49 @@ def register_conditions_v2(
             "chronology": _journal_chronology(manifest, root, completed_at),
         }
         validate_promotion_journal_pre_v2(pre, repo_root=root)
-        _assert_sqlite_auxiliary_paths_absent(db_file)
+        _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         mutation_guard.validate_file(pre_path)
         _write_exclusive_json(pre_path, pre)
-        _assert_sqlite_auxiliary_paths_absent(db_file)
+        _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         pre_ref = {"path": pre_relative, "sha256": hashlib.sha256(pre_path.read_bytes()).hexdigest()}
         mutation_guard.validate_file(anchor_path)
         _write_exclusive_bytes(anchor_path, pre_ref["sha256"].encode("ascii"))
-        _assert_sqlite_auxiliary_paths_absent(db_file)
+        _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         pre_anchor_ref = {"path": anchor_relative, "sha256": hashlib.sha256(anchor_path.read_bytes()).hexdigest()}
         backup_ref = pre["backup_ref"]
         _validate_retained_target(db_file, target_descriptor)
-        write_con = sqlite3.connect(str(db_file))
         try:
-            _force_memory_journal_mode(write_con, db_file)
             mode = write_con.execute("PRAGMA locking_mode=EXCLUSIVE").fetchone()
             if not mode or str(mode[0]).lower() != "exclusive":
                 raise EvidenceSchemaError("SQLite EXCLUSIVE locking mode is required for promotion")
             mutation_guard.validate_file(db_file)
             mutation_guard.validate_file(destinations["backup"])
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             write_con.execute("BEGIN EXCLUSIVE")
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             if recheck_authority_paths(manifest["authority_paths"], root) != manifest["authority_paths"]:
                 raise EvidenceSchemaError("sealed authority paths changed under write lock")
             locked_pre_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             if locked_pre_sha256 != pre_sha256:
                 raise EvidenceSchemaError("target DB changed after PRE intent; reconciliation is required")
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             backup_sha256 = _copy_locked_db_exclusive(db_file, destinations["backup"])
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             if backup_sha256 != locked_pre_sha256:
                 raise EvidenceSchemaError("locked target DB backup does not match defined main-file digest")
             names_by_table = {table: _existing_names(write_con, table) for table in TABLE_BY_SIDE.values()}
             to_insert, conflicts = _split_plan(items, names_by_table)
             inserted: list[dict[str, Any]] = []
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             if to_insert:
                 inserted = _apply_inserts(write_con, to_insert)
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             write_con.commit()
-            _assert_sqlite_auxiliary_paths_absent(db_file)
-            post_state = capture_sqlite_logical_state(db_file, connection=write_con)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
+            post_state = capture_sqlite_logical_state(
+                db_file, connection=write_con,
+                allowed_reserved_sidecars=auxiliary_reservations.paths,
+            )
             db_post_sha256 = hashlib.sha256(db_file.read_bytes()).hexdigest()
             logical_delta = build_promotion_logical_delta(
                 capture_sqlite_logical_state(destinations["backup"]), post_state, inserted)
@@ -544,13 +655,15 @@ def register_conditions_v2(
                 "logical_delta": logical_delta,
             }
             validate_promotion_journal_post_v2(post, pre=pre, repo_root=root)
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             mutation_guard.validate_file(post_path)
             _write_exclusive_json(post_path, post)
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
             verified, verified_manifest, verified_sha256 = _verify_promotion_result_locked(
                 post_path, repo_root=root, connection=write_con,
-                locked_post_state=post_state, locked_post_sha256=db_post_sha256)
+                locked_post_state=post_state, locked_post_sha256=db_post_sha256,
+                allowed_reserved_sidecars=auxiliary_reservations.paths,
+            )
             if (
                 verified != post
                 or verified_manifest != manifest
@@ -563,13 +676,15 @@ def register_conditions_v2(
             raise
         finally:
             write_con.close()
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         return verified
     finally:
         try:
-            _assert_sqlite_auxiliary_paths_absent(db_file)
+            _assert_sqlite_auxiliary_paths_absent(db_file, auxiliary_reservations)
         finally:
             _release_promotion_guard(guard_path, guard)
+            if auxiliary_reservations is not None:
+                auxiliary_reservations.close()
             os.close(target_descriptor)
             authority_guard.__exit__(None, None, None)
 

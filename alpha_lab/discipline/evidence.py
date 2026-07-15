@@ -742,14 +742,32 @@ def _quote_identifier(identifier: str) -> str:
     return '"' + identifier.replace('"', '""') + '"'
 
 
+def _validate_allowed_reserved_sidecars(
+    sidecars: tuple[Path, Path, Path], allowed_reserved_sidecars: tuple[Path, Path, Path] | None,
+) -> None:
+    if allowed_reserved_sidecars is None:
+        if any(path.exists() for path in sidecars):
+            raise EvidenceSchemaError("SQLite filesystem sidecar state is not verifiable")
+        return
+    allowed = tuple(path.resolve() for path in allowed_reserved_sidecars)
+    if len(set(allowed)) != 3 or set(allowed) != set(sidecars):
+        raise EvidenceSchemaError("SQLite reserved sidecar contract is invalid")
+    if any(not path.is_file() or path.stat().st_size != 0 for path in sidecars):
+        raise EvidenceSchemaError("SQLite reserved sidecar contract is invalid")
+
+
 def capture_sqlite_logical_state(
-    db_path: Path | str, *, connection: sqlite3.Connection | None = None,
+    db_path: Path | str, *,
+    connection: sqlite3.Connection | None = None,
+    allowed_reserved_sidecars: tuple[Path, Path, Path] | None = None,
 ) -> dict[str, Any]:
-    """Read a stable snapshot; only a supplied retained writer may use MEMORY mode."""
+    """Read a stable snapshot; retained writers may use validated empty reservations."""
     path = Path(db_path).resolve()
     journal_path, wal_path, shm_path = _sqlite_sidecars(path)
-    if journal_path.exists() or wal_path.exists() or shm_path.exists():
-        raise EvidenceSchemaError("SQLite filesystem sidecar state is not verifiable")
+    sidecars = (journal_path, wal_path, shm_path)
+    if connection is None and allowed_reserved_sidecars is not None:
+        raise EvidenceSchemaError("SQLite reserved sidecars require a retained connection")
+    _validate_allowed_reserved_sidecars(sidecars, allowed_reserved_sidecars)
     owns_connection = connection is None
     try:
         con = connection or sqlite3.connect(
@@ -768,8 +786,7 @@ def capture_sqlite_logical_state(
             raise EvidenceSchemaError(
                 "retained SQLite connection journal mode must be DELETE or MEMORY for verification"
             )
-        if journal_path.exists() or wal_path.exists() or shm_path.exists():
-            raise EvidenceSchemaError("SQLite filesystem sidecar state is not verifiable")
+        _validate_allowed_reserved_sidecars(sidecars, allowed_reserved_sidecars)
         persistent_state = {
             "user_version": con.execute("PRAGMA user_version").fetchone()[0],
             "application_id": con.execute("PRAGMA application_id").fetchone()[0],
@@ -803,8 +820,7 @@ def capture_sqlite_logical_state(
                 "columns": columns,
                 "rows": [[_sqlite_value(value) for value in row] for row in rows],
             }
-        if wal_path.exists() or shm_path.exists():
-            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        _validate_allowed_reserved_sidecars(sidecars, allowed_reserved_sidecars)
         return {"persistent_state": persistent_state, "schema": schema, "tables": tables}
     except sqlite3.Error as exc:
         raise EvidenceSchemaError(f"target SQLite DB cannot be read logically: {exc}") from exc
@@ -815,8 +831,7 @@ def capture_sqlite_logical_state(
             except sqlite3.Error:
                 pass
             con.close()
-        if wal_path.exists() or shm_path.exists():
-            raise EvidenceSchemaError("SQLite WAL/SHM sidecar state is not verifiable")
+        _validate_allowed_reserved_sidecars(sidecars, allowed_reserved_sidecars)
 
 
 def build_promotion_logical_delta(
@@ -984,11 +999,14 @@ def verify_promotion_result_v2(
     result_path: Path | str, *, repo_root: Path | str,
     target_connection: sqlite3.Connection | None = None,
     locked_post_state: Mapping[str, Any] | None = None,
+    allowed_reserved_sidecars: tuple[Path, Path, Path] | None = None,
 ) -> tuple[PromotionResultV2, PromotionManifestV2, str]:
     """Verify the canonical POST, its exact PRE anchor, and live byte authorities."""
     if (target_connection is None) != (locked_post_state is None):
         raise EvidenceSchemaError(
             "retained target connection and locked POST state must be supplied together")
+    if target_connection is None and allowed_reserved_sidecars is not None:
+        raise EvidenceSchemaError("SQLite reserved sidecars require a retained target connection")
     root = Path(repo_root).resolve()
     source = Path(result_path).resolve()
     try:
@@ -1113,7 +1131,10 @@ def verify_promotion_result_v2(
         )
         if main_path != target.resolve():
             raise EvidenceSchemaError("retained target connection does not address the sealed target DB")
-        observed_post_state = capture_sqlite_logical_state(target, connection=target_connection)
+        observed_post_state = capture_sqlite_logical_state(
+            target, connection=target_connection,
+            allowed_reserved_sidecars=allowed_reserved_sidecars,
+        )
         if observed_post_state != locked_post_state:
             raise EvidenceSchemaError("retained target connection does not match locked POST state")
         post_state = observed_post_state
