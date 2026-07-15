@@ -29,6 +29,10 @@ from alpha_lab.runlab import contract
 # 기동 실패(대상 자체를 못 띄움) 시 관례적 종료코드.
 _SPAWN_FAIL_EXIT_CODE = 127
 
+def _repo_root() -> Path:
+    """워크트리 루트(ROOT) — 이 파일 기준 2단계 상위."""
+    return Path(__file__).resolve().parents[2]
+
 
 def _parse_args(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     """인자 파싱 — run_dir·target 뒤 전부를 대상 인자로 넘긴다(REMAINDER)."""
@@ -62,12 +66,13 @@ def _run(run_dir: Path, target: str, target_args: Sequence[str],
     contract.touch_heartbeat(run_dir)
     started = contract.utc_now_iso()
     cmd = [sys.executable, str(target), *target_args]
+    child_env = contract.sanitize_runtime_env(os.environ, _repo_root())
     base = {"pid": os.getpid(), "target": str(target),
             "target_args": list(target_args), "started_utc": started,
             "interval_sec": interval}
     with open(run_dir / contract.LOG_FILE, "ab") as log:
         try:
-            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
+            proc = subprocess.Popen(cmd, env=child_env, stdin=subprocess.DEVNULL,
                                     stdout=log, stderr=subprocess.STDOUT)
         except OSError as err:
             contract.write_status(run_dir, contract.STATE_EXITED,

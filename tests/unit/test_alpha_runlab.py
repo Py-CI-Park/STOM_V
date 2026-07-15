@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from alpha_lab.runlab import contract, watchdog
+from alpha_lab.runlab import contract, detached_runner, watchdog
 from alpha_lab.runlab.detached_runner import launch_detached
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -44,6 +44,11 @@ _FAIL_CHILD = (
     "time.sleep(0.2)\n"
     "sys.exit(3)\n"
 )
+_PATH_CHILD = (
+    "import json, sys\n"
+    "from pathlib import Path\n"
+    "Path(sys.argv[1]).write_text(json.dumps(sys.path), encoding='utf-8')\n"
+)
 
 
 def _write_child(tmp_path: Path, name: str, body: str) -> Path:
@@ -55,8 +60,7 @@ def _write_child(tmp_path: Path, name: str, body: str) -> Path:
 def _child_env() -> dict:
     """자식 파이썬이 ROOT의 alpha_lab을 임포트할 수 있게 PYTHONPATH 주입."""
     env = dict(os.environ)
-    prev = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = str(_ROOT) + (os.pathsep + prev if prev else "")
+    env["PYTHONPATH"] = str(_ROOT)
     return env
 
 
@@ -121,6 +125,101 @@ def test_child_wrap_preserves_args_and_exit_code(tmp_path):
     assert argv_dump.read_text(encoding="utf-8") == "alpha|--beta=1"
     assert (run_dir / contract.HEARTBEAT_FILE).exists()
     assert contract.read_pid(run_dir) > 0
+
+def test_sanitize_runtime_env_canonicalizes_and_seals_repo_entries(tmp_path):
+    repo_root = tmp_path / "repo"
+    external = tmp_path / "external"
+    nested = repo_root / "extra"
+    env = {
+        "PYTHONPATH": os.pathsep.join(
+            [str(nested), str(repo_root), str(external), str(external)])
+    }
+
+    sanitized = contract.sanitize_runtime_env(env, repo_root)
+
+    assert sanitized["PYTHONPATH"].split(os.pathsep) == [
+        str(repo_root.resolve()), str(external.resolve())]
+
+
+@pytest.mark.parametrize("pythonpath", ["", "relative"])
+def test_sanitize_runtime_env_rejects_empty_and_relative_entries(
+        tmp_path, pythonpath):
+    with pytest.raises(ValueError, match="empty|relative"):
+        contract.sanitize_runtime_env({"PYTHONPATH": pythonpath},
+                                      tmp_path / "repo")
+
+
+def test_detached_runner_passes_sealed_env_to_popen(tmp_path, monkeypatch):
+    captured = {}
+    repo_root = detached_runner._repo_root()
+    external = tmp_path / "external"
+    nested = repo_root / "extra"
+
+    class FakeProc:
+        pid = 4321
+
+    def fake_popen(cmd, log_path, cwd, env):
+        captured["env"] = env
+        return FakeProc(), 0
+
+    monkeypatch.setattr(detached_runner.os, "name", "nt")
+    monkeypatch.setattr(detached_runner, "_popen_detached", fake_popen)
+
+    detached_runner.launch_detached(
+        tmp_path / "run", tmp_path / "target.py",
+        env={"PYTHONPATH": os.pathsep.join(
+            [str(nested), str(repo_root), str(external), str(external)])})
+
+    assert captured["env"]["PYTHONPATH"].split(os.pathsep) == [
+        str(repo_root.resolve()), str(external.resolve())]
+
+
+def test_child_wrap_passes_sealed_env_to_popen(tmp_path, monkeypatch):
+    from alpha_lab.runlab import child_wrap
+
+    captured = {}
+    repo_root = child_wrap._repo_root()
+    external = tmp_path / "external"
+    nested = repo_root / "extra"
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+
+    class FakeProc:
+        pid = 5432
+
+        def poll(self):
+            return 0
+
+    def fake_popen(cmd, **kwargs):
+        captured["env"] = kwargs["env"]
+        return FakeProc()
+
+    monkeypatch.setenv(
+        "PYTHONPATH",
+        os.pathsep.join([str(nested), str(repo_root), str(external)]))
+    monkeypatch.setattr(child_wrap.subprocess, "Popen", fake_popen)
+
+    assert child_wrap._run(run_dir, str(tmp_path / "target.py"), [], 0.1) == 0
+    assert captured["env"]["PYTHONPATH"].split(os.pathsep) == [
+        str(repo_root.resolve()), str(external.resolve())]
+
+def test_direct_child_wrap_removes_nested_repo_shadow_path(tmp_path):
+    child = _write_child(tmp_path, "path_child.py", _PATH_CHILD)
+    output = tmp_path / "sys_path.json"
+    run_dir = tmp_path / "run_path"
+    nested = _ROOT / "extra"
+    env = _child_env()
+    env["PYTHONPATH"] = os.pathsep.join([str(nested), str(_ROOT)])
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "alpha_lab.runlab.child_wrap",
+         "--interval", "0.1", str(run_dir), str(child), str(output)],
+        cwd=str(tmp_path), env=env, capture_output=True, timeout=60)
+
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    child_path = json.loads(output.read_text(encoding="utf-8"))
+    assert str(nested.resolve()) not in child_path
+    assert child_path.count(str(_ROOT.resolve())) == 1
 
 
 # ── watchdog: pid 생존 확인(ctypes) ─────────────────────────────────────────

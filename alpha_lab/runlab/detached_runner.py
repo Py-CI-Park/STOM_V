@@ -54,13 +54,9 @@ def _repo_root() -> Path:
 
 
 def _prepare_env(env: Optional[Dict[str, str]]) -> Dict[str, str]:
-    """자식 환경 구성 — ROOT를 PYTHONPATH 선두에 넣어 -m 임포트를 보장한다."""
-    merged = dict(os.environ if env is None else env)
-    root = str(_repo_root())
-    prev = merged.get("PYTHONPATH", "")
-    if root not in prev.split(os.pathsep):
-        merged["PYTHONPATH"] = root + (os.pathsep + prev if prev else "")
-    return merged
+    """Seal the wrapper's import path before it is spawned."""
+    return contract.sanitize_runtime_env(env, _repo_root())
+
 
 
 def _wrapper_cmd(run_dir: Path, target: Path, target_args: Sequence[str],
@@ -121,13 +117,20 @@ def launch_detached(run_dir, target, target_args: Sequence[str] = (), *,
                           target=str(target_path), cwd=str(work_dir),
                           cmd=list(cmd))
     try:
-        proc, flags = _popen_detached(cmd, log_path, work_dir,
-                                      _prepare_env(env))
+        child_env = _prepare_env(env)
+    except ValueError as err:
+        contract.write_status(run_path, contract.STATE_LAUNCHED,
+                              target=str(target_path), cwd=str(work_dir),
+                              cmd=list(cmd), error=f"환경 검증 실패: {err}")
+        raise
+    try:
+        proc, flags = _popen_detached(cmd, log_path, work_dir, child_env)
     except OSError as err:
         contract.write_status(run_path, contract.STATE_LAUNCHED,
                               target=str(target_path), cwd=str(work_dir),
                               cmd=list(cmd), error=f"기동 실패: {err}")
         raise
+
     contract.write_pid(run_path, proc.pid)
     return LaunchResult(
         pid=proc.pid, run_dir=run_path, log_path=log_path,

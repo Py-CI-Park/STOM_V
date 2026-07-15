@@ -38,6 +38,46 @@ _IO_RETRY = 5
 _IO_RETRY_SLEEP_SEC = 0.05
 
 
+def sanitize_runtime_env(env: Optional[Dict[str, str]],
+                         repo_root: Path) -> Dict[str, str]:
+    """Return a child environment with a sealed, deterministic ``PYTHONPATH``.
+
+    ``repo_root`` is the sole repository search root. Nested repository paths
+    are removed so they cannot shadow package imports; absolute external paths
+    retain their order after the canonical repository root. Empty and relative
+    entries are rejected rather than inheriting Python's current-directory
+    semantics.
+    """
+    merged = dict(os.environ if env is None else env)
+    root = Path(repo_root).resolve()
+    raw = merged.get("PYTHONPATH")
+    external_entries = []
+    seen = set()
+
+    if raw is not None:
+        for entry in raw.split(os.pathsep):
+            if not entry:
+                raise ValueError("PYTHONPATH contains an empty entry")
+            path = Path(entry)
+            if not path.is_absolute():
+                raise ValueError(f"PYTHONPATH contains a relative entry: {entry!r}")
+            canonical = path.resolve()
+            if canonical == root:
+                continue
+            try:
+                canonical.relative_to(root)
+            except ValueError:
+                key = os.path.normcase(str(canonical))
+                if key not in seen:
+                    seen.add(key)
+                    external_entries.append(str(canonical))
+            # A nested repository path is deliberately removed.
+
+    merged["PYTHONPATH"] = os.pathsep.join([str(root), *external_entries])
+    return merged
+
+
+
 def utc_now_iso() -> str:
     """UTC 현재 시각 ISO 문자열(초 단위)."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
