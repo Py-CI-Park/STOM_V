@@ -37,7 +37,7 @@ from alpha_lab.catalog.loaders import (
 from alpha_lab.catalog.schema import create_schema, reset_tables, table_counts
 from alpha_lab.catalog.sources import (
     RetainedSourceSnapshots, add_note, new_receipt, read_json, record_inventory,
-    retain_snapshot_sources, sha256_file, snapshot_sources,
+    record_source, retain_snapshot_sources, sha256_file, snapshot_sources,
     validate_retained_snapshot_sources,
 )
 
@@ -752,6 +752,31 @@ def _read_retained_file_bytes(path: Path, descriptor: int, label: str) -> bytes:
     return bytes(payload)
 
 
+def _validated_outer_catalog_receipt(
+    value: object, expected: dict[str, Any],
+) -> dict[str, Any]:
+    """Accept a crashed outer receipt only when all non-time fields rebuild exactly."""
+    if not isinstance(value, dict) or set(value) != set(expected):
+        raise EvidenceSchemaError("published catalog outer receipt schema is not exact")
+    generated_at = value.get("generated_at")
+    if not isinstance(generated_at, str):
+        raise EvidenceSchemaError("published catalog outer receipt generated_at is invalid")
+    try:
+        parsed = datetime.fromisoformat(generated_at)
+    except ValueError as exc:
+        raise EvidenceSchemaError(
+            "published catalog outer receipt generated_at is invalid") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise EvidenceSchemaError("published catalog outer receipt generated_at is not timezone-aware")
+    deterministic = dict(value)
+    deterministic.pop("generated_at")
+    rebuilt = dict(expected)
+    rebuilt.pop("generated_at", None)
+    if deterministic != rebuilt:
+        raise EvidenceSchemaError(
+            "published catalog outer receipt does not match rebuilt deterministic fields")
+    return value
+
 def _validate_published_catalog_pair(
     db_path: Path, db_descriptor: int, receipt_path: Path, receipt_descriptor: int,
     root: Path,
@@ -777,7 +802,7 @@ def _validate_published_catalog_pair(
 def _reconcile_published_catalog_pair(
     db_path: Path, db_descriptor: int, receipt_path: Path, receipt_descriptor: int,
     working_db_sha256: str, authority_records: list[dict[str, str]],
-    expected_promotion_receipt: dict[str, Any], root: Path,
+    expected_receipt: dict[str, Any], root: Path,
 ) -> dict[str, Any]:
     """Seal an interrupted publication only when both retained files still match."""
     try:
@@ -794,11 +819,11 @@ def _reconcile_published_catalog_pair(
             con.close()
         _validate_published_catalog_pair(
             db_path, db_descriptor, receipt_path, receipt_descriptor, root)
-        published = json.loads(_read_retained_file_bytes(
-            receipt_path, receipt_descriptor, "published catalog authority receipt"))
-        if published.get("promotion_receipt") != expected_promotion_receipt:
-            raise EvidenceSchemaError(
-                "published catalog receipt does not match the rebuilt authority receipt")
+        published = _validated_outer_catalog_receipt(
+            json.loads(_read_retained_file_bytes(
+                receipt_path, receipt_descriptor, "published catalog authority receipt")),
+            expected_receipt,
+        )
     except (OSError, sqlite3.Error, UnicodeDecodeError, json.JSONDecodeError,
             EvidenceSchemaError) as exc:
         raise EvidenceSchemaError(
@@ -1012,6 +1037,33 @@ def _manifest_snapshot_expectations(
             raise EvidenceSchemaError("catalog manifest sources must be unique and hashed")
         expected[rel] = artifact["sha256"]
     return expected
+_CATALOG_SOURCE_PACKAGE_RELS = frozenset((*_SHARED_RELS, "n_trials_ledger.jsonl"))
+
+
+def _has_complete_catalog_source_package(
+    run_dir: Path, root: Path, artifacts: list[dict[str, str]],
+) -> bool:
+    """Legacy corpus parsing is authorized only by a complete sealed package."""
+    try:
+        paths = {
+            (root / Path(*PurePosixPath(item["path"]).parts)).resolve()
+            .relative_to(run_dir.resolve()).as_posix()
+            for item in artifacts
+        }
+    except ValueError:
+        return False
+    return _CATALOG_SOURCE_PACKAGE_RELS <= paths
+
+
+def _record_manifest_sources(
+    receipt: dict[str, Any], snapshot_dir: Path, artifacts: list[dict[str, str]],
+    root: Path, run_dir: Path,
+) -> None:
+    """Record every sealed artifact without interpreting ordinary evidence as corpus."""
+    for artifact in artifacts:
+        source = root / Path(*PurePosixPath(artifact["path"]).parts)
+        rel = source.resolve().relative_to(run_dir.resolve()).as_posix()
+        record_source(receipt, snapshot_dir, snapshot_dir / rel)
 
 
 def build_all(
@@ -1095,16 +1147,34 @@ def build_all(
         try:
             create_schema(con)
             reset_tables(con)
-            docs = {rel: read_json(receipt, content_run_dir, rel) for rel in _SHARED_RELS}
             load_assets(con, run_dir, receipt, retained_snapshots, db_path)
-            ledger_rows = load_ledger_mirror(
-                con, content_run_dir, receipt, strict=promotion_status is not None)
-            validate_retained_snapshot_sources()
-            load_clauses(con, docs[_REL_D1], receipt)
-            load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
-            load_cells(con, content_run_dir, docs[_REL_O1G], receipt)
-            load_judgments(con, docs, ledger_rows, receipt)
-            validate_retained_snapshot_sources()
+            if promotion_status is not None:
+                _record_manifest_sources(
+                    receipt, content_run_dir, promotion_status["source_artifacts"], root, run_dir)
+            complete_package = (
+                promotion_status is None
+                or _has_complete_catalog_source_package(
+                    run_dir, root, promotion_status["source_artifacts"]))
+            if complete_package:
+                docs = {
+                    rel: read_json(receipt, content_run_dir, rel)
+                    for rel in _SHARED_RELS
+                }
+                ledger_rows = load_ledger_mirror(
+                    con, content_run_dir, receipt, strict=promotion_status is not None)
+                validate_retained_snapshot_sources()
+                load_clauses(con, docs[_REL_D1], receipt)
+                load_strategies(
+                    con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
+                load_cells(con, content_run_dir, docs[_REL_O1G], receipt)
+                load_judgments(con, docs, ledger_rows, receipt)
+                validate_retained_snapshot_sources()
+            elif promotion_status is not None:
+                add_note(
+                    receipt,
+                    "promotion catalog used manifest artifacts only; complete sealed "
+                    "catalog-source package was not supplied",
+                )
             if promotion_status is not None:
                 _validate_catalog_candidate_identity(promotion_status)
                 authority_records = _write_authority_records(con, promotion_status)
@@ -1190,7 +1260,7 @@ def build_all(
                     return _reconcile_published_catalog_pair(
                         db_path, published_db_descriptor, receipt_path,
                         published_receipt_descriptor, canonical_db_sha256,
-                        authority_records, receipt["promotion_receipt"], root)
+                        authority_records, receipt, root)
                 receipt_temp = _write_temp_bytes(
                     receipt_path.parent, f".{receipt_path.name}.", receipt_bytes, mutation_guard)
                 mutation_guard.validate_file(receipt_temp)

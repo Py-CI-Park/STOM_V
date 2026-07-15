@@ -5,10 +5,13 @@
 """
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import json
-import sqlite3
 import os
+import shutil
+import sqlite3
+import subprocess
 import threading
 from pathlib import Path
 
@@ -16,6 +19,11 @@ import pytest
 
 from alpha_lab.catalog import builder, schema, sources
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
+from alpha_lab.bridge.registrar import register_conditions_v2
+from alpha_lab.discipline.evidence import issue_promotion_manifest_v2
+from alpha_lab.discipline.ledger import append_trial_v2
+from alpha_lab.discipline.measure_gate import claim_gate_receipt_v2, issue_gate_receipt_v2
+from alpha_lab.discipline.prereg import finalize_prereg
 
 # ---------------------------------------------------------------------------
 # 픽스처 데이터 — 원천 실측 스키마의 최소 축소판.
@@ -180,6 +188,93 @@ def run_dir(tmp_path: Path) -> Path:
         encoding="utf-8")
     _write_stats_dbs(run)
     return run
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_minimal_authority_catalog_builds_real_pre_and_post(tmp_path: Path):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for authoritative v2 receipt fixtures")
+    prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
+    source, result = tmp_path / "source.json", tmp_path / "result.json"
+    code.write_text("MEASURE = 1\n", encoding="utf-8")
+    prereg.write_text(
+        "> 지위: **SEALED**\n```json prereg-contract-v2\n" + json.dumps({
+            "schema_version": 2, "hypothesis_id": "H-minimal-catalog",
+            "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+            "primary_estimand": "mean spread", "sample_floors": {"qualified": 2},
+            "multiplicity_family": "catalog fixture", "kill_rule": "non-positive effect",
+            "ledger_path": "n_trials_ledger.jsonl",
+            "authority_paths": {
+                "seal_dir": "seals", "promotions_dir": "promotions",
+                "catalog_dir": "promotion_catalogs", "target_db": "strategy.db",
+                "journal_dir": "promotion_journal", "backup_dir": "backups",
+            },
+            "dependency_roots": ["measure.py"], "dynamic_python_dependencies": [],
+            "non_python_dependencies": [],
+        }, sort_keys=True) + "\n```\n", encoding="utf-8")
+    source.write_text('{"source":"fixture"}\n', encoding="utf-8")
+    result.write_text('{"result":"pass"}\n', encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "prereg.md", "measure.py"], check=True)
+    subprocess.run([
+        "git", "-C", str(tmp_path), "-c", "user.name=tester",
+        "-c", "user.email=t@example.com", "commit", "-q", "-m", "fixture",
+    ], check=True)
+
+    def ref(path: Path) -> dict[str, str]:
+        return {"path": path.relative_to(tmp_path).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+    con = sqlite3.connect(tmp_path / "strategy.db")
+    try:
+        for table in ("stockbuy", "stocksell"):
+            con.execute(f'CREATE TABLE "{table}" ( "index" TEXT, "전략코드" TEXT )')
+            con.execute(f'CREATE INDEX "ix_{table}_index" ON "{table}" ("index")')
+        con.commit()
+    finally:
+        con.close()
+    seal = tmp_path / "seals" / f"{hashlib.sha256(prereg.read_bytes()).hexdigest()}.seal.json"
+    finalize_prereg(prereg, repo_root=tmp_path, code_files=(code,), manifest_path=seal,
+                    sealed_at="2026-07-14T00:00:00+00:00")
+    gate = issue_gate_receipt_v2(
+        tmp_path, seal, issued_at="2026-07-14T00:01:00+00:00", nonce="catalog-run")
+    gate_path = tmp_path / "receipts" / f"{gate['receipt_id']}.json"
+    usage = claim_gate_receipt_v2(
+        gate_path, repo_root=tmp_path, consumer="catalog-test",
+        consumed_at="2026-07-14T00:02:00+00:00")
+    buy, sell = "if 등락율 > 2: 매수", "if 수익률 > 3: 매도"
+    candidate = {
+        "name": "ALP_CATALOG_MINIMAL",
+        "buy_sha256": hashlib.sha256(buy.encode()).hexdigest(),
+        "sell_sha256": hashlib.sha256(sell.encode()).hexdigest(),
+    }
+    ledger = append_trial_v2(
+        ts="2026-07-14T00:03:00+00:00", series="B",
+        window="2022-03-23~2023-12-31(발견창)", trial_type="b(test)",
+        target="candidate", result="pass", session="catalog-test", repo_root=tmp_path,
+        gate_receipt_path=gate_path, gate_usage_path=tmp_path / usage["claim"]["path"],
+        input_artifacts=[ref(source)], result_artifacts=[ref(result)],
+        candidate_set=[candidate], path=tmp_path / "n_trials_ledger.jsonl")
+    issue_promotion_manifest_v2(
+        tmp_path, gate_receipt_path=gate_path, gate_claim_path=tmp_path / usage["claim"]["path"],
+        ledger_path=tmp_path / "n_trials_ledger.jsonl", evidence_id=ledger["evidence_id"],
+        created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions")
+    manifest_path = tmp_path / "promotions" / f"{ledger['evidence_id']}.pre.json"
+    pre = builder.build_all(tmp_path, repo_root=tmp_path, promotion_manifest_path=manifest_path)
+    assert pre["missing"] == pre["skipped"] == []
+    assert pre["promotion_receipt"]["source_hashes"] == sorted(
+        [ref(source), ref(result)], key=lambda item: item["path"])
+    assert pre["catalog_authority"]["canonical_record_count"] == 1
+
+    registered = register_conditions_v2(
+        [{"name": candidate["name"], "buy_expr": buy, "sell_expr": sell}],
+        manifest_path=manifest_path, repo_root=tmp_path,
+        now=dt.datetime(2026, 7, 14, 0, 5, tzinfo=dt.timezone.utc))
+    post = builder.build_all(
+        tmp_path, repo_root=tmp_path,
+        promotion_result_path=tmp_path / "promotion_journal" / f"{registered['evidence_id']}.post.json")
+    assert post["missing"] == post["skipped"] == []
+    assert post["promotion_receipt"]["phase"] == "POST"
+    assert post["catalog_authority"]["canonical_record_count"] == 1
+
 def test_json_parse_uses_verified_bytes_when_source_path_is_swapped(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ):
@@ -1065,8 +1160,18 @@ def test_build_all_recovers_receipt_published_crash_by_sealing_pair(
         )
 
     assert db_path.exists() and receipt_path.exists()
+    published_bytes = receipt_path.read_bytes()
+    tampered = json.loads(published_bytes)
+    tampered["inventory"].append({"asset_id": "tampered"})
+    receipt_path.write_text(json.dumps(tampered), encoding="utf-8")
     monkeypatch.setattr(builder, "_seal_published_catalog_pair", original_seal)
     monkeypatch.setattr(builder, "_release_reservation", builder._release_reservation)
+    with pytest.raises(builder.EvidenceSchemaError, match="outer receipt"):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+    receipt_path.write_bytes(published_bytes)
     builder.build_all(
         run_dir, repo_root=run_dir,
         promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
