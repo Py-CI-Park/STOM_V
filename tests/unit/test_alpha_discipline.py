@@ -821,9 +821,13 @@ class TestPrereg:
         "import pydoc\ndef namespace():\n    marker = None\n    return globals()\nnamespace()['str'] = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
         "import pydoc\nsetattr(globals(), 'str', pydoc.importfile)\n",
         "import pydoc\ndelattr(pydoc, 'render_doc')\n",
+        "import builtins\nimport pydoc\ndef namespace():\n    marker = None\n    return builtins.__dict__\ndef mutate(callback):\n    callback().update({'str': pydoc.importfile})\nmutate(namespace)\nlist(map(str, ['plugin.py']))\n",
+        "import runpy\nimport sys\ndef self_module():\n    marker = None\n    return sys.modules[__name__]\ndef mutate(callback):\n    callback().__dict__.__setitem__('run_path', runpy.run_path)\nmutate(self_module)\nrun_path('plugin.py')\n",
     ], ids=(
         "global_str_callback", "builtins_str", "alias_return_helper",
         "multi_statement_helper", "setattr", "delattr",
+        "multi_statement_builtins_dict_helper_update_callback",
+        "self_module_helper_setitem_mutator",
     ))
     @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
     def test_finalize_prereg_rejects_sealed_global_export_mutation(
@@ -840,6 +844,7 @@ class TestPrereg:
 
         with pytest.raises(evidence.EvidenceSchemaError, match=(
             "global or nonlocal|builtins namespace|module-level object|dynamic attribute"
+            "|function-body object mutation|function-body mutating method"
         )):
             prereg.finalize_prereg(
                 document,
@@ -849,19 +854,20 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
-    def test_dynamic_dependency_allows_function_local_object_mutation(self, tmp_path):
-        source = (
-            "def update(state):\n"
-            "    state.value = 1\n"
-            "    state['value'] = 2\n"
-            "    local_state = {}\n"
-            "    local_state['value'] = 3\n"
-            "    return local_state\n"
-            "result = update({})\n"
-        )
-        assert prereg._dynamic_local_dependencies(
-            ast.parse(source), tmp_path / "measure.py", tmp_path
-        ) == set()
+    @pytest.mark.parametrize("source", [
+        "def update(state):\n    state.value = 1\n",
+        "def update(state):\n    state['value'] = 2\n",
+        "def update(state):\n    state.update({'value': 3})\n",
+        "def update(state):\n    state.__setitem__('value', 4)\n",
+    ], ids=("attribute_store", "subscript_store", "update", "setitem"))
+    def test_dynamic_dependency_rejects_function_body_object_mutation(self, tmp_path, source):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="function-body object mutation|function-body mutating method|unresolved executable receiver parameter",
+        ):
+            prereg._dynamic_local_dependencies(
+                ast.parse(source), tmp_path / "measure.py", tmp_path
+            )
     @pytest.mark.parametrize("source", [
         "import importlib\ndef carrier():\n    pass\ncarrier.loader = importlib\ncarrier.loader.import_module('plugin')\n",
         "import importlib\nclass Carrier:\n    pass\nCarrier.loader = importlib\nCarrier.loader.import_module('plugin')\n",
@@ -1133,7 +1139,10 @@ class TestPrereg:
 
         if relative:
             (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
-        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="unresolved callable alias|function-body object mutation",
+        ):
             prereg.finalize_prereg(
                 document,
                 repo_root=tmp_path,

@@ -1112,7 +1112,20 @@ def _reject_namespace_export_mutation(
 def _reject_sealed_global_mutation(
     tree: ast.AST, aliases: dict[str, str], path: Path
 ) -> None:
-    """Keep sealed modules from changing exports or the shared builtins namespace."""
+    """Keep SEALED code pure: no export, namespace, or object/container mutation.
+
+    Function bodies are fail-closed. Attribute/subscript writes and known mutating
+    method sinks are rejected unless a future reviewed effect system proves a
+    fresh function-local literal receiver.
+    """
+
+    mutating_method_names = frozenset({
+        "__delattr__", "__delitem__", "__iadd__", "__ior__", "__isub__",
+        "__setattr__", "__setitem__", "add", "append", "clear",
+        "difference_update", "discard", "extend", "insert",
+        "intersection_update", "pop", "popitem", "remove", "reverse",
+        "setdefault", "sort", "symmetric_difference_update", "update",
+    })
 
     for node in ast.walk(tree):
         if isinstance(node, (ast.Global, ast.Nonlocal)):
@@ -1130,21 +1143,25 @@ def _reject_sealed_global_mutation(
     def _is_store(target: ast.AST) -> bool:
         return isinstance(target, (ast.Attribute, ast.Subscript))
 
-    class _ModuleScopeStores(ast.NodeVisitor):
-        """Reject import-time object writes without receiver provenance inference."""
+    class _FunctionBodyMutation(ast.NodeVisitor):
+        """Reject every unproven object or container mutation in a function."""
 
         def _reject_targets(self, targets: tuple[ast.AST, ...]) -> None:
             if any(_is_store(target) for target in targets):
                 raise EvidenceSchemaError(
-                    f"module-level object mutation is unsupported: {path}"
+                    f"function-body object mutation is unsupported in sealed code: {path}"
                 )
 
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-            return
+            self.generic_visit(node)
 
         visit_AsyncFunctionDef = visit_FunctionDef
-        visit_Lambda = visit_FunctionDef
-        visit_ClassDef = visit_FunctionDef
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            self.generic_visit(node)
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            self.generic_visit(node)
 
         def visit_Assign(self, node: ast.Assign) -> None:
             self._reject_targets(tuple(node.targets))
@@ -1162,6 +1179,51 @@ def _reject_sealed_global_mutation(
             self._reject_targets(tuple(node.targets))
             self.generic_visit(node)
 
+        def visit_Call(self, node: ast.Call) -> None:
+            if (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr in mutating_method_names
+            ):
+                raise EvidenceSchemaError(
+                    f"function-body mutating method is unsupported in sealed code: {path}"
+                )
+            self.generic_visit(node)
+
+    class _ModuleScopeStores(ast.NodeVisitor):
+        """Reject import-time object writes without receiver provenance inference."""
+
+        def _reject_targets(self, targets: tuple[ast.AST, ...]) -> None:
+            if any(_is_store(target) for target in targets):
+                raise EvidenceSchemaError(
+                    f"module-level object mutation is unsupported: {path}"
+                )
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            _FunctionBodyMutation().visit(node)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            self.generic_visit(node)
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            self.generic_visit(node)
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._reject_targets(tuple(node.targets))
+            self.generic_visit(node)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._reject_targets((node.target,))
+            self.generic_visit(node)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._reject_targets((node.target,))
+            self.generic_visit(node)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            self._reject_targets(tuple(node.targets))
+            self.generic_visit(node)
 
     for node in ast.walk(tree):
         if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete)):
