@@ -875,6 +875,15 @@ def _bound_names(target: ast.AST) -> set[str]:
     return set()
 
 
+def _assignment_receiver(node: ast.AST, aliases: dict[str, str]) -> str | None:
+    """Return the affected receiver path for an attribute or container mutation."""
+    if isinstance(node, ast.Attribute):
+        return _dotted_name(node, aliases)
+    if isinstance(node, ast.Subscript):
+        return _assignment_receiver(node.value, aliases)
+    return None
+
+
 def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], path: Path) -> None:
     """Reject receiver calls whose root is not a sealed local or static import."""
 
@@ -956,10 +965,76 @@ def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], 
         visit_DictComp = visit_ListComp
         visit_GeneratorExp = visit_ListComp
 
+
     def _receiver_root(node: ast.AST) -> str | None:
         while isinstance(node, ast.Attribute):
             node = node.value
         return node.id if isinstance(node, ast.Name) else None
+
+
+    class _SealedLocalApis(ast.NodeVisitor):
+        """Collect explicitly declared class-level callable APIs by dotted name."""
+
+        def __init__(self) -> None:
+            self.class_stack: list[str] = []
+            self.apis: set[str] = set()
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            self.class_stack.append(node.name)
+            for statement in node.body:
+                if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    self.apis.add(".".join((*self.class_stack, statement.name)))
+            self.generic_visit(node)
+            self.class_stack.pop()
+
+    sealed_apis = _SealedLocalApis()
+    sealed_apis.visit(tree)
+
+    static_imports: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            static_imports.update(alias.asname or alias.name.split(".", 1)[0] for alias in node.names)
+    changed = True
+    while changed:
+        changed = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign) or _receiver_root(node.value) not in static_imports:
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id not in static_imports:
+                    static_imports.add(target.id)
+                    changed = True
+
+    invalidated_receivers: set[str] = set()
+    for node in ast.walk(tree):
+        targets: tuple[ast.AST, ...]
+        if isinstance(node, ast.Assign):
+            targets = tuple(node.targets)
+        elif isinstance(node, ast.AnnAssign):
+            targets = (node.target,)
+        elif isinstance(node, ast.AugAssign):
+            targets = (node.target,)
+        elif isinstance(node, ast.Delete):
+            targets = tuple(node.targets)
+        else:
+            continue
+        for target in targets:
+            receiver = _assignment_receiver(target, aliases)
+            if receiver:
+                invalidated_receivers.add(receiver)
+
+    def _is_invalidated(receiver: str) -> bool:
+        return any(
+            receiver == invalidated
+            or receiver.startswith(f"{invalidated}.")
+            or invalidated.startswith(f"{receiver}.")
+            for invalidated in invalidated_receivers
+        )
+
+    def _static_import_receiver(node: ast.Attribute) -> bool:
+        root = _receiver_root(node)
+        return root in static_imports if root is not None else False
+
 
     def _scope_bindings(
         statements: list[ast.stmt], parameters: set[str], inherited: set[str]
@@ -1056,8 +1131,18 @@ def _reject_unresolved_module_receivers(tree: ast.AST, aliases: dict[str, str], 
 
         def visit_Call(self, node: ast.Call) -> None:
             if isinstance(node.func, ast.Attribute):
-                root = _receiver_root(node.func.value)
-                if root is None or root not in self.safe:
+                receiver = _dotted_name(node.func, aliases)
+                root = _receiver_root(node.func)
+                if (
+                    receiver is None
+                    or root is None
+                    or root not in self.safe
+                    or _is_invalidated(receiver)
+                    or (
+                        receiver not in sealed_apis.apis
+                        and not _static_import_receiver(node.func)
+                    )
+                ):
                     raise EvidenceSchemaError(
                         f"unresolved executable receiver is unsupported: {path}"
                     )

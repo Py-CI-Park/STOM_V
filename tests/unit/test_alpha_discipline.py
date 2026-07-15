@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import ast
 import datetime as dt
 import contextlib
 import hashlib
@@ -732,6 +733,21 @@ class TestPrereg:
                 sealed_at="2026-07-14T00:00:00+00:00",
             )
 
+    @pytest.mark.parametrize("source", [
+        "import importlib\ndef carrier():\n    pass\ncarrier.loader = importlib\ncarrier.loader.import_module('plugin')\n",
+        "import importlib\nclass Carrier:\n    pass\nCarrier.loader = importlib\nCarrier.loader.import_module('plugin')\n",
+        "import importlib\ndef carrier():\n    pass\ncarrier.loader = {}\ncarrier.loader['module'] = importlib\ncarrier.loader['module'].import_module('plugin')\n",
+        "import importlib\ndef carrier():\n    pass\ncarrier.holder = carrier\ncarrier.holder.loader = importlib\ncarrier.holder.loader.import_module('plugin')\n",
+    ])
+    def test_dynamic_dependency_rejects_attribute_capability_carriers(self, tmp_path, source):
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg._dynamic_local_dependencies(ast.parse(source), tmp_path / "measure.py", tmp_path)
+
+    def test_dynamic_dependency_allows_static_module_and_sealed_local_calls(self, tmp_path):
+        source = "import numpy as np\ndef sealed_local():\n    return np.mean([1, 2])\nsealed_local()\n"
+        assert prereg._dynamic_local_dependencies(
+            ast.parse(source), tmp_path / "measure.py", tmp_path
+        ) == set()
     def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
         measure.write_text("from importlib import import_module\ndef sealed_local():\n    return 'ok'\nsealed_local()\nplugin = import_module('plugin')\n", encoding="utf-8")
