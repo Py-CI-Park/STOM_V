@@ -23,6 +23,7 @@ import json
 import re
 import os
 import stat
+import sysconfig
 from pathlib import Path, PurePosixPath
 from typing import Iterator
 
@@ -2144,6 +2145,52 @@ def _absolute_import_modules(tree: ast.AST) -> set[str]:
             if not node.args[0].value.startswith("."):
                 modules.add(node.args[0].value)
     return modules
+def _trusted_interpreter_roots() -> tuple[Path, ...]:
+    """Return interpreter import roots from the active interpreter configuration only."""
+    paths = sysconfig.get_paths()
+    roots: list[Path] = []
+    for key in ("stdlib", "purelib", "platlib"):
+        value = paths.get(key)
+        if not isinstance(value, str) or not value:
+            continue
+        root = Path(value).resolve()
+        if root not in roots:
+            roots.append(root)
+    return tuple(roots)
+
+
+def _trusted_top_level_spec(name: str) -> bool:
+    """Resolve *name* without consulting caller-controlled import search paths."""
+    if importlib.machinery.BuiltinImporter.find_spec(name) is not None:
+        return True
+    if importlib.machinery.FrozenImporter.find_spec(name) is not None:
+        return True
+    return importlib.machinery.PathFinder.find_spec(
+        name, [str(root) for root in _trusted_interpreter_roots()]
+    ) is not None
+
+
+def _repo_top_level_candidate(root: Path, name: str) -> bool:
+    """Return whether the repository root can provide an importable top-level name."""
+    base = root / name
+    return (
+        base.with_suffix(".py").is_file()
+        or base.is_dir()
+        or any(base.with_suffix(suffix).is_file() for suffix in _IMPORTABLE_ARTIFACT_SUFFIXES)
+    )
+
+
+def _reject_untrusted_absolute_imports(root: Path, modules: set[str]) -> None:
+    """Require deterministic trusted-external or sealed-local top-level imports."""
+    for name in sorted({module.split(".", 1)[0] for module in modules if module}):
+        local = _repo_top_level_candidate(root, name)
+        trusted = _trusted_top_level_spec(name)
+        if local and trusted:
+            raise EvidenceSchemaError(
+                f"ambiguous local/external import: {name}; runtime resolves trusted external first"
+            )
+        if not local and not trusted:
+            raise EvidenceSchemaError(f"unresolved external import: {name}")
 
 
 def _script_parent_candidates(parent: Path, module: str) -> set[Path]:
@@ -2236,6 +2283,9 @@ def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[se
         )
         pending.extend((item, script_parent) for item in dependencies)
     _reject_direct_script_shadowing(root, imports_by_parent)
+    _reject_untrusted_absolute_imports(
+        root, set().union(*imports_by_parent.values()) if imports_by_parent else set()
+    )
     return (
         {path.relative_to(root).as_posix() for path in closure},
         {path.relative_to(root).as_posix() for path in dynamic},

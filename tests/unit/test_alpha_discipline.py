@@ -178,6 +178,21 @@ def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths
     return "> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract, sort_keys=True) + "\n```\n"
 def _canonical_seal_path(root, document):
     return root / "seals" / f"{hashlib.sha256(document.read_bytes()).hexdigest()}.seal.json"
+@contextlib.contextmanager
+def _temporary_trusted_external_root(root):
+    """Expose a synthetic external package through sysconfig, never sys.path."""
+    original_get_paths = prereg.sysconfig.get_paths
+
+    def get_paths(*args, **kwargs):
+        paths = original_get_paths(*args, **kwargs)
+        paths["purelib"] = str(root)
+        return paths
+
+    prereg.sysconfig.get_paths = get_paths
+    try:
+        yield
+    finally:
+        prereg.sysconfig.get_paths = original_get_paths
 
 
 
@@ -2021,6 +2036,69 @@ class TestPrereg:
         assert prereg._dynamic_local_dependencies(
             ast.parse(source), tmp_path / "measure.py", tmp_path
         ) == set()
+    def test_code_manifest_allows_trusted_external_from_sysconfig_root(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "numpy.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import numpy\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"measure.py"}
+
+    def test_code_manifest_rejects_unresolved_external_import_before_seal(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("import sealed_unknown_plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match=r"unresolved external import: sealed_unknown_plugin"
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+        (tmp_path / "sealed_unknown_plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="code_files must equal derived Python dependency closure",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+        assert not _canonical_seal_path(tmp_path, document).exists()
+
+    def test_code_manifest_rejects_post_added_local_shadow_of_trusted_external(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "numpy.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import numpy\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"measure.py"}
+            (tmp_path / "numpy.py").write_text("VALUE = 2\n", encoding="utf-8")
+            with pytest.raises(
+                evidence.EvidenceSchemaError, match=r"ambiguous local/external import: numpy"
+            ):
+                prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
     def test_dynamic_dependency_allows_direct_static_module_alias(self, tmp_path):
         plugin = tmp_path / "plugin.py"
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
