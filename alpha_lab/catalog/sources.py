@@ -14,6 +14,8 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+from contextlib import contextmanager
+from typing import Iterator
 
 
 def new_receipt(run_dir: Path, db_path: Path) -> Dict[str, Any]:
@@ -33,9 +35,9 @@ def new_receipt(run_dir: Path, db_path: Path) -> Dict[str, Any]:
 
 
 def sha256_file(path: Path) -> str:
-    """파일 sha256 — 대용량(parquet 수 MB)도 청크 단위로 안전하게."""
-    with open(path, "rb") as handle:
-        return _sha256_handle(handle.fileno())
+    """Hash through an active retained descriptor when this is a snapshot source."""
+    _, digest = _read_verified_bytes(path, f"catalog source '{path}'")
+    return digest
 
 
 def _sha256_handle(descriptor: int) -> str:
@@ -58,12 +60,82 @@ def _retained_regular_file(path: Path, descriptor: int, label: str) -> os.stat_r
     ):
         raise OSError(f"{label} identity changed or is not a single-link regular file")
     return opened
+class RetainedSourceSnapshots:
+    """Keep every snapshot source bound to its opened single-link file identity."""
+
+    def __init__(self, snapshot_dir: Path):
+        self.snapshot_dir = Path(snapshot_dir)
+        self.descriptors: dict[Path, int] = {}
+
+    def __enter__(self) -> "RetainedSourceSnapshots":
+        for path in sorted(self.snapshot_dir.rglob("*")):
+            if not path.is_file():
+                continue
+            descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+            try:
+                _retained_regular_file(path, descriptor, f"catalog snapshot '{path}'")
+            except BaseException:
+                os.close(descriptor)
+                self.close()
+                raise
+            self.descriptors[path.resolve()] = descriptor
+        return self
+
+    def descriptor_for(self, path: Path) -> int | None:
+        return self.descriptors.get(Path(path).resolve())
+
+    def validate(self) -> None:
+        for path, descriptor in self.descriptors.items():
+            _retained_regular_file(path, descriptor, f"catalog snapshot '{path}'")
+
+    def close(self) -> None:
+        for descriptor in self.descriptors.values():
+            os.close(descriptor)
+        self.descriptors.clear()
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
+
+
+_ACTIVE_RETAINED_SNAPSHOTS: RetainedSourceSnapshots | None = None
+
+
+@contextmanager
+def retain_snapshot_sources(snapshot_dir: Path) -> Iterator[RetainedSourceSnapshots]:
+    """Expose retained snapshot descriptors to all catalog readers for one build."""
+    global _ACTIVE_RETAINED_SNAPSHOTS
+    if _ACTIVE_RETAINED_SNAPSHOTS is not None:
+        raise RuntimeError("catalog source retention is already active")
+    retained = RetainedSourceSnapshots(snapshot_dir)
+    _ACTIVE_RETAINED_SNAPSHOTS = retained.__enter__()
+    try:
+        yield retained
+    finally:
+        _ACTIVE_RETAINED_SNAPSHOTS = None
+        retained.close()
+
+
+def validate_retained_snapshot_sources() -> None:
+    """Fail closed if any source parsed through the active snapshot was replaced."""
+    if _ACTIVE_RETAINED_SNAPSHOTS is not None:
+        _ACTIVE_RETAINED_SNAPSHOTS.validate()
+
+
+def _active_descriptor(path: Path) -> int | None:
+    if _ACTIVE_RETAINED_SNAPSHOTS is None:
+        return None
+    return _ACTIVE_RETAINED_SNAPSHOTS.descriptor_for(path)
+
 
 
 def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
-    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    descriptor = _active_descriptor(path)
+    close_descriptor = descriptor is None
+    if descriptor is None:
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
     try:
         _retained_regular_file(path, descriptor, label)
+        os.lseek(descriptor, 0, os.SEEK_SET)
         chunks: list[bytes] = []
         h = hashlib.sha256()
         while chunk := os.read(descriptor, 1 << 20):
@@ -72,7 +144,8 @@ def _read_verified_bytes(path: Path, label: str) -> tuple[bytes, str]:
         _retained_regular_file(path, descriptor, label)
         return b"".join(chunks), h.hexdigest()
     finally:
-        os.close(descriptor)
+        if close_descriptor:
+            os.close(descriptor)
 
 
 def snapshot_sources(
@@ -124,20 +197,23 @@ def record_source(
     status: str = "loaded", note: str = "", *, sha256: Optional[str] = None,
     size_bytes: Optional[int] = None,
 ) -> None:
-    """원천 파일 1건을 영수증 sources에 기록(동일 경로 중복 기록 방지)."""
+    """Record one source and reject a duplicate path with different verified bytes."""
     rel = rel_to(run_dir, path)
+    if sha256 is None and path.is_file():
+        payload, sha256 = _read_verified_bytes(path, f"catalog source '{rel}'")
+        size_bytes = len(payload)
     for entry in receipt["sources"]:
-        if entry.get("path") == rel:
-            return
+        if entry.get("path") != rel:
+            continue
+        if entry.get("sha256") != sha256 or entry.get("size_bytes") != size_bytes:
+            raise ValueError(f"catalog source '{rel}' was recorded with different bytes")
+        return
     entry: Dict[str, Any] = {"path": rel, "status": status}
     if note:
         entry["note"] = note
     if sha256 is not None:
         entry["sha256"] = sha256
         entry["size_bytes"] = size_bytes
-    elif path.is_file():
-        entry["sha256"] = sha256_file(path)
-        entry["size_bytes"] = path.stat().st_size
     receipt["sources"].append(entry)
 
 

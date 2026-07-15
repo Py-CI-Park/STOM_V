@@ -227,6 +227,83 @@ def test_sqlite_snapshot_remains_the_verified_database_after_source_swap(tmp_pat
         (snapshot / "source.db").unlink()
         snapshot.rmdir()
 
+def test_retained_snapshot_rejects_swap_after_snapshot_creation(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_text('{"value":"A"}', encoding="utf-8")
+    snapshot = sources.snapshot_sources(
+        tmp_path, tmp_path, {"source.json": builder.sha256_file(source)})
+    try:
+        snap_source = snapshot / "source.json"
+        original = snap_source.read_bytes()
+        replacement = snapshot / "replacement.json"
+        replacement.write_text('{"value":"B"}', encoding="utf-8")
+        with sources.retain_snapshot_sources(snapshot):
+            if os.name == "nt":
+                with pytest.raises(PermissionError):
+                    os.replace(replacement, snap_source)
+                assert snap_source.read_bytes() == original
+                sources.validate_retained_snapshot_sources()
+            else:
+                os.replace(replacement, snap_source)
+                assert sources.read_json(
+                    {"sources": [], "missing": [], "skipped": [], "notes": []},
+                    snapshot, "source.json",
+                ) is None
+                with pytest.raises(OSError, match="identity changed"):
+                    sources.validate_retained_snapshot_sources()
+    finally:
+        if snapshot.exists():
+            for path in sorted(snapshot.rglob("*"), reverse=True):
+                if path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    path.rmdir()
+            snapshot.rmdir()
+
+
+def test_duplicate_source_record_rejects_a_hash_for_b_parse(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_bytes(b"A")
+    receipt = {"sources": [], "missing": [], "skipped": [], "notes": []}
+    sources.record_source(receipt, tmp_path, source)
+    source.write_bytes(b"B")
+    with pytest.raises(ValueError, match="different bytes"):
+        sources.record_source(receipt, tmp_path, source)
+
+
+def test_retained_published_pair_rejects_post_validation_db_swap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    db_path = tmp_path / "catalog.db"
+    receipt_path = tmp_path / "catalog.receipt.json"
+    db_path.write_bytes(b"verified DB")
+    db_descriptor = os.open(db_path, os.O_RDONLY)
+    receipt_descriptor: int | None = None
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+    try:
+        receipt_path.write_text(json.dumps({"promotion_receipt": {
+            "catalog_db": {"sha256": builder._sha256_retained_file(
+                db_path, db_descriptor, "published catalog authority DB")},
+        }}), encoding="utf-8")
+        receipt_descriptor = os.open(receipt_path, os.O_RDONLY)
+        original = db_path.read_bytes()
+        replacement = tmp_path / "replacement.db"
+        replacement.write_bytes(b"replacement DB")
+        if os.name == "nt":
+            with pytest.raises(PermissionError):
+                os.replace(replacement, db_path)
+            assert db_path.read_bytes() == original
+            builder._validate_published_catalog_pair(
+                db_path, db_descriptor, receipt_path, receipt_descriptor, tmp_path)
+        else:
+            os.replace(replacement, db_path)
+            with pytest.raises(ValueError, match="identity changed"):
+                builder._validate_published_catalog_pair(
+                    db_path, db_descriptor, receipt_path, receipt_descriptor, tmp_path)
+    finally:
+        if receipt_descriptor is not None:
+            os.close(receipt_descriptor)
+        os.close(db_descriptor)
 
 # ---------------------------------------------------------------------------
 # 스키마.
@@ -729,7 +806,14 @@ def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
     monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
     monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
     monkeypatch.setattr(builder, "_revalidate_authority_paths", lambda *args, **kwargs: None)
-    monkeypatch.setattr(builder, "_promotion_receipt", lambda *args, **kwargs: {"schema_version": 2})
+    monkeypatch.setattr(
+        builder,
+        "_promotion_receipt",
+        lambda *args, **kwargs: {
+            "schema_version": 2,
+            "catalog_db": {"sha256": kwargs["verified_db_sha256"]},
+        },
+    )
     monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
 
     class SimulatedCrash(BaseException):

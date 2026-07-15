@@ -36,7 +36,8 @@ from alpha_lab.catalog.loaders import (
 )
 from alpha_lab.catalog.schema import create_schema, reset_tables, table_counts
 from alpha_lab.catalog.sources import (
-    add_note, new_receipt, read_json, record_source, sha256_file, snapshot_sources,
+    add_note, new_receipt, read_json, record_source, retain_snapshot_sources,
+    sha256_file, snapshot_sources, validate_retained_snapshot_sources,
 )
 
 # 공유 원천(1회만 읽고 여러 테이블이 소비) — rel 경로 키.
@@ -643,6 +644,38 @@ def _sha256_retained_file(path: Path, descriptor: int, label: str) -> str:
         digest.update(chunk)
     _validate_retained_file_identity(path, descriptor, label)
     return digest.hexdigest()
+def _read_retained_file_bytes(path: Path, descriptor: int, label: str) -> bytes:
+    _validate_retained_file_identity(path, descriptor, label)
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    payload = bytearray()
+    while chunk := os.read(descriptor, 1 << 20):
+        payload.extend(chunk)
+    _validate_retained_file_identity(path, descriptor, label)
+    return bytes(payload)
+
+
+def _validate_published_catalog_pair(
+    db_path: Path, db_descriptor: int, receipt_path: Path, receipt_descriptor: int,
+    root: Path,
+) -> None:
+    """Validate the published DB and receipt from their retained destination handles."""
+    db_sha256 = _sha256_retained_file(
+        db_path, db_descriptor, "published catalog authority DB")
+    try:
+        published_receipt = json.loads(_read_retained_file_bytes(
+            receipt_path, receipt_descriptor, "published catalog authority receipt"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise EvidenceSchemaError("published catalog receipt is not valid JSON") from exc
+    promotion_receipt = published_receipt.get("promotion_receipt")
+    if not isinstance(promotion_receipt, dict):
+        raise EvidenceSchemaError("published catalog receipt lacks promotion receipt")
+    catalog_db = promotion_receipt.get("catalog_db")
+    if not isinstance(catalog_db, dict) or catalog_db.get("sha256") != db_sha256:
+        raise EvidenceSchemaError("published catalog receipt does not bind the retained DB")
+    validate_catalog_promotion_receipt_v2(promotion_receipt, repo_root=root)
+    _validate_retained_file_identity(db_path, db_descriptor, "published catalog authority DB")
+    _validate_retained_file_identity(
+        receipt_path, receipt_descriptor, "published catalog authority receipt")
 
 
 
@@ -878,12 +911,16 @@ def build_all(
     receipt_temp: Path | None = None
     authority_guard = None
     working_db_descriptor: int | None = None
+    source_retention = None
+    published_db_descriptor: int | None = None
+    published_receipt_descriptor: int | None = None
     if promotion_status is not None:
-        source_snapshot_dir = snapshot_sources(
-            run_dir, Path(tempfile.gettempdir()),
-            _manifest_snapshot_expectations(
-                run_dir.resolve(), root, promotion_status["source_artifacts"]))
-        content_run_dir = source_snapshot_dir
+        snapshot_expectations = _manifest_snapshot_expectations(
+            run_dir.resolve(), root, promotion_status["source_artifacts"])
+        if snapshot_expectations:
+            source_snapshot_dir = snapshot_sources(
+                run_dir, Path(tempfile.gettempdir()), snapshot_expectations)
+            content_run_dir = source_snapshot_dir
     if promotion_status is None:
         receipt["catalog_authority"] = {
             "authoritative": False,
@@ -916,6 +953,10 @@ def build_all(
                 authority_guard.__exit__(None, None, None)
             raise
     try:
+        if source_snapshot_dir is not None:
+            source_retention = retain_snapshot_sources(source_snapshot_dir)
+            source_retention.__enter__()
+            validate_retained_snapshot_sources()
         if promotion_status is not None:
             _validate_retained_file_identity(
                 working_db_path, working_db_descriptor, "catalog authority temporary file")
@@ -928,10 +969,12 @@ def build_all(
             load_assets(con, run_dir, receipt)
             ledger_rows = load_ledger_mirror(
                 con, content_run_dir, receipt, strict=promotion_status is not None)
+            validate_retained_snapshot_sources()
             load_clauses(con, docs[_REL_D1], receipt)
             load_strategies(con, docs[_REL_W2], docs[_REL_D1], docs[_REL_B1R], receipt)
             load_cells(con, content_run_dir, docs[_REL_O1G], receipt)
             load_judgments(con, docs, ledger_rows, receipt)
+            validate_retained_snapshot_sources()
             if promotion_status is not None:
                 _validate_catalog_candidate_identity(promotion_status)
                 authority_records = _write_authority_records(con, promotion_status)
@@ -944,6 +987,8 @@ def build_all(
             receipt["table_counts"] = table_counts(con)
         finally:
             con.close()
+        if promotion_status is not None:
+            validate_retained_snapshot_sources()
         if promotion_status is not None:
             _validate_retained_file_identity(
                 working_db_path, working_db_descriptor, "catalog authority temporary file")
@@ -972,7 +1017,13 @@ def build_all(
                     working_db_path, db_path, mutation_guard,
                     source_descriptor=working_db_descriptor)
                 mutation_guard.validate_file(db_path)
-            if sha256_file(db_path) != working_db_sha256:
+            published_db_descriptor = mutation_guard.open_path(
+                db_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+            _validate_retained_file_identity(
+                db_path, published_db_descriptor, "published catalog authority DB")
+            if _sha256_retained_file(
+                db_path, published_db_descriptor, "published catalog authority DB",
+            ) != working_db_sha256:
                 raise EvidenceSchemaError(
                     "published catalog DB bytes do not match the verified working DB")
             receipt["promotion_receipt"] = _promotion_receipt(
@@ -994,8 +1045,19 @@ def build_all(
                 mutation_guard.validate_file(receipt_temp)
                 _publish_no_replace(receipt_temp, receipt_path, mutation_guard)
                 mutation_guard.validate_file(receipt_path)
+                published_receipt_descriptor = mutation_guard.open_path(
+                    receipt_path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+                _validate_published_catalog_pair(
+                    db_path, published_db_descriptor, receipt_path,
+                    published_receipt_descriptor, root)
         return receipt
     finally:
+        if published_receipt_descriptor is not None:
+            os.close(published_receipt_descriptor)
+        if published_db_descriptor is not None:
+            os.close(published_db_descriptor)
+        if source_retention is not None:
+            source_retention.__exit__(None, None, None)
         if working_db_descriptor is not None:
             os.close(working_db_descriptor)
             working_db_descriptor = None
