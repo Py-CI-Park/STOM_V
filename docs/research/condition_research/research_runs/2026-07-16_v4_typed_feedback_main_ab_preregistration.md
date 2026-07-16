@@ -78,3 +78,11 @@ run_id: `abmain0716_p{i}_{legacy|typed}`.
   15~20분). cold 모드는 완주에 40시간+가 걸려 실험 불성립이므로, 양팔 동일하게
   `bt_timeout=2400`으로 상향하고 run_id를 `abmain0716d_`로 갱신해 재시작했다.
   판정 규칙·지표는 계속 무수정이다.
+- **3차 보정 (첫 쌍 완료 전)**: `abmain0716d_p1_legacy` 셰이크다운에서 gen 1~14
+  전부 생성 차단(평가 1건)을 확인했다. 원인은 설정 자기모순 2건 — ①
+  `bt_refine_from_best`가 시드 코드를 출발점으로 주는데 few-shot 패턴카드가
+  같은 902/905 계열이라 anti-copy 삼중항 판정에 걸림(6/14), ②
+  `time_cap_bucket` 복잡도 프리플라이트가 복잡한 시드의 정련본을 차단(7/14).
+  양팔 동일하게 `few_shot_enabled=False`, `time_cap_bucket_generation_enabled=False`
+  로 끄고 run_id를 `abmain0716e_`로 갱신해 재시작했다. 카드 채널 발화는
+  d-런에서 실측 확인됐다(프롬프트 84라인). 판정 규칙·지표는 계속 무수정이다.
