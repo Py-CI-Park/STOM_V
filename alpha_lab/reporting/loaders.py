@@ -242,10 +242,24 @@ def _ex_bext(_: dict) -> dict:
     ], "note": "가문 13종 고겹침 — (c) 재발로 오프라인 발굴 축 최종 종결"}
 
 
+def _ex_sell_d1(_: dict) -> dict:
+    d = load_json("sell_d1", "sell_d1_summary.json")
+    if not d:
+        return {"_missing": rel_path("sell_d1", "sell_d1_summary.json")}
+    j = d.get("judgment", {})
+    lb = j.get("load_bearing", [])
+    c3 = j.get("per_clause", {}).get("3", {})
+    return {"rows": [
+        ("load-bearing 확정", f"{len(lb)}절 {lb}"),
+        ("제거-개선(B2 후보)", str(j.get("removal_candidates") or "없음")),
+        ("지배 절 3 (청산 62.8%)", f"제거 Δ {_pp(c3.get('delta_pp'))} — 보존 확정"),
+    ], "note": "9절 전부 음/중립 — 매도식은 '뺄 것 없음', 개선 방향은 추가(B1)뿐"}
+
+
 EXTRACTORS: Dict[str, Callable[[dict], dict]] = {
     "strack": _ex_strack, "o1g": _ex_o1g, "d1": _ex_d1, "d5r": _ex_d5r, "b1": _ex_b1,
     "d5d9": _ex_d5d9, "d1pair": _ex_d1pair, "o3": _ex_o3, "o4": _ex_o4,
-    "btrack": _ex_btrack, "bext": _ex_bext,
+    "btrack": _ex_btrack, "bext": _ex_bext, "sell_d1": _ex_sell_d1,
 }
 
 

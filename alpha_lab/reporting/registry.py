@@ -88,6 +88,10 @@ STUDIES: Tuple[Study, ...] = (
           "902905 가문 13종의 깊은 가지 + 챔피언 902/905 발화 합집합(합동 anchor) mean L3 를 3분법·층화로 재검정 — 표본 확장에도 (c) 재발.",
           "1e179bb6", "종결", "kill", "2026-07-14_b_track_ext_multistrategy_branches_preregistration.md",
           ("b_track_ext/b_ext_summary.json",), "bext"),
+    Study("sell_d1", "매도식 D1 (절 제거 ablation)", "매도식 9개 절을 하나씩 꺼 보니 '빼서 좋아질 절'은 없었다 — 다섯 절은 확실히 돈을 지키는 절(load-bearing)이었다.",
+          "매도식 발화 절 9개를 drop 미러 하니스로 하나씩 제거 재채점(영향 집합 {l3_clause==k} 서로소 분할) — 원본재현 862,932건 전수 비트동일 게이트 후 Δ·CI·FDR·연도부호 판정.",
+          "bd5bb3c4", "양성", "posv", "2026-07-16_sell_d1_exit_ablation_preregistration.md",
+          ("sell_d1/sell_d1_summary.json",), "sell_d1"),
 )
 
 

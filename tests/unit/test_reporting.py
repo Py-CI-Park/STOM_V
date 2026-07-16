@@ -43,16 +43,16 @@ def test_highlight_escapes_and_marks_b1():
 # 2. registry.
 # --------------------------------------------------------------------------
 
-def test_registry_11_studies():
-    assert len(registry.STUDIES) == 11
+def test_registry_12_studies():
+    assert len(registry.STUDIES) == 12
     ids = [s.id for s in registry.STUDIES]
-    assert len(set(ids)) == 11
+    assert len(set(ids)) == 12
     vc = registry.verdict_counts()
-    # 양성 2(D1·2절) + 실전이관 1(B1) = 성과 3 · 미결 1(B-트랙) · 기각6+종결1 = 오답 7축.
-    assert vc["양성"] == 2 and vc["실전이관"] == 1 and vc["미결"] == 1
-    assert vc["양성"] + vc["실전이관"] == 3
+    # 양성 3(D1·2절·매도식D1) + 실전이관 1(B1) = 성과 4 · 미결 1(B-트랙) · 기각6+종결1 = 오답 7축.
+    assert vc["양성"] == 3 and vc["실전이관"] == 1 and vc["미결"] == 1
+    assert vc["양성"] + vc["실전이관"] == 4
     assert vc["기각"] + vc["종결"] == 7
-    assert sum(vc.values()) == 11
+    assert sum(vc.values()) == 12
 
 
 def test_every_study_has_extractor():
@@ -81,9 +81,9 @@ def test_build_conditions_sha_and_escape():
     assert "<mark>" in h                               # B1 절 마킹.
 
 
-def test_build_11_study_cards():
+def test_build_12_study_cards():
     h = build()
-    assert h.count('<div class="studycard">') == 11
+    assert h.count('<div class="studycard">') == 12
 
 
 def test_build_key_numbers_from_json():
@@ -91,7 +91,8 @@ def test_build_key_numbers_from_json():
     # 판정 json 에서 로드된 대표 수치.
     assert "158" in h                                  # O-4 후보 158.
     assert "n=114" in h                                # B-트랙 anchor.
-    assert "245" in h or loaders.load_ledger().get("total") is None  # 원장 합계.
+    led = loaders.load_ledger()                        # 원장 합계 — 살아있는 값 대조.
+    assert led.get("total") is None or str(led["total"]) in h
 
 
 def test_build_no_missing_with_real_data():
@@ -120,10 +121,10 @@ def test_missing_extractor_key():
 # 5. 계층형 — 허브 + 상세 11 + 링크 무결성.
 # --------------------------------------------------------------------------
 
-def test_build_all_hub_plus_11():
+def test_build_all_hub_plus_details():
     files = build_all(commit="test")
     assert "research_lab_report.html" in files
-    assert len(files) == 1 + len(registry.STUDIES) == 12
+    assert len(files) == 1 + len(registry.STUDIES) == 13
     for s in registry.STUDIES:
         assert f"research/{s.id}.html" in files
 
