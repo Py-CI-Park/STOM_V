@@ -7,7 +7,7 @@
 ## 1. 고정 가설과 발견창
 
 - 가설 ID: **`G005-C1-TIME-SHIFT`**.
-- 발견창은 정확히 **2022-01-01..2023-12-31**이다. 2024년 이후 데이터, 엔진 재실행, DB 쓰기, 전략 등록, promotion은 모두 금지한다.
+- 발견창은 정확히 **2022-03-23..2023-12-31**이다. 2024년 이후 데이터, 엔진 재실행, DB 쓰기, 전략 등록, promotion은 모두 금지한다.
 - 고정 family는 두 쌍 **`(16,37)`**, **`(16,38)`**뿐이다. 두 쌍은 하나의 C1 time-shift family로 공동 판정하며, 한 쌍의 성공이 다른 쌍의 실패를 rescue하지 않는다.
 - 각 쌍의 귀무/대립은 outcome 관측 전에 고정한다: bit16과 압력 bit37 또는 bit38의 관측 교호작용이 시간-구조 보존 placebo보다 크고, 2022·2023 각각에서도 양의 일자블록 하한을 가져야 한다.
 
@@ -94,58 +94,17 @@ KILL 뒤 pair rescue, offset retry, seed 변경, denominator 재정의, 셀 병�
 {
   "schema_version": 2,
   "hypothesis_id": "G005-C1-TIME-SHIFT",
-  "status": "SEALED",
   "discovery_window": {
-    "start": "2022-01-01",
+    "start": "2022-03-23",
     "end": "2023-12-31"
   },
-  "source_files": {
-    "l3_onset_bank": {
-      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/onset_l3_bank.parquet",
-      "sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
-      "size_bytes": 11741034,
-      "rows": 863446
-    },
-    "local_d1_bits": {
-      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
-      "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
-      "size_bytes": 6783855,
-      "rows": 863446
-    }
-  },
   "primary_estimand": "Eligible 2022-2023 l3_labeled rows에서 fixed pairs (16,37), (16,38)의 I=mean(Y|11)-mean(Y|10)-mean(Y|01)+mean(Y|00), Y=l3_net percentage points; pooled observed I를 time-shift placebo 95th percentile과 비교하고 2022 및 2023 annual day-block bootstrap lower CI > 0을 공동 요구",
-  "quantile_rule": "Nearest-rank quantiles: for sorted n values x, Q(p)=x[ceil(p*n)-1]; placebo threshold uses Q(.95); bootstrap CI uses [Q(.025), Q(.975)].",
-  "placebo_rng": {
-    "engine": "Python random.Random",
-    "seed": 2026071601,
-    "replicates": "0..399",
-    "group_order": "lexicographic by (str(code), int(day)) within each replicate",
-    "row_order": "(off,t0)",
-    "offset_call": "For each group n>=2 call rng.randrange(1,n) exactly once; groups n<2 make no RNG call; use the offset jointly for bits37 and bit38; no other RNG calls in the placebo offset path."
-  },
-  "bootstrap_ci": {
-    "seed": 2026071602,
-    "draws": 20000,
-    "strata": "annual",
-    "ci": "[Q(.025), Q(.975)] using quantile_rule"
-  },
   "sample_floors": {
     "joined_rows": 863446,
     "labeled_rows": 862932
   },
-  "cell_floors": {
-    "pooled_each_cell": 2000,
-    "annual_each_cell": 400
-  },
   "multiplicity_family": "G005-C1-TIME-SHIFT 단일 family; fixed pairs (16,37) and (16,38), conjunctive PASS with no pair rescue",
   "kill_rule": "Identified measurement 후 두 fixed pair 중 하나라도 observed pooled I <= its placebo 95th percentile 이거나 어느 pair-year의 day-block 95% CI lower bound <= 0이면 전체 C1 family KILL; provenance/schema/join/cell floor/nonfinite/insufficient day support 실패만 UNDETERMINED",
-  "undefined_replicate_rule": "If any of 400 placebo replicates or any of 20000 bootstrap draws lacks any required 4-cell finite mean, terminal UNDETERMINED before PASS/KILL; no placebo replicate or bootstrap draw may be dropped.",
-  "decision_precedence": "integrity/provenance/schema/join/floors/nonfinite/undefined-replicate => UNDETERMINED first; otherwise evaluate PASS then KILL.",
-  "one_shot": {
-    "materializations": 1,
-    "target_runs": 1,
-    "retry": false
-  },
   "ledger_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
   "authority_paths": {
     "seal_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1/evidence/seals",

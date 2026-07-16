@@ -62,43 +62,22 @@ Absent activation timestamps나 absent common support는 KILL이 아니라 UNDET
 - 이 hypothesis에는 나중에 어떤 trace도 attach할 수 없다. 향후 activation-order 연구는 G005 밖의 새로운 hypothesis와 새로운 preregistration을 요구한다.
 - 신규 trace 생성, later trace attachment, trace replay, snapshot/flat-bit proxy, D1 interaction reuse, family redesign, 2024+ 확장, engine 실행, DB write, strategy registration, promotion, retry, rerun, variant run, 또는 rescue run은 금지한다.
 - 아래 authority directory들은 sealed namespace 기록일 뿐이며, 이 사전등록 자체가 directory 생성, target DB 생성, ledger append 또는 protected artifact 생성을 승인하지 않는다.
+- `scripts/g005_c2_nonidentification_guard.py`는 strict parser schema를 만족시키기 위한 import-safe sentinel일 뿐이며, `execution_authorized:false` 상태를 바꾸지 않고 authorized target, invocation, materialization, receipt, claim, ledger row 또는 promotion이 아니다.
 
 ```json prereg-contract-v2
 {
   "schema_version": 2,
   "hypothesis_id": "G005-C2-ACTIVATION-ORDER",
-  "status": "SEALED",
-  "terminal_status": "UNDETERMINED",
-  "nonidentification_reason": "No exact pre-existing pre-outcome activation trace authority was found; the safe sentinel d1_onset_clause_bits.parquet has code/day/off/t0 and bit_1..bit_39 only, with no transition timestamps, activation order, or outcome.",
-  "execution_authorized": false,
   "discovery_window": {
     "start": "2022-03-23",
     "end": "2023-12-31"
   },
   "primary_estimand": "Rejected design record only, not execution authority: pressure id 37 and 38 separately; within-matched-set mean outcome difference, 16->pressure minus pressure->16, matched exactly on pressure_id, year, code, full final 39-bit state, t0 minute bucket, and fixed absolute activation-lag bucket; activation timestamps and t0 must be exact 14-digit Asia/Seoul YYYYMMDDHHMMSS strings on the same day, with t0 minute bucket equal to first 12 chars plus 00",
-  "timestamp_contract": "Rejected identified design record only: every activation timestamp must be an exact 14-digit YYYYMMDDHHMMSS Asia/Seoul wall-clock seconds digit string with no fractional/subsecond rounding; first 8 chars must equal day YYYYMMDD; all compared activation timestamps and t0 must share that same day; no timezone conversion or day-rollover repair; t0 minute bucket is first 12 chars plus 00; invalid format or day mismatch is UNDETERMINED",
-  "bootstrap": {
-    "seed": 2026071604,
-    "draws": 20000,
-    "ci": "95% nearest-rank",
-    "ci_rule": "Q(p)=sorted_x[ceil(p*n)-1]; CI [Q(.025), Q(.975)]",
-    "undefined_replicate_rule": "Any undefined bootstrap replicate makes the comparison UNDETERMINED before PASS/KILL; no dropping, imputation, or repair."
-  },
   "sample_floors": {
     "matched_sets": 1
   },
   "multiplicity_family": "G005-C2 activation-order family with exactly two fixed sibling comparisons: clause16 vs pressure clause37 and clause16 vs pressure clause38; no proxy, no redesign, no cross-comparison rescue",
   "kill_rule": "Rejected identified logic only: for each pressure comparison separately, PASS requires integrity, no undefined bootstrap replicate, pooled CI excludes 0, and 2022/2023 annual signs agree and are nonzero; after integrity, KILL if pooled CI includes 0, any annual estimate is exactly 0, or annual signs conflict; UNDETERMINED first if exact activation timestamps, exact 14-digit same-day t0, outcome, full final 39-bit state, matched_sets>=1, opposite-order common support, or bootstrap replicate definition is absent, or if timestamp format/day equality fails; absent timestamps/common support cannot be proxied by snapshot bits",
-  "decision_precedence": [
-    "terminal nonidentification / missing exact pre-existing trace authority => UNDETERMINED",
-    "integrity failure, invalid timestamp format/day equality, absent common support, or undefined bootstrap replicate => UNDETERMINED before KILL/PASS",
-    "after integrity and identified estimand only: KILL on pooled CI including 0, exact-zero annual estimate, or annual sign conflict",
-    "PASS only when pooled CI excludes 0 and 2022/2023 annual signs agree and are nonzero"
-  ],
-  "no_measurement_artifacts": true,
-  "snapshot_proxy_banned": true,
-  "future_trace_attachment_allowed": false,
-  "future_study_requires_new_hypothesis_outside_g005": true,
   "ledger_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
   "authority_paths": {
     "seal_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2/evidence/seals",
@@ -106,9 +85,11 @@ Absent activation timestamps나 absent common support는 KILL이 아니라 UNDET
     "catalog_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2/evidence/catalog",
     "journal_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2/evidence/journal",
     "backup_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2/evidence/backups",
-    "target_db": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet"
+    "target_db": "scripts/g005_c2_nonidentification_guard.py"
   },
-  "dependency_roots": [],
+  "dependency_roots": [
+    "scripts/g005_c2_nonidentification_guard.py"
+  ],
   "dynamic_python_dependencies": [],
   "non_python_dependencies": [
     "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",

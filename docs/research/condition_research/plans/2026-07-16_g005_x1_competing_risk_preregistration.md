@@ -87,10 +87,8 @@
 {
   "schema_version": 2,
   "hypothesis_id": "G005-X1-EXIT-COMPETING-RISK",
-  "status": "SEALED",
-  "claim_type": "descriptive_not_causal",
   "discovery_window": {
-    "start": "2022-01-01",
+    "start": "2022-03-23",
     "end": "2023-12-31"
   },
   "primary_estimand": "2022-2023 fixed external CSV rows에서 raw_contrast=mean(RR8)-mean(GPTAUTH_G8)와 pooled-cause-standardized contrast의 residual_ratio=abs(standardized_contrast/raw_contrast)",
@@ -99,172 +97,15 @@
     "census_2023": 1148,
     "census_total": 1658
   },
-  "expected_filtered_counts_or_undetermined": {
-    "year_2022": 510,
-    "year_2023": 1148,
-    "total": 1658
-  },
-  "parsing_contract": {
-    "date_year_source": "exact CSV column 매수시간 only",
-    "buy_time_format": "digit string exactly 14 chars YYYYMMDDHHMMSS",
-    "sell_time_format": "digit string exactly 14 chars YYYYMMDDHHMMSS",
-    "timestamp_validation": "first require 14 digits, then validate 매수시간 and 매도시간 with datetime.strptime(value, '%Y%m%d%H%M%S') as Asia/Seoul wall-clock; no timezone conversion",
-    "date_filter": "before any row output, use 매수시간[0:8] day and 매수시간[0:4] year only; keep 2022 and 2023 only",
-    "condition_text_source": "exact CSV column 매도조건 raw Unicode string only",
-    "forced_cap_time": "compare final 6 digits of 매도시간 HHMMSS to 093000",
-    "day_mismatch": "매도시간[0:8] must equal 매수시간[0:8]; mismatch => UNDETERMINED",
-    "invalid_or_ambiguous_field": "missing, duplicate, ambiguous, non-string text, timestamp length mismatch, timestamp non-digits, invalid date/time, timezone correction need, or day rollover need => UNDETERMINED",
-    "offsets": "none; no timezone/day rollover correction and no alternate date/text columns"
-  },
-  "text_matching": {
-    "source": "exact raw Unicode string from 매도조건",
-    "operation": "Python case-sensitive codepoint substring: needle in text",
-    "forbidden_transforms": [
-      "strip",
-      "Unicode normalization",
-      "casefold",
-      "case change",
-      "translation",
-      "alternate field",
-      "missing-value fill",
-      "synonym expansion",
-      "regex expansion",
-      "manual reclassification"
-    ],
-    "invalid_or_ambiguous_field": "UNDETERMINED"
-  },
-  "comparison_groups": {
-    "left": "RR8 family: RR8_12 + RR8_0 + RR8_21 strategy-slot ledgers, rows not deduplicated across strategies",
-    "right": "GPTAUTH_G8",
-    "raw_contrast": "mean(left 수익률 pp) - mean(right 수익률 pp)"
-  },
-  "source_files": [
-    {
-      "slot": "RR8_12",
-      "group": "RR8",
-      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/backtest/csv/stock_bt_ALP_V4_RR8_12_20260707074238.csv",
-      "encoding": "utf-8",
-      "sha256": "f5e3807f26c32d8e2409a56ed1cdc89c80c13b37bcf36f0dbed811595e2ee9ed",
-      "size_bytes": 153817,
-      "raw_rows": 454
-    },
-    {
-      "slot": "RR8_0",
-      "group": "RR8",
-      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/backtest/csv/stock_bt_ALP_V4_RR8_0_20260707074352.csv",
-      "encoding": "utf-8",
-      "sha256": "ae90e89663dd1a704535893556a05954b016ec6b6ece766b9eeb236153fdd06c",
-      "size_bytes": 115829,
-      "raw_rows": 338
-    },
-    {
-      "slot": "RR8_21",
-      "group": "RR8",
-      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/backtest/csv/stock_bt_ALP_V4_RR8_21_20260707074459.csv",
-      "encoding": "utf-8",
-      "sha256": "a22af054c264087d2b87f52ac178b7fe19d49a3c71e660965f6803b83083131f",
-      "size_bytes": 128654,
-      "raw_rows": 380
-    },
-    {
-      "slot": "GPTAUTH_G8",
-      "group": "GPTAUTH_G8",
-      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/backtest/csv/stock_bt_ALP_V4_GPTAUTH_G8_20260707075127.csv",
-      "encoding": "utf-8",
-      "sha256": "830a003a046e6e1f14372838c458badb198dedb069539d2b6e8ede7f807eb4cd",
-      "size_bytes": 464671,
-      "raw_rows": 1447
-    }
-  ],
-  "source_hash_binding": {
-    "required_before_finalizer": true,
-    "pre_hash": "before any row output, each source file must match source_files sha256, size_bytes, and raw_rows",
-    "post_hash": "after materialization/target read and before finalizer completion, each source file must still match source_files sha256, size_bytes, and raw_rows",
-    "mismatch_disposition": "UNDETERMINED and no receipt/claim target run"
-  },
-  "cause_order": [
-    {
-      "cause": "forced_cap",
-      "rule": "매도시간 final 6 HHMMSS >= 093000 OR 매도조건 contains 강제 OR 매도조건 contains 마감"
-    },
-    {
-      "cause": "stop_loss",
-      "rule": "매도조건 contains 손절 OR 매도조건 contains 최저가이탈"
-    },
-    {
-      "cause": "trailing",
-      "rule": "매도조건 contains 트레일링 OR 매도조건 contains 최고수익률"
-    },
-    {
-      "cause": "time_exit",
-      "rule": "매도조건 contains 보유시간"
-    },
-    {
-      "cause": "profit_take",
-      "rule": "매도조건 contains 익절"
-    },
-    {
-      "cause": "other",
-      "rule": "no prior cause matched"
-    }
-  ],
-  "standardization": {
-    "weights": "pooled cause incidences over RR8 and GPTAUTH_G8 combined filtered rows",
-    "group_means": "each group's E[수익률 pp | cause]",
-    "missing_support": "UNDETERMINED; no smoothing, imputation, fallback, or cause merge"
-  },
-  "bootstrap": {
-    "seed": 2026071603,
-    "draws": 20000,
-    "unit": "trading_day_block",
-    "stratification": "annual",
-    "ci": "95% exact nearest-rank percentile [Q(0.025), Q(0.975)] where sorted n values Q(p)=x[ceil(p*n)-1]",
-    "undefined_replicate": "any undefined bootstrap replicate => UNDETERMINED; no replicate dropping, replacement, interpolation, or rescue"
-  },
   "multiplicity_family": "G005-X1-EXIT-COMPETING-RISK 단일 descriptive competing-risk family; cause/annual/CI tables are non-rescue diagnostics",
   "kill_rule": "Ordered decision ladder: first source/provenance/schema/parser/denominator/cause-support/raw-zero/annual-zero/any undefined bootstrap replicate => UNDETERMINED; then pooled residual_ratio >= 0.8 or annual sign conflict => KILL; otherwise pooled residual_ratio < 0.8 plus same nonzero annual signs => PASS",
-  "decision_precedence": [
-    {
-      "order": 1,
-      "verdict": "UNDETERMINED",
-      "conditions": [
-        "source/provenance failure",
-        "schema failure",
-        "parser failure",
-        "denominator mismatch",
-        "missing cause support",
-        "raw_contrast == 0",
-        "annual raw contrast zero",
-        "any undefined bootstrap replicate"
-      ]
-    },
-    {
-      "order": 2,
-      "verdict": "KILL",
-      "conditions": [
-        "pooled residual_ratio >= 0.8",
-        "2022/2023 annual raw contrast sign conflict"
-      ]
-    },
-    {
-      "order": 3,
-      "verdict": "PASS",
-      "conditions": [
-        "pooled residual_ratio < 0.8",
-        "2022/2023 annual raw contrast signs agree and are nonzero"
-      ]
-    }
-  ],
   "ledger_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
   "authority_paths": {
     "seal_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/seals",
-    "receipts_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/receipts",
-    "claims_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/claims",
     "promotions_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/promotions",
     "catalog_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/catalog",
     "journal_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/journal",
     "backup_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/backups",
-    "hash_audit_dir": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/hash_audit",
     "target_db": "scripts/g005_x1_competing_risk.py"
   },
   "dependency_roots": [
@@ -274,23 +115,6 @@
   "non_python_dependencies": [
     "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",
     "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json"
-  ],
-  "receipt_claim_target_runs": 1,
-  "one_shot": {
-    "materializations": 1,
-    "target_runs": 1,
-    "retry": false
-  },
-  "bans": [
-    "2024_plus_rows",
-    "engine_execution",
-    "db_write",
-    "strategy_registration",
-    "promotion",
-    "retry",
-    "rescue",
-    "causal_claim",
-    "exit_adoption"
   ]
 }
 ```
