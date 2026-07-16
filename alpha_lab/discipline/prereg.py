@@ -798,6 +798,54 @@ class _WindowsAuthorityGuard:
                 "cannot mark created authority file delete-pending"
             )
 
+    def commit_created_file(self, path: Path | str, identity: tuple[int, int]) -> None:
+        """Release exact rollback custody after a created file is durably committed."""
+        if os.name != "nt":
+            raise UnsupportedAuthorityPlatform(
+                "exact-handle authority commit is unsupported on POSIX"
+            )
+        key = self._path_key(Path(path))
+        registered = self._created_file_identities.get(key)
+        if registered is None:
+            raise EvidenceSchemaError(
+                "created authority file is not registered for exact commit"
+            )
+        if registered != identity:
+            raise EvidenceSchemaError(
+                "refusing commit whose identity differs from registered creation"
+            )
+        retained_fds: list[int] = []
+        for held_fd in self._retained_file_fds:
+            try:
+                metadata = os.fstat(held_fd)
+            except OSError:
+                continue
+            if (metadata.st_dev, metadata.st_ino) == registered:
+                retained_fds.append(held_fd)
+        if not retained_fds:
+            raise EvidenceSchemaError(
+                "created authority file has no retained exact-identity handle"
+            )
+        for retained_fd in retained_fds:
+            try:
+                metadata = os.fstat(retained_fd)
+            except OSError as exc:
+                raise EvidenceSchemaError(
+                    "cannot inspect retained authority file before commit"
+                ) from exc
+            if (metadata.st_dev, metadata.st_ino) != registered:
+                raise EvidenceSchemaError(
+                    "refusing commit after retained authority identity changed"
+                )
+        for retained_fd in retained_fds:
+            try:
+                os.close(retained_fd)
+            except OSError as exc:
+                raise EvidenceSchemaError(
+                    "cannot release retained authority file after commit"
+                ) from exc
+            self._retained_file_fds.remove(retained_fd)
+        del self._created_file_identities[key]
     def remove_created_file(self, path: Path | str, identity: tuple[int, int]) -> None:
         """Delete the retained creation object without re-resolving its pathname."""
         if os.name != "nt":

@@ -44,9 +44,8 @@ from alpha_lab.discipline.evidence import (
 from alpha_lab.discipline.ledger import append_trial_v2
 from alpha_lab.discipline.measure_gate import (
     claim_gate_receipt_v2,
-    issue_gate_receipt_v2,
+    finalize_and_issue_gate_receipt_v2,
 )
-from alpha_lab.discipline.prereg import finalize_prereg
 
 NOW = dt.datetime(2026, 7, 14, 0, 5, 0, tzinfo=dt.timezone.utc)
 
@@ -175,19 +174,19 @@ def _write_v2_promotion_chain(tmp_path, item: dict, monkeypatch) -> dict:
     if not strategy_db.exists():
         _make_fake_strategy_db(strategy_db)
     seal_path = tmp_path / "seals" / f"{hashlib.sha256(prereg.read_bytes()).hexdigest()}.seal.json"
-    finalize_prereg(
+    receipt = finalize_and_issue_gate_receipt_v2(
         prereg,
         repo_root=tmp_path,
         code_files=(code,),
         manifest_path=seal_path,
         sealed_at="2026-07-14T00:00:00+00:00",
-    )
-    receipt = issue_gate_receipt_v2(
-        tmp_path,
-        seal_path,
         issued_at="2026-07-14T00:01:00+00:00",
         nonce="bridge-run",
     )
+    assert receipt["custody"] == {
+        "mode": "continuous-finalizer-v1",
+        "launch_authoritative": True,
+    }
     receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
     usage = claim_gate_receipt_v2(
         receipt_path,

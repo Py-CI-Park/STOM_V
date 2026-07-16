@@ -488,6 +488,42 @@ def test_windows_rollback_close_boundary_never_unlinks_substitution(tmp_path, mo
     assert retained_fd not in guard._retained_file_fds
     guard.close()
 
+@pytest.mark.skipif(os.name != "nt", reason="strict mutation is Windows-only")
+def test_windows_created_file_commit_requires_exact_retained_identity(tmp_path):
+    target = tmp_path / "committed.seal.json"
+    target.write_bytes(b"created")
+    descriptor = os.open(target, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    metadata = os.fstat(descriptor)
+    identity = metadata.st_dev, metadata.st_ino
+    guard = prereg._WindowsAuthorityGuard(tmp_path, {}, ())
+    guard._retained_file_fds.append(descriptor)
+    guard.note_created_file(target, identity)
+    try:
+        with pytest.raises(ValueError, match="identity differs"):
+            guard.commit_created_file(target, (identity[0], identity[1] + 1))
+        guard._retained_file_fds.remove(descriptor)
+        os.close(descriptor)
+        with pytest.raises(ValueError, match="no retained"):
+            guard.commit_created_file(target, identity)
+    finally:
+        guard.close()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="strict mutation is Windows-only")
+def test_windows_created_file_commit_releases_exact_rollback_handle(tmp_path):
+    target = tmp_path / "committed.seal.json"
+    target.write_bytes(b"created")
+    descriptor = os.open(target, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    metadata = os.fstat(descriptor)
+    identity = metadata.st_dev, metadata.st_ino
+    guard = prereg._WindowsAuthorityGuard(tmp_path, {}, ())
+    guard._retained_file_fds.append(descriptor)
+    guard.note_created_file(target, identity)
+    guard.commit_created_file(target, identity)
+    assert guard.created_file_identity(target) is None
+    assert descriptor not in guard._retained_file_fds
+    guard.close()
+
 
 def test_finalizer_seal_collision_preserves_existing_bytes(sealed_repo):
     repo, sealed, code, _ = sealed_repo

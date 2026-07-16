@@ -566,50 +566,53 @@ def _verify_authority_records(
         raise EvidenceSchemaError("catalog authority DB records are omitted, extra, or misstated")
 
 
+def _logical_catalog_state_from_connection(con: sqlite3.Connection) -> dict[str, Any]:
+    """Return the complete logical SQLite state from an already-open connection."""
+    objects = con.execute(
+        "SELECT type, name, tbl_name, sql FROM sqlite_master "
+        "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name"
+    ).fetchall()
+    tables = [name for kind, name, _, _ in objects if kind == "table"]
+    rows: dict[str, list[tuple[Any, ...]]] = {}
+    table_info: dict[str, list[tuple[Any, ...]]] = {}
+    for table in tables:
+        quoted = '"' + table.replace('"', '""') + '"'
+        table_info[table] = con.execute(
+            f"PRAGMA table_xinfo({quoted})").fetchall()
+        rows[table] = sorted(
+            con.execute(f"SELECT * FROM {quoted}").fetchall(),
+            key=lambda row: repr(row),
+        )
+    pragmas = {
+        name: con.execute(f"PRAGMA {name}").fetchone()[0]
+        for name in ("application_id", "auto_vacuum", "encoding", "user_version")
+    }
+    return {
+        "objects": objects,
+        "table_info": table_info,
+        "rows": rows,
+        "pragmas": pragmas,
+    }
+
+
 def _logical_catalog_state(path: Path, descriptor: int, label: str) -> dict[str, Any]:
     """Read the complete logical SQLite state while the pathname identity is retained."""
     _validate_retained_file_identity(path, descriptor, label)
     con = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None)
     try:
-        objects = con.execute(
-            "SELECT type, name, tbl_name, sql FROM sqlite_master "
-            "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name"
-        ).fetchall()
-        tables = [name for kind, name, _, _ in objects if kind == "table"]
-        rows: dict[str, list[tuple[Any, ...]]] = {}
-        table_info: dict[str, list[tuple[Any, ...]]] = {}
-        for table in tables:
-            quoted = '"' + table.replace('"', '""') + '"'
-            table_info[table] = con.execute(
-                f"PRAGMA table_xinfo({quoted})").fetchall()
-            rows[table] = sorted(
-                con.execute(f"SELECT * FROM {quoted}").fetchall(),
-                key=lambda row: repr(row),
-            )
-        pragmas = {
-            name: con.execute(f"PRAGMA {name}").fetchone()[0]
-            for name in ("application_id", "auto_vacuum", "encoding", "user_version")
-        }
-        return {
-            "objects": objects,
-            "table_info": table_info,
-            "rows": rows,
-            "pragmas": pragmas,
-        }
+        return _logical_catalog_state_from_connection(con)
     finally:
         con.close()
         _validate_retained_file_identity(path, descriptor, label)
 
 
 def _verify_existing_authority_db(
-    existing: Path, existing_descriptor: int, expected_db: Path, expected_descriptor: int,
+    existing: Path, existing_descriptor: int, expected_state: dict[str, Any],
     records: list[dict[str, str]],
 ) -> str:
     """Accept a crashed canonical DB only when its full logical state equals rebuild."""
     existing_state = _logical_catalog_state(
         existing, existing_descriptor, "published catalog authority DB")
-    expected_state = _logical_catalog_state(
-        expected_db, expected_descriptor, "catalog authority temporary file")
     if existing_state != expected_state:
         raise EvidenceSchemaError(
             "catalog publication reconciliation failed: existing catalog DB logical state "
@@ -650,11 +653,21 @@ def _fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
-def _flush_file(path: Path) -> None:
-    with open(path, "rb+") as handle:
-        handle.flush()
-        os.fsync(handle.fileno())
-
+def _write_serialized_sqlite_to_retained_file(
+    path: Path, descriptor: int, payload: bytes, label: str,
+) -> None:
+    """Replace a retained authority file with a fully materialized SQLite image."""
+    _validate_retained_file_identity(path, descriptor, label)
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    os.ftruncate(descriptor, 0)
+    view = memoryview(payload)
+    while view:
+        written = os.write(descriptor, view)
+        if written == 0:
+            raise OSError("catalog authority SQLite image write made no progress")
+        view = view[written:]
+    os.fsync(descriptor)
+    _validate_retained_file_identity(path, descriptor, label)
 def _set_windows_readonly(path: Path, readonly: bool) -> None:
     """Persist and verify a Windows read-only publication attribute."""
     if os.name != "nt":
@@ -868,12 +881,16 @@ def _publish_no_replace(
         source_descriptor = mutation_guard.open_path(
             source, os.O_RDONLY | getattr(os, "O_BINARY", 0))
     destination_descriptor: int | None = None
+    destination_identity: tuple[int, int] | None = None
+    committed = False
     try:
         destination_descriptor = mutation_guard.open_path(
             destination,
             os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0),
             0o600,
         )
+        destination_identity = mutation_guard.retain_creation_fd(
+            destination, destination_descriptor)
         _validate_retained_file_identity(
             source, source_descriptor, "catalog authority publication source")
         os.lseek(source_descriptor, 0, os.SEEK_SET)
@@ -885,17 +902,28 @@ def _publish_no_replace(
                     raise OSError("catalog authority publication write made no progress")
                 view = view[written:]
         os.fsync(destination_descriptor)
+        _validate_retained_file_identity(
+            destination, destination_descriptor, "catalog authority publication destination")
+        mutation_guard.validate_file(destination)
+        _fsync_directory(destination.parent)
+        mutation_guard.commit_created_file(destination, destination_identity)
+        committed = True
+    except BaseException:
+        if destination_identity is not None and not committed:
+            try:
+                if destination_descriptor is not None:
+                    os.close(destination_descriptor)
+                    destination_descriptor = None
+                mutation_guard.remove_created_file(destination, destination_identity)
+            except BaseException as cleanup_exc:
+                raise EvidenceSchemaError(
+                    "catalog authority publication rollback failed") from cleanup_exc
+        raise
     finally:
         if destination_descriptor is not None:
             os.close(destination_descriptor)
         if close_source:
             os.close(source_descriptor)
-    published = os.stat(destination, follow_symlinks=False)
-    if not stat.S_ISREG(published.st_mode) or published.st_nlink != 1:
-        raise EvidenceSchemaError(
-            "catalog authority publication destination is not a single-link regular file")
-    mutation_guard.validate_file(destination)
-    _fsync_directory(destination.parent)
 
 @dataclass
 class _PublicationReservation:
@@ -1096,6 +1124,8 @@ def build_all(
     retained_snapshots: RetainedSourceSnapshots | None = None
     published_db_descriptor: int | None = None
     published_receipt_descriptor: int | None = None
+    serialized_working_db: bytes | None = None
+    working_db_state: dict[str, Any] | None = None
     if promotion_status is not None:
         snapshot_expectations = _manifest_snapshot_expectations(
             run_dir.resolve(), root, promotion_status["source_artifacts"])
@@ -1143,7 +1173,7 @@ def build_all(
             _validate_retained_file_identity(
                 working_db_path, working_db_descriptor, "catalog authority temporary file")
             mutation_guard.validate_file(working_db_path)
-        con = sqlite3.connect(working_db_path)
+        con = sqlite3.connect(":memory:" if promotion_status is not None else working_db_path)
         try:
             create_schema(con)
             reset_tables(con)
@@ -1185,14 +1215,19 @@ def build_all(
                 }
             con.commit()
             receipt["table_counts"] = table_counts(con)
+            if promotion_status is not None:
+                working_db_state = _logical_catalog_state_from_connection(con)
+                serialized_working_db = con.serialize()
         finally:
             con.close()
         if promotion_status is not None:
             validate_retained_snapshot_sources()
         if promotion_status is not None:
-            _validate_retained_file_identity(
-                working_db_path, working_db_descriptor, "catalog authority temporary file")
-            _flush_file(working_db_path)
+            if serialized_working_db is None or working_db_state is None:
+                raise EvidenceSchemaError("catalog authority SQLite image was not materialized")
+            _write_serialized_sqlite_to_retained_file(
+                working_db_path, working_db_descriptor, serialized_working_db,
+                "catalog authority temporary file")
             working_db_sha256 = _sha256_retained_file(
                 working_db_path, working_db_descriptor, "catalog authority temporary file")
             _strict_source_hashes(
@@ -1211,8 +1246,7 @@ def build_all(
                 _validate_retained_file_identity(
                     db_path, published_db_descriptor, "published catalog authority DB")
                 canonical_db_sha256 = _verify_existing_authority_db(
-                    db_path, published_db_descriptor, working_db_path,
-                    working_db_descriptor, authority_records)
+                    db_path, published_db_descriptor, working_db_state, authority_records)
             else:
                 if mutation_guard is not None:
                     mutation_guard.validate_file(db_path)

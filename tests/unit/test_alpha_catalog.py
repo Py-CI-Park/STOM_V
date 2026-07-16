@@ -22,8 +22,10 @@ from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
 from alpha_lab.bridge.registrar import register_conditions_v2
 from alpha_lab.discipline.evidence import issue_promotion_manifest_v2
 from alpha_lab.discipline.ledger import append_trial_v2
-from alpha_lab.discipline.measure_gate import claim_gate_receipt_v2, issue_gate_receipt_v2
-from alpha_lab.discipline.prereg import finalize_prereg
+from alpha_lab.discipline.measure_gate import (
+    claim_gate_receipt_v2,
+    finalize_and_issue_gate_receipt_v2,
+)
 
 # ---------------------------------------------------------------------------
 # 픽스처 데이터 — 원천 실측 스키마의 최소 축소판.
@@ -189,7 +191,9 @@ def run_dir(tmp_path: Path) -> Path:
     _write_stats_dbs(run)
     return run
 @pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
-def test_minimal_authority_catalog_builds_real_pre_and_post(tmp_path: Path):
+def test_minimal_authority_catalog_builds_real_pre_and_post(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
     if shutil.which("git") is None:
         pytest.skip("git is required for authoritative v2 receipt fixtures")
     prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
@@ -232,10 +236,14 @@ def test_minimal_authority_catalog_builds_real_pre_and_post(tmp_path: Path):
     finally:
         con.close()
     seal = tmp_path / "seals" / f"{hashlib.sha256(prereg.read_bytes()).hexdigest()}.seal.json"
-    finalize_prereg(prereg, repo_root=tmp_path, code_files=(code,), manifest_path=seal,
-                    sealed_at="2026-07-14T00:00:00+00:00")
-    gate = issue_gate_receipt_v2(
-        tmp_path, seal, issued_at="2026-07-14T00:01:00+00:00", nonce="catalog-run")
+    gate = finalize_and_issue_gate_receipt_v2(
+        prereg, repo_root=tmp_path, code_files=(code,), manifest_path=seal,
+        sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="catalog-run")
+    assert gate["custody"] == {
+        "mode": "continuous-finalizer-v1",
+        "launch_authoritative": True,
+    }
     gate_path = tmp_path / "receipts" / f"{gate['receipt_id']}.json"
     usage = claim_gate_receipt_v2(
         gate_path, repo_root=tmp_path, consumer="catalog-test",
@@ -258,11 +266,52 @@ def test_minimal_authority_catalog_builds_real_pre_and_post(tmp_path: Path):
         ledger_path=tmp_path / "n_trials_ledger.jsonl", evidence_id=ledger["evidence_id"],
         created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions")
     manifest_path = tmp_path / "promotions" / f"{ledger['evidence_id']}.pre.json"
+    original_connect = sqlite3.connect
+    authority_temp_connects: list[object] = []
+    authority_connects: list[object] = []
+
+    def reject_authority_temp(database: object, *args: object, **kwargs: object):
+        authority_connects.append(database)
+        if isinstance(database, (str, Path)):
+            candidate = str(database).replace("\\", "/")
+            if "/promotion_catalogs/" in candidate and ".tmp" in candidate:
+                authority_temp_connects.append(database)
+                raise sqlite3.OperationalError("authority temporary catalog path is unavailable")
+        return original_connect(database, *args, **kwargs)
+
+    monkeypatch.setattr(sqlite3, "connect", reject_authority_temp)
+    original_write_serialized = builder._write_serialized_sqlite_to_retained_file
+
+    def fail_serialized_write(*args: object, **kwargs: object) -> None:
+        raise OSError("simulated retained authority write failure")
+
+    monkeypatch.setattr(builder, "_write_serialized_sqlite_to_retained_file", fail_serialized_write)
+    with pytest.raises(OSError, match="simulated retained authority write failure"):
+        builder.build_all(tmp_path, repo_root=tmp_path, promotion_manifest_path=manifest_path)
+    assert not list((tmp_path / "promotion_catalogs").glob("*.tmp"))
+    monkeypatch.setattr(
+        builder, "_write_serialized_sqlite_to_retained_file", original_write_serialized)
     pre = builder.build_all(tmp_path, repo_root=tmp_path, promotion_manifest_path=manifest_path)
     assert pre["missing"] == pre["skipped"] == []
     assert pre["promotion_receipt"]["source_hashes"] == sorted(
         [ref(source), ref(result)], key=lambda item: item["path"])
     assert pre["catalog_authority"]["canonical_record_count"] == 1
+    canonical_db = tmp_path / pre["promotion_receipt"]["catalog_db"]["path"]
+    canonical_readonly_uri = f"{canonical_db.as_uri()}?mode=ro"
+    assert authority_temp_connects == []
+    assert authority_connects.count(":memory:") == 2
+    assert all(
+        database == ":memory:" or database == canonical_readonly_uri
+        for database in authority_connects
+    )
+    readonly = original_connect(canonical_readonly_uri, uri=True)
+    try:
+        assert readonly.execute(
+            "SELECT name FROM catalog_authority").fetchall() == [("ALP_CATALOG_MINIMAL",)]
+        with pytest.raises(sqlite3.OperationalError):
+            readonly.execute("INSERT INTO catalog_authority VALUES ('x', 'y', 'z', 'PRE', NULL, 'x')")
+    finally:
+        readonly.close()
 
     registered = register_conditions_v2(
         [{"name": candidate["name"], "buy_expr": buy, "sell_expr": sell}],
@@ -616,6 +665,7 @@ class _ReservationGuard:
 
     def __init__(self) -> None:
         self.opened: list[Path] = []
+        self.retained: dict[Path, tuple[tuple[int, int], int]] = {}
 
     def open_path(self, path: Path, flags: int, mode: int = 0o666) -> int:
         self.opened.append(path)
@@ -630,11 +680,32 @@ class _ReservationGuard:
 
     def hold_write_denied_file(self, path: Path) -> None:
         return None
+    def retain_creation_fd(self, path: Path, descriptor: int) -> tuple[int, int]:
+        metadata = os.fstat(descriptor)
+        identity = metadata.st_dev, metadata.st_ino
+        self.retained[path] = identity, os.dup(descriptor)
+        return identity
+
+    def commit_created_file(self, path: Path, identity: tuple[int, int]) -> None:
+        registered_identity, descriptor = self.retained.pop(path)
+        assert registered_identity == identity
+        os.close(descriptor)
+
+    def remove_created_file(self, path: Path, identity: tuple[int, int]) -> None:
+        registered_identity, descriptor = self.retained.pop(path)
+        assert registered_identity == identity
+        os.close(descriptor)
+        path.unlink()
+
+    def close(self) -> None:
+        for _, descriptor in self.retained.values():
+            os.close(descriptor)
+        self.retained.clear()
     def __enter__(self) -> "_ReservationGuard":
         return self
 
     def __exit__(self, *args: object) -> None:
-        return None
+        self.close()
 
 
 def _reserve(db_path: Path, receipt_path: Path) -> builder._PublicationReservation:
@@ -926,10 +997,61 @@ def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
         assert destination.read_bytes() == b"first"
         assert destination.stat().st_nlink == 1
         assert first.stat().st_nlink == 1
+        assert guard.retained == {}
     finally:
+        guard.close()
         for path in (first, second):
             if path.exists():
                 path.unlink()
+@pytest.mark.parametrize("failure", ("short-write", "zero-write", "write-error", "fsync-error"))
+def test_no_replace_publication_rolls_back_failed_creation_and_retries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+):
+    source = builder._write_temp_bytes(tmp_path, ".source.", b"authority bytes")
+    destination = tmp_path / "canonical.db"
+    guard = _ReservationGuard()
+    original_write = os.write
+    original_fsync = os.fsync
+
+    if failure == "short-write":
+        monkeypatch.setattr(
+            builder.os, "write",
+            lambda descriptor, payload: original_write(descriptor, payload[:1]),
+        )
+    elif failure == "zero-write":
+        monkeypatch.setattr(builder.os, "write", lambda descriptor, payload: 0)
+    elif failure == "write-error":
+        def fail_write(descriptor: int, payload: object) -> int:
+            raise OSError("simulated publication write failure")
+
+        monkeypatch.setattr(builder.os, "write", fail_write)
+    else:
+        def fail_fsync(descriptor: int) -> None:
+            raise OSError("simulated publication fsync failure")
+
+        monkeypatch.setattr(builder.os, "fsync", fail_fsync)
+
+    try:
+        if failure == "short-write":
+            builder._publish_no_replace(source, destination, guard)
+            assert destination.read_bytes() == b"authority bytes"
+            return
+        with pytest.raises(OSError):
+            builder._publish_no_replace(source, destination, guard)
+        assert not destination.exists()
+        assert guard.retained == {}
+        monkeypatch.setattr(builder.os, "write", original_write)
+        monkeypatch.setattr(builder.os, "fsync", original_fsync)
+        builder._publish_no_replace(source, destination, guard)
+        assert destination.read_bytes() == b"authority bytes"
+        assert guard.retained == {}
+    finally:
+        guard.close()
+        for path in (source, destination):
+            if path.exists():
+                path.unlink()
+
+
 def test_retained_catalog_temp_rejects_protected_hardlink_swap(tmp_path: Path):
     protected = tmp_path / "protected.db"
     protected.write_bytes(b"protected authority bytes")
@@ -1198,8 +1320,10 @@ def test_existing_authority_db_recovery_compares_logical_catalog_state(tmp_path:
     existing_descriptor = os.open(existing, os.O_RDONLY)
     rebuilt_descriptor = os.open(rebuilt, os.O_RDONLY)
     try:
+        rebuilt_state = builder._logical_catalog_state(
+            rebuilt, rebuilt_descriptor, "rebuilt catalog authority DB")
         assert builder._verify_existing_authority_db(
-            existing, existing_descriptor, rebuilt, rebuilt_descriptor, records,
+            existing, existing_descriptor, rebuilt_state, records,
         ) == builder._sha256_retained_file(
             existing, existing_descriptor, "published catalog authority DB")
     finally:
