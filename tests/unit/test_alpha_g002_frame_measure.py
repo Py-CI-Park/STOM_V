@@ -218,3 +218,8 @@ def test_consumer_accepts_each_canonical_producer_source_path(path):
 @pytest.mark.parametrize("path", ("/sealed/input.json", "C:/sealed/input.json", r"C:\sealed\input.json", r"docs\source.json", "docs/../source.json", "./source.json", "docs//source.json", "docs/source.json/"))
 def test_consumer_rejects_each_noncanonical_producer_source_path(path):
     assert frame._project_path(path) is False
+def test_consumer_accepts_stripped_producer_source_descriptor_and_rejects_read_path() -> None:
+    descriptor = {"path": "alpha_lab/catalog/onset_l3_bank.parquet", "sha256": HASH, "size_bytes": 1}
+    assert frame._artifact(descriptor, "provenance.sources.onset_l3_bank") == descriptor
+    with pytest.raises(frame.FrameSchemaError):
+        frame._artifact({**descriptor, "read_path": "C:/sealed/onset_l3_bank.parquet"}, "provenance.sources.onset_l3_bank")

@@ -39,6 +39,13 @@ CANONICAL = {
 }
 CONTRACT = {"schema": "u7-f0-materialized-input-v2", "factor_coding": {"E0":"synthetic", "E1":"recorded", "D0":"l3_topbook", "D1":"engine_ladder3", "T0":"cap093000", "T1":"terminal092800"}, "years":[2022,2023], "seed":20260715, "replicates":20000, "cell_net_support_pp":[-100,100], "modeled_gap_support_pp":[-200,200], "explanation_threshold":.5}
 SOURCES = ("champion_ledger", "p5_receipt", "onset_l3_bank", "d1_onset_clause_bits", "equivalence_receipt", "champion_passport", "sell_expression")
+class _SourceReadPaths(dict[str, Path]):
+    """Internal read locations and sealed source descriptors from one authority capture."""
+
+    def __init__(self, paths: Mapping[str, Path], descriptors: Mapping[str, Any]) -> None:
+        super().__init__(paths)
+        self.descriptors = descriptors
+
 TICK_COLUMNS = ("index", "현재가", "시가", "등락율", "초당매수수량", "초당매도수량", "시가총액", "매수총잔량", "매도호가1", "매수호가1", "매수호가2", "매수호가3", "매수잔량1", "매수잔량2", "매수잔량3")
 L3_COLUMNS = ("code", "day", "off", "t0", "year", "updown_q", "mktcap_b", "time_b", "l3_net", "l3_labeled", "l3_clause", "l3_exit")
 D1_COLUMNS = ("code", "day", "off", "t0") + tuple(f"bit_{n}" for n in range(1,40))
@@ -68,8 +75,22 @@ def _canonical_project_path(value: Any) -> str:
     if any(part in ("", ".", "..") for part in parts):
         _fail("source authority source path is not canonical")
     return value
+def _canonical_read_path(value: Any) -> str:
+    if not isinstance(value, str) or not value or "\\" in value:
+        _fail("source authority read_path is not canonical")
+    if value.startswith("/"):
+        parts = value[1:].split("/")
+    elif re.match(r"^[A-Za-z]:/", value):
+        parts = value[3:].split("/")
+    else:
+        _fail("source authority read_path is not canonical")
+    if not parts or any(part in ("", ".", "..") for part in parts):
+        _fail("source authority read_path is not canonical")
+    return value
 def _authority_source_path(item: Mapping[str, Any]) -> Path:
     value = _canonical_project_path(item["path"])
+    if "read_path" in item:
+        return Path(_canonical_read_path(item["read_path"]))
     path = (ROOT / Path(*value.split("/"))).resolve()
     try:
         path.relative_to(ROOT.resolve())
@@ -361,9 +382,13 @@ def _validate_authority(authority: Mapping[str,Any]) -> None:
     for key,item in sources.items():
         fields={"path","sha256","size_bytes"}
         if key in ("onset_l3_bank","d1_onset_clause_bits"): fields|={"arrow_schema_sha256","row_groups","row_count"}
+        if isinstance(item, Mapping) and "read_path" in item:
+            fields.add("read_path")
         if not isinstance(item,Mapping) or set(item)!=fields or not isinstance(item["path"],str) or not item["path"]:
             _fail("source authority source descriptor is invalid")
         _canonical_project_path(item["path"])
+        if "read_path" in item:
+            _canonical_read_path(item["read_path"])
         _hash(item["sha256"],f"sources.{key}.sha256")
         if isinstance(item["size_bytes"],bool) or not isinstance(item["size_bytes"],int) or item["size_bytes"]<=0:
             _fail("source authority source descriptor is invalid")
@@ -382,10 +407,10 @@ def _seal_post(physical: dict[str, Any], paths: Mapping[str, tuple[Path, Mapping
         artifact=_artifact(path,canonical=before["path"])
         if artifact["sha256"]!=before["sha256"] or artifact["size_bytes"]!=before["size_bytes"]: _fail("consumed artifact drifted during materialization")
         physical.setdefault(key,{"pre":{"sha256":before["sha256"],"size_bytes":before["size_bytes"],"physical_id":_physical(before)}})["post"]={"sha256":artifact["sha256"],"size_bytes":artifact["size_bytes"],"physical_id":_physical(artifact)}
-def _provenance(ledger: Path,l3: Path,d1: Path,db: Path) -> dict[str,Any]:
+def _provenance(ledger: Path,l3: Path,d1: Path,db: Path) -> tuple[dict[str,Any], _SourceReadPaths]:
     _reject_sqlite_sidecars(db)
     authority,authority_artifact=_capture_json(CANONICAL["authority"],"source authority",canonical=str(CANONICAL["authority"].relative_to(ROOT).as_posix())); _validate_authority(authority)
-    sources={}
+    sources={}; source_read_paths={}
     for key,item in authority["sources"].items():
         path=_authority_source_path(item)
         got=_artifact(path,canonical=item["path"])
@@ -394,6 +419,7 @@ def _provenance(ledger: Path,l3: Path,d1: Path,db: Path) -> dict[str,Any]:
         if key in authority["semantic_receipts"]:
             _validate_semantic_artifact(key, path)
         sources[key]=got
+        source_read_paths[key]=path
     expected_paths={"champion_ledger":ledger,"onset_l3_bank":l3,"d1_onset_clause_bits":d1}
     for key,path in expected_paths.items():
         if path.resolve()!=_authority_source_path(authority["sources"][key]).resolve() or sources[key]!=_artifact(path,canonical=authority["sources"][key]["path"]):
@@ -414,7 +440,8 @@ def _provenance(ledger: Path,l3: Path,d1: Path,db: Path) -> dict[str,Any]:
     physical={key:{"pre":{"sha256":item["sha256"],"size_bytes":item["size_bytes"],"physical_id":_physical(item)},"post":None} for key,item in sources.items()}
     for key,item in (("tick_db",tick),("source_authority",authority_artifact),("preregistration",prereg),("launch",launch_artifact),("materializer",materializer),("measurement_target",measurement_target)):
         physical[key]={"pre":{"sha256":item["sha256"],"size_bytes":item["size_bytes"],"physical_id":_physical(item)},"post":None}
-    return {"schema":"u7-f0-provenance-v3","source_authority":authority_artifact,"sources":sources,"preregistration":prereg,"launch":launch_artifact,"cell_definition_binding":{"champion_sell_sha256":sources["sell_expression"]["sha256"],"equivalence_receipt_sha256":sources["equivalence_receipt"]["sha256"],"champion_passport_sha256":sources["champion_passport"]["sha256"],"states":{"equivalence":"validated","passport":"validated"}},"physical_inputs":physical,"tick_db":{**tick,"physical_id":_physical(tick),"read_only":True,"query_only":True,"pre":{"sha256":tick["sha256"],"size_bytes":tick["size_bytes"],"physical_id":_physical(tick)},"post":None},"materializer":materializer,"measurement_target":measurement_target}
+    provenance={"schema":"u7-f0-provenance-v3","source_authority":authority_artifact,"sources":sources,"preregistration":prereg,"launch":launch_artifact,"cell_definition_binding":{"champion_sell_sha256":sources["sell_expression"]["sha256"],"equivalence_receipt_sha256":sources["equivalence_receipt"]["sha256"],"champion_passport_sha256":sources["champion_passport"]["sha256"],"states":{"equivalence":"validated","passport":"validated"}},"physical_inputs":physical,"tick_db":{**tick,"physical_id":_physical(tick),"read_only":True,"query_only":True,"pre":{"sha256":tick["sha256"],"size_bytes":tick["size_bytes"],"physical_id":_physical(tick)},"post":None},"materializer":materializer,"measurement_target":measurement_target}
+    return provenance,_SourceReadPaths(source_read_paths,authority["sources"])
 
 def _validate_snapshot(snapshot: Mapping[str,Any]) -> None:
     """Import only the measurement validator whose committed bytes match provenance."""
@@ -526,25 +553,24 @@ def main() -> None:
     _check_paths(args,identity=args.identity_only); _reject_sqlite_sidecars(args.tick_db)
     if args.identity_only:
         if any(path.exists() for path in (args.identity_output,args.design_marker,CANONICAL["identity_attempt"],CANONICAL["identity_status"])): _fail("identity attempt/status/crosswalk/design is immutable")
+        provenance,source_read_paths=_provenance(args.ledger,args.l3,args.d1_bits,args.tick_db)
         _reserve_identity()
         try:
-            provenance=_provenance(args.ledger,args.l3,args.d1_bits,args.tick_db)
             ledger=_authoritative_ledger(_records(args.ledger))
             with open_readonly(args.tick_db) as conn: identities=_identity_rows(ledger,conn)
             _reject_sqlite_sidecars(args.tick_db)
-            authority=_read_json(CANONICAL["authority"],"source authority")
-            crosswalk=build_identity_crosswalk(identities,_joined_l3(args.l3,args.d1_bits,identity_only=True,expected=authority["sources"]))
-            custody_paths={key:(_authority_source_path(item),provenance["sources"][key]) for key,item in authority["sources"].items()}
+            crosswalk=build_identity_crosswalk(identities,_joined_l3(args.l3,args.d1_bits,identity_only=True,expected=source_read_paths.descriptors))
+            custody_paths={key:(source_read_paths[key],provenance["sources"][key]) for key in SOURCES}
             custody_paths.update({"tick_db":(args.tick_db,provenance["tick_db"]),"source_authority":(CANONICAL["authority"],provenance["source_authority"]),"preregistration":(CANONICAL["prereg"],provenance["preregistration"]),"launch":(CANONICAL["launch"],provenance["launch"]),"materializer":(Path(__file__),provenance["materializer"]),"measurement_target":(ROOT / provenance["measurement_target"]["path"],provenance["measurement_target"])})
             _reject_sqlite_sidecars(args.tick_db)
             _seal_post(provenance["physical_inputs"],custody_paths)
             tick_post=provenance["physical_inputs"]["tick_db"]["post"]
             provenance["tick_db"]["post"]=tick_post
-            crosswalk["source_custody"]={"physical_inputs":provenance["physical_inputs"],"arrow_metadata":_arrow_metadata(authority["sources"]),"tick_db":provenance["tick_db"]}
+            crosswalk["source_custody"]={"physical_inputs":provenance["physical_inputs"],"arrow_metadata":_arrow_metadata(source_read_paths.descriptors),"tick_db":provenance["tick_db"]}
             _exclusive_json(args.identity_output,crosswalk)
             crosswalk_artifact=_artifact(args.identity_output,canonical=str(args.identity_output.resolve()))
             design_physical={**provenance["physical_inputs"],"identity_crosswalk":{"pre":{"sha256":crosswalk_artifact["sha256"],"size_bytes":crosswalk_artifact["size_bytes"],"physical_id":_physical(crosswalk_artifact)},"post":{"sha256":crosswalk_artifact["sha256"],"size_bytes":crosswalk_artifact["size_bytes"],"physical_id":_physical(crosswalk_artifact)}}}
-            _exclusive_json(args.design_marker,{"schema":"u7-f0-identity-design-marker-v2","experiment_id":EXPERIMENT_ID,"attempt_id":ATTEMPT_ID,"identity_attempt_id":IDENTITY_ATTEMPT_ID,"full_attempt_id":ATTEMPT_ID,"state":"sealed","crosswalk_sha256":crosswalk_artifact["sha256"],"source_authority_sha256":provenance["source_authority"]["sha256"],"preregistration_sha256":provenance["preregistration"]["sha256"],"materializer_sha256":provenance["materializer"]["sha256"],"measurement_sha256":provenance["measurement_target"]["sha256"],"tick_db":provenance["tick_db"],"source_custody":{"physical_inputs":design_physical,"arrow_metadata":_arrow_metadata(authority["sources"]),"tick_db":provenance["tick_db"]}})
+            _exclusive_json(args.design_marker,{"schema":"u7-f0-identity-design-marker-v2","experiment_id":EXPERIMENT_ID,"attempt_id":ATTEMPT_ID,"identity_attempt_id":IDENTITY_ATTEMPT_ID,"full_attempt_id":ATTEMPT_ID,"state":"sealed","crosswalk_sha256":crosswalk_artifact["sha256"],"source_authority_sha256":provenance["source_authority"]["sha256"],"preregistration_sha256":provenance["preregistration"]["sha256"],"materializer_sha256":provenance["materializer"]["sha256"],"measurement_sha256":provenance["measurement_target"]["sha256"],"tick_db":provenance["tick_db"],"source_custody":{"physical_inputs":design_physical,"arrow_metadata":_arrow_metadata(source_read_paths.descriptors),"tick_db":provenance["tick_db"]}})
         except Exception:
             _identity_status("failed"); raise
         _identity_status("succeeded"); return
@@ -554,7 +580,7 @@ def main() -> None:
     identity_status=_read_json(CANONICAL["identity_status"],"identity status")
     if identity_attempt!={"schema":"u7-f0-identity-attempt-v1","experiment_id":EXPERIMENT_ID,"identity_attempt_id":IDENTITY_ATTEMPT_ID,"state":"reserved"} or identity_status!={"schema":"u7-f0-identity-status-v1","experiment_id":EXPERIMENT_ID,"identity_attempt_id":IDENTITY_ATTEMPT_ID,"state":"succeeded"}: _fail("full mode requires the succeeded canonical identity attempt")
     marker,marker_before=_capture_json(args.design_marker,"design marker",canonical=str(args.design_marker.resolve()))
-    provenance=_provenance(args.ledger,args.l3,args.d1_bits,args.tick_db)
+    provenance,source_read_paths=_provenance(args.ledger,args.l3,args.d1_bits,args.tick_db)
     crosswalk,crosswalk_artifact=_capture_json(args.identity_input,"identity crosswalk",canonical=str(args.identity_input.resolve()))
     _validate_identity_closure(crosswalk,marker,provenance,crosswalk_artifact,provenance["sources"])
     attempt=_reserve()
@@ -562,13 +588,13 @@ def main() -> None:
         ledger=_authoritative_ledger(_records(args.ledger))
         with open_readonly(args.tick_db) as conn:
             material=_material_rows(ledger,conn)
-            snapshot=build_snapshot(material,_joined_l3(args.l3,args.d1_bits,expected=provenance["sources"]),conn,provenance=provenance)
+            snapshot=build_snapshot(material,_joined_l3(args.l3,args.d1_bits,expected=source_read_paths.descriptors),conn,provenance=provenance)
         _reject_sqlite_sidecars(args.tick_db)
         projected=[{"identity":event["identity"],"ledger_ordinal":row["ledger_ordinal"],"branch":event["branch"],"match_status":"matched" if event["status"]!="engine_only" else "engine_only"} for row,event in zip(material,snapshot["events"])]
         if crosswalk.get("events")!=projected: _fail("identity crosswalk does not equal recomputed universe")
         snapshot["provenance"]["identity_crosswalk"]=crosswalk_artifact
         snapshot["provenance"]["design_marker"]=marker_before
-        custody_paths={key:(_authority_source_path({"path": provenance["sources"][key]["path"]}),provenance["sources"][key]) for key in SOURCES}
+        custody_paths={key:(source_read_paths[key],provenance["sources"][key]) for key in SOURCES}
         custody_paths.update({"tick_db":(args.tick_db,provenance["tick_db"]),"source_authority":(CANONICAL["authority"],provenance["source_authority"]),"preregistration":(CANONICAL["prereg"],provenance["preregistration"]),"launch":(CANONICAL["launch"],provenance["launch"]),"materializer":(Path(__file__),provenance["materializer"]),"measurement_target":(ROOT / provenance["measurement_target"]["path"],provenance["measurement_target"]),"identity_crosswalk":(args.identity_input,crosswalk_artifact),"design_marker":(args.design_marker,marker_before)})
         _reject_sqlite_sidecars(args.tick_db)
         _seal_post(snapshot["provenance"]["physical_inputs"],custody_paths)

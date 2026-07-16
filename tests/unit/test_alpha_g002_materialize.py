@@ -166,13 +166,97 @@ def test_canonical_layout_and_launch_prereg_bindings(tmp_path: Path) -> None:
     source = (materializer.CANONICAL["prereg"], materializer.CANONICAL["launch"])
     assert "preregistration_sha256" in __import__("inspect").getsource(materializer._provenance)
     assert source == (materializer.CANONICAL["prereg"], materializer.CANONICAL["launch"])
-def test_identity_attempt_is_canonical_and_reserved_before_provenance_or_ledger_reads() -> None:
+def _authority_with_source(materializer, source: dict[str, object]) -> dict[str, object]:
+    sha = "a" * 64
+    sources = {
+        key: {"path": f"artifacts/{key}", "sha256": sha, "size_bytes": 1}
+        for key in materializer.SOURCES
+    }
+    for key in ("onset_l3_bank", "d1_onset_clause_bits"):
+        sources[key].update({"arrow_schema_sha256": sha, "row_groups": 1, "row_count": 1})
+    sources["onset_l3_bank"] = source
+    tick = {"path": "C:/sealed/ticks.db", "sha256": sha, "size_bytes": 1, "physical_id": f"C:/sealed/ticks.db:1:{sha}"}
+    return {
+        "schema": "u7-f0-source-authority-v3",
+        "state": "sealed",
+        "experiment_id": materializer.EXPERIMENT_ID,
+        "attempt_id": materializer.ATTEMPT_ID,
+        "identity_attempt_id": materializer.IDENTITY_ATTEMPT_ID,
+        "preregistration_sha256": sha,
+        "materializer_sha256": sha,
+        "measurement_sha256": sha,
+        "sources": sources,
+        "semantic_receipts": {key: {} for key in ("p5_receipt", "equivalence_receipt", "champion_passport", "sell_expression")},
+        "tick_db": tick,
+    }
+
+
+def test_external_read_path_is_authoritative_only_and_stripped_from_consumer_descriptor(tmp_path: Path) -> None:
+    materializer = load()
+    external = tmp_path / "onset_l3_bank.parquet"
+    external.write_bytes(b"sealed external source")
+    source = {
+        "path": "alpha_lab/catalog/onset_l3_bank.parquet",
+        "read_path": external.as_posix(),
+        "sha256": "a" * 64,
+        "size_bytes": 1,
+        "arrow_schema_sha256": "a" * 64,
+        "row_groups": 1,
+        "row_count": 1,
+    }
+    materializer._validate_authority(_authority_with_source(materializer, source))
+    assert materializer._authority_source_path(source) == external
+    descriptor = materializer._artifact(materializer._authority_source_path(source), canonical=source["path"])
+    assert descriptor["path"] == source["path"]
+    assert "read_path" not in descriptor
+    physical = {"onset_l3_bank": {"pre": {"sha256": descriptor["sha256"], "size_bytes": descriptor["size_bytes"], "physical_id": materializer._physical(descriptor)}, "post": None}}
+    materializer._seal_post(physical, {"onset_l3_bank": (materializer._authority_source_path(source), descriptor)})
+    assert physical["onset_l3_bank"]["post"] == physical["onset_l3_bank"]["pre"]
+    assert external.as_posix() not in physical["onset_l3_bank"]["post"]["physical_id"]
+    frame_spec = importlib.util.spec_from_file_location("g002_frame_consumer_test", ROOT / "scripts/u7_f0_frame_measure.py")
+    frame = importlib.util.module_from_spec(frame_spec)
+    assert frame_spec and frame_spec.loader
+    frame_spec.loader.exec_module(frame)
+    assert frame._artifact(descriptor, "provenance.sources.onset_l3_bank") == descriptor
+
+
+@pytest.mark.parametrize("read_path", ("relative/onset_l3_bank.parquet", r"C:\sealed\onset_l3_bank.parquet"))
+def test_authority_rejects_relative_or_backslash_ambiguous_read_path(read_path: str) -> None:
+    materializer = load()
+    source = {
+        "path": "alpha_lab/catalog/onset_l3_bank.parquet",
+        "read_path": read_path,
+        "sha256": "a" * 64,
+        "size_bytes": 1,
+        "arrow_schema_sha256": "a" * 64,
+        "row_groups": 1,
+        "row_count": 1,
+    }
+    with pytest.raises(ValueError, match="read_path"):
+        materializer._validate_authority(_authority_with_source(materializer, source))
+
+
+def test_authority_rejects_extra_read_path_field() -> None:
+    materializer = load()
+    source = {
+        "path": "alpha_lab/catalog/onset_l3_bank.parquet",
+        "read_path": "C:/sealed/onset_l3_bank.parquet",
+        "read_path_hint": "forbidden",
+        "sha256": "a" * 64,
+        "size_bytes": 1,
+        "arrow_schema_sha256": "a" * 64,
+        "row_groups": 1,
+        "row_count": 1,
+    }
+    with pytest.raises(ValueError, match="source descriptor"):
+        materializer._validate_authority(_authority_with_source(materializer, source))
+def test_identity_preflight_captures_authority_before_reservation_or_ledger_reads() -> None:
     materializer = load()
     source = __import__("inspect").getsource(materializer.main)
     assert materializer.IDENTITY_ATTEMPT_ID
     assert materializer.CANONICAL["identity_attempt"].name == "identity_attempt.json"
     assert materializer.CANONICAL["identity_status"].name == "identity_status.json"
-    assert source.index("_reserve_identity()") < source.index("_provenance(") < source.index("_records(")
+    assert source.index("_provenance(") < source.index("_reserve_identity()") < source.index("_records(")
     assert "identity attempt/status/crosswalk/design is immutable" in source
     assert "identity_attempt_id" in __import__("inspect").getsource(materializer._validate_authority)
 
@@ -189,7 +273,7 @@ def test_identity_status_is_no_clobber_after_a_failed_identity_attempt(tmp_path:
         materializer._identity_status("succeeded")
     assert materializer._read_json(materializer.CANONICAL["identity_status"], "identity status")["state"] == "failed"
 @pytest.mark.parametrize("after_ledger_parse", (False, True))
-def test_identity_failures_before_and_after_ledger_parse_consume_the_attempt(tmp_path: Path, monkeypatch, after_ledger_parse: bool) -> None:
+def test_identity_failures_after_authority_capture_consume_the_attempt(tmp_path: Path, monkeypatch, after_ledger_parse: bool) -> None:
     materializer = load()
     monkeypatch.setitem(materializer.CANONICAL, "identity_attempt", tmp_path / "identity_attempt.json")
     monkeypatch.setitem(materializer.CANONICAL, "identity_status", tmp_path / "identity_status.json")
@@ -197,19 +281,23 @@ def test_identity_failures_before_and_after_ledger_parse_consume_the_attempt(tmp
     read_json = materializer._read_json
     monkeypatch.setattr(materializer, "_read_json", lambda path, label: {} if label == "materialization launch" else read_json(path, label))
     if after_ledger_parse:
-        monkeypatch.setattr(materializer, "_provenance", lambda *_args: {})
+        monkeypatch.setattr(materializer, "_provenance", lambda *_args: ({}, {}))
         monkeypatch.setattr(materializer, "_records", lambda *_args: [])
         monkeypatch.setattr(materializer, "_authoritative_ledger", lambda *_args: (_ for _ in ()).throw(ValueError("after ledger parse")))
     else:
-        monkeypatch.setattr(materializer, "_provenance", lambda *_args: (_ for _ in ()).throw(ValueError("before ledger parse")))
+        monkeypatch.setattr(materializer, "_provenance", lambda *_args: (_ for _ in ()).throw(ValueError("before reservation")))
     argv = ["u7", "--identity-only", "--ledger", str(tmp_path / "ledger.json"), "--l3", str(tmp_path / "l3.parquet"), "--d1-bits", str(tmp_path / "d1.parquet"), "--tick-db", str(tmp_path / "ticks.db"), "--evidence", str(tmp_path / "launch.json"), "--identity-output", str(tmp_path / "crosswalk.json"), "--design-marker", str(tmp_path / "design.json")]
     monkeypatch.setattr(sys, "argv", argv)
     with pytest.raises(ValueError):
         materializer.main()
-    assert materializer._read_json(materializer.CANONICAL["identity_attempt"], "attempt")["identity_attempt_id"] == materializer.IDENTITY_ATTEMPT_ID
-    assert materializer._read_json(materializer.CANONICAL["identity_status"], "status")["state"] == "failed"
-    with pytest.raises(ValueError, match="immutable"):
-        materializer.main()
+    if after_ledger_parse:
+        assert materializer._read_json(materializer.CANONICAL["identity_attempt"], "attempt")["identity_attempt_id"] == materializer.IDENTITY_ATTEMPT_ID
+        assert materializer._read_json(materializer.CANONICAL["identity_status"], "status")["state"] == "failed"
+        with pytest.raises(ValueError, match="immutable"):
+            materializer.main()
+    else:
+        assert not materializer.CANONICAL["identity_attempt"].exists()
+        assert not materializer.CANONICAL["identity_status"].exists()
 def test_cells_seal_forced_and_non_forced_clause_domains() -> None:
     materializer = load()
     raw = {name: {"entry": {"quantity": 1, "price": 100.0}, "exit": {"price": 101.0, "time": "20220103090100", "forced": False}, "cause": {"kind": "sell_clause", "clause": 17}} for name in materializer.CELL_NAMES}
@@ -384,7 +472,7 @@ def test_full_preflight_finishes_before_reservation_and_outcome_reads() -> None:
     source = __import__("inspect").getsource(materializer.main)
     full_mode = source[source.index('if any(getattr(args,x) is None for x in ("output","attempt","status","identity_input","design_marker"))'):]
     reserve = full_mode.index("attempt=_reserve()")
-    assert full_mode.index("provenance=_provenance(") < reserve
+    assert full_mode.index("provenance,source_read_paths=_provenance(") < reserve
     assert full_mode.index("crosswalk,crosswalk_artifact=_capture_json(") < reserve
     assert full_mode.index("_validate_identity_closure(") < reserve < full_mode.index("_records(")
     assert "authority=_read_json(CANONICAL[\"authority\"]" not in full_mode
@@ -429,7 +517,7 @@ def test_malformed_full_preflight_never_consumes_attempt_or_writes_status_or_out
         monkeypatch.setattr(materializer, "_provenance", lambda *_args: (_ for _ in ()).throw(ValueError("malformed prerequisite")))
     else:
         monkeypatch.setattr(materializer, "_capture_json", lambda *_args, **_kwargs: ({}, descriptor))
-        monkeypatch.setattr(materializer, "_provenance", lambda *_args: {"sources": {}})
+        monkeypatch.setattr(materializer, "_provenance", lambda *_args: ({"sources": {}}, {}))
         monkeypatch.setattr(materializer, "_validate_identity_closure", lambda *_args: (_ for _ in ()).throw(ValueError("malformed prerequisite")))
     monkeypatch.setattr(sys, "argv", ["u7", "--ledger", str(tmp_path / "ledger.json"), "--l3", str(tmp_path / "l3.parquet"), "--d1-bits", str(tmp_path / "d1.parquet"), "--tick-db", str(tmp_path / "ticks.db"), "--output", str(output), "--attempt", str(attempt), "--status", str(status), "--evidence", str(tmp_path / "launch.json"), "--identity-input", str(tmp_path / "crosswalk.json"), "--design-marker", str(tmp_path / "design.json")])
     with pytest.raises(ValueError, match="malformed prerequisite"):
@@ -447,7 +535,7 @@ def test_malformed_crosswalk_main_preflight_does_not_consume_attempt(tmp_path: P
     descriptor = {"path": "sealed", "sha256": "a" * 64, "size_bytes": 1}
     malformed = {"schema": "u7-f0-identity-crosswalk-v2", "experiment_id": materializer.EXPERIMENT_ID, "attempt_id": materializer.ATTEMPT_ID, "identity_attempt_id": materializer.IDENTITY_ATTEMPT_ID, "events": [], "source_custody": {}}
     monkeypatch.setattr(materializer, "_capture_json", lambda *_args, **_kwargs: (malformed, descriptor))
-    monkeypatch.setattr(materializer, "_provenance", lambda *_args: {"sources": {}})
+    monkeypatch.setattr(materializer, "_provenance", lambda *_args: ({"sources": {}}, {}))
     def validate(crosswalk, *_args):
         if not isinstance(crosswalk["events"], list) or len(crosswalk["events"]) != 298:
             raise ValueError("full mode crosswalk universe is invalid")
