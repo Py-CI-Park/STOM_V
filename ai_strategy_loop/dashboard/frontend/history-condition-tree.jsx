@@ -49,15 +49,20 @@ function _hctPresence(flag) {
   return flag ? "\u2713" : "\u2014";
 }
 
-// 백엔드 필드명이 확정되기 전까지 흔한 변형을 모두 관대하게 인식한다(존재하지 않으면 미확인 표시).
-function _hctHasCodeLookup(row) {
-  return !!(row.code_lookup || row.code_ref || row.has_code_lookup || row.code_id);
-}
-function _hctHasPrompt(row) {
-  return !!(row.prompt || row.has_prompt || row.prompt_ref);
-}
-function _hctHasHypothesis(row) {
-  return !!(row.hypothesis || row.has_hypothesis || row.hypothesis_ref);
+// 서버 계약(history_adapters._generation_label)에 고정: ConditionNode.label은
+// loop_run 어댑터에서 정렬 키 JSON 문자열(code_lookup_status, hypotheses_present,
+// parent_condition_id, buy_name/sell_name, gen_no/parent_gen)이다. campaign
+// 어댑터의 label은 일반 문자열이므로 파싱 실패 시 null(메타 없음)로 처리한다.
+// 추측성 키 별칭 탐색은 금지 — 서버가 emit하지 않는 신호는 표시하지 않는다.
+function _hctLabelMeta(row) {
+  const label = row && row.label;
+  if (typeof label !== "string" || label[0] !== "{") return null;
+  try {
+    const meta = JSON.parse(label);
+    return (meta && typeof meta === "object") ? meta : null;
+  } catch {
+    return null;
+  }
 }
 
 function _hctStatusCell(row) {
@@ -370,20 +375,25 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
                             {stageConditions.map(cond => {
                               const condOpen = !!expandedConditions[cond.condition_id];
                               const condEvaluations = evaluationRows.filter(e => e.condition_id === cond.condition_id);
+                              const meta = _hctLabelMeta(cond);
+                              const parentId = (meta && meta.parent_condition_id) || cond.parent_condition_id;
                               return (
                                 <div key={cond.condition_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: "pointer" }} onClick={() => toggleCondition(cond.condition_id)}>
                                     <span className="mono">{condOpen ? "▼" : "▶"}</span>
                                     <span className="badge" style={{ color: cond.side === "sell" ? "var(--red)" : "var(--teal)" }}>{cond.side || "-"}</span>
                                     <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{cond.condition_id}</span>
-                                    {cond.parent_condition_id && (
+                                    {parentId && (
                                       <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>
-                                        parent={cond.parent_condition_id}
+                                        parent={parentId}
                                       </span>
                                     )}
-                                    <span className="badge" title="code-lookup 존재 여부">code {_hctPresence(_hctHasCodeLookup(cond))}</span>
-                                    <span className="badge" title="프롬프트 존재 여부">프롬프트 {_hctPresence(_hctHasPrompt(cond))}</span>
-                                    <span className="badge" title="가설 존재 여부">가설 {_hctPresence(_hctHasHypothesis(cond))}</span>
+                                    {meta && meta.code_lookup_status && (
+                                      <span className="badge" title="buy/sell 이름 참조의 코드 조회 상태 (서버 code_lookup_status)">code {meta.code_lookup_status}</span>
+                                    )}
+                                    {meta && ("hypotheses_present" in meta) && (
+                                      <span className="badge" title="가설(hypotheses_json) 존재 여부">가설 {_hctPresence(!!meta.hypotheses_present)}</span>
+                                    )}
                                   </div>
                                   {condOpen && (
                                     <div style={{ marginTop: 6, marginLeft: 18 }}>
