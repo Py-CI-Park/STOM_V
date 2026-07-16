@@ -84,9 +84,9 @@ KILL 뒤 pair rescue, offset retry, seed 변경, denominator 재정의, 셀 병�
 현재 이 문서는 source authority, outcome 산출물, finalizer, receipt, claim 또는 promotion이 아니다.
 
 1. **Seal only:** 이 문서와 고정 계약만 커밋한다. 이 단계에서 outcome read, measurement, ledger append, DB write, engine action은 금지한다.
-2. **Builder/materialization:** future input `docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json.gz`을 정확히 한 번 만들 수 있다. builder는 §2.1 원천의 pre bytes와 materialization 후 post bytes를 finalizer 전에 evidence로 묶어야 한다.
+2. **Builder/materialization:** future input `docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json`을 정확히 한 번 만들 수 있다. builder는 §2.1 원천의 pre bytes와 materialization 후 post bytes를 finalizer 전에 evidence로 묶어야 한다.
 3. **Finalizer:** materialized input과 source pre/post binding이 커밋된 뒤에만 가능하다. finalizer는 promotion 또는 registration 권한을 부여하지 않는다.
-4. **Receipt/claim target run:** `scripts/g005_c1_time_shift.py` target execution은 receipt/claim-bound로 정확히 한 번만 허용한다. rerun, retry, variant run, 보정 실행 또는 rescue run은 금지한다.
+4. **Receipt/claim target run:** `scripts/g005_c1_time_shift.py` target execution은 external runlab receipt/claim authority에 묶여 정확히 한 번만 허용한다. 공식 receipt/claim 및 one-shot enforcement는 G003와 같이 외부 runlab에 남아 있으며, target script의 filesystem guard가 아니다. rerun, retry, variant run, 보정 실행 또는 rescue run은 금지한다.
 
 `target_db` sentinel은 기존 비승격 코드 경로 `scripts/g005_c1_time_shift.py`를 가리키는 authority-schema 자리일 뿐이며, DB 생성·쓰기·등록·promotion을 뜻하지 않는다.
 
@@ -120,7 +120,7 @@ KILL 뒤 pair rescue, offset retry, seed 변경, denominator 재정의, 셀 병�
   "dynamic_python_dependencies": [],
   "non_python_dependencies": [
     "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",
-    "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json.gz"
+    "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json"
   ]
 }
 ```
