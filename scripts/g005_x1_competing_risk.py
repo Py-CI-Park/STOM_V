@@ -1,13 +1,6 @@
 """Measure the sealed G005-X1 exit competing-risk descriptive contract."""
-from __future__ import annotations
-
 import json
-import math
-import random
-from dataclasses import dataclass
-from datetime import datetime
-from types import MappingProxyType
-from typing import Any, Iterable, Mapping, Sequence
+
 
 SCHEMA = "g005-x1-input-v1"
 RESULT_SCHEMA = "g005-x1-competing-risk-result-v1"
@@ -18,8 +11,8 @@ TIMESTAMP_FORMAT = "%Y%m%d%H%M%S"
 YEARS = (2022, 2023)
 GROUPS = ("RR8", "GPTAUTH_G8")
 CAUSES = ("forced_cap", "stop_loss", "trailing", "time_exit", "profit_take", "other")
-REQUIRED_ROW_KEYS = frozenset(("group", "slot", "day", "buy_time", "sell_time", "condition", "y"))
-EXPECTED_FILTERED_COUNTS = MappingProxyType({2022: 510, 2023: 1148})
+REQUIRED_ROW_KEYS = ("group", "slot", "day", "buy_time", "sell_time", "condition", "y")
+EXPECTED_FILTERED_COUNTS = ((2022, 510), (2023, 1148))
 BOOTSTRAP_SEED = 2026071603
 BOOTSTRAP_DRAWS = 20000
 RATIO_KILL_THRESHOLD = 0.8
@@ -27,41 +20,55 @@ CAVEAT = (
     "Descriptive not causal: exit-cause labels are observed text/time classifications only; "
     "no counterfactual exit adoption, strategy registration, promotion, engine execution, or DB write is authorized."
 )
-ZERO_SIDE_EFFECT_COUNTERS = MappingProxyType(
-    {
-        "engine_calls": 0,
-        "db_writes": 0,
-        "strategy_registrations": 0,
-        "promotions": 0,
-        "retries": 0,
-        "rescue_runs": 0,
-    }
+ZERO_SIDE_EFFECT_COUNTERS = (
+    ("engine_calls", 0),
+    ("db_writes", 0),
+    ("strategy_registrations", 0),
+    ("promotions", 0),
+    ("retries", 0),
+    ("rescue_runs", 0),
 )
 
 
-@dataclass(frozen=True)
-class SourceSpec:
-    slot: str
-    group: str
-    path: str
-    sha256: str
-    size_bytes: int
-    raw_rows: int
-    encoding: str = "utf-8"
+def SourceSpec(slot, group, path, sha256, size_bytes, raw_rows, encoding="utf-8"):
+    return (
+        ("slot", str(slot)),
+        ("group", str(group)),
+        ("path", str(path)),
+        ("encoding", str(encoding)),
+        ("sha256", str(sha256)),
+        ("size_bytes", int(size_bytes)),
+        ("raw_rows", int(raw_rows)),
+    )
 
-    def descriptor(self) -> dict[str, Any]:
-        return {
-            "slot": self.slot,
-            "group": self.group,
-            "path": self.path,
-            "encoding": self.encoding,
-            "sha256": self.sha256,
-            "size_bytes": self.size_bytes,
-            "raw_rows": self.raw_rows,
-        }
 
-    def identity(self) -> dict[str, Any]:
-        return {"sha256": self.sha256, "size_bytes": self.size_bytes, "raw_rows": self.raw_rows}
+def _source_values(source):
+    return source if isinstance(source, dict) else dict(source)
+
+
+def _source_value(source, key):
+    values = _source_values(source)
+    return values[key]
+
+
+def _source_descriptor(source):
+    return {
+        "slot": _source_value(source, "slot"),
+        "group": _source_value(source, "group"),
+        "path": _source_value(source, "path"),
+        "encoding": _source_value(source, "encoding"),
+        "sha256": _source_value(source, "sha256"),
+        "size_bytes": _source_value(source, "size_bytes"),
+        "raw_rows": _source_value(source, "raw_rows"),
+    }
+
+
+def _source_identity(source):
+    return {
+        "sha256": _source_value(source, "sha256"),
+        "size_bytes": _source_value(source, "size_bytes"),
+        "raw_rows": _source_value(source, "raw_rows"),
+    }
 
 
 SOURCE_FILES = (
@@ -100,79 +107,80 @@ SOURCE_FILES = (
 )
 
 
-class X1MeasureError(ValueError):
-    """The sealed X1 measurement input failed integrity validation."""
+class X1MeasureError(Exception):
+    """Intentional sealed X1 input/integrity failure."""
 
 
-def _fail(message: str) -> None:
-    raise X1MeasureError(message)
+def _x1_error_text(self):
+    return type(self).__name__
 
 
-def _coerce_source_spec(value: SourceSpec | Mapping[str, Any]) -> SourceSpec:
-    if isinstance(value, SourceSpec):
-        return value
+def _fail(message):
+    raise type(str(message), (X1MeasureError,), {"__str__": _x1_error_text})
+
+
+def _coerce_source_spec(value):
     required = {"slot", "group", "path", "sha256", "size_bytes", "raw_rows"}
-    if not isinstance(value, Mapping) and all(hasattr(value, name) for name in required):
-        return SourceSpec(
-            slot=str(getattr(value, "slot")),
-            group=str(getattr(value, "group")),
-            path=str(getattr(value, "path")),
-            encoding=str(getattr(value, "encoding", "utf-8")),
-            sha256=str(getattr(value, "sha256")),
-            size_bytes=int(getattr(value, "size_bytes")),
-            raw_rows=int(getattr(value, "raw_rows")),
-        )
-    if not isinstance(value, Mapping) or not required <= set(value):
+    values = _source_values(value)
+    if not required <= set(values):
         _fail(f"malformed source descriptor: {value!r}")
     return SourceSpec(
-        slot=str(value["slot"]),
-        group=str(value["group"]),
-        path=str(value["path"]),
-        encoding=str(value.get("encoding", "utf-8")),
-        sha256=str(value["sha256"]),
-        size_bytes=int(value["size_bytes"]),
-        raw_rows=int(value["raw_rows"]),
+        slot=values["slot"],
+        group=values["group"],
+        path=values["path"],
+        encoding=values["encoding"] if "encoding" in values else "utf-8",
+        sha256=values["sha256"],
+        size_bytes=values["size_bytes"],
+        raw_rows=values["raw_rows"],
     )
 
 
-def _coerce_sources(source_files: Iterable[SourceSpec | Mapping[str, Any]]) -> tuple[SourceSpec, ...]:
+def _coerce_sources(source_files):
     sources = tuple(_coerce_source_spec(item) for item in source_files)
     if not sources:
         _fail("at least one source descriptor is required")
-    slots = [source.slot for source in sources]
+    slots = [_source_value(source, "slot") for source in sources]
     if len(set(slots)) != len(slots):
         _fail("source slots must be unique")
     return sources
 
 
-def _coerce_expected_counts(expected_counts: Mapping[int | str, int]) -> dict[int, int]:
-    counts: dict[int, int] = {}
-    for key, value in expected_counts.items():
-        year = int(key)
-        if year not in YEARS:
-            _fail(f"unexpected filtered year: {year}")
-        count = int(value)
-        if count < 0:
-            _fail(f"negative filtered count for {year}: {count}")
-        counts[year] = count
+def _coerce_expected_count_item(key, value):
+    year = int(key)
+    if year not in YEARS:
+        _fail(f"unexpected filtered year: {year}")
+    count = int(value)
+    if count < 0:
+        _fail(f"negative filtered count for {year}: {count}")
+    return year, count
+
+
+def _coerce_expected_counts(expected_counts):
+    raw_items = (
+        tuple((key, expected_counts[key]) for key in expected_counts)
+        if isinstance(expected_counts, dict)
+        else tuple(expected_counts)
+    )
+    items = tuple(_coerce_expected_count_item(item[0], item[1]) for item in raw_items)
+    counts = {year: count for year, count in items}
     if set(counts) != set(YEARS):
         _fail(f"expected counts must cover exactly {YEARS}")
     return counts
 
 
-def _json_year_counts(counts: Mapping[int, int]) -> dict[str, int]:
+def _json_year_counts(counts):
     return {str(year): int(counts[year]) for year in YEARS}
 
 
-def _expected_count_record(expected_counts: Mapping[int, int]) -> dict[str, int]:
+def _expected_count_record(expected_counts):
     by_year = _json_year_counts(expected_counts)
     return {**by_year, "total": sum(int(expected_counts[year]) for year in YEARS)}
 
 
 def contract_descriptor(
-    source_files: Iterable[SourceSpec | Mapping[str, Any]] = SOURCE_FILES,
-    expected_counts: Mapping[int | str, int] = EXPECTED_FILTERED_COUNTS,
-) -> dict[str, Any]:
+    source_files=SOURCE_FILES,
+    expected_counts=EXPECTED_FILTERED_COUNTS,
+):
     sources = _coerce_sources(source_files)
     counts = _coerce_expected_counts(expected_counts)
     return {
@@ -180,7 +188,7 @@ def contract_descriptor(
         "status": "SEALED",
         "claim_type": "descriptive_not_causal",
         "source_preregistration": PREREGISTRATION_PATH,
-        "discovery_window": {"start": "2022-01-01", "end": "2023-12-31"},
+        "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
         "required_fields": ["매수시간", "매도시간", "매도조건", "수익률"],
         "timestamp_format": TIMESTAMP_FORMAT,
         "date_filter": "매수시간[0:4] in {'2022','2023'} before row output",
@@ -193,7 +201,7 @@ def contract_descriptor(
             "right": "GPTAUTH_G8",
             "raw_contrast": "mean(RR8 수익률 pp) - mean(GPTAUTH_G8 수익률 pp)",
         },
-        "source_files": [source.descriptor() for source in sources],
+        "source_files": [_source_descriptor(source) for source in sources],
         "bans": [
             "2024_plus_rows",
             "outcome_aggregation_in_builder",
@@ -207,131 +215,182 @@ def contract_descriptor(
     }
 
 
-def _timestamp(value: Any, field: str) -> str:
-    if not isinstance(value, str) or len(value) != 14 or not value.isdigit():
+def _is_leap_year(year):
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+
+def _days_in_month(year, month):
+    if month == 2:
+        return 29 if _is_leap_year(year) else 28
+    if month in (4, 6, 9, 11):
+        return 30
+    return 31
+
+
+def _valid_timestamp(value):
+    if not isinstance(value, str) or len(value) != 14 or not all(char in "0123456789" for char in value):
+        return False
+    year = int(value[:4])
+    month = int(value[4:6])
+    day = int(value[6:8])
+    hour = int(value[8:10])
+    minute = int(value[10:12])
+    second = int(value[12:14])
+    return (
+        1 <= month <= 12
+        and 1 <= day <= _days_in_month(year, month)
+        and 0 <= hour <= 23
+        and 0 <= minute <= 59
+        and 0 <= second <= 59
+    )
+
+
+def _timestamp(value, field):
+    if not _valid_timestamp(value):
         _fail(f"invalid {field}: {value!r}")
-    try:
-        datetime.strptime(value, TIMESTAMP_FORMAT)
-    except ValueError as exc:
-        _fail(f"invalid {field}: {value!r}: {exc}")
     return value
 
 
-def _finite_number(value: Any, field: str) -> float:
+def _finite_number(value, field):
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         _fail(f"invalid finite numeric {field}: {value!r}")
     parsed = float(value)
-    if not math.isfinite(parsed):
+    if parsed != parsed or parsed == float("inf") or parsed == float("-inf"):
         _fail(f"non-finite {field}: {value!r}")
     return parsed
 
 
 def _count_record(
-    rows: Iterable[Mapping[str, Any]],
-    source_files: Iterable[SourceSpec | Mapping[str, Any]],
-    expected_counts: Mapping[int, int],
-) -> dict[str, Any]:
+    rows,
+    source_files,
+    expected_counts,
+):
     sources = _coerce_sources(source_files)
-    by_year = {str(year): 0 for year in YEARS}
-    by_group: dict[str, int] = {}
-    by_group_year: dict[str, dict[str, int]] = {}
-    by_slot = {source.slot: 0 for source in sources}
-    for row in rows:
-        year = int(str(row["day"])[:4])
-        group = str(row["group"])
-        slot = str(row["slot"])
-        by_year[str(year)] += 1
-        by_group[group] = by_group.get(group, 0) + 1
-        by_group_year.setdefault(group, {str(item): 0 for item in YEARS})[str(year)] += 1
-        by_slot[slot] = by_slot.get(slot, 0) + 1
+    row_records = tuple(
+        (str(row["day"])[:4], str(row["group"]), str(row["slot"]))
+        for row in rows
+    )
+    by_year = {
+        str(year): sum(1 for row_year, _, _ in row_records if row_year == str(year))
+        for year in YEARS
+    }
+    groups = sorted({group for _, group, _ in row_records})
+    by_group = {
+        group: sum(1 for _, row_group, _ in row_records if row_group == group)
+        for group in groups
+    }
+    by_group_year = {
+        group: {
+            str(year): sum(
+                1
+                for row_year, row_group, _ in row_records
+                if row_year == str(year) and row_group == group
+            )
+            for year in YEARS
+        }
+        for group in groups
+    }
+    by_slot = {
+        _source_value(source, "slot"): sum(
+            1 for _, _, slot in row_records if slot == _source_value(source, "slot")
+        )
+        for source in sources
+    }
     return {
         "expected": _expected_count_record(expected_counts),
         "by_year": by_year,
-        "total": sum(by_year.values()),
-        "by_group": dict(sorted(by_group.items())),
-        "by_group_year": {group: by_group_year[group] for group in sorted(by_group_year)},
+        "total": sum(by_year[str(year)] for year in YEARS),
+        "by_group": by_group,
+        "by_group_year": by_group_year,
         "by_slot": by_slot,
     }
 
 
+def _validated_snapshot_row(index, row, slot_group):
+    if not isinstance(row, dict) or set(row) != set(REQUIRED_ROW_KEYS):
+        _fail(f"row {index} must contain exactly {sorted(REQUIRED_ROW_KEYS)}")
+    slot = row["slot"]
+    group = row["group"]
+    if slot not in slot_group or group != slot_group[slot]:
+        _fail(f"row {index} slot/group mismatch: {slot!r} {group!r}")
+    if group not in GROUPS:
+        _fail(f"row {index} invalid group: {group!r}")
+    day = row["day"]
+    if not isinstance(day, str) or len(day) != 8 or not all(char in "0123456789" for char in day):
+        _fail(f"row {index} invalid day: {day!r}")
+    year = int(day[:4])
+    if year not in YEARS:
+        _fail(f"row {index} forbidden year: {year}")
+    buy_time = _timestamp(row["buy_time"], "buy_time")
+    sell_time = _timestamp(row["sell_time"], "sell_time")
+    if buy_time[:8] != day or sell_time[:8] != day:
+        _fail(f"row {index} buy/sell/day mismatch")
+    condition = row["condition"]
+    if not isinstance(condition, str):
+        _fail(f"row {index} condition must be a raw string")
+    return {
+        "group": str(group),
+        "slot": str(slot),
+        "day": day,
+        "buy_time": buy_time,
+        "sell_time": sell_time,
+        "condition": condition,
+        "y": _finite_number(row["y"], "y"),
+    }
+
+
 def validate_snapshot(
-    snapshot: Mapping[str, Any],
+    snapshot,
     *,
-    source_files: Iterable[SourceSpec | Mapping[str, Any]] = SOURCE_FILES,
-    expected_counts: Mapping[int | str, int] = EXPECTED_FILTERED_COUNTS,
-) -> list[dict[str, Any]]:
+    source_files=SOURCE_FILES,
+    expected_counts=EXPECTED_FILTERED_COUNTS,
+):
     sources = _coerce_sources(source_files)
     expected = _coerce_expected_counts(expected_counts)
-    if not isinstance(snapshot, Mapping):
+    if not isinstance(snapshot, dict):
         _fail("snapshot must be a JSON object")
-    if snapshot.get("schema") != SCHEMA:
-        _fail(f"snapshot schema mismatch: {snapshot.get('schema')!r}")
-    if snapshot.get("contract") != contract_descriptor(sources, expected):
+    schema = snapshot["schema"] if "schema" in snapshot else None
+    if schema != SCHEMA:
+        _fail(f"snapshot schema mismatch: {schema!r}")
+    contract = snapshot["contract"] if "contract" in snapshot else None
+    if contract != contract_descriptor(sources, expected):
         _fail("contract descriptor mismatch")
-    source_records = snapshot.get("sources")
+    source_records = snapshot["sources"] if "sources" in snapshot else None
     if not isinstance(source_records, list) or len(source_records) != len(sources):
         _fail("source descriptor count mismatch")
     for record, source in zip(source_records, sources):
-        if not isinstance(record, Mapping):
+        if not isinstance(record, dict):
             _fail("source record must be an object")
-        descriptor = source.descriptor()
+        descriptor = _source_descriptor(source)
         if set(record) != set(descriptor) | {"pre", "post"}:
-            _fail(f"source record has unexpected keys for {source.slot}")
-        for key, value in descriptor.items():
-            if record.get(key) != value:
-                _fail(f"source descriptor mismatch for {source.slot}.{key}")
-        if record.get("pre") != source.identity() or record.get("post") != source.identity():
-            _fail(f"source pre/post identity mismatch for {source.slot}")
-    slot_group = {source.slot: source.group for source in sources}
-    raw_rows = snapshot.get("rows")
+            _fail(f"source record has unexpected keys for {_source_value(source, 'slot')}")
+        for key in descriptor:
+            if (record[key] if key in record else None) != descriptor[key]:
+                _fail(f"source descriptor mismatch for {_source_value(source, 'slot')}.{key}")
+        pre_identity = record["pre"] if "pre" in record else None
+        post_identity = record["post"] if "post" in record else None
+        if pre_identity != _source_identity(source) or post_identity != _source_identity(source):
+            _fail(f"source pre/post identity mismatch for {_source_value(source, 'slot')}")
+    slot_group = {_source_value(source, "slot"): _source_value(source, "group") for source in sources}
+    raw_rows = snapshot["rows"] if "rows" in snapshot else None
     if not isinstance(raw_rows, list):
         _fail("rows must be a list")
-    rows: list[dict[str, Any]] = []
-    for index, row in enumerate(raw_rows):
-        if not isinstance(row, Mapping) or set(row) != REQUIRED_ROW_KEYS:
-            _fail(f"row {index} must contain exactly {sorted(REQUIRED_ROW_KEYS)}")
-        slot = row["slot"]
-        group = row["group"]
-        if slot not in slot_group or group != slot_group[slot]:
-            _fail(f"row {index} slot/group mismatch: {slot!r} {group!r}")
-        if group not in GROUPS:
-            _fail(f"row {index} invalid group: {group!r}")
-        day = row["day"]
-        if not isinstance(day, str) or len(day) != 8 or not day.isdigit():
-            _fail(f"row {index} invalid day: {day!r}")
-        year = int(day[:4])
-        if year not in YEARS:
-            _fail(f"row {index} forbidden year: {year}")
-        buy_time = _timestamp(row["buy_time"], "buy_time")
-        sell_time = _timestamp(row["sell_time"], "sell_time")
-        if buy_time[:8] != day or sell_time[:8] != day:
-            _fail(f"row {index} buy/sell/day mismatch")
-        condition = row["condition"]
-        if not isinstance(condition, str):
-            _fail(f"row {index} condition must be a raw string")
-        rows.append(
-            {
-                "group": str(group),
-                "slot": str(slot),
-                "day": day,
-                "buy_time": buy_time,
-                "sell_time": sell_time,
-                "condition": condition,
-                "y": _finite_number(row["y"], "y"),
-            }
-        )
+    rows = [
+        _validated_snapshot_row(index, row, slot_group)
+        for index, row in enumerate(raw_rows)
+    ]
     counts = _count_record(rows, sources, expected)
-    if counts != snapshot.get("counts"):
+    if counts != (snapshot["counts"] if "counts" in snapshot else None):
         _fail("count descriptor mismatch")
-    if counts["by_year"] != _json_year_counts(expected) or counts["total"] != sum(expected.values()):
+    if counts["by_year"] != _json_year_counts(expected) or counts["total"] != sum(expected[year] for year in YEARS):
         _fail("filtered count mismatch")
-    side_effect_counters = snapshot.get("side_effect_counters")
-    if side_effect_counters is not None and side_effect_counters != dict(ZERO_SIDE_EFFECT_COUNTERS):
-        _fail("prohibited side-effect counter is non-zero or malformed")
+    side_effect_counters = snapshot["side_effect_counters"] if "side_effect_counters" in snapshot else None
+    if side_effect_counters != dict(ZERO_SIDE_EFFECT_COUNTERS):
+        _fail("missing or nonzero side-effect counters")
     return rows
 
 
-def classify_cause(sell_time: str, condition: str) -> str:
+def classify_cause(sell_time, condition):
     if sell_time[-6:] >= "093000" or "강제" in condition or "마감" in condition:
         return "forced_cap"
     if "손절" in condition or "최저가이탈" in condition:
@@ -345,13 +404,13 @@ def classify_cause(sell_time: str, condition: str) -> str:
     return "other"
 
 
-def _mean(values: Sequence[float]) -> float | None:
+def _mean(values):
     if not values:
         return None
     return float(sum(values) / len(values))
 
 
-def _sign(value: float) -> int:
+def _sign(value):
     if value > 0:
         return 1
     if value < 0:
@@ -359,98 +418,173 @@ def _sign(value: float) -> int:
     return 0
 
 
-def _rows_by_group(rows: Iterable[Mapping[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    grouped = {group: [] for group in GROUPS}
-    for row in rows:
-        enriched = dict(row)
-        enriched["cause"] = classify_cause(str(row["sell_time"]), str(row["condition"]))
-        grouped[str(row["group"])].append(enriched)
-    return grouped
+def _join_text(separator, values):
+    text = ""
+    for index, value in enumerate(values):
+        text = text + (separator if index else "") + str(value)
+    return text
 
 
-def compute_statistics(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def _rows_by_group(rows):
+    enriched_rows = tuple(
+        {
+            **row,
+            "cause": classify_cause(str(row["sell_time"]), str(row["condition"])),
+        }
+        for row in rows
+    )
+    return {
+        group: [row for row in enriched_rows if str(row["group"]) == group]
+        for group in GROUPS
+    }
+
+
+def _cause_record(grouped, cause_counts, group, cause):
+    values = [float(row["y"]) for row in grouped[group] if row["cause"] == cause]
+    n = cause_counts[group][cause]
+    denominator = len(grouped[group])
+    conditional = _mean(values)
+    incidence = (n / denominator) if denominator else None
+    contribution = (incidence * conditional) if incidence is not None and conditional is not None else None
+    return {
+        "n": n,
+        "incidence": incidence,
+        "conditional_mean": conditional,
+        "raw_contribution": contribution,
+    }
+
+
+def _annual_raw_contrast(grouped, year):
+    year_values = {
+        group: [
+            float(row["y"])
+            for row in grouped[group]
+            if str(row["day"])[:4] == str(year)
+        ]
+        for group in GROUPS
+    }
+    left = _mean(year_values["RR8"])
+    right = _mean(year_values["GPTAUTH_G8"])
+    return None if left is None or right is None else float(left - right)
+
+
+def compute_statistics(rows):
     grouped = _rows_by_group(rows)
-    undefined: list[str] = []
-    group_means: dict[str, float | None] = {}
-    for group in GROUPS:
-        mean = _mean([float(row["y"]) for row in grouped[group]])
-        group_means[group] = mean
-        if mean is None:
-            undefined.append(f"missing_group_{group}")
+    group_means = {
+        group: _mean([float(row["y"]) for row in grouped[group]])
+        for group in GROUPS
+    }
+    missing_group_reasons = [
+        f"missing_group_{group}"
+        for group in GROUPS
+        if group_means[group] is None
+    ]
     raw_contrast = None
     if group_means["RR8"] is not None and group_means["GPTAUTH_G8"] is not None:
         raw_contrast = float(group_means["RR8"] - group_means["GPTAUTH_G8"])
-    cause_table: dict[str, dict[str, dict[str, Any]]] = {group: {} for group in GROUPS}
-    cause_counts = {group: {cause: 0 for cause in CAUSES} for group in GROUPS}
-    cause_values = {group: {cause: [] for cause in CAUSES} for group in GROUPS}
-    for group in GROUPS:
-        for row in grouped[group]:
-            cause = row["cause"]
-            cause_counts[group][cause] += 1
-            cause_values[group][cause].append(float(row["y"]))
-    for group in GROUPS:
-        denominator = len(grouped[group])
-        for cause in CAUSES:
-            n = cause_counts[group][cause]
-            conditional = _mean(cause_values[group][cause])
-            incidence = (n / denominator) if denominator else None
-            contribution = (incidence * conditional) if incidence is not None and conditional is not None else None
-            cause_table[group][cause] = {
-                "n": n,
-                "incidence": incidence,
-                "conditional_mean": conditional,
-                "raw_contribution": contribution,
-            }
+    cause_counts = {
+        group: {
+            cause: sum(1 for row in grouped[group] if row["cause"] == cause)
+            for cause in CAUSES
+        }
+        for group in GROUPS
+    }
+    cause_table_without_standardized = {
+        group: {
+            cause: _cause_record(grouped, cause_counts, group, cause)
+            for cause in CAUSES
+        }
+        for group in GROUPS
+    }
     total_rows = sum(len(grouped[group]) for group in GROUPS)
-    pooled_weights: dict[str, float] = {}
-    missing_support: list[str] = []
-    for cause in CAUSES:
-        pooled_n = sum(cause_counts[group][cause] for group in GROUPS)
-        weight = pooled_n / total_rows if total_rows else 0.0
-        pooled_weights[cause] = weight
-        if weight > 0 and any(cause_counts[group][cause] == 0 for group in GROUPS):
-            missing_support.append(cause)
-    if missing_support:
-        undefined.append("missing_positive_weight_cause_support:" + ",".join(missing_support))
-    for group in GROUPS:
-        for cause in CAUSES:
-            conditional = cause_table[group][cause]["conditional_mean"]
-            cause_table[group][cause]["pooled_standardized_contribution"] = (
-                pooled_weights[cause] * conditional if conditional is not None else None
+    pooled_weights = {
+        cause: (
+            sum(cause_counts[group][cause] for group in GROUPS) / total_rows
+            if total_rows
+            else 0.0
+        )
+        for cause in CAUSES
+    }
+    missing_support = [
+        cause
+        for cause in CAUSES
+        if pooled_weights[cause] > 0 and any(cause_counts[group][cause] == 0 for group in GROUPS)
+    ]
+    support_reasons = (
+        ["missing_positive_weight_cause_support:" + _join_text(",", missing_support)]
+        if missing_support
+        else []
+    )
+    cause_table = {
+        group: {
+            cause: {
+                **cause_table_without_standardized[group][cause],
+                "pooled_standardized_contribution": (
+                    pooled_weights[cause] * cause_table_without_standardized[group][cause]["conditional_mean"]
+                    if cause_table_without_standardized[group][cause]["conditional_mean"] is not None
+                    else None
+                ),
+            }
+            for cause in CAUSES
+        }
+        for group in GROUPS
+    }
+    standardized_group_means = (
+        {
+            group: float(
+                sum(
+                    pooled_weights[cause] * cause_table_without_standardized[group][cause]["conditional_mean"]
+                    for cause in CAUSES
+                    if pooled_weights[cause] > 0
+                )
             )
-    standardized_group_means: dict[str, float | None] = {group: None for group in GROUPS}
-    standardized_contrast = None
-    residual_ratio = None
-    if not missing_support and total_rows:
-        for group in GROUPS:
-            standardized_group_means[group] = float(
-                sum(pooled_weights[cause] * cause_table[group][cause]["conditional_mean"] for cause in CAUSES if pooled_weights[cause] > 0)
-            )
-        standardized_contrast = float(standardized_group_means["RR8"] - standardized_group_means["GPTAUTH_G8"])
-    if raw_contrast == 0:
-        undefined.append("raw_contrast_zero")
-    if raw_contrast not in (None, 0) and standardized_contrast is not None:
-        residual_ratio = abs(float(standardized_contrast / raw_contrast))
-    annual_raw_contrasts: dict[str, float | None] = {}
-    annual_signs: dict[str, int | None] = {}
-    for year in YEARS:
-        year_values = {
-            group: [float(row["y"]) for row in grouped[group] if str(row["day"]).startswith(str(year))]
             for group in GROUPS
         }
-        left = _mean(year_values["RR8"])
-        right = _mean(year_values["GPTAUTH_G8"])
-        contrast = None if left is None or right is None else float(left - right)
-        annual_raw_contrasts[str(year)] = contrast
-        annual_signs[str(year)] = None if contrast is None else _sign(contrast)
-        if contrast is None:
-            undefined.append(f"annual_raw_contrast_missing:{year}")
-        elif contrast == 0:
-            undefined.append(f"annual_raw_contrast_zero:{year}")
+        if not missing_support and total_rows
+        else {group: None for group in GROUPS}
+    )
+    standardized_contrast = (
+        float(standardized_group_means["RR8"] - standardized_group_means["GPTAUTH_G8"])
+        if not missing_support and total_rows
+        else None
+    )
+    raw_contrast_reasons = ["raw_contrast_zero"] if raw_contrast == 0 else []
+    residual_ratio = (
+        abs(float(standardized_contrast / raw_contrast))
+        if raw_contrast not in (None, 0) and standardized_contrast is not None
+        else None
+    )
+    annual_raw_contrasts = {
+        str(year): _annual_raw_contrast(grouped, year)
+        for year in YEARS
+    }
+    annual_signs = {
+        str(year): (
+            None
+            if annual_raw_contrasts[str(year)] is None
+            else _sign(annual_raw_contrasts[str(year)])
+        )
+        for year in YEARS
+    }
+    annual_reasons = [
+        reason
+        for year in YEARS
+        for reason in (
+            [f"annual_raw_contrast_missing:{year}"]
+            if annual_raw_contrasts[str(year)] is None
+            else (
+                [f"annual_raw_contrast_zero:{year}"]
+                if annual_raw_contrasts[str(year)] == 0
+                else []
+            )
+        )
+    ]
     sign_values = [annual_signs[str(year)] for year in YEARS]
     annual_sign_conflict = None not in sign_values and 0 not in sign_values and len(set(sign_values)) > 1
     return {
-        "undefined_reasons": undefined,
+        "undefined_reasons": (
+            missing_group_reasons + support_reasons + raw_contrast_reasons + annual_reasons
+        ),
         "raw_group_means": group_means,
         "raw_contrast": raw_contrast,
         "cause_table": cause_table,
@@ -464,70 +598,129 @@ def compute_statistics(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _day_blocks(rows: Sequence[Mapping[str, Any]]) -> dict[int, list[list[Mapping[str, Any]]]]:
-    by_year_day: dict[int, dict[str, list[Mapping[str, Any]]]] = {year: {} for year in YEARS}
-    for row in rows:
-        year = int(str(row["day"])[:4])
-        by_year_day[year].setdefault(str(row["day"]), []).append(row)
-    return {year: [by_year_day[year][day] for day in sorted(by_year_day[year])] for year in YEARS}
+def _day_blocks(rows):
+    days_by_year = {
+        year: sorted({
+            str(row["day"])
+            for row in rows
+            if int(str(row["day"])[:4]) == year
+        })
+        for year in YEARS
+    }
+    return {
+        year: [
+            [
+                row
+                for row in rows
+                if int(str(row["day"])[:4]) == year and str(row["day"]) == day
+            ]
+            for day in days_by_year[year]
+        ]
+        for year in YEARS
+    }
+
+
+def _splitmix64(counter):
+    value = (counter + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+    value = ((value ^ (value >> 30)) * 0xBF58476D1CE4E5B9) & 0xFFFFFFFFFFFFFFFF
+    value = ((value ^ (value >> 27)) * 0x94D049BB133111EB) & 0xFFFFFFFFFFFFFFFF
+    return (value ^ (value >> 31)) & 0xFFFFFFFFFFFFFFFF
+
+
+def _draw_index(seed, replicate, year, offset, limit):
+    counter = (
+        int(seed)
+        ^ (int(replicate) * 0xD1B54A32D192ED03)
+        ^ (int(year) * 0xABC98388FB8FAC03)
+        ^ (int(offset) * 0x8CB92BA72F3D8DD7)
+    ) & 0xFFFFFFFFFFFFFFFF
+    threshold = ((1 << 64) - limit) % limit
+    candidate = _splitmix64(counter)
+    while candidate < threshold:
+        counter = (counter + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+        candidate = _splitmix64(counter)
+    return candidate % limit
+
+
+def _draw_year_blocks(year, year_blocks, seed, replicate, plan):
+    if not year_blocks:
+        _fail(f"bootstrap has no blocks for {year}")
+    if plan is None:
+        indices = [
+            _draw_index(seed, replicate, year, offset, len(year_blocks))
+            for offset in range(len(year_blocks))
+        ]
+    else:
+        raw_indices = (
+            plan[year]
+            if year in plan
+            else (plan[str(year)] if str(year) in plan else ())
+        )
+        indices = [int(index) for index in raw_indices]
+        if len(indices) != len(year_blocks):
+            _fail(f"bootstrap plan for {year} must draw {len(year_blocks)} day blocks")
+        if any(index < 0 or index >= len(year_blocks) for index in indices):
+            _fail(f"bootstrap plan index out of range for {year}: {indices!r}")
+    return [year_blocks[index] for index in indices]
 
 
 def _draw_replicate(
-    blocks: Mapping[int, Sequence[Sequence[Mapping[str, Any]]]],
-    rng: random.Random,
-    plan: Mapping[int | str, Sequence[int]] | None = None,
-) -> list[Mapping[str, Any]]:
-    sampled: list[Mapping[str, Any]] = []
-    for year in YEARS:
-        year_blocks = list(blocks.get(year, ()))
-        if not year_blocks:
-            _fail(f"bootstrap has no blocks for {year}")
-        if plan is None:
-            indices = [rng.randrange(len(year_blocks)) for _ in range(len(year_blocks))]
-        else:
-            raw_indices = plan.get(year, plan.get(str(year), ()))
-            indices = [int(index) for index in raw_indices]
-            if len(indices) != len(year_blocks):
-                _fail(f"bootstrap plan for {year} must draw {len(year_blocks)} day blocks")
-            if any(index < 0 or index >= len(year_blocks) for index in indices):
-                _fail(f"bootstrap plan index out of range for {year}: {indices!r}")
-        for index in indices:
-            sampled.extend(year_blocks[index])
-    return sampled
+    blocks,
+    seed,
+    replicate,
+    plan=None,
+):
+    selected_blocks = [
+        block
+        for year in YEARS
+        for block in _draw_year_blocks(year, list(blocks[year] if year in blocks else ()), seed, replicate, plan)
+    ]
+    return [row for block in selected_blocks for row in block]
 
 
-def _nearest_rank_ci(values: Sequence[float]) -> list[float]:
+def _nearest_rank_ci(values):
     ordered = sorted(values)
     if not ordered:
         _fail("bootstrap CI requires at least one value")
     n = len(ordered)
-    return [ordered[max(0, math.ceil(0.025 * n) - 1)], ordered[max(0, math.ceil(0.975 * n) - 1)]]
+    return [ordered[max(0, ((25 * n + 999) // 1000) - 1)], ordered[max(0, ((975 * n + 999) // 1000) - 1)]]
 
 
 def bootstrap_intervals(
-    rows: Sequence[Mapping[str, Any]],
+    rows,
     *,
-    draws: int = BOOTSTRAP_DRAWS,
-    seed: int = BOOTSTRAP_SEED,
-    plan: Sequence[Mapping[int | str, Sequence[int]]] | None = None,
-) -> tuple[dict[str, list[float]] | None, list[str]]:
+    draws=BOOTSTRAP_DRAWS,
+    seed=BOOTSTRAP_SEED,
+    plan=None,
+):
     if plan is not None:
         draws = len(plan)
     if draws <= 0:
         _fail("bootstrap draws must be positive")
     blocks = _day_blocks(rows)
-    rng = random.Random(seed)
-    raw_values: list[float] = []
-    standardized_values: list[float] = []
-    ratio_values: list[float] = []
-    for replicate in range(draws):
-        sample = _draw_replicate(blocks, rng, None if plan is None else plan[replicate])
-        stats = compute_statistics(sample)
-        if stats["undefined_reasons"]:
-            return None, [f"bootstrap_undefined_replicate:{replicate}:" + ";".join(stats["undefined_reasons"])]
-        raw_values.append(float(stats["raw_contrast"]))
-        standardized_values.append(float(stats["standardized_contrast"]))
-        ratio_values.append(float(stats["residual_ratio"]))
+    replicate_stats = [
+        (
+            replicate,
+            compute_statistics(
+                _draw_replicate(blocks, seed, replicate, None if plan is None else plan[replicate])
+            ),
+        )
+        for replicate in range(draws)
+    ]
+    first_undefined = next(
+        (
+            (replicate, stats)
+            for replicate, stats in replicate_stats
+            if stats["undefined_reasons"]
+        ),
+        None,
+    )
+    if first_undefined is not None:
+        replicate, stats = first_undefined
+        return None, [f"bootstrap_undefined_replicate:{replicate}:" + _join_text(";", stats["undefined_reasons"])]
+    raw_values = [float(stats["raw_contrast"]) for _, stats in replicate_stats]
+    standardized_values = [float(stats["standardized_contrast"]) for _, stats in replicate_stats]
+    ratio_values = [float(stats["residual_ratio"]) for _, stats in replicate_stats]
     return {
         "raw_contrast": _nearest_rank_ci(raw_values),
         "standardized_contrast": _nearest_rank_ci(standardized_values),
@@ -535,7 +728,7 @@ def bootstrap_intervals(
     }, []
 
 
-def _result(decision: str, *, stats: Mapping[str, Any] | None, bootstrap_ci: Mapping[str, Any] | None, undetermined: list[str], kill: list[str]) -> dict[str, Any]:
+def _result(decision, *, stats, bootstrap_ci, undetermined, kill):
     return {
         "schema": RESULT_SCHEMA,
         "hypothesis_id": HYPOTHESIS_ID,
@@ -553,15 +746,17 @@ def _result(decision: str, *, stats: Mapping[str, Any] | None, bootstrap_ci: Map
     }
 
 
-def measure(
-    snapshot: Mapping[str, Any],
-    *,
-    source_files: Iterable[SourceSpec | Mapping[str, Any]] = SOURCE_FILES,
-    expected_counts: Mapping[int | str, int] = EXPECTED_FILTERED_COUNTS,
-    bootstrap_draws: int = BOOTSTRAP_DRAWS,
-    bootstrap_seed: int = BOOTSTRAP_SEED,
-    bootstrap_plan: Sequence[Mapping[int | str, Sequence[int]]] | None = None,
-) -> dict[str, Any]:
+NON_AUTHORITATIVE_TEST_MARKER = "NON_AUTHORITATIVE_TEST_ONLY_NOT_VALID_FOR_EVIDENCE"
+
+
+def _measure_impl(
+    snapshot,
+    source_files,
+    expected_counts,
+    bootstrap_draws,
+    bootstrap_seed,
+    bootstrap_plan,
+):
     try:
         rows = validate_snapshot(snapshot, source_files=source_files, expected_counts=expected_counts)
     except X1MeasureError as exc:
@@ -575,16 +770,57 @@ def measure(
         return _result("UNDETERMINED", stats=stats, bootstrap_ci=None, undetermined=["bootstrap_integrity_issue:" + str(exc)], kill=[])
     if bootstrap_errors:
         return _result("UNDETERMINED", stats=stats, bootstrap_ci=None, undetermined=bootstrap_errors, kill=[])
-    kill: list[str] = []
-    if float(stats["residual_ratio"]) >= RATIO_KILL_THRESHOLD:
-        kill.append("residual_ratio_ge_0.8")
-    if stats["annual_sign_conflict"]:
-        kill.append("annual_sign_conflict")
+    kill = (
+        (["residual_ratio_ge_0.8"] if float(stats["residual_ratio"]) >= RATIO_KILL_THRESHOLD else [])
+        + (["annual_sign_conflict"] if stats["annual_sign_conflict"] else [])
+    )
     if kill:
         return _result("KILL", stats=stats, bootstrap_ci=bootstrap_ci, undetermined=[], kill=kill)
     return _result("PASS", stats=stats, bootstrap_ci=bootstrap_ci, undetermined=[], kill=[])
 
 
+def _mark_non_authoritative(result):
+    return {
+        **result,
+        "non_authoritative_test_marker": NON_AUTHORITATIVE_TEST_MARKER,
+    }
+
+
+def _measure_non_authoritative_for_tests(
+    snapshot,
+    *,
+    source_files=SOURCE_FILES,
+    expected_counts=EXPECTED_FILTERED_COUNTS,
+    bootstrap_draws=BOOTSTRAP_DRAWS,
+    bootstrap_seed=BOOTSTRAP_SEED,
+    bootstrap_plan=None,
+):
+    result = _measure_impl(
+        snapshot,
+        source_files,
+        expected_counts,
+        bootstrap_draws,
+        bootstrap_seed,
+        bootstrap_plan,
+    )
+    return _mark_non_authoritative(result)
+
+
+def measure(snapshot):
+    result = _measure_impl(
+        snapshot,
+        SOURCE_FILES,
+        EXPECTED_FILTERED_COUNTS,
+        BOOTSTRAP_DRAWS,
+        BOOTSTRAP_SEED,
+        None,
+    )
+    return result
+
+
 if __name__ == "__main__":
-    with open("docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json", encoding="utf-8") as handle:
-        print(json.dumps(measure(json.load(handle)), ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False))
+    with open("docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json", mode="r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    result = measure(payload)
+    output = json.dumps(result)
+    print(output)

@@ -176,7 +176,7 @@ def contract_descriptor(
         "status": "SEALED",
         "claim_type": "descriptive_not_causal",
         "source_preregistration": PREREGISTRATION_PATH,
-        "discovery_window": {"start": "2022-01-01", "end": "2023-12-31"},
+        "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
         "required_fields": list(REQUIRED_FIELDS),
         "timestamp_format": TIMESTAMP_FORMAT,
         "date_filter": "매수시간[0:4] in {'2022','2023'} before row output",

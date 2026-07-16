@@ -20,7 +20,7 @@
     "date_filter": "매수시간[0:4] in {'2022','2023'} before row output",
     "discovery_window": {
       "end": "2023-12-31",
-      "start": "2022-01-01"
+      "start": "2022-03-23"
     },
     "expected_filtered_counts": {
       "2022": 510,
