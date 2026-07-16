@@ -186,11 +186,10 @@ def config_field_specs() -> List[Dict[str, Any]]:
     경계값(mdd_cap, min_trades, target_score), 데이터 범위/스코프(bt_*),
     provider/model 을 포함한다.
 
-    NOTE: graduation_holdout/holdout_recent_days는 현재 run_loop가 적용하지
-    않는 no-op이라 GUI 폼에서 의도적으로 제외한다(노출되면 사용자가 켜도
-    아무 효과 없는 거짓 UI가 된다). LoopConfig 필드 자체는 보존한다.
-    TODO: holdout-graduation 배선(run_loop에서 holdout 윈도우 분리 + 게이트
-    재평가)을 후속 작업으로 끝낸 뒤 이 두 필드를 폼에 복원한다.
+    graduation_holdout/holdout_recent_days는 run_loop에 배선 완료되어
+    (P5: gate 통과 후보를 CSV 거래일 기준 train/holdout으로 분할해 졸업검사)
+    폼에 노출한다. 2026-07-16 실 A/B 파일럿에서 홀드아웃 게이트 로그로
+    실동작을 확인했다.
     """
     d = LoopConfig()  # 기본값 출처 (단일 진실원).
     return [
@@ -242,8 +241,16 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "default": d.feedback_window,
             "help": "피드백 윈도우: 다음 세대 프롬프트에 참고할 최근 부검/실패 원인 개수. 많을수록 더 긴 연구 맥락을 보지만 토큰 비용이 늘어난다.",
         }, minimum=0, step=1),
-        # graduation_holdout / holdout_recent_days 는 run_loop 미배선(no-op)이라
-        #   폼에서 제외한다 (위 docstring의 TODO 참조). LoopConfig 필드는 유지.
+        {
+            "name": "graduation_holdout", "label": "홀드아웃 졸업검사", "type": "bool",
+            "default": d.graduation_holdout,
+            "help": "ON이면 gate 통과 후보를 결과 CSV의 최근 거래일 구간(홀드아웃)으로 재판정해, 홀드아웃에서도 게이트를 통과해야 졸업한다. 추가 백테스트 없이 과적합을 걸러낸다.",
+        },
+        _with_bounds({
+            "name": "holdout_recent_days", "label": "홀드아웃 최근 거래일수", "type": "number",
+            "default": d.holdout_recent_days,
+            "help": "홀드아웃으로 떼어 둘 윈도우 끝 최근 거래일 수. 홀드아웃 졸업검사가 ON일 때만 적용된다.",
+        }, minimum=1, step=1),
         {
             "name": "research_oos_mode", "label": "Research OOS Mode", "type": "select",
             "choices": ["disabled", "advisory", "promotion_only"], "default": d.research_oos_mode,

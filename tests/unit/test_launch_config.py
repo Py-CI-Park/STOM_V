@@ -148,15 +148,16 @@ class TestConfigFieldSpecs:
         ):
             assert required in names, f"missing field spec: {required}"
 
-    def test_holdout_fields_excluded_until_wired(self):
-        # MEDIUM-5: holdout 토글은 run_loop 미배선(no-op)이라 폼에서 제외한다.
-        #   LoopConfig 필드 자체는 보존(아래 별도 확인).
-        names = {s["name"] for s in config_field_specs()}
-        assert "graduation_holdout" not in names
-        assert "holdout_recent_days" not in names
+    def test_holdout_fields_exposed_now_that_run_loop_is_wired(self):
+        # P5 배선 완료: run_loop가 gate 통과 후보를 train/holdout으로 분할해
+        #   졸업검사한다(2026-07-16 실 A/B 파일럿에서 홀드아웃 게이트 로그 실측).
+        #   따라서 폼에 노출되어야 하며, 숨기면 작동하는 기능을 감추는 거짓 UI다.
+        specs = {s["name"]: s for s in config_field_specs()}
+        assert specs["graduation_holdout"]["type"] == "bool"
+        assert specs["holdout_recent_days"]["type"] == "number"
+        assert specs["holdout_recent_days"]["min"] == 1
 
     def test_holdout_config_fields_still_exist(self):
-        # 폼에서 빠졌어도 LoopConfig 필드는 유지된다(후속 배선 대비).
         d = LoopConfig()
         assert hasattr(d, "graduation_holdout")
         assert hasattr(d, "holdout_recent_days")
