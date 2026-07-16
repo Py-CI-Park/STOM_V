@@ -1,6 +1,6 @@
 # 2026-07-16 Alpha Lab 최종 연구 종합 보고서 (G007)
 
-> 본 문서는 G007의 최종 연구 종합·합류 준비 산출물이다. 이 보고서는 `agent://357-G007EvidenceMapA`, `agent://358-G007EvidenceMapB`가 동결한 동일 evidence map과 그들이 인용한 durable source를 종합한다. 본 content-generation executor는 테스트·게이트·포매터·엔진·연구 재실행·DB 접근·git 명령·커밋을 실행했다는 주장을 하지 않는다. 다만 active G007 objective는 논리 단위 한국어 문서 커밋을 요구하므로, 검증 후 parent가 이 G007 문서 커밋을 생성하는 것은 예정된 문서화 절차이며 maintainer integration approval gate가 아니다.
+> 본 문서는 G007의 최종 연구 종합·합류 준비 산출물이다. 이 보고서는 `agent://357-G007EvidenceMapA`, `agent://358-G007EvidenceMapB`가 동결한 동일 evidence map과 그들이 인용한 durable source를 종합한다. 본 content-generation executor는 테스트·게이트·포매터·엔진·연구 재실행·DB 접근·git 명령·커밋을 실행했다는 주장을 하지 않는다. Primary G007 documentation commit `f10e41d7` now follows the pre-G007-documentation baseline, and this self-referential wording correction will be committed afterward; neither documentation commit is a maintainer integration approval gate.
 
 ## 1. 제목, 범위, source manifest
 
@@ -62,7 +62,7 @@ Underlying durable files remain the source of truth. The two `agent://` maps are
 | G004 | Complete as dependency nonidentification. | Terminal report HEAD `cfe5f4ab283bd5bfaf9301d04fc2c2879ccc3986`; goal receipt records later closure HEAD `74688f2`. | Architect review `289 CLEAR`; direct hash/absence/zero-counter verification and diff check passed in goal receipt. | invocation, engine, DB write, registration, promotion, outcome, receipt/claim, n_trials append all zero. `[G]`, `[G004-R]` |
 | G005 | Superseded. Original goal should not be treated as final measurement authority. | Goal receipt records G005 resolved by G009 at `HEAD 81901b3d`; G010 later supplies final measurement replacement at `HEAD 61d26005`. | G009 focused `61 passed`, cleaners `327/326`, reviews `328/329`, QA `330/331`. | C1 input/materializer/target not executed by G009; protected DB untouched. `[G]` |
 | G006 | Complete as authority-identification failure. | Goal receipt and terminal artifacts bind completion at `HEAD 25975531`; D1/clause hashes are explicit durable bindings. | JSON/terminal/diff checks passed; cleaner `338`, review `339`, QA `340` in goal receipt/QA report. | motif mining, C4 metrics, engine, DB writes, registration, promotion, retry, rescue all zero. `[G]`, `[G006-R]`, `[G006-J]` |
-| G007 | This report is the synthesis deliverable. | Current integration observation records audit branch at `61d26005a26799e9e13ddaca423873850fae834f`; this content-generation executor did not run git or create a commit. Parent will create the required logical Korean G007 documentation commit after verification. | This executor did not run tests. Review/testing must cite historical receipts or future maintainer-approved checks. | Integration prep only; no protected path authority. `[G]`, current assignment |
+| G007 | This report is the synthesis deliverable. | Pre-G007-documentation integration baseline records audit branch at `61d26005a26799e9e13ddaca423873850fae834f`; primary G007 documentation commit `f10e41d7` now follows that baseline, and this correction will be committed later, so this report does not assert a final post-correction HEAD/count. | This executor did not run tests. Review/testing must cite historical receipts or future maintainer-approved checks. | Integration prep only; no protected path authority. `[G]`, current assignment |
 | G008 | Complete. Evidence-chain v2 bypass removal/closure. | Report HEAD `86e3ee7`; goal receipt evidence `9db36cbd`; representative hardening commits `98fc8469`, `a634ff74`, `098e90ca`, `c197df20`, `d3a47b3f`. | `13`, `396`, `921 passed` histories; reviews `153/190 PASS/CLEAR`. | No strategy promotion, protected DB, engine, live, or G001/G002 state-change authority. `[G008-R]`, `[G]` |
 | G009 | Complete contract repair only. | `HEAD 81901b3d`. | Focused `61 passed after commit`; authoritative X1/C2 manifests and C1 probe passed; cleaners/reviews/QA as above. | No final measurement execution; protected DB untouched. `[G]` |
 | G010 | Complete authoritative final G005 replacement. | Completion HEAD `61d26005`; G005 terminal artifacts are bound to `25975531ab966eb113d79bc130b9b4493001b1f6`. This distinction is material: artifacts record measurement custody at bound HEAD, while G010 receipt records final post-commit verification/review closure. | Parent-reported `449 passed in 418.64s` after commit, JSON/hash/absence/ledger and X1 receipt/claim validation passed, cleaners `350/351`, reviews `352/353/354/356 CLEAR APPROVE`, QA artifact passed. This report does not claim executor reran them. | engine/DB/registration/promotion/retry/rescue zero. `[G]`, `[G010-J]` |
@@ -172,7 +172,7 @@ Adversarial cases rejected by the G006 QA report include: D1/clause tamper, abse
 - Any retry/rescue/rerun/variant of sealed C1/C2/C3/G002 attempts.
 - Any creation or attachment of new activation traces, exact timestamp authority, C4 opening, C4 outcome/metric read, or portfolio computation.
 - Any fake or derived receipt/claim/ledger row/candidate identity.
-- Git integration actions require explicit future maintainer/user approval: merge, push, rebase/squash/cherry-pick into the target branch, target-branch mutation, or worktree deletion. The required G007 documentation commit by parent after verification is not such an integration action.
+- Git integration actions require explicit future maintainer/user approval: merge, push, rebase/squash/cherry-pick into the target branch, target-branch mutation, or worktree deletion. Primary G007 documentation commit `f10e41d7` and this later correction commit are documentation-only and are not such integration actions.
 
 ### 11.2 Forbidden inferences for this report
 
@@ -208,19 +208,21 @@ This follow-up is not a trading candidate and is not approved by this report. It
 
 ## 14. Merge-ready branch integration checklist
 
-### 14.1 Current integration observation
-아래 값은 G007 assignment가 제공한 current observation으로 기록하며, 본 보고서 작성자가 git 명령으로 재검증했다는 주장을 하지 않는다.
+### 14.1 Pre-G007-documentation baseline and integration-time recheck
+아래 값은 G007 assignment가 제공한 **pre-G007-documentation baseline**으로 기록하며, 본 보고서 작성자가 git 명령으로 재검증했다는 주장을 하지 않는다. Primary G007 documentation commit `f10e41d7` now follows this baseline; this correction itself will be committed afterward, so this report intentionally does **not** assert a final post-correction audit HEAD or divergence count.
 
-- Audit branch: `research/alpha-lab-audit-ideas-20260714` at `61d26005a26799e9e13ddaca423873850fae834f`.
-- Original alpha branch: `research/alpha-lab-idea5-foundation-20260707` at `bd5bb3c4bc9253034326eadfe8afdfd4605258c4`.
-- Merge base: `541a8d70cb8904cc33f3f325b37e60f6ea1591d3`.
-- Divergence: target-only `2`, audit-only `112`.
-- Target-only commits: `bd5bb3c4`, `ff251f9a`.
+- Audit branch pre-G007-documentation baseline: `research/alpha-lab-audit-ideas-20260714` at `61d26005a26799e9e13ddaca423873850fae834f`.
+- Original alpha branch previously observed target baseline: `research/alpha-lab-idea5-foundation-20260707` at `bd5bb3c4bc9253034326eadfe8afdfd4605258c4`.
+- Previously observed merge base: `541a8d70cb8904cc33f3f325b37e60f6ea1591d3`.
+- Pre-G007-documentation divergence baseline: target-only `2`, audit-only `112`.
+- Target-only commits observed at that baseline: `bd5bb3c4`, `ff251f9a`.
+- Integration operator must freshly run read-only `git rev-parse HEAD`, `git merge-base HEAD research/alpha-lab-idea5-foundation-20260707`, and `git rev-list --left-right --count research/alpha-lab-idea5-foundation-20260707...HEAD` immediately before any approved target integration.
 - Integration is **prepared but not executed**. This report does not perform or authorize a merge.
 
 ### 14.2 Checklist before any maintainer-approved integration action
 
-- [ ] Maintainer explicitly approves target integration. Without this, no merge, push, rebase, squash, cherry-pick into the target branch, target-branch mutation, or worktree deletion. This does not block the parent from creating the required logical Korean G007 documentation commit after verification.
+- [ ] Maintainer explicitly approves target integration. Without this, no merge, push, rebase, squash, cherry-pick into the target branch, target-branch mutation, or worktree deletion. This does not block the already-created primary G007 documentation commit `f10e41d7` or this later documentation correction commit.
+- [ ] Immediately before any approved target integration, integration operator freshly runs read-only `git rev-parse HEAD`, `git merge-base HEAD research/alpha-lab-idea5-foundation-20260707`, and `git rev-list --left-right --count research/alpha-lab-idea5-foundation-20260707...HEAD`; use those fresh values for final integration-time HEAD/base/count, not the pre-G007-documentation baseline above.
 - [ ] Preserve detailed evidence commit chain by default. **No squash recommendation by default** because receipt/review/test provenance is audit material.
 - [ ] Reconfirm target-only commits `bd5bb3c4`, `ff251f9a` are intentionally preserved or integrated according to maintainer decision.
 - [ ] Reconfirm protected paths remain untouched: `_database/`, `_database_v3k_shadow/`, `_log/`, `backup/`, `*.db`, `backtest/graph/`, `.omx/reports/`, `v3k_settings*.json`, runtime sidecars.

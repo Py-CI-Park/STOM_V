@@ -1,6 +1,6 @@
 # 2026-07-16 Alpha Lab G007 경영 브리핑
 
-동결 증거 지도: `agent://357-G007EvidenceMapA`, `agent://358-G007EvidenceMapB`. 기초 durable 파일이 최종 원천이며, 본 문서는 신규 측정/게이트/포매터 없이 작성한 감사·지식·통합준비 요약이다. 콘텐츠 생성 executor는 git 명령을 실행하지 않았으며, 검증된 G007 문서 커밋 생성은 parent의 필수 후속 책임이다. 관리 결론은 **승격 가능한 STOM 전략 후보 0건**이다.
+동결 증거 지도: `agent://357-G007EvidenceMapA`, `agent://358-G007EvidenceMapB`. 기초 durable 파일이 최종 원천이며, 본 문서는 신규 측정/게이트/포매터 없이 작성한 감사·지식·통합준비 요약이다. 콘텐츠 생성 executor는 git 명령을 실행하지 않았으며, primary G007 documentation commit `f10e41d7`은 pre-G007-documentation baseline 이후 생성됐다. 본 self-referential correction은 이후 커밋될 예정이며, 관리 결론은 **승격 가능한 STOM 전략 후보 0건**이다.
 
 | 목표 | durable status | 과학적 판정 | 사업적 의미 | 후보/실행 가능성 | risk label | 다음 결정 | 근거 |
 |---|---|---|---|---|---|---|---|
@@ -10,7 +10,7 @@
 | G004 | complete; terminal `UNDETERMINED` | G002 common-cohort 부재로 P1/M1/S1 미식별; KILL/PASS 아님 | path/missingness/sparsity 진단 결론 없음 | 후보 없음; fabricated cohort 금지 | `DEPENDENCY_NONIDENTIFIED` | 승인된 G002-like common-cohort 성공 후에만 재검토 | `[G:goals.G004]`, `[G004-R]`, `[G002-R]` |
 | G005/G009/G010 | G005는 G009 contract repair + G010 final measurement로 대체·종결 | mixed terminal: C1 `UNDETERMINED / INPUT_SCHEMA_MISMATCH`, X1 descriptive noncausal nonpromotable `PASS`, C2 `UNDETERMINED / nonidentified` | X1은 설명 지식만 제공; 전략/원장/엔진 권한 없음 | 승격 후보 없음; X1은 nonpromotable knowledge | `DESCRIPTIVE_NONCAUSAL`, `UNIDENTIFIED_SCHEMA` | fake ledger/candidate 금지; C1/C2는 별도 승인 없이는 재시도 없음 | `[G:goals.G005,G009,G010]`, `[G005-R]`, `[G005-J]`, `[G010-J]` |
 | G006 | complete; terminal `UNDETERMINED / DNF_UNIDENTIFIED`; C4 closed metadata-only | true-DNF/stateful first-activation trace authority 부재; motif 실패 증거가 아님 | C3/C4 기회는 authority 부족으로 잠김 | 후보 없음; C4 metric/outcome read 금지 | `DNF_AUTHORITY_ABSENT`, `C4_CLOSED` | activation trace authority가 생기기 전 C4 개방 금지 | `[G:goals.G006]`, `[G006-R]`, `[G006-J]` |
-| G007 | active final synthesis/integration-prep 산출 단계; 본 브리핑은 관리 요약 산출물 | 최종 결론은 audit/knowledge/integration-prep only; no promotable candidate | 경영 결정은 “무엇을 하지 않을지”와 다음 연구권한을 분리하는 것 | 승격/등록/엔진 실행 없음; 통합 체크리스트만 준비 | `MERGE_APPROVAL_REQUIRED` | verified G007 documentation commit은 parent 책임; merge/push/rebase·squash·cherry-pick into target/target-branch mutation/worktree deletion은 maintainer 승인 전 미실행 | `[G:goals.G007]`, `[G007-R]` |
+| G007 | active final synthesis/integration-prep 산출 단계; 본 브리핑은 관리 요약 산출물 | 최종 결론은 audit/knowledge/integration-prep only; no promotable candidate | 경영 결정은 “무엇을 하지 않을지”와 다음 연구권한을 분리하는 것 | 승격/등록/엔진 실행 없음; 통합 체크리스트만 준비 | `MERGE_APPROVAL_REQUIRED` | primary docs commit `f10e41d7` 및 이후 correction commit은 documentation-only; merge/push/rebase·squash·cherry-pick into target/target-branch mutation/worktree deletion은 maintainer 승인 전 미실행 | `[G:goals.G007]`, `[G007-R]` |
 
 ## Source key legend
 
@@ -27,16 +27,18 @@
 | `[G010-J]` | `docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g010_terminal_audit_report.json` | G010 QA red-team report and parent-reported 449-test evidence |
 | `[G006-R]` | `docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md` | G006 C3/C4 terminal report |
 | `[G006-J]` | `docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_terminal_audit_report.json` | G006 algorithm-boundary QA report, contract coverage, adversarial cases |
-| `[G007-R]` | `docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md` | G007 source manifest, integration observation, commit-boundary wording |
+| `[G007-R]` | `docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md` | G007 source manifest, pre-G007 baseline/recheck wording, commit-boundary wording |
 
-## 현재 브랜치·통합 사실
+## 브랜치 기준선·통합 직전 재확인
 
 | 항목 | 값 | 경영상 해석 | 근거 |
 |---|---|---|---|
-| audit HEAD | `61d26005a26799e9e13ddaca423873850fae834f` | G007 감사 worktree 기준 현재 HEAD | `[G007-R]`, `[G010-J]` |
-| target alpha HEAD | `bd5bb3c4bc9253034326eadfe8afdfd4605258c4` | 병합 대상 alpha HEAD | `[G007-R]` |
-| merge base | `541a8d70cb8904cc33f3f325b37e60f6ea1591d3` | 통합 비교 기준 | `[G007-R]` |
-| divergence | target-only `2` / audit-only `112` | 감사 worktree 증거 체인이 길며 보존 검토 필요 | `[G007-R]` |
+| pre-G007-documentation audit baseline | `61d26005a26799e9e13ddaca423873850fae834f` | G007 문서화 전 감사 branch 기준선이며 현재/최종 HEAD가 아님 | `[G007-R]`, `[G010-J]` |
+| primary G007 documentation commit | `f10e41d7` | 위 기준선 이후 생성된 1차 G007 문서 커밋; 본 self-referential correction은 이후 커밋될 예정이므로 최종 post-correction HEAD/count를 단정하지 않음 | `[G007-R]` |
+| previously observed target alpha baseline | `bd5bb3c4bc9253034326eadfe8afdfd4605258c4` | 병합 대상 alpha 기준선으로 이전 관측값이며 통합 직전 재확인 필요 | `[G007-R]` |
+| previously observed merge base | `541a8d70cb8904cc33f3f325b37e60f6ea1591d3` | 통합 비교 기준으로 이전 관측값이며 통합 직전 재확인 필요 | `[G007-R]` |
+| pre-G007-documentation divergence baseline | target-only `2` / audit-only `112` | 문서화 전 감사 worktree 기준 차이이며 현재/최종 divergence가 아님 | `[G007-R]` |
+| required fresh read-only recheck | `git rev-parse HEAD`; `git merge-base HEAD research/alpha-lab-idea5-foundation-20260707`; `git rev-list --left-right --count research/alpha-lab-idea5-foundation-20260707...HEAD` | 승인된 target integration 직전에 integration operator가 새로 실행한 값을 최종 통합 판단에 사용 | `[G007-R]` |
 | 미실행 작업 | merge, push, rebase/squash/cherry-pick into target, target-branch mutation, worktree deletion | 콘텐츠 생성 executor 기준 모두 **미실행**이며 maintainer 명시 승인 gate 필요 | `[G007-R]` |
 
 ## 확인된 지식
@@ -102,7 +104,7 @@
 | G004 | experiment `alpha_restart_20260710-g004`, HEAD `cfe5f4ab...`, G002 hashes bound | dependency nonidentification만 인정 | `[G004-R]`, `[G002-R]` |
 | G009/G010/G005 | G009 HEAD `81901b3d`, focused `61 passed`; G010 HEAD `61d26005`, `449 tests passed`; G005 terminal artifacts bound to `25975531...`; X1 receipt `618f8aeb...` | mixed terminal/no candidate만 인정 | `[G]`, `[G005-R]`, `[G005-J]`, `[G010-J]` |
 | G006 | completion HEAD `25975531...`; JSON/terminal/diff checks, cleaner 338, review 339, QA 340 | `UNDETERMINED / DNF_UNIDENTIFIED`, C4 closed | `[G]`, `[G006-R]`, `[G006-J]` |
-| G007 briefing | 콘텐츠 생성 executor는 신규 tests/gates/formatters/git 명령/commit을 실행하지 않음; verified G007 documentation commit은 parent 필수 후속 책임 | 문서 작성 검증은 동결 증거 지도 대조와 파일 생성 확인으로 한정; target-branch mutation과 worktree deletion은 미실행·approval-gated | `[G007-R]` |
+| G007 briefing | 콘텐츠 생성 executor는 신규 tests/gates/formatters/git 명령/commit을 실행하지 않음; primary G007 documentation commit `f10e41d7`은 pre-doc baseline 이후 생성됐고 본 correction commit은 이후 parent 후속 책임 | 문서 작성 검증은 동결 증거 지도 대조와 파일 생성 확인으로 한정; target-branch mutation과 worktree deletion은 미실행·approval-gated | `[G007-R]` |
 
 ## 통합 준비도
 
@@ -111,7 +113,7 @@
 | 연구 결론 | 준비됨 | no-candidate / audit-only 문구 유지 | `[G007-R]`, `[G005-J]`, `[G006-R]` |
 | 후보 승격 | 준비 안 됨 | 후보 0, promotion authority 0 | `[G005-J]`, `[G006-R]`, `[G006-J]` |
 | 보호 surface | 실행 금지 상태 유지 | 별도 승인 전 DB/engine/live/registration 금지 | `[B]`, `[G005-J]`, `[G006-J]` |
-| 증거 체인 보존 | 필요 | audit-only `112` commit chain을 무단 squash/삭제하지 않음 | `[G007-R]` |
+| 증거 체인 보존 | 필요 | pre-G007 audit-only `112` baseline/evidence chain을 무단 squash/삭제하지 않으며, 통합 직전 fresh count로 최종 판단 | `[G007-R]` |
 | merge readiness | checklist 준비만 가능 | maintainer 승인 전 merge/push/rebase/squash/cherry-pick into target 및 target-branch mutation 금지 | `[G007-R]` |
 | worktree cleanup | 준비 안 됨 | 승인된 merge·peer/user work 확인 후 별도 maintainer 승인 전 deletion 금지 | `[G007-R]` |
 

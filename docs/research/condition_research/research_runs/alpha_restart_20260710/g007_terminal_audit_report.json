@@ -32,12 +32,12 @@
     {
       "id": "g007-final-synthesis",
       "path": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
-      "inspection": "Read current report contents; key lines include 7-15, 37-53, 55-68, 86-123, 146-164, 166-183, 209-231, and 245-272."
+      "inspection": "Read current report contents; key lines include 7-15, 37-53, 55-68, 86-123, 146-164, 166-183, 209-233, and 247-274."
     },
     {
       "id": "g007-management-briefing",
       "path": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
-      "inspection": "Read current briefing contents; key lines include 3-13, 32-40, 42-63, 75-93, and 95-120."
+      "inspection": "Read current briefing contents; key lines include 3-13, 32-42, 44-65, 77-95, and 97-122."
     },
     {
       "id": "durable-goals",
@@ -111,15 +111,23 @@
       "G006-C4": "CLOSED metadata-only; outcome and metric reads not allowed"
     },
     "integrationStatus": {
-      "auditBranch": "research/alpha-lab-audit-ideas-20260714 at 61d26005a26799e9e13ddaca423873850fae834f",
-      "targetAlphaBranch": "research/alpha-lab-idea5-foundation-20260707 at bd5bb3c4bc9253034326eadfe8afdfd4605258c4",
-      "mergeBase": "541a8d70cb8904cc33f3f325b37e60f6ea1591d3",
-      "divergence": "target-only 2 / audit-only 112",
-      "targetOnlyCommits": ["bd5bb3c4", "ff251f9a"],
+      "auditBranchPreG007DocumentationBaseline": "research/alpha-lab-audit-ideas-20260714 at 61d26005a26799e9e13ddaca423873850fae834f",
+      "primaryG007DocumentationCommit": "f10e41d7 follows the pre-G007-documentation baseline",
+      "postCorrectionHeadAndDivergence": "not asserted; this correction itself will be committed afterward",
+      "targetAlphaBranchPreviouslyObservedBaseline": "research/alpha-lab-idea5-foundation-20260707 at bd5bb3c4bc9253034326eadfe8afdfd4605258c4",
+      "mergeBasePreviouslyObserved": "541a8d70cb8904cc33f3f325b37e60f6ea1591d3",
+      "divergencePreG007DocumentationBaseline": "target-only 2 / audit-only 112",
+      "targetOnlyCommitsAtBaseline": ["bd5bb3c4", "ff251f9a"],
+      "freshIntegrationRecheckRequired": true,
+      "freshIntegrationRecheckCommands": [
+        "git rev-parse HEAD",
+        "git merge-base HEAD research/alpha-lab-idea5-foundation-20260707",
+        "git rev-list --left-right --count research/alpha-lab-idea5-foundation-20260707...HEAD"
+      ],
       "integrationPrepared": true,
       "integrationExecuted": false,
       "maintainerApprovalRequiredForTargetActions": true,
-      "g007DocumentationCommitBoundary": "Parent may create the required logical Korean G007 documentation commit after verification; that document commit is not target-branch merge approval and must not be blocked as if it were merge/push/rebase/cherry-pick authority."
+      "g007DocumentationCommitBoundary": "Primary G007 documentation commit f10e41d7 is already after the pre-G007-documentation baseline; this correction will be committed later. Neither document commit is target-branch merge approval, and final integration-time HEAD/base/count must come from the fresh read-only recheck commands."
     }
   },
   "parentVerification": {
@@ -129,8 +137,8 @@
     "checks": [
       {
         "check": "alpha unit/research suite",
-        "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1319.36s",
-        "artifactRef": "artifact://1600",
+        "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1751.06s",
+        "artifactRef": "artifact://1610",
         "executorClaim": "not run by this executor"
       },
       {
@@ -172,7 +180,7 @@
       "requirement": "The final G007 artifact must preserve that no branch creates a promotable STOM strategy candidate, engine request, registration, promotion, or live authority.",
       "evidence": [
         "Final synthesis lines 7-15 and 157-164 state promotable STOM strategy candidates are 0, G003 is retired, X1 is nonpromotable knowledge only, and follow-up trace authority is not approved.",
-        "Management briefing lines 3, 75-82, and 107-116 repeat zero promotable candidates and no registration, promotion manifest, or engine request.",
+        "Management briefing lines 3, 77-84, and 109-118 repeat zero promotable candidates and no registration, promotion manifest, or engine request.",
         "G005 execution report lines 7-16 and 119-123 and G006 terminal report lines 67-86 show no engine/DB/registration/promotion/retry/rescue authority."
       ],
       "status": "covered"
@@ -249,30 +257,30 @@
       "requirement": "No document or QA artifact may invent protected DB write/read expansion, engine execution, strategy registration, promotion, live/OOS, retry, rescue, or runtime authority.",
       "evidence": [
         "Original brief lines 1-2 states protected DB, live, registration, and engine execution need separate approval and existing gates.",
-        "Final synthesis lines 166-183 and management briefing lines 84-93 list approval-required work and forbidden inferences.",
+        "Final synthesis lines 166-183 and management briefing lines 86-95 list approval-required work and forbidden inferences.",
         "G002, G003, G004, G005, and G006 terminal reports record protected side-effect counters zero in their cited side-effect sections."
       ],
       "status": "covered"
     },
     {
       "coverageId": "COV-09-integration-prepared-not-executed",
-      "topic": "Branch divergence and integration gate",
-      "requirement": "The report must include supplied branch divergence facts, preserve that integration is prepared but not executed, and require maintainer approval before merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion.",
+      "topic": "Pre-G007 branch divergence baseline and integration gate",
+      "requirement": "The report must label 61d26005 and target-only 2 / audit-only 112 as the pre-G007-documentation baseline, record primary G007 documentation commit f10e41d7 after that baseline, avoid asserting final post-correction HEAD/count, and require fresh read-only integration-time recheck plus maintainer approval before merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion.",
       "evidence": [
-        "Final synthesis lines 211-220 records audit branch 61d26005, target branch bd5bb3c4, merge base 541a8d70, target-only 2, audit-only 112, target-only commits bd5bb3c4 and ff251f9a, and integration not executed.",
-        "Final synthesis lines 221-231 and management briefing lines 32-40 and 107-116 preserve the approval gate and worktree cleanup boundary.",
-        "This executor did not run git; branch facts are bound to supplied contract and current report/briefing contents only."
+        "Final synthesis lines 211-220 record audit branch 61d26005, target branch bd5bb3c4, merge base 541a8d70, target-only 2, audit-only 112, and target-only commits bd5bb3c4 and ff251f9a as pre-G007-documentation or previously observed baseline facts, not final current values.",
+        "Final synthesis lines 212, 219, and 225 plus management briefing lines 36-42 require no final post-correction HEAD/count assertion and fresh read-only git rev-parse, merge-base, and rev-list --left-right --count recheck immediately before approved target integration.",
+        "This executor did not run git; branch facts are bound to supplied baseline context and current report/briefing contents only."
       ],
       "status": "covered"
     },
     {
       "coverageId": "COV-10-g007-document-commit-boundary",
       "topic": "G007 docs commit is allowed but target integration is not",
-      "requirement": "The artifact must not wrongly block the parent from the required logical Korean G007 documentation commit, while also not authorizing target branch integration actions.",
+      "requirement": "The artifact must distinguish already-created primary G007 documentation commit f10e41d7 and this later documentation correction from target branch integration authority.",
       "evidence": [
-        "Final synthesis line 3 states the parent may create the verified G007 documentation commit and that it is not maintainer integration approval.",
-        "Final synthesis lines 175 and 223 require maintainer approval for target integration actions but do not block the G007 doc commit.",
-        "Management briefing lines 13 and 105 repeat that verified G007 documentation commit is parent responsibility while merge/push/rebase/squash/cherry-pick target mutation and worktree deletion remain approval-gated."
+        "Final synthesis lines 212 and 224-225 distinguish primary G007 documentation commit f10e41d7 and this later correction from maintainer target-integration approval.",
+        "Management briefing lines 36-42 repeat that 61d26005/2/112 are pre-G007-documentation baseline facts, f10e41d7 follows them, and final integration-time HEAD/base/count require fresh recheck.",
+        "Target merge/push/rebase/squash/cherry-pick, target mutation, and worktree deletion remain approval-gated."
       ],
       "status": "covered"
     },
@@ -281,9 +289,9 @@
       "topic": "Fresh and historical verification claims",
       "requirement": "Fresh parent verification must be recorded accurately without claiming this executor ran it, and historical tests must not be misrepresented as newly run.",
       "evidence": [
-        "Parent context reports alpha suite 1143 passed, 5 skipped, 4247 deselected in 1319.36s at artifact://1600, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories; this artifact marks executorRanParentCommands=false.",
-        "Final synthesis lines 245-255 list historical checks and explicitly mark Executor ran now? as No.",
-        "Final synthesis line 3 and management briefing lines 3 and 95-105 state content-generation executors did not run tests/gates/formatters/git commands."
+        "Parent context reports authoritative post-cleaner alpha suite 1143 passed, 5 skipped, 4247 deselected in 1751.06s at artifact://1610, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories; this artifact marks executorRanParentCommands=false.",
+        "Final synthesis lines 247-257 list historical checks and explicitly mark Executor ran now? as No.",
+        "Final synthesis line 3 and management briefing lines 3 and 97-107 state content-generation executors did not run tests/gates/formatters/git commands."
       ],
       "status": "covered"
     }
@@ -294,8 +302,8 @@
       "surface": "Final research synthesis current contents",
       "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
       "kind": "durable G007 synthesis document",
-      "observed": "States no promotable candidates, preserves terminal distinctions, supersession chains, approval needs, branch divergence, and final audit assertion.",
-      "evidenceRefs": ["lines 7-15", "lines 37-53", "lines 146-183", "lines 209-231", "lines 270-272"],
+      "observed": "States no promotable candidates, preserves terminal distinctions, supersession chains, approval needs, pre-G007-documentation branch baseline, fresh integration-time recheck requirement, and final audit assertion.",
+      "evidenceRefs": ["lines 7-15", "lines 37-53", "lines 146-183", "lines 209-233", "lines 272-274"],
       "verdict": "consistent"
     },
     {
@@ -303,8 +311,8 @@
       "surface": "Management briefing current contents",
       "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
       "kind": "durable G007 management summary",
-      "observed": "Summarizes zero promotable candidates, unresolved terminal statuses, G003 fail/retired, X1 descriptive-only PASS, branch facts, approval gates, and highest-value trace-authority follow-up.",
-      "evidenceRefs": ["lines 3-13", "lines 32-40", "lines 54-63", "lines 75-93", "lines 107-120"],
+      "observed": "Summarizes zero promotable candidates, unresolved terminal statuses, G003 fail/retired, X1 descriptive-only PASS, pre-G007 branch baseline facts, approval gates, and highest-value trace-authority follow-up.",
+      "evidenceRefs": ["lines 3-13", "lines 32-42", "lines 56-65", "lines 77-95", "lines 109-122"],
       "verdict": "consistent"
     },
     {
@@ -373,19 +381,19 @@
     {
       "surfaceId": "SURF-PARENT-VERIFICATION",
       "surface": "Parent fresh verification binding",
-      "artifactPath": "artifact://1600 plus parent context",
+      "artifactPath": "artifact://1610 plus parent context",
       "kind": "parent-reported verification; not executor-run",
-      "observed": "Parent reports alpha suite 1143 passed, 5 skipped, 4247 deselected in 1319.36s, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories.",
-      "evidenceRefs": ["parent assignment context", "artifact://1600"],
+      "observed": "Parent reports authoritative post-cleaner alpha suite 1143 passed, 5 skipped, 4247 deselected in 1751.06s, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories.",
+      "evidenceRefs": ["parent assignment context", "artifact://1610"],
       "verdict": "consistent_attributed_to_parent"
     },
     {
       "surfaceId": "SURF-BRANCH-INTEGRATION",
-      "surface": "Branch integration facts from supplied contract",
+      "surface": "Branch integration baseline facts from supplied contract",
       "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md and management briefing",
       "kind": "integration-prep metadata",
-      "observed": "Audit branch at 61d26005, target alpha at bd5bb3c4, merge base 541a8d70, target-only 2, audit-only 112, target-only commits bd5bb3c4 and ff251f9a; integration prepared but not executed.",
-      "evidenceRefs": ["final synthesis lines 211-220", "final synthesis lines 221-231", "briefing lines 32-40"],
+      "observed": "Audit branch 61d26005 and divergence target-only 2 / audit-only 112 are labeled pre-G007-documentation baseline facts; target alpha bd5bb3c4 and merge base 541a8d70 are previously observed baseline facts requiring fresh recheck; primary G007 documentation commit f10e41d7 follows that baseline; no final post-correction HEAD/count is asserted; integration prepared but not executed.",
+      "evidenceRefs": ["final synthesis lines 211-225", "final synthesis lines 226-233", "briefing lines 32-42"],
       "verdict": "consistent"
     }
   ],
@@ -442,23 +450,23 @@
       "caseId": "ADV-07-protected-authority-invented",
       "threat": "Protected DB read/write expansion, engine execution, strategy registration, promotion, live/OOS, retry, rescue, or runtime authority is invented from audit documents.",
       "expectedBoundary": "Audit documents and QA artifacts remain non-authorizing; protected operations require separate maintainer/user approval and gates.",
-      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 84-93", "terminal reports' zero counters"],
+      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 86-95", "terminal reports' zero counters"],
       "result": "rejected_by_evidence",
       "status": "passed"
     },
     {
       "caseId": "ADV-08-branch-divergence-omitted",
-      "threat": "The G007 synthesis omits branch divergence or target-only commits, hiding integration risk.",
-      "expectedBoundary": "Audit HEAD, target HEAD, merge base, target-only/audit-only counts, and target-only commit IDs remain visible.",
-      "evidence": ["final synthesis lines 211-220", "management briefing lines 32-40"],
+      "threat": "The G007 synthesis omits the pre-G007-documentation branch baseline, f10e41d7 documentation-commit boundary, or required fresh integration-time recheck, hiding integration risk.",
+      "expectedBoundary": "Pre-G007 baseline audit HEAD, previously observed target baseline, previously observed merge base, pre-G007 target-only/audit-only counts, and target-only commit IDs remain visible, but final post-correction HEAD/count are not asserted and must be freshly recomputed before approved target integration.",
+      "evidence": ["final synthesis lines 211-225", "management briefing lines 32-42"],
       "result": "rejected_by_evidence",
       "status": "passed"
     },
     {
       "caseId": "ADV-09-g007-doc-commit-wrongly-blocked",
-      "threat": "The required parent G007 documentation commit is wrongly treated as blocked by maintainer target-integration approval.",
-      "expectedBoundary": "Parent may create the verified logical Korean G007 documentation commit after verification; this is distinct from merge/push/rebase/squash/cherry-pick target integration approval.",
-      "evidence": ["final synthesis line 3 and lines 221-231", "management briefing lines 13 and 105"],
+      "threat": "Primary G007 documentation commit f10e41d7 or this later correction is wrongly treated as target-integration approval, or target-integration approval is wrongly treated as required before documentation-only correction.",
+      "expectedBoundary": "Primary G007 documentation commit f10e41d7 and this later correction are documentation-only; they are distinct from merge/push/rebase/squash/cherry-pick target integration approval.",
+      "evidence": ["final synthesis line 3 and lines 175 and 224-225", "management briefing lines 3, 13, and 107"],
       "result": "rejected_by_evidence",
       "status": "passed"
     },
@@ -474,7 +482,7 @@
       "caseId": "ADV-11-historical-tests-claimed-new",
       "threat": "Historical G008/G002/G003/G004/G009/G010 checks or parent fresh checks are misrepresented as newly run by this executor.",
       "expectedBoundary": "Historical checks remain cited history, parent fresh checks are parent-reported, and executorRanParentCommands=false.",
-      "evidence": ["final synthesis lines 245-255", "management briefing lines 95-105", "parentVerification entries in this artifact"],
+      "evidence": ["final synthesis lines 247-257", "management briefing lines 97-107", "parentVerification entries in this artifact"],
       "result": "rejected_by_evidence",
       "status": "passed"
     },
@@ -525,23 +533,23 @@
     },
     {
       "id": "CHK-BRANCH-FACTS-AND-GATE",
-      "assertion": "Branch facts are present and integration is prepared but not executed or authorized.",
+      "assertion": "Branch baseline facts are present, explicitly pre-G007-documentation or previously observed, and integration is prepared but not executed or authorized.",
       "observed": "matched",
-      "evidence": ["final synthesis lines 211-231", "management briefing lines 32-40 and 107-116"],
-      "wouldFailIf": "Divergence was omitted or merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion was treated as executed or authorized."
+      "evidence": ["final synthesis lines 211-233", "management briefing lines 32-42 and 109-118"],
+      "wouldFailIf": "Pre-G007 baseline facts were treated as final post-correction HEAD/count, fresh recheck was omitted, or merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion was treated as executed or authorized."
     },
     {
       "id": "CHK-PARENT-VERIFICATION-ATTRIBUTION",
       "assertion": "Parent fresh verification is recorded accurately without claiming this executor ran it.",
       "observed": "matched",
-      "evidence": ["parentVerification in this JSON", "final synthesis lines 245-255", "management briefing lines 95-105"],
-      "wouldFailIf": "This artifact claimed the executor ran artifact://1600 alpha suite, nonrelease sync, doc-contract, diff, protected-path, or cleaner 361 checks."
+      "evidence": ["parentVerification in this JSON", "final synthesis lines 247-257", "management briefing lines 97-107"],
+      "wouldFailIf": "This artifact claimed the executor ran artifact://1610 alpha suite, nonrelease sync, doc-contract, diff, protected-path, or cleaner 361 checks."
     },
     {
       "id": "CHK-PROTECTED-SURFACE-ZERO-AUTHORITY",
       "assertion": "No inspected source creates protected DB, engine, registration, promotion, retry, rescue, workflow, receipt, claim, ledger, or candidate authority.",
       "observed": "matched",
-      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 84-93", "artifactScope in this JSON"],
+      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 86-95", "artifactScope in this JSON"],
       "wouldFailIf": "This artifact or a source document created operational authority beyond audit documentation."
     }
   ],
@@ -550,13 +558,13 @@
       "id": "final-synthesis",
       "path": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
       "role": "G007 final synthesis source",
-      "lineRefs": ["7-15", "37-53", "86-123", "146-183", "209-231", "245-272"]
+      "lineRefs": ["7-15", "37-53", "86-123", "146-183", "209-233", "247-274"]
     },
     {
       "id": "management-briefing",
       "path": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
       "role": "G007 management briefing source",
-      "lineRefs": ["3-13", "32-40", "75-93", "95-120"]
+      "lineRefs": ["3-13", "32-42", "77-95", "97-122"]
     },
     {
       "id": "durable-goals",
@@ -663,9 +671,9 @@
     },
     {
       "id": "parent-alpha-suite",
-      "path": "artifact://1600",
-      "role": "parent-reported fresh alpha suite evidence",
-      "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1319.36s",
+      "path": "artifact://1610",
+      "role": "authoritative parent-reported post-cleaner fresh alpha suite evidence",
+      "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1751.06s",
       "executorRan": false
     }
   ],
