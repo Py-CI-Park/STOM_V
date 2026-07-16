@@ -129,6 +129,8 @@ def build_stage0_receipt(
     *,
     sample_limit: int = 0,
     generated_at: Optional[str] = None,
+    min_coverage: Optional[dict] = None,
+    notes: Optional[dict] = None,
 ) -> dict:
     """Stage-0 재고 영수증을 결정론적으로 구성한다.
 
@@ -145,6 +147,13 @@ def build_stage0_receipt(
         sample_limit: `scan_min_db`에 전달할 표본 상한 (기본 0 = sqlite 미개방).
         generated_at: 영수증 타임스탬프. ``None``이면 호출 시각(UTC, ISO-8601)을
             사용한다. 결정론적 테스트에서는 고정 문자열을 명시적으로 전달한다.
+        min_coverage: 분봉 레인의 실제 커버리지 선언 ``{"min": "YYYYMMDD",
+            "max": "YYYYMMDD", "source": "<근거 문서/스캔>"}``. 파일 메타데이터만으로
+            분봉 날짜범위를 추출할 수 없으므로 호출자가 명시 선언하면 영수증의
+            ``lanes.min.coverage``에 그대로 기록되고, 틱 레인 범위와 비교해
+            ``non_common_history``를 정직하게 계산한다.
+        notes: 영수증에 남길 추가 메모 딕셔너리(예: data_root_note). 생성기가
+            직접 emit하므로 영수증은 항상 이 함수만으로 재현 가능하다.
 
     Returns:
         `schemaVersion`, `kind`, `lanes`, `non_common_history`,
@@ -153,10 +162,18 @@ def build_stage0_receipt(
     """
     tick_lane = scan_tick_dbs(tick_dir)
     min_lane = scan_min_db(min_db, sample_limit=sample_limit)
+    if min_coverage is not None:
+        min_lane = dict(min_lane)
+        min_lane["coverage"] = dict(min_coverage)
 
-    # 커버리지 비교: 틱 거래일자가 하나도 없거나 분봉 DB가 없으면 두 축 사이의
-    # 공통 히스토리를 확인할 수 없으므로 non_common_history=True.
+    # 커버리지 비교: 한쪽 레인이 비었으면 공통 히스토리를 확인할 수 없어 True.
+    # 양쪽 범위를 모두 알 때는 시작/끝 일자가 정확히 일치할 때만 공통으로 본다.
     non_common_history = tick_lane["count"] == 0 or not min_lane["exists"]
+    if not non_common_history and min_coverage is not None:
+        non_common_history = (
+            str(min_coverage.get("min")) != str(tick_lane.get("min"))
+            or str(min_coverage.get("max")) != str(tick_lane.get("max"))
+        )
 
     if generated_at is None:
         generated_at = datetime.now(timezone.utc).isoformat()
@@ -174,6 +191,8 @@ def build_stage0_receipt(
         "trial_plan_hashes": list(plan_hashes),
         "generatedAt": generated_at,
     }
+    if notes:
+        payload["notes"] = dict(notes)
     payload["receipt_sha"] = canonical_sha256(payload)
     return payload
 
