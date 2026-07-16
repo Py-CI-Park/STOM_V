@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from ai_strategy_loop.dashboard import research_index
 from ai_strategy_loop.dashboard import research_records as records
 from ai_strategy_loop.dashboard.analysis_snapshot import analysis_router
+from ai_strategy_loop.dashboard.history_api import history_router
 
 
 class ResearchDocSummary(TypedDict):
@@ -66,6 +67,7 @@ _SELECTED_UPDATE_LOGS: Final[tuple[str, ...]] = (
 
 router = APIRouter()
 router.include_router(analysis_router)
+router.include_router(history_router)
 
 
 def _repo_path(rel_path: str) -> Path:
