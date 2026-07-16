@@ -17,6 +17,15 @@ _NUMBER_RE = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?")
 _WHITESPACE_RE = re.compile(r"\s+")
 _OPERATOR_SPACE_RE = re.compile(r"\s*([<>=!+\-*/%(),:&|]+)\s*")
 _ALLOWED_HYPOTHESIS_STATUS = {"accepted", "rejected", "deferred", "inconclusive"}
+# 시간축 게이트(예: 90000 <= 시분초 < 93000)는 생성 가드가 구조적으로 요구하고
+# 인간 시드도 같은 세션 상수를 쓸 수밖에 없다. 시간축 비교는 "고유 임계값"이
+# 아니므로 항목 단위 복사 판정에서 제외한다(전체 숫자집합 동일 판정에는 남는다).
+_TIME_AXIS_VARIABLES = frozenset({"시분초", "시간"})
+_IDENTIFIER = r"[가-힣A-Za-z_][가-힣A-Za-z_0-9]*"
+_NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
+_COMPARISON_RE = re.compile(rf"({_IDENTIFIER})\s*(<=|>=|==|!=|<|>)\s*({_NUMBER})")
+_REVERSED_COMPARISON_RE = re.compile(rf"({_NUMBER})\s*(<=|>=|<|>)\s*({_IDENTIFIER})")
+_FLIPPED_OPERATOR = {"<": ">", ">": "<", "<=": ">=", ">=": "<="}
 
 
 def _sha(text: str) -> str:
@@ -50,11 +59,37 @@ def _canonical_thresholds(text: Any) -> List[str]:
     return [_canonical_number(v) for v in _NUMBER_RE.findall(str(text or ""))]
 
 
+def _comparison_threshold_items(text: Any) -> List[str]:
+    """비교식에서 (변수, 연산자, 정규화 숫자) 항목을 추출한다.
+
+    맨숫자(bare number)가 아니라 문맥 있는 임계값만 항목으로 삼아,
+    0/1/100 같은 보편 상수 공유가 복사로 오판되는 것을 막는다.
+    시간축 변수 비교는 제외한다(_TIME_AXIS_VARIABLES 참조).
+    """
+    source = str(text or "")
+    items = set()
+    for var, op, num in _COMPARISON_RE.findall(source):
+        if var in _TIME_AXIS_VARIABLES:
+            continue
+        items.add(f"{var}{op}{_canonical_number(num)}")
+    for num, op, var in _REVERSED_COMPARISON_RE.findall(source):
+        if var in _TIME_AXIS_VARIABLES:
+            continue
+        items.add(f"{var}{_FLIPPED_OPERATOR[op]}{_canonical_number(num)}")
+    return sorted(items)
+
+
 def _threshold_fingerprint(text: Any) -> tuple[List[str], str, List[str]]:
+    """(전체 숫자 목록, 숫자집합 해시, 문맥 임계값 항목 해시)를 반환한다.
+
+    - 숫자집합 해시: 표현식의 모든 숫자를 통째로 베낀 경우를 잡는 조밀 판정.
+    - 항목 해시: 변수+연산자+숫자 삼중항 단위 판정. 단일 숫자 겹침만으로는
+      차단하지 않는다(2026-07-16 실 A/B에서 100% 오차단이 확인된 결함 수정).
+    """
     values = _canonical_thresholds(text)
     canonical_set = sorted(set(values))
     normalized = ",".join(canonical_set)
-    item_hashes = [_sha(v) for v in canonical_set]
+    item_hashes = [_sha(item) for item in _comparison_threshold_items(text)]
     return values, _sha(normalized) if canonical_set else "", item_hashes
 
 

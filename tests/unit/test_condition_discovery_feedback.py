@@ -95,12 +95,35 @@ def test_pattern_card_strips_thresholds_and_rejects_performance_truth():
     )
     assert structural["status"] == "ok"
 
-    partial_copy = validate_pattern_card_usage(
+    # 시간축 게이트 공유는 구조 요구사항이므로 복사로 판정하지 않는다.
+    shared_time_gate_only = validate_pattern_card_usage(
         "시분초 >= 90000 and 시분초 <= 92000 and 당일거래대금 > 2100 and 체결강도 > 135",
+        card,
+    )
+    assert shared_time_gate_only["status"] == "ok"
+
+    # 보편 상수가 다른 변수 문맥에서 우연히 겹치는 것도 복사가 아니다(과차단 결함 회귀 방지).
+    same_number_different_variable = validate_pattern_card_usage(
+        "시분초 >= 90500 and 시분초 <= 92000 and 당일거래대금 > 120 and 체결강도 > 135",
+        card,
+    )
+    assert same_number_different_variable["status"] == "ok"
+
+    # 고유 임계값(변수+연산자+숫자)이 한 항목이라도 겹치면 복사다.
+    partial_copy = validate_pattern_card_usage(
+        "시분초 >= 90500 and 시분초 <= 92000 and 당일거래대금 > 1500 and 체결강도 > 135",
         card,
     )
     assert partial_copy["status"] == "blocked"
     assert "threshold_copy" in partial_copy["blockers"]
+
+    # 숫자 순서를 뒤집어 써도(1500 < 당일거래대금) 같은 삼중항으로 판정한다.
+    reversed_partial_copy = validate_pattern_card_usage(
+        "시분초 >= 90500 and 시분초 <= 92000 and 1500 < 당일거래대금 and 체결강도 > 135",
+        card,
+    )
+    assert reversed_partial_copy["status"] == "blocked"
+    assert "threshold_copy" in reversed_partial_copy["blockers"]
 
     equivalent_copy = validate_pattern_card_usage(
         "체결강도 > +1.2e2 and 당일거래대금 > 1.500e3 and 시분초 <= 92800.0 and 시분초 >= 90000",
