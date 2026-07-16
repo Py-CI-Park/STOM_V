@@ -5089,9 +5089,13 @@ def test_typed_analysis_card_feedback_resolves_side_conflicts_deterministically(
     monkeypatch.setattr(ac, "verify_analysis_card_v3_content_hash", lambda card: True)
 
     evidence_id = "c" * 64
+    # 프로덕션 카드와 동일하게 지시를 불변 MappingProxyType으로 노출한다
+    # (dict isinstance 검사 회귀 방지 — 2026-07-16 실 A/B에서 전 지시 폐기 실측).
+    from types import MappingProxyType
+
     card = types.SimpleNamespace(
         content_hash=evidence_id,
-        actionable_directives=(
+        actionable_directives=tuple(MappingProxyType(d) for d in (
             {"statement": "BUY_WINNER", "side": "BUY"},
             {"statement": "BUY_CONFLICT", "side": "BUY"},
             {"statement": "SELL_READY", "side": "SELL"},
@@ -5107,7 +5111,7 @@ def test_typed_analysis_card_feedback_resolves_side_conflicts_deterministically(
                 "data_role": "TRAIN",
                 "status": "BLOCKED",
             },
-        ),
+        )),
     )
     envelope = _resolve_analysis_card_typed_feedback(card, generation=4)
 

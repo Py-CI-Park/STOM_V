@@ -2808,14 +2808,17 @@ def _resolve_analysis_card_typed_feedback(
         scope = "analysis_card_v3_prompt"
         directives = []
         for priority, item in enumerate(getattr(card, "actionable_directives", ()) or ()):
-            statement = item.get("statement") if isinstance(item, dict) else None
+            # AnalysisCardV3는 지시를 불변 MappingProxyType으로 노출하므로
+            # dict가 아닌 Mapping 기준으로 판별해야 한다(dict 검사면 전 지시가
+            # 조용히 폐기되어 typed 채널이 무발화된다 — 2026-07-16 실 A/B 실측).
+            statement = item.get("statement") if isinstance(item, Mapping) else None
             if not isinstance(statement, str) or not statement.strip():
                 continue
-            side_value = item.get("side", "BUY") if isinstance(item, dict) else "BUY"
-            role_value = item.get("data_role", "TRAIN") if isinstance(item, dict) else "TRAIN"
-            status_value = item.get("status", "READY") if isinstance(item, dict) else "READY"
-            scope_value = item.get("scope", scope) if isinstance(item, dict) else scope
-            supplied_priority = item.get("priority") if isinstance(item, dict) else None
+            side_value = item.get("side", "BUY")
+            role_value = item.get("data_role", "TRAIN")
+            status_value = item.get("status", "READY")
+            scope_value = item.get("scope", scope)
+            supplied_priority = item.get("priority")
             priority_value = (
                 supplied_priority
                 if isinstance(supplied_priority, int) and not isinstance(supplied_priority, bool)
