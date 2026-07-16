@@ -42,6 +42,23 @@ def _field(record: dict[str, Any], names: tuple[str, ...], what: str) -> Any:
     if len(found) != 1:
         _fail(f"{what} must contain exactly one of {names}")
     return found[0]
+def _alias(record: dict[str, Any], names: tuple[str, ...], parser: Any, what: str) -> Any:
+    values = [(name, parser(record[name])) for name in names if name in record]
+    if not values:
+        _fail(f"{what} must contain one of {names}")
+    canonical = values[0][1]
+    if any(value != canonical for _, value in values[1:]):
+        _fail(f"{what} has conflicting aliases: {[name for name, _ in values]}")
+    return canonical
+
+
+def _entry_aliases(record: dict[str, Any], day_names: tuple[str, ...],
+                   time_names: tuple[str, ...], what: str) -> tuple[str, str]:
+    day = _alias(record, day_names, _day, f"{what} day")
+    second = _alias(record, time_names,
+                    lambda value: _time_for_day(day, value, f"{what} time"),
+                    f"{what} time")
+    return day, second
 
 
 def _digits(value: Any, length: int, what: str) -> str:
@@ -301,8 +318,8 @@ def _mapping(paths: tuple[Path, Path]) -> tuple[dict[tuple[str, str, str], str],
         rows = _p3_rows(_json(path))
         counts.append(len(rows))
         for row in rows:
-            identifier = str(_field(row, ("code", "종목코드"), "P3 row"))
-            day, second = _entry_parts(_field(row, ("day", "진입일자"), "P3 row"), _field(row, ("t0", "진입시각"), "P3 row"), "P3 row")
+            identifier = _alias(row, ("code", "종목코드"), str, "P3 identifier")
+            day, second = _entry_aliases(row, ("day", "진입일자"), ("t0", "진입시각"), "P3")
             code = str(row["code6"])
             if not _CODE6.fullmatch(code):
                 _fail("P3 code6 must be a six-digit literal")
@@ -321,8 +338,9 @@ def _ledger(path: Path, mapping: dict[tuple[str, str, str], str]) -> tuple[list[
             record = json.loads(line)
             if not isinstance(record, dict):
                 _fail("ledger JSONL row must be an object")
-            identifier = str(_field(record, ("종목코드", "identifier"), "ledger row"))
-            day, buy = _entry_parts(_field(record, ("진입일자", "entry_day"), "ledger row"), _field(record, ("진입시각", "매수시간", "buy_second"), "ledger row"), "ledger entry")
+            identifier = _alias(record, ("종목코드", "identifier"), str, "ledger identifier")
+            day, buy = _entry_aliases(record, ("진입일자", "entry_day"),
+                                      ("진입시각", "매수시간", "buy_second"), "ledger entry")
             if day[:4] not in {"2022", "2023"}:
                 continue
             mapped = mapping.get((identifier, day, buy))
@@ -332,7 +350,9 @@ def _ledger(path: Path, mapping: dict[tuple[str, str, str], str]) -> tuple[list[
                 code, resolution = identifier, "code_literal"
             else:
                 code, resolution = mapped, "p3_rejoin"
-            sell_day, sell = _full_timestamp(_field(record, ("매도시간", "sell_timestamp"), "ledger row"))
+            sell_day, sell = _alias(record, ("매도시간", "sell_timestamp"), _full_timestamp, "ledger sell")
+            if sell_day != day:
+                _fail("ledger sell timestamp day conflicts with entry day")
             trades.append({"trade_id": ordinal, "code6": code, "code_resolution": resolution, "entry_day": day,
                            "buy_second": buy, "sell_day": sell_day, "sell_second": sell,
                            "notional": _field(record, ("매수금액", "notional"), "ledger row")})

@@ -41,11 +41,11 @@ def make_inputs(root):
         "per_candidate": per_candidate,
     }})
     Path(a.ledger).write_text(
-        json.dumps({"종목코드": "alias", "진입일자": "20230101", "진입시각": "20230101000000", "매도시간": 20230101090000.0, "매수금액": 11, "수익금": 999}) + "\n" +
-        json.dumps({"종목코드": "123456", "진입일자": "20230101", "매수시간": "20230101000001", "매도시간": 20230101090000.0, "매수금액": 12, "label": "never read"}) + "\n" +
+        json.dumps({"종목코드": "alias", "진입일자": "20230101", "진입시각": "000000", "매수시간": "20230101000000", "매도시간": 20230101090000.0, "매수금액": 11, "수익금": 999}) + "\n" +
+        json.dumps({"종목코드": "123456", "진입일자": "20230101", "진입시각": "000001", "매수시간": "20230101000001", "매도시간": 20230101090000.0, "매수금액": 12, "label": "never read"}) + "\n" +
         json.dumps({"종목코드": "654321", "진입일자": "20240101", "진입시각": "20240101000000", "매도시간": 20240101090000.0, "매수금액": 13}) + "\n",
         encoding="utf-8")
-    dump(Path(a.p3_chunk1), {"samples": [{"code": "alias", "day": "20230101", "t0": "20230101000000", "code6": "123456"}], "exclusions": [{"reason": "no code"}]})
+    dump(Path(a.p3_chunk1), {"samples": [{"code": "alias", "종목코드": "alias", "day": "20230101", "진입일자": "20230101", "t0": "20230101000000", "진입시각": "000000", "code6": "123456"}], "exclusions": [{"reason": "no code"}]})
     dump(Path(a.p3_chunk2), {"samples": [], "exclusions": []})
     parquet(Path(a.o3_parquet), [
         {"code": "123456", "day": "20221231", "off": 7, "t0": "235959", "variant": "P20", "onset_type": "breakout", "pnl": 100},
@@ -94,6 +94,19 @@ def test_actual_artifact_schemas_are_deterministic_outcome_blind_and_indexed(rep
     assert "수익금" not in json.dumps(saved, ensure_ascii=False) and "profit" not in json.dumps(saved)
     with pytest.raises(FileExistsError):
         mod.publish(Path(a.output), payload)
+    with pytest.raises(ValueError, match="conflicting aliases"):
+        mod._entry_aliases(
+            {"진입일자": "20230101", "진입시각": "000000", "매수시간": "20230101000001"},
+            ("진입일자",), ("진입시각", "매수시간"), "ledger entry")
+    with pytest.raises(ValueError, match="timestamp day conflicts"):
+        mod._entry_aliases(
+            {"진입일자": "20230101", "진입시각": "000000", "매수시간": "20230102000000"},
+            ("진입일자",), ("진입시각", "매수시간"), "ledger entry")
+    p3 = json.loads(Path(a.p3_chunk1).read_text(encoding="utf-8"))
+    p3["samples"][0]["종목코드"] = "different"
+    dump(Path(a.p3_chunk1), p3)
+    with pytest.raises(ValueError, match="conflicting aliases"):
+        mod._mapping((Path(a.p3_chunk1), Path(a.p3_chunk2)))
 
 
 @pytest.mark.parametrize("mutation, message", [
