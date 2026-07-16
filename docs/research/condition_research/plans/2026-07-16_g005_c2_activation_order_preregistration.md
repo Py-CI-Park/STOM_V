@@ -62,7 +62,7 @@ Absent activation timestamps나 absent common support는 KILL이 아니라 UNDET
 - 이 hypothesis에는 나중에 어떤 trace도 attach할 수 없다. 향후 activation-order 연구는 G005 밖의 새로운 hypothesis와 새로운 preregistration을 요구한다.
 - 신규 trace 생성, later trace attachment, trace replay, snapshot/flat-bit proxy, D1 interaction reuse, family redesign, 2024+ 확장, engine 실행, DB write, strategy registration, promotion, retry, rerun, variant run, 또는 rescue run은 금지한다.
 - 아래 authority directory들은 sealed namespace 기록일 뿐이며, 이 사전등록 자체가 directory 생성, target DB 생성, ledger append 또는 protected artifact 생성을 승인하지 않는다.
-- `scripts/g005_c2_nonidentification_guard.py`는 strict parser schema를 만족시키기 위한 import-safe sentinel일 뿐이며, `execution_authorized:false` 상태를 바꾸지 않고 authorized target, invocation, materialization, receipt, claim, ledger row 또는 promotion이 아니다.
+- `scripts/g005_c2_nonidentification_guard.py`는 strict parser schema를 만족시키기 위한 static schema sentinel이며 executable entrypoint가 없다. 이 정적 선언은 `execution_authorized:false` 상태를 바꾸지 않고 authorized target, invocation, materialization, receipt, claim, ledger row 또는 promotion이 아니다.
 
 ```json prereg-contract-v2
 {
@@ -98,4 +98,4 @@ Absent activation timestamps나 absent common support는 KILL이 아니라 UNDET
 }
 ```
 
-이 SEALED 계약은 C2의 사전 확정 가설, denominator, seed, matching/offset, kill/UNDETERMINED rule, no-retry boundary를 기각된 design record로 보존한다. 현재 sentinel에는 order와 outcome authority가 없고 정확한 pre-existing activation trace authority도 발견되지 않았으므로 이 hypothesis는 지금 terminal UNDETERMINED / nonidentified이며, 이후 어떤 trace도 이 hypothesis에 붙일 수 없고 어떤 measurement artifact나 outcome claim도 만들 수 없다.
+이 SEALED 계약은 C2의 사전 확정 가설, denominator, seed, matching/offset, kill/UNDETERMINED rule, no-retry boundary를 기각된 design record로 보존한다. 현재 static schema sentinel에는 order와 outcome authority가 없고 executable entrypoint도 없으며 정확한 pre-existing activation trace authority도 발견되지 않았으므로 이 hypothesis는 지금 terminal UNDETERMINED / nonidentified다. 이후 어떤 trace도 이 hypothesis에 붙일 수 없고 어떤 measurement artifact나 outcome claim도 만들 수 없다.
