@@ -31,7 +31,7 @@ from fastapi import APIRouter, HTTPException, Query
 from ai_strategy_loop.controller.state import LoopState
 from ai_strategy_loop.controller.state import LOOP_RUNS_DB as _DEFAULT_LOOP_RUNS_DB
 from ai_strategy_loop.dashboard import research_records
-from ai_strategy_loop.dashboard.history_adapters import CampaignAdapter, LoopRunAdapter
+from ai_strategy_loop.dashboard.history_adapters import CampaignAdapter, LoopRunAdapter, list_companion_campaigns
 from cli.condition_history_schema import ResearchNode, flat_rows
 
 #: 캠페인 증거 루트 -- 테스트가 tmp 디렉토리로 교체할 수 있게 모듈 전역으로 둔다.
@@ -151,8 +151,10 @@ def _campaign_index_items() -> tuple[list[HistoryIndexItem], bool]:
     listing = research_records.list_research_records(root=EVIDENCE_ROOT)
     adapter = CampaignAdapter(evidence_root=EVIDENCE_ROOT)
     items: list[HistoryIndexItem] = []
+    seen: set[str] = set()
     for campaign in listing["campaigns"]:
         name = campaign["name"]
+        seen.add(name)
         result = adapter.build_research_node(name)
         counts, status = _counts_and_status(result["research"])
         items.append(
@@ -161,6 +163,27 @@ def _campaign_index_items() -> tuple[list[HistoryIndexItem], bool]:
                 "source_kind": "campaign",
                 "label": name,
                 "updated_at": _iso(campaign.get("updated_at")),
+                "counts": counts,
+                "condition_tree_status": status,
+            }
+        )
+    # 발행 companion(<campaign>_condition_history_v1.json)은 summary/JSONL 없이도
+    # 존재할 수 있다(예: Stage-1 발행). records 목록에 없으면 여기서 합류시킨다.
+    for name in list_companion_campaigns(EVIDENCE_ROOT):
+        if name in seen:
+            continue
+        result = adapter.build_research_node(name)
+        counts, status = _counts_and_status(result["research"])
+        try:
+            mtime = (EVIDENCE_ROOT / f"{name}_condition_history_v1.json").stat().st_mtime
+        except OSError:
+            mtime = 0.0
+        items.append(
+            {
+                "research_id": f"campaign:{name}",
+                "source_kind": "campaign",
+                "label": name,
+                "updated_at": _iso(mtime),
                 "counts": counts,
                 "condition_tree_status": status,
             }
