@@ -1,0 +1,202 @@
+{
+  "schema": "g002-identity-failure-evidence-v1",
+  "schema_version": 1,
+  "repository": {
+    "head": "6bf93002aeda356da66c68ded322a2b83b7a0efd"
+  },
+  "identity": {
+    "experiment_id": "alpha_restart_20260710-g002",
+    "identity_attempt_id": "alpha_restart_20260710-g002-identity-attempt-001",
+    "full_attempt_id": "alpha_restart_20260710-g002-attempt-001",
+    "terminal_decision": "UNDETERMINED",
+    "stage": "identity_projection"
+  },
+  "canonical_invocation": {
+    "command": "python -m scripts.u7_f0_materialize --ledger docs/research/condition_research/research_runs/alpha_lab_20260705/distill/champion_ledger.jsonl --l3 C:/System_Trading/STOM/STOM_V.wt-alpha/docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/onset_l3_bank.parquet --d1-bits docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet --tick-db C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_tick_back.db --evidence docs/research/condition_research/research_runs/alpha_restart_20260710/g002/materialization_launch.json --identity-output docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_crosswalk.json --design-marker docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_design_marker.json --identity-only",
+    "exit_code": 1,
+    "exception_type": "ValueError",
+    "exception_message": "timestamp must be an exact integer or digit string"
+  },
+  "invocation_history": {
+    "first_direct_script": {
+      "classification": "noncanonical import-only direct-script invocation",
+      "result": "failed before main",
+      "artifacts_created": []
+    },
+    "canonical_module": {
+      "classification": "sole canonical identity-only invocation",
+      "result": "reserved identity attempt, then failed during identity projection"
+    }
+  },
+  "identity_artifacts": {
+    "identity_attempt": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_attempt.json",
+      "sha256": "b178ccdc0498dff171bb9c73a1f08186c5089507c785b8a4a28bce3aa537c1cc",
+      "size_bytes": 185,
+      "state": "reserved"
+    },
+    "identity_status": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_status.json",
+      "sha256": "0e43be2f1092c75e15d0a40e4fb7ef66b0ca07aae25e3179b607bf07aa5dbd50",
+      "size_bytes": 182,
+      "state": "failed"
+    }
+  },
+  "root_cause": {
+    "ledger_parse": {
+      "total_rows": 671,
+      "fixed_cohort_selected_rows": 298,
+      "first_selected_row": {
+        "진입시각": "090127",
+        "진입시각_identity_form": "exact digit string",
+        "매수시간": 20220323090127.0,
+        "매수시간_runtime_type": "float"
+      }
+    },
+    "implementation_precedence": "buy_timestamp, then buy_time, then 매수시간",
+    "failure_mechanism": "The implementation selects buy_timestamp, then buy_time, then 매수시간. It selected the 매수시간 float and _timestamp rejected it; 진입시각 is omitted and never a candidate or fallback.",
+    "source_locations": {
+      "identity_projection": "scripts/u7_f0_materialize.py:_identity",
+      "timestamp_validation": "scripts/u7_f0_materialize.py:_timestamp"
+    }
+  },
+  "read_scope": {
+    "all_source_and_db_byte_hashes_validated": true,
+    "champion_ledger_json_parsed": true,
+    "tick_db": {
+      "opened_query_only": true,
+      "purpose": "first code/day resolution only",
+      "resolved_code": "066410",
+      "resolved_day": "20220323",
+      "sqlite_sidecars_absent": {
+        "-wal": true,
+        "-shm": true,
+        "-journal": true
+      }
+    },
+    "failure_before": [
+      "identity crosswalk",
+      "L3/D1 row materialization",
+      "factorial",
+      "full attempt",
+      "target",
+      "bootstrap",
+      "result"
+    ]
+  },
+  "source_custody": {
+    "authority": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/source_authority.json",
+      "sha256": "3403f9b27e6361ec991c64db5542c7e48f347efe705e4b927f8b765928c00bc6",
+      "size_bytes": 3154
+    },
+    "launch": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/materialization_launch.json",
+      "sha256": "d46e97bd2033411d9324d61eeb2f2cebdb4c37c4be302eb5a27e7fbe0eff2943",
+      "size_bytes": 884
+    },
+    "preregistration": {
+      "path": "docs/research/condition_research/plans/2026-07-16_g002_u7_f0_preregistration.md",
+      "sha256": "130d4d69b3e6b3373ef10c2bc3acb548154460d7086fd4aa7204f4ff3ac0afee",
+      "size_bytes": 8193
+    },
+    "materializer": {
+      "path": "scripts/u7_f0_materialize.py",
+      "sha256": "d743cdd80e9ae5a90bbf78b070ae18e2ddcee7505062b08b55d97c34a3b81dfd",
+      "size_bytes": 51577
+    },
+    "measurement_target": {
+      "path": "scripts/u7_f0_frame_measure.py",
+      "sha256": "6b4f9b323fe90a615dad1b02d6ca67725090220711715ba5d7fc2b88849d3f42",
+      "size_bytes": 26276
+    },
+    "authority_sources_pre_vs_post": [
+      {
+        "name": "champion_ledger",
+        "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/distill/champion_ledger.jsonl",
+        "authority_sha256": "72b6a082774a61c235f865a61b34d8162ced1972a8e2e7ccc1be7252aff01477",
+        "post_sha256": "72b6a082774a61c235f865a61b34d8162ced1972a8e2e7ccc1be7252aff01477",
+        "size_bytes": 779908,
+        "equal": true
+      },
+      {
+        "name": "p5_receipt",
+        "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/distill/p5_phase0_receipt.json",
+        "authority_sha256": "889713c5024402844fd978f028a3c8237d179e6aa327df0af49e4c832f83c517",
+        "post_sha256": "889713c5024402844fd978f028a3c8237d179e6aa327df0af49e4c832f83c517",
+        "size_bytes": 15525,
+        "equal": true
+      },
+      {
+        "name": "onset_l3_bank_external_read_path",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/onset_l3_bank.parquet",
+        "authority_sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
+        "post_sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
+        "size_bytes": 11741034,
+        "equal": true
+      },
+      {
+        "name": "d1_onset_clause_bits_local",
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+        "authority_sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+        "post_sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+        "size_bytes": 6783855,
+        "equal": true
+      },
+      {
+        "name": "equivalence_receipt",
+        "path": "docs/research/condition_research/research_runs/alpha_lab_v3_20260706/v2_labeler_equivalence.json",
+        "authority_sha256": "ad7dae7c9501458d1681154d355e28762993b0c96063af497476eb25bece5649",
+        "post_sha256": "ad7dae7c9501458d1681154d355e28762993b0c96063af497476eb25bece5649",
+        "size_bytes": 465,
+        "equal": true
+      },
+      {
+        "name": "champion_passport",
+        "path": "docs/research/condition_research/condition_passports/rr8_12_turnover_min_902_1.5.md",
+        "authority_sha256": "7b98572d9af6bd9244ed75a4ee8e39ed3e31468d4574c042a01da7d07f914770",
+        "post_sha256": "7b98572d9af6bd9244ed75a4ee8e39ed3e31468d4574c042a01da7d07f914770",
+        "size_bytes": 8134,
+        "equal": true
+      },
+      {
+        "name": "sell_expression",
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/champion_sell_expression.txt",
+        "authority_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+        "post_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+        "size_bytes": 1923,
+        "equal": true
+      }
+    ],
+    "tick_db_pre_vs_post": {
+      "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_tick_back.db",
+      "authority_sha256": "d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a",
+      "post_sha256": "d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a",
+      "size_bytes": 29727162368,
+      "physical_id": "C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_tick_back.db:29727162368:d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a",
+      "equal": true,
+      "sidecars_absent": ["-wal", "-shm", "-journal"]
+    }
+  },
+  "side_effect_counters": {
+    "engine": 0,
+    "db_writes": 0,
+    "registration": 0,
+    "promotion": 0,
+    "full_attempt": 0,
+    "target_runs": 0,
+    "outcome_computations": 0
+  },
+  "absent_artifacts": [
+    "identity_crosswalk.json",
+    "identity_design_marker.json",
+    "materialization_attempt.json",
+    "materialization_status.json",
+    "u7_f0_materialized_input.json",
+    "seal",
+    "receipt",
+    "claim",
+    "result"
+  ],
+  "receipt_or_claim_invented": false
+}
