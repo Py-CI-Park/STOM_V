@@ -25,7 +25,7 @@ import hashlib
 import stat
 from contextlib import nullcontext
 
-from alpha_lab.discipline import measure_gate, prereg
+from alpha_lab.discipline import evidence, measure_gate
 from alpha_lab.runlab.sealed_execution import (
     load_execution_evidence,
     stage_execution,
@@ -401,7 +401,10 @@ def _git(repo: Path, *args: str) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def _sealed_runlab_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
+def _sealed_runlab_repo(
+    tmp_path: Path, *, target_source: str | None = None,
+    extra_files: dict[str, str] | None = None,
+) -> tuple[Path, Path, Path, Path]:
     repo = tmp_path / "sealed-repo"
     (repo / "docs").mkdir(parents=True)
     (repo / "code").mkdir()
@@ -420,22 +423,23 @@ def _sealed_runlab_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
 """, encoding="utf-8")
     target = repo / "code" / "entry.py"
     target.write_text(
-        "from package import helper\nRESULT = helper.VALUE\n",
-        encoding="utf-8")
+        target_source or "from package import helper\nRESULT = helper.VALUE\n",
+        encoding="utf-8",
+    )
+    for relative, content in (extra_files or {}).items():
+        candidate = repo / relative
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        candidate.write_text(content, encoding="utf-8")
     _git(repo.parent, "init", "-q", str(repo))
     _git(repo, "add", "-A")
     _git(repo, "-c", "user.name=test", "-c", "user.email=test@example.com",
          "commit", "-qm", "initial")
     seal = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
-    prereg.finalize_prereg(
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
         sealed, repo_root=repo,
         code_files=(target, repo / "package" / "__init__.py", repo / "package" / "helper.py"),
-        manifest_path=seal, sealed_at="2026-07-14T00:00:00+00:00")
-    _git(repo, "add", "seals")
-    _git(repo, "-c", "user.name=test", "-c", "user.email=test@example.com",
-         "commit", "-qm", "seal")
-    receipt = measure_gate.issue_gate_receipt_v2(
-        repo, seal, issued_at="2026-07-14T00:01:00+00:00", nonce="runlab")
+        manifest_path=seal, sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="runlab")
     receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
     measure_gate.claim_gate_receipt_v2(
         receipt_path, repo_root=repo, consumer="runlab-test",
@@ -453,7 +457,16 @@ def test_sealed_execution_stages_and_runs_dependency_root(tmp_path):
                        str(staged_target)),
         env=_child_env(), capture_output=True, timeout=60)
     assert proc.returncode == 0, proc.stderr.decode(errors="replace")
-
+def test_staged_launch_rejects_local_builtin_hidden_by_trusted_precedence(tmp_path):
+    with pytest.raises(
+        evidence.EvidenceSchemaError,
+        match=r"ambiguous local/external import: sys",
+    ):
+        _sealed_runlab_repo(
+            tmp_path,
+            target_source="import sys\nRESULT = sys.version\n",
+            extra_files={"sys.py": "VALUE = 'local-stage-candidate'\n"},
+        )
 
 def test_sealed_execution_rejects_late_target_claim_tamper_and_stage_extra(tmp_path):
     repo, target, receipt, claim = _sealed_runlab_repo(tmp_path)

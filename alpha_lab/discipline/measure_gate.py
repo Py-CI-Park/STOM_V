@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -37,6 +38,7 @@ from alpha_lab.discipline.evidence import (
     validate_gate_usage,
     validate_prereg_seal,
 )
+from alpha_lab.discipline.prereg import _consume_finalizer_authority
 
 # 읽기 전용 git 서브커맨드 화이트리스트 — 이 밖은 코드상 실행 불가.
 _ALLOWED_GIT = frozenset({"rev-parse", "log", "status", "ls-files"})
@@ -241,23 +243,45 @@ def _current_head(repo_root: Path) -> str:
     return head
 
 
-def issue_gate_receipt_v2(
-    repo_root: Path | str,
+def _issue_gate_receipt_v2(
+    root: Path,
     seal_manifest_path: Path | str,
     *,
     issued_at: str,
     nonce: str,
-) -> dict[str, Any]:
-    """Issue an immutable v2 receipt for the complete sealed code manifest."""
-    root = Path(repo_root).resolve()
+    capability: object | None = None,
+) -> tuple[dict[str, Any], Path]:
+    """Build and publish a receipt; authority derives only from live finalizer custody."""
     require_timestamp_order(("issued_at", issued_at))
     if not isinstance(nonce, str) or not nonce:
         raise EvidenceSchemaError("nonce must be non-empty")
-    seal_file_ref = _relative_file_ref(seal_manifest_path, root)
-    try:
-        seal_value = json.loads(Path(seal_manifest_path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise EvidenceSchemaError("seal manifest must be readable JSON") from exc
+    guard = None
+    custody = {"mode": "standalone", "launch_authoritative": False}
+    if capability is not None:
+        custody = {"mode": "continuous-finalizer-v1", "launch_authoritative": True}
+        guard = _consume_finalizer_authority(capability, Path(seal_manifest_path))
+        seal_path = Path(seal_manifest_path)
+        if not seal_path.is_absolute():
+            seal_path = root / seal_path
+        try:
+            relative = seal_path.relative_to(root)
+        except ValueError as exc:
+            raise EvidenceSchemaError("path must be inside repo_root") from exc
+        seal_bytes = guard.read_retained_file(seal_path)
+        seal_file_ref = {
+            "path": relative.as_posix(),
+            "sha256": hashlib.sha256(seal_bytes).hexdigest(),
+        }
+        try:
+            seal_value = json.loads(seal_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise EvidenceSchemaError("seal manifest must be readable JSON") from exc
+    else:
+        seal_file_ref = _relative_file_ref(seal_manifest_path, root)
+        try:
+            seal_value = json.loads(Path(seal_manifest_path).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise EvidenceSchemaError("seal manifest must be readable JSON") from exc
     seal_ref = {"path": seal_file_ref["path"], "sha256": sha256_canonical(seal_value)}
     seal = validate_prereg_seal(seal_value, repo_root=root, verify_files=True)
     prereg_path = root / Path(*Path(seal["sealed_doc"]["path"]).parts)
@@ -269,37 +293,140 @@ def issue_gate_receipt_v2(
         raise EvidenceSchemaError("v2 gate failed: " + "; ".join(gate["reasons"]))
     head = _current_head(root)
     code_manifest_sha256 = sha256_canonical(seal["code_manifest"])
-    receipt_id = sha256_canonical({
-        "issued_at": issued_at,
-        "nonce": nonce,
-        "repo_head": head,
-        "seal_manifest": seal_ref,
-        "prereg": seal["sealed_doc"],
-        "code_manifest_sha256": code_manifest_sha256,
-    })
-    receipt = {
-        "schema_version": 2,
-        "kind": "measure_gate_receipt",
-        "status": "PASS",
-        "receipt_id": receipt_id,
-        "issued_at": issued_at,
-        "nonce": nonce,
-        "repo_head": head,
-        "seal_manifest": seal_ref,
-        "prereg": seal["sealed_doc"],
-        "code_manifest_sha256": code_manifest_sha256,
-        "code_manifest": seal["code_manifest"],
-        "checks": gate["checks"],
+    identity = {
+        "issued_at": issued_at, "nonce": nonce, "repo_head": head,
+        "seal_manifest": seal_ref, "prereg": seal["sealed_doc"],
+        "code_manifest_sha256": code_manifest_sha256, "custody": custody,
     }
-    validate_gate_receipt(receipt, repo_root=root)
+    receipt_id = sha256_canonical(identity)
+    receipt = {
+        "schema_version": 2, "kind": "measure_gate_receipt", "status": "PASS",
+        "receipt_id": receipt_id, "issued_at": issued_at, "nonce": nonce,
+        "repo_head": head, "seal_manifest": seal_ref, "prereg": seal["sealed_doc"],
+        "code_manifest_sha256": code_manifest_sha256, "code_manifest": seal["code_manifest"],
+        "checks": gate["checks"], "custody": custody,
+    }
+    validate_gate_receipt(
+        receipt,
+        repo_root=root,
+        retained_seal_value=seal_value if guard is not None else None,
+    )
     out = root / "receipts" / f"{receipt_id}.json"
+    created_identity: tuple[int, int] | None = None
     try:
-        out.parent.mkdir(parents=True, exist_ok=True)
-        with out.open("x", encoding="utf-8") as handle:
-            json.dump(receipt, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    except FileExistsError as exc:
-        raise EvidenceSchemaError("canonical receipt path already exists") from exc
+        if guard is not None:
+            guard.hold_path(out)
+            guard.validate_file(out)
+            try:
+                fd = guard.open_path(out, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+            except FileExistsError as exc:
+                raise EvidenceSchemaError("canonical receipt path already exists") from exc
+            try:
+                created_identity = guard.retain_creation_fd(out, fd)
+                with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+                    fd = -1
+                    handle.write(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            except Exception:
+                if fd >= 0:
+                    os.close(fd)
+                raise
+        else:
+            try:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                with out.open("x", encoding="utf-8", newline="\n") as handle:
+                    json.dump(receipt, handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            except FileExistsError as exc:
+                raise EvidenceSchemaError("canonical receipt path already exists") from exc
+        try:
+            persisted_bytes = (
+                guard.read_retained_file(out)
+                if guard is not None
+                else out.read_bytes()
+            )
+            persisted = json.loads(persisted_bytes.decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise EvidenceSchemaError("published receipt cannot be reread") from exc
+        if persisted != receipt:
+            raise EvidenceSchemaError("published receipt bytes changed before validation")
+        return validate_gate_receipt(
+            persisted,
+            repo_root=root,
+            retained_seal_value=seal_value if guard is not None else None,
+        ), out
+    except Exception:
+        if guard is not None:
+            identity = created_identity or guard.created_file_identity(out)
+            if identity is not None:
+                guard.remove_created_file(out, identity)
+        raise
+
+
+def issue_gate_receipt_v2(
+    repo_root: Path | str,
+    seal_manifest_path: Path | str,
+    *,
+    issued_at: str,
+    nonce: str,
+) -> dict[str, Any]:
+    """Issue readable standalone evidence, explicitly not launch-authoritative."""
+    receipt, _ = _issue_gate_receipt_v2(
+        Path(repo_root).resolve(), seal_manifest_path, issued_at=issued_at, nonce=nonce
+    )
     return receipt
+
+
+def finalize_and_issue_gate_receipt_v2(
+    doc_path: Path | str,
+    *,
+    repo_root: Path | str,
+    code_files: tuple[Path | str, ...],
+    manifest_path: Path | str,
+    sealed_at: str,
+    issued_at: str,
+    nonce: str,
+) -> dict[str, Any]:
+    """Atomically bind continuous finalizer custody to a launch-authoritative receipt."""
+    root = Path(repo_root).resolve()
+    require_timestamp_order(("sealed_at", sealed_at), ("issued_at", issued_at))
+    if not isinstance(nonce, str) or not nonce:
+        raise EvidenceSchemaError("nonce must be non-empty")
+    from alpha_lab.discipline.prereg import _finalize_prereg_custody
+
+    with _finalize_prereg_custody(
+        doc_path, repo_root=root, code_files=code_files, manifest_path=manifest_path,
+        sealed_at=sealed_at,
+    ) as custody:
+        receipt_path: Path | None = None
+        receipt_identity: tuple[int, int] | None = None
+        try:
+            head_before = _current_head(root)
+            receipt, receipt_path = _issue_gate_receipt_v2(
+                root, custody.seal_path, issued_at=issued_at, nonce=nonce,
+                capability=custody.capability,
+            )
+            receipt_identity = custody.guard.created_file_identity(receipt_path)
+            if _current_head(root) != head_before:
+                raise EvidenceSchemaError("repository HEAD changed during continuous custody issuance")
+            return receipt
+        except Exception:
+            if receipt_path is not None:
+                receipt_identity = custody.guard.created_file_identity(receipt_path)
+                if receipt_identity is not None:
+                    custody.guard.remove_created_file(receipt_path, receipt_identity)
+            custody.guard.remove_created_file(
+                custody.seal_path, custody.seal_identity
+            )
+            custody.guard.close()
+            if receipt_path is not None:
+                try:
+                    receipt_path.parent.rmdir()
+                except OSError:
+                    pass
+            raise
 
 
 def claim_gate_receipt_v2(

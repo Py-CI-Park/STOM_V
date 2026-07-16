@@ -218,19 +218,19 @@ def _v2_chain(tmp_path):
          "commit", "-q", "-m", "fixture"],
         check=True,
     )
-    prereg.finalize_prereg(
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
         doc,
         repo_root=tmp_path,
         code_files=(code,),
         manifest_path=_canonical_seal_path(tmp_path, doc),
         sealed_at="2026-07-14T00:00:00+00:00",
-    )
-    receipt = measure_gate.issue_gate_receipt_v2(
-        tmp_path,
-        _canonical_seal_path(tmp_path, doc),
         issued_at="2026-07-14T00:01:00+00:00",
         nonce="unit-run",
     )
+    assert receipt["custody"] == {
+        "mode": "continuous-finalizer-v1",
+        "launch_authoritative": True,
+    }
     receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
     measure_gate.claim_gate_receipt_v2(
         receipt_path,
@@ -2036,6 +2036,46 @@ class TestPrereg:
         assert prereg._dynamic_local_dependencies(
             ast.parse(source), tmp_path / "measure.py", tmp_path
         ) == set()
+    def test_static_receiver_assignment_alias_is_rejected(self, tmp_path):
+        carrier = tmp_path / "carrier.py"
+        measure = tmp_path / "measure.py"
+        carrier.write_text("from os import system as mean\n", encoding="utf-8")
+        measure.write_text(
+            "import carrier\n"
+            "import numpy\n"
+            "receiver = carrier\n"
+            "receiver.mean('calc.exe')\n"
+            "receiver = numpy\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="unresolved executable receiver",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_code_manifest_rejects_unaudited_stdlib_import(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("import antigravity\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved external import: antigravity",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
     def test_code_manifest_allows_trusted_external_from_sysconfig_root(self, tmp_path):
         trusted = tmp_path / "trusted"
         trusted.mkdir()
@@ -2049,6 +2089,57 @@ class TestPrereg:
             assert prereg.derive_prereg_code_manifest(
                 document.read_text(encoding="utf-8"), tmp_path
             ) == {"measure.py"}
+    @pytest.mark.parametrize(
+        "name",
+        (
+            "sys",
+            pytest.param(
+                "_frozen_importlib",
+                marks=pytest.mark.skipif(
+                    importlib.machinery.FrozenImporter.find_spec("_frozen_importlib")
+                    is None,
+                    reason="interpreter has no _frozen_importlib frozen module",
+                ),
+            ),
+        ),
+        ids=("builtin", "frozen"),
+    )
+    def test_code_manifest_rejects_local_builtin_or_frozen_collision(self, tmp_path, name):
+        (tmp_path / f"{name}.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import {name}\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"ambiguous local/external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+        (tmp_path / f"{name}.py").unlink()
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"unresolved external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    def test_code_manifest_rejects_local_startup_root_collision(self, tmp_path, monkeypatch):
+        startup = tmp_path / "startup"
+        startup.mkdir()
+        name = "startup_only_module"
+        (startup / f"{name}.py").write_text("VALUE = 'startup'\n", encoding="utf-8")
+        (tmp_path / f"{name}.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import {name}\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        monkeypatch.setattr(prereg, "_INITIAL_INTERPRETER_PATHS", (str(startup),))
+        monkeypatch.setattr(prereg, "_INITIAL_INTERPRETER_PREFIXES", (startup,))
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"ambiguous local/external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
 
     def test_code_manifest_rejects_unresolved_external_import_before_seal(self, tmp_path):
         measure = tmp_path / "measure.py"
@@ -2099,7 +2190,25 @@ class TestPrereg:
                 evidence.EvidenceSchemaError, match=r"ambiguous local/external import: numpy"
             ):
                 prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
-    def test_dynamic_dependency_allows_direct_static_module_alias(self, tmp_path):
+    def test_code_manifest_rejects_local_stdlib_collision_before_local_closure(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "shutil.py").write_text("VALUE = 'trusted'\n", encoding="utf-8")
+        (tmp_path / "shutil.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import shutil\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            with pytest.raises(
+                evidence.EvidenceSchemaError,
+                match=r"ambiguous local/external import: shutil",
+            ):
+                prereg.derive_prereg_code_manifest(
+                    document.read_text(encoding="utf-8"), tmp_path
+                )
+    def test_dynamic_dependency_rejects_assignment_derived_static_module_alias(self, tmp_path):
         plugin = tmp_path / "plugin.py"
         plugin.write_text("VALUE = 1\n", encoding="utf-8")
         source = (
@@ -2107,9 +2216,13 @@ class TestPrereg:
             "loader = imported_module\n"
             "loader.import_module('plugin')\n"
         )
-        assert prereg._dynamic_local_dependencies(
-            ast.parse(source), tmp_path / "measure.py", tmp_path
-        ) == {plugin.resolve()}
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match="unresolved executable receiver"
+        ):
+            prereg._dynamic_local_dependencies(
+                ast.parse(source), tmp_path / "measure.py", tmp_path
+            )
     def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
         measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
         measure.write_text("from importlib import import_module\ndef sealed_local():\n    return 'ok'\nsealed_local()\nplugin = import_module('plugin')\n", encoding="utf-8")
@@ -2380,6 +2493,357 @@ class TestPrereg:
         assert raced
         assert source.read_bytes() == source_before
 
+    def test_finalize_prereg_allows_declared_read_only_json_inputs(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        data, rows = tmp_path / "data.json", tmp_path / "rows.jsonl"
+        data.write_text('{"value": 1}\n', encoding="utf-8")
+        rows.write_text('{"value": 2}\n', encoding="utf-8")
+        measure.write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as data_handle:\n"
+            "    result = json.load(data_handle)\n"
+            "with open('rows.jsonl', mode='r', encoding='utf-8') as rows_handle:\n"
+            "    rows = [json.loads(line) for line in rows_handle]\n"
+            "print(json.dumps(result))\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), non_python=("data.json", "rows.jsonl"),
+            ),
+            encoding="utf-8",
+        )
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, data, rows),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-16T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in seal["code_manifest"]] == [
+            "data.json", "measure.py", "rows.jsonl",
+        ]
+
+    @pytest.mark.parametrize("source", [
+        "import json\nwith open(path, mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('undeclared.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('C:/outside.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='w', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='a', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r+', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='rb', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8', errors='ignore') as handle:\n    result = json.load(handle)\n",
+        "import json\nhandle = open('data.json', mode='r', encoding='utf-8')\nresult = json.load(handle)\n",
+        "import json as js\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = js.load(handle)\n",
+        "reader = open\n",
+        "import json\ndecoder = json.load\n",
+        "import pickle as json\nimport json\njson.loads('payload')\n",
+        "import json\nimport pickle as json\njson.loads('payload')\n",
+        "import os as json\nimport json\njson.loads('payload')\n",
+        "import yaml as json\nimport json\njson.loads('payload')\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\njson.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    def nested():\n        return json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = [json.load(handle) for value in (1,)]\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    for handle in ():\n        pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    with open('data.json', mode='r', encoding='utf-8') as other:\n        result = json.load(other)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = (handle := handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    def nested(handle):\n        return handle\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    try:\n        pass\n    except Exception as handle:\n        pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    match 1:\n        case handle:\n            pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    callback = lambda: json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    class Nested:\n        value = json.load(handle)\n",
+        "import json\nimport pickle\nreader = pickle\nreader.loads(payload)\nreader = json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n    result = reader.load(stream)\n",
+        "import json\nreader = json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n    result = reader.load(stream)\n",
+    ], ids=(
+        "dynamic_path", "undeclared_path", "absolute_path", "write_mode", "append_mode",
+        "update_mode", "binary_mode", "extra_open_option", "not_context_manager",
+        "json_alias", "open_indirection", "json_indirection",
+        "pickle_as_json_before_import", "pickle_as_json_after_import", "os_as_json",
+        "yaml_as_json", "load_after_with", "nested_function_load", "comprehension_load",
+        "for_handle_rebinding", "nested_with", "walrus_handle_rebinding", "duplicate_handle",
+        "parameter_handle_rebinding", "except_handle_rebinding", "match_handle_rebinding",
+        "lambda_load", "class_load", "ordered_receiver_alias", "direct_receiver_alias",
+    ))
+    def test_sealed_json_input_rejects_every_non_exact_capability(self, tmp_path, source):
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        (tmp_path / "measure.py").write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed JSON"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    @pytest.mark.parametrize("binding", [
+        "import sys as handle\n",
+        "from sys import stdin as handle\n",
+        "def handle():\n    pass\n",
+        "async def handle():\n    pass\n",
+        "class handle:\n    pass\n",
+    ], ids=("import_alias", "importfrom_alias", "function", "async_function", "class"))
+    def test_sealed_json_input_rejects_every_handle_binding_event(self, tmp_path, binding):
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+        (tmp_path / "measure.py").write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as handle:\n"
+            "    result = json.load(handle)\n"
+            + binding,
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="sealed JSON input does not permit handle rebinding",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_sealed_json_input_rejects_declared_symlink_outside_repo(self, tmp_path):
+        outside = tmp_path.parent / f"{tmp_path.name}-outside.json"
+        outside.write_text('{"value": 1}\n', encoding="utf-8")
+        linked = tmp_path / "data.json"
+        try:
+            linked.symlink_to(outside)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        (tmp_path / "measure.py").write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as handle:\n"
+            "    result = json.load(handle)\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="resolves outside repo_root"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+        outside.unlink()
+    def test_declared_dependency_rejects_in_repo_symlink_and_hardlink(self, tmp_path):
+        target = tmp_path / "measure.py"
+        target.write_text("VALUE = 1\n", encoding="utf-8")
+        linked = tmp_path / "linked.py"
+        try:
+            linked.symlink_to(target)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("linked.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink|reparse"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+        linked.unlink()
+        alias = tmp_path / "alias.py"
+        try:
+            os.link(target, alias)
+        except OSError:
+            pytest.skip("hardlink creation is unavailable")
+        document.write_text(_sealed_contract(roots=("alias.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="hardlink"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_finalize_rejects_snapshot_change_without_writing_a_seal(self, tmp_path, monkeypatch):
+        code = tmp_path / "measure.py"
+        code.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._snapshot_file
+        changed = False
+
+        def swap_after_review(root, relative, snapshots, field):
+            nonlocal changed
+            snapshot = original(root, relative, snapshots, field)
+            if relative == "measure.py" and not changed:
+                changed = True
+                code.write_text("VALUE = 2\n", encoding="utf-8")
+            return snapshot
+
+        monkeypatch.setattr(prereg, "_snapshot_file", swap_after_review)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+    def test_finalize_uses_snapshotted_local_module_api_before_revalidation(self, tmp_path, monkeypatch):
+        measure, carrier = tmp_path / "measure.py", tmp_path / "carrier.py"
+        measure.write_text("import carrier\ncarrier.run()\n", encoding="utf-8")
+        carrier.write_text("def run():\n    return 'benign'\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._snapshot_file
+        swapped = False
+
+        def swap_carrier_after_snapshot(root, relative, snapshots, field):
+            nonlocal swapped
+            snapshot = original(root, relative, snapshots, field)
+            if relative == "carrier.py" and not swapped:
+                swapped = True
+                carrier.write_text("from os import system as run\n", encoding="utf-8")
+            return snapshot
+
+        monkeypatch.setattr(prereg, "_snapshot_file", swap_carrier_after_snapshot)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure, carrier),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert swapped and not canonical.exists()
+
+    def test_finalize_rejects_dependency_root_symlink_swap_before_closure_snapshot(
+        self, tmp_path, monkeypatch,
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        outside = tmp_path.parent / f"{tmp_path.name}-replacement.py"
+        outside.write_text("VALUE = 2\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._parse_contract
+        parsed = 0
+
+        def substitute_root_after_contract_parse(text, root):
+            nonlocal parsed
+            contract = original(text, root)
+            parsed += 1
+            if parsed == 3:
+                measure.unlink()
+                try:
+                    measure.symlink_to(outside)
+                except OSError:
+                    pytest.skip("symlink creation is unavailable")
+            return contract
+
+        monkeypatch.setattr(prereg, "_parse_contract", substitute_root_after_contract_parse)
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink|reparse"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+        outside.unlink()
+
+    @pytest.mark.parametrize("replacement", (
+        lambda text: text + "\n",
+        lambda text: text.replace('"seal_dir": "seals"', '"seal_dir": "other-seals"'),
+    ), ids=("document_bytes", "authority_paths"))
+    def test_finalize_rejects_document_change_between_preliminary_and_retained_snapshot(
+        self, tmp_path, monkeypatch, replacement,
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original_guard = prereg.authority_mutation_guard
+
+        @contextlib.contextmanager
+        def mutate_document_after_preliminary_snapshot(*args, **kwargs):
+            with original_guard(*args, **kwargs) as guard:
+                document.write_text(replacement(document.read_text(encoding="utf-8")), encoding="utf-8")
+                yield guard
+
+        monkeypatch.setattr(prereg, "authority_mutation_guard", mutate_document_after_preliminary_snapshot)
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="changed between preliminary and authority review",
+        ):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+
+    @pytest.mark.parametrize(
+        ("script_relative", "shadow_relative"),
+        (("measure.py", "json.py"), ("json.py", None)),
+        ids=("repository_shadow", "direct_script_shadow"),
+    )
+    def test_json_shadow_is_rejected_at_derive_time(
+        self, tmp_path, script_relative, shadow_relative,
+    ):
+        measure = tmp_path / script_relative
+        measure.parent.mkdir(parents=True, exist_ok=True)
+        measure.write_text(
+            "import json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n"
+            "    result = json.load(stream)\n",
+            encoding="utf-8",
+        )
+        if shadow_relative is not None:
+            (tmp_path / shadow_relative).write_text("VALUE = 1\n", encoding="utf-8")
+        if script_relative != "measure.py":
+            (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=(script_relative,), non_python=("data.json",),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_trusted_external_json_accepts_only_exact_reader_syntax(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "json.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "import json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n"
+            "    result = json.load(stream)\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"data.json", "measure.py"}
+
+    @pytest.mark.skipif(os.name != "nt", reason="Windows authority handles enforce share denial")
+    def test_windows_canonical_sidecar_writer_is_denied_while_publisher_handle_is_live(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        authority = prereg._parse_contract(document.read_text(encoding="utf-8"), tmp_path)["authority_paths"]
+
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(canonical)
+            publisher_fd = guard._open_windows_path(
+                canonical, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666,
+            )
+            try:
+                os.write(publisher_fd, b"publisher")
+                with pytest.raises(evidence.EvidenceSchemaError, match="cannot securely open"):
+                    guard._open_windows_path(canonical, os.O_WRONLY, 0o666)
+            finally:
+                os.close(publisher_fd)
+        assert canonical.read_bytes() == b"publisher"
 # ---------------------------------------------------------------------------
 # trials_report — 시행 병기 블록 (소비 전용)
 # ---------------------------------------------------------------------------

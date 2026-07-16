@@ -270,10 +270,18 @@ def _validate_authoritative_checks(checks: object, *, repo_root: Path, prereg: M
     return dict(checks)
 
 
-def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, Any]:
+def validate_gate_receipt(
+    value: object,
+    *,
+    repo_root: Path | str,
+    retained_seal_value: object | None = None,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    keys = {"schema_version", "kind", "status", "receipt_id", "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256", "code_manifest", "checks"}
-    receipt = _require_exact_keys(value, keys, "gate receipt")
+    legacy_keys = {"schema_version", "kind", "status", "receipt_id", "issued_at", "nonce", "repo_head", "seal_manifest", "prereg", "code_manifest_sha256", "code_manifest", "checks"}
+    custody_keys = legacy_keys | {"custody"}
+    if not isinstance(value, Mapping) or set(value) not in (legacy_keys, custody_keys):
+        raise EvidenceSchemaError("gate receipt must use a recognized v2 key set")
+    receipt = dict(value)
     if receipt["schema_version"] != 2 or receipt["kind"] != "measure_gate_receipt" or receipt["status"] != "PASS":
         raise EvidenceSchemaError("gate receipt must be schema_version=2, kind=measure_gate_receipt, status=PASS")
     issued_at = _require_timestamp(receipt["issued_at"], "issued_at")
@@ -283,10 +291,15 @@ def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, 
         raise EvidenceSchemaError("repo_head must be a lowercase 40-character git SHA")
     seal_manifest = _validate_file_ref(receipt["seal_manifest"], "seal_manifest", root, verify_files=False)
     seal_path = root / Path(*PurePosixPath(seal_manifest["path"]).parts)
-    try:
-        seal_value = json.loads(seal_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise EvidenceSchemaError("seal_manifest must be readable canonical JSON") from exc
+    if retained_seal_value is None:
+        try:
+            seal_value = json.loads(seal_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise EvidenceSchemaError("seal_manifest must be readable canonical JSON") from exc
+    elif isinstance(retained_seal_value, Mapping):
+        seal_value = dict(retained_seal_value)
+    else:
+        raise EvidenceSchemaError("retained seal manifest must be a JSON object")
     if sha256_canonical(seal_value) != seal_manifest["sha256"]:
         raise EvidenceSchemaError("seal_manifest SHA-256 does not match canonical contents")
     seal = validate_prereg_seal(seal_value, repo_root=root, verify_files=True)
@@ -309,11 +322,24 @@ def validate_gate_receipt(value: object, *, repo_root: Path | str) -> dict[str, 
     checks = _validate_authoritative_checks(
         receipt["checks"], repo_root=root, prereg=prereg, manifest=manifest
     )
-    expected_id = sha256_canonical({"issued_at": issued_at, "nonce": receipt["nonce"], "repo_head": receipt["repo_head"], "seal_manifest": seal_manifest, "prereg": prereg, "code_manifest_sha256": code_manifest_sha256})
+    custody = receipt.get("custody", {"mode": "legacy-standalone", "launch_authoritative": False})
+    if not isinstance(custody, Mapping) or set(custody) != {"mode", "launch_authoritative"}:
+        raise EvidenceSchemaError("receipt custody must contain mode and launch_authoritative")
+    if custody["mode"] not in {"continuous-finalizer-v1", "standalone", "legacy-standalone"}:
+        raise EvidenceSchemaError("receipt custody mode is unrecognized")
+    if not isinstance(custody["launch_authoritative"], bool):
+        raise EvidenceSchemaError("receipt custody launch_authoritative must be boolean")
+    if custody["launch_authoritative"] != (custody["mode"] == "continuous-finalizer-v1"):
+        raise EvidenceSchemaError("receipt custody authority does not match mode")
+    identity = {"issued_at": issued_at, "nonce": receipt["nonce"], "repo_head": receipt["repo_head"], "seal_manifest": seal_manifest, "prereg": prereg, "code_manifest_sha256": code_manifest_sha256}
+    if "custody" in receipt:
+        identity["custody"] = dict(custody)
+    expected_id = sha256_canonical(identity)
     if require_full_sha256(receipt["receipt_id"], "receipt_id") != expected_id:
         raise EvidenceSchemaError("receipt_id does not match receipt identity")
     result = dict(receipt)
     result["checks"] = checks
+    result["custody"] = dict(custody)
     return result
 
 
@@ -349,6 +375,9 @@ def validate_gate_usage(value: object, *, receipt: Mapping[str, Any]) -> dict[st
     consumed_at = _require_timestamp(usage["consumed_at"], "consumed_at")
     issued_at = _require_timestamp(receipt.get("issued_at"), "receipt.issued_at")
     require_timestamp_order(("issued_at", issued_at), ("consumed_at", consumed_at))
+    custody = receipt.get("custody", {"mode": "legacy-standalone", "launch_authoritative": False})
+    if custody != {"mode": "continuous-finalizer-v1", "launch_authoritative": True}:
+        raise EvidenceSchemaError("gate usage requires continuous finalizer custody provenance")
     return dict(usage)
 
 

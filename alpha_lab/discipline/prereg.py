@@ -24,8 +24,31 @@ import re
 import os
 import stat
 import sysconfig
+import sys
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Iterator
+
+
+def _initial_interpreter_prefixes() -> tuple[Path, ...]:
+    """Capture validated installation prefixes before application paths can intervene."""
+    prefixes: list[Path] = []
+    for raw_prefix in (
+        sys.base_prefix,
+        sys.prefix,
+        sys.base_exec_prefix,
+        sys.exec_prefix,
+    ):
+        path = Path(raw_prefix)
+        if path.is_absolute() and path.is_dir():
+            path = path.resolve()
+            if path not in prefixes:
+                prefixes.append(path)
+    return tuple(prefixes)
+
+
+_INITIAL_INTERPRETER_PATHS = tuple(sys.path)
+_INITIAL_INTERPRETER_PREFIXES = _initial_interpreter_prefixes()
 
 from alpha_lab.discipline import windows
 from alpha_lab.discipline.evidence import (
@@ -302,13 +325,90 @@ def _validate_physical_ancestry(
         if current.is_symlink() or getattr(
             metadata, "st_file_attributes", 0
         ) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
-            raise EvidenceSchemaError(f"{field} must not traverse a symlink or reparse point")
+            raise EvidenceSchemaError(f"{field} resolves outside repo_root or traverses a symlink or reparse point")
         if _physical_path(current) in protected_identities or any(
             _same_physical_file(current, candidate) for candidate in protected
         ):
             raise EvidenceSchemaError(f"{field} aliases a protected physical identity")
     if resolved.exists() and resolved.is_file() and resolved.stat().st_nlink > 1:
         raise EvidenceSchemaError(f"{field} must not be a hardlink")
+@dataclass(frozen=True)
+class _FileSnapshot:
+    """One no-follow read and the identity that supplied its reviewed bytes."""
+
+    path: Path
+    data: bytes
+    identity: tuple[int, int, int, int]
+
+    def revalidate(self) -> None:
+        try:
+            metadata = os.stat(self.path, follow_symlinks=False)
+        except OSError as exc:
+            raise EvidenceSchemaError(f"sealed source disappeared: {self.path}") from exc
+        current = (metadata.st_dev, metadata.st_ino, metadata.st_size, metadata.st_mtime_ns)
+        if current != self.identity:
+            raise EvidenceSchemaError(f"sealed source identity changed: {self.path}")
+
+
+def _snapshot_file(
+    root: Path, relative: str, snapshots: dict[Path, _FileSnapshot], field: str,
+) -> _FileSnapshot:
+    """Read a regular dependency once, without following its final component."""
+    path = root / Path(*PurePosixPath(relative).parts)
+    existing = snapshots.get(path)
+    if existing is not None:
+        return existing
+    _validate_physical_ancestry(root, PurePosixPath(relative), path, field)
+    try:
+        fd = os.open(
+            path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+        )
+    except OSError as exc:
+        raise EvidenceSchemaError(f"cannot securely snapshot {field}: {relative}") from exc
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink > 1:
+            raise EvidenceSchemaError(f"{field} must be a regular non-hardlinked file")
+        data = bytearray()
+        while True:
+            chunk = os.read(fd, 1024 * 1024)
+            if not chunk:
+                break
+            data.extend(chunk)
+        after = os.fstat(fd)
+    finally:
+        os.close(fd)
+    identity = (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
+    if identity != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns):
+        raise EvidenceSchemaError(f"{field} changed while being snapshotted")
+    snapshot = _FileSnapshot(path, bytes(data), identity)
+    snapshots[path] = snapshot
+    return snapshot
+
+
+def _validate_declared_dependencies(
+    root: Path, groups: tuple[list[str], list[str], list[str]],
+) -> None:
+    """Reject every physical alias among all contract dependency declarations."""
+    seen: list[tuple[str, Path]] = []
+    for paths in groups:
+        for relative in paths:
+            path = root / Path(*PurePosixPath(relative).parts)
+            _validate_physical_ancestry(root, PurePosixPath(relative), path, "declared dependency")
+            spelling = tuple(part.casefold() for part in PurePosixPath(relative).parts)
+            for other_relative, other_path in seen:
+                other_spelling = tuple(
+                    part.casefold() for part in PurePosixPath(other_relative).parts
+                )
+                if (
+                    spelling == other_spelling
+                    or _physical_path(path) == _physical_path(other_path)
+                    or _same_physical_file(path, other_path)
+                ):
+                    raise EvidenceSchemaError(
+                        "declared dependencies must have distinct physical identities"
+                    )
+            seen.append((relative, path))
 
 
 def revalidate_authority_paths(
@@ -373,7 +473,10 @@ class _WindowsAuthorityGuard:
         self._dir_fds: dict[str, int] = {}
         self._target_dir_fds: dict[str, int] = {}
         self._target_identities: dict[str, tuple[int, int]] = {}
+        self._created_file_identities: dict[str, tuple[int, int]] = {}
+        self._retained_file_fds: list[int] = []
         self._windows_handles: list[object] = []
+        self._active = True
 
     def _open_windows(
         self, path: Path, *, directory: bool = True, deny_writes: bool = False,
@@ -569,6 +672,7 @@ class _WindowsAuthorityGuard:
         if flags & (os.O_WRONLY | os.O_RDWR):
             access |= 0x40000000
         if flags & os.O_CREAT and flags & os.O_EXCL:
+            access |= 0x00010000  # DELETE for exact-handle rollback
             disposition = 1  # CREATE_NEW
         elif flags & os.O_CREAT:
             disposition = 4  # OPEN_ALWAYS
@@ -641,6 +745,146 @@ class _WindowsAuthorityGuard:
                 os.close(fd)
                 raise EvidenceSchemaError(f"opened mutation target identity changed: {target}")
         return fd
+    def retain_creation_fd(self, path: Path | str, fd: int) -> tuple[int, int]:
+        """Duplicate and retain the exact Windows handle for rollback custody."""
+        if os.name != "nt":
+            raise UnsupportedAuthorityPlatform(
+                "exact-handle authority cleanup is unsupported on POSIX"
+            )
+        try:
+            metadata = os.fstat(fd)
+        except OSError as exc:
+            raise EvidenceSchemaError("cannot inspect newly-created authority file") from exc
+        identity = metadata.st_dev, metadata.st_ino
+        try:
+            duplicate = os.dup(fd)
+        except OSError as exc:
+            raise EvidenceSchemaError(
+                "cannot retain newly-created authority file handle"
+            ) from exc
+        self._retained_file_fds.append(duplicate)
+        self.note_created_file(path, identity)
+        return identity
+
+    def note_created_file(self, path: Path | str, identity: tuple[int, int]) -> None:
+        self._created_file_identities[self._path_key(Path(path))] = identity
+
+    def created_file_identity(self, path: Path | str) -> tuple[int, int] | None:
+        return self._created_file_identities.get(self._path_key(Path(path)))
+
+    @staticmethod
+    def _mark_retained_file_delete_pending(fd: int) -> None:
+        """Mark the object behind a retained Windows fd for deletion."""
+        import ctypes
+        import msvcrt
+
+        class _FileDispositionInfo(ctypes.Structure):
+            _fields_ = [("delete_file", ctypes.c_int32)]
+
+        handle = msvcrt.get_osfhandle(fd)
+        if handle == -1:
+            raise EvidenceSchemaError(
+                "created authority file retained handle is no longer valid"
+            )
+        disposition = _FileDispositionInfo(1)
+        kernel32 = ctypes.windll.kernel32
+        if not kernel32.SetFileInformationByHandle(
+            ctypes.c_void_p(handle),
+            4,  # FileDispositionInfo
+            ctypes.byref(disposition),
+            ctypes.sizeof(disposition),
+        ):
+            raise EvidenceSchemaError(
+                "cannot mark created authority file delete-pending"
+            )
+
+    def remove_created_file(self, path: Path | str, identity: tuple[int, int]) -> None:
+        """Delete the retained creation object without re-resolving its pathname."""
+        if os.name != "nt":
+            raise UnsupportedAuthorityPlatform(
+                "exact-handle authority cleanup is unsupported on POSIX"
+            )
+        key = self._path_key(Path(path))
+        registered = self._created_file_identities.get(key)
+        if registered is None:
+            raise EvidenceSchemaError(
+                "created authority file is not registered for exact cleanup"
+            )
+        if registered != identity:
+            raise EvidenceSchemaError(
+                "refusing cleanup whose identity differs from registered creation"
+            )
+
+        retained_fd = None
+        for held_fd in self._retained_file_fds:
+            try:
+                metadata = os.fstat(held_fd)
+            except OSError:
+                continue
+            if (metadata.st_dev, metadata.st_ino) == registered:
+                retained_fd = held_fd
+                break
+        if retained_fd is None:
+            raise EvidenceSchemaError(
+                "created authority file has no retained exact-identity handle"
+            )
+
+        try:
+            metadata = os.fstat(retained_fd)
+        except OSError as exc:
+            raise EvidenceSchemaError(
+                "cannot inspect retained authority file before cleanup"
+            ) from exc
+        if (metadata.st_dev, metadata.st_ino) != registered:
+            raise EvidenceSchemaError(
+                "refusing cleanup after retained authority identity changed"
+            )
+
+        # No path is reopened or unlinked here. The retained handle identifies
+        # the creation object even if its former pathname is substituted.
+        self._mark_retained_file_delete_pending(retained_fd)
+        try:
+            os.close(retained_fd)
+        except OSError as exc:
+            raise EvidenceSchemaError(
+                "created authority file was delete-pending but retained handle cannot close"
+            ) from exc
+        self._retained_file_fds.remove(retained_fd)
+        del self._created_file_identities[key]
+    def read_retained_file(self, path: Path | str) -> bytes:
+        """Read a registered creation object through its retained Windows handle."""
+        if os.name != "nt":
+            raise UnsupportedAuthorityPlatform(
+                "exact-handle authority reads are unsupported on POSIX"
+            )
+        registered = self.created_file_identity(path)
+        if registered is None:
+            raise EvidenceSchemaError(
+                "authority file is not registered for retained-handle reading"
+            )
+        for held_fd in self._retained_file_fds:
+            try:
+                metadata = os.fstat(held_fd)
+            except OSError:
+                continue
+            if (metadata.st_dev, metadata.st_ino) != registered:
+                continue
+            try:
+                offset = os.lseek(held_fd, 0, os.SEEK_CUR)
+                os.lseek(held_fd, 0, os.SEEK_SET)
+                chunks: list[bytes] = []
+                while chunk := os.read(held_fd, 1024 * 1024):
+                    chunks.append(chunk)
+                os.lseek(held_fd, offset, os.SEEK_SET)
+            except OSError as exc:
+                raise EvidenceSchemaError(
+                    "cannot read retained authority file handle"
+                ) from exc
+            return b"".join(chunks)
+        raise EvidenceSchemaError(
+            "authority file has no retained exact-identity handle for reading"
+        )
+
 
 
     def validate_file(self, path: Path | str) -> None:
@@ -649,11 +893,20 @@ class _WindowsAuthorityGuard:
         if target.exists():
             _validate_physical_ancestry(
                 self.root, PurePosixPath(target.relative_to(self.root).as_posix()),
-                target.resolve(), "mutation target",
+                target, "mutation target",
             )
         revalidate_authority_paths(self.root, self.authority_paths)
 
+    @property
+    def active(self) -> bool:
+        return self._active
+
     def close(self) -> None:
+        self._active = False
+        for fd in self._retained_file_fds:
+            os.close(fd)
+        self._retained_file_fds.clear()
+        self._created_file_identities.clear()
         for fd in self._dir_fds.values():
             os.close(fd)
         self._dir_fds.clear()
@@ -713,25 +966,19 @@ def _repo_path(value: object, field: str, root: Path) -> tuple[str, Path]:
     if path.is_absolute():
         raise EvidenceSchemaError(f"{field} must be a safe repository-relative POSIX path")
     try:
-        resolved = (root / Path(*path.parts)).resolve()
+        lexical = root / Path(*path.parts)
     except (OSError, RuntimeError) as exc:
-        raise EvidenceSchemaError(f"{field} cannot safely resolve") from exc
-    try:
-        resolved.relative_to(root)
-    except ValueError as exc:
-        raise EvidenceSchemaError(f"{field} resolves outside repo_root") from exc
-    return path.as_posix(), resolved
+        raise EvidenceSchemaError(f"{field} cannot safely construct") from exc
+    _validate_physical_ancestry(root, path, lexical, field)
+    return path.as_posix(), lexical
 def _contract_repo_path(value: object, field: str, root: Path) -> str:
     if not isinstance(value, str) or not value or "\\" in value or any(part in ("", ".", "..") for part in value.split("/")):
         raise EvidenceSchemaError(f"{field} must be a non-empty repository-relative POSIX path")
     path = PurePosixPath(value)
-    resolved = (root / Path(*path.parts)).resolve()
-    if path.is_absolute() or not resolved.is_file():
+    lexical = root / Path(*path.parts)
+    if path.is_absolute() or not lexical.is_file():
         raise EvidenceSchemaError(f"{field} must name an existing repository file")
-    try:
-        resolved.relative_to(root)
-    except ValueError as exc:
-        raise EvidenceSchemaError(f"{field} resolves outside repo_root") from exc
+    _validate_physical_ancestry(root, path, lexical, field)
     return path.as_posix()
 
 
@@ -780,6 +1027,7 @@ def _parse_contract(text: str, root: Path) -> dict:
     for paths in (root_paths, dynamic_paths, dependency_paths):
         if paths != sorted(paths) or len(set(paths)) != len(paths):
             raise EvidenceSchemaError("declared dependency paths must be sorted and unique")
+    _validate_declared_dependencies(root, (root_paths, dynamic_paths, dependency_paths))
     return contract
 def _contract_ledger_path(value: object, root: Path) -> str:
     if not isinstance(value, str) or not value or "\\" in value or any(
@@ -791,14 +1039,10 @@ def _contract_ledger_path(value: object, root: Path) -> str:
         raise EvidenceSchemaError("ledger_path must be a repository-relative .jsonl path")
     if _PROTECTED_ROOT_NAMES.intersection(part.casefold() for part in path.parts):
         raise EvidenceSchemaError("ledger_path must not name a protected path")
-    resolved = (root / Path(*path.parts)).resolve()
-    try:
-        resolved.relative_to(root)
-    except ValueError as exc:
-        raise EvidenceSchemaError("ledger_path resolves outside repo_root") from exc
-    if resolved.exists() and not resolved.is_file():
+    lexical = root / Path(*path.parts)
+    if lexical.exists() and not lexical.is_file():
         raise EvidenceSchemaError("ledger_path must not name a directory")
-    _validate_physical_ancestry(root, path, resolved, "ledger_path")
+    _validate_physical_ancestry(root, path, lexical, "ledger_path")
     return path.as_posix()
 
 
@@ -839,14 +1083,21 @@ def _module_file(root: Path, module: str) -> Path | None:
             if not package_initializer.is_file():
                 return None
         elif package_initializer.is_file():
-            return package_initializer.resolve()
+            return package_initializer
         elif module_file.is_file():
-            return module_file.resolve()
+            return module_file
     return None
-def _unambiguous_final_bindings(module_path: Path) -> set[str]:
+def _unambiguous_final_bindings(
+    module_path: Path, snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> set[str]:
     """Return names with one statically provable module-level final binding."""
     try:
-        tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
+        data = (
+            snapshots[module_path].data
+            if snapshots is not None and module_path in snapshots
+            else module_path.read_bytes()
+        )
+        tree = ast.parse(data.decode("utf-8"), filename=str(module_path))
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
         raise EvidenceSchemaError(
             f"cannot inspect local module bindings: {module_path}"
@@ -925,7 +1176,9 @@ def _unambiguous_final_bindings(module_path: Path) -> set[str]:
     return {name for name, count in bindings.events.items() if count == 1}
 
 
-def _validate_local_absolute_imports(root: Path, tree: ast.AST) -> None:
+def _validate_local_absolute_imports(
+    root: Path, tree: ast.AST, snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> None:
     """Fail closed when an absolute local import cannot be sealed exactly."""
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -943,9 +1196,14 @@ def _validate_local_absolute_imports(root: Path, tree: ast.AST) -> None:
                 raise EvidenceSchemaError(
                     f"unresolved local absolute import: {module}"
                 )
+            if snapshots is not None:
+                _snapshot_file(
+                    root, resolved.relative_to(root).as_posix(), snapshots,
+                    "local import inspection",
+                )
             if not fromlist:
                 continue
-            exports = _unambiguous_final_bindings(resolved)
+            exports = _unambiguous_final_bindings(resolved, snapshots)
             is_package = resolved.name == "__init__.py"
             for name in fromlist:
                 child = _module_file(root, f"{module}.{name}")
@@ -971,8 +1229,8 @@ def _package_initializers(path: Path, root: Path) -> set[Path]:
         if not initializer.is_file():
             break
         module = ".".join(parent.relative_to(root).parts)
-        if _module_file(root, module) == initializer.resolve():
-            initializers.add(initializer.resolve())
+        if _module_file(root, module) == initializer:
+            initializers.add(initializer)
         parent = parent.parent
     return initializers
 
@@ -988,6 +1246,11 @@ def _reject_wildcard_imports(tree: ast.AST, path: Path) -> None:
 _SAFE_STATIC_CALL_EFFECTS = {
     # Pure numerical reductions explicitly needed by sealed measurement code.
     "numpy.mean": "pure",
+    # Sealed measurement targets may serialize results and parse only declared
+    # JSON/JSONL inputs through the exact syntax checked below.
+    "json.load": "pure",
+    "json.loads": "pure",
+    "json.dumps": "pure",
     # Dynamic imports are safe only because _dynamic_local_dependencies below
     # requires a literal local target and adds that target to the manifest.
     "__import__": "tracked_dynamic",
@@ -1085,13 +1348,16 @@ def _direct_function_api_names(tree: ast.Module) -> set[str]:
     }
 
 
-def _declared_local_module_apis(module_path: Path) -> set[str]:
-    """Return direct function APIs declared by a local module, never re-exports."""
+def _declared_local_module_apis(
+    module_path: Path, snapshots: dict[Path, _FileSnapshot],
+) -> set[str]:
+    """Return direct function APIs declared by a local module snapshot."""
     try:
-        tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
-    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        snapshot = snapshots[module_path]
+        tree = ast.parse(snapshot.data.decode("utf-8"), filename=str(module_path))
+    except (KeyError, UnicodeDecodeError, SyntaxError) as exc:
         raise EvidenceSchemaError(
-            f"cannot inspect local module API: {module_path}"
+            f"cannot inspect snapshotted local module API: {module_path}"
         ) from exc
     _reject_sealed_store_mutation(tree, module_path)
     _reject_import_resolution_global_binding(tree, module_path)
@@ -1488,7 +1754,8 @@ def _local_importfrom_receivers(
 
 
 def _reject_unresolved_module_receivers(
-    tree: ast.AST, aliases: dict[str, str], path: Path, root: Path
+    tree: ast.AST, aliases: dict[str, str], path: Path, root: Path,
+    snapshots: dict[Path, _FileSnapshot] | None = None,
 ) -> None:
     """Reject receiver calls that cross a local sealed module's declared API."""
 
@@ -1602,7 +1869,17 @@ def _reject_unresolved_module_receivers(
     for receiver in local_module_receivers:
         module_path = _module_file(root, aliases.get(receiver, receiver))
         if module_path is not None:
-            local_module_apis[receiver] = _declared_local_module_apis(module_path)
+            if snapshots is None:
+                raise EvidenceSchemaError(
+                    f"local module API inspection requires snapshots: {module_path}"
+                )
+            _snapshot_file(
+                root, module_path.relative_to(root).as_posix(), snapshots,
+                "local module API",
+            )
+            local_module_apis[receiver] = _declared_local_module_apis(
+                module_path, snapshots
+            )
 
 
 
@@ -1650,15 +1927,6 @@ def _reject_unresolved_module_receivers(
                 safe.add(name)
             else:
                 safe.discard(name)
-        changed = True
-        while changed:
-            changed = False
-            for name, events in collector.events.items():
-                if name in safe or any(kind not in {"alias"} for kind, _ in events):
-                    continue
-                if all(_receiver_root(value) in safe for _, value in events):
-                    safe.add(name)
-                    changed = True
         return safe
 
     def _parameters(args: ast.arguments) -> set[str]:
@@ -1867,7 +2135,7 @@ def _reject_untrusted_bare_calls(
 
     builtins = {
         "abs", "all", "any", "bool", "dict", "enumerate", "float", "int", "isinstance",
-        "len", "list", "map", "max", "min", "next", "print", "range", "repr", "set",
+        "len", "list", "map", "max", "min", "next", "open", "print", "range", "repr", "set",
         "sorted", "str", "sum", "tuple", "type", "zip",
     }
 
@@ -2032,9 +2300,235 @@ def _reject_executable_annotations(tree: ast.AST, path: Path) -> None:
 
     _Annotations().visit(tree)
 
-def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Path]:
+def _validate_sealed_json_input(
+    tree: ast.AST, path: Path, allowed_dependencies: frozenset[str],
+) -> None:
+    """Allow literal declared JSON reads only in their lexical ``with`` binding."""
+    allowed_withs: dict[int, str] = {}
+    handles: set[str] = set()
+    json_imports = 0
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    json_calls = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "json"
+        and node.func.attr in {"load", "loads", "dumps"}
+        for node in ast.walk(tree)
+    )
+
+    def _exact_open(node: ast.With) -> str | None:
+        if len(node.items) != 1:
+            return None
+        item = node.items[0]
+        call = item.context_expr
+        if not (
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id == "open"
+            and isinstance(item.optional_vars, ast.Name)
+        ):
+            return None
+        if (
+            len(call.args) != 1
+            or not isinstance(call.args[0], ast.Constant)
+            or not isinstance(call.args[0].value, str)
+            or call.args[0].value not in allowed_dependencies
+            or not call.args[0].value.endswith((".json", ".jsonl"))
+            or len(call.keywords) != 2
+            or {keyword.arg for keyword in call.keywords} != {"mode", "encoding"}
+            or any(keyword.arg is None for keyword in call.keywords)
+            or any(
+                not isinstance(keyword.value, ast.Constant)
+                or not isinstance(keyword.value.value, str)
+                for keyword in call.keywords
+            )
+            or next(keyword.value.value for keyword in call.keywords if keyword.arg == "mode") != "r"
+            or next(keyword.value.value for keyword in call.keywords if keyword.arg == "encoding") != "utf-8"
+        ):
+            raise EvidenceSchemaError(f"sealed JSON input must use exact declared read-only open: {path}")
+        return item.optional_vars.id
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            binds_json = any((alias.asname or alias.name.split(".", 1)[0]) == "json" for alias in node.names)
+            binds_open = any((alias.asname or alias.name.split(".", 1)[0]) == "open" for alias in node.names)
+            imports_json = any(alias.name == "json" for alias in node.names)
+            if binds_open or (
+                imports_json and (
+                    len(node.names) != 1 or node.names[0].name != "json" or node.names[0].asname is not None
+                )
+            ) or (
+                binds_json and not imports_json
+            ):
+                raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+            if imports_json:
+                json_imports += 1
+        elif isinstance(node, ast.ImportFrom):
+            if any((alias.asname or alias.name) in {"json", "open"} for alias in node.names):
+                raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, ast.ExceptHandler) and node.name in {"json", "open"}:
+            raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name in {"json", "open"}:
+            raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, ast.arg) and node.arg in {"json", "open"}:
+            raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) and node.id in {"json", "open"}:
+            raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name in {"json", "open"}:
+            raise EvidenceSchemaError(f"sealed JSON input does not permit aliases or rebinding: {path}")
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "open":
+            parent_with = next(
+                (
+                    parent for parent in ast.walk(tree)
+                    if isinstance(parent, ast.With)
+                    and any(item.context_expr is node for item in parent.items)
+                ),
+                None,
+            )
+            if parent_with is None or _exact_open(parent_with) is None:
+                raise EvidenceSchemaError(f"sealed JSON input must use open as an exact context manager: {path}")
+        elif isinstance(node, ast.With):
+            handle = _exact_open(node)
+            if handle is not None:
+                if handle in handles:
+                    raise EvidenceSchemaError(f"sealed JSON input does not permit duplicate handle bindings: {path}")
+                handles.add(handle)
+                allowed_withs[id(node)] = handle
+
+    if (json_calls and json_imports != 1) or json_imports > 1:
+        raise EvidenceSchemaError(f"sealed JSON input requires exactly one unaliased import json: {path}")
+    allowed_handle_bindings = {
+        item.optional_vars
+        for node in ast.walk(tree)
+        if isinstance(node, ast.With)
+        for item in node.items
+        if id(node) in allowed_withs and isinstance(item.optional_vars, ast.Name)
+    }
+    for node in ast.walk(tree):
+        rebound = (
+            isinstance(node, ast.arg) and node.arg in handles
+            or isinstance(node, ast.ExceptHandler) and node.name in handles
+            or isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name in handles
+            or isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+            and node.name in handles
+            or isinstance(node, ast.Import)
+            and any((alias.asname or alias.name.split(".", 1)[0]) in handles for alias in node.names)
+            or isinstance(node, ast.ImportFrom)
+            and any((alias.asname or alias.name) in handles for alias in node.names)
+            or isinstance(node, ast.Name)
+            and isinstance(node.ctx, (ast.Store, ast.Del))
+            and node.id in handles
+            and node not in allowed_handle_bindings
+        )
+        if rebound:
+            raise EvidenceSchemaError(
+                f"sealed JSON input does not permit handle rebinding: {path}"
+            )
+
+
+    class _LexicalJsonCalls(ast.NodeVisitor):
+        def __init__(self) -> None:
+            self.handles: list[str] = []
+            self.scope_depth = 0
+            self.comprehension_depth = 0
+
+        def visit_With(self, node: ast.With) -> None:
+            handle = allowed_withs.get(id(node))
+            if self.handles:
+                raise EvidenceSchemaError(f"sealed JSON input does not permit nested with scopes: {path}")
+            if handle is None:
+                self.generic_visit(node)
+                return
+            self.handles.append(handle)
+            for statement in node.body:
+                self.visit(statement)
+            self.handles.pop()
+
+        def _visit_nested_scope(self, node: ast.AST) -> None:
+            self.scope_depth += 1
+            self.generic_visit(node)
+            self.scope_depth -= 1
+
+        visit_FunctionDef = _visit_nested_scope
+        visit_AsyncFunctionDef = _visit_nested_scope
+        visit_ClassDef = _visit_nested_scope
+        visit_Lambda = _visit_nested_scope
+
+        def _visit_comprehension(self, node: ast.AST) -> None:
+            self.comprehension_depth += 1
+            self.generic_visit(node)
+            self.comprehension_depth -= 1
+
+        visit_ListComp = _visit_comprehension
+        visit_SetComp = _visit_comprehension
+        visit_DictComp = _visit_comprehension
+        visit_GeneratorExp = _visit_comprehension
+
+        def visit_Name(self, node: ast.Name) -> None:
+            if isinstance(node.ctx, (ast.Store, ast.Del)) and node.id in handles:
+                raise EvidenceSchemaError(f"sealed JSON input does not permit handle rebinding: {path}")
+            if node.id == "open" and isinstance(node.ctx, ast.Load):
+                parent = parents.get(node)
+                if not (isinstance(parent, ast.Call) and parent.func is node):
+                    raise EvidenceSchemaError(f"sealed JSON input does not permit open callable indirection: {path}")
+            if node.id == "json" and isinstance(node.ctx, ast.Load):
+                parent = parents.get(node)
+                if not (
+                    isinstance(parent, ast.Attribute)
+                    and parent.value is node
+                    and parent.attr in {"load", "loads", "dumps"}
+                ):
+                    raise EvidenceSchemaError(
+                        f"sealed JSON input does not permit JSON value indirection: {path}"
+                    )
+
+        def visit_Call(self, node: ast.Call) -> None:
+            if isinstance(node.func, ast.Name) and node.func.id == "open":
+                return
+            if isinstance(node.func, ast.Attribute) and node.func.attr in {"load", "loads", "dumps"}:
+                if not (isinstance(node.func.value, ast.Name) and node.func.value.id == "json"):
+                    raise EvidenceSchemaError(
+                        f"sealed JSON input permits only direct json load/loads/dumps calls: {path}"
+                    )
+                if len(node.args) != 1 or node.keywords or not isinstance(node.args[0], ast.Name):
+                    raise EvidenceSchemaError(f"sealed JSON call must use one exact name argument: {path}")
+                if node.func.attr == "load" and (
+                    self.scope_depth
+                    or self.comprehension_depth
+                    or len(self.handles) != 1
+                    or node.args[0].id != self.handles[-1]
+                ):
+                    raise EvidenceSchemaError(f"sealed JSON load must use its live declared read handle: {path}")
+                self.generic_visit(node)
+                return
+            self.generic_visit(node)
+
+        def visit_Attribute(self, node: ast.Attribute) -> None:
+            if node.attr in {"load", "loads", "dumps"}:
+                parent = parents.get(node)
+                if not (
+                    isinstance(node.value, ast.Name)
+                    and node.value.id == "json"
+                    and isinstance(parent, ast.Call)
+                    and parent.func is node
+                ):
+                    raise EvidenceSchemaError(
+                        f"sealed JSON input does not permit JSON callable indirection: {path}"
+                    )
+            self.generic_visit(node)
+
+    _LexicalJsonCalls().visit(tree)
+
+
+def _dynamic_local_dependencies(
+    tree: ast.AST, path: Path, root: Path,
+    allowed_non_python_dependencies: frozenset[str] = frozenset(),
+    snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> set[Path]:
     """Resolve only direct, literal dynamic imports; reject executable indirection."""
     _reject_executable_annotations(tree, path)
+    _validate_sealed_json_input(tree, path, allowed_non_python_dependencies)
     _reject_sealed_store_mutation(tree, path)
     if any(isinstance(node, ast.Lambda) for node in ast.walk(tree)):
         raise EvidenceSchemaError(f"lambda executable dependencies are unsupported: {path}")
@@ -2059,14 +2553,14 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
     calls, aliases = _dynamic_call_kinds(tree)
     _reject_sealed_global_mutation(tree, aliases, path)
     _reject_namespace_export_mutation(tree, aliases, path)
-    _reject_unresolved_module_receivers(tree, aliases, path, root)
+    _reject_unresolved_module_receivers(tree, aliases, path, root, snapshots)
     found: set[Path] = set()
     executable = {
         "__import__", "builtins.__import__", "importlib.import_module",
         "importlib.util.spec_from_file_location", "importlib.machinery.SourceFileLoader",
         "importlib.machinery.SourcelessFileLoader", "runpy.run_module", "runpy.run_path",
-        "exec", "eval", "compile", "open", "builtins.exec", "builtins.eval",
-        "builtins.compile", "builtins.open",
+        "exec", "eval", "compile", "builtins.exec", "builtins.eval",
+        "builtins.compile",
     }
     allowed_direct = {
         "__import__", "builtins.__import__", "importlib.import_module",
@@ -2189,7 +2683,10 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
         loader_name = canonical or raw_name or ""
         if (
             loader_name.startswith(("pickle", "dill", "cloudpickle", "marshal", "shelve", "joblib"))
-            or loader_name.endswith((".load", ".loads", ".Unpickler", ".find_class", ".load_module", ".unsafe_load"))
+            or (
+                loader_name.endswith((".load", ".loads", ".Unpickler", ".find_class", ".load_module", ".unsafe_load"))
+                and loader_name not in {"json.load", "json.loads"}
+            )
             or loader_name in {"numpy.load", "pandas.read_pickle", "torch.load", "yaml.full_load"}
         ):
             raise EvidenceSchemaError(f"unsafe deserializer/loader is unsupported: {path}")
@@ -2225,8 +2722,8 @@ def _dynamic_local_dependencies(tree: ast.AST, path: Path, root: Path) -> set[Pa
             candidate = _dynamic_module_file(root, target.value, path)
         else:
             location = Path(target.value)
-            candidate = (path.parent / location).resolve() if not location.is_absolute() else location.resolve()
-            if not candidate.is_file() or candidate.suffix != ".py":
+            candidate = path.parent / location
+            if location.is_absolute() or not candidate.is_file() or candidate.suffix != ".py":
                 raise EvidenceSchemaError(f"dynamic import/load target must resolve to a local .py file: {path}")
         if candidate is None:
             raise EvidenceSchemaError(f"dynamic import/load target cannot be resolved locally: {path}")
@@ -2262,29 +2759,92 @@ def _absolute_import_modules(tree: ast.AST) -> set[str]:
             if not node.args[0].value.startswith("."):
                 modules.add(node.args[0].value)
     return modules
-def _trusted_interpreter_roots() -> tuple[Path, ...]:
-    """Return interpreter import roots from the active interpreter configuration only."""
-    paths = sysconfig.get_paths()
+_AUDITED_EXTERNAL_TOP_LEVEL_IMPORTS = frozenset({
+    "importlib",
+    "json",
+    "numpy",
+})
+
+
+def _startup_import_roots(root: Path) -> tuple[Path, ...]:
+    """Return validated import-time interpreter roots excluding this repository."""
     roots: list[Path] = []
-    for key in ("stdlib", "purelib", "platlib"):
-        value = paths.get(key)
-        if not isinstance(value, str) or not value:
+    for raw_path in _INITIAL_INTERPRETER_PATHS:
+        if not raw_path:
             continue
-        root = Path(value).resolve()
-        if root not in roots:
-            roots.append(root)
+        path = Path(raw_path)
+        if not path.is_absolute() or not path.exists():
+            continue
+        path = path.resolve()
+        if not any(path.is_relative_to(prefix) for prefix in _INITIAL_INTERPRETER_PREFIXES):
+            continue
+        if path == root or path in roots:
+            continue
+        roots.append(path)
     return tuple(roots)
 
 
-def _trusted_top_level_spec(name: str) -> bool:
-    """Resolve *name* without consulting caller-controlled import search paths."""
-    if importlib.machinery.BuiltinImporter.find_spec(name) is not None:
-        return True
-    if importlib.machinery.FrozenImporter.find_spec(name) is not None:
-        return True
-    return importlib.machinery.PathFinder.find_spec(
-        name, [str(root) for root in _trusted_interpreter_roots()]
-    ) is not None
+def _trusted_import_roots(root: Path) -> tuple[Path, ...]:
+    """Return startup then sysconfig roots in bootstrap-compatible precedence."""
+    roots = list(_startup_import_roots(root))
+    for key in ("stdlib", "platstdlib", "purelib", "platlib"):
+        raw_path = sysconfig.get_paths().get(key)
+        if not raw_path:
+            continue
+        path = Path(raw_path).resolve()
+        if path.is_dir() and path not in roots:
+            roots.append(path)
+    return tuple(roots)
+
+
+def _trusted_builtin_or_frozen_spec(name: str) -> importlib.machinery.ModuleSpec | None:
+    """Return the runtime-precedent built-in or frozen top-level import spec."""
+    for importer in (
+        importlib.machinery.BuiltinImporter,
+        importlib.machinery.FrozenImporter,
+    ):
+        spec = importer.find_spec(name)
+        if spec is not None:
+            return spec
+    return None
+
+
+def _trusted_top_level_candidates(
+    name: str, root: Path,
+) -> tuple[tuple[Path, Path], ...]:
+    """Resolve top-level candidates beneath trusted roots in runtime precedence order."""
+    candidates: list[tuple[Path, Path]] = []
+    for trusted_root in _trusted_import_roots(root):
+        spec = importlib.machinery.PathFinder.find_spec(name, [str(trusted_root)])
+        if spec is None or not spec.origin or spec.origin in {"built-in", "frozen"}:
+            continue
+        candidate = Path(spec.origin)
+        try:
+            candidate.relative_to(trusted_root)
+        except ValueError:
+            continue
+        candidates.append((trusted_root, candidate))
+    return tuple(candidates)
+
+
+def _trusted_external_candidate(name: str, candidate: tuple[Path, Path]) -> bool:
+    """Validate the selected audited external candidate without changing precedence."""
+    if name not in _AUDITED_EXTERNAL_TOP_LEVEL_IMPORTS:
+        return False
+    trusted_root, path = candidate
+    if path.suffix in importlib.machinery.EXTENSION_SUFFIXES:
+        return False
+    try:
+        relative = path.relative_to(trusted_root)
+    except ValueError:
+        return False
+    if _has_reparse_point(trusted_root, PurePosixPath(relative.as_posix())):
+        return False
+    try:
+        metadata = os.stat(path, follow_symlinks=False)
+    except OSError:
+        return False
+    return stat.S_ISREG(metadata.st_mode) and metadata.st_nlink == 1
 
 
 def _repo_top_level_candidate(root: Path, name: str) -> bool:
@@ -2295,18 +2855,23 @@ def _repo_top_level_candidate(root: Path, name: str) -> bool:
         or base.is_dir()
         or any(base.with_suffix(suffix).is_file() for suffix in _IMPORTABLE_ARTIFACT_SUFFIXES)
     )
-
-
 def _reject_untrusted_absolute_imports(root: Path, modules: set[str]) -> None:
-    """Require deterministic trusted-external or sealed-local top-level imports."""
+    """Model runtime trusted-import precedence before sealing local imports."""
     for name in sorted({module.split(".", 1)[0] for module in modules if module}):
         local = _repo_top_level_candidate(root, name)
-        trusted = _trusted_top_level_spec(name)
-        if local and trusted:
+        builtin_or_frozen = _trusted_builtin_or_frozen_spec(name)
+        trusted = () if builtin_or_frozen is not None else _trusted_top_level_candidates(name, root)
+        if local and (builtin_or_frozen is not None or trusted):
             raise EvidenceSchemaError(
                 f"ambiguous local/external import: {name}; runtime resolves trusted external first"
             )
-        if not local and not trusted:
+        if local:
+            continue
+        if (
+            builtin_or_frozen is not None
+            or not trusted
+            or not _trusted_external_candidate(name, trusted[0])
+        ):
             raise EvidenceSchemaError(f"unresolved external import: {name}")
 
 
@@ -2346,13 +2911,23 @@ def _reject_direct_script_shadowing(
         )
 
 
-def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path], set[str]]:
+def _local_imports(
+    path: Path,
+    root: Path,
+    allowed_non_python_dependencies: frozenset[str],
+    snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> tuple[set[Path], set[Path], set[str]]:
     try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        data = (
+            snapshots[path].data
+            if snapshots is not None and path in snapshots
+            else path.read_bytes()
+        )
+        tree = ast.parse(data.decode("utf-8"), filename=str(path))
     except (OSError, UnicodeDecodeError, SyntaxError) as exc:
         raise EvidenceSchemaError(f"cannot parse dependency Python file {path}: {exc}") from exc
     _reject_import_resolution_global_binding(tree, path)
-    _validate_local_absolute_imports(root, tree)
+    _validate_local_absolute_imports(root, tree, snapshots)
     package = list(path.relative_to(root).parent.parts)
     found: set[Path] = set()
     for node in ast.walk(tree):
@@ -2372,11 +2947,18 @@ def _local_imports(path: Path, root: Path) -> tuple[set[Path], set[Path], set[st
             if candidate is not None:
                 found.add(candidate)
                 found.update(_package_initializers(candidate, root))
-    return found, _dynamic_local_dependencies(tree, path, root), _absolute_import_modules(tree)
+    return found, _dynamic_local_dependencies(
+        tree, path, root, allowed_non_python_dependencies, snapshots
+    ), _absolute_import_modules(tree)
 
 
-def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[set[str], set[str]]:
-    roots = [(root / Path(*PurePosixPath(item).parts)).resolve() for item in dependency_roots]
+def _derived_python_closure(
+    root: Path,
+    dependency_roots: list[str],
+    allowed_non_python_dependencies: frozenset[str],
+    snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> tuple[set[str], set[str]]:
+    roots = [root / Path(*PurePosixPath(item).parts) for item in dependency_roots]
     pending = [
         (candidate, dependency_root.parent)
         for dependency_root in roots
@@ -2393,7 +2975,13 @@ def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[se
             continue
         seen.add(context)
         closure.add(current)
-        imports, dynamic_imports, absolute_imports = _local_imports(current, root)
+        if snapshots is not None:
+            _snapshot_file(
+                root, current.relative_to(root).as_posix(), snapshots, "derived Python dependency"
+            )
+        imports, dynamic_imports, absolute_imports = _local_imports(
+            current, root, allowed_non_python_dependencies, snapshots
+        )
         imports_by_parent.setdefault(script_parent, set()).update(absolute_imports)
         dynamic.update(dynamic_imports)
         dependencies = imports | dynamic_imports | set().union(
@@ -2410,64 +2998,221 @@ def _derived_python_closure(root: Path, dependency_roots: list[str]) -> tuple[se
     )
 
 
-def derive_prereg_code_manifest(text: str, repo_root: Path | str) -> set[str]:
+def derive_prereg_code_manifest(
+    text: str,
+    repo_root: Path | str,
+    snapshots: dict[Path, _FileSnapshot] | None = None,
+) -> set[str]:
     """Derive the only valid code manifest from a sealed document contract."""
+    if snapshots is None:
+        snapshots = {}
     root = Path(repo_root).resolve()
     contract = _parse_contract(text, root)
-    python_closure, dynamic_dependencies = _derived_python_closure(root, contract["dependency_roots"])
+    python_closure, dynamic_dependencies = _derived_python_closure(
+        root, contract["dependency_roots"],
+        frozenset(contract["non_python_dependencies"]), snapshots,
+    )
     if dynamic_dependencies != set(contract["dynamic_python_dependencies"]):
         raise EvidenceSchemaError("dynamic_python_dependencies must exactly declare every local dynamic import/load target")
     return python_closure | set(contract["non_python_dependencies"])
 
 
-def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
-    """Create a v2 prereg seal only at its contract-owned canonical destination."""
-    root, document = Path(repo_root).resolve(), Path(doc_path).resolve()
+_ACTIVE_FINALIZER_AUTHORITIES: dict[
+    int, tuple[object, _WindowsAuthorityGuard, Path, tuple[int, int]]
+] = {}
+
+
+def _consume_finalizer_authority(
+    capability: object, receipt_seal_path: Path | str,
+) -> _WindowsAuthorityGuard:
+    """Atomically consume only the exact registered finalizer callable."""
     try:
-        doc_relative = document.relative_to(root).as_posix()
+        owned, guard, seal_path, seal_identity = _ACTIVE_FINALIZER_AUTHORITIES.pop(
+            id(capability)
+        )
+    except KeyError as exc:
+        raise EvidenceSchemaError(
+            "authoritative receipt requires a registered live finalizer capability"
+        ) from exc
+    if owned is not capability:
+        raise EvidenceSchemaError(
+            "authoritative receipt requires a registered live finalizer capability"
+        )
+    target = Path(receipt_seal_path)
+    if not guard.active or target != seal_path:
+        raise EvidenceSchemaError(
+            "authoritative receipt requires a registered live finalizer capability"
+        )
+    try:
+        metadata = os.stat(target, follow_symlinks=False)
+    except OSError as exc:
+        raise EvidenceSchemaError("authoritative seal identity is unavailable") from exc
+    if (metadata.st_dev, metadata.st_ino) != seal_identity:
+        raise EvidenceSchemaError("authoritative seal identity changed during custody")
+    return owned(target)
+
+
+@dataclass(frozen=True)
+class _PreregCustody:
+    """Validated seal and the live authority guard that protects its inputs."""
+    seal: dict
+    seal_path: Path
+    seal_identity: tuple[int, int]
+    guard: _WindowsAuthorityGuard
+    capability: object
+
+
+
+@contextlib.contextmanager
+def _finalize_prereg_custody(
+    doc_path: Path | str,
+    *,
+    repo_root: Path | str,
+    code_files: tuple[Path | str, ...],
+    manifest_path: Path | str,
+    sealed_at: str,
+) -> Iterator[_PreregCustody]:
+    """Publish a seal, retaining write/delete-denying custody through the caller body."""
+    root = Path(repo_root).resolve()
+    document = Path(doc_path)
+    try:
+        doc_relative = (
+            document.relative_to(root) if document.is_absolute() else document
+        ).as_posix()
     except ValueError as exc:
         raise EvidenceSchemaError("doc_path must resolve inside repo_root") from exc
-    if not document.is_file():
-        raise EvidenceSchemaError("doc_path must name an existing preregistration document")
-    text = document.read_text(encoding="utf-8")
-    if "> 지위: **SEALED**" not in text:
-        raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
-    if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
-        raise EvidenceSchemaError("preregistration document retains draft marker")
-    contract = _parse_contract(text, root)
-    declared = []
-    for index, code_file in enumerate(code_files):
-        candidate = Path(code_file).resolve()
-        if not candidate.is_file():
-            raise EvidenceSchemaError(f"code_files[{index}] must name a file")
-        try:
-            declared.append(candidate.relative_to(root).as_posix())
-        except ValueError as exc:
-            raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
-    if len(declared) != len(set(declared)):
-        raise EvidenceSchemaError("code_files must resolve to unique paths")
-    expected = derive_prereg_code_manifest(text, root)
-    if set(declared) != expected:
-        raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
-    manifest = [{"path": item, "sha256": hashlib.sha256((root / Path(*PurePosixPath(item).parts)).read_bytes()).hexdigest()} for item in sorted(expected)]
-    sealed_doc = {"path": doc_relative, "sha256": hashlib.sha256(document.read_bytes()).hexdigest()}
-    canonical_output = root / Path(*PurePosixPath(contract["authority_paths"]["seal_dir"]).parts) / f"{sealed_doc['sha256']}.seal.json"
-    if Path(manifest_path).resolve() != canonical_output:
-        raise EvidenceSchemaError("manifest_path must equal the canonical contract seal path")
-    seal = {
-        "schema_version": 2, "kind": "prereg_seal", "status": "SEALED", "sealed_at": sealed_at,
-        "sealed_doc": sealed_doc, "ledger_path": contract["ledger_path"],
-        "authority_paths": contract["authority_paths"], "code_manifest": manifest,
-    }
-    validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
+    if not doc_relative or "\\" in doc_relative or any(
+        part in ("", ".", "..") for part in doc_relative.split("/")
+    ):
+        raise EvidenceSchemaError("doc_path must name a safe repository file")
+    snapshots: dict[Path, _FileSnapshot] = {}
+    document_snapshot = _snapshot_file(root, doc_relative, snapshots, "preregistration document")
+    try:
+        preliminary_text = document_snapshot.data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise EvidenceSchemaError("preregistration document must be UTF-8") from exc
+    contract = _parse_contract(preliminary_text, root)
+
     with authority_mutation_guard(root, contract["authority_paths"], fields=("seal_dir",)) as guard:
+        hold = getattr(guard, "hold_write_denied_file", None)
+        if hold is not None:
+            hold(document_snapshot.path)
+        snapshots.pop(document_snapshot.path)
+        reviewed_document_snapshot = _snapshot_file(
+            root, doc_relative, snapshots, "preregistration document"
+        )
+        if reviewed_document_snapshot.data != document_snapshot.data:
+            raise EvidenceSchemaError(
+                "preregistration document changed between preliminary and authority review"
+            )
+        document_snapshot = reviewed_document_snapshot
+        try:
+            text = document_snapshot.data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise EvidenceSchemaError("preregistration document must be UTF-8") from exc
+        if "> 지위: **SEALED**" not in text:
+            raise EvidenceSchemaError("preregistration document is not explicitly SEALED")
+        if any(marker in text for marker in ("봉인 전 초안", "(기입)", "(미주입")):
+            raise EvidenceSchemaError("preregistration document retains draft marker")
+        contract = _parse_contract(text, root)
+        declared = []
+        for index, code_file in enumerate(code_files):
+            candidate = Path(code_file)
+            try:
+                relative = (candidate.relative_to(root) if candidate.is_absolute() else candidate).as_posix()
+            except ValueError as exc:
+                raise EvidenceSchemaError(f"code_files[{index}] must resolve inside repo_root") from exc
+            if not relative or "\\" in relative or any(
+                part in ("", ".", "..") for part in relative.split("/")
+            ):
+                raise EvidenceSchemaError(f"code_files[{index}] must name a safe repository file")
+            declared.append(relative)
+        if len(declared) != len(set(declared)):
+            raise EvidenceSchemaError("code_files must resolve to unique paths")
+        expected = derive_prereg_code_manifest(text, root, snapshots)
+        if set(declared) != expected:
+            raise EvidenceSchemaError("code_files must equal derived Python dependency closure plus non_python_dependencies")
+        for item in sorted(expected):
+            snapshot = _snapshot_file(root, item, snapshots, "sealed dependency")
+            if hold is not None:
+                hold(snapshot.path)
+        manifest = [
+            {"path": item, "sha256": hashlib.sha256(
+                snapshots[root / Path(*PurePosixPath(item).parts)].data
+            ).hexdigest()}
+            for item in sorted(expected)
+        ]
+        sealed_doc = {"path": doc_relative, "sha256": hashlib.sha256(document_snapshot.data).hexdigest()}
+        canonical_output = root / Path(*PurePosixPath(contract["authority_paths"]["seal_dir"]).parts) / f"{sealed_doc['sha256']}.seal.json"
+        if Path(manifest_path).resolve() != canonical_output:
+            raise EvidenceSchemaError("manifest_path must equal the canonical contract seal path")
+        seal = {
+            "schema_version": 2, "kind": "prereg_seal", "status": "SEALED", "sealed_at": sealed_at,
+            "sealed_doc": sealed_doc, "ledger_path": contract["ledger_path"],
+            "authority_paths": contract["authority_paths"], "code_manifest": manifest,
+        }
+        for snapshot in snapshots.values():
+            snapshot.revalidate()
+        validated = validate_prereg_seal(seal, repo_root=root, verify_files=True)
+        for snapshot in snapshots.values():
+            snapshot.revalidate()
         guard.hold_path(canonical_output)
         guard.validate_file(canonical_output)
         if canonical_output.exists():
             raise FileExistsError(f"existing prereg seal sidecar cannot be overwritten: {canonical_output}")
         fd = guard.open_path(canonical_output, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write(canonical_json_bytes(validated).decode("utf-8"))
-            handle.flush()
-            os.fsync(handle.fileno())
-    return dict(validated)
+        try:
+            seal_identity = guard.retain_creation_fd(canonical_output, fd)
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+                fd = -1
+                handle.write(canonical_json_bytes(validated).decode("utf-8"))
+                handle.flush()
+                os.fsync(handle.fileno())
+        except Exception:
+            if fd >= 0:
+                os.close(fd)
+            identity = guard.created_file_identity(canonical_output)
+            if identity is not None:
+                guard.remove_created_file(canonical_output, identity)
+            raise
+
+        consumed = False
+
+        def consume_authority(receipt_seal_path: Path) -> _WindowsAuthorityGuard:
+            """One-shot closure-private authority proof for the active custody window."""
+            nonlocal consumed
+            if (
+                consumed
+                or not guard.active
+                or receipt_seal_path != canonical_output
+            ):
+                raise EvidenceSchemaError(
+                    "authoritative receipt requires live unused finalizer capability"
+                )
+            try:
+                metadata = os.stat(canonical_output, follow_symlinks=False)
+            except OSError as exc:
+                raise EvidenceSchemaError("authoritative seal identity is unavailable") from exc
+            if (metadata.st_dev, metadata.st_ino) != seal_identity:
+                raise EvidenceSchemaError("authoritative seal identity changed during custody")
+            consumed = True
+            return guard
+
+        _ACTIVE_FINALIZER_AUTHORITIES[id(consume_authority)] = (
+            consume_authority, guard, canonical_output, seal_identity
+        )
+        try:
+            yield _PreregCustody(
+                dict(validated), canonical_output, seal_identity, guard, consume_authority
+            )
+        finally:
+            _ACTIVE_FINALIZER_AUTHORITIES.pop(id(consume_authority), None)
+
+
+def finalize_prereg(doc_path: Path | str, *, repo_root: Path | str, code_files: tuple[Path | str, ...], manifest_path: Path | str, sealed_at: str) -> dict:
+    """Publish readable durable evidence; standalone sealing is not launch-authoritative."""
+    with _finalize_prereg_custody(
+        doc_path, repo_root=repo_root, code_files=code_files,
+        manifest_path=manifest_path, sealed_at=sealed_at,
+    ) as custody:
+        return dict(custody.seal)

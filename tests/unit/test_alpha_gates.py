@@ -382,6 +382,137 @@ def _v2_seal_manifest(
     _git(repo, env, "-c", "user.name=tester", "-c", "user.email=t@example.com",
          "commit", "-q", "-m", "seal")
     return path
+def test_finalizer_capability_has_no_module_level_constructor():
+    assert not hasattr(prereg, "_FinalizerAuthorityCapability")
+
+
+def test_finalizer_capability_rejects_capture_after_context_exit(sealed_repo):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    with prereg._finalize_prereg_custody(
+        sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+        sealed_at="2026-07-14T00:00:00+00:00",
+    ) as custody:
+        captured = custody.capability
+    with pytest.raises(ValueError, match="registered live finalizer capability"):
+        prereg._consume_finalizer_authority(captured, seal_path)
+
+
+def test_finalizer_capability_consumes_only_once(sealed_repo):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    with prereg._finalize_prereg_custody(
+        sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+        sealed_at="2026-07-14T00:00:00+00:00",
+    ) as custody:
+        assert prereg._consume_finalizer_authority(
+            custody.capability, seal_path
+        ) is custody.guard
+        with pytest.raises(ValueError, match="registered live finalizer capability"):
+            prereg._consume_finalizer_authority(custody.capability, seal_path)
+def test_finalizer_capability_registry_uses_identity_only(sealed_repo):
+    class HostileCapability:
+        def __hash__(self):
+            raise AssertionError("attacker hash lookup")
+
+        def __eq__(self, other):
+            raise AssertionError("attacker equality lookup")
+
+        def __call__(self, path):
+            raise AssertionError("attacker callable invocation")
+
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    with prereg._finalize_prereg_custody(
+        sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+        sealed_at="2026-07-14T00:00:00+00:00",
+    ) as custody:
+        with pytest.raises(ValueError, match="registered live finalizer capability"):
+            prereg._consume_finalizer_authority(HostileCapability(), seal_path)
+        assert prereg._consume_finalizer_authority(
+            custody.capability, seal_path
+        ) is custody.guard
+        with pytest.raises(ValueError, match="registered live finalizer capability"):
+            prereg._consume_finalizer_authority(custody.capability, seal_path)
+
+
+def test_finalizer_seal_postopen_failure_removes_only_created_file(
+    sealed_repo, monkeypatch
+):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+
+    def fail_fsync(_):
+        raise OSError("injected seal fsync failure")
+
+    monkeypatch.setattr(prereg.os, "fsync", fail_fsync)
+    with pytest.raises(OSError, match="injected seal fsync failure"):
+        prereg.finalize_prereg(
+            sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+    assert not seal_path.exists()
+@pytest.mark.skipif(os.name != "nt", reason="strict mutation is Windows-only")
+def test_windows_rollback_close_boundary_never_unlinks_substitution(tmp_path, monkeypatch):
+    """A replacement injected when the old code closed its fd must survive."""
+    target = tmp_path / "attempt.seal.json"
+    replacement_source = tmp_path / "replacement.json"
+    target.write_bytes(b"attempt")
+    replacement_source.write_bytes(b"replacement")
+    retained_fd = os.open(target, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    metadata = os.fstat(retained_fd)
+    identity = metadata.st_dev, metadata.st_ino
+    guard = prereg._WindowsAuthorityGuard(tmp_path, {}, ())
+    guard._retained_file_fds.append(retained_fd)
+    guard.note_created_file(target, identity)
+
+    monkeypatch.setattr(
+        guard, "_mark_retained_file_delete_pending", lambda fd: None
+    )
+    original_close = prereg.os.close
+    substituted = False
+
+    def substitute_at_old_close_boundary(fd):
+        nonlocal substituted
+        original_close(fd)
+        if fd == retained_fd:
+            os.replace(replacement_source, target)
+            substituted = True
+
+    monkeypatch.setattr(prereg.os, "close", substitute_at_old_close_boundary)
+    guard.remove_created_file(target, identity)
+
+    assert substituted
+    assert target.read_bytes() == b"replacement"
+    assert guard.created_file_identity(target) is None
+    assert retained_fd not in guard._retained_file_fds
+    guard.close()
+
+
+def test_finalizer_seal_collision_preserves_existing_bytes(sealed_repo):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    seal_path.parent.mkdir()
+    original = b"existing collision bytes"
+    seal_path.write_bytes(original)
+    with pytest.raises(FileExistsError):
+        prereg.finalize_prereg(
+            sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+    assert seal_path.read_bytes() == original
+
+
+def test_authoritative_receipt_rejects_fabricated_callable(sealed_repo):
+    repo, sealed, code, env = sealed_repo
+    seal_path = _v2_seal_manifest(repo, sealed, code, env)
+    with pytest.raises(ValueError, match="registered live finalizer capability"):
+        measure_gate._issue_gate_receipt_v2(
+            repo, seal_path, issued_at="2026-07-14T00:00:00+00:00", nonce="forged",
+            capability=lambda _: None,
+        )
+    assert not (repo / "receipts").exists()
+
 
 
 def test_issue_and_claim_gate_receipt_v2_once(sealed_repo):
@@ -393,24 +524,77 @@ def test_issue_and_claim_gate_receipt_v2_once(sealed_repo):
     assert receipt_path.is_file()
     assert receipt["code_manifest"] == json.loads(
         seal.read_text(encoding="utf-8"))["code_manifest"]
-    usage = measure_gate.claim_gate_receipt_v2(
-        receipt_path, repo_root=repo,
-        consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
-    usage_path = repo / "claims" / f"{receipt['receipt_id']}.json"
-    assert usage_path.is_file()
-    assert usage["claim"]["path"] == f"claims/{receipt['receipt_id']}.json"
+    assert receipt["custody"] == {
+        "mode": "standalone", "launch_authoritative": False}
+    with pytest.raises(ValueError, match="continuous finalizer custody"):
+        measure_gate.claim_gate_receipt_v2(
+            receipt_path, repo_root=repo,
+            consumer="measure-run-1", consumed_at="2026-07-14T00:01:00+00:00")
     alternate_receipt = repo / "alternate-receipt.json"
     alternate_receipt.write_bytes(receipt_path.read_bytes())
     with pytest.raises(ValueError, match="canonical receipt path"):
         measure_gate.claim_gate_receipt_v2(
             alternate_receipt, repo_root=repo,
             consumer="alternate", consumed_at="2026-07-14T00:01:30+00:00")
-    original_usage = usage_path.read_bytes()
-    with pytest.raises(ValueError):
-        measure_gate.claim_gate_receipt_v2(
-            receipt_path, repo_root=repo,
-            consumer="measure-run-2", consumed_at="2026-07-14T00:02:00+00:00")
-    assert usage_path.read_bytes() == original_usage
+def test_finalize_and_issue_gate_receipt_v2_authorizes_claim(sealed_repo):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
+        sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+        sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="combined-1")
+    assert receipt["custody"] == {
+        "mode": "continuous-finalizer-v1", "launch_authoritative": True}
+    assert receipt["seal_manifest"]["path"] == seal_path.relative_to(repo).as_posix()
+    usage = measure_gate.claim_gate_receipt_v2(
+        repo / "receipts" / f"{receipt['receipt_id']}.json", repo_root=repo,
+        consumer="combined-run", consumed_at="2026-07-14T00:02:00+00:00")
+    assert usage["issuer"]["receipt_id"] == receipt["receipt_id"]
+def test_combined_issuance_retains_document_dependency_and_seal_custody(
+    sealed_repo, monkeypatch
+):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    original = measure_gate._issue_gate_receipt_v2
+
+    def assert_custody(*args, **kwargs):
+        for target in (sealed, code, seal_path):
+            with pytest.raises(PermissionError):
+                target.write_text("tampered\n", encoding="utf-8")
+            with pytest.raises(PermissionError):
+                target.unlink()
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(measure_gate, "_issue_gate_receipt_v2", assert_custody)
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
+        sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+        sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="custody-1")
+    assert receipt["seal_manifest"]["sha256"] == measure_gate.sha256_canonical(
+        json.loads(seal_path.read_text(encoding="utf-8")))
+
+
+def test_combined_issuance_cleans_created_outputs_after_postpublish_failure(
+    sealed_repo, monkeypatch
+):
+    repo, sealed, code, _ = sealed_repo
+    seal_path = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    original_head = measure_gate._current_head
+    calls = 0
+
+    def changed_after_publish(root):
+        nonlocal calls
+        calls += 1
+        return original_head(root) if calls < 3 else "0" * 40
+
+    monkeypatch.setattr(measure_gate, "_current_head", changed_after_publish)
+    with pytest.raises(ValueError, match="HEAD changed"):
+        measure_gate.finalize_and_issue_gate_receipt_v2(
+            sealed, repo_root=repo, code_files=(code,), manifest_path=seal_path,
+            sealed_at="2026-07-14T00:00:00+00:00",
+            issued_at="2026-07-14T00:01:00+00:00", nonce="cleanup-1")
+    assert not seal_path.exists()
+    assert not (repo / "receipts").exists()
 def test_v2_receipt_rejects_empty_or_false_authoritative_checks(sealed_repo):
     from alpha_lab.discipline.evidence import EvidenceSchemaError, validate_gate_receipt
 

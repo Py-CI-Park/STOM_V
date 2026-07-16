@@ -48,8 +48,8 @@ _RUNNER_SOURCE_SHA256 = {
     "alpha_lab/runlab/contract.py": "696c970d4cc54b856f41fb6f70ed7e0c038941c7008fb75bf2ef5066e3fba284",
     "alpha_lab/runlab/watchdog.py": "ee54c8c0c06d3d38bc34bdb99a5fd7291a3e115ec22aadfd4f630c69eb359d1d",
     "alpha_lab/discipline/__init__.py": "7b61a8fdc21fd783d3a9e298863f57b3dd51fba62de35705c03bf1cccb84e787",
-    "alpha_lab/discipline/evidence.py": "04983914ade57065f48ac1957ff1f183b9a50b678467f3e40126ef9b3c87d9f2",
-    "alpha_lab/discipline/prereg.py": "5ac2059272ceb93ea86002e38c8bbb9cc8cef6d71f874df82de600ed193000d1",
+    "alpha_lab/discipline/evidence.py": "fdb03d25767be9c7cafb1ac4c9098583b8b46ef7ecec788f0084e0b5ae7f428f",
+    "alpha_lab/discipline/prereg.py": "1b65970ccbf1b5de830184eaa5ecbe0bf52006f493ebef35645e287b25df3988",
 }
 
 
