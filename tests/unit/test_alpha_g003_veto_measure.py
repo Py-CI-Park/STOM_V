@@ -5,7 +5,7 @@ from pathlib import Path
 from alpha_lab.discipline import prereg
 
 ROOT = Path(__file__).parents[2]
-SOURCE = ROOT / "alpha_lab" / "distill" / "g003_veto_measure.py"
+SOURCE = ROOT / "scripts" / "g003_veto_measure.py"
 SNAPSHOT = ROOT / "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_input.json"
 INPUT_PATH = "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_input.json"
 LEDGER_PATH = "docs/research/condition_research/research_runs/alpha_lab_20260705/distill/champion_ledger.jsonl"
@@ -72,7 +72,7 @@ def test_forged_source_refs_and_scalars_are_insufficient():
 
 
 def test_target_derives_with_declared_inputs(tmp_path):
-    source = tmp_path / "alpha_lab/distill/g003_veto_measure.py"
+    source = tmp_path / "scripts/g003_veto_measure.py"
     source.parent.mkdir(parents=True)
     source.write_text(SOURCE.read_text(encoding="utf-8"), encoding="utf-8")
     paths = tuple(sorted((INPUT_PATH, LEDGER_PATH)))
@@ -82,7 +82,7 @@ def test_target_derives_with_declared_inputs(tmp_path):
         target.write_text("{}\n", encoding="utf-8")
     for directory in ("seals", "promotions", "catalog", "journal", "backups"):
         (tmp_path / directory).mkdir()
-    contract = {"schema_version": 2, "hypothesis_id": "G003", "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"}, "primary_estimand": "static veto", "sample_floors": {"n": 1}, "multiplicity_family": "G003", "kill_rule": "fail", "ledger_path": "ledger.jsonl", "authority_paths": {"seal_dir": "seals", "promotions_dir": "promotions", "catalog_dir": "catalog", "target_db": "alpha_lab/distill/g003_veto_measure.py", "journal_dir": "journal", "backup_dir": "backups"}, "dependency_roots": ["alpha_lab/distill/g003_veto_measure.py"], "dynamic_python_dependencies": [], "non_python_dependencies": list(paths)}
+    contract = {"schema_version": 2, "hypothesis_id": "G003", "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"}, "primary_estimand": "static veto", "sample_floors": {"n": 1}, "multiplicity_family": "G003", "kill_rule": "fail", "ledger_path": "ledger.jsonl", "authority_paths": {"seal_dir": "seals", "promotions_dir": "promotions", "catalog_dir": "catalog", "target_db": "scripts/g003_veto_measure.py", "journal_dir": "journal", "backup_dir": "backups"}, "dependency_roots": ["scripts/g003_veto_measure.py"], "dynamic_python_dependencies": [], "non_python_dependencies": list(paths)}
     document = tmp_path / "prereg.md"
     document.write_text("> 지위: **SEALED**\n```json prereg-contract-v2\n" + json.dumps(contract) + "\n```\n", encoding="utf-8")
-    assert prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path) == {"alpha_lab/distill/g003_veto_measure.py", *paths}
+    assert prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path) == {"scripts/g003_veto_measure.py", *paths}
