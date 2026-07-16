@@ -23,6 +23,11 @@
 - BackTest가 구식 확장 생성자 계약으로 동작 (당시 시점 안에서는 일관되므로 즉시 깨지지는 않음)
 - warm session BackTest spawn 결함 (실 warm 실행 실패)
 - 단위 기준선 실패 7건
+- **anti-copy 가드 맨숫자 오차단 결함** — `d5dece4f` 시점 가드는 few-shot
+  패턴카드와 생성식이 보편 상수(0, 100, 세션 시각 등) 하나만 공유해도
+  threshold_copy로 차단한다. 실 A/B에서 연구 프리셋 생성 성공률 0/6이
+  실측됐다. few-shot을 켠 연구를 돌린다면 이 수정(ee7cd8a1) 없이는
+  후보가 하나도 생성되지 않는다.
 
 ### 동기화 절차 (그쪽 연구가 다음 커밋 지점에 도달했을 때 수행)
 
@@ -30,7 +35,8 @@
 # 진행 중 미추적 연구 산출물 위에 얹지 말 것 — 반드시 커밋 경계에서 수행
 cd C:/System_Trading/STOM/STOM_V.wt-condition-tree
 git status --short --untracked-files=no   # 추적 변경이 없는지 확인
-git cherry-pick 8cee4679 3d6e8675 a3754e9b f3ddbd14 a3022b82
+git cherry-pick 8cee4679 3d6e8675 a3754e9b f3ddbd14 a3022b82 d6413b8b ee7cd8a1 77e462ab 1b43aee6
+# 또는 본선이 이미 같은 팁이므로 간단히: git rebase loop/process-research-pipeline
 pytest tests/unit/ -q
 python scripts/verify_nonrelease_sync.py
 ```
