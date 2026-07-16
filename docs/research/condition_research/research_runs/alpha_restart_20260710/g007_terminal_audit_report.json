@@ -1,0 +1,674 @@
+{
+  "schemaVersion": 1,
+  "schema": "g007-terminal-audit-report-v1",
+  "kind": "algorithm-boundary-test-report",
+  "artifactKind": "algorithm-boundary-test-report",
+  "reportType": "G007 final synthesis QA and red-team evidence artifact",
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "createdDate": "2026-07-16",
+  "activeGoal": "G007",
+  "researchRun": "alpha_restart_20260710",
+  "worktree": "C:/System_Trading/STOM/STOM_V.wt-alpha-audit",
+  "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g007_terminal_audit_report.json",
+  "artifactScope": {
+    "qaEvidenceOnly": true,
+    "algorithmDocumentAuditOnly": true,
+    "notAReceipt": true,
+    "notAClaim": true,
+    "notALedgerRow": true,
+    "notACandidate": true,
+    "notPromotionAuthority": true,
+    "noGuiOrCliProductSurfaceShipped": true,
+    "createdOnlyThisJsonArtifact": true,
+    "executorRanTestsGatesFormatters": false,
+    "executorRanGitCommands": false,
+    "executorRanEngineDbWorkflowActions": false,
+    "executorRanParentVerificationCommands": false,
+    "statusBasis": "Passed means this read-only QA artifact found the G007 synthesis, management briefing, durable statuses, and terminal reports internally consistent with the supplied algorithm/document contract. Parent fresh verification is attributed as parent-reported and not executor-run. No product E2E surface was shipped."
+  },
+  "reviewedSources": [
+    {
+      "id": "g007-final-synthesis",
+      "path": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
+      "inspection": "Read current report contents; key lines include 7-15, 37-53, 55-68, 86-123, 146-164, 166-183, 209-231, and 245-272."
+    },
+    {
+      "id": "g007-management-briefing",
+      "path": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
+      "inspection": "Read current briefing contents; key lines include 3-13, 32-40, 42-63, 75-93, and 95-120."
+    },
+    {
+      "id": "durable-goals",
+      "path": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/goals.json",
+      "inspection": "Read durable goal statuses; key lines include 7-31, 32-79, 80-116, 117-164, 165-212, 213-237, 238-274, 275-322, 323-375, and 376-399."
+    },
+    {
+      "id": "g002-terminal",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_u7_f0_terminal_report.md",
+      "inspection": "Read terminal identity failure report; key lines include 3-12, 22-36."
+    },
+    {
+      "id": "g003-terminal",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_report.md",
+      "inspection": "Read terminal FAIL report; key lines include 3-19."
+    },
+    {
+      "id": "g004-terminal",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g004/g004_terminal_report.md",
+      "inspection": "Read dependency nonidentification report; key lines include 3-12, 41-66, and 77-79."
+    },
+    {
+      "id": "g005-terminal-family",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_execution_report.md",
+      "inspection": "Read family terminal report; key lines include 1-16, 41-99, 101-123."
+    },
+    {
+      "id": "g006-terminal",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md",
+      "inspection": "Read C3/C4 terminal report; key lines include 3-14, 44-65, 67-91."
+    },
+    {
+      "id": "g010-qa-artifact",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g010_terminal_audit_report.json",
+      "inspection": "Read G010 algorithm-boundary QA report; key lines include 1-30, 124-188, 189-269, 270-388, 389-501, 614-688."
+    },
+    {
+      "id": "g006-qa-artifact",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_terminal_audit_report.json",
+      "inspection": "Read G006 algorithm-boundary QA report; key lines include 1-45, 62-174, 175-252."
+    }
+  ],
+  "statuses": {
+    "candidateStatus": {
+      "promotableStomStrategyCandidateCount": 0,
+      "promotableCandidates": [],
+      "g003StaticO3OrO4Veto": "FAIL and retired; candidate_set is empty",
+      "x1": "descriptive noncausal nonpromotable PASS; survives only as knowledge item",
+      "futureFollowup": "outcome-blind authoritative activation trace and exact first-activation timestamp project; not approved and not a strategy candidate"
+    },
+    "goalStatuses": {
+      "G001": "superseded by G008; governance closure only",
+      "G002": "complete; UNDETERMINED identity integrity failure",
+      "G003": "complete; measured FAIL; fixed static O3 OR O4 veto retired",
+      "G004": "complete; UNDETERMINED dependency nonidentification",
+      "G005": "superseded; resolved by G009 contract repair and G010 final measurement replacement",
+      "G006": "complete; UNDETERMINED / DNF_UNIDENTIFIED; C4 CLOSED metadata-only",
+      "G007": "active final synthesis and integration-prep goal at time of inspected goals.json",
+      "G008": "complete; evidence-chain v2 implementation/review/verification closure only",
+      "G009": "complete; G005 sealed-measurement contract repair only",
+      "G010": "complete; authoritative final G005 replacement"
+    },
+    "terminalStatuses": {
+      "G002": "UNDETERMINED; failure before identity crosswalk/materialization/factorial/result; no PASS/KILL/FAIL relabel",
+      "G003": "FAIL; drop-only diagnostic loss; no rescue, reweight, or reselect within same fixed family",
+      "G004": "UNDETERMINED; P1/M1/S1 unidentified because G002 common cohort absent",
+      "G005-C1": "UNDETERMINED / INPUT_SCHEMA_MISMATCH; one failed builder attempt before c1_input.json; KILL/PASS not evaluated",
+      "G005-X1": "PASS; descriptive_not_causal and nonpromotable; no candidate or ledger row",
+      "G005-C2": "UNDETERMINED / nonidentified; exact activation timestamp/outcome/trace authority absent",
+      "G006-C3": "UNDETERMINED / DNF_UNIDENTIFIED; no formal candidate; KILL/PASS not evaluated",
+      "G006-C4": "CLOSED metadata-only; outcome and metric reads not allowed"
+    },
+    "integrationStatus": {
+      "auditBranch": "research/alpha-lab-audit-ideas-20260714 at 61d26005a26799e9e13ddaca423873850fae834f",
+      "targetAlphaBranch": "research/alpha-lab-idea5-foundation-20260707 at bd5bb3c4bc9253034326eadfe8afdfd4605258c4",
+      "mergeBase": "541a8d70cb8904cc33f3f325b37e60f6ea1591d3",
+      "divergence": "target-only 2 / audit-only 112",
+      "targetOnlyCommits": ["bd5bb3c4", "ff251f9a"],
+      "integrationPrepared": true,
+      "integrationExecuted": false,
+      "maintainerApprovalRequiredForTargetActions": true,
+      "g007DocumentationCommitBoundary": "Parent may create the required logical Korean G007 documentation commit after verification; that document commit is not target-branch merge approval and must not be blocked as if it were merge/push/rebase/cherry-pick authority."
+    }
+  },
+  "parentVerification": {
+    "source": "parent-supplied verification context and artifact reference",
+    "executorRanParentCommands": false,
+    "doNotClaimExecutorRanThese": true,
+    "checks": [
+      {
+        "check": "alpha unit/research suite",
+        "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1319.36s",
+        "artifactRef": "artifact://1600",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "nonrelease sync",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "doc-contract check",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "diff check",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "protected-path check",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "cleaner 361",
+        "reportedResult": "zero blockers and zero advisories",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      }
+    ]
+  },
+  "contractCoverage": [
+    {
+      "coverageId": "COV-01-zero-promotable-candidates",
+      "topic": "Zero promotable strategy candidates",
+      "requirement": "The final G007 artifact must preserve that no branch creates a promotable STOM strategy candidate, engine request, registration, promotion, or live authority.",
+      "evidence": [
+        "Final synthesis lines 7-15 and 157-164 state promotable STOM strategy candidates are 0, G003 is retired, X1 is nonpromotable knowledge only, and follow-up trace authority is not approved.",
+        "Management briefing lines 3, 75-82, and 107-116 repeat zero promotable candidates and no registration, promotion manifest, or engine request.",
+        "G005 execution report lines 7-16 and 119-123 and G006 terminal report lines 67-86 show no engine/DB/registration/promotion/retry/rescue authority."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-02-unresolved-statuses-stay-unresolved",
+      "topic": "UNDETERMINED statuses are not relabeled",
+      "requirement": "G002, G004, G005-C1, G005-C2, and G006-C3/C4 must remain unresolved or nonidentified and must not be converted to PASS, FAIL, or KILL.",
+      "evidence": [
+        "Final synthesis lines 41-49 and 146-154 list G002, G004, C1, C2, and G006 as UNDETERMINED or nonidentified, while line 180 forbids PASS/KILL/FAIL relabeling.",
+        "G002 report lines 3-12 and 28-36 close before estimand/result; G004 report lines 3-12 and 41-66 close through dependency nonidentification.",
+        "C1 report lines 3-12 and 59-68, C2 report lines 3-13 and 26-69, and G006 report lines 3-14 and 61-65 all state KILL/PASS were not evaluated."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-03-g003-fail-retired",
+      "topic": "Measured G003 FAIL family",
+      "requirement": "G003 is the measured FAIL and retired fixed static O3 OR O4 veto family; it cannot be rescued, reweighted, or reselected as a candidate.",
+      "evidence": [
+        "G003 report lines 5-19 record exit_code 0, final FAIL, combined delta_profit -8,453,880, false-dropped positives 112/173, and candidate set empty/no promotion.",
+        "G003 evidence lines 5, 59-74 record verdict FAIL, measurement values, candidate_set empty, and negative_or_kill true.",
+        "Final synthesis lines 43, 61, 128, 138, 162, and 181 keep G003 FAIL/retired and forbid rescue by reweighting or reselecting the same family."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-04-x1-descriptive-only",
+      "topic": "X1 PASS boundary",
+      "requirement": "X1 PASS may be described only as descriptive, noncausal, and nonpromotable and must not become causal strategy evidence or a promotion candidate.",
+      "evidence": [
+        "X1 terminal report lines 3-19 and 76-86 state descriptive/noncausal/nonpromotable PASS, no engine/DB/registration/promotion/retry/rescue, and no fake candidate or ledger row.",
+        "G005 summary lines 171-213 records PASS, descriptive=true, noncausal=true, nonpromotable=true, strategy_candidate_created=false, and promotion_proposed=false.",
+        "Final synthesis lines 47, 99, 141, 155, 163, and 182 preserve X1 as descriptive knowledge only."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-05-fake-ledger-receipt-candidate-blocked",
+      "topic": "No fabricated candidate, ledger, receipt, or claim",
+      "requirement": "The artifact must reject fake negative_or_kill flags, fake buy/sell hashes, fake candidates, fake n_trials rows, and fake receipt/claim authority.",
+      "evidence": [
+        "G005 execution report lines 101-108 records X1 ledger append rejection before mutation and forbids fake negative_or_kill, fake buy/sell hash, and fake promotable candidate.",
+        "G005 summary lines 251-288 records ledger_row_appended=false, fake_buy_hash=false, fake_sell_hash=false, fake_candidate=false, confirmed no ledger row, and fake_ledger_row=false.",
+        "G010 QA report lines 101-122, 224-233, 452-462, and 609-612 cover no fake ledger/candidate and ledger absence."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-06-g006-c4-closed",
+      "topic": "G006 C4 remains closed metadata-only",
+      "requirement": "G006 C4 must not be opened, executed, or used to read outcome/metric/portfolio values under the current C3 DNF_UNIDENTIFIED closure.",
+      "evidence": [
+        "G006 terminal report lines 3-14 and 63-91 state C4 closed, c4_outcome_read_allowed=false, no C4 outcome/metric read or computation, and zero side-effect counters.",
+        "c4_gate_status.json lines 6-12, 58-77, 78-97, and 98-113 record CLOSED metadata-only, c4_opened=false, c4_executed=false, c4_metrics_generated=false, and outcome/metric reads prohibited.",
+        "G006 QA report lines 130-139 and 219-244 red-team C4 open/read attempts and keep C4 CLOSED metadata-only."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-07-supersession-preserved",
+      "topic": "G001 and G005 supersession chains",
+      "requirement": "G001 must remain superseded by G008 and G005 must remain superseded by G009 plus G010; original superseded goals must not be revived as independent final authorities.",
+      "evidence": [
+        "Durable goals.json lines 7-31 records G001 status superseded and resolved by G008; lines 80-116 records G008 complete.",
+        "Durable goals.json lines 213-237 records G005 status superseded by G009; lines 238-274 and 323-375 record G009 and G010 complete.",
+        "Final synthesis lines 15, 41, 45, 52-53, 63, 67-68, 90-92, and 228 keep G001->G008 and G005->G009->G010 visible."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-08-protected-authority-absent",
+      "topic": "Protected DB, engine, registration, and promotion authority",
+      "requirement": "No document or QA artifact may invent protected DB write/read expansion, engine execution, strategy registration, promotion, live/OOS, retry, rescue, or runtime authority.",
+      "evidence": [
+        "Original brief lines 1-2 states protected DB, live, registration, and engine execution need separate approval and existing gates.",
+        "Final synthesis lines 166-183 and management briefing lines 84-93 list approval-required work and forbidden inferences.",
+        "G002, G003, G004, G005, and G006 terminal reports record protected side-effect counters zero in their cited side-effect sections."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-09-integration-prepared-not-executed",
+      "topic": "Branch divergence and integration gate",
+      "requirement": "The report must include supplied branch divergence facts, preserve that integration is prepared but not executed, and require maintainer approval before merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion.",
+      "evidence": [
+        "Final synthesis lines 211-220 records audit branch 61d26005, target branch bd5bb3c4, merge base 541a8d70, target-only 2, audit-only 112, target-only commits bd5bb3c4 and ff251f9a, and integration not executed.",
+        "Final synthesis lines 221-231 and management briefing lines 32-40 and 107-116 preserve the approval gate and worktree cleanup boundary.",
+        "This executor did not run git; branch facts are bound to supplied contract and current report/briefing contents only."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-10-g007-document-commit-boundary",
+      "topic": "G007 docs commit is allowed but target integration is not",
+      "requirement": "The artifact must not wrongly block the parent from the required logical Korean G007 documentation commit, while also not authorizing target branch integration actions.",
+      "evidence": [
+        "Final synthesis line 3 states the parent may create the verified G007 documentation commit and that it is not maintainer integration approval.",
+        "Final synthesis lines 175 and 223 require maintainer approval for target integration actions but do not block the G007 doc commit.",
+        "Management briefing lines 13 and 105 repeat that verified G007 documentation commit is parent responsibility while merge/push/rebase/squash/cherry-pick target mutation and worktree deletion remain approval-gated."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-11-verification-attribution",
+      "topic": "Fresh and historical verification claims",
+      "requirement": "Fresh parent verification must be recorded accurately without claiming this executor ran it, and historical tests must not be misrepresented as newly run.",
+      "evidence": [
+        "Parent context reports alpha suite 1143 passed, 5 skipped, 4247 deselected in 1319.36s at artifact://1600, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories; this artifact marks executorRanParentCommands=false.",
+        "Final synthesis lines 245-255 list historical checks and explicitly mark Executor ran now? as No.",
+        "Final synthesis line 3 and management briefing lines 3 and 95-105 state content-generation executors did not run tests/gates/formatters/git commands."
+      ],
+      "status": "covered"
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "surfaceId": "SURF-G007-FINAL-SYNTHESIS",
+      "surface": "Final research synthesis current contents",
+      "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
+      "kind": "durable G007 synthesis document",
+      "observed": "States no promotable candidates, preserves terminal distinctions, supersession chains, approval needs, branch divergence, and final audit assertion.",
+      "evidenceRefs": ["lines 7-15", "lines 37-53", "lines 146-183", "lines 209-231", "lines 270-272"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G007-BRIEFING",
+      "surface": "Management briefing current contents",
+      "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
+      "kind": "durable G007 management summary",
+      "observed": "Summarizes zero promotable candidates, unresolved terminal statuses, G003 fail/retired, X1 descriptive-only PASS, branch facts, approval gates, and highest-value trace-authority follow-up.",
+      "evidenceRefs": ["lines 3-13", "lines 32-40", "lines 54-63", "lines 75-93", "lines 107-120"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-DURABLE-GOALS",
+      "surface": "Durable goal status ledger",
+      "artifactPath": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/goals.json",
+      "kind": "durable goal state",
+      "observed": "G001 superseded, G002 complete, G003 complete, G004 complete, G005 superseded, G006 complete, G008/G009/G010 complete, and G007 active at inspected revision 30.",
+      "evidenceRefs": ["lines 7-31", "lines 32-79", "lines 117-164", "lines 165-212", "lines 213-237", "lines 275-322", "lines 323-399"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G002",
+      "surface": "G002 identity terminal failure",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_u7_f0_terminal_report.md and g002_identity_failure_evidence.json",
+      "kind": "terminal report and evidence",
+      "observed": "UNDETERMINED identity_projection failure before crosswalk/materialization/factorial/result; canonical module exit 1; engine/DB-write/registration/promotion/full/target/outcome counters zero.",
+      "evidenceRefs": ["report lines 3-36", "evidence lines 7-19", "evidence lines 45-62", "evidence lines 181-201"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G003",
+      "surface": "G003 static O3 OR O4 veto",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_report.md and g003_veto_evidence.json",
+      "kind": "terminal report and evidence",
+      "observed": "Measured FAIL with combined delta_profit -8,453,880, retained 120/298, false-dropped positives 112/173, candidate_set empty, no promotion or engine/DB/registration authority.",
+      "evidenceRefs": ["report lines 5-19", "evidence lines 5-17", "evidence lines 59-74"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G004",
+      "surface": "G004 dependency nonidentification",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g004/g004_terminal_report.md",
+      "kind": "terminal report",
+      "observed": "UNDETERMINED dependency closure because G002 common cohort and downstream artifacts are absent; P1/M1/S1 unidentified; no invocation/outcome/n_trials/receipt/claim.",
+      "evidenceRefs": ["lines 3-12", "lines 14-39", "lines 41-66", "lines 77-79"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G005-FAMILY",
+      "surface": "G005 family mixed terminal closure",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_execution_report.md and g005_terminal_summary.json",
+      "kind": "family terminal report and summary",
+      "observed": "C1 UNDETERMINED/INPUT_SCHEMA_MISMATCH, X1 descriptive PASS, C2 UNDETERMINED/nonidentified; no aggregate all-PASS/all-FAIL, strategy candidate, fake ledger row, engine request, registration, promotion, retry, or rescue.",
+      "evidenceRefs": ["execution report lines 41-99", "execution report lines 101-123", "summary lines 111-249", "summary lines 274-310"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G006-C3-C4",
+      "surface": "G006 C3/C4 terminal closure",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md and c4_gate_status.json",
+      "kind": "terminal report and C4 status metadata",
+      "observed": "C3 closes Phase 0 as UNDETERMINED/DNF_UNIDENTIFIED with formal candidate count 0; C4 is CLOSED metadata-only, not opened/executed, and outcome/metric reads are prohibited.",
+      "evidenceRefs": ["terminal report lines 3-14", "terminal report lines 44-65", "terminal report lines 67-91", "c4 status lines 6-12", "c4 status lines 78-113"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-G008-GOVERNANCE",
+      "surface": "G001/G008 governance closure",
+      "artifactPath": "docs/research/condition_research/2026-07-14_alpha_lab_evidence_chain_v2_execution.md",
+      "kind": "G008 execution and audit record",
+      "observed": "G008 closes evidence-chain v2 governance contracts only; it is not strategy promotion, protected DB work, engine execution, or live operation approval.",
+      "evidenceRefs": ["lines 3-8", "lines 9-20", "lines 35-64", "lines 66-74"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-PARENT-VERIFICATION",
+      "surface": "Parent fresh verification binding",
+      "artifactPath": "artifact://1600 plus parent context",
+      "kind": "parent-reported verification; not executor-run",
+      "observed": "Parent reports alpha suite 1143 passed, 5 skipped, 4247 deselected in 1319.36s, nonrelease sync passed, doc-contract/diff/protected-path checks passed, and cleaner 361 zero blockers/advisories.",
+      "evidenceRefs": ["parent assignment context", "artifact://1600"],
+      "verdict": "consistent_attributed_to_parent"
+    },
+    {
+      "surfaceId": "SURF-BRANCH-INTEGRATION",
+      "surface": "Branch integration facts from supplied contract",
+      "artifactPath": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md and management briefing",
+      "kind": "integration-prep metadata",
+      "observed": "Audit branch at 61d26005, target alpha at bd5bb3c4, merge base 541a8d70, target-only 2, audit-only 112, target-only commits bd5bb3c4 and ff251f9a; integration prepared but not executed.",
+      "evidenceRefs": ["final synthesis lines 211-220", "final synthesis lines 221-231", "briefing lines 32-40"],
+      "verdict": "consistent"
+    }
+  ],
+  "adversarialCases": [
+    {
+      "caseId": "ADV-01-unresolved-status-relabel",
+      "threat": "G002, G004, C1, C2, or G006 are relabeled as PASS, FAIL, or KILL even though required identity/schema/trace authority was absent.",
+      "expectedBoundary": "They remain UNDETERMINED, nonidentified, or DNF_UNIDENTIFIED; KILL/PASS/FAIL are not evaluated for those unresolved branches.",
+      "evidence": ["final synthesis lines 41-49 and 146-154", "G002 report lines 3-36", "G004 report lines 3-12", "C1/C2/G006 terminal reports cited in surface evidence"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-02-g003-rescue-reselect",
+      "threat": "The measured G003 static O3 OR O4 FAIL is rescued by reweighting, reselecting, or rebranding the same fixed family.",
+      "expectedBoundary": "G003 remains FAIL and retired with candidate_set empty; any new veto family requires separate preregistration and cannot reuse this measured family as a candidate.",
+      "evidence": ["G003 report lines 13-19", "G003 evidence lines 59-74", "final synthesis lines 128, 138, 162, and 181"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-03-x1-causal-promotion",
+      "threat": "X1 descriptive PASS is promoted, treated causally, interpreted as counterfactual exit adoption, or converted into a strategy candidate.",
+      "expectedBoundary": "X1 remains descriptive, noncausal, and nonpromotable; no strategy candidate, registration, promotion, engine execution, or DB write follows.",
+      "evidence": ["X1 terminal report lines 3-19 and 76-86", "G005 summary lines 171-213", "final synthesis lines 47, 99, 141, 155, 163, and 182"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-04-fake-candidate-ledger-receipt",
+      "threat": "A fake candidate, fake n_trials ledger row, fake negative_or_kill flag, fake buy/sell hash, or fake receipt/claim is made to rescue X1 or unresolved branches.",
+      "expectedBoundary": "No fabricated receipt, claim, ledger row, candidate identity, negative_or_kill flag, or buy/sell hash may be created; ledger rejection remains fail-closed.",
+      "evidence": ["G005 execution report lines 101-108", "G005 summary lines 251-288", "G010 QA report lines 101-122 and 452-462"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-05-g006-c4-open-outcome-read",
+      "threat": "G006 C4 is opened, scheduler/portfolio metrics are computed, or outcome/MDD/incremental-profit reads are performed under C3 DNF_UNIDENTIFIED closure.",
+      "expectedBoundary": "C4 stays CLOSED metadata-only with c4_opened=false, c4_executed=false, c4_outcome_read_allowed=false, and c4_metrics_generated=false.",
+      "evidence": ["G006 terminal report lines 63-91", "c4_gate_status.json lines 6-12 and 78-113", "G006 QA report lines 130-139 and 219-244"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-06-supersession-chain-lost",
+      "threat": "G001 or G005 supersession is lost, causing old goals to be treated as open independent authority or final measurement authority.",
+      "expectedBoundary": "G001 remains superseded by G008 and G005 remains superseded by G009 plus G010, with the chain visible in final notes.",
+      "evidence": ["goals.json lines 7-31 and 213-237", "final synthesis lines 15, 41, 45, 52-53, 63, 67-68, and 228"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-07-protected-authority-invented",
+      "threat": "Protected DB read/write expansion, engine execution, strategy registration, promotion, live/OOS, retry, rescue, or runtime authority is invented from audit documents.",
+      "expectedBoundary": "Audit documents and QA artifacts remain non-authorizing; protected operations require separate maintainer/user approval and gates.",
+      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 84-93", "terminal reports' zero counters"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-08-branch-divergence-omitted",
+      "threat": "The G007 synthesis omits branch divergence or target-only commits, hiding integration risk.",
+      "expectedBoundary": "Audit HEAD, target HEAD, merge base, target-only/audit-only counts, and target-only commit IDs remain visible.",
+      "evidence": ["final synthesis lines 211-220", "management briefing lines 32-40"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-09-g007-doc-commit-wrongly-blocked",
+      "threat": "The required parent G007 documentation commit is wrongly treated as blocked by maintainer target-integration approval.",
+      "expectedBoundary": "Parent may create the verified logical Korean G007 documentation commit after verification; this is distinct from merge/push/rebase/squash/cherry-pick target integration approval.",
+      "evidence": ["final synthesis line 3 and lines 221-231", "management briefing lines 13 and 105"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-10-target-integration-actions-misrepresented",
+      "threat": "Target merge, push, rebase, squash, cherry-pick, target-branch mutation, worktree deletion, or cleanup is treated as executed or authorized.",
+      "expectedBoundary": "Integration is prepared but not executed; all target branch integration and worktree deletion actions require explicit future maintainer approval.",
+      "evidence": ["final synthesis lines 175 and 219-231", "management briefing lines 40, 93, and 115-116"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-11-historical-tests-claimed-new",
+      "threat": "Historical G008/G002/G003/G004/G009/G010 checks or parent fresh checks are misrepresented as newly run by this executor.",
+      "expectedBoundary": "Historical checks remain cited history, parent fresh checks are parent-reported, and executorRanParentCommands=false.",
+      "evidence": ["final synthesis lines 245-255", "management briefing lines 95-105", "parentVerification entries in this artifact"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-12-product-surface-overclaim",
+      "threat": "This QA artifact is presented as shipped GUI/CLI product behavior, algorithm output, receipt, claim, ledger row, or product E2E test result.",
+      "expectedBoundary": "This is algorithm/document audit evidence only; it creates no product surface, receipt, claim, ledger row, candidate, engine run, DB write, or workflow action.",
+      "evidence": ["artifactScope in this JSON", "final synthesis line 3", "management briefing line 3", "G010 QA report lines 16-30 as analogous QA-evidence boundary"],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    }
+  ],
+  "contradictionChecks": [
+    {
+      "id": "CHK-FINAL-BRIEFING-CONSISTENCY",
+      "assertion": "Final synthesis and management briefing both say zero promotable candidates and audit/knowledge/integration-prep only.",
+      "observed": "matched",
+      "evidence": ["final synthesis lines 7-15 and 157-164", "management briefing lines 3 and 75-82"],
+      "wouldFailIf": "Either document listed a promotable candidate, engine request, registration, promotion path, or live authority."
+    },
+    {
+      "id": "CHK-DURABLE-STATUS-CONSISTENCY",
+      "assertion": "Durable goals.json statuses align with the final synthesis table: G001/G005 superseded, G002/G003/G004/G006/G008/G009/G010 complete, G007 active.",
+      "observed": "matched",
+      "evidence": ["goals.json lines 7-31, 32-79, 117-164, 165-212, 213-237, 238-274, 275-322, 323-399", "final synthesis lines 39-53"],
+      "wouldFailIf": "A superseded goal was treated as independent final authority or an active/complete status was inverted."
+    },
+    {
+      "id": "CHK-TERMINAL-DISTINCTIONS",
+      "assertion": "G002/G004/C1/C2/G006 unresolved statuses stay unresolved; G003 is FAIL retired; X1 is descriptive PASS only.",
+      "observed": "matched",
+      "evidence": ["final synthesis lines 126-132 and 146-164", "G002/G003/G004/G005/G006 terminal reports"],
+      "wouldFailIf": "Any unresolved branch was relabeled PASS/KILL/FAIL, G003 was rescued, or X1 became causal/promotable."
+    },
+    {
+      "id": "CHK-G005-FAMILY-BOUNDARY",
+      "assertion": "G005 is mixed terminal closure with no aggregate all-PASS/all-FAIL, no fake ledger row, and no candidate.",
+      "observed": "matched",
+      "evidence": ["G005 execution report lines 101-123", "G005 summary lines 251-310", "G010 QA report lines 389-501"],
+      "wouldFailIf": "The family was collapsed to all-PASS/all-FAIL or an X1 ledger/candidate/receipt was fabricated."
+    },
+    {
+      "id": "CHK-G006-C4-BOUNDARY",
+      "assertion": "G006 C4 is CLOSED metadata-only with no outcome/metric read and no C4 computation.",
+      "observed": "matched",
+      "evidence": ["G006 terminal report lines 63-91", "c4_gate_status.json lines 6-12 and 78-113", "G006 QA report lines 130-139"],
+      "wouldFailIf": "C4 was opened, executed, or used to compute incremental total profit, MDD, scheduler, overlap, or portfolio metrics."
+    },
+    {
+      "id": "CHK-BRANCH-FACTS-AND-GATE",
+      "assertion": "Branch facts are present and integration is prepared but not executed or authorized.",
+      "observed": "matched",
+      "evidence": ["final synthesis lines 211-231", "management briefing lines 32-40 and 107-116"],
+      "wouldFailIf": "Divergence was omitted or merge/push/rebase/squash/cherry-pick/target mutation/worktree deletion was treated as executed or authorized."
+    },
+    {
+      "id": "CHK-PARENT-VERIFICATION-ATTRIBUTION",
+      "assertion": "Parent fresh verification is recorded accurately without claiming this executor ran it.",
+      "observed": "matched",
+      "evidence": ["parentVerification in this JSON", "final synthesis lines 245-255", "management briefing lines 95-105"],
+      "wouldFailIf": "This artifact claimed the executor ran artifact://1600 alpha suite, nonrelease sync, doc-contract, diff, protected-path, or cleaner 361 checks."
+    },
+    {
+      "id": "CHK-PROTECTED-SURFACE-ZERO-AUTHORITY",
+      "assertion": "No inspected source creates protected DB, engine, registration, promotion, retry, rescue, workflow, receipt, claim, ledger, or candidate authority.",
+      "observed": "matched",
+      "evidence": ["brief.md lines 1-2", "final synthesis lines 166-183", "management briefing lines 84-93", "artifactScope in this JSON"],
+      "wouldFailIf": "This artifact or a source document created operational authority beyond audit documentation."
+    }
+  ],
+  "artifactRefs": [
+    {
+      "id": "final-synthesis",
+      "path": "docs/research/condition_research/2026-07-16_alpha_lab_final_research_synthesis.md",
+      "role": "G007 final synthesis source",
+      "lineRefs": ["7-15", "37-53", "86-123", "146-183", "209-231", "245-272"]
+    },
+    {
+      "id": "management-briefing",
+      "path": "docs/research/condition_research/2026-07-16_alpha_lab_management_briefing.md",
+      "role": "G007 management briefing source",
+      "lineRefs": ["3-13", "32-40", "75-93", "95-120"]
+    },
+    {
+      "id": "durable-goals",
+      "path": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/goals.json",
+      "role": "durable goal statuses and completion receipts",
+      "lineRefs": ["7-31", "32-79", "117-164", "165-212", "213-237", "238-274", "275-322", "323-399"]
+    },
+    {
+      "id": "original-brief",
+      "path": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/brief.md",
+      "role": "original approval and protected-surface constraints",
+      "lineRefs": ["1-2", "22-23"]
+    },
+    {
+      "id": "g008-report",
+      "path": "docs/research/condition_research/2026-07-14_alpha_lab_evidence_chain_v2_execution.md",
+      "role": "G001 supersession and governance-only closure",
+      "lineRefs": ["3-8", "9-20", "56-64", "66-74"]
+    },
+    {
+      "id": "g002-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_u7_f0_terminal_report.md",
+      "role": "G002 terminal identity failure",
+      "lineRefs": ["3-12", "22-36"]
+    },
+    {
+      "id": "g002-identity-evidence",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_identity_failure_evidence.json",
+      "role": "G002 structured evidence and zero counters",
+      "lineRefs": ["7-19", "45-62", "181-201"]
+    },
+    {
+      "id": "g003-veto-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_report.md",
+      "role": "G003 terminal FAIL/retired family report",
+      "lineRefs": ["3-19"]
+    },
+    {
+      "id": "g003-veto-evidence",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_evidence.json",
+      "role": "G003 measurements, candidate_set empty, and receipt/claim custody",
+      "lineRefs": ["5-17", "59-74"]
+    },
+    {
+      "id": "g004-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g004/g004_terminal_report.md",
+      "role": "G004 dependency nonidentification",
+      "lineRefs": ["3-12", "41-66", "77-79"]
+    },
+    {
+      "id": "g005-execution-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_execution_report.md",
+      "role": "G005 family terminal report",
+      "lineRefs": ["1-16", "41-99", "101-123"]
+    },
+    {
+      "id": "g005-terminal-summary",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json",
+      "role": "G005 structured family summary",
+      "lineRefs": ["111-249", "251-310"]
+    },
+    {
+      "id": "c1-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_report.md",
+      "role": "C1 INPUT_SCHEMA_MISMATCH terminal branch report",
+      "lineRefs": ["3-12", "14-28", "59-68"]
+    },
+    {
+      "id": "x1-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_terminal_report.md",
+      "role": "X1 descriptive noncausal nonpromotable PASS report",
+      "lineRefs": ["3-19", "32-60", "76-86"],
+      "receiptId": "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2"
+    },
+    {
+      "id": "c2-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_terminal_report.md",
+      "role": "C2 nonidentification terminal branch report",
+      "lineRefs": ["3-13", "26-39", "49-69"]
+    },
+    {
+      "id": "g010-terminal-audit-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g010_terminal_audit_report.json",
+      "role": "G010 algorithm-boundary QA artifact for G005 final measurement replacement",
+      "lineRefs": ["1-30", "189-269", "270-388", "389-501", "614-688"]
+    },
+    {
+      "id": "g006-c3-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md",
+      "role": "G006-C3 terminal DNF_UNIDENTIFIED report",
+      "lineRefs": ["3-14", "44-65", "67-91"]
+    },
+    {
+      "id": "g006-c4-gate-status",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/c4_gate_status.json",
+      "role": "G006-C4 CLOSED metadata-only status",
+      "lineRefs": ["6-12", "58-77", "78-113"]
+    },
+    {
+      "id": "g006-terminal-audit-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_terminal_audit_report.json",
+      "role": "G006 algorithm-boundary QA artifact",
+      "lineRefs": ["1-45", "62-174", "175-252"]
+    },
+    {
+      "id": "parent-alpha-suite",
+      "path": "artifact://1600",
+      "role": "parent-reported fresh alpha suite evidence",
+      "reportedResult": "1143 passed, 5 skipped, 4247 deselected in 1319.36s",
+      "executorRan": false
+    }
+  ],
+  "blockerListReviewed": true,
+  "blockers": []
+}
