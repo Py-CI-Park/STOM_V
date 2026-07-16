@@ -252,3 +252,29 @@ def test_no_write_mode_open_against_scanned_tick_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(builtins, "open", _audited_open)
 
     scan_tick_dbs(tick_dir)
+
+
+def test_min_coverage_and_notes_drive_honest_flag(tmp_path):
+    """min_coverage 선언 시 non_common_history를 정직 계산하고 notes를 생성기가 emit한다."""
+    from cli.stage0_inventory import build_stage0_receipt
+    db_dir = tmp_path / "db"
+    db_dir.mkdir()
+    (db_dir / "stock_tick_20220323.db").write_bytes(b"")
+    (db_dir / "stock_tick_20260227.db").write_bytes(b"")
+    min_db = tmp_path / "stock_min_back.db"
+    min_db.write_bytes(b"x")
+    receipt = build_stage0_receipt(
+        db_dir, min_db, "b" * 64, "e" * 64, ["t1"],
+        generated_at="2026-07-16T00:00:00+00:00",
+        min_coverage={"min": "20250407", "max": "20260227", "source": "lattice docs"},
+        notes={"data_root_note": "wt-dev/_database"},
+    )
+    assert receipt["non_common_history"] is True
+    assert receipt["lanes"]["min"]["coverage"]["min"] == "20250407"
+    assert receipt["notes"]["data_root_note"] == "wt-dev/_database"
+    same = build_stage0_receipt(
+        db_dir, min_db, "b" * 64, "e" * 64, ["t1"],
+        generated_at="2026-07-16T00:00:00+00:00",
+        min_coverage={"min": "20220323", "max": "20260227", "source": "동일 범위 가정"},
+    )
+    assert same["non_common_history"] is False
