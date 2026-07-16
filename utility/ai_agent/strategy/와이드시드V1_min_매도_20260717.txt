@@ -1,0 +1,15 @@
+# WSEED_V1_Min_S - 자동 생성 와이드 시드 V1 (매도)
+# 생성일: 20260717
+매도 = False
+
+if 시분초 >= 145900:
+    매도 = True
+elif 수익률 <= -4.0:
+    매도 = True
+elif 수익률 >= 6.0:
+    매도 = True
+elif 보유시간 >= 60:
+    매도 = True
+
+if 매도:
+    self.Sell()
