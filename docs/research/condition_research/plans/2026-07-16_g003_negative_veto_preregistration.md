@@ -3,6 +3,7 @@
 > 지위: **SEALED**
 >
 > 이 문서와 커밋된 outcome-blind 마스크 스냅샷 및 대상 코드는 최초 실현손익 집계 전의 고정 설계다. 검토와 커밋 뒤에만 finalizer/receipt 실행을 허용하며, 그 전에는 결과를 읽거나 설계를 바꾸지 않는다.
+> 최초 combined finalizer/receipt 발행 시도는 측정 전에 실패하여 seal·receipt·claim·target 실행이나 outcome 공개를 전혀 만들지 않았으며, 이번 정정은 runtime dependency 분류만 바꾼다.
 
 ## 1. 관측과 범위
 
@@ -35,6 +36,7 @@
 | O4 candidate bits | 863,446 | `105850275408b061d2406da3ec888bfd27a037531183f5827bd178392315b724` | 4,878,692 |
 | O4 summary | 1 | `65f20ea3f229f03420c8ef088b60c64b7810330575ddb163096ca95461e1ea37` | 141,365 |
 | D1 onset clause bits | 863,446 | `4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56` | 6,783,855 |
+O3 onset bank, O4 candidate bits, D1 onset clause bits의 세 parquet은 upstream provenance-only lineage이며, 현재 bytes의 SHA-256·크기를 측정 직전과 직후에 독립적으로 확인하고 evidence에 기록하되 runtime dependency로 stage하지 않는다.
 
 ### 2.3 정적 shadow와 집계
 
@@ -91,11 +93,8 @@
     "docs/research/condition_research/research_runs/alpha_lab_20260705/p3_rejoin_chunk_1of2.json",
     "docs/research/condition_research/research_runs/alpha_lab_20260705/p3_rejoin_chunk_2of2.json",
     "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_input.json",
-    "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_onset_bank.parquet",
     "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json",
-    "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json",
-    "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/stats_map_o4/o4_candidate_bits.parquet",
-    "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet"
+    "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json"
   ]
 }
 ```
