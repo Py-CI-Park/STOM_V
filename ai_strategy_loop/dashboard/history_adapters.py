@@ -136,6 +136,35 @@ def _evaluation_status_from_candidate(row: dict) -> str:
     return "success"
 
 
+_COMPANION_SUFFIX = "_condition_history_v1.json"
+
+
+def _companion_path(evidence_root: Path, campaign: str) -> Path:
+    """캠페인 companion(`<campaign>_condition_history_v1.json`) 경로를 만든다."""
+    return evidence_root / f"{campaign}{_COMPANION_SUFFIX}"
+
+
+def list_companion_campaigns(evidence_root: Optional[Path] = None) -> list[str]:
+    """증거 루트에서 발행된 companion 캠페인 이름 목록을 반환한다(정렬 결정론).
+
+    `cli.research_history_projection.publish_condition_history`가 발행한
+    `<campaign>_condition_history_v1.json` 파일명을 역파싱한다. 디렉토리가
+    없으면 빈 목록이다(예외 없음).
+    """
+    root = evidence_root if evidence_root is not None else _default_evidence_root()
+    if not root.is_dir():
+        return []
+    names = []
+    for path in sorted(root.glob(f"*{_COMPANION_SUFFIX}")):
+        names.append(path.name[: -len(_COMPANION_SUFFIX)])
+    return names
+
+
+def _default_evidence_root() -> Path:
+    from ai_strategy_loop.dashboard import research_records as _rr
+
+    return _rr.EVIDENCE_ROOT
+
 class CampaignAdapter:
     """research_records 기반 캠페인 read-only 어댑터 (source_kind="campaign").
 
@@ -153,9 +182,18 @@ class CampaignAdapter:
     def build_research_node(self, campaign: str) -> CampaignResult:
         """캠페인 하나를 ``ResearchNode`` + 아티팩트 참조 봉투로 매핑한다.
 
+        발행된 companion(`<campaign>_condition_history_v1.json`)이 있으면
+        그것이 정본이므로 검증 후 그대로 반환한다(재합성 없음). companion이
+        없으면 기존 research_records 합성 경로를 쓴다. companion이 손상되었으면
+        추측 복구 없이 typed ``companion_invalid``로 반환한다.
+
         캠페인이 없거나 이름이 안전하지 않으면(``research_record_detail``의
         ``available=False``) 예외 없이 typed 미가용 결과를 반환한다.
         """
+        companion = self._load_companion(campaign)
+        if companion is not None:
+            return companion
+
         detail = research_record_detail(campaign, root=self._evidence_root)
         if not detail.get("available"):
             return {
@@ -168,7 +206,6 @@ class CampaignAdapter:
         record = detail["campaign"]
         research_id = f"campaign:{campaign}"
         stage_id = f"stage:{campaign}:candidates"
-
         conditions: list[ConditionNode] = []
         eval_statuses: list[str] = []
         for idx, candidate in enumerate(record.get("candidates", [])):
@@ -221,6 +258,40 @@ class CampaignAdapter:
             "reason": None,
             "research": research,
             "artifact_refs": artifact_refs,
+        }
+
+    def _load_companion(self, campaign: str) -> Optional[CampaignResult]:
+        """발행 companion을 로드/검증한다. 없으면 ``None``(합성 경로 사용)."""
+        import json as _json
+
+        from cli.condition_history_schema import validate_research_node
+
+        root = self._evidence_root if self._evidence_root is not None else _default_evidence_root()
+        path = _companion_path(root, campaign)
+        if not path.is_file():
+            return None
+        try:
+            node = _json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {
+                "available": False,
+                "reason": "companion_invalid",
+                "research": None,
+                "artifact_refs": None,
+            }
+        errors = validate_research_node(node)
+        if errors:
+            return {
+                "available": False,
+                "reason": "companion_invalid",
+                "research": None,
+                "artifact_refs": None,
+            }
+        return {
+            "available": True,
+            "reason": None,
+            "research": node,
+            "artifact_refs": {"companion": path.name},
         }
 
 
