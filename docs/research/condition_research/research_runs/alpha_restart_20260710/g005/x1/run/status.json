@@ -1,0 +1,12 @@
+{
+  "state": "exited",
+  "utc": "2026-07-16T17:07:55+00:00",
+  "exit_code": 0,
+  "child_pid": 98060,
+  "ended_utc": "2026-07-16T17:07:55+00:00",
+  "pid": 64520,
+  "target": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha-audit\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\g005\\x1\\run\\sealed-stage-5_9s62mi\\scripts\\g005_x1_competing_risk.py",
+  "target_args": [],
+  "started_utc": "2026-07-16T17:05:12+00:00",
+  "interval_sec": 5.0
+}

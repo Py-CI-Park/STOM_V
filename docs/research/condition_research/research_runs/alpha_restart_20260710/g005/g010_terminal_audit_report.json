@@ -1,0 +1,691 @@
+{
+  "schemaVersion": 1,
+  "schema": "g010-terminal-audit-report-v1",
+  "kind": "algorithm-boundary-test-report",
+  "artifactKind": "algorithm-boundary-test-report",
+  "reportType": "typed algorithm/test-report QA red-team artifact",
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "createdDate": "2026-07-16",
+  "family": "G005",
+  "activeGoal": "G010",
+  "researchRun": "alpha_restart_20260710",
+  "worktree": "C:/System_Trading/STOM/STOM_V.wt-alpha-audit",
+  "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g010_terminal_audit_report.json",
+  "artifactScope": {
+    "qaEvidenceOnly": true,
+    "notAReceipt": true,
+    "notAClaim": true,
+    "notALedgerRow": true,
+    "notACandidate": true,
+    "notPromotionAuthority": true,
+    "readOnlyEvidenceInspection": true,
+    "createdOnlyThisJsonArtifact": true,
+    "productCodeEdited": false,
+    "testsGatesFormattersRunByExecutor": false,
+    "builderFinalizerRunlabRerunByExecutor": false,
+    "engineDbRegistrationPromotionRetryRescueByExecutor": false,
+    "executorRanParentCommands": false
+  },
+  "algorithmSurfaceInvocation": {
+    "mode": "read-only file and validator-style inspection",
+    "surface": "C1/X1/C2 terminal artifact consistency, ledger-absence boundary, and aggregate terminal-family boundary",
+    "actualInspection": [
+      "Read C1 preregistration, c1_terminal_evidence.json, c1_terminal_report.md, and c1_builder_attempt_bg_6.txt; confirmed the single builder transcript is parent-captured, exit_code=1, timestamp unavailable/not asserted, and c1_input.json is absent.",
+      "Read X1 preregistration, x1_execution_evidence.json, x1_terminal_report.md, seal manifest, receipt, claim, run status, and canonical run log; confirmed sole descriptive PASS, receipt/claim/runlab binding, exit_code=0, noncausal/nonpromotable caveat, and zero side-effect counters.",
+      "Read C2 preregistration, c2_nonidentification_evidence.json, c2_terminal_report.md, and scripts/g005_c2_nonidentification_guard.py; confirmed static nonidentification, declarations-only guard, no invocation, and prohibited proxy substitution.",
+      "Read g005_execution_report.md and g005_terminal_summary.json; confirmed mixed family terminal status, no aggregate PASS/FAIL, no strategy candidate, and no engine/DB/registration/promotion/retry/rescue authorization.",
+      "Searched n_trials_ledger.jsonl for the X1 receipt id and G005/X1 family identifiers; no matches were found."
+    ],
+    "notInvoked": [
+      "project tests",
+      "project gates",
+      "formatters",
+      "builder/materializer",
+      "finalizer",
+      "runlab target",
+      "engine",
+      "database write",
+      "registration",
+      "promotion",
+      "retry",
+      "rescue"
+    ]
+  },
+  "approvedContractObligations": [
+    {
+      "id": "obligation-c1-one-shot-fail-closed",
+      "surface": "C1",
+      "obligation": "C1 has exactly one allowed builder/materializer story; the observed builder failure before c1_input.json creation is terminal UNDETERMINED/INPUT_SCHEMA_MISMATCH, not KILL/PASS, and permits no retry, rematerialization, target, finalizer, receipt, claim, runlab, rescue, or future result attachment.",
+      "contractRefs": [
+        "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md:76-91",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_evidence.json:54-143",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_report.md:42-68"
+      ],
+      "verdict": "covered"
+    },
+    {
+      "id": "obligation-x1-sole-descriptive-pass",
+      "surface": "X1",
+      "obligation": "X1 has one receipt/claim/seal/runlab execution and only a descriptive, noncausal, nonpromotable PASS; it creates no causal claim, strategy candidate, registration, promotion, engine execution, DB write, retry, rescue, or authority outside the sealed run evidence.",
+      "contractRefs": [
+        "docs/research/condition_research/plans/2026-07-16_g005_x1_competing_risk_preregistration.md:5-12,79-84",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json:15-40,85-309",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_terminal_report.md:3-86"
+      ],
+      "verdict": "covered"
+    },
+    {
+      "id": "obligation-c2-static-nonidentification",
+      "surface": "C2",
+      "obligation": "C2 is terminal UNDETERMINED/nonidentified because exact pre-existing activation timestamps, outcome, and trace authority are absent; the static guard is declarations-only and no proxy, target invocation, materialization, receipt, claim, ledger row, later trace attachment, retry, rerun, or rescue is permitted.",
+      "contractRefs": [
+        "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md:5-28,58-65,101-101",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_nonidentification_evidence.json:5-172",
+        "scripts/g005_c2_nonidentification_guard.py:1-12"
+      ],
+      "verdict": "covered"
+    },
+    {
+      "id": "obligation-mixed-family-closure",
+      "surface": "family",
+      "obligation": "The family closes with mixed terminal statuses: C1 UNDETERMINED/INPUT_SCHEMA_MISMATCH, X1 descriptive PASS, C2 UNDETERMINED/nonidentified. The aggregate is neither all-PASS nor all-FAIL and has no candidate.",
+      "contractRefs": [
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json:111-288",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_execution_report.md:1-123"
+      ],
+      "verdict": "covered"
+    },
+    {
+      "id": "obligation-no-fake-ledger-or-candidate",
+      "surface": "ledger/candidate boundary",
+      "obligation": "No fake negative_or_kill flag, fake buy/sell hash, fake candidate, candidate ledger row, or X1 n_trials row may be appended to rescue descriptive PASS into a promotable record.",
+      "contractRefs": [
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json:287-295",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json:251-272",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl search for receipt/G005/X1 identifiers returned no matches"
+      ],
+      "verdict": "covered"
+    },
+    {
+      "id": "obligation-zero-prohibited-surfaces",
+      "surface": "side-effect boundary",
+      "obligation": "No engine request/execution, DB write, registration, promotion, retry, rescue, builder retry, finalizer rerun, runlab rerun, runtime mutation, or .gjc/protected-path authority is created by the terminal closure or this QA artifact.",
+      "contractRefs": [
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json:9-18,274-310",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_evidence.json:118-143",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json:277-285",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_nonidentification_evidence.json:144-170"
+      ],
+      "verdict": "covered"
+    }
+  ],
+  "terminalSnapshot": {
+    "c1": {
+      "hypothesisId": "G005-C1-TIME-SHIFT",
+      "terminalDecision": "UNDETERMINED",
+      "terminalStatus": "INPUT_SCHEMA_MISMATCH",
+      "builderAttempts": 1,
+      "builderExitCode": 1,
+      "tracebackRoot": "ValueError: t0 must be a nonempty string",
+      "captureKind": "parent_captured_managed_job_transcript",
+      "captureIsOriginalBuilderWrittenLog": false,
+      "executionTimestampAsserted": false,
+      "inputArtifactCreated": false,
+      "killEvaluated": false,
+      "passEvaluated": false,
+      "retryAllowed": false,
+      "rematerializationAllowed": false,
+      "downstreamExecutionObserved": false
+    },
+    "x1": {
+      "hypothesisId": "G005-X1-EXIT-COMPETING-RISK",
+      "terminalDecision": "PASS",
+      "claimType": "descriptive_not_causal",
+      "descriptive": true,
+      "noncausal": true,
+      "nonpromotable": true,
+      "soleReceiptClaimRunlabExecution": true,
+      "receiptId": "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2",
+      "receiptStatus": "PASS",
+      "claimConsumer": "g005-x1-sealed-runlab",
+      "runlabState": "exited",
+      "runlabExitCode": 0,
+      "residualRatio": 0.07790204613985911,
+      "annualSignsLabel": "+/+",
+      "strategyCandidateCreated": false,
+      "promotionProposed": false
+    },
+    "c2": {
+      "hypothesisId": "G005-C2-ACTIVATION-ORDER",
+      "terminalDecision": "UNDETERMINED",
+      "terminalStatus": "nonidentified",
+      "terminalReason": "dependency/schema nonidentification",
+      "h37Identified": false,
+      "h38Identified": false,
+      "killEvaluated": false,
+      "passEvaluated": false,
+      "targetInvoked": false,
+      "materialized": false,
+      "staticGuardDeclarationsOnly": true,
+      "staticGuardInvocationPresent": false
+    },
+    "family": {
+      "familyClosure": "mixed_terminal_statuses",
+      "allHypothesesPassed": false,
+      "allHypothesesFailed": false,
+      "strategyCandidate": false,
+      "engineRequest": false,
+      "engineExecution": false,
+      "dbWrite": false,
+      "registration": false,
+      "promotion": false,
+      "retry": false,
+      "rescue": false,
+      "fakeLedgerRow": false
+    }
+  },
+  "contractCoverage": [
+    {
+      "coverageId": "COV-01",
+      "topic": "C1 one-shot schema-mismatch terminal boundary",
+      "requirement": "One failed C1 builder attempt before input creation must be represented as UNDETERMINED/INPUT_SCHEMA_MISMATCH, with KILL/PASS not evaluated and no retry/rematerialization/target path.",
+      "evidence": [
+        "c1_builder_attempt_bg_6.txt lines 1-7 identify parent-captured transcript, command, cwd, exit_code=1, and unavailable/not asserted timestamp.",
+        "c1_builder_attempt_bg_6.txt lines 9-33 show traceback ending ValueError: t0 must be a nonempty string.",
+        "c1_terminal_evidence.json lines 54-143 records attempt_count=1, failed_before_output_artifact=true, c1_input present_before/after false, no downstream actions, one-shot limits, and zero side-effect counters.",
+        "find inspection found no c1_input.json at docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-02",
+      "topic": "C1 transcript provenance and timestamp honesty",
+      "requirement": "The transcript must not masquerade as an original builder-written log and must not fabricate an exact execution timestamp.",
+      "evidence": [
+        "c1_terminal_evidence.json lines 6-11 and 60-70 state source parent_captured_managed_job_transcript, capture_is_original_builder_written_log=false, execution_timestamp=unavailable_not_asserted, execution_timestamp_asserted=false.",
+        "c1_terminal_report.md lines 12 and 24-25 repeat the same provenance and timestamp limitation."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-03",
+      "topic": "X1 sole descriptive PASS custody",
+      "requirement": "X1 PASS must be bound to the single receipt/claim/seal/runlab evidence chain and remain descriptive, noncausal, and nonpromotable.",
+      "evidence": [
+        "x1_execution_evidence.json lines 15-40 records PASS, descriptive_not_causal, nonpromotable, count=1, receipt id, claim consumer, runlab exited, exit_code=0.",
+        "x1/run/log.txt line 1 records decision PASS and caveat forbidding causal/counterfactual/promotion/engine/DB conclusions.",
+        "receipt 618f...bbc2 records kind measure_gate_receipt, status PASS, repo_head 25975531ab966eb113d79bc130b9b4493001b1f6, seal manifest, and sha seal checks pass.",
+        "claim 618f...bbc2 records kind measure_gate_usage, consumer g005-x1-sealed-runlab, and receipt_sha256 d511fb13363e7e918765954c321cdb8ff2a090314ed23f280d20b9bc1c249509."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-04",
+      "topic": "X1 no fake ledger or candidate",
+      "requirement": "A descriptive PASS cannot be converted into a negative_or_kill ledger row, empty candidate_set row, fake buy/sell hash, fake candidate, or promotion proposal.",
+      "evidence": [
+        "x1_execution_evidence.json lines 287-295 states ledger append was not attempted by this executor, parent observed rejection message 'candidate_set may be empty only for a negative_or_kill measurement', ledger_row_appended=false, and fake candidate/negative_or_kill conversion is forbidden.",
+        "g005_terminal_summary.json lines 251-272 records v2 append validation rejected before mutation and confirmed_no_receipt_or_series_row_in_ledger=true.",
+        "search of n_trials_ledger.jsonl for the X1 receipt id and G005/X1 identifiers returned no matches."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-05",
+      "topic": "C2 nonidentification and proxy exclusion",
+      "requirement": "C2 closes as UNDETERMINED/nonidentified when exact activation timestamps/outcome/trace authority are absent, and flat bits/off/t0/D1/C1 proxies cannot substitute for the missing authority.",
+      "evidence": [
+        "c2 preregistration lines 18-28 identify required exact timestamps/outcome/trace authority, state the safe D1 sentinel lacks transition timestamp/order/outcome, and ban generated trace, replay, snapshot bit, off, D1 interaction, D1 pairwise, C1 tie logic, and final snapshot proxies.",
+        "c2_nonidentification_evidence.json lines 97-113 lists missing required inputs and banned proxies; lines 132-170 record no matched sets, no estimates, zero counters, and no prohibited actions observed.",
+        "g005_c2_nonidentification_guard.py lines 1-12 is declarations-only, EXECUTION_AUTHORIZED=False, and grants no entrypoint authority."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-06",
+      "topic": "Family mixed terminal closure",
+      "requirement": "The aggregate family report must preserve mixed terminal status and must not conflate it into all-PASS, all-FAIL, or a strategy-candidate result.",
+      "evidence": [
+        "g005_terminal_summary.json lines 111-249 records C1 UNDETERMINED/INPUT_SCHEMA_MISMATCH, X1 PASS descriptive/noncausal/nonpromotable, and C2 UNDETERMINED/nonidentified.",
+        "g005_terminal_summary.json lines 274-288 records mixed_terminal_statuses, all_hypotheses_passed=false, all_hypotheses_failed=false, strategy_candidate=false, engine/db/registration/promotion/retry/rescue=false.",
+        "g005_execution_report.md lines 119-123 states all-PASS/all-FAIL conclusions and candidate/engine/promotion/retry/rescue derivations do not follow from the evidence."
+      ],
+      "status": "covered"
+    },
+    {
+      "coverageId": "COV-07",
+      "topic": "Zero prohibited surfaces",
+      "requirement": "No terminal branch or this QA artifact may authorize engine, DB, registration, promotion, retry, rescue, finalizer rerun, runlab rerun, .gjc mutation, protected runtime mutation, or product code changes.",
+      "evidence": [
+        "g005_terminal_summary.json lines 9-18 and 302-310 record synthesis_only/durable_evidence_only and false for engine/request/registration/retry/rescue/tests/gates/targets/formatters/ledger/db/.gjc touches.",
+        "C1 downstream_actions_observed all false in c1_terminal_evidence.json lines 92-105 and counters zero in lines 126-142 except builder_attempt=1.",
+        "X1 side_effect_counters are zero in x1_execution_evidence.json lines 277-285.",
+        "C2 zero_counters and prohibited_actions_observed are zero/false in c2_nonidentification_evidence.json lines 144-170."
+      ],
+      "status": "covered"
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "surfaceId": "SURF-C1-PREREG",
+      "surface": "C1 preregistered algorithm boundary",
+      "artifactPath": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+      "kind": "sealed contract",
+      "observed": "SEALED contract fixes one C1 family, PASS/KILL/UNDETERMINED precedence, exact one future materialization and receipt/claim-bound target, and no retry/rescue/promotion.",
+      "evidenceRefs": ["lines 3-12", "lines 76-91"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C1-TERMINAL",
+      "surface": "C1 terminal evidence",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_evidence.json",
+      "kind": "terminal evidence json",
+      "observed": "terminal_decision UNDETERMINED, terminal_status INPUT_SCHEMA_MISMATCH, builder_attempt=1, output absent, KILL/PASS not evaluated, one-shot retry/rematerialization false, downstream counters zero.",
+      "evidenceRefs": ["lines 13-24", "lines 54-143"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C1-TRANSCRIPT",
+      "surface": "C1 builder transcript boundary",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt",
+      "kind": "parent-captured managed job transcript",
+      "observed": "capture_kind parent_captured_managed_job_transcript, not original builder-written log, exact timestamp unavailable/not asserted, exit_code=1, traceback root ValueError: t0 must be a nonempty string.",
+      "evidenceRefs": ["lines 1-7", "lines 9-35"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C1-ABSENCE",
+      "surface": "C1 materialized-input absence",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json",
+      "kind": "absence check",
+      "observed": "find inspection returned Path not found, matching terminal evidence present_before_attempt=false and present_after_attempt=false.",
+      "evidenceRefs": ["find path-not-found result", "c1_terminal_evidence.json lines 86-91"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-X1-PREREG",
+      "surface": "X1 preregistered descriptive boundary",
+      "artifactPath": "docs/research/condition_research/plans/2026-07-16_g005_x1_competing_risk_preregistration.md",
+      "kind": "sealed contract",
+      "observed": "SEALED contract states the question is descriptive, forbids causal/exit-adoption/promotion/live/engine authority, and permits exactly one x1_input materialization and one receipt/claim-bound target run with retry=false.",
+      "evidenceRefs": ["lines 3-12", "lines 79-84", "lines 122-122"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-X1-CUSTODY",
+      "surface": "X1 receipt/claim/seal custody",
+      "artifactPath": "receipts/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json and claims/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json",
+      "kind": "receipt and claim",
+      "observed": "Receipt kind measure_gate_receipt, status PASS, repo_head 25975531ab966eb113d79bc130b9b4493001b1f6; claim kind measure_gate_usage consumed by g005-x1-sealed-runlab with matching receipt id and receipt sha256.",
+      "evidenceRefs": ["receipt line 1", "claim line 1", "seal manifest line 1"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-X1-RUNLAB",
+      "surface": "X1 runlab status and canonical result",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/status.json and docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/log.txt",
+      "kind": "runlab status and canonical log",
+      "observed": "status.json records state exited and exit_code 0; canonical log records decision PASS, descriptive-not-causal caveat, residual_ratio 0.07790204613985911, annual signs +/+, and zero engine/DB/registration/promotion/retry/rescue counters.",
+      "evidenceRefs": ["status.json lines 1-12", "log.txt line 1"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-X1-EVIDENCE",
+      "surface": "X1 terminal evidence json",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json",
+      "kind": "terminal pass execution evidence",
+      "observed": "JSON binds seal/receipt/claim/input/log/status hashes, decision PASS, descriptive_not_causal, nonpromotable, side-effect counters zero, and ledger append rejection before mutation.",
+      "evidenceRefs": ["lines 15-72", "lines 85-309"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C2-PREREG",
+      "surface": "C2 preregistered nonidentification boundary",
+      "artifactPath": "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md",
+      "kind": "sealed contract",
+      "observed": "SEALED contract states current terminal UNDETERMINED/nonidentified due to absent exact pre-existing activation trace authority, and prohibits target invocation, materialization, receipt, claim, ledger row, proxy, trace attachment, retry, rerun, engine, DB, registration, and promotion.",
+      "evidenceRefs": ["lines 5-28", "lines 58-65", "lines 101-101"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C2-EVIDENCE",
+      "surface": "C2 terminal nonidentification evidence",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_nonidentification_evidence.json",
+      "kind": "terminal nonidentification evidence",
+      "observed": "terminal_decision UNDETERMINED, terminal_status nonidentified, H37/H38 identified false, missing exact timestamps/outcome/trace authority, proxy bans true, and zero/prohibited counters show no invocation or side effects.",
+      "evidenceRefs": ["lines 5-15", "lines 97-172"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-C2-GUARD",
+      "surface": "C2 static guard",
+      "artifactPath": "scripts/g005_c2_nonidentification_guard.py",
+      "kind": "static declarations-only sentinel",
+      "observed": "Module docstring grants no executable entrypoint and no target/materialization/receipt/claim/ledger/promotion authority; EXECUTION_AUTHORIZED=False.",
+      "evidenceRefs": ["lines 1-12"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-FAMILY-SUMMARY",
+      "surface": "G005 family terminal summary",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json",
+      "kind": "family terminal summary json",
+      "observed": "C1, X1, and C2 branch terminal statuses are mixed; overall summary has all_hypotheses_passed=false, all_hypotheses_failed=false, strategy_candidate=false, fake_ledger_row=false, and zero engine/DB/registration/promotion/retry/rescue flags.",
+      "evidenceRefs": ["lines 111-249", "lines 251-310"],
+      "verdict": "consistent"
+    },
+    {
+      "surfaceId": "SURF-LEDGER-ABSENCE",
+      "surface": "n_trials ledger absence",
+      "artifactPath": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
+      "kind": "ledger search inspection",
+      "observed": "Search for the X1 receipt id, G005-X1, g005-x1, alpha_restart_20260710-g005-x1, G005, and g005 returned no matches.",
+      "evidenceRefs": ["search result: No matches found"],
+      "verdict": "consistent"
+    }
+  ],
+  "adversarialCases": [
+    {
+      "caseId": "ADV-01-transcript-masquerade",
+      "threat": "The C1 parent-captured transcript is presented as an original builder-written log to overstate provenance.",
+      "expectedBoundary": "The artifact must label it as parent_captured_managed_job_transcript, capture_is_original_builder_written_log=false, and derived terminal evidence only.",
+      "evidence": [
+        "c1_builder_attempt_bg_6.txt lines 1-7",
+        "c1_terminal_evidence.json lines 6-11 and 60-70",
+        "c1_terminal_report.md lines 12 and 24-25"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-02-timestamp-fabrication",
+      "threat": "An exact C1 execution timestamp is fabricated for the failed builder attempt.",
+      "expectedBoundary": "Timestamp remains unavailable/not asserted; no terminal statement may claim a precise execution time.",
+      "evidence": [
+        "c1_builder_attempt_bg_6.txt line 7",
+        "c1_terminal_evidence.json lines 68-70",
+        "g005_terminal_summary.json lines 29-39 and 122-132"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-03-c1-retry-rematerialization",
+      "threat": "C1 is retried, fixed, rematerialized, or followed by target/finalizer/runlab execution after the one failed builder attempt.",
+      "expectedBoundary": "Builder_attempts remains 1, c1_input.json remains absent, one-shot limits forbid retry/rematerialization/target/rescue, and downstream actions are not observed.",
+      "evidence": [
+        "c1_terminal_evidence.json lines 54-105 and 118-143",
+        "c1_terminal_report.md lines 57-68",
+        "find result: c1_input.json path not found"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-04-schema-mismatch-misreported-as-kill",
+      "threat": "The C1 input schema mismatch is relabeled as a statistical KILL or negative outcome.",
+      "expectedBoundary": "C1 remains UNDETERMINED/INPUT_SCHEMA_MISMATCH, kill_evaluated=false, pass_evaluated=false, outcome/statistical evidence absent.",
+      "evidence": [
+        "c1_terminal_evidence.json lines 13-24 and 107-117",
+        "c1_terminal_report.md lines 3-12 and 59-68",
+        "g005_terminal_summary.json lines 134-169"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-05-x1-causal-promotable-overclaim",
+      "threat": "X1 descriptive PASS is overclaimed as causal, counterfactual, promotable, or a strategy-candidate result.",
+      "expectedBoundary": "X1 stays descriptive_not_causal, noncausal, nonpromotable, strategy_candidate_created=false, promotion_proposed=false, and caveat forbids engine/DB/registration/promotion authority.",
+      "evidence": [
+        "x1 preregistration lines 5-12 and 79-84",
+        "x1_execution_evidence.json lines 15-24 and 297-308",
+        "x1/run/log.txt line 1",
+        "x1_terminal_report.md lines 3-8 and 76-86"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-06-fake-negative-or-kill-candidate-ledger",
+      "threat": "A fake negative_or_kill=true flag, fake buy/sell hashes, fake empty candidate_set ledger row, or fake candidate is appended for X1.",
+      "expectedBoundary": "Ledger append rejection remains before mutation; descriptive PASS cannot be encoded as negative_or_kill, fake candidate, or promotable ledger evidence; ledger search stays absent.",
+      "evidence": [
+        "x1_execution_evidence.json lines 287-295",
+        "g005_terminal_summary.json lines 251-272",
+        "g005_execution_report.md lines 101-108",
+        "n_trials ledger search result: No matches found"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-07-c2-proxy-substitution",
+      "threat": "C2 uses flat final bits, off, t0, D1 interaction/pairwise, C1 tie logic, generated traces, replayed traces, or later attachments as substitutes for exact activation-order authority.",
+      "expectedBoundary": "C2 remains terminal nonidentified; proxy substitutions are banned; no invocation/materialization/outcome/receipt/claim/n_trials/engine/DB/registration/promotion is observed.",
+      "evidence": [
+        "c2 preregistration lines 18-28 and 58-65",
+        "c2_nonidentification_evidence.json lines 97-113 and 144-170",
+        "c2_terminal_report.md lines 26-39 and 67-70",
+        "g005_c2_nonidentification_guard.py lines 1-12"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-08-aggregate-all-pass-all-fail-conflation",
+      "threat": "The mixed C1/X1/C2 closure is collapsed into aggregate all-PASS, all-FAIL, or a strategy-candidate family result.",
+      "expectedBoundary": "Family summary records mixed_terminal_statuses, all_hypotheses_passed=false, all_hypotheses_failed=false, strategy_candidate=false, and no engine/registration/promotion/retry/rescue.",
+      "evidence": [
+        "g005_terminal_summary.json lines 274-288",
+        "g005_execution_report.md lines 119-123"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    },
+    {
+      "caseId": "ADV-09-hash-identity-drift",
+      "threat": "Referenced terminal artifacts, receipt/claim/seal, source identities, or bound HEAD drift from the values used for the terminal closure.",
+      "expectedBoundary": "Artifact references carry explicit path/hash/size or receipt ids and the current terminal artifacts agree on bound HEAD 25975531ab966eb113d79bc130b9b4493001b1f6; parent verification reports JSON/hash/absence/ledger and X1 receipt/claim validation passed.",
+      "evidence": [
+        "g005_terminal_summary.json lines 19-109 and 111-249",
+        "x1_execution_evidence.json lines 41-72",
+        "receipt and claim JSONs read from receipts/ and claims/",
+        "parentVerification entries for JSON/hash/absence/ledger check and X1 receipt/claim validation"
+      ],
+      "result": "rejected_by_evidence",
+      "status": "passed"
+    }
+  ],
+  "artifactRefs": [
+    {
+      "id": "c1-preregistration",
+      "path": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+      "sha256": "af4b8258cebc3442c7cb3749971af7bbf56f0d27fe3f48f8440695eaee1c79d8",
+      "sizeBytes": 11423
+    },
+    {
+      "id": "c1-terminal-evidence",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_evidence.json",
+      "schema": "g005-c1-terminal-evidence-v1"
+    },
+    {
+      "id": "c1-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_report.md"
+    },
+    {
+      "id": "c1-builder-transcript",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt",
+      "sha256": "8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b",
+      "sizeBytes": 1740,
+      "captureKind": "parent_captured_managed_job_transcript"
+    },
+    {
+      "id": "x1-preregistration",
+      "path": "docs/research/condition_research/plans/2026-07-16_g005_x1_competing_risk_preregistration.md",
+      "sha256": "5288392dff3969549a5dc33d7aa6c159a043aab3e7f35c613592b164d20dfe3c"
+    },
+    {
+      "id": "x1-execution-evidence",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json",
+      "schema": "g005-x1-execution-evidence-v1"
+    },
+    {
+      "id": "x1-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_terminal_report.md"
+    },
+    {
+      "id": "x1-seal-manifest",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/seals/5288392dff3969549a5dc33d7aa6c159a043aab3e7f35c613592b164d20dfe3c.seal.json",
+      "sha256": "7662e99882f7938ce899ea29184dea76cfc09ec587b3f8538fc9d72237afb2de",
+      "sizeBytes": 1512
+    },
+    {
+      "id": "x1-receipt",
+      "path": "receipts/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json",
+      "receiptId": "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2",
+      "sha256": "d511fb13363e7e918765954c321cdb8ff2a090314ed23f280d20b9bc1c249509",
+      "status": "PASS"
+    },
+    {
+      "id": "x1-claim",
+      "path": "claims/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json",
+      "sha256": "42a0864453d4b5357c4cc6e0a146ec11ede8e9858143190b263825466338ca5f",
+      "consumer": "g005-x1-sealed-runlab"
+    },
+    {
+      "id": "x1-input",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json",
+      "sha256": "d60a0ba7d02437d7fce625280f2b890d9667ea3785956e236084194a2aed0790",
+      "sizeBytes": 473456
+    },
+    {
+      "id": "x1-run-log",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/log.txt",
+      "sha256": "de7b2fe04be4fd0ae406f7bcb79e3a3057fc2cf9f6c48713d2af5697fb2cae6e",
+      "sizeBytes": 3580,
+      "canonicalResult": true
+    },
+    {
+      "id": "x1-run-status",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/status.json",
+      "sha256": "20060f061fbf9503435caaf12e6ac6c0e35d0a752d1c422058ec669842c48b2e",
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "id": "c2-preregistration",
+      "path": "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md",
+      "sha256": "084928f444d1f7b729fea648c5ba46f2d7f1696d2450c469b895c3e65991fa60",
+      "sizeBytes": 12220
+    },
+    {
+      "id": "c2-nonidentification-evidence",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_nonidentification_evidence.json",
+      "schema": "g005-c2-nonidentification-v1"
+    },
+    {
+      "id": "c2-terminal-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_terminal_report.md"
+    },
+    {
+      "id": "c2-static-guard",
+      "path": "scripts/g005_c2_nonidentification_guard.py",
+      "sha256": "a0273c212922fc93317fb5cdb5b70074ac1c526b8800913a265e71f95633c653",
+      "sizeBytes": 573
+    },
+    {
+      "id": "family-summary",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_terminal_summary.json",
+      "schema": "g005-family-terminal-summary-v1"
+    },
+    {
+      "id": "family-execution-report",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/g005_execution_report.md"
+    },
+    {
+      "id": "n-trials-ledger",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
+      "inspection": "search for X1 receipt id and G005/X1 identifiers returned no matches"
+    }
+  ],
+  "parentVerification": {
+    "source": "parent assignment context and parent-supplied artifact reference",
+    "executorRanParentCommands": false,
+    "doNotClaimExecutorRanThese": true,
+    "evidence": [
+      {
+        "check": "parent test suite",
+        "reportedResult": "449 passed in 418.64s",
+        "artifactRef": "artifact://1579",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "JSON/hash/absence/ledger check",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "X1 receipt/claim validation",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "git diff check",
+        "reportedResult": "passed",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "cleaner 350",
+        "reportedResult": "zero blockers",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      },
+      {
+        "check": "cleaner 351",
+        "reportedResult": "zero blockers",
+        "artifactRef": "parent context",
+        "executorClaim": "not run by this executor"
+      }
+    ]
+  },
+  "contradictionChecks": [
+    {
+      "id": "CHK-C1-STATUS",
+      "assertion": "C1 current artifacts say UNDETERMINED/INPUT_SCHEMA_MISMATCH after exactly one failed builder attempt before c1_input.json.",
+      "observed": "matched",
+      "wouldFailIf": "C1 reported PASS/KILL, more than one builder attempt, c1_input.json present, timestamp asserted, original builder log asserted, or downstream target/finalizer/runlab observed."
+    },
+    {
+      "id": "CHK-X1-STATUS",
+      "assertion": "X1 current artifacts say descriptive noncausal nonpromotable PASS from one receipt/claim/runlab execution with zero prohibited side effects.",
+      "observed": "matched",
+      "wouldFailIf": "X1 reported causal/promotable/candidate/promotion/engine/DB/retry/rescue authority, missing custody, nonzero prohibited counters, or a mutated ledger row."
+    },
+    {
+      "id": "CHK-C2-STATUS",
+      "assertion": "C2 current artifacts say UNDETERMINED/nonidentified with missing exact timestamp/outcome/trace authority, static declarations-only guard, and no invocation/materialization.",
+      "observed": "matched",
+      "wouldFailIf": "C2 reported identified PASS/KILL, proxy substitution, target invocation, materialization, trace attachment, outcome claim, receipt/claim, or ledger row."
+    },
+    {
+      "id": "CHK-FAMILY-STATUS",
+      "assertion": "Family closure is mixed terminal statuses with no aggregate PASS/FAIL, no strategy candidate, and no prohibited side effects.",
+      "observed": "matched",
+      "wouldFailIf": "Family summary reported all_hypotheses_passed=true, all_hypotheses_failed=true, candidate=true, fake ledger row, or engine/DB/registration/promotion/retry/rescue authorization."
+    },
+    {
+      "id": "CHK-PARENT-VERIFICATION",
+      "assertion": "Parent verification evidence is recorded as parent-reported only, including 449 tests in artifact://1579 and the named JSON/hash/absence/ledger, X1 receipt/claim, diff, and cleaner checks.",
+      "observed": "matched",
+      "wouldFailIf": "This artifact claimed the executor ran parent commands or omitted the parent verification evidence requested by acceptance."
+    }
+  ],
+  "blockerListReviewed": true,
+  "blockers": []
+}

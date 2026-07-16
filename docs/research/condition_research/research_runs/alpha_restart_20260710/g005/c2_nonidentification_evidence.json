@@ -14,15 +14,24 @@
     "outcome_claim_made": false
   },
   "repository": {
-    "head": "a29ec0e7592976931f5f994828c3677fda552a3f",
-    "short_head": "a29ec0e7"
+    "head": "25975531ab966eb113d79bc130b9b4493001b1f6",
+    "short_head": "25975531"
   },
   "authoritative_sources": {
     "prereg": {
       "path": "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md",
-      "sha256": "6963234fa695a987aded9c400905db986442f42a90332fede5f9e9fc04b5fd43",
-      "size_bytes": 13659,
+      "sha256": "084928f444d1f7b729fea648c5ba46f2d7f1696d2450c469b895c3e65991fa60",
+      "size_bytes": 12220,
       "authority": "committed_sealed_preregistration"
+    },
+    "static_dependency_guard": {
+      "path": "scripts/g005_c2_nonidentification_guard.py",
+      "sha256": "a0273c212922fc93317fb5cdb5b70074ac1c526b8800913a265e71f95633c653",
+      "size_bytes": 573,
+      "authority": "static_nonexecution_dependency_sentinel",
+      "declarations_only": true,
+      "invocation_present": false,
+      "notes": "Contains declarations only and no invocation."
     },
     "agenda": {
       "path": "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",

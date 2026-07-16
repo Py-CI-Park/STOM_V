@@ -1,0 +1,144 @@
+{
+  "schema": "g005-c1-terminal-evidence-v1",
+  "schema_version": 1,
+  "document_type": "terminal_materializer_failure_evidence",
+  "document_created_date": "2026-07-16",
+  "evidence_scope": {
+    "source": "parent_captured_managed_job_transcript",
+    "source_note": "The transcript is an after-the-fact parent capture of managed job output, not an original builder-written log; the exact execution timestamp is unavailable and not asserted.",
+    "executor_did_not_rerun_builder": true,
+    "executor_did_not_run_target_tests_gates_formatters": true,
+    "purpose": "Preserve honest terminal C1 evidence after the single permitted builder/materializer attempt failed before c1_input.json artifact creation."
+  },
+  "experiment": {
+    "experiment_id": "alpha_restart_20260710-g005-c1",
+    "hypothesis_id": "G005-C1-TIME-SHIFT",
+    "terminal_decision": "UNDETERMINED",
+    "terminal_status": "INPUT_SCHEMA_MISMATCH",
+    "statistical_kill": false,
+    "kill_evaluated": false,
+    "pass_evaluated": false,
+    "outcome_claim_made": false,
+    "builder_failure_is_negative_statistical_evidence": false,
+    "integrity_state": "UNDETERMINED"
+  },
+  "repository": {
+    "head_at_attempt": "25975531ab966eb113d79bc130b9b4493001b1f6"
+  },
+  "authoritative_preregistration": {
+    "path": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+    "sha256": "af4b8258cebc3442c7cb3749971af7bbf56f0d27fe3f48f8440695eaee1c79d8",
+    "size_bytes": 11423,
+    "status": "SEALED",
+    "fingerprint_status_at_attempt": "UNCHANGED"
+  },
+  "preregistered_source_fingerprints": {
+    "status_at_attempt": "UNCHANGED",
+    "sources": [
+      {
+        "source": "L3 onset bank",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-alpha/docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/onset_l3_bank.parquet",
+        "rows": 863446,
+        "sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
+        "size_bytes": 11741034
+      },
+      {
+        "source": "local D1 bits",
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+        "rows": 863446,
+        "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+        "size_bytes": 6783855
+      }
+    ]
+  },
+  "observed_evidence": {
+    "builder_attempt": {
+      "attempt_count": 1,
+      "command": "python scripts/build_g005_c1_input.py",
+      "exit_status": "nonzero",
+      "exit_code": 1,
+      "transcript": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt",
+        "sha256": "8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b",
+        "size_bytes": 1740,
+        "capture_kind": "parent_captured_managed_job_transcript",
+        "source_job": "bg_6",
+        "exit_code": 1,
+        "capture_is_original_builder_written_log": false,
+        "execution_timestamp": "unavailable_not_asserted",
+        "execution_timestamp_asserted": false,
+        "provenance_note": "This transcript is an after-the-fact parent capture of the managed job output, not an original builder-written log; the exact execution timestamp is unavailable and not asserted."
+      },
+      "failed_before_output_artifact": true,
+      "traceback_root": {
+        "exception_type": "ValueError",
+        "message": "t0 must be a nonempty string",
+        "root_function": "_identity_string",
+        "called_from": "_key_columns(l3)"
+      }
+    },
+    "current_l3_schema": {
+      "t0": "int64",
+      "code": "large_string",
+      "day": "int32",
+      "off": "int16"
+    },
+    "output_artifact": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_input.json",
+      "present_before_attempt": false,
+      "present_after_attempt": false,
+      "created": false
+    },
+    "downstream_actions_observed_false_value_meaning": "false means the downstream action was not observed.",
+    "downstream_actions_observed": {
+      "target": false,
+      "finalizer": false,
+      "receipt": false,
+      "claim": false,
+      "runlab": false,
+      "engine": false,
+      "db_write": false,
+      "registration": false,
+      "promotion": false,
+      "retry": false,
+      "rescue": false
+    }
+  },
+  "inference": {
+    "failure_classification": "builder_input_schema_mismatch",
+    "reason": "The builder reached L3 key-column identity construction where _key_columns(l3) called _identity_string, but t0 was int64 instead of a nonempty string identity value.",
+    "terminal_decision": "UNDETERMINED",
+    "terminal_status": "INPUT_SCHEMA_MISMATCH",
+    "integrity_interpretation": "A builder/materializer failure before c1_input.json creation leaves C1 integrity undetermined; it is not a negative statistical result.",
+    "kill_evaluated": false,
+    "pass_evaluated": false,
+    "outcome_evaluated": false,
+    "target_evaluated": false
+  },
+  "one_shot_story_limits": {
+    "retry_allowed": false,
+    "fix_allowed_in_this_story": false,
+    "rematerialization_allowed": false,
+    "target_run_allowed_after_this_failure": false,
+    "rescue_allowed": false,
+    "future_result_attachment_allowed_in_this_story": false
+  },
+  "side_effect_counters": {
+    "builder_attempt": 1,
+    "materialization": 0,
+    "c1_input_artifact": 0,
+    "target_invocation": 0,
+    "finalizer": 0,
+    "receipt": 0,
+    "claim": 0,
+    "runlab_receipt": 0,
+    "engine_run": 0,
+    "db_write": 0,
+    "registration": 0,
+    "promotion": 0,
+    "retry": 0,
+    "rescue": 0,
+    "ledger_append": 0
+  },
+  "terminal_statement": "The single permitted G005-C1 builder/materializer attempt failed nonzero before creating c1_input.json because the current L3 key schema presented t0 as int64 while _identity_string required a nonempty string. The C1 terminal decision is UNDETERMINED with status INPUT_SCHEMA_MISMATCH. KILL/PASS were not evaluated. The bound transcript is docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt with sha256 8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b and size 1740; it is a parent-captured managed-job transcript from bg_6, not an original builder-written log, and the exact execution timestamp is unavailable/not asserted. No target/finalizer/receipt/claim/runlab/engine/DB/registration/promotion was observed, all downstream_actions_observed values remain false, and no retry, fix, rescue, or rematerialization is allowed in this story."
+}
