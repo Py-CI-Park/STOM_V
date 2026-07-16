@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>STOM 와이드 시드 조건식 검토 — stage-09 final (2026-07-16)</title>
+<style>
+  body { background:#0f172a; color:#e2e8f0; font-family:'Malgun Gothic',sans-serif; margin:0; padding:24px; line-height:1.55; }
+  main { max-width:980px; margin:0 auto; }
+  h1 { font-size:22px; color:#7dd3fc; border-bottom:2px solid #1e293b; padding-bottom:10px; }
+  h2 { font-size:18px; color:#a5f3fc; margin-top:36px; border-left:4px solid #0ea5e9; padding-left:10px; }
+  h3 { font-size:15px; color:#fbbf24; margin-top:24px; }
+  pre { background:#020617; border:1px solid #1e293b; border-radius:8px; padding:14px; overflow-x:auto; font-size:13px; line-height:1.5; }
+  code { font-family:Consolas,'D2Coding',monospace; color:#e2e8f0; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin:12px 0; }
+  th, td { border:1px solid #334155; padding:7px 10px; text-align:left; }
+  th { background:#1e293b; color:#94a3b8; }
+  .warn { background:#3f1d1d; border:1px solid #7f1d1d; border-radius:8px; padding:12px 14px; font-size:13px; }
+  .meta { color:#64748b; font-size:12px; }
+  .k { color:#f472b6; } .n { color:#fbbf24; } .s { color:#86efac; }
+</style>
+</head>
+<body>
+<main>
+<h1>STOM 와이드 시드 조건식 — 검토 문서 (stage-09 final)</h1>
+<p class="meta">
+기준 커밋 d5dece4f · 브랜치 research/condition-history-tree-seeds-20260715 · 워크트리 C:/System_Trading/STOM/STOM_V.wt-condition-tree<br>
+합의: Architect CLEAR/APPROVE · Critic OKAY · pending approval · 정본 stage-09-final.md (SHA a41097790e2e469c41b94ce515e7d026be03ddca2377ef732a06a824aae5c8cd)
+</p>
+
+<div class="warn">
+아래 4개 전략(레인별 통합 매수 1 + 공용 매도 1)은 <b>검토용 제안</b>입니다. 아직 파일·전략 DB 저장, 컴파일, 백테스트가 실행되지 않았습니다.
+매도의 손절/익절/보유시간 값은 미검증 비교용 프로필로, Stage-1 전 동결 검토 대상입니다.
+</div>
+
+<h2>구조 요약</h2>
+<table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td>형태</td><td>레인당 <b>하나의 통합 조건식</b> — 최상위 elif로 시간대 3분기, 각 시간 분기 안에 시가총액 4분기, 각 leaf(12개)에 전체 조건 반복(개별 튜닝 가능)</td></tr>
+<tr><td>Tick 시간창</td><td>09:00~09:05 / 09:05~09:10 / 09:10~09:20 (서로소)</td></tr>
+<tr><td>Min 시간창</td><td>09:00~09:30 / 09:30~10:00 / 10:00~14:00 (서로소)</td></tr>
+<tr><td>시가총액(억원)</td><td>&lt;3000 / 3000~6000 / 6000~10000 / ≥10000</td></tr>
+<tr><td>공통 가드</td><td>데이터길이≥20, 등락율 -15~29%, 시가갭 ±15%(전일종가 분모 가드), 당일거래대금≥100, 레인 거래대금&gt;0, 체결강도≥평균(20), 거래대금≥평균(20)</td></tr>
+<tr><td>매도</td><td>Tick: 손절 -3% / 익절 +5% / 300초 / 09:30 종료 · Min: 손절 -4% / 익절 +6% / 60분 / 14:59 종료</td></tr>
+<tr><td>Stage-1 부하</td><td>기본 2회 백테스트(레인당 1회) — 12셀 통계는 per-trade CSV의 매수시간×시가총액 분해로 산출. 셀별 MDD/자본곡선이 필요하면 24개 분리판(stage-08 appendix) 별도 실행</td></tr>
+</table>
+
+<h2>1. Tick 통합 매수 (시간 3창 × 시총 4군 = 12 leaf)</h2>
+<pre><code>매수 = False
+
+전일종가 = 현재가 / (1 + 등락율 / 100) if (1 + 등락율 / 100) != 0 else 0
+시가갭등락율 = ((시가 - 전일종가) / 전일종가) * 100 if 전일종가 > 0 else 999
+
+if 데이터길이 < 20:
+    매수 = False
+elif 90000 <= 시분초 < 90500:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+elif 90500 <= 시분초 < 91000:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+elif 91000 <= 시분초 < 92000:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 초당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 초당거래대금 >= 초당거래대금평균(20)):
+            매수 = True
+
+if 매수:
+    self.Buy()</code></pre>
+
+<h2>2. Tick 공용 매도 (손절 -3% / 익절 +5% / 300초 / 09:30 강제종료)</h2>
+<pre><code>매도 = False
+
+if 시분초 >= 93000:
+    매도 = True
+elif 수익률 <= -3.0:
+    매도 = True
+elif 수익률 >= 5.0:
+    매도 = True
+elif 보유시간 >= 300:
+    매도 = True
+
+if 매도:
+    self.Sell()</code></pre>
+<p class="meta">보유시간은 tick 레인에서 초 단위.</p>
+
+<h2>3. Min 통합 매수 (시간 3창 × 시총 4군 = 12 leaf)</h2>
+<pre><code>매수 = False
+
+전일종가 = 현재가 / (1 + 등락율 / 100) if (1 + 등락율 / 100) != 0 else 0
+시가갭등락율 = ((시가 - 전일종가) / 전일종가) * 100 if 전일종가 > 0 else 999
+
+if 데이터길이 < 20:
+    매수 = False
+elif 90000 <= 시분초 < 93000:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+elif 93000 <= 시분초 < 100000:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+elif 100000 <= 시분초 < 140000:
+    if 0 < 시가총액 < 3000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 3000 <= 시가총액 < 6000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 6000 <= 시가총액 < 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+    elif 시가총액 >= 10000:
+        if (-15 <= 등락율 < 29 and -15 <= 시가갭등락율 <= 15
+                and 당일거래대금 >= 100 and 분당거래대금 > 0
+                and 체결강도 >= 체결강도평균(20)
+                and 분당거래대금 >= 분당거래대금평균(20)):
+            매수 = True
+
+if 매수:
+    self.Buy()</code></pre>
+
+<h2>4. Min 공용 매도 (손절 -4% / 익절 +6% / 60분 / 14:59 강제종료)</h2>
+<pre><code>매도 = False
+
+if 시분초 >= 145900:
+    매도 = True
+elif 수익률 <= -4.0:
+    매도 = True
+elif 수익률 >= 6.0:
+    매도 = True
+elif 보유시간 >= 60:
+    매도 = True
+
+if 매도:
+    self.Sell()</code></pre>
+<p class="meta">보유시간은 min 레인에서 분 단위.</p>
+
+<h2>다음 단계 (승인 후 실행 순서)</h2>
+<table>
+<tr><th>순서</th><th>작업</th><th>목적</th></tr>
+<tr><td>1</td><td>축·exit 프로필 동결</td><td>경계/청산값 receipt 고정 — 결과 해석 기준 불변화</td></tr>
+<tr><td>2</td><td>condition_history_v1 read model + 대시보드 트리/테이블</td><td>모든 연구→단계→조건식→결과를 원문·부모·맥락과 함께 검토</td></tr>
+<tr><td>3</td><td>통합 시드 2쌍 등록·구문 검증</td><td>격리 DB만 사용, 운영 DB 불변</td></tr>
+<tr><td>4</td><td>Stage-0 인벤토리</td><td>각 DB 실제 기간·hash·종목 수 확정(백테스트 없음)</td></tr>
+<tr><td>5</td><td>Stage-1 백테스트(별도 승인)</td><td>레인당 1회 전체 기간 실행 → 12셀 손실·거래폭 지도(탐색용, OOS/승격 근거 아님)</td></tr>
+<tr><td>6</td><td>후속 시드 가공</td><td>유망 셀만 갭/등락률 세분화, 부모 브랜치 cherry-pick 반영</td></tr>
+</table>
+
+<h2>울트라골 명령 (검토 후 채팅에 붙여넣기)</h2>
+<pre><code>/skill:ultragoal 승인된 ralplan 최종안(stage-09-final.md, sha a41097790e2e469c41b94ce515e7d026be03ddca2377ef732a06a824aae5c8cd)을 워크트리 C:/System_Trading/STOM/STOM_V.wt-condition-tree, 브랜치 research/condition-history-tree-seeds-20260715 에서 실행. 운영 _database 쓰기·live 경로 금지, 커밋은 한글 제목/본문.
+
+@goal: 축·계약 동결과 History read model
+SeedBoundaryIntentReceiptV1과 exit 프로필(Tick -3/+5/300초, Min -4/+6/60분) 동결, condition_history_v1 스키마와 Campaign/LoopRun adapter, 단일 발행기 cli/research_history_projection.py 구현. fixture 테스트 포함, runtime DB 불변.
+
+@goal: 대시보드 History 트리·테이블 UI
+research API cursor/보안 계약과 접기식 트리 + 정렬/필터 테이블, 조건식 원문·부모·프롬프트/가설 링크와 손실거래수·총손실·거래종목수 지표 표시. 기존 History 소유권 내 구현, UI 검증 포함.
+
+@goal: 통합 시드 등록과 계획기
+Tick/Min 통합 중첩 조건식 2쌍 구문 검증 후 격리 DB 등록, 12-leaf 셀 metadata와 TrialSpec 계획기·ledger(기본 2 unique/4 attempts), Stage-0 인벤토리 receipt 생성. 백테스트 실행 없음.
+
+@goal: Stage-1 탐색 백테스트와 셀 분해
+sealed 2-trial 스케줄로 각 DB 전체 기간 official 백테스트 실행, per-trade CSV를 매수시간×시가총액 12셀로 분해해 셀별 거래수·손익·손실거래·거래종목수를 History에 탐색용으로 수록, docs/update_log에 한글 기록 작성. 승격/OOS 주장 금지.</code></pre>
+
+<p class="meta">정본: C:/System_Trading/STOM/STOM_V.wt-condition-tree/.gjc/_session-019f660b-1c18-7000-98db-61af7bc0d0aa/plans/ralplan/019f660b-1c18-7000-98db-61af7bc0d0aa/stage-09-final.md</p>
+</main>
+</body>
+</html>
