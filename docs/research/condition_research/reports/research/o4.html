@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O-4 생성 문법 — 연구 상세</title>
+<style>
+:root{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+@media (prefers-color-scheme:dark){:root{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;
+  --line:#2E332B;--accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}}
+:root[data-theme="light"]{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+:root[data-theme="dark"]{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;--line:#2E332B;
+  --accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15px;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px}
+h1,h2,h3{font-family:"Batang","Nanum Myeongjo","Apple Myungjo",serif;text-wrap:balance;line-height:1.35}
+h1{font-size:30px;margin:10px 0 6px}
+h2{font-size:22px;margin:0 0 4px;padding-top:8px}
+h3{font-size:17px;margin:22px 0 8px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
+.lede{font-size:15.5px;max-width:70ch}
+.masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.meta-grid b{color:var(--ink);font-weight:600}
+.themebtn{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.kpi .value{font-family:"Batang",serif;font-size:26px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.pos{color:var(--up)}.neg{color:var(--down)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin:14px 0}
+th{background:var(--accent-soft);color:var(--ink);text-align:left;font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+td.best{font-weight:700}
+.barrow{display:grid;grid-template-columns:172px 1fr 118px;gap:10px;align-items:center;margin:7px 0}
+.barrow .blabel{font-size:13px;text-align:right;color:var(--muted)}
+.barrow .bval{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.track{background:var(--code-bg);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.fill{height:100%;border-radius:4px 3px 3px 4px}
+.fill.acc{background:var(--accent)}.fill.up{background:var(--up)}.fill.dn{background:var(--down)}
+.fill.ghost{background:var(--muted);opacity:.45}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:14px 0}
+.chart .ctitle{font-size:13px;font-weight:700;margin-bottom:10px}
+.chart .cnote{font-size:12px;color:var(--muted);margin-top:10px}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px}
+.callout.warn{border-left-color:var(--mark-line);background:var(--mark)}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 11px;margin-right:6px;vertical-align:1px}
+.badge.kill{background:var(--down-soft);color:var(--down)}
+.badge.posv{background:var(--up-soft);color:var(--up)}
+.badge.hold{background:var(--code-bg);color:var(--muted)}
+.badge.live{background:var(--accent-soft);color:var(--accent)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:16px;overflow-x:auto;font-family:"Consolas","D2Coding",monospace;font-size:12.5px;line-height:1.62;margin:10px 0}
+pre .c{color:var(--code-dim)}pre .k{color:var(--accent);font-weight:700}
+pre mark{background:var(--mark);color:inherit;border-radius:3px;padding:1px 2px;outline:1px solid var(--mark-line)}
+.codehead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-size:12.5px;color:var(--muted);margin-top:14px}
+.codehead b{color:var(--ink);font-size:14px}
+.sha{font-family:"Consolas",monospace;background:var(--code-bg);padding:1px 7px;border-radius:4px;font-size:11.5px}
+.timeline{list-style:none;margin:14px 0;padding:0}
+.timeline li{display:grid;grid-template-columns:96px 92px 1fr;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline}
+.timeline li:last-child{border-bottom:none}
+.timeline .tdate{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.funnel{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.fstep{border-radius:5px;padding:9px 14px;color:#fff;font-size:13.5px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.score{display:grid;gap:8px;margin:14px 0}
+.srow{display:grid;grid-template-columns:minmax(150px,220px) 1fr 84px;gap:10px;align-items:center;font-size:13px}
+.srow .sname{text-align:right;color:var(--muted)}
+.srow .spts{font-weight:700;font-variant-numeric:tabular-nums}
+.studycard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0}
+.studycard .shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.studycard h3{margin:0;font-size:16px}
+.studycard .easy{font-size:13.5px;margin:8px 0 4px}
+.studycard .method{font-size:12.5px;color:var(--muted);margin:6px 0 10px}
+.studycard .ev{font-size:11.5px;color:var(--muted);margin-top:10px;word-break:break-all}
+.evfoot{font-size:11.5px;color:var(--muted);margin-top:16px;border-top:1px dashed var(--line);padding-top:8px;word-break:break-all}
+.repgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin:16px 0}
+.repcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.repcard .rtitle{font-family:"Batang",serif;font-size:15px;font-weight:700}
+.repcard .rone{font-size:12.5px;color:var(--muted);flex:1}
+.repcard .rmeta{font-size:11.5px;color:var(--muted)}
+.repcard a.open{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+a{color:var(--accent)}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+footer code{font-family:"Consolas",monospace;font-size:11.5px}
+.tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.tabbtn.active{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px}
+.tabpanel>section:first-of-type{border-top:none}
+body.js .tabpanel{display:none}
+body.js .tabpanel.active{display:block}
+@media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div>
+    <div class="eyebrow"><a href="../research_lab_report.html">← 허브로</a> · 연구 상세 보고서</div>
+    <h1>O-4 생성 문법 <span class="badge kill">기각</span></h1>
+    <div class="meta-grid">
+      <span>연구 ID <b>o4</b></span>
+      <span>봉인 <b class="num">2026-07-13</b> · <span class="sha">fd7bae48</span></span>
+      <span>판정 <b>기각</b></span>
+    </div>
+  </div>
+  <button class="themebtn" id="themebtn" type="button">🌙 다크 / ☀️ 라이트</button>
+</header>
+<nav class="tabs" role="tablist"><button class="tabbtn active" data-tab="overview">개요</button><button class="tabbtn" data-tab="method">방법·봉인</button><button class="tabbtn" data-tab="results">결과</button><button class="tabbtn" data-tab="fulltable">수치 전표</button><button class="tabbtn" data-tab="verdict">판정·한정</button><button class="tabbtn" data-tab="evidence">증거·재현</button></nav>
+<div id="tab-overview" class="tabpanel active"><section>
+  <div class="eyebrow">① 개요</div>
+  <h2>질문과 판정 <span class="badge kill">기각</span></h2>
+  <p class="lede">합격한 부품(압력 절+결합 규칙)으로 후보 158개를 조립했지만 전 조합이 전원 음(−) — 가산 조합엔 금맥이 없었다.</p>
+  <div class="kpis"><div class="kpi"><div class="label">자격 후보</div><div class="value num" style="font-size:20px">158 / 158</div></div><div class="kpi"><div class="label">생존(양EV∧구별)</div><div class="value num" style="font-size:20px">0개</div></div><div class="kpi"><div class="label">양EV 증거 0</div><div class="value num" style="font-size:20px">158개 전원</div></div></div>
+  <p class="method">해석: 검증 부품의 전 가산 조합이 전원 음(−) — 가산 조합 문법 한계 확정</p>
+</section></div><div id="tab-method" class="tabpanel"><section>
+  <div class="eyebrow">② 방법·봉인</div>
+  <h2>측정 방법과 사전등록 봉인</h2>
+  <p class="lede"><b>방법.</b> 압력 4족 ± 조건부 가드 ± 함정 회피로 조립한 매수 후보 158개(닫힌 문법)의 발화 집합 mean L3 를 효과 하한·FDR·겹침으로 검정.</p>
+  <div class="tablebox"><table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>봉인 커밋</td><td><span class="sha">fd7bae48</span></td></tr>
+    <tr><td>봉인 문서</td><td><code>docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md</code></td></tr>
+    <tr><td>봉인 규약</td><td>사전등록 §13 미결 전건을 §14 결정으로 확정한 뒤에만 측정(번복 0회)</td></tr>
+    <tr><td>측정창</td><td>발견창 2022-03-23 ~ 2023-12-31 (known 2024/2025 미접촉)</td></tr>
+  </table></div>
+  <p class="muted" style="font-size:13px">측정 절차는 SOP-M 9단계(봉인 확인→measure_gate→분리 기동→감시→게이트 검수→원장 기입→판정)를 따른다. 상세는 허브 '원장·규율' 탭.</p>
+</section></div><div id="tab-results" class="tabpanel"><section>
+  <div class="eyebrow">③ 결과</div>
+  <h2>핵심 차트·수치</h2>
+  <div class="chart"><div class="ctitle">158 후보 분포 (자격 158)</div><div class="barrow"><span class="blabel">생존(양EV∧구별)</span><div class="track"><div class="fill up" style="width:0.0%"></div></div><span class="bval num ">0개</span></div><div class="barrow"><span class="blabel">아류(겹침 초과)</span><div class="track"><div class="fill dn" style="width:0.0%"></div></div><span class="bval num ">0개</span></div><div class="barrow"><span class="blabel">약신호</span><div class="track"><div class="fill acc" style="width:0.0%"></div></div><span class="bval num ">0개</span></div><div class="barrow"><span class="blabel">양EV 증거 0</span><div class="track"><div class="fill dn" style="width:100.0%"></div></div><span class="bval num ">158개</span></div><div class="cnote">전 조합이 양EV 증거 0 — 가산 조합 문법의 한계 확정.</div></div>
+</section></div><div id="tab-fulltable" class="tabpanel"><section>
+  <div class="eyebrow">④ 수치 전표</div>
+  <h2>판정 json 필드 전량</h2>
+  <div class="tablebox"><table><tr><th>필드</th><th>값</th></tr><tr><td><span style="white-space:normal">kind</span></td><td><span style="white-space:normal">o4_candidate_judgment</span></td></tr><tr><td><span style="white-space:normal">preregistration</span></td><td><span style="white-space:normal">2026-07-13_o4_generation_grammar_preregistration.md (fd7bae48)</span></td></tr><tr><td><span style="white-space:normal">n_labeled</span></td><td><span style="white-space:normal">862932</span></td></tr><tr><td><span style="white-space:normal">pool_mean_pp_measured</span></td><td><span style="white-space:normal">-1.0078</span></td></tr><tr><td><span style="white-space:normal">qualification.n_candidates</span></td><td><span style="white-space:normal">158</span></td></tr><tr><td><span style="white-space:normal">qualification.n_qualified</span></td><td><span style="white-space:normal">158</span></td></tr><tr><td><span style="white-space:normal">qualification.fdr_denominator</span></td><td><span style="white-space:normal">158</span></td></tr><tr><td><span style="white-space:normal">qualification.qualified_cids</span></td><td><span style="white-space:normal">[158개 항목] · F4@0.22, F4@0.22+A, F4@0.22+G@30000, F4@0.22+G@30000+A, F4@0.22+G@50000, F4@0.22+G@50000+A…</span></td></tr><tr><td><span style="white-space:normal">judgment.per_candidate</span></td><td><span style="white-space:normal">[158개 항목]</span></td></tr><tr><td><span style="white-space:normal">judgment.n_qualified</span></td><td><span style="white-space:normal">158</span></td></tr><tr><td><span style="white-space:normal">judgment.fdr_denominator</span></td><td><span style="white-space:normal">158</span></td></tr><tr><td><span style="white-space:normal">judgment.fdr_q</span></td><td><span style="white-space:normal">0.1</span></td></tr><tr><td><span style="white-space:normal">judgment.survive_cids</span></td><td><span style="white-space:normal">[0개 항목]</span></td></tr><tr><td><span style="white-space:normal">judgment.derivative_cids</span></td><td><span style="white-space:normal">[0개 항목]</span></td></tr><tr><td><span style="white-space:normal">judgment.weak_signal_cids</span></td><td><span style="white-space:normal">[0개]</span></td></tr><tr><td><span style="white-space:normal">judgment.no_positive_ev_cids</span></td><td><span style="white-space:normal">[158개 항목] · F4@0.22, F4@0.22+A, F4@0.22+G@30000, F4@0.22+G@30000+A, F4@0.22+G@50000, F4@0.22+G@50000+A…</span></td></tr><tr><td><span style="white-space:normal">judgment.n_survive</span></td><td><span style="white-space:normal">0</span></td></tr><tr><td><span style="white-space:normal">judgment.n_derivative</span></td><td><span style="white-space:normal">0</span></td></tr><tr><td><span style="white-space:normal">judgment.family_result</span></td><td><span style="white-space:normal">[46개 항목]</span></td></tr><tr><td><span style="white-space:normal">judgment.survive_families</span></td><td><span style="white-space:normal">[0개]</span></td></tr><tr><td><span style="white-space:normal">judgment.n_survive_families</span></td><td><span style="white-space:normal">0</span></td></tr><tr><td><span style="white-space:normal">judgment.overlap_cap</span></td><td><span style="white-space:normal">0.5</span></td></tr><tr><td><span style="white-space:normal">judgment.overlap_proxy_tag</span></td><td><span style="white-space:normal">챔피언 발동 프록시 = 39절 플랫 AND(bit_1~39). RR8_12 병합 다분기(CNF)·엔진 상태 변수(경과틱수·warmup·1일1진입·순매수금액 타이밍) 미포함 → 발화 **과소추정** → 본 겹침률은 참</span></td></tr><tr><td><span style="white-space:normal">judgment.pool_mean_pp_ref</span></td><td><span style="white-space:normal">-1.008</span></td></tr><tr><td><span style="white-space:normal">judgment.sanity_anchor_tripped</span></td><td><span style="white-space:normal">거짓</span></td></tr><tr><td><span style="white-space:normal">judgment.kill1_no_survivor</span></td><td><span style="white-space:normal">참</span></td></tr><tr><td><span style="white-space:normal">judgment.only_derivative</span></td><td><span style="white-space:normal">거짓</span></td></tr><tr><td><span style="white-space:normal">tags</span></td><td><span style="white-space:normal">[5개 항목] · ① 출구 조건부: L3 는 RR8_12 매도식(sell_sha 8ef01e0e…)에 조건부 — 다른 출구면 다른 지도., ② known-오염 입력: 절 족 구조는 2024 선정창을 본 챔피언 계보(buy_sha 348c5181…)의 D1 진단, 임계 어휘 출처(W5)에 2025~2026 시점 전략 포함. 측정창(2022-2023) clean 이나 계보·출구 조건부 진단., ③ 원-임계 재도출: 후보 임계는 챔피언 원-임계 이식이 아니라 W5 실재 어휘 재도출 격자(결과 관측 전 봉인). 단 가드 G(현재가&lt;=30000/50000)는 시너지가 측정된 좌표라 재사용(§14-F5)., ④ 성능 주장 아님·최종 심판: 양/음 EV 는 매수 필터 진단이지 성능·실전 수익 주장 아님. 오프라인 생존→엔진 확인(A-5)은 '실전 시험 자격'까지 — 최종 심판은 U-4 감독형 소액 실전., ⑤ 09:00-09:30·필터 한정: tick DB 는 09:00~09:30 만, 후보는 서지 온셋 위 필터(자립 트리거 아님) — 이 창·이 온셋 풀 한정, 장중 일반화 금지.</span></td></tr><tr><td><span style="white-space:normal">smoke</span></td><td><span style="white-space:normal">거짓</span></td></tr></table></div><p class="muted" style="font-size:12px">판정 json 주요 필드(29개 중 상위 80) — 대용량 컬렉션은 항목 수로 요약.</p>
+</section></div><div id="tab-verdict" class="tabpanel"><section>
+  <div class="eyebrow">⑤ 판정·한정</div>
+  <h2>판정문과 정직한 한정 <span class="badge kill">기각</span></h2>
+  <div class="callout"><b>판정.</b> O-4 생성 문법 — <b>기각</b>. 검증 부품의 전 가산 조합이 전원 음(−) — 가산 조합 문법 한계 확정</div>
+  <h3>딱지 (강제 인쇄)</h3>
+  <ul style="font-size:13.5px;line-height:1.8"><li>① 출구 조건부: L3 는 RR8_12 매도식(sell_sha 8ef01e0e…)에 조건부 — 다른 출구면 다른 지도.</li><li>② known-오염 입력: 절 족 구조는 2024 선정창을 본 챔피언 계보(buy_sha 348c5181…)의 D1 진단, 임계 어휘 출처(W5)에 2025~2026 시점 전략 포함. 측정창(2022-2023) clean 이나 계보·출구 조건부 진단.</li><li>③ 원-임계 재도출: 후보 임계는 챔피언 원-임계 이식이 아니라 W5 실재 어휘 재도출 격자(결과 관측 전 봉인). 단 가드 G(현재가&lt;=30000/50000)는 시너지가 측정된 좌표라 재사용(§14-F5).</li><li>④ 성능 주장 아님·최종 심판: 양/음 EV 는 매수 필터 진단이지 성능·실전 수익 주장 아님. 오프라인 생존→엔진 확인(A-5)은 '실전 시험 자격'까지 — 최종 심판은 U-4 감독형 소액 실전.</li><li>⑤ 09:00-09:30·필터 한정: tick DB 는 09:00~09:30 만, 후보는 서지 온셋 위 필터(자립 트리거 아님) — 이 창·이 온셋 풀 한정, 장중 일반화 금지.</li></ul>
+  <div class="callout warn"><b>정직한 한정</b> — 발견창(2022-2023) 성적이며 시간축 OOS 가 아니다. L3 라벨은 챔피언 출구에 조건부. 최종 검증은 감독형 소액 실전(B1 전례).</div>
+</section></div><div id="tab-evidence" class="tabpanel"><section>
+  <div class="eyebrow">⑥ 증거·재현</div>
+  <h2>근거 파일·재생성·관련 커밋</h2>
+  <div class="tablebox"><table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>근거 파일</td><td style="white-space:normal"><code>docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json</code></td></tr>
+    <tr><td>재생성 명령</td><td><code style="white-space:normal">STOM_ALLOW_MINIMAL_SETTING=1 python scripts/o4_measure.py --phase all</code></td></tr>
+    <tr><td>봉인 커밋</td><td><span class="sha">fd7bae48</span></td></tr>
+    <tr><td>봉인 문서</td><td><code>docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md</code></td></tr>
+  </table></div>
+  <p class="muted" style="font-size:12px">엔진 백테 0회 · 원본 read-only · 신규 시장 데이터 수집 0. 수치는 판정 json 원문에서 로드(재계산 없음).</p>
+</section></div>
+<footer>
+  단일 자가완결 HTML(외부 의존 0·상대 링크) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
+  생성 커밋 <code>bd5bb3c4</code> · 생성 시각 <code>2026-07-17 04:43 대한민국 표준시</code> · <a href="../research_lab_report.html">← 허브로</a><br>
+  수치는 판정 json 원문에서 로드(재계산 없음·원장 count 만 aggregate). 정적 서사는 결산 v1 계승.
+  <span class="muted">wt-dev 이식: reports/ 폴더 복사 + 대시보드 iframe/정적 서빙.</span>
+</footer>
+</div>
+<script>
+(function(){
+  var b=document.body; b.classList.add('js');
+  var btns=[].slice.call(document.querySelectorAll('.tabbtn'));
+  var panels=[].slice.call(document.querySelectorAll('.tabpanel'));
+  function show(id){
+    if(!document.getElementById('tab-'+id)){id='overview';}
+    btns.forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===id);});
+    panels.forEach(function(p){p.classList.toggle('active',p.id==='tab-'+id);});
+  }
+  btns.forEach(function(x){x.addEventListener('click',function(){location.hash='tab-'+x.getAttribute('data-tab');});});
+  window.addEventListener('hashchange',function(){show((location.hash||'').replace('#tab-',''));});
+  show((location.hash||'').replace('#tab-','')||'overview');
+  var tb=document.getElementById('themebtn');
+  if(tb){tb.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    var next=(cur||sys)==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    tb.textContent=next==='dark'?'☀️ 라이트':'🌙 다크';
+  });}
+})();
+</script>
+</body>
+</html>
