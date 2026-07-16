@@ -58,6 +58,8 @@ _ALLOWED_PRINT_FILES = {
     "cli/queue_drain.py",
     "cli/monitor.py",
     "cli/runner.py",
+    # research 명령은 결과 JSON을 stdout으로 출력하는 것이 정상 CLI 계약이다.
+    "cli/commands/research.py",
 }
 
 # ---------------------------------------------------------------------------
@@ -284,10 +286,25 @@ def _print_check(label: str, result: dict) -> None:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    """Run all pre-commit checks and exit 0 on success, 1 on any failure."""
+def _reconfigure_stdio_utf8() -> None:
+    """cp949 콘솔에서도 검사 결과 문자가 크래시 없이 출력되게 한다."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Run all pre-commit checks and exit 0 on success, 1 on any failure.
+
+    ``--fast`` 는 정적 검사(문법/시크릿/print)만 수행하고 단위 테스트를 생략한다.
+    """
+    args = sys.argv[1:] if argv is None else argv
+    fast_mode = "--fast" in args
+    _reconfigure_stdio_utf8()
+
     print("\n" + "=" * 60)
-    print("  STOM CLI Pre-commit 검증")
+    print("  STOM CLI Pre-commit 검증" + (" (fast)" if fast_mode else ""))
     print("=" * 60)
 
     files = _collect_python_files()
@@ -301,18 +318,20 @@ def main() -> None:
     _print_check("No secrets", secrets_result)
     _print_check("No debug print()", print_result)
 
-    print("\n  빠른 단위 테스트 실행 중...")
-    tests_result = run_quick_tests()
-    passed = tests_result.get("passed", 0)
-    total = tests_result.get("total", 0)
-    duration = tests_result.get("duration_sec", 0.0)
-    test_badge = _ok("PASS") if tests_result["status"] == "ok" else _fail("FAIL")
-    print(f"  [{test_badge}] Unit Tests: {passed}/{total} in {duration}s")
+    results = [syntax_result, secrets_result, print_result]
+    if fast_mode:
+        print("\n  --fast: 단위 테스트 생략")
+    else:
+        print("\n  빠른 단위 테스트 실행 중...")
+        tests_result = run_quick_tests()
+        passed = tests_result.get("passed", 0)
+        total = tests_result.get("total", 0)
+        duration = tests_result.get("duration_sec", 0.0)
+        test_badge = _ok("PASS") if tests_result["status"] == "ok" else _fail("FAIL")
+        print(f"  [{test_badge}] Unit Tests: {passed}/{total} in {duration}s")
+        results.append(tests_result)
 
-    all_ok = all(
-        r["status"] == "ok"
-        for r in [syntax_result, secrets_result, print_result, tests_result]
-    )
+    all_ok = all(r["status"] == "ok" for r in results)
 
     print("\n" + "=" * 60)
     if all_ok:
