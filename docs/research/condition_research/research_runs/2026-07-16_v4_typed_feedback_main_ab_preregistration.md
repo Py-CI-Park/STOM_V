@@ -86,3 +86,10 @@ run_id: `abmain0716_p{i}_{legacy|typed}`.
   양팔 동일하게 `few_shot_enabled=False`, `time_cap_bucket_generation_enabled=False`
   로 끄고 run_id를 `abmain0716e_`로 갱신해 재시작했다. 카드 채널 발화는
   d-런에서 실측 확인됐다(프롬프트 84라인). 판정 규칙·지표는 계속 무수정이다.
+- **4차 보정 (p1 쌍만 완료 시점)**: e-런 p1 쌍에서 평가는 정상 흐름(29회)이나
+  typed팔 카드 라인이 0임을 확인, 원인을 추적해 **처치 자체의 제품 결함**을
+  확정했다 — typed 결의 배선이 `isinstance(item, dict)`로 판별하는데
+  AnalysisCardV3 지시는 불변 mappingproxy라 전 지시가 조용히 폐기됐다
+  (`cf995e03`으로 수정, e-런 CSV 재현에서 14세대 중 7세대 봉투 인가 검증).
+  처치(T팔)가 죽은 상태의 e-런 데이터는 A/B로 무효이므로 폐기하고
+  `abmain0716f_`로 전체 재시작했다. 판정 규칙·지표는 계속 무수정이다.
