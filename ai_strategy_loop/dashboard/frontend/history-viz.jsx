@@ -34,7 +34,17 @@ function _hvNegColor(value) {
 
 function _hvMetric(row, key) {
   const m = (row && row.metrics) || {};
-  return m[key] != null ? m[key] : (row ? row[key] : null);
+  return m[key] != null ? m[key] : null;
+}
+
+// metrics 키 이름이 발행기 세대(campaign은 trades, loop_run은 trade_count)에 따라 달라지므로
+// 후보 키를 순서대로 시도한다 — 존재하는 키만 읽고 없는 키는 절대 만들어내지 않는다.
+function _hvMetricAny(row, keys) {
+  const m = (row && row.metrics) || {};
+  for (const k of keys) {
+    if (m[k] != null) return m[k];
+  }
+  return null;
 }
 
 function _hvFetchJson(url, timeoutMs) {
@@ -42,17 +52,36 @@ function _hvFetchJson(url, timeoutMs) {
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-// 서버가 evaluation row에 gate 통과 여부를 명시적으로 내려주지 않으므로, history-condition-tree.jsx
-// 와 동일한 status 어휘(no_trades/failed/missing/timeout/그 외=ok)만으로 판정한다 — 추측 금지.
+// cursor 기반 전체 수집: /history/detail을 limit=100으로 요청하고 next_cursor를 따라가며
+// 안전 상한(50페이지)까지 모든 행을 모은다. 서버가 next_cursor를 더는 주지 않으면 중단한다.
+function _hvFetchAllPages(url, timeoutMs) {
+  const MAX_PAGES = 50;
+  const sep = url.includes("?") ? "&" : "?";
+  const base = url + sep + "limit=100";
+  const step = (cursor, acc, page) => {
+    const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
+    return _hvFetchJson(pageUrl, timeoutMs).then(j => {
+      const rows = Array.isArray(j && j.rows) ? j.rows : [];
+      const merged = acc.concat(rows);
+      const next = j && j.next_cursor ? j.next_cursor : null;
+      if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+      return merged;
+    });
+  };
+  return step(null, [], 1);
+}
+
+// 서버가 loop_run 평가 행에는 gate_passed(bool)를 additive로 내려준다(campaign 행은 원천 데이터가
+// 없어 필드 자체가 없다). boolean으로 존재할 때만 판정하고, 부재 시 정직하게 null(→"—")을
+// 반환한다 — 휴리스틱 추론 금지.
 function _hvGatePassed(row) {
-  const status = (row && row.status) || "";
-  return status !== "no_trades" && status !== "failed" && status !== "missing" && status !== "timeout";
+  return row && typeof row.gate_passed === "boolean" ? row.gate_passed : null;
 }
 
 function _hvGateBadge(row) {
-  const status = (row && row.status) || "\u2014";
   const passed = _hvGatePassed(row);
-  return <span className={"badge " + (passed ? "ok" : "err")}>{status}</span>;
+  if (passed == null) return <span className="badge">{"\u2014"}</span>;
+  return <span className={"badge " + (passed ? "ok" : "err")}>{passed ? "pass" : "reject"}</span>;
 }
 
 // label의 "시간창 × 시총" 문자열을 두 축으로 분리한다(rp-heatmap.jsx의 분리 규칙과 동일 구분자
@@ -90,7 +119,7 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
-  const [series, setSeries] = useState_hv("abmain0716f");
+  const [series, setSeries] = useState_hv(""); // 기본값 없음 — placeholder(예: abmain0716f)로만 안내
   const [pairsAvailable, setPairsAvailable] = useState_hv(null); // null=미조회
   const [pairs, setPairs] = useState_hv([]);
   const [pairsLoading, setPairsLoading] = useState_hv(false);
@@ -133,11 +162,10 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
       return;
     }
     setter(prev => ({ ...prev, loading: true, err: "" }));
-    _hvFetchJson(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations",
-      8000
+    _hvFetchAllPages(
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
     )
-      .then(j => setter({ loading: false, err: "", rows: Array.isArray(j && j.rows) ? j.rows : [] }))
+      .then(rows => setter({ loading: false, err: "", rows }))
       .catch(e => setter({ loading: false, err: String(e), rows: [] }));
   }, [baseUrl, isDemo]);
 
@@ -155,7 +183,7 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
   const renderSide = (title, gatePassedFlag, side) => (
     <div style={{ flex: "1 1 260px", minWidth: 260 }}>
       <div className="stat-label" style={{ marginBottom: 6 }}>
-        {title}{gatePassedFlag != null && (
+        {title}{typeof gatePassedFlag === "boolean" && (
           <span className={"badge " + (gatePassedFlag ? "ok" : "err")} style={{ marginLeft: 6 }}>
             gate {gatePassedFlag ? "pass" : "reject"}
           </span>
@@ -175,7 +203,7 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
                 <th style={{ textAlign: "left", padding: "6px 8px" }}>gate</th>
                 <th style={{ textAlign: "right", padding: "6px 8px" }}>거래수</th>
                 <th style={{ textAlign: "right", padding: "6px 8px" }}>MDD</th>
-                <th style={{ textAlign: "right", padding: "6px 8px" }}>순손익</th>
+                <th style={{ textAlign: "right", padding: "6px 8px" }}>손익</th>
               </tr>
             </thead>
             <tbody>
@@ -183,10 +211,10 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
                 <tr key={row.evaluation_id || idx} style={{ borderTop: "1px solid var(--line-1)" }}>
                   <td style={{ padding: "6px 8px" }}>{idx + 1}</td>
                   <td style={{ padding: "6px 8px" }}>{_hvGateBadge(row)}</td>
-                  <td style={{ padding: "6px 8px", textAlign: "right" }}>{_hvNum(_hvMetric(row, "trade_count"))}</td>
+                  <td style={{ padding: "6px 8px", textAlign: "right" }}>{_hvNum(_hvMetricAny(row, ["trade_count", "trades"]))}</td>
                   <td style={{ padding: "6px 8px", textAlign: "right" }}>{_hvPct(_hvMetric(row, "mdd"))}</td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "net_profit")) }}>
-                    {_hvMoney(_hvMetric(row, "net_profit"))}
+                  <td style={{ padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) }}>
+                    {_hvMoney(_hvMetric(row, "profit"))}
                   </td>
                 </tr>
               ))}
@@ -244,8 +272,12 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
             )}
             {current && (
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                {renderSide("legacy · " + current.legacy_research_id, current.legacy_gate_passed, legacyRows)}
-                {renderSide("typed · " + current.typed_research_id, current.typed_gate_passed, typedRows)}
+                {current.legacy_research_id
+                  ? renderSide("legacy · " + current.legacy_research_id, current.legacy_gate_passed, legacyRows)
+                  : <_HvEmpty>이 쌍은 legacy 판이 없습니다(typed만 발행됨)</_HvEmpty>}
+                {current.typed_research_id
+                  ? renderSide("typed · " + current.typed_research_id, current.typed_gate_passed, typedRows)
+                  : <_HvEmpty>이 쌍은 typed 판이 없습니다(legacy만 발행됨)</_HvEmpty>}
               </div>
             )}
           </React.Fragment>
@@ -268,7 +300,7 @@ function CellHeatmap({ baseUrl, wsStatus }) {
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
-  const [metricMode, setMetricMode] = useState_hv("win_rate");
+  const [metricMode, setMetricMode] = useState_hv("profit");
 
   const loadCampaigns = useCallback_hv(() => {
     if (isDemo || !baseUrl) return;
@@ -296,11 +328,10 @@ function CellHeatmap({ baseUrl, wsStatus }) {
     }
     setRowsLoading(true);
     setRowsErr("");
-    _hvFetchJson(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations",
-      8000
+    _hvFetchAllPages(
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
     )
-      .then(j => setRows(Array.isArray(j && j.rows) ? j.rows : []))
+      .then(rows => setRows(rows))
       .catch(e => { setRowsErr(String(e)); setRows([]); })
       .finally(() => setRowsLoading(false));
   }, [baseUrl, isDemo, selected]);
@@ -310,9 +341,9 @@ function CellHeatmap({ baseUrl, wsStatus }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
-  const hasWinRate = rows.some(r => _hvMetric(r, "win_rate") != null);
-  const hasProfit = rows.some(r => _hvMetric(r, "net_profit") != null);
-  const effectiveMode = metricMode === "win_rate" && !hasWinRate && hasProfit ? "net_profit" : metricMode;
+  const hasProfit = rows.some(r => _hvMetric(r, "profit") != null);
+  const hasPct = rows.some(r => _hvMetric(r, "total_profit_pct") != null);
+  const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
 
   const grid = (() => {
     const timeLabels = [];
@@ -325,13 +356,13 @@ function CellHeatmap({ baseUrl, wsStatus }) {
       if (!timeLabels.includes(t)) timeLabels.push(t);
       if (!capLabels.includes(c)) capLabels.push(c);
       const key = t + "\u00d7" + c;
-      if (!cellMap[key]) cellMap[key] = { count: 0, winSum: 0, winN: 0, profitSum: 0 };
+      if (!cellMap[key]) cellMap[key] = { count: 0, profitSum: 0, pctSum: 0, pctN: 0 };
       const cell = cellMap[key];
       cell.count += 1;
-      const wr = _hvMetric(row, "win_rate");
-      if (wr != null && !Number.isNaN(Number(wr))) { cell.winSum += Number(wr); cell.winN += 1; }
-      const np = _hvMetric(row, "net_profit");
-      if (np != null && !Number.isNaN(Number(np))) cell.profitSum += Number(np);
+      const profit = _hvMetric(row, "profit");
+      if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
+      const pct = _hvMetric(row, "total_profit_pct");
+      if (pct != null && !Number.isNaN(Number(pct))) { cell.pctSum += Number(pct); cell.pctN += 1; }
     }
     if (!capLabels.length || !timeLabels.length) return null;
     return { timeLabels, capLabels, cellMap };
@@ -365,9 +396,9 @@ function CellHeatmap({ baseUrl, wsStatus }) {
                   <option key={c.research_id} value={c.research_id}>{c.label || c.research_id}</option>
                 ))}
               </select>
-              {hasWinRate && hasProfit && (
-                <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "win_rate" ? "net_profit" : "win_rate"))}>
-                  값: {effectiveMode === "win_rate" ? "승률" : "수익합"}
+              {hasProfit && hasPct && (
+                <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "profit" ? "total_profit_pct" : "profit"))}>
+                  값: {effectiveMode === "profit" ? "손익" : "수익률%"}
                 </button>
               )}
             </div>
@@ -397,16 +428,16 @@ function CellHeatmap({ baseUrl, wsStatus }) {
                         {grid.capLabels.map(c => {
                           const cell = grid.cellMap[t + "\u00d7" + c];
                           const value = !cell ? null
-                            : effectiveMode === "win_rate"
-                              ? (cell.winN ? cell.winSum / cell.winN : null)
+                            : effectiveMode === "total_profit_pct"
+                              ? (cell.pctN ? cell.pctSum / cell.pctN : null)
                               : cell.profitSum;
                           return (
                             <td
                               key={c}
-                              style={{ padding: "6px 10px", textAlign: "center", color: effectiveMode === "net_profit" ? _hvNegColor(value) : "var(--ink-0)" }}
+                              style={{ padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) }}
                               title={cell ? `${t} × ${c} · ${cell.count}건` : `${t} × ${c} · 데이터 없음`}
                             >
-                              {value == null ? "\u2014" : (effectiveMode === "win_rate" ? _hvPct(value) : _hvMoney(value))}
+                              {value == null ? "\u2014" : (effectiveMode === "total_profit_pct" ? _hvPct(value) : _hvMoney(value))}
                             </td>
                           );
                         })}
@@ -463,11 +494,10 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
     }
     setRowsLoading(true);
     setRowsErr("");
-    _hvFetchJson(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations",
-      8000
+    _hvFetchAllPages(
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
     )
-      .then(j => setRows(Array.isArray(j && j.rows) ? j.rows : []))
+      .then(rows => setRows(rows))
       .catch(e => { setRowsErr(String(e)); setRows([]); })
       .finally(() => setRowsLoading(false));
   }, [baseUrl, isDemo, selected]);
@@ -478,20 +508,22 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
   }, [selected]);
 
   const evaluatedCount = rows.length;
-  const gatePassedCount = rows.filter(_hvGatePassed).length;
-  // 홀드아웃 신호는 metrics 키 또는 reason 문자열에 "holdout"이 실제로 존재할 때만 집계한다
-  // (추측 금지 — 서버가 명시적으로 내려준 신호만 사용).
+  // gate_passed는 loop_run 평가 행에만 additive로 존재한다(campaign 행은 필드 자체가 없음).
+  // boolean 신호가 하나라도 있을 때만 통과수를 집계하고, 전혀 없으면 "—"로 정직하게 표시한다.
+  const gateSignalSeen = rows.some(r => r && typeof r.gate_passed === "boolean");
+  const gatePassedCount = rows.filter(r => r && r.gate_passed === true).length;
+  // 홀드아웃 신호는 metrics 키에 "holdout"이 실제로 존재할 때만 집계한다
+  // (추측 금지 — 서버가 명시적으로 내려준 신호만 사용, reason 같은 존재하지 않는 필드는 참조하지 않는다).
   let holdoutTotal = 0;
   let holdoutPassed = 0;
   let holdoutSignalSeen = false;
   for (const row of rows) {
-    const metrics = row.metrics || {};
+    const metrics = (row && row.metrics) || {};
     const metricKeys = Object.keys(metrics).filter(k => k.toLowerCase().includes("holdout"));
-    const reasonHasHoldout = typeof row.reason === "string" && row.reason.toLowerCase().includes("holdout");
-    if (metricKeys.length === 0 && !reasonHasHoldout) continue;
+    if (metricKeys.length === 0) continue;
     holdoutSignalSeen = true;
     holdoutTotal += 1;
-    const truthy = metricKeys.some(k => !!metrics[k]) || (reasonHasHoldout && _hvGatePassed(row));
+    const truthy = metricKeys.some(k => !!metrics[k]);
     if (truthy) holdoutPassed += 1;
   }
 
@@ -554,14 +586,18 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
                 </div>
                 <div>
                   <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>gate 통과수</div>
-                  <div style={barStyle(gatePassedCount)}>{_hvNum(gatePassedCount)}</div>
+                  {gateSignalSeen ? (
+                    <div style={barStyle(gatePassedCount)}>{_hvNum(gatePassedCount)}</div>
+                  ) : (
+                    <_HvEmpty>{"\u2014"}</_HvEmpty>
+                  )}
                 </div>
                 <div>
                   <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>홀드아웃</div>
                   {holdoutSignalSeen ? (
                     <div style={barStyle(holdoutPassed)}>{_hvNum(holdoutPassed)} / {_hvNum(holdoutTotal)}</div>
                   ) : (
-                    <_HvEmpty>홀드아웃 데이터 없음</_HvEmpty>
+                    <_HvEmpty>홀드아웃 신호 미발행(향후 제공)</_HvEmpty>
                   )}
                 </div>
               </div>

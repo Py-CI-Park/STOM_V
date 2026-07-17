@@ -161,12 +161,22 @@ class CampaignResult(TypedDict):
     artifact_refs: Optional[dict[str, Any]]
 
 
-class LoopRunResult(TypedDict):
-    """``LoopRunAdapter.build_research_node``의 반환 봉투."""
-
+class _LoopRunResultRequired(TypedDict):
     available: bool
     reason: Optional[str]
     research: Optional[ResearchNode]
+
+
+class LoopRunResult(_LoopRunResultRequired, total=False):
+    """``LoopRunAdapter.build_research_node``의 반환 봉투.
+
+    ``evaluation_gate_passed``는 evaluation_id -> generations.gate_passed(bool)
+    매핑이다. ``EvaluationNode`` 스키마(동결)는 건드리지 않고 봉투 레벨에서만
+    추가하는 read-only 파생 필드다(G002, additive). run이 불가용
+    (``available=False``)이면 이 키 자체를 생략한다.
+    """
+
+    evaluation_gate_passed: dict[str, bool]
 
 
 # ---------------------------------------------------------------------------
@@ -444,6 +454,7 @@ class LoopRunAdapter:
 
         conditions: list[ConditionNode] = []
         eval_statuses: list[str] = []
+        evaluation_gate_passed: dict[str, bool] = {}
         for gen in gen_rows:
             gen_no = gen.get("gen_no")
             parent_gen = gen.get("parent_gen")
@@ -454,6 +465,8 @@ class LoopRunAdapter:
             evaluation_id = f"eval:{condition_id}"
             status = _evaluation_status_from_generation(gen)
             eval_statuses.append(status)
+            if "gate_passed" in gen and gen["gate_passed"] is not None:
+                evaluation_gate_passed[evaluation_id] = bool(gen["gate_passed"])
 
             def _metric(key: str) -> Optional[float]:
                 value = gen.get(key)
@@ -496,4 +509,9 @@ class LoopRunAdapter:
             "coverage_status": stage_status,
             "stages": [stage],
         }
-        return {"available": True, "reason": None, "research": research}
+        return {
+            "available": True,
+            "reason": None,
+            "research": research,
+            "evaluation_gate_passed": evaluation_gate_passed,
+        }

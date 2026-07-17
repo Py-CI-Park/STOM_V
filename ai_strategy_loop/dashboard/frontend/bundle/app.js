@@ -31378,19 +31378,41 @@ def signal_sell(pos, bar, ind):
   }
   function _hvMetric(row, key) {
     const m = row && row.metrics || {};
-    return m[key] != null ? m[key] : row ? row[key] : null;
+    return m[key] != null ? m[key] : null;
+  }
+  function _hvMetricAny(row, keys) {
+    const m = row && row.metrics || {};
+    for (const k of keys) {
+      if (m[k] != null) return m[k];
+    }
+    return null;
   }
   function _hvFetchJson(url, timeoutMs) {
     return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
+  function _hvFetchAllPages(url, timeoutMs) {
+    const MAX_PAGES = 50;
+    const sep = url.includes("?") ? "&" : "?";
+    const base = url + sep + "limit=100";
+    const step = (cursor, acc, page) => {
+      const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
+      return _hvFetchJson(pageUrl, timeoutMs).then((j) => {
+        const rows = Array.isArray(j && j.rows) ? j.rows : [];
+        const merged = acc.concat(rows);
+        const next = j && j.next_cursor ? j.next_cursor : null;
+        if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+        return merged;
+      });
+    };
+    return step(null, [], 1);
+  }
   function _hvGatePassed(row) {
-    const status = row && row.status || "";
-    return status !== "no_trades" && status !== "failed" && status !== "missing" && status !== "timeout";
+    return row && typeof row.gate_passed === "boolean" ? row.gate_passed : null;
   }
   function _hvGateBadge(row) {
-    const status = row && row.status || "\u2014";
     const passed = _hvGatePassed(row);
-    return /* @__PURE__ */ React.createElement("span", { className: "badge " + (passed ? "ok" : "err") }, status);
+    if (passed == null) return /* @__PURE__ */ React.createElement("span", { className: "badge" }, "\u2014");
+    return /* @__PURE__ */ React.createElement("span", { className: "badge " + (passed ? "ok" : "err") }, passed ? "pass" : "reject");
   }
   function _hvSplitAxisLabel(label) {
     const text = String(label || "").trim();
@@ -31414,7 +31436,7 @@ def signal_sell(pos, bar, ind):
   }
   function AbPairCompareView({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const [series, setSeries] = useState_hv("abmain0716f");
+    const [series, setSeries] = useState_hv("");
     const [pairsAvailable, setPairsAvailable] = useState_hv(null);
     const [pairs, setPairs] = useState_hv([]);
     const [pairsLoading, setPairsLoading] = useState_hv(false);
@@ -31448,10 +31470,9 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setter((prev) => ({ ...prev, loading: true, err: "" }));
-      _hvFetchJson(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations",
-        8e3
-      ).then((j) => setter({ loading: false, err: "", rows: Array.isArray(j && j.rows) ? j.rows : [] })).catch((e) => setter({ loading: false, err: String(e), rows: [] }));
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
+      ).then((rows) => setter({ loading: false, err: "", rows })).catch((e) => setter({ loading: false, err: String(e), rows: [] }));
     }, [baseUrl, isDemo]);
     useEffect_hv(() => {
       if (!current) {
@@ -31462,7 +31483,7 @@ def signal_sell(pos, bar, ind):
       loadSide(current.legacy_research_id, setLegacyRows);
       loadSide(current.typed_research_id, setTypedRows);
     }, [current && current.pair]);
-    const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, gatePassedFlag != null && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), !side.err && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC21C\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "net_profit")) } }, _hvMoney(_hvMetric(row, "net_profit")))))))));
+    const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, typeof gatePassedFlag === "boolean" && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), !side.err && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetricAny(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) } }, _hvMoney(_hvMetric(row, "profit")))))))));
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "A/B \uC30D\uB300\uBE44\uAD50 (legacy \xB7 typed)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: isDemo || pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC A/B \uC30D\uB300\uBE44\uAD50\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -31484,7 +31505,7 @@ def signal_sell(pos, bar, ind):
         onChange: (e) => setSelectedPair(e.target.value)
       },
       pairs.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.pair, value: p.pair }, p.pair))
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\uC870\uD68C")), /* @__PURE__ */ React.createElement(_HvError, { err: pairsErr, onRetry: loadPairs }), !pairsErr && pairsAvailable === false && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC758 A/B \uC30D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uD589\uAE30 \uBCD1\uB82C \uC2AC\uB77C\uC774\uC2A4 \uB300\uAE30 \uC911\uC77C \uC218 \uC788\uC74C)"), !pairsErr && pairsAvailable && pairs.length === 0 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC5D0 \uBC1C\uD589\uB41C A/B \uC30D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4"), current && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, renderSide("legacy \xB7 " + current.legacy_research_id, current.legacy_gate_passed, legacyRows), renderSide("typed \xB7 " + current.typed_research_id, current.typed_gate_passed, typedRows)))));
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\uC870\uD68C")), /* @__PURE__ */ React.createElement(_HvError, { err: pairsErr, onRetry: loadPairs }), !pairsErr && pairsAvailable === false && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC758 A/B \uC30D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uD589\uAE30 \uBCD1\uB82C \uC2AC\uB77C\uC774\uC2A4 \uB300\uAE30 \uC911\uC77C \uC218 \uC788\uC74C)"), !pairsErr && pairsAvailable && pairs.length === 0 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC5D0 \uBC1C\uD589\uB41C A/B \uC30D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4"), current && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, current.legacy_research_id ? renderSide("legacy \xB7 " + current.legacy_research_id, current.legacy_gate_passed, legacyRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 legacy \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(typed\uB9CC \uBC1C\uD589\uB428)"), current.typed_research_id ? renderSide("typed \xB7 " + current.typed_research_id, current.typed_gate_passed, typedRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 typed \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(legacy\uB9CC \uBC1C\uD589\uB428)")))));
   }
   function CellHeatmap({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
@@ -31495,7 +31516,7 @@ def signal_sell(pos, bar, ind):
     const [rows, setRows] = useState_hv([]);
     const [rowsLoading, setRowsLoading] = useState_hv(false);
     const [rowsErr, setRowsErr] = useState_hv("");
-    const [metricMode, setMetricMode] = useState_hv("win_rate");
+    const [metricMode, setMetricMode] = useState_hv("profit");
     const loadCampaigns = useCallback_hv(() => {
       if (isDemo || !baseUrl) return;
       setCampaignsLoading(true);
@@ -31519,10 +31540,9 @@ def signal_sell(pos, bar, ind):
       }
       setRowsLoading(true);
       setRowsErr("");
-      _hvFetchJson(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations",
-        8e3
-      ).then((j) => setRows(Array.isArray(j && j.rows) ? j.rows : [])).catch((e) => {
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
+      ).then((rows2) => setRows(rows2)).catch((e) => {
         setRowsErr(String(e));
         setRows([]);
       }).finally(() => setRowsLoading(false));
@@ -31530,9 +31550,9 @@ def signal_sell(pos, bar, ind):
     useEffect_hv(() => {
       loadRows();
     }, [selected2]);
-    const hasWinRate = rows.some((r) => _hvMetric(r, "win_rate") != null);
-    const hasProfit = rows.some((r) => _hvMetric(r, "net_profit") != null);
-    const effectiveMode = metricMode === "win_rate" && !hasWinRate && hasProfit ? "net_profit" : metricMode;
+    const hasProfit = rows.some((r) => _hvMetric(r, "profit") != null);
+    const hasPct = rows.some((r) => _hvMetric(r, "total_profit_pct") != null);
+    const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
     const grid = (() => {
       const timeLabels = [];
       const capLabels = [];
@@ -31544,16 +31564,16 @@ def signal_sell(pos, bar, ind):
         if (!timeLabels.includes(t)) timeLabels.push(t);
         if (!capLabels.includes(c)) capLabels.push(c);
         const key = t + "\xD7" + c;
-        if (!cellMap[key]) cellMap[key] = { count: 0, winSum: 0, winN: 0, profitSum: 0 };
+        if (!cellMap[key]) cellMap[key] = { count: 0, profitSum: 0, pctSum: 0, pctN: 0 };
         const cell = cellMap[key];
         cell.count += 1;
-        const wr = _hvMetric(row, "win_rate");
-        if (wr != null && !Number.isNaN(Number(wr))) {
-          cell.winSum += Number(wr);
-          cell.winN += 1;
+        const profit = _hvMetric(row, "profit");
+        if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
+        const pct = _hvMetric(row, "total_profit_pct");
+        if (pct != null && !Number.isNaN(Number(pct))) {
+          cell.pctSum += Number(pct);
+          cell.pctN += 1;
         }
-        const np = _hvMetric(row, "net_profit");
-        if (np != null && !Number.isNaN(Number(np))) cell.profitSum += Number(np);
       }
       if (!capLabels.length || !timeLabels.length) return null;
       return { timeLabels, capLabels, cellMap };
@@ -31569,17 +31589,17 @@ def signal_sell(pos, bar, ind):
       },
       campaigns.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uCEA0\uD398\uC778 \uC5C6\uC74C"),
       campaigns.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.research_id, value: c.research_id }, c.label || c.research_id))
-    ), hasWinRate && hasProfit && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "win_rate" ? "net_profit" : "win_rate") }, "\uAC12: ", effectiveMode === "win_rate" ? "\uC2B9\uB960" : "\uC218\uC775\uD569")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
+    ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
       const cell = grid.cellMap[t + "\xD7" + c];
-      const value = !cell ? null : effectiveMode === "win_rate" ? cell.winN ? cell.winSum / cell.winN : null : cell.profitSum;
+      const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
       return /* @__PURE__ */ React.createElement(
         "td",
         {
           key: c,
-          style: { padding: "6px 10px", textAlign: "center", color: effectiveMode === "net_profit" ? _hvNegColor(value) : "var(--ink-0)" },
+          style: { padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) },
           title: cell ? `${t} \xD7 ${c} \xB7 ${cell.count}\uAC74` : `${t} \xD7 ${c} \xB7 \uB370\uC774\uD130 \uC5C6\uC74C`
         },
-        value == null ? "\u2014" : effectiveMode === "win_rate" ? _hvPct(value) : _hvMoney(value)
+        value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(value) : _hvMoney(value)
       );
     })))))))));
   }
@@ -31615,10 +31635,9 @@ def signal_sell(pos, bar, ind):
       }
       setRowsLoading(true);
       setRowsErr("");
-      _hvFetchJson(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations",
-        8e3
-      ).then((j) => setRows(Array.isArray(j && j.rows) ? j.rows : [])).catch((e) => {
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
+      ).then((rows2) => setRows(rows2)).catch((e) => {
         setRowsErr(String(e));
         setRows([]);
       }).finally(() => setRowsLoading(false));
@@ -31627,18 +31646,18 @@ def signal_sell(pos, bar, ind):
       loadRows();
     }, [selected2]);
     const evaluatedCount = rows.length;
-    const gatePassedCount = rows.filter(_hvGatePassed).length;
+    const gateSignalSeen = rows.some((r) => r && typeof r.gate_passed === "boolean");
+    const gatePassedCount = rows.filter((r) => r && r.gate_passed === true).length;
     let holdoutTotal = 0;
     let holdoutPassed = 0;
     let holdoutSignalSeen = false;
     for (const row of rows) {
-      const metrics = row.metrics || {};
+      const metrics = row && row.metrics || {};
       const metricKeys = Object.keys(metrics).filter((k) => k.toLowerCase().includes("holdout"));
-      const reasonHasHoldout = typeof row.reason === "string" && row.reason.toLowerCase().includes("holdout");
-      if (metricKeys.length === 0 && !reasonHasHoldout) continue;
+      if (metricKeys.length === 0) continue;
       holdoutSignalSeen = true;
       holdoutTotal += 1;
-      const truthy = metricKeys.some((k) => !!metrics[k]) || reasonHasHoldout && _hvGatePassed(row);
+      const truthy = metricKeys.some((k) => !!metrics[k]);
       if (truthy) holdoutPassed += 1;
     }
     const maxCount = Math.max(evaluatedCount, 1);
@@ -31665,7 +31684,7 @@ def signal_sell(pos, bar, ind):
       },
       runs.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "run \uC5C6\uC74C"),
       runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.research_id, value: r.research_id }, r.label || r.research_id))
-    )), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uB370\uC774\uD130 \uC5C6\uC74C"))))));
+    )), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uC2E0\uD638 \uBBF8\uBC1C\uD589(\uD5A5\uD6C4 \uC81C\uACF5)"))))));
   }
   Object.assign(window, { AbPairCompareView, CellHeatmap, HoldoutFunnel });
 

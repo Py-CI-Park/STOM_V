@@ -137,6 +137,29 @@ def _seed_two_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> Non
         state.close()
 
 
+def _seed_pass_fail_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> None:
+    """게이트 통과 1세대 + 실패 1세대를 심는다(G002 gate_passed 행 계약 테스트용)."""
+    state = LoopState(db_path=str(db_path), snapshot_dir=str(snapshot_dir))
+    try:
+        state.start_run(LoopConfig(), run_id=run_id)
+        state.record_generation(
+            run_id, 0,
+            buy_name=f"AILOOP_{run_id}_g0_buy", sell_name=f"AILOOP_{run_id}_g0_sell",
+            status="ok", score=1.0, gate_passed=True,
+            trade_count=40, mdd=15.0, profit=100000.0, total_profit_pct=10.0,
+            daily_avg_trades=1.2,
+        )
+        state.record_generation(
+            run_id, 1,
+            buy_name=f"AILOOP_{run_id}_g1_buy", sell_name=f"AILOOP_{run_id}_g1_sell",
+            status="ok", score=0.2, gate_passed=False,
+            trade_count=3, mdd=25.0, profit=-2000.0, total_profit_pct=-0.2,
+            daily_avg_trades=0.3, parent_gen=0,
+        )
+    finally:
+        state.close()
+
+
 class TestLoopRunAdapter:
     def test_build_research_node_maps_lineage_and_metrics(self, tmp_path: Path) -> None:
         db_path = tmp_path / "loop_runs.db"
@@ -181,6 +204,23 @@ class TestLoopRunAdapter:
         assert gen1_eval["metrics"]["profit"] == 150000.0
         assert gen1_eval["metrics"]["total_profit_pct"] == 15.0
         assert gen1_eval["metrics"]["daily_avg_trades"] == 1.0
+
+    def test_build_research_node_exposes_evaluation_gate_passed_map(self, tmp_path: Path) -> None:
+        """G002 -- 봉투 계약: evaluation_gate_passed가 generations.gate_passed와 정확히 일치한다(통과1/실패1)."""
+        db_path = tmp_path / "loop_runs.db"
+        snap_dir = tmp_path / "snapshots"
+        run_id = "runGate"
+        _seed_pass_fail_generations(db_path, snap_dir, run_id)
+
+        adapter = LoopRunAdapter(db_path=str(db_path))
+        result = adapter.build_research_node(run_id)
+
+        assert result["available"] is True
+        gate_map = result["evaluation_gate_passed"]
+        assert gate_map == {
+            f"eval:cond:{run_id}:gen0": True,
+            f"eval:cond:{run_id}:gen1": False,
+        }
 
     def test_build_research_node_missing_db_is_typed_not_exception(self, tmp_path: Path) -> None:
         db_path = tmp_path / "does_not_exist" / "loop_runs.db"
