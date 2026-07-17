@@ -98,17 +98,17 @@ def test_dashboard_frontend_called_read_only_routes_do_not_404(monkeypatch, tmp_
         response = client.get(route, params=params)
         assert response.status_code != 404
 
-def test_dashboard_ui_deep_links_preserve_v2_default_and_explicit_v3_selector(monkeypatch, tmp_path: Path) -> None:
-    """Given canonical dashboard routes, Then V2 remains default and V3 is explicit."""
+def test_dashboard_ui_deep_links_preserve_v4_ops_default_and_explicit_v3_selector(monkeypatch, tmp_path: Path) -> None:
+    """Given canonical dashboard routes, Then V4 ops shell remains default and V3 is explicit."""
     client = _client(monkeypatch, tmp_path)
 
     for route, status_code in UI_DEEP_LINKS.items():
         response = client.get(route)
         assert response.status_code == status_code
-        assert "STOM AI · 조건식 자율 진화 대시보드" in response.text
+        assert "STOM AI · V4 조건식 자율 진화 대시보드" in response.text
         assert 'src="/ui/bundle/app.js' in response.text
         assert 'src="/ui/remodel/src/app.js' not in response.text
-        assert response.headers["x-stom-dashboard-version"] == "v2"
+        assert response.headers["x-stom-dashboard-version"] == "v4-ops"
 
         v3 = client.get(route, params={"dashboard_version": "v3"})
         assert v3.status_code == status_code

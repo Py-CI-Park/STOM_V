@@ -262,9 +262,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           ))}
         </div>
         <div className="v4-rail-spacer"></div>
-        <a className="v4-rail-item" href="/ui/" title="V2 운영 대시보드로">
+        <a className="v4-rail-item" href="/ui/" title="V4 운영 대시보드로">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
-          <span className="v4-ri-label">V2</span>
+          <span className="v4-ri-label">OPS</span>
         </a>
       </aside>
 

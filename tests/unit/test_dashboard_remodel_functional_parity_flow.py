@@ -87,13 +87,13 @@ def test_condition_panel_separates_safe_empty_from_api_error() -> None:
         assert marker in condition_block or marker in app
 
 
-def test_v2_default_routes_do_not_flip_while_v3_parity_flow_is_explicit() -> None:
+def test_ops_default_routes_do_not_flip_while_v3_parity_flow_is_explicit() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
     client = authorized_dashboard_client(create_app())
     v2 = client.get("/ui/backtest", follow_redirects=False)
     assert v2.status_code == 200
-    assert v2.headers["x-stom-dashboard-version"] == "v2"
+    assert v2.headers["x-stom-dashboard-version"] == "v4-ops"
     assert "/ui/bundle/app.js" in v2.text
     assert "/ui/remodel/src/app.js" not in v2.text
 

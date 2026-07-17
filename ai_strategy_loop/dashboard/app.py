@@ -3087,7 +3087,7 @@ def create_app(
             return HTMLResponse("<h1>Dashboard remodel frontend not available</h1>", status_code=503)
 
     def _dashboard_v4_index_response() -> HTMLResponse:
-        # V4 opt-in 프리뷰: frontend/v4.html(window.DashboardV4Shell 마운트). V2 와 같은 bundle/app.js 공유.
+        # graph-first 프리뷰: frontend/v4.html(window.DashboardV4Shell 마운트). V4 운영 정본과 같은 bundle/app.js 공유.
         index_path = os.path.join(_FRONTEND_DIR, "v4.html")
         try:
             with open(index_path, encoding="utf-8") as fh:
@@ -3101,11 +3101,15 @@ def create_app(
             return HTMLResponse("<h1>Dashboard V4 frontend not available</h1>", status_code=503)
 
     def _dashboard_version_from_request(request: Request) -> str:
-        """Return one-response dashboard version selector; never persist in browser state."""
+        """Return one-response dashboard version selector; never persist in browser state.
+
+        내부 키는 역사적 이유로 v2(운영 정본)/v3(리모델)/v4(graph-first 프리뷰)를 유지한다.
+        운영 정본 셸은 V4 연구 파이프라인을 운영하므로 응답 헤더는 v4-ops 로 표기한다.
+        """
         selector = (request.query_params.get("dashboard_version") or "").strip().lower()
         if selector in {"v3", "remodel", "preview"}:
             return "v3"
-        if selector in {"v2", "legacy", "production"}:
+        if selector in {"v2", "legacy", "production", "ops", "v4-ops"}:
             return "v2"
         if selector in {"v4", "v4-preview"}:
             return "v4"
@@ -3124,7 +3128,9 @@ def create_app(
         if version == "v3":
             return _dashboard_remodel_index_response()
         response = _dashboard_index_response()
-        response.headers["X-STOM-Dashboard-Version"] = "v2"
+        # 정본 셸 리브랜딩(2026-07-17): 셸 라벨 V2 가 V4 파이프라인 운영 실체를 가려
+        #   "아직 v2가 실행된다" 혼동을 만들었다. 운영 정본 헤더는 v4-ops 로 표기한다.
+        response.headers["X-STOM-Dashboard-Version"] = "v4-ops"
         return response
 
     def _redirect_with_query(request: Request, target: str) -> RedirectResponse:
@@ -3169,12 +3175,12 @@ def create_app(
       <div class=\"code\">404</div>
       <div>
         <h1>Dashboard route not found</h1>
-        <p>Unknown dashboard routes fail closed with <code>404</code> instead of masking broken links with a V2/V3 shell.</p>
+        <p>Unknown dashboard routes fail closed with <code>404</code> instead of masking broken links with a legacy shell.</p>
       </div>
     </section>
     <section class=\"badges\">
-      <span class=\"badge\">V2 default preserved</span>
-      <span class=\"badge\">V3 explicit only</span>
+      <span class=\"badge\">V4 ops default preserved</span>
+      <span class=\"badge\">V3/graph preview explicit only</span>
       <span class=\"badge\">No hidden SPA fallback</span>
       <span class=\"badge\">Research-only boundary</span>
     </section>
@@ -3232,7 +3238,7 @@ def create_app(
 
     @app.get("/ui/v4/", response_class=HTMLResponse)
     def ui_v4_root() -> HTMLResponse:
-        # V4 opt-in 프리뷰 진입점. V2/V3 기본 경로는 불변, 미지 버전은 V2 폴백.
+        # graph-first 프리뷰 진입점. V4 운영 정본(/ui, /ui/evolution)은 불변, 미지 버전은 운영 정본 폴백.
         return _dashboard_v4_index_response()
 
     @app.get("/ui/evolution", response_class=HTMLResponse)

@@ -276,9 +276,9 @@ function App() {
           <div className="stom-shell-brand">
             <Logo />
             <div className="stom-shell-title">
-              <h1>STOM AI · 조건식 AI 연구 대시보드</h1>
+              <h1>STOM AI · V4 조건식 AI 연구 대시보드</h1>
               <span className="mono">
-                autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
+                V4 운영 · autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
             <nav className="stom-pagenav mono" aria-label="현재 위치">
@@ -294,14 +294,14 @@ function App() {
             <a className="btn ghost sm mono"
                data-dashboard-preview="v3"
                href={v3PreviewHref}
-               title="V2 기본 화면은 유지하고 현재 경로를 V3 리모델 프리뷰로 1회 열기">
+               title="V4 운영 화면은 유지하고 현재 경로를 V3 리모델 프리뷰로 1회 열기">
               V3 Preview
             </a>
             <a className="btn ghost sm mono"
                data-dashboard-preview="v4"
                href={v4PreviewHref}
-               title="V2 기본 화면은 유지하고 V4 graph-first 프리뷰를 1회 열기">
-              V4 Preview
+               title="V4 운영 화면은 유지하고 graph-first 실험 터미널을 1회 열기">
+              Graph 터미널
             </a>
             <BaseUrlControl
               value={pendingBase}

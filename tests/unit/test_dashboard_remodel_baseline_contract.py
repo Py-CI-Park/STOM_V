@@ -14,17 +14,17 @@ def _text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def test_canonical_dashboard_routes_keep_v2_default_and_explicit_v3_selector() -> None:
+def test_canonical_dashboard_routes_keep_v4_ops_default_and_explicit_v3_selector() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
     client = authorized_dashboard_client(create_app())
     for path in ["/ui/", "/ui/evolution", "/ui/evolution/process", "/ui/backtest", "/ui/chart-replay"]:
         response = client.get(path, follow_redirects=False)
         assert response.status_code == 200, path
-        assert "STOM AI · 조건식 자율 진화 대시보드" in response.text
+        assert "STOM AI · V4 조건식 자율 진화 대시보드" in response.text
         assert "/ui/bundle/app.js" in response.text
         assert "/ui/remodel/src/app.js" not in response.text
-        assert response.headers["x-stom-dashboard-version"] == "v2"
+        assert response.headers["x-stom-dashboard-version"] == "v4-ops"
 
         v3 = client.get(path, params={"dashboard_version": "v3"}, follow_redirects=False)
         assert v3.status_code == 200, path
@@ -35,7 +35,7 @@ def test_canonical_dashboard_routes_keep_v2_default_and_explicit_v3_selector() -
 
 
 
-def test_v2_default_bundle_exposes_nonpersistent_v3_preview_link() -> None:
+def test_ops_default_bundle_exposes_nonpersistent_v3_preview_link() -> None:
     source = _text(FRONTEND / "app.jsx")
     bundle = _text(FRONTEND / "bundle" / "app.js")
 

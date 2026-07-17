@@ -283,7 +283,7 @@ def route_matrix_entry(capture: Capture, expected_version: str, expected_asset: 
     violations: list[str] = []
     if capture.status is None or capture.status >= 400:
         violations.append(f"bad_status:{capture.status}")
-    if expected_version == "v2" and header_version != "v2":
+    if expected_version == "v2" and header_version != "v4-ops":
         violations.append(f"unexpected_version_header:{header_version or 'missing'}")
     if expected_version == "v3-remodel" and header_version != "v3-remodel":
         violations.append(f"unexpected_version_header:{header_version or 'missing'}")
@@ -652,8 +652,8 @@ def main(argv: list[str]) -> int:
         "failures": failures,
         "status": "PASS" if not failures else "FAIL",
         "scoreDocumentation": {
-            "v2Identity": "V2 route returns x-stom-dashboard-version=v2, loads /ui/bundle/app.js, and does not load V3 remodel assets.",
-            "v3Identity": "Explicit V3 route returns x-stom-dashboard-version=v3-remodel, no-store HTML, loads /ui/remodel/src/app.js, and does not load V2 bundle.",
+            "v2Identity": "Ops route returns x-stom-dashboard-version=v4-ops, loads /ui/bundle/app.js, and does not load V3 remodel assets.",
+            "v3Identity": "Explicit V3 route returns x-stom-dashboard-version=v3-remodel, no-store HTML, loads /ui/remodel/src/app.js, and does not load ops bundle.",
             "totalCorrectedScore": "0.18 V2 identity + 0.10 V2 text + 0.22 V3 identity + 0.18 V3 text + 0.14 V3 safety + 0.10 inventory + 0.05 safety/network + 0.03 screenshot; hard failures cap below threshold.",
         },
     }

@@ -484,7 +484,7 @@ def route_identity_failures(capture: BrowserCapture) -> list[str]:
     if capture.status is None or capture.status >= 400:
         failures.append(f"bad_status:{capture.status}")
     if capture.version == "v2":
-        if header_version != "v2":
+        if header_version != "v4-ops":
             failures.append(f"unexpected_v2_header:{header_version or 'missing'}")
         if "/ui/bundle/app.js" not in script_blob:
             failures.append("missing_v2_bundle")

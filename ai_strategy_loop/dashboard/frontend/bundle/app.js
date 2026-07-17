@@ -33660,7 +33660,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const currentDashboardPath = typeof window !== "undefined" && window.location && window.location.pathname || "/ui/evolution";
     const v3PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v3`;
     const v4PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v4`;
-    return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 \uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "autonomous_strategy_loop \xB7 contract_v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 V4 \uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \uC6B4\uC601 \xB7 autonomous_strategy_loop \xB7 contract_v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
       "span",
       {
         className: "stom-pagenav-item stom-pagenav-active",
@@ -33675,7 +33675,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         className: "btn ghost sm mono",
         "data-dashboard-preview": "v3",
         href: v3PreviewHref,
-        title: "V2 \uAE30\uBCF8 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 \uD604\uC7AC \uACBD\uB85C\uB97C V3 \uB9AC\uBAA8\uB378 \uD504\uB9AC\uBDF0\uB85C 1\uD68C \uC5F4\uAE30"
+        title: "V4 \uC6B4\uC601 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 \uD604\uC7AC \uACBD\uB85C\uB97C V3 \uB9AC\uBAA8\uB378 \uD504\uB9AC\uBDF0\uB85C 1\uD68C \uC5F4\uAE30"
       },
       "V3 Preview"
     ), /* @__PURE__ */ React.createElement(
@@ -33684,9 +33684,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         className: "btn ghost sm mono",
         "data-dashboard-preview": "v4",
         href: v4PreviewHref,
-        title: "V2 \uAE30\uBCF8 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 V4 graph-first \uD504\uB9AC\uBDF0\uB97C 1\uD68C \uC5F4\uAE30"
+        title: "V4 \uC6B4\uC601 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 graph-first \uC2E4\uD5D8 \uD130\uBBF8\uB110\uC744 1\uD68C \uC5F4\uAE30"
       },
-      "V4 Preview"
+      "Graph \uD130\uBBF8\uB110"
     ), /* @__PURE__ */ React.createElement(
       BaseUrlControl,
       {
@@ -35129,7 +35129,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/", title: "V2 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "V2"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/", title: "V4 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "OPS"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,
