@@ -279,7 +279,12 @@ class CampaignAdapter:
                 "research": None,
                 "artifact_refs": None,
             }
-        errors = validate_research_node(node)
+        try:
+            errors = validate_research_node(node)
+        except (KeyError, TypeError, AttributeError):
+            # 유효한 JSON이지만 ResearchNode 형태가 아니면(필수 키 부재 등)
+            # 검증기가 KeyError 등을 던질 수 있다 — typed invalid로 흡수한다.
+            errors = ["companion_shape_invalid"]
         if errors:
             return {
                 "available": False,
