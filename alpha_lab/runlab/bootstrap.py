@@ -40,16 +40,16 @@ _RUNNER_SOURCE_FILES = (
     "alpha_lab/discipline/prereg.py",
 )
 _RUNNER_SOURCE_SHA256 = {
-    "alpha_lab/__init__.py": "09f4bc71af7a3ea87743b2fde48b040c0cb6e8e02214606637214c22f51f13c6",
+    "alpha_lab/__init__.py": "0ef99f9f7abd1b148b6ee3190f995ee4d4eb4122d6ba7b74b8f6bb88bcfd96b6",
     "alpha_lab/runlab/__init__.py": "529d7083064981e855fa107e162440bd231cbef176a1f10eaac318ea6d893b4c",
     "alpha_lab/runlab/child_wrap.py": "ec686e945a1451d9bf71c96bf284bb93ff15b374ee60a909a16f7595abfb43c9",
     "alpha_lab/runlab/detached_runner.py": "ab2c58e632576e5ddb5d9bc093e0e0fe9bfd1108f819a5ff077395ba9a2ab5ae",
     "alpha_lab/runlab/sealed_execution.py": "675e0f340faec15f0e67ca654adf78a3f1e36260533174f73920e64e4dc41a7c",
     "alpha_lab/runlab/contract.py": "696c970d4cc54b856f41fb6f70ed7e0c038941c7008fb75bf2ef5066e3fba284",
-    "alpha_lab/runlab/watchdog.py": "ee54c8c0c06d3d38bc34bdb99a5fd7291a3e115ec22aadfd4f630c69eb359d1d",
-    "alpha_lab/discipline/__init__.py": "7b61a8fdc21fd783d3a9e298863f57b3dd51fba62de35705c03bf1cccb84e787",
+    "alpha_lab/runlab/watchdog.py": "9074f6f724b1fb8aba57028fd8c9e9d43b357e74751ac6e2e1e58a103df54a1c",
+    "alpha_lab/discipline/__init__.py": "546deef1495540f5004c442927786b1ee2b69c3e3209c76acf916ad57c7c04e4",
     "alpha_lab/discipline/evidence.py": "fdb03d25767be9c7cafb1ac4c9098583b8b46ef7ecec788f0084e0b5ae7f428f",
-    "alpha_lab/discipline/prereg.py": "afce02815291d879660385fb39c5b2067f471ee55fd6f0ca1c913878416e74ce",
+    "alpha_lab/discipline/prereg.py": "d05db76883bb90e96c68902ee32076ca8d88ab8bbb57389803d595544df4a237",
 }
 
 
