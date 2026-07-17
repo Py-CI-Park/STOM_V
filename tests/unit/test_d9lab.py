@@ -12,14 +12,16 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from alpha_lab.d9lab import judge_d9, overlap, run, transitions  # noqa: E402
+from alpha_lab.d9lab import judge_d9, overlap, report, run, transitions  # noqa: E402
 from alpha_lab.d9lab.transitions import classify_transitions  # noqa: E402
 from alpha_lab.stats_map import config_v2, costs_v2  # noqa: E402
+from alpha_lab.discipline import ledger  # noqa: E402
 
 
 # --------------------------------------------------------------------------
@@ -286,3 +288,18 @@ def test_consolidate_r1_parity_and_floors(tmp_path, monkeypatch):
     assert cons["parity_gate_pass"] is True
     assert cons["n_observable"] == 2 * len(days)
     assert set(cons["floors"].keys()) == {"new", "reentry", "pooled"}
+def test_legacy_append_n_trials_is_blocked_before_file_mutation(tmp_path, monkeypatch):
+    def fail_legacy_write(**_kwargs):
+        raise AssertionError("retired ledger writer was called")
+
+    monkeypatch.setattr(ledger, "append_trial", fail_legacy_write)
+    ledger_path = tmp_path / "n_trials.jsonl"
+
+    assert "append_n_trials" not in report.__all__
+    with pytest.raises(
+        report.LegacyEvidenceWriteBlockedError,
+        match="legacy-evidence-write-blocked",
+    ):
+        report.append_n_trials(ledger_path, object())
+
+    assert not ledger_path.exists()

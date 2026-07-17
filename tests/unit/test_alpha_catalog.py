@@ -5,14 +5,27 @@
 """
 from __future__ import annotations
 
+import datetime as dt
+import hashlib
 import json
+import os
+import shutil
 import sqlite3
+import subprocess
+import threading
 from pathlib import Path
 
 import pytest
 
-from alpha_lab.catalog import builder, schema
+from alpha_lab.catalog import builder, schema, sources
 from alpha_lab.catalog.assets_registry import ASSET_REGISTRY
+from alpha_lab.bridge.registrar import register_conditions_v2
+from alpha_lab.discipline.evidence import issue_promotion_manifest_v2
+from alpha_lab.discipline.ledger import append_trial_v2
+from alpha_lab.discipline.measure_gate import (
+    claim_gate_receipt_v2,
+    finalize_and_issue_gate_receipt_v2,
+)
 
 # ---------------------------------------------------------------------------
 # 픽스처 데이터 — 원천 실측 스키마의 최소 축소판.
@@ -177,7 +190,324 @@ def run_dir(tmp_path: Path) -> Path:
         encoding="utf-8")
     _write_stats_dbs(run)
     return run
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_minimal_authority_catalog_builds_real_pre_and_post(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for authoritative v2 receipt fixtures")
+    prereg, code = tmp_path / "prereg.md", tmp_path / "measure.py"
+    source, result = tmp_path / "source.json", tmp_path / "result.json"
+    code.write_text("MEASURE = 1\n", encoding="utf-8")
+    prereg.write_text(
+        "> 지위: **SEALED**\n```json prereg-contract-v2\n" + json.dumps({
+            "schema_version": 2, "hypothesis_id": "H-minimal-catalog",
+            "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+            "primary_estimand": "mean spread", "sample_floors": {"qualified": 2},
+            "multiplicity_family": "catalog fixture", "kill_rule": "non-positive effect",
+            "ledger_path": "n_trials_ledger.jsonl",
+            "authority_paths": {
+                "seal_dir": "seals", "promotions_dir": "promotions",
+                "catalog_dir": "promotion_catalogs", "target_db": "strategy.db",
+                "journal_dir": "promotion_journal", "backup_dir": "backups",
+            },
+            "dependency_roots": ["measure.py"], "dynamic_python_dependencies": [],
+            "non_python_dependencies": [],
+        }, sort_keys=True) + "\n```\n", encoding="utf-8")
+    source.write_text('{"source":"fixture"}\n', encoding="utf-8")
+    result.write_text('{"result":"pass"}\n', encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "prereg.md", "measure.py"], check=True)
+    subprocess.run([
+        "git", "-C", str(tmp_path), "-c", "user.name=tester",
+        "-c", "user.email=t@example.com", "commit", "-q", "-m", "fixture",
+    ], check=True)
 
+    def ref(path: Path) -> dict[str, str]:
+        return {"path": path.relative_to(tmp_path).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+    con = sqlite3.connect(tmp_path / "strategy.db")
+    try:
+        for table in ("stockbuy", "stocksell"):
+            con.execute(f'CREATE TABLE "{table}" ( "index" TEXT, "전략코드" TEXT )')
+            con.execute(f'CREATE INDEX "ix_{table}_index" ON "{table}" ("index")')
+        con.commit()
+    finally:
+        con.close()
+    seal = tmp_path / "seals" / f"{hashlib.sha256(prereg.read_bytes()).hexdigest()}.seal.json"
+    gate = finalize_and_issue_gate_receipt_v2(
+        prereg, repo_root=tmp_path, code_files=(code,), manifest_path=seal,
+        sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="catalog-run")
+    assert gate["custody"] == {
+        "mode": "continuous-finalizer-v1",
+        "launch_authoritative": True,
+    }
+    gate_path = tmp_path / "receipts" / f"{gate['receipt_id']}.json"
+    usage = claim_gate_receipt_v2(
+        gate_path, repo_root=tmp_path, consumer="catalog-test",
+        consumed_at="2026-07-14T00:02:00+00:00")
+    buy, sell = "if 등락율 > 2: 매수", "if 수익률 > 3: 매도"
+    candidate = {
+        "name": "ALP_CATALOG_MINIMAL",
+        "buy_sha256": hashlib.sha256(buy.encode()).hexdigest(),
+        "sell_sha256": hashlib.sha256(sell.encode()).hexdigest(),
+    }
+    ledger = append_trial_v2(
+        ts="2026-07-14T00:03:00+00:00", series="B",
+        window="2022-03-23~2023-12-31(발견창)", trial_type="b(test)",
+        target="candidate", result="pass", session="catalog-test", repo_root=tmp_path,
+        gate_receipt_path=gate_path, gate_usage_path=tmp_path / usage["claim"]["path"],
+        input_artifacts=[ref(source)], result_artifacts=[ref(result)],
+        candidate_set=[candidate], path=tmp_path / "n_trials_ledger.jsonl")
+    issue_promotion_manifest_v2(
+        tmp_path, gate_receipt_path=gate_path, gate_claim_path=tmp_path / usage["claim"]["path"],
+        ledger_path=tmp_path / "n_trials_ledger.jsonl", evidence_id=ledger["evidence_id"],
+        created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions")
+    manifest_path = tmp_path / "promotions" / f"{ledger['evidence_id']}.pre.json"
+    original_connect = sqlite3.connect
+    authority_temp_connects: list[object] = []
+    authority_connects: list[object] = []
+
+    def reject_authority_temp(database: object, *args: object, **kwargs: object):
+        authority_connects.append(database)
+        if isinstance(database, (str, Path)):
+            candidate = str(database).replace("\\", "/")
+            if "/promotion_catalogs/" in candidate and ".tmp" in candidate:
+                authority_temp_connects.append(database)
+                raise sqlite3.OperationalError("authority temporary catalog path is unavailable")
+        return original_connect(database, *args, **kwargs)
+
+    monkeypatch.setattr(sqlite3, "connect", reject_authority_temp)
+    original_write_serialized = builder._write_serialized_sqlite_to_retained_file
+
+    def fail_serialized_write(*args: object, **kwargs: object) -> None:
+        raise OSError("simulated retained authority write failure")
+
+    monkeypatch.setattr(builder, "_write_serialized_sqlite_to_retained_file", fail_serialized_write)
+    with pytest.raises(OSError, match="simulated retained authority write failure"):
+        builder.build_all(tmp_path, repo_root=tmp_path, promotion_manifest_path=manifest_path)
+    assert not list((tmp_path / "promotion_catalogs").glob("*.tmp"))
+    monkeypatch.setattr(
+        builder, "_write_serialized_sqlite_to_retained_file", original_write_serialized)
+    pre = builder.build_all(tmp_path, repo_root=tmp_path, promotion_manifest_path=manifest_path)
+    assert pre["missing"] == pre["skipped"] == []
+    assert pre["promotion_receipt"]["source_hashes"] == sorted(
+        [ref(source), ref(result)], key=lambda item: item["path"])
+    assert pre["catalog_authority"]["canonical_record_count"] == 1
+    canonical_db = tmp_path / pre["promotion_receipt"]["catalog_db"]["path"]
+    canonical_readonly_uri = f"{canonical_db.as_uri()}?mode=ro"
+    assert authority_temp_connects == []
+    assert authority_connects.count(":memory:") == 2
+    assert all(
+        database == ":memory:" or database == canonical_readonly_uri
+        for database in authority_connects
+    )
+    readonly = original_connect(canonical_readonly_uri, uri=True)
+    try:
+        assert readonly.execute(
+            "SELECT name FROM catalog_authority").fetchall() == [("ALP_CATALOG_MINIMAL",)]
+        with pytest.raises(sqlite3.OperationalError):
+            readonly.execute("INSERT INTO catalog_authority VALUES ('x', 'y', 'z', 'PRE', NULL, 'x')")
+    finally:
+        readonly.close()
+
+    registered = register_conditions_v2(
+        [{"name": candidate["name"], "buy_expr": buy, "sell_expr": sell}],
+        manifest_path=manifest_path, repo_root=tmp_path,
+        now=dt.datetime(2026, 7, 14, 0, 5, tzinfo=dt.timezone.utc))
+    post = builder.build_all(
+        tmp_path, repo_root=tmp_path,
+        promotion_result_path=tmp_path / "promotion_journal" / f"{registered['evidence_id']}.post.json")
+    assert post["missing"] == post["skipped"] == []
+    assert post["promotion_receipt"]["phase"] == "POST"
+    assert post["catalog_authority"]["canonical_record_count"] == 1
+
+def test_json_parse_uses_verified_bytes_when_source_path_is_swapped(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    path = tmp_path / "source.json"
+    original = b'{"value":"verified"}'
+    path.write_bytes(original)
+    receipt = {"sources": [], "missing": [], "skipped": [], "notes": []}
+    original_loads = sources.json.loads
+
+    def swap_then_parse(payload: str) -> object:
+        path.write_text('{"value":"replacement"}', encoding="utf-8")
+        return original_loads(payload)
+
+    monkeypatch.setattr(sources.json, "loads", swap_then_parse)
+    assert sources.read_json(receipt, tmp_path, "source.json") == {"value": "verified"}
+    assert receipt["sources"] == [{
+        "path": "source.json", "status": "loaded",
+        "sha256": hashlib.sha256(original).hexdigest(),
+        "size_bytes": len(original),
+    }]
+
+
+def test_sqlite_snapshot_remains_the_verified_database_after_source_swap(tmp_path: Path):
+    source = tmp_path / "source.db"
+    con = sqlite3.connect(source)
+    con.execute("CREATE TABLE source_rows (value TEXT)")
+    con.execute("INSERT INTO source_rows VALUES ('verified')")
+    con.commit()
+    con.close()
+    expected = builder.sha256_file(source)
+    snapshot = sources.snapshot_sources(tmp_path, tmp_path, {"source.db": expected})
+    try:
+        con = sqlite3.connect(source)
+        con.execute("DROP TABLE source_rows")
+        con.execute("CREATE TABLE source_rows (value TEXT)")
+        con.execute("INSERT INTO source_rows VALUES ('replacement')")
+        con.commit()
+        con.close()
+        snap_con = sqlite3.connect(f"file:{(snapshot / 'source.db').as_posix()}?mode=ro", uri=True)
+        try:
+            assert snap_con.execute("SELECT value FROM source_rows").fetchone()[0] == "verified"
+        finally:
+            snap_con.close()
+    finally:
+        (snapshot / "source.db").unlink()
+        snapshot.rmdir()
+def test_snapshot_preserves_verified_source_mtime_ns(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_text('{"value":"verified"}', encoding="utf-8")
+    expected_mtime_ns = 1_700_000_000_123_456_789
+    os.utime(source, ns=(expected_mtime_ns, expected_mtime_ns))
+    observed_source_mtime_ns = source.stat().st_mtime_ns
+    snapshot = sources.snapshot_sources(
+        tmp_path, tmp_path, {"source.json": builder.sha256_file(source)})
+    try:
+        assert (snapshot / "source.json").stat().st_mtime_ns == observed_source_mtime_ns
+    finally:
+        (snapshot / "source.json").unlink()
+        snapshot.rmdir()
+
+def test_retained_snapshot_rejects_swap_after_snapshot_creation(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_text('{"value":"A"}', encoding="utf-8")
+    snapshot = sources.snapshot_sources(
+        tmp_path, tmp_path, {"source.json": builder.sha256_file(source)})
+    try:
+        snap_source = snapshot / "source.json"
+        original = snap_source.read_bytes()
+        replacement = snapshot / "replacement.json"
+        replacement.write_text('{"value":"B"}', encoding="utf-8")
+        with sources.retain_snapshot_sources(snapshot):
+            if os.name == "nt":
+                with pytest.raises(PermissionError):
+                    os.replace(replacement, snap_source)
+                assert snap_source.read_bytes() == original
+                sources.validate_retained_snapshot_sources()
+            else:
+                os.replace(replacement, snap_source)
+                assert sources.read_json(
+                    {"sources": [], "missing": [], "skipped": [], "notes": []},
+                    snapshot, "source.json",
+                ) is None
+                with pytest.raises(OSError, match="identity changed"):
+                    sources.validate_retained_snapshot_sources()
+    finally:
+        if snapshot.exists():
+            for path in sorted(snapshot.rglob("*"), reverse=True):
+                if path.is_file():
+                    path.unlink()
+                elif path.is_dir():
+                    path.rmdir()
+            snapshot.rmdir()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_authoritative_assets_use_retained_snapshot_bytes_after_live_asset_swap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    run = tmp_path / "run"
+    run.mkdir()
+    asset = run / "asset.json"
+    frozen = b'{"version":"A"}'
+    asset.write_bytes(frozen)
+    snapshot = sources.snapshot_sources(
+        run, tmp_path, {"asset.json": hashlib.sha256(frozen).hexdigest()})
+    monkeypatch.setattr(builder, "ASSET_REGISTRY", [{
+        "asset_id": "asset", "kind": "judgment_json", "base": "run",
+        "path": "asset.json", "status_tag": "sealed",
+    }])
+    receipt = sources.new_receipt(run, tmp_path / "catalog.db")
+    con = sqlite3.connect(":memory:")
+    try:
+        schema.create_schema(con)
+        with sources.retain_snapshot_sources(snapshot) as retained:
+            # The source returns to A before end-of-build validation, but assets
+            # must still come from the retained A observation while live is B.
+            asset.write_bytes(b'{"version":"B"}')
+            builder.load_assets(con, run, receipt, retained)
+            asset.write_bytes(frozen)
+        row = con.execute(
+            "SELECT path, exists_on_disk, sha256, size_bytes FROM assets WHERE asset_id = 'asset'"
+        ).fetchone()
+        assert row == (
+            "asset.json", 1, hashlib.sha256(frozen).hexdigest(), len(frozen))
+        assert receipt["sources"] == []
+        inventory = receipt["inventory"]
+        assert len(inventory) == 1
+        assert inventory[0]["asset_id"] == "asset"
+        assert inventory[0]["path"] == "asset.json"
+        assert inventory[0]["exists_on_disk"] is True
+        assert inventory[0]["sha256"] == hashlib.sha256(frozen).hexdigest()
+        assert inventory[0]["size_bytes"] == len(frozen)
+    finally:
+        con.close()
+        for path in sorted(snapshot.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            else:
+                path.rmdir()
+        snapshot.rmdir()
+
+
+
+def test_duplicate_source_record_rejects_a_hash_for_b_parse(tmp_path: Path):
+    source = tmp_path / "source.json"
+    source.write_bytes(b"A")
+    receipt = {"sources": [], "missing": [], "skipped": [], "notes": []}
+    sources.record_source(receipt, tmp_path, source)
+    source.write_bytes(b"B")
+    with pytest.raises(ValueError, match="different bytes"):
+        sources.record_source(receipt, tmp_path, source)
+
+
+def test_retained_published_pair_rejects_post_validation_db_swap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    db_path = tmp_path / "catalog.db"
+    receipt_path = tmp_path / "catalog.receipt.json"
+    db_path.write_bytes(b"verified DB")
+    db_descriptor = os.open(db_path, os.O_RDONLY)
+    receipt_descriptor: int | None = None
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+    try:
+        receipt_path.write_text(json.dumps({"promotion_receipt": {
+            "catalog_db": {"sha256": builder._sha256_retained_file(
+                db_path, db_descriptor, "published catalog authority DB")},
+        }}), encoding="utf-8")
+        receipt_descriptor = os.open(receipt_path, os.O_RDONLY)
+        original = db_path.read_bytes()
+        replacement = tmp_path / "replacement.db"
+        replacement.write_bytes(b"replacement DB")
+        if os.name == "nt":
+            with pytest.raises(PermissionError):
+                os.replace(replacement, db_path)
+            assert db_path.read_bytes() == original
+            builder._validate_published_catalog_pair(
+                db_path, db_descriptor, receipt_path, receipt_descriptor, tmp_path)
+        else:
+            os.replace(replacement, db_path)
+            with pytest.raises(ValueError, match="identity changed"):
+                builder._validate_published_catalog_pair(
+                    db_path, db_descriptor, receipt_path, receipt_descriptor, tmp_path)
+    finally:
+        if receipt_descriptor is not None:
+            os.close(receipt_descriptor)
+        os.close(db_descriptor)
 
 # ---------------------------------------------------------------------------
 # 스키마.
@@ -230,7 +560,7 @@ def test_build_all_counts_and_receipt(run_dir: Path):
 
 def test_build_all_strategy_details(run_dir: Path):
     builder.build_all(run_dir, write_receipt=False)
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     rows = dict(con.execute("SELECT name, api_compat FROM strategies"))
     assert rows["OLD_B"].startswith("legacy")
     assert rows["#1"].startswith("원문없음")
@@ -241,9 +571,11 @@ def test_build_all_strategy_details(run_dir: Path):
     tag, = con.execute(
         "SELECT status_tag FROM strategies WHERE name='#1'").fetchone()
     assert "외부 벤치마크" in tag
-    assert con.execute(
-        "SELECT COUNT(*) FROM strategies WHERE name='ALP_D5R_B1_S'"
-    ).fetchone()[0] == 1
+    b1 = con.execute(
+        "SELECT api_compat, status_tag FROM strategies WHERE name='ALP_D5R_B1_S'"
+    ).fetchone()
+    assert b1[0] == "historical/non-authoritative(등록 영수증)"
+    assert "비권위" in b1[1]
     # 분류 필드 부재 절(22)은 판정부 inconclusive_nums 목록으로 보강된다.
     assert con.execute(
         "SELECT classification FROM clauses WHERE clause_num=22"
@@ -253,7 +585,7 @@ def test_build_all_strategy_details(run_dir: Path):
 
 def test_build_all_judgment_ledger_links(run_dir: Path):
     builder.build_all(run_dir, write_receipt=False)
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     rows = {r[0]: (r[1], r[2], r[3]) for r in con.execute(
         "SELECT series, verdict, ledger_rows, n_ledger_rows FROM judgments")}
     assert rows["B1 감독형 이관 엔진 A/B"][0].startswith("PASS")
@@ -278,7 +610,7 @@ def test_rebuild_is_idempotent(run_dir: Path):
     first = builder.build_all(run_dir)
     second = builder.build_all(run_dir)
     assert first["table_counts"] == second["table_counts"]
-    con = sqlite3.connect(run_dir / "research_assets.db")
+    con = sqlite3.connect(run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db")
     n, max_id = con.execute("SELECT COUNT(*), MAX(cell_id) FROM cells").fetchone()
     con.close()
     assert n == max_id  # cell_id 시퀀스 초기화 — 재빌드 중복 없음
@@ -315,3 +647,685 @@ def test_gitignore_appends_preserving_content(tmp_path: Path):
     text = (run / ".gitignore").read_text(encoding="utf-8")
     assert text.startswith("*.parquet\n")
     assert "research_assets.db*" in text
+def _promotion_status(evidence_id: str = "a" * 64) -> dict[str, object]:
+    return {
+        "schema_version": 2,
+        "phase": "PRE",
+        "valid": True,
+        "evidence_id": evidence_id,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "b" * 64,
+        "catalog_dir": "promotion_catalogs",
+    }
+
+
+class _ReservationGuard:
+    """Minimal mutation-guard double that exposes only verified open handles."""
+
+    def __init__(self) -> None:
+        self.opened: list[Path] = []
+        self.retained: dict[Path, tuple[tuple[int, int], int]] = {}
+
+    def open_path(self, path: Path, flags: int, mode: int = 0o666) -> int:
+        self.opened.append(path)
+        return os.open(path, flags, mode)
+
+    def validate_file(self, path: Path) -> None:
+        if path.exists() and path.stat().st_nlink != 1:
+            raise builder.EvidenceSchemaError("test guard rejected hardlinked target")
+
+    def hold_path(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+    def hold_write_denied_file(self, path: Path) -> None:
+        return None
+    def retain_creation_fd(self, path: Path, descriptor: int) -> tuple[int, int]:
+        metadata = os.fstat(descriptor)
+        identity = metadata.st_dev, metadata.st_ino
+        self.retained[path] = identity, os.dup(descriptor)
+        return identity
+
+    def commit_created_file(self, path: Path, identity: tuple[int, int]) -> None:
+        registered_identity, descriptor = self.retained.pop(path)
+        assert registered_identity == identity
+        os.close(descriptor)
+
+    def remove_created_file(self, path: Path, identity: tuple[int, int]) -> None:
+        registered_identity, descriptor = self.retained.pop(path)
+        assert registered_identity == identity
+        os.close(descriptor)
+        path.unlink()
+
+    def close(self) -> None:
+        for _, descriptor in self.retained.values():
+            os.close(descriptor)
+        self.retained.clear()
+    def __enter__(self) -> "_ReservationGuard":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
+
+
+def _reserve(db_path: Path, receipt_path: Path) -> builder._PublicationReservation:
+    return builder._reserve_publication(db_path, receipt_path, _ReservationGuard())
+
+
+def test_catalog_output_paths_keep_legacy_defaults_non_authoritative(run_dir: Path):
+    db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, None)
+
+    assert db_path == run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db"
+    assert receipt_path == run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets_build_receipt.json"
+
+
+def test_catalog_output_paths_use_evidence_bound_promotion_defaults(run_dir: Path):
+    evidence_id = "a" * 64
+    status = {**_promotion_status(evidence_id), "catalog_dir": "sealed_catalogs"}
+    db_path, receipt_path = builder._catalog_output_paths(run_dir, None, None, status)
+
+    assert db_path == run_dir / "sealed_catalogs" / f"{evidence_id}.pre.db"
+    assert receipt_path == run_dir / "sealed_catalogs" / f"{evidence_id}.pre.receipt.json"
+
+
+@pytest.mark.parametrize("field", ["db_path", "receipt_path"])
+def test_promotion_output_aliases_are_rejected_before_mutation(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch, field: str,
+):
+    evidence_id = "a" * 64
+    canonical_db = run_dir / "promotion_catalogs" / f"{evidence_id}.db"
+    canonical_receipt = run_dir / "promotion_catalogs" / f"{evidence_id}.receipt.json"
+    alias = canonical_db.parent / "alias" / ".." / canonical_db.name
+    kwargs = {
+        "db_path": canonical_db,
+        "receipt_path": canonical_receipt,
+        field: alias,
+        "repo_root": run_dir,
+        "promotion_manifest_path": run_dir / "promotions" / "test.pre.json",
+    }
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: _promotion_status(evidence_id))
+
+    with pytest.raises(ValueError, match="authority-owned canonical path"):
+        builder.build_all(run_dir, **kwargs)
+
+    assert not (run_dir / "promotion_catalogs").exists()
+    assert not (run_dir / ".gitignore").exists()
+
+
+@pytest.mark.parametrize("field", ["db_path", "receipt_path"])
+def test_legacy_outputs_reject_promotion_namespace_before_mutation(
+    run_dir: Path, field: str,
+):
+    namespace_path = run_dir / "promotion_catalogs" / "untrusted.db"
+    kwargs = {field: namespace_path}
+
+    with pytest.raises(ValueError, match="authority-owned canonical path"):
+        builder.build_all(run_dir, **kwargs)
+
+    assert not (run_dir / "promotion_catalogs").exists()
+    assert not (run_dir / ".gitignore").exists()
+
+
+def test_build_all_rejects_shape_only_promotion_before_catalog_mutation(run_dir: Path):
+    db_path = run_dir / builder.LEGACY_NON_AUTHORITATIVE_CATALOG_ROOT / "research_assets.db"
+    builder.build_all(run_dir, write_receipt=False)
+    before = db_path.read_bytes()
+    manifest_path = run_dir / "promotion_manifest.json"
+    manifest_path.write_text(json.dumps({"schema_version": 2, "kind": "promotion_manifest"}), encoding="utf-8")
+    with pytest.raises(ValueError):
+        builder.build_all(
+            run_dir, write_receipt=False, repo_root=run_dir,
+            promotion_manifest_path=manifest_path)
+    assert db_path.read_bytes() == before
+
+
+@pytest.mark.parametrize("field, value", [
+    ("missing", ["required.json"]),
+    ("skipped", [{"path": "required.json", "reason": "parse failure"}]),
+])
+def test_promotion_source_receipt_rejects_incomplete_inputs(
+    tmp_path: Path, field: str, value: list,
+):
+    source = tmp_path / "required.json"
+    source.write_text("{}", encoding="utf-8")
+    receipt = {
+        "run_dir": str(tmp_path),
+        "missing": [],
+        "skipped": [],
+        "sources": [{"path": "required.json", "status": "loaded",
+                     "sha256": builder.sha256_file(source), "size_bytes": 2}],
+    }
+    receipt[field] = value
+    with pytest.raises(ValueError):
+        builder._strict_source_hashes(receipt, tmp_path, tmp_path)
+
+
+def test_strict_ledger_loader_rejects_unrelated_malformed_row(tmp_path: Path):
+    ledger = tmp_path / "n_trials_ledger.jsonl"
+    ledger.write_text('{"ts":"not-a-timestamp"}\n', encoding="utf-8")
+    con = sqlite3.connect(":memory:")
+    schema.create_schema(con)
+    receipt = {"missing": [], "skipped": [], "sources": [], "notes": []}
+    with pytest.raises(ValueError):
+        builder.load_ledger_mirror(con, tmp_path, receipt, strict=True)
+    con.close()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_retained_snapshot_ledger_and_sqlite_deny_same_inode_overwrite(tmp_path: Path):
+    snapshot = tmp_path / "snapshot"
+    snapshot.mkdir()
+    ledger = snapshot / "n_trials_ledger.jsonl"
+    ledger.write_text('{"ts":"2026-01-01T00:00:00+00:00"}\n', encoding="utf-8")
+    catalog = snapshot / "source.db"
+    con = sqlite3.connect(catalog)
+    try:
+        con.execute("CREATE TABLE snapshot_authority (value TEXT NOT NULL)")
+        con.execute("INSERT INTO snapshot_authority VALUES ('verified')")
+        con.commit()
+    finally:
+        con.close()
+    originals = {path: path.read_bytes() for path in (ledger, catalog)}
+
+    with sources.retain_snapshot_sources(snapshot):
+        assert json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])["ts"]
+        con = sqlite3.connect(f"{catalog.as_uri()}?mode=ro", uri=True)
+        try:
+            assert con.execute("SELECT value FROM snapshot_authority").fetchone() == ("verified",)
+        finally:
+            con.close()
+        for path in (ledger, catalog):
+            with pytest.raises(OSError) as exc:
+                path.write_bytes(b"same-inode overwrite")
+            assert (
+                getattr(exc.value, "winerror", None) in {5, 32}
+                or exc.value.errno == 13
+            )
+            assert path.read_bytes() == originals[path]
+            assert sources.sha256_file(path) == hashlib.sha256(originals[path]).hexdigest()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_final_publication_pair_denies_in_place_overwrite_until_guard_release(tmp_path: Path):
+    from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+    db_path = tmp_path / "published.db"
+    receipt_path = tmp_path / "published.receipt.json"
+    db_path.write_bytes(b"verified database bytes")
+    receipt_path.write_bytes(b'{"verified":true}')
+    originals = {path: path.read_bytes() for path in (db_path, receipt_path)}
+    guard = _WindowsAuthorityGuard(tmp_path, {}, ())
+    try:
+        for path in originals:
+            guard.hold_write_denied_file(path)
+        for path in originals:
+            with pytest.raises(OSError) as exc:
+                path.write_bytes(b"same-inode overwrite")
+            assert (
+                getattr(exc.value, "winerror", None) in {5, 32}
+                or exc.value.errno == 13
+            )
+            assert path.read_bytes() == originals[path]
+    finally:
+        guard.close()
+@pytest.mark.skipif(os.name != "nt", reason="Windows authority is the supported platform")
+def test_sealed_publication_pair_rejects_writes_after_guard_release(tmp_path: Path):
+    from alpha_lab.discipline.prereg import _WindowsAuthorityGuard
+
+    db_path = tmp_path / "published.db"
+    receipt_path = tmp_path / "published.receipt.json"
+    db_path.write_bytes(b"verified database bytes")
+    receipt_path.write_bytes(b'{"verified":true}')
+    guard = _WindowsAuthorityGuard(tmp_path, {}, ())
+    try:
+        guard.hold_write_denied_file(db_path)
+        guard.hold_write_denied_file(receipt_path)
+        builder._seal_published_catalog_pair(db_path, receipt_path)
+    finally:
+        guard.close()
+
+    try:
+        for path in (db_path, receipt_path):
+            with pytest.raises(OSError):
+                path.write_bytes(b"ordinary overwrite")
+            replacement = tmp_path / f"replacement-{path.name}"
+            replacement.write_bytes(b"replacement")
+            with pytest.raises(OSError):
+                replacement.replace(path)
+        builder.recover_published_catalog_immutability(db_path, receipt_path)
+        db_path.write_bytes(b"administrative recovery")
+        receipt_path.write_bytes(b"administrative recovery")
+    finally:
+        builder.recover_published_catalog_immutability(db_path, receipt_path)
+
+
+def test_promotion_sources_must_exactly_match_manifest_artifacts(tmp_path: Path):
+    source = tmp_path / "bound.json"
+    extra = tmp_path / "extra.json"
+    source.write_text("bound", encoding="utf-8")
+    extra.write_text("extra", encoding="utf-8")
+    receipt = {
+        "run_dir": str(tmp_path), "missing": [], "skipped": [], "notes": [],
+        "sources": [
+            {"path": "bound.json", "status": "loaded",
+             "sha256": builder.sha256_file(source), "size_bytes": source.stat().st_size},
+        ],
+    }
+    bound = [{"path": "bound.json", "sha256": builder.sha256_file(source)}]
+
+    assert builder._strict_source_hashes(receipt, tmp_path, tmp_path, bound) == bound
+    receipt["sources"].append(
+        {"path": "extra.json", "status": "loaded",
+         "sha256": builder.sha256_file(extra), "size_bytes": extra.stat().st_size})
+    with pytest.raises(ValueError, match="exactly equal"):
+        builder._strict_source_hashes(receipt, tmp_path, tmp_path, bound)
+def _authority_status(phase: str) -> dict[str, object]:
+    candidates = [
+        {"name": "ALP_A", "buy_sha256": "a" * 64, "sell_sha256": "b" * 64},
+        {"name": "ALP_B", "buy_sha256": "c" * 64, "sell_sha256": "d" * 64},
+    ]
+    return {
+        "phase": phase,
+        "candidate_set": candidates,
+        "outcomes": (
+            None if phase == "PRE" else {
+                "inserted": [{
+                    "name": "ALP_A", "buy_sha256": "a" * 64,
+                    "sell_sha256": "b" * 64,
+                }],
+                "conflicts": [{
+                    "name": "ALP_B", "reason": "name_exists",
+                    "existing_tables": ["stockbuy"],
+                }],
+            }
+        ),
+    }
+
+
+@pytest.mark.parametrize("phase", ["PRE", "POST"])
+def test_catalog_authority_records_bind_every_candidate_and_disposition(
+    tmp_path: Path, phase: str,
+):
+    status = _authority_status(phase)
+    records = builder._canonical_authority_records(status)
+
+    assert [record["name"] for record in records] == ["ALP_A", "ALP_B"]
+    assert records[0]["buy_sha256"] == "a" * 64
+    assert records[1]["sell_sha256"] == "d" * 64
+    assert records[0]["phase"] == phase
+    if phase == "PRE":
+        assert {record["disposition"] for record in records} == {"pending_post"}
+    else:
+        assert [(record["outcome"], record["disposition"]) for record in records] == [
+            ("inserted", "published"), ("conflict", "name_exists"),
+        ]
+
+    con = sqlite3.connect(tmp_path / f"{phase}.db")
+    try:
+        persisted = builder._write_authority_records(con, status)
+        assert builder._authority_summary(persisted) == {
+            "canonical_record_count": 2,
+            "canonical_record_sha256": builder.sha256_canonical(records),
+        }
+        con.execute(
+            "INSERT INTO catalog_authority VALUES ('extra', ?, ?, ?, ?, ?)",
+            ("e" * 64, "f" * 64, phase, "extra", "extra"),
+        )
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+        con.execute("DELETE FROM catalog_authority WHERE name = 'extra'")
+        con.execute("DELETE FROM catalog_authority WHERE name = 'ALP_B'")
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+        con.execute(
+            "INSERT INTO catalog_authority VALUES ('ALP_B', ?, ?, ?, ?, ?)",
+            ("c" * 64, "d" * 64, phase, "wrong", "wrong"),
+        )
+        with pytest.raises(ValueError, match="omitted, extra, or misstated"):
+            builder._verify_authority_records(con, records)
+    finally:
+        con.close()
+
+
+def test_no_replace_publication_preserves_first_authority_bytes(tmp_path: Path):
+    first = builder._write_temp_bytes(tmp_path, ".first.", b"first")
+    second = builder._write_temp_bytes(tmp_path, ".second.", b"second")
+    destination = tmp_path / "canonical.db"
+    guard = _ReservationGuard()
+    try:
+        builder._publish_no_replace(first, destination, guard)
+        with pytest.raises(FileExistsError):
+            builder._publish_no_replace(second, destination, guard)
+        assert destination.read_bytes() == b"first"
+        assert destination.stat().st_nlink == 1
+        assert first.stat().st_nlink == 1
+        assert guard.retained == {}
+    finally:
+        guard.close()
+        for path in (first, second):
+            if path.exists():
+                path.unlink()
+@pytest.mark.parametrize("failure", ("short-write", "zero-write", "write-error", "fsync-error"))
+def test_no_replace_publication_rolls_back_failed_creation_and_retries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+):
+    source = builder._write_temp_bytes(tmp_path, ".source.", b"authority bytes")
+    destination = tmp_path / "canonical.db"
+    guard = _ReservationGuard()
+    original_write = os.write
+    original_fsync = os.fsync
+
+    if failure == "short-write":
+        monkeypatch.setattr(
+            builder.os, "write",
+            lambda descriptor, payload: original_write(descriptor, payload[:1]),
+        )
+    elif failure == "zero-write":
+        monkeypatch.setattr(builder.os, "write", lambda descriptor, payload: 0)
+    elif failure == "write-error":
+        def fail_write(descriptor: int, payload: object) -> int:
+            raise OSError("simulated publication write failure")
+
+        monkeypatch.setattr(builder.os, "write", fail_write)
+    else:
+        def fail_fsync(descriptor: int) -> None:
+            raise OSError("simulated publication fsync failure")
+
+        monkeypatch.setattr(builder.os, "fsync", fail_fsync)
+
+    try:
+        if failure == "short-write":
+            builder._publish_no_replace(source, destination, guard)
+            assert destination.read_bytes() == b"authority bytes"
+            return
+        with pytest.raises(OSError):
+            builder._publish_no_replace(source, destination, guard)
+        assert not destination.exists()
+        assert guard.retained == {}
+        monkeypatch.setattr(builder.os, "write", original_write)
+        monkeypatch.setattr(builder.os, "fsync", original_fsync)
+        builder._publish_no_replace(source, destination, guard)
+        assert destination.read_bytes() == b"authority bytes"
+        assert guard.retained == {}
+    finally:
+        guard.close()
+        for path in (source, destination):
+            if path.exists():
+                path.unlink()
+
+
+def test_retained_catalog_temp_rejects_protected_hardlink_swap(tmp_path: Path):
+    protected = tmp_path / "protected.db"
+    protected.write_bytes(b"protected authority bytes")
+    guard = _ReservationGuard()
+    candidate, descriptor = builder._create_authority_temp(tmp_path, ".candidate.", guard)
+    try:
+        with pytest.raises((builder.EvidenceSchemaError, PermissionError)):
+            os.unlink(candidate)
+            os.link(protected, candidate)
+            builder._validate_retained_file_identity(
+                candidate, descriptor, "catalog authority temporary file")
+        assert protected.read_bytes() == b"protected authority bytes"
+    finally:
+        os.close(descriptor)
+        if candidate.exists():
+            candidate.unlink()
+
+
+def test_live_publication_owner_cannot_be_stolen(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    barrier = threading.Barrier(2)
+    wins: list[builder._PublicationReservation] = []
+    failures: list[BaseException] = []
+
+    def reserve() -> None:
+        barrier.wait()
+        try:
+            wins.append(_reserve(db_path, receipt_path))
+        except FileExistsError as exc:
+            failures.append(exc)
+
+    workers = [threading.Thread(target=reserve), threading.Thread(target=reserve)]
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join()
+    try:
+        assert len(wins) == 1
+        assert len(failures) == 1
+        assert wins[0].path.exists()
+    finally:
+        for reservation in wins:
+            builder._release_reservation(reservation)
+
+
+def test_abandoned_publication_reservation_is_recovered_after_crash(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    crashed_owner = _reserve(db_path, receipt_path)
+
+    builder._abandon_reservation(crashed_owner)
+
+    assert crashed_owner.path.exists()
+    retry_owner = _reserve(db_path, receipt_path)
+    try:
+        assert retry_owner.path == crashed_owner.path
+        assert retry_owner.token != crashed_owner.token
+    finally:
+        builder._release_reservation(retry_owner)
+    assert crashed_owner.path.exists()
+    assert crashed_owner.path.read_bytes() == b"UNOWNED\n"
+
+
+def test_preplaced_hardlink_reservation_is_rejected(tmp_path: Path):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    reservation_path = tmp_path / f".{db_path.name}.{receipt_path.name}.publish"
+    original = tmp_path / "preplaced"
+    original.write_bytes(b"attacker")
+    os.link(original, reservation_path)
+
+    with pytest.raises(ValueError, match="single-link"):
+        _reserve(db_path, receipt_path)
+
+
+def test_reservation_locks_empty_inode_before_token_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    db_path = tmp_path / "evidence.pre.db"
+    receipt_path = tmp_path / "evidence.pre.receipt.json"
+    observed_sizes: list[int] = []
+    original_lock = builder._lock_reservation
+
+    def lock_after_observing_empty(descriptor: int) -> None:
+        observed_sizes.append(os.fstat(descriptor).st_size)
+        original_lock(descriptor)
+
+    monkeypatch.setattr(builder, "_lock_reservation", lock_after_observing_empty)
+    reservation = _reserve(db_path, receipt_path)
+    try:
+        assert observed_sizes == [0]
+    finally:
+        builder._release_reservation(reservation)
+
+def test_build_all_recovers_db_only_crash_with_abandoned_reservation(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    status = {
+        **_authority_status("PRE"),
+        "schema_version": 2,
+        "valid": True,
+        "evidence_id": "a" * 64,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "b" * 64,
+        "catalog_dir": "promotion_catalogs",
+        "source_artifacts": [],
+        "authority_paths": {"catalog_dir": "promotion_catalogs"},
+    }
+    db_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.db"
+    receipt_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.receipt.json"
+    original_publish = builder._publish_no_replace
+    original_release = builder._release_reservation
+
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: status)
+    test_guard = _ReservationGuard()
+    monkeypatch.setattr(builder, "authority_mutation_guard", lambda *args, **kwargs: test_guard)
+    monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "_revalidate_authority_paths", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        builder,
+        "_promotion_receipt",
+        lambda *args, **kwargs: {
+            "schema_version": 2,
+            "catalog_db": {"sha256": kwargs["verified_db_sha256"]},
+        },
+    )
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+
+    class SimulatedCrash(BaseException):
+        pass
+
+    def publish_db_then_crash(
+        source: Path,
+        destination: Path,
+        mutation_guard: _ReservationGuard,
+        *,
+        source_descriptor: int | None = None,
+    ) -> None:
+        original_publish(
+            source, destination, mutation_guard, source_descriptor=source_descriptor)
+        if destination == db_path:
+            raise SimulatedCrash()
+
+    monkeypatch.setattr(builder, "_publish_no_replace", publish_db_then_crash)
+    monkeypatch.setattr(builder, "_release_reservation", builder._abandon_reservation)
+    with pytest.raises(SimulatedCrash):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+
+    db_bytes = db_path.read_bytes()
+    reservation_path = db_path.parent / f".{db_path.name}.{receipt_path.name}.publish"
+    assert reservation_path.exists()
+    assert not receipt_path.exists()
+
+    monkeypatch.setattr(builder, "_publish_no_replace", original_publish)
+    monkeypatch.setattr(builder, "_release_reservation", original_release)
+    builder.build_all(
+        run_dir, repo_root=run_dir,
+        promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+    )
+
+    assert db_path.read_bytes() == db_bytes
+    assert receipt_path.exists()
+    assert reservation_path.exists()
+    assert reservation_path.read_bytes() == b"UNOWNED\n"
+def test_catalog_asset_inventory_does_not_expand_sealed_sources(run_dir: Path):
+    receipt = sources.new_receipt(run_dir, run_dir / "catalog.db")
+    con = sqlite3.connect(":memory:")
+    try:
+        schema.create_schema(con)
+        builder.load_assets(con, run_dir, receipt, catalog_db_path=run_dir / "catalog.db")
+    finally:
+        con.close()
+
+    assert receipt["sources"] == []
+    assert len(receipt["inventory"]) == len(ASSET_REGISTRY)
+    assert any(
+        item["asset_id"] == "research_assets_db"
+        for item in receipt["inventory"]
+    )
+
+
+def test_build_all_recovers_receipt_published_crash_by_sealing_pair(
+    run_dir: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    status = {
+        **_authority_status("PRE"),
+        "schema_version": 2,
+        "valid": True,
+        "evidence_id": "c" * 64,
+        "source_kind": "promotion_manifest",
+        "source_path": "promotions/test.pre.json",
+        "source_sha256": "d" * 64,
+        "catalog_dir": "promotion_catalogs",
+        "source_artifacts": [],
+        "authority_paths": {"catalog_dir": "promotion_catalogs"},
+    }
+    db_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.db"
+    receipt_path = run_dir / "promotion_catalogs" / f"{status['evidence_id']}.pre.receipt.json"
+    original_seal = builder._seal_published_catalog_pair
+    monkeypatch.setattr(builder, "_promotion_status", lambda *args: status)
+    monkeypatch.setattr(
+        builder, "authority_mutation_guard", lambda *args, **kwargs: _ReservationGuard())
+    monkeypatch.setattr(builder, "_strict_source_hashes", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "load_ledger_mirror", lambda *args, **kwargs: [])
+    monkeypatch.setattr(builder, "_promotion_receipt", lambda *args, **kwargs: {
+        "schema_version": 2, "catalog_db": {"sha256": kwargs["verified_db_sha256"]},
+    })
+    monkeypatch.setattr(builder, "validate_catalog_promotion_receipt_v2", lambda *args, **kwargs: None)
+
+    class SimulatedCrash(BaseException):
+        pass
+
+    monkeypatch.setattr(
+        builder, "_seal_published_catalog_pair",
+        lambda *args: (_ for _ in ()).throw(SimulatedCrash()),
+    )
+    monkeypatch.setattr(builder, "_release_reservation", builder._abandon_reservation)
+    with pytest.raises(SimulatedCrash):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+
+    assert db_path.exists() and receipt_path.exists()
+    published_bytes = receipt_path.read_bytes()
+    tampered = json.loads(published_bytes)
+    tampered["inventory"].append({"asset_id": "tampered"})
+    receipt_path.write_text(json.dumps(tampered), encoding="utf-8")
+    monkeypatch.setattr(builder, "_seal_published_catalog_pair", original_seal)
+    monkeypatch.setattr(builder, "_release_reservation", builder._release_reservation)
+    with pytest.raises(builder.EvidenceSchemaError, match="outer receipt"):
+        builder.build_all(
+            run_dir, repo_root=run_dir,
+            promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+        )
+    receipt_path.write_bytes(published_bytes)
+    builder.build_all(
+        run_dir, repo_root=run_dir,
+        promotion_manifest_path=run_dir / "promotions" / "test.pre.json",
+    )
+    assert db_path.exists() and receipt_path.exists()
+def test_existing_authority_db_recovery_compares_logical_catalog_state(tmp_path: Path):
+    records = builder._canonical_authority_records(_authority_status("PRE"))
+    existing = tmp_path / "existing.db"
+    rebuilt = tmp_path / "rebuilt.db"
+    for path in (existing, rebuilt):
+        con = sqlite3.connect(path)
+        try:
+            builder._write_authority_records(con, _authority_status("PRE"))
+            con.commit()
+        finally:
+            con.close()
+    con = sqlite3.connect(existing)
+    try:
+        con.execute("PRAGMA user_version=1")
+        con.execute("PRAGMA user_version=0")
+        con.commit()
+    finally:
+        con.close()
+    existing_descriptor = os.open(existing, os.O_RDONLY)
+    rebuilt_descriptor = os.open(rebuilt, os.O_RDONLY)
+    try:
+        rebuilt_state = builder._logical_catalog_state(
+            rebuilt, rebuilt_descriptor, "rebuilt catalog authority DB")
+        assert builder._verify_existing_authority_db(
+            existing, existing_descriptor, rebuilt_state, records,
+        ) == builder._sha256_retained_file(
+            existing, existing_descriptor, "published catalog authority DB")
+    finally:
+        os.close(existing_descriptor)
+        os.close(rebuilt_descriptor)

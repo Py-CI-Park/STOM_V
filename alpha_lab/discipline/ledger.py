@@ -17,12 +17,24 @@ known_ok=True 명시 없이는 거부(fail-closed, 원장 §1 veto 전용).
 
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import json
 import math
+import os
 from pathlib import Path
 
 from alpha_lab.discipline import windows
+from alpha_lab.discipline.evidence import (
+    EvidenceSchemaError,
+    build_evidence_identity,
+    require_full_sha256,
+    require_timestamp_order,
+    sha256_canonical,
+    validate_gate_receipt,
+    validate_gate_usage,
+    validate_measurement_bindings,
+)
 
 _ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = (
@@ -45,6 +57,7 @@ REQUIRED_KEYS: tuple[str, ...] = (
     "result",
     "session",
 )
+V2_REQUIRED_KEYS = REQUIRED_KEYS + ("schema_version", "evidence_id", "evidence")
 
 # 원장 규약 §3.1 — 시행 유형 a/b/c. type-d 신설은 규약 개정(원장 §5)으로만.
 ALLOWED_TRIAL_PREFIXES: tuple[str, ...] = ("a", "b", "c")
@@ -53,10 +66,20 @@ ALLOWED_TRIAL_PREFIXES: tuple[str, ...] = ("a", "b", "c")
 class LedgerSchemaError(Exception):
     """원장 스키마 위반(필수 키·형식·파싱 불가) — fail-closed 거부."""
 
+class LegacyLedgerWriteBlockedError(LedgerSchemaError):
+    """The public v1 writer is retired; historical rows remain readable."""
+
 
 def _serialize(record: dict) -> str:
-    """REQUIRED_KEYS 순서로 1행 직렬화 — 기존 행과 byte 호환."""
-    ordered = {key: record[key] for key in REQUIRED_KEYS}
+    """Serialize v1 byte-compatibly and v2 with its appended contract keys."""
+    if record.get("schema_version", 1) in (None, 1):
+        _validate_v1_record(record)
+        ordered = {key: record[key] for key in REQUIRED_KEYS}
+    elif record.get("schema_version") == 2:
+        _validate_v2_record(record)
+        ordered = {key: record[key] for key in V2_REQUIRED_KEYS}
+    else:
+        raise LedgerSchemaError(f"unsupported ledger schema_version: {record.get('schema_version')!r}")
     return json.dumps(ordered, ensure_ascii=False)
 
 
@@ -79,6 +102,113 @@ def _validate_schema(record: dict) -> None:
         raise LedgerSchemaError(
             f"trial_type은 a/b/c로 시작해야 합니다(예: 'b(오프라인 봉인 판정)'). "
             f"type-d 등 신설은 원장 §5 규약 개정으로만: {record['trial_type']!r}"
+        )
+def _validate_v1_record(record: object) -> None:
+    if not isinstance(record, dict) or set(record) != set(REQUIRED_KEYS):
+        raise LedgerSchemaError("필수 키 누락 또는 추가 키 존재: v1 ledger row must contain exactly the seven required keys")
+    _validate_schema(record)
+def _validate_v2_record(record: dict) -> None:
+    if set(record) != set(V2_REQUIRED_KEYS):
+        raise LedgerSchemaError(f"v2 ledger row has invalid keys: {sorted(record)!r}")
+    _validate_schema(record)
+    if record["schema_version"] != 2:
+        raise LedgerSchemaError("v2 ledger row schema_version must be exactly 2")
+    try:
+        evidence_id = require_full_sha256(record["evidence_id"], "evidence_id")
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(str(exc)) from exc
+    evidence = record["evidence"]
+    identity_keys = {
+        "prereg_sha256", "seal_manifest_sha256", "code_manifest_sha256",
+        "gate_receipt_id", "gate_receipt_sha256", "gate_usage_sha256",
+        "input_artifacts", "result_artifacts", "candidate_set", "candidate_set_sha256",
+        "negative_or_kill",
+    }
+    if not isinstance(evidence, dict) or set(evidence) != identity_keys:
+        raise LedgerSchemaError("v2 ledger evidence has invalid keys")
+    try:
+        for key in ("prereg_sha256", "seal_manifest_sha256", "code_manifest_sha256", "gate_receipt_id", "gate_receipt_sha256", "gate_usage_sha256", "candidate_set_sha256"):
+            require_full_sha256(evidence[key], f"evidence.{key}")
+        inputs, results, candidates, candidate_hash = validate_measurement_bindings(
+            input_artifacts=evidence["input_artifacts"],
+            result_artifacts=evidence["result_artifacts"],
+            candidate_set=evidence["candidate_set"],
+            negative_or_kill=evidence["negative_or_kill"],
+            repo_root=_ROOT,
+            verify_files=False,
+        )
+        if inputs != evidence["input_artifacts"] or results != evidence["result_artifacts"] or candidates != evidence["candidate_set"] or candidate_hash != evidence["candidate_set_sha256"]:
+            raise LedgerSchemaError("v2 ledger measurement bindings are not canonical")
+        if evidence_id != sha256_canonical(evidence):
+            raise LedgerSchemaError("v2 ledger evidence_id does not match evidence")
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(str(exc)) from exc
+
+
+@contextlib.contextmanager
+def _canonical_ledger_lock(target_path: Path, guard):
+    """Serialize every v2 scan-and-append through the held authority parent."""
+    lock_path = target_path.with_name(f"{target_path.name}.lock")
+    fd = guard.open_path(lock_path, os.O_RDWR | os.O_CREAT)
+    with os.fdopen(fd, "a+b") as handle:
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+            os.fsync(handle.fileno())
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            unlock = lambda: msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            unlock = lambda: fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        try:
+            yield
+        finally:
+            unlock()
+
+
+def _append_record(target_path: Path, record: dict, *, guard=None) -> None:
+    line = _serialize(record)
+    eol, prefix = b"\n", b""
+    if guard is not None:
+        try:
+            with os.fdopen(guard.open_path(target_path, os.O_RDONLY), "rb") as source:
+                existing = source.read()
+        except FileNotFoundError:
+            existing = b""
+    elif target_path.exists():
+        existing = target_path.read_bytes()
+    else:
+        existing = b""
+    if b"\r\n" in existing:
+        eol = b"\r\n"
+    if existing and not existing.endswith(b"\n"):
+        prefix = eol
+    if guard is not None:
+        fd = guard.open_path(target_path, os.O_WRONLY | os.O_APPEND | os.O_CREAT)
+        with os.fdopen(fd, "ab") as handle:
+            handle.write(prefix + line.encode("utf-8") + eol)
+            handle.flush()
+            os.fsync(handle.fileno())
+    else:
+        with open(target_path, "ab") as handle:
+            handle.write(prefix + line.encode("utf-8") + eol)
+
+
+def _validate_append_fields(record: dict, known_ok: bool) -> None:
+    _validate_schema(record)
+    contact = _known_contact_zones(record["window"], record["series"])
+    if contact and not known_ok:
+        raise windows.WindowViolation(
+            f"known 창 접촉 기입 거부(fail-closed): window={record['window']!r} 이(가) "
+            f"{sorted(contact)} 에 접촉합니다. veto/감사 기록이 맞으면 "
+            f'known_ok=True를 명시하십시오. 원장 §1: "{windows.LEDGER_QUOTE_KNOWN}"'
         )
 
 
@@ -120,12 +250,82 @@ def append_trial(
     path=None,
     known_ok: bool = False,
 ) -> dict:
-    """전역 n_trials 원장에 시행 1행을 append한다 — 유일한 기입 경로.
+    """Retired v1 writer; v1 ledger rows are historical read-only evidence."""
+    raise LegacyLedgerWriteBlockedError(
+        "append_trial is retired: v1 ledger writes are blocked before mutation; use append_trial_v2"
+    )
+def _contract_ledger_path(root: Path, receipt: dict) -> Path:
+    """Derive the sole v2 ledger destination from the receipt's sealed contract."""
+    try:
+        seal_path = root / Path(*receipt["seal_manifest"]["path"].split("/"))
+        seal = json.loads(seal_path.read_text(encoding="utf-8"))
+        document = root / Path(*seal["sealed_doc"]["path"].split("/"))
+        from alpha_lab.discipline.prereg import _parse_contract
 
-    known 창(2025-01-01~2026-02-27·부재 창·계열-known 2024) 접촉 window는
-    known_ok=True를 명시해야만 기록된다(veto/감사 기록 용도 — 원장 §1).
-    반환: 기록된 레코드 사본(dict).
-    """
+        contract = _parse_contract(document.read_text(encoding="utf-8"), root)
+    except (OSError, KeyError, TypeError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise LedgerSchemaError(f"cannot derive v2 ledger path from sealed contract: {exc}") from exc
+    return (root / Path(*contract["ledger_path"].split("/"))).resolve()
+
+
+def append_trial_v2(
+    *,
+    ts: str,
+    series: str,
+    window: str,
+    trial_type: str,
+    target: str,
+    result: str,
+    session: str,
+    repo_root: Path | str,
+    gate_receipt_path: Path | str,
+    gate_usage_path: Path | str,
+    input_artifacts: list[dict[str, str]],
+    result_artifacts: list[dict[str, str]],
+    candidate_set: list[dict[str, str]],
+    negative_or_kill: bool = False,
+    path: Path | str | None = None,
+    known_ok: bool = False,
+) -> dict:
+    """Append a v2 evidence-bound trial after validating its immutable claim."""
+    root = Path(repo_root).resolve()
+    receipt_file = Path(gate_receipt_path).resolve()
+    usage_file = Path(gate_usage_path).resolve()
+    try:
+        receipt_value = json.loads(receipt_file.read_text(encoding="utf-8"))
+        usage_value = json.loads(usage_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LedgerSchemaError(f"v2 gate receipt or usage cannot be read: {exc}") from exc
+    try:
+        receipt = validate_gate_receipt(receipt_value, repo_root=root)
+        receipt_id = require_full_sha256(receipt["receipt_id"], "receipt_id")
+        if receipt_file != root / "receipts" / f"{receipt_id}.json":
+            raise EvidenceSchemaError("gate_receipt_path is not the canonical receipt path")
+        if usage_file != root / "claims" / f"{receipt_id}.json":
+            raise EvidenceSchemaError("gate_usage_path is not the canonical claim path")
+        usage = validate_gate_usage(usage_value, receipt=receipt)
+        evidence_id, evidence = build_evidence_identity(
+            receipt,
+            usage,
+            input_artifacts=input_artifacts,
+            result_artifacts=result_artifacts,
+            candidate_set=candidate_set,
+            negative_or_kill=negative_or_kill,
+            repo_root=root,
+        )
+    except EvidenceSchemaError as exc:
+        raise LedgerSchemaError(f"invalid v2 evidence chain: {exc}") from exc
+    try:
+        require_timestamp_order(
+            ("sealed_at", json.loads(
+                (root / Path(*receipt["seal_manifest"]["path"].split("/"))).read_text(
+                    encoding="utf-8"))["sealed_at"]),
+            ("issued_at", receipt["issued_at"]),
+            ("consumed_at", usage["consumed_at"]),
+            ("ledger.ts", ts),
+        )
+    except (OSError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise LedgerSchemaError(f"invalid v2 evidence chronology: {exc}") from exc
     record = {
         "ts": ts,
         "series": series,
@@ -134,41 +334,64 @@ def append_trial(
         "target": target,
         "result": result,
         "session": session,
+        "schema_version": 2,
+        "evidence_id": evidence_id,
+        "evidence": evidence,
     }
-    _validate_schema(record)
-    contact = _known_contact_zones(window, series)
-    if contact and not known_ok:
-        raise windows.WindowViolation(
-            f"known 창 접촉 기입 거부(fail-closed): window={window!r} 이(가) "
-            f"{sorted(contact)} 에 접촉합니다. veto/감사 기록이 맞으면 "
-            f'known_ok=True를 명시하십시오. 원장 §1: "{windows.LEDGER_QUOTE_KNOWN}"'
-        )
-    target_path = Path(path) if path is not None else DEFAULT_LEDGER_PATH
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-    line = _serialize(record)
-    eol, prefix = b"\n", b""
-    if target_path.exists():
-        existing = target_path.read_bytes()
-        if b"\r\n" in existing:
-            eol = b"\r\n"  # 기존 원장 관례(CRLF) 유지 — 파일 내 EOL 혼재 방지
-        if existing and not existing.endswith(b"\n"):
-            prefix = eol  # 마지막 행 미종결 파일 보호(행 붙음 방지)
-    with open(target_path, "ab") as handle:
-        handle.write(prefix + line.encode("utf-8") + eol)
+    _validate_append_fields(record, known_ok)
+    _validate_v2_record(record)
+    target_path = _contract_ledger_path(root, receipt)
+    if path is not None and Path(path).resolve() != target_path:
+        raise LedgerSchemaError("v2 output path must equal the sealed contract ledger_path")
+    try:
+        seal_file = root / Path(*receipt["seal_manifest"]["path"].split("/"))
+        seal = json.loads(seal_file.read_text(encoding="utf-8"))
+        from alpha_lab.discipline.prereg import _parse_contract, authority_mutation_guard
+        authority_paths = _parse_contract(
+            (root / Path(*seal["sealed_doc"]["path"].split("/"))).read_text(encoding="utf-8"), root
+        )["authority_paths"]
+    except (OSError, KeyError, TypeError, json.JSONDecodeError, EvidenceSchemaError) as exc:
+        raise LedgerSchemaError(f"cannot derive v2 mutation authority: {exc}") from exc
+    with authority_mutation_guard(root, authority_paths) as guard:
+        guard.hold_path(target_path)
+        with _canonical_ledger_lock(target_path, guard):
+            guard.validate_file(target_path)
+            _validate_v2_record(record)
+            try:
+                try:
+                    with os.fdopen(guard.open_path(target_path, os.O_RDONLY), "rb") as source:
+                        existing_rows = _read_all_text(source.read().decode("utf-8"))
+                except FileNotFoundError:
+                    existing_rows = []
+            except LedgerSchemaError as exc:
+                raise LedgerSchemaError(
+                    f"canonical ledger validation failed before append: {exc}"
+                ) from exc
+            duplicate = next(
+                (
+                    row
+                    for row in existing_rows
+                    if row.get("schema_version") == 2
+                    and (
+                        row["evidence"]["gate_receipt_id"] == receipt_id
+                        or row["evidence"]["gate_usage_sha256"] == evidence["gate_usage_sha256"]
+                    )
+                ),
+                None,
+            )
+            if duplicate is not None:
+                raise LedgerSchemaError(
+                    "canonical ledger already contains a v2 row for this gate receipt claim"
+                )
+            _append_record(target_path, record, guard=guard)
     return dict(record)
 
 
-def read_all(path=None) -> list[dict]:
-    """원장 전체를 파싱해 레코드 리스트로 반환한다(없으면 빈 리스트).
 
-    파싱 불가 행·필수 키 누락 행은 행 번호와 함께 LedgerSchemaError
-    (fail-closed — 조용히 건너뛰지 않는다).
-    """
-    target = Path(path) if path is not None else DEFAULT_LEDGER_PATH
-    if not target.exists():
-        return []
+
+def _read_all_text(text: str) -> list[dict]:
+    """Parse ledger content already read from a stable authority descriptor."""
     entries: list[dict] = []
-    text = target.read_text(encoding="utf-8")
     for lineno, raw in enumerate(text.splitlines(), start=1):
         line = raw.strip()
         if not line:
@@ -179,11 +402,32 @@ def read_all(path=None) -> list[dict]:
             raise LedgerSchemaError(
                 f"원장 {lineno}행 JSON 파싱 불가(fail-closed): {exc}"
             ) from exc
-        missing = [key for key in REQUIRED_KEYS if key not in record]
-        if missing:
-            raise LedgerSchemaError(f"원장 {lineno}행 필수 키 누락: {missing}")
+        if not isinstance(record, dict):
+            raise LedgerSchemaError(f"원장 {lineno}행 객체가 아닙니다")
+        if record.get("schema_version", 1) == 2:
+            try:
+                _validate_v2_record(record)
+            except LedgerSchemaError as exc:
+                raise LedgerSchemaError(f"원장 {lineno}행 v2 스키마 위반: {exc}") from exc
+        elif record.get("schema_version", 1) in (None, 1):
+            try:
+                _validate_v1_record(record)
+            except LedgerSchemaError as exc:
+                raise LedgerSchemaError(f"원장 {lineno}행 v1 스키마 위반: {exc}") from exc
+        else:
+            raise LedgerSchemaError(
+                f"원장 {lineno}행 지원하지 않는 schema_version: {record.get('schema_version')!r}"
+            )
         entries.append(record)
     return entries
+
+
+def read_all(path=None) -> list[dict]:
+    """원장 전체를 파싱해 레코드 리스트로 반환한다(없으면 빈 리스트)."""
+    target = Path(path) if path is not None else DEFAULT_LEDGER_PATH
+    if not target.exists():
+        return []
+    return _read_all_text(target.read_text(encoding="utf-8"))
 
 
 def sqrt_2_ln(n: int) -> float:

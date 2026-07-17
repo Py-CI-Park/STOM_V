@@ -10,11 +10,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from alpha_lab.clause_lab import clauses, gate, judge, parser
+from alpha_lab.clause_lab import clauses, gate, judge, pair_report, parser, report
 from alpha_lab.clause_lab.clauses import (
     CLAUSE_SPECS, FAMILIES, PURE_DUPLICATE_PAIRS, RAW_EXPR,
     build_local_definitions, evaluate_clause_bits,
 )
+from alpha_lab.discipline import ledger
 
 _STRAT = Path("_database/strategy.db")
 
@@ -214,3 +215,27 @@ def test_parser_validates_sealed_buy_code():
 def test_verify_buy_sha_rejects_tamper():
     with pytest.raises(ValueError):
         parser.verify_buy_sha("tampered code")
+@pytest.mark.parametrize(
+    ("module", "legacy_label"),
+    [
+        (report, "D1"),
+        (pair_report, "D1-pair"),
+    ],
+)
+def test_legacy_append_n_trials_is_blocked_before_file_mutation(
+    tmp_path, monkeypatch, module, legacy_label,
+):
+    def fail_legacy_write(**_kwargs):
+        raise AssertionError("retired ledger writer was called")
+
+    monkeypatch.setattr(ledger, "append_trial", fail_legacy_write)
+    ledger_path = tmp_path / f"{legacy_label}.jsonl"
+
+    assert "append_n_trials" not in module.__all__
+    with pytest.raises(
+        module.LegacyEvidenceWriteBlockedError,
+        match="legacy-evidence-write-blocked",
+    ):
+        module.append_n_trials(ledger_path, object())
+
+    assert not ledger_path.exists()

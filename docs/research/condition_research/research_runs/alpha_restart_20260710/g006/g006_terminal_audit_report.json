@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "kind": "algorithm-boundary-report",
+  "surface": "algorithm",
+  "artifactScope": {
+    "type": "qa-evidence",
+    "notAReceipt": true,
+    "notAClaim": true,
+    "notALedgerRow": true,
+    "noMotifComputation": true,
+    "noC4Computation": true
+  },
+  "contractRef": {
+    "id": "G006-C3-TEMPORAL-MOTIF",
+    "conditionalBranch": "G006-C4",
+    "preregistrationPath": "docs/research/condition_research/plans/2026-07-16_g006_c3_temporal_motif_preregistration.md",
+    "terminalArtifacts": [
+      "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_identifiability_evidence.json",
+      "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md",
+      "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/c4_gate_status.json"
+    ],
+    "preregistrationStatus": "SEALED",
+    "terminalDecision": "UNDETERMINED",
+    "status": "DNF_UNIDENTIFIED",
+    "c4Status": "CLOSED",
+    "c4StatusMetadataOnly": true,
+    "decisionPriority": [
+      "authority/schema insufficiency -> UNDETERMINED / DNF_UNIDENTIFIED",
+      "identified statistical failure -> KILL",
+      "formal survivor -> PASS"
+    ]
+  },
+  "parentVerification": {
+    "basis": "parent-supplied verification evidence",
+    "exactCitation": "JSON parse+hash+terminal assertions and diff check passed; cleaner 338 zero blockers.",
+    "scope": [
+      "D1/clause current hashes/sizes verified",
+      "JSON schemas verified",
+      "terminal UNDETERMINED/DNF_UNIDENTIFIED verified",
+      "C4 CLOSED metadata-only verified",
+      "diff check passed",
+      "cleaner 338 zero blockers"
+    ],
+    "executorCommandClaim": "none"
+  },
+  "reviewedBindings": {
+    "d1Bits": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+      "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+      "sizeBytes": 6783855,
+      "rows": 863446,
+      "schemaCompact": "code/day/off/t0 + bit_1..bit_39",
+      "authorityLimit": "static final bit snapshot only; no formal true-DNF, stateful activation trace, transition order, first activation timestamp, L3, or outcome authority"
+    },
+    "clauseDictionary": {
+      "path": "alpha_lab/clause_lab/clauses.py",
+      "sha256": "def0f5c8750c19c02b52f026461422572641b36730d28e5bdfa97f20deabb7d4",
+      "sizeBytes": 21405,
+      "authorityLimit": "predicate dictionary only; no authoritative first-activation trace or timestamp authority"
+    }
+  },
+  "contractCoverage": [
+    {
+      "checkId": "COV-01",
+      "topic": "D1/clause hash tamper",
+      "requirement": "The algorithm boundary is bound to the sealed D1 parquet and clause dictionary fingerprints; any hash or size mismatch is a blocker and cannot be repaired by inference.",
+      "evidence": [
+        "D1 path docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet sha256 4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56 size_bytes 6783855 rows 863446.",
+        "Clause dictionary alpha_lab/clause_lab/clauses.py sha256 def0f5c8750c19c02b52f026461422572641b36730d28e5bdfa97f20deabb7d4 size_bytes 21405.",
+        "Parent verification: JSON parse+hash+terminal assertions and diff check passed; cleaner 338 zero blockers."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-02",
+      "topic": "absent authority vs negative KILL",
+      "requirement": "Absence of formal true-DNF/stateful exact activation timestamp authority must terminate as UNDETERMINED / DNF_UNIDENTIFIED before any KILL/PASS statistical interpretation.",
+      "evidence": [
+        "Preregistration decision ladder places authority/schema insufficiency before KILL and PASS.",
+        "g006_c3_identifiability_evidence.json terminal_decision UNDETERMINED, status DNF_UNIDENTIFIED, kill_evaluated false, pass_evaluated false.",
+        "g006_c3_terminal_report.md states the closure is absence of identification authority, not negative motif evidence."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-03",
+      "topic": "post-search self-authority exclusion",
+      "requirement": "The G006 terminal artifacts created after the pre-artifact authority search must not be treated as authority sources for true-DNF or activation traces.",
+      "evidence": [
+        "Authority search receipt result: no authoritative true-DNF/stateful activation timestamp/trace artifact found.",
+        "post_search_g006_artifacts_excluded_from_authority lists g006_c3_identifiability_evidence.json, g006_c3_terminal_report.md, and c4_gate_status.json.",
+        "c4_gate_status.json repeats post_search_g006_artifacts_excluded_from_authority true."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-04",
+      "topic": "generic outcome-read overclaim",
+      "requirement": "The closure may claim no outcome/L3/h300 use for C3 candidate generation, no outcome-dependent motif selection, and no C4 outcome/metric read; it must not overclaim a generic planning-session outcome-read zero counter.",
+      "evidence": [
+        "Preregistration states Planner inspected existing D1 ablation summary/report as prior provenance context and does not assert a generic planning-session outcome-read zero counter.",
+        "Terminal report repeats that existing D1 ablation summary/report were provenance context only.",
+        "Identifiability evidence statement_scope limits the claim to no outcome/L3/h300 field used for C3 candidate generation, no outcome-dependent motif selection, and no C4 outcome/metric read or computation."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-05",
+      "topic": "flat39/off proxy attempts",
+      "requirement": "Final 39-bit snapshots, off, t0, row order, nearest-neighbor, fill, interpolation, timezone conversion, D1 pairwise, or G005 C1/C2 logic must not proxy temporal motif authority or C4 timestamp authority.",
+      "evidence": [
+        "Preregistration prohibits flat-39 proxy, off-as-timestamp, t0-as-activation-timestamp, D1 pairwise proxy, and G005 C1/C2 proxy use.",
+        "Identifiability evidence sets flat39_allowed_as_true_dnf false and off_allowed_as_activation_timestamp false.",
+        "c4_gate_status.json sets flat39_allowed_as_trigger_authority false and off_allowed_as_activation_timestamp false."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-06",
+      "topic": "dormant params mislabeled as results",
+      "requirement": "Dormant identified-path parameters are preregistered only and must not be labeled as executed C3/C4 results.",
+      "evidence": [
+        "Preregistration says dormant values apply only if Phase 0 passes and are not executed results.",
+        "Prereg contract dormant_identified_parameters.executed false.",
+        "Identifiability evidence says dormant_statistical_parameters_scope is preregistration only and no dormant parameter was executed as a result."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-07",
+      "topic": "C4 open/read attempts",
+      "requirement": "C4 must remain closed unless C3 has a formal survivor and a separate exact timestamp gate; C4 outcome/metric reads or computations are prohibited under this closure.",
+      "evidence": [
+        "c4_gate_status.json status CLOSED, status_metadata_only true, c4_opened false, c4_executed false, c4_metrics_generated false.",
+        "c4_gate_status.json c4_outcome_read_allowed false and prohibit_c4_outcome_metric_reads true.",
+        "Terminal report states C4 audit output is CLOSED status metadata only."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-08",
+      "topic": "receipt/ledger fabrication",
+      "requirement": "QA evidence and inline reproducibility metadata must not be presented as a durable receipt, claim, or ledger row.",
+      "evidence": [
+        "Identifiability evidence receipt_scope_note says the inline reproducibility receipt is audit metadata only and does not assert a durable claim, ledger receipt, or authority artifact.",
+        "Terminal report states authority_search.reproducible_receipt is inline metadata and not ledger receipt/claim creation.",
+        "Zero counters for ledger_rows_appended, receipts_created, and claims_created are 0 in the terminal artifacts."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-09",
+      "topic": "side-effect boundaries",
+      "requirement": "The terminal closure must not create engine, DB, registration, promotion, retry, rescue, protected runtime, .gjc, or side-effect authority.",
+      "evidence": [
+        "Identifiability evidence zero_counters engine 0, db_writes 0, registration 0, promotion 0, retry 0, rescue 0.",
+        "c4_gate_status.json zero_counters engine 0, db_writes 0, registration 0, promotion 0, retry 0, rescue 0.",
+        "Preregistration prohibits engine execution, DB write, strategy registration, promotion, retry, rerun, variant run, rescue run, and .gjc/protected runtime artifact authority fabrication."
+      ],
+      "status": "covered"
+    },
+    {
+      "checkId": "COV-10",
+      "topic": "terminal field consistency",
+      "requirement": "The preregistration and three terminal artifacts must agree on Phase 0 UNDETERMINED / DNF_UNIDENTIFIED closure, zero formal candidates, and C4 CLOSED metadata-only status.",
+      "evidence": [
+        "Preregistration contract terminal_decision UNDETERMINED, status DNF_UNIDENTIFIED, c4_status CLOSED, c4_opened false, c4_executed false, c4_status_metadata_emitted true.",
+        "Identifiability evidence terminal terminal_decision UNDETERMINED, status DNF_UNIDENTIFIED, terminal_phase Phase 0, formal_candidate_count 0, c4_closed true.",
+        "Terminal report final decision lists experiment alpha_restart_20260710-g006-c3, UNDETERMINED, DNF_UNIDENTIFIED, Phase 0, formal candidate count 0, C4 closed.",
+        "c4_gate_status.json status CLOSED, status_metadata_only true, terminal_decision UNDETERMINED, c3_status DNF_UNIDENTIFIED, formal_candidate_count 0."
+      ],
+      "status": "covered"
+    }
+  ],
+  "adversarialCases": [
+    {
+      "caseId": "ADV-01",
+      "attempt": "Tamper D1 or clause inputs while preserving downstream-looking reports.",
+      "expectedDisposition": "block",
+      "guardrail": "sealed sha256 and size bindings for D1 parquet and clause dictionary; parent parse+hash+terminal assertions are part of the acceptance basis",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-02",
+      "attempt": "Reclassify absent true-DNF/stateful timestamp authority as a negative KILL or failed motif result.",
+      "expectedDisposition": "block",
+      "guardrail": "authority/schema insufficiency has priority and terminates as UNDETERMINED / DNF_UNIDENTIFIED before KILL/PASS evaluation",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-03",
+      "attempt": "Use the newly created G006 terminal/status artifacts as self-authorizing trace authority after the pre-artifact search.",
+      "expectedDisposition": "block",
+      "guardrail": "post-search G006 artifacts are explicitly excluded from authority-source status",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-04",
+      "attempt": "Overclaim that no outcome was read anywhere in the planning session.",
+      "expectedDisposition": "block",
+      "guardrail": "statement scope is limited to no C3 candidate-generation outcome/L3/h300 use, no outcome-dependent motif selection, and no C4 outcome/metric read; prior D1 ablation summary/report inspection remains provenance context",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-05",
+      "attempt": "Use flat 39-bit snapshots, off, t0, row order, nearest-neighbor fill, interpolation, timezone conversion, D1 pairwise, or G005 C1/C2 logic as activation timestamp or temporal motif proxy.",
+      "expectedDisposition": "block",
+      "guardrail": "flat39/off/t0/proxy authority is explicitly disallowed for true-DNF, activation timestamp, and C4 trigger authority",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-06",
+      "attempt": "Present dormant support floors, Fisher/Simes, BH, lift floors, reconstruction, or C4 gate parameters as executed results.",
+      "expectedDisposition": "block",
+      "guardrail": "dormant_identified_parameters.executed is false and dormant parameters are preregistration only",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-07",
+      "attempt": "Open C4, read candidate outcomes, compute portfolio incremental profit/MDD/scheduler metrics, or inspect rescue/retry outcomes under this terminal closure.",
+      "expectedDisposition": "block",
+      "guardrail": "C4 is CLOSED metadata-only with c4_opened false, c4_executed false, c4_outcome_read_allowed false, and c4_metrics_generated false",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-08",
+      "attempt": "Treat this QA artifact or inline reproducibility metadata as a durable receipt, claim, ledger row, promotion authority, or authority artifact.",
+      "expectedDisposition": "block",
+      "guardrail": "artifactScope marks QA evidence only; terminal artifacts state receipt metadata is not a ledger receipt/claim and ledger/receipt/claim counters are zero",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-09",
+      "attempt": "Infer side-effect completion through engine, DB, registration, promotion, retry, rescue, .gjc, or protected runtime touches.",
+      "expectedDisposition": "block",
+      "guardrail": "side-effect counters remain zero and preregistration prohibits those surfaces for this terminal closure",
+      "result": "rejected_by_contract"
+    },
+    {
+      "caseId": "ADV-10",
+      "attempt": "Mix inconsistent terminal fields such as C3 PASS/KILL, nonzero formal candidates, C4 open, or generated C4 metrics with the G006 terminal closure.",
+      "expectedDisposition": "block",
+      "guardrail": "all referenced artifacts align on Phase 0 UNDETERMINED / DNF_UNIDENTIFIED, formal_candidate_count 0, and C4 CLOSED metadata-only",
+      "result": "rejected_by_contract"
+    }
+  ],
+  "verdict": {
+    "status": "PASS",
+    "passed": true,
+    "reason": "All requested algorithm-boundary checks are covered, C4 remains CLOSED metadata-only, no motif/C4 computation is asserted, and blockers is empty.",
+    "blockersEmptyRequiredForPass": true
+  },
+  "blockers": []
+}

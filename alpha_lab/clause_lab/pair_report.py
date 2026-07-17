@@ -1,24 +1,21 @@
-"""D1 2절 교호작용 — 산출물 조립·렌더·원장 기입 (봉인본 §9·§11·§14-F3).
+"""D1 2절 교호작용 — 산출물 조립·렌더 (봉인본 §9·§11·§14-F3).
 
-- build_gate_report: 무결성 + 자격 게이트 → gate_report.json 페이로드.
-- build_summary / render_report: 짝별 정본 JSON + 판정표·족-짝·미검출 열거 리포트.
-- append_n_trials: 자격 짝 수만큼 type-b 를 discipline.ledger.append_trial 단일 경로로 기입.
-
-§9 딱지(known-오염 + 교호작용 확장)는 모든 산출물에 강제 인쇄.
+Legacy n_trials ledger writes are retired; report and analysis APIs remain read-only.
 """
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Dict, List, Mapping
 
-from alpha_lab.clause_lab.pair_gate import PAIRS
-from alpha_lab.discipline.ledger import append_trial
 
 __all__ = [
-    "CONTAMINATION_LABEL", "append_n_trials", "build_gate_report",
-    "build_summary", "render_report",
+    "CONTAMINATION_LABEL", "LegacyEvidenceWriteBlockedError",
+    "build_gate_report", "build_summary", "render_report",
 ]
+
+class LegacyEvidenceWriteBlockedError(RuntimeError):
+    """Raised when retired D1-pair evidence-writing compatibility API is called."""
+
 
 CONTAMINATION_LABEL = (
     "본 결과의 절 집합(RR8_12 매수식)은 2024 선정창을 포함해 튜닝된 역사적 산물이다"
@@ -30,7 +27,6 @@ CONTAMINATION_LABEL = (
     "계승), O-4 승격은 별도 트랙의 임계 재도출·재검정을 거친다."
 )
 _PREREG = "2026-07-12_d1_pairwise_interaction_preregistration.md (e1c12697)"
-_WINDOW = "2022-03-23~2023-12-31(발견창)"
 
 
 def build_gate_report(integrity: Mapping, qualification: Mapping) -> Dict[str, object]:
@@ -145,29 +141,9 @@ def render_report(summary: Mapping, *, smoke: bool = False) -> str:
     return "\n".join(L) + "\n"
 
 
-def append_n_trials(ledger_path, judgment: Mapping, *,
-                    session: str = "alpha-restart-d1-pairwise") -> int:
-    """자격 짝 수만큼 series D1_PAIR type-b append — discipline.ledger.append_trial 단일 경로.
-
-    검정 미수행 짝(산술 배제·게이트 미달·구조적)은 미계상(§14-F3). 반환: append 행수.
-    """
-    per = judgment["per_pair"]
-    ts = datetime.now(timezone.utc).isoformat()
-    n = 0
-    for k, r in per.items():
-        append_trial(
-            ts=ts, series="D1_PAIR", window=_WINDOW,
-            trial_type="b(오프라인 봉인 판정)", session=session,
-            path=ledger_path,
-            target=(f"D1 2절 교호작용 짝 {k} ({r['family_pair']}) DiD I "
-                    "≥+0.10%p ∧ 일자블록 CI부호일정 ∧ BH-FDR ∧ 연도 동부호 "
-                    "(사전등록 §7, 짝 단위 type-b)"),
-            result=(f"{r['classification']} — I {_fmt(r['I_pp'])}%p, "
-                    f"CI[{_fmt(r['ci_low_pp'])},{_fmt(r['ci_high_pp'])}], "
-                    f"양측p {r['p_two_sided']:.4f}, FDR생존 {r['fdr_survive']}, "
-                    f"MDE {_fmt(r['mde_pp'])}%p, 연도부호 "
-                    f"{r['year_I'][2022]['sign']}/{r['year_I'][2023]['sign']}, "
-                    f"자격셀 {r['cell_counts']} (FDR 분모={judgment['fdr_denominator']})"),
-        )
-        n += 1
-    return n
+def append_n_trials(*_args, **_kwargs) -> None:
+    """Retired compatibility shim; legacy D1-pair ledger writes are prohibited."""
+    raise LegacyEvidenceWriteBlockedError(
+        "legacy-evidence-write-blocked: D1-pair legacy ledger writes are retired; "
+        "use the authenticated v2 evidence chain"
+    )

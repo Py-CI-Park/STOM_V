@@ -19,8 +19,18 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-
+import sysconfig
 import pytest
+import hashlib
+import stat
+from contextlib import nullcontext
+
+from alpha_lab.discipline import evidence, measure_gate
+from alpha_lab.runlab.sealed_execution import (
+    load_execution_evidence,
+    stage_execution,
+    validate_staged_execution,
+)
 
 from alpha_lab.runlab import contract, watchdog
 from alpha_lab.runlab.detached_runner import launch_detached
@@ -53,11 +63,22 @@ def _write_child(tmp_path: Path, name: str, body: str) -> Path:
 
 
 def _child_env() -> dict:
-    """자식 파이썬이 ROOT의 alpha_lab을 임포트할 수 있게 PYTHONPATH 주입."""
+    """격리 bootstrap 검증용 환경 — caller PYTHONPATH를 전달하지 않는다."""
     env = dict(os.environ)
-    prev = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = str(_ROOT) + (os.pathsep + prev if prev else "")
+    env.pop("PYTHONPATH", None)
     return env
+
+
+def _bootstrap_cmd(mode: str, *args: str) -> list[str]:
+    bootstrap = _ROOT / "alpha_lab" / "runlab" / "bootstrap.py"
+    return [sys.executable, "-I", "-S", str(bootstrap), mode, *args]
+
+
+def _isolated_startup_paths() -> list[str]:
+    proc = subprocess.run(
+        [sys.executable, "-I", "-S", "-c", "import json, sys; print(json.dumps(sys.path))"],
+        capture_output=True, check=True, text=True, timeout=30)
+    return [str(Path(path).resolve()) for path in json.loads(proc.stdout) if path]
 
 
 def _force_kill_tree(pid) -> None:
@@ -78,49 +99,108 @@ def _wait_until(cond, timeout_sec: float, poll_sec: float = 0.05) -> bool:
 
 # ── detached_runner: 기동→심박→정상 종료 계약 ──────────────────────────────
 @_WINDOWS_ONLY
-def test_detached_launch_full_contract(tmp_path):
-    child = _write_child(tmp_path, "ok_child.py", _OK_CHILD)
-    run_dir = tmp_path / "run_ok"
-    res = launch_detached(run_dir, child, heartbeat_interval=0.1)
-    try:
-        hb = run_dir / contract.HEARTBEAT_FILE
-        assert _wait_until(hb.exists, timeout_sec=20.0), "심박 미생성"
-        first_mtime = hb.stat().st_mtime
-        status = watchdog.wait_for_exited(run_dir, timeout_sec=25.0)
-        assert status is not None and status["state"] == "exited"
-        assert status["exit_code"] == 0
-        assert status["child_pid"] > 0 and status["started_utc"]
-        # pid.txt는 래퍼 PID와 일치, 심박은 구동 중 주기 갱신됐어야 한다.
-        assert contract.read_pid(run_dir) == res.pid
-        assert hb.stat().st_mtime > first_mtime, "심박이 주기 갱신되지 않음"
-        log_text = res.log_path.read_text(encoding="utf-8", errors="replace")
-        assert "CHILD_START" in log_text and "CHILD_DONE" in log_text
-        # 종료 후 래퍼 프로세스는 곧 사라져야 한다(잔존 금지).
-        assert _wait_until(lambda: not watchdog.check_pid_alive(res.pid),
-                           timeout_sec=10.0), "래퍼 프로세스 잔존"
-        report = watchdog.inspect_run(run_dir)
-        assert report.verdict == watchdog.VERDICT_EXITED
-        assert report.exit_code == 0
-    finally:
-        _force_kill_tree(res.pid)
+def test_detached_launch_requires_receipt_and_claim(tmp_path):
+    child = _write_child(tmp_path, "late.py", "raise AssertionError('must not run')\n")
+    with pytest.raises(TypeError):
+        launch_detached(tmp_path / "run", child, heartbeat_interval=0.1)
 
 
 # ── child_wrap: 무수정 래핑 — 인자 전달 + 실패 exit_code 보존 ───────────────
-def test_child_wrap_preserves_args_and_exit_code(tmp_path):
-    child = _write_child(tmp_path, "fail_child.py", _FAIL_CHILD)
-    argv_dump = tmp_path / "argv.txt"
+def test_child_wrap_requires_receipt_and_claim(tmp_path):
+    child = _write_child(tmp_path, "late.py", "raise AssertionError('must not run')\n")
     run_dir = tmp_path / "run_fail"
-    cmd = [sys.executable, "-m", "alpha_lab.runlab.child_wrap",
-           "--interval", "0.1", str(run_dir), str(child),
-           str(argv_dump), "alpha", "--beta=1"]
-    proc = subprocess.run(cmd, cwd=str(tmp_path), env=_child_env(),
-                          capture_output=True, timeout=60)
-    assert proc.returncode == 3, proc.stderr.decode(errors="replace")
-    status = contract.read_status(run_dir)
-    assert status["state"] == "exited" and status["exit_code"] == 3
-    assert argv_dump.read_text(encoding="utf-8") == "alpha|--beta=1"
-    assert (run_dir / contract.HEARTBEAT_FILE).exists()
-    assert contract.read_pid(run_dir) > 0
+    proc = subprocess.run(
+        _bootstrap_cmd("child-wrap", "--interval", "0.1", str(run_dir), str(child)),
+        cwd=str(tmp_path), env=_child_env(), capture_output=True, timeout=60)
+    assert proc.returncode != 0
+    assert b"--repo-root" in proc.stderr
+# ── bootstrap: caller path/site hook 차단 + 신뢰 루트 우선순위 ───────────────
+
+
+def test_bootstrap_target_requires_sealed_evidence(tmp_path):
+    target = _write_child(tmp_path, "late.py", "raise AssertionError('must not run')\n")
+    proc = subprocess.run(
+        _bootstrap_cmd("target", str(target)), cwd=str(tmp_path),
+        env=_child_env(), capture_output=True, timeout=60)
+    assert proc.returncode != 0
+    assert b"--repo-root" in proc.stderr
+
+
+def test_wrapper_command_uses_isolated_bootstrap_and_removes_pythonpath(monkeypatch,
+                                                                         tmp_path):
+    from alpha_lab.runlab import detached_runner
+
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path / "shadow"))
+    event = type("Event", (), {"handle": 1})()
+    cmd = detached_runner._wrapper_cmd(
+        tmp_path / "run", tmp_path / "target.py", (), 5.0,
+        repo_root=_ROOT, receipt=_ROOT / "receipts" / "r.json",
+        claim=_ROOT / "claims" / "r.json", stage_root=tmp_path / "stage",
+        wrapper_ready=event, parent_release=event)
+    assert cmd[1:5] == ("-I", "-S",
+                        str(_ROOT / "alpha_lab" / "runlab" / "bootstrap.py"),
+                        "child-wrap")
+    assert "PYTHONPATH" not in detached_runner._prepare_env(None)
+    assert cmd[0] == sys.executable
+    assert "python_exe" not in detached_runner.launch_detached.__annotations__
+
+
+def test_child_target_command_uses_isolated_bootstrap(monkeypatch, tmp_path):
+    from alpha_lab.runlab import child_wrap
+
+    seen = {}
+
+    class DummyProcess:
+        pid = 1
+
+        def poll(self):
+            return 0
+
+        def terminate(self):
+            pass
+
+    class FakeEvent:
+        handle = 1
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def wait(self, timeout):
+            return True
+
+    def fake_popen(cmd, **kwargs):
+        seen["cmd"] = cmd
+        seen["kwargs"] = kwargs
+        return DummyProcess()
+
+    monkeypatch.setattr(child_wrap.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(
+        child_wrap, "WindowsEvent",
+        type("Events", (), {"inherited": staticmethod(lambda _: None),
+                            "create": staticmethod(lambda: FakeEvent())}))
+    monkeypatch.setattr(child_wrap, "inherited_handle_startupinfo",
+                        lambda handles: {"handles": handles})
+    evidence = type("Evidence", (), {
+        "repo_root": _ROOT, "receipt_path": _ROOT / "receipts" / "r.json",
+        "claim_path": _ROOT / "claims" / "r.json",
+        "receipt": {"code_manifest": [{"path": "target.py"}]}})()
+    monkeypatch.setattr(child_wrap, "locked_execution",
+                        lambda *args: nullcontext(evidence))
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    target = stage / "target.py"
+    target.write_text("", encoding="utf-8")
+    assert child_wrap._run(
+        tmp_path, str(target), [], 0.1, repo_root=_ROOT,
+        receipt=_ROOT / "receipts" / "r.json", claim=_ROOT / "claims" / "r.json",
+        stage_root=stage) == 0
+    assert seen["cmd"][1:5] == ["-I", "-S",
+                                 str(_ROOT / "alpha_lab" / "runlab" / "bootstrap.py"),
+                                 "target"]
+
 
 
 # ── watchdog: pid 생존 확인(ctypes) ─────────────────────────────────────────
@@ -255,9 +335,53 @@ def test_child_wrap_heartbeat_failure_preserves_alive_child(tmp_path,
         real_touch(rd)
 
     monkeypatch.setattr(child_wrap.contract, "touch_heartbeat", flaky_touch)
+    evidence = type("Evidence", (), {
+        "repo_root": _ROOT, "receipt_path": _ROOT / "receipts" / "r.json",
+        "claim_path": _ROOT / "claims" / "r.json",
+        "receipt": {"code_manifest": [{"path": "slow_child.py"}]}})()
+    monkeypatch.setattr(child_wrap, "locked_execution",
+                        lambda *args: nullcontext(evidence))
+    class FakeEvent:
+        handle = 1
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def wait(self, timeout):
+            return True
+
+    monkeypatch.setattr(
+        child_wrap, "WindowsEvent",
+        type("Events", (), {"inherited": staticmethod(lambda _: None),
+                            "create": staticmethod(lambda: FakeEvent())}))
+    monkeypatch.setattr(child_wrap, "inherited_handle_startupinfo",
+                        lambda handles: {"handles": handles})
+    real_child = subprocess.Popen([sys.executable, str(child)])
+
+    class LiveProcess:
+        pid = real_child.pid
+
+        def poll(self):
+            return real_child.poll()
+
+        def terminate(self):
+            real_child.terminate()
+
+    monkeypatch.setattr(child_wrap.subprocess, "Popen",
+                        lambda *args, **kwargs: LiveProcess())
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    staged_child = stage / "slow_child.py"
+    staged_child.write_text(child.read_text(encoding="utf-8"), encoding="utf-8")
     child_pid = None
     try:
-        rc = child_wrap._run(run_dir, str(child), [], interval=0.1)
+        rc = child_wrap._run(
+            run_dir, str(staged_child), [], interval=0.1, repo_root=_ROOT,
+            receipt=_ROOT / "receipts" / "r.json", claim=_ROOT / "claims" / "r.json",
+            stage_root=stage)
         status = contract.read_status(run_dir)
         assert rc == 1
         assert status is not None
@@ -271,3 +395,94 @@ def test_child_wrap_heartbeat_failure_preserves_alive_child(tmp_path,
         assert _wait_until(lambda: not watchdog.check_pid_alive(child_pid), 10)
     finally:
         _force_kill_tree(child_pid)
+def _git(repo: Path, *args: str) -> None:
+    result = subprocess.run(
+        ("git", "-C", str(repo), *args), capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stderr
+
+
+def _sealed_runlab_repo(
+    tmp_path: Path, *, target_source: str | None = None,
+    extra_files: dict[str, str] | None = None,
+) -> tuple[Path, Path, Path, Path]:
+    repo = tmp_path / "sealed-repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "code").mkdir()
+    (repo / "package").mkdir()
+    (repo / "package" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "package" / "helper.py").write_text("VALUE = 'sealed-run'\n", encoding="utf-8")
+    sealed = repo / "docs" / "prereg.md"
+    sealed.write_text(
+        """# sealed
+
+> 지위: **SEALED**
+
+```json prereg-contract-v2
+{"authority_paths":{"backup_dir":"backups","catalog_dir":"catalog","journal_dir":"journal","promotions_dir":"promotions","seal_dir":"seals","target_db":"code/entry.py"},"dependency_roots":["code/entry.py"],"discovery_window":{"end":"2023-12-31","start":"2022-03-23"},"dynamic_python_dependencies":[],"hypothesis_id":"H-runlab","kill_rule":"none","ledger_path":"ledger.jsonl","multiplicity_family":"runlab","non_python_dependencies":[],"primary_estimand":"run","sample_floors":{"qualified":1},"schema_version":2}
+```
+""", encoding="utf-8")
+    target = repo / "code" / "entry.py"
+    target.write_text(
+        target_source or "from package import helper\nRESULT = helper.VALUE\n",
+        encoding="utf-8",
+    )
+    for relative, content in (extra_files or {}).items():
+        candidate = repo / relative
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        candidate.write_text(content, encoding="utf-8")
+    _git(repo.parent, "init", "-q", str(repo))
+    _git(repo, "add", "-A")
+    _git(repo, "-c", "user.name=test", "-c", "user.email=test@example.com",
+         "commit", "-qm", "initial")
+    seal = repo / "seals" / f"{hashlib.sha256(sealed.read_bytes()).hexdigest()}.seal.json"
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
+        sealed, repo_root=repo,
+        code_files=(target, repo / "package" / "__init__.py", repo / "package" / "helper.py"),
+        manifest_path=seal, sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00", nonce="runlab")
+    receipt_path = repo / "receipts" / f"{receipt['receipt_id']}.json"
+    measure_gate.claim_gate_receipt_v2(
+        receipt_path, repo_root=repo, consumer="runlab-test",
+        consumed_at="2026-07-14T00:02:00+00:00")
+    return repo, target, receipt_path, repo / "claims" / f"{receipt['receipt_id']}.json"
+
+
+def test_sealed_execution_stages_and_runs_dependency_root(tmp_path):
+    repo, target, receipt, claim = _sealed_runlab_repo(tmp_path)
+    evidence = load_execution_evidence(repo, receipt, claim)
+    stage, staged_target = stage_execution(tmp_path / "run", evidence, target)
+    proc = subprocess.run(
+        _bootstrap_cmd("target", "--repo-root", str(repo), "--receipt", str(receipt),
+                       "--claim", str(claim), "--stage-root", str(stage),
+                       str(staged_target)),
+        env=_child_env(), capture_output=True, timeout=60)
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+def test_staged_launch_rejects_local_builtin_hidden_by_trusted_precedence(tmp_path):
+    with pytest.raises(
+        evidence.EvidenceSchemaError,
+        match=r"ambiguous local/external import: sys",
+    ):
+        _sealed_runlab_repo(
+            tmp_path,
+            target_source="import sys\nRESULT = sys.version\n",
+            extra_files={"sys.py": "VALUE = 'local-stage-candidate'\n"},
+        )
+
+def test_sealed_execution_rejects_late_target_claim_tamper_and_stage_extra(tmp_path):
+    repo, target, receipt, claim = _sealed_runlab_repo(tmp_path)
+    evidence = load_execution_evidence(repo, receipt, claim)
+    late = repo / "code" / "late.py"
+    late.write_text("raise AssertionError('late')\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="dependency_roots"):
+        stage_execution(tmp_path / "run-late", evidence, late)
+    with pytest.raises(RuntimeError, match="dependency_roots"):
+        stage_execution(tmp_path / "run-member", evidence, repo / "package" / "helper.py")
+    stage, staged_target = stage_execution(tmp_path / "run", evidence, target)
+    stage.chmod(stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
+    extra = stage / "late.py"
+    extra.write_text("raise AssertionError('extra')\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="exactly the manifest"):
+        validate_staged_execution(repo, receipt, claim, stage, staged_target)
+    claim.write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="invalid gate claim"):
+        load_execution_evidence(repo, receipt, claim)

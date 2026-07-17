@@ -1,0 +1,312 @@
+{
+  "schema": "g005-family-terminal-summary-v1",
+  "schema_version": 1,
+  "document_type": "family_level_terminal_audit_summary",
+  "document_created_date": "2026-07-16",
+  "family": "G005",
+  "research_run": "alpha_restart_20260710",
+  "bound_head": "25975531ab966eb113d79bc130b9b4493001b1f6",
+  "scope": {
+    "synthesis_only": true,
+    "durable_evidence_only": true,
+    "authorizes_promotion": false,
+    "authorizes_engine_execution": false,
+    "authorizes_engine_request": false,
+    "authorizes_registration": false,
+    "authorizes_retry": false,
+    "authorizes_rescue": false
+  },
+  "source_artifacts": {
+    "c1": {
+      "terminal_report": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_report.md",
+      "terminal_evidence": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_terminal_evidence.json",
+      "preregistration": {
+        "path": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+        "sha256": "af4b8258cebc3442c7cb3749971af7bbf56f0d27fe3f48f8440695eaee1c79d8",
+        "size_bytes": 11423,
+        "status": "SEALED"
+      },
+      "builder_attempt_transcript": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt",
+        "sha256": "8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b",
+        "size_bytes": 1740,
+        "capture_kind": "parent_captured_managed_job_transcript",
+        "source_job": "bg_6",
+        "exit_code": 1,
+        "capture_is_original_builder_written_log": false,
+        "execution_timestamp": "unavailable_not_asserted",
+        "execution_timestamp_asserted": false,
+        "provenance_note": "This transcript is an after-the-fact parent capture of the managed job output, not an original builder-written log; the exact execution timestamp is unavailable and not asserted."
+      }
+    },
+    "x1": {
+      "terminal_report": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_terminal_report.md",
+      "execution_evidence": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_execution_evidence.json",
+      "seal_manifest": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/evidence/seals/5288392dff3969549a5dc33d7aa6c159a043aab3e7f35c613592b164d20dfe3c.seal.json",
+        "sha256": "7662e99882f7938ce899ea29184dea76cfc09ec587b3f8538fc9d72237afb2de",
+        "size_bytes": 1512
+      },
+      "receipt": {
+        "path": "receipts/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json",
+        "receipt_id": "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2",
+        "receipt_id_abbrev": "618f...bbc2",
+        "sha256": "d511fb13363e7e918765954c321cdb8ff2a090314ed23f280d20b9bc1c249509",
+        "size_bytes": 3532,
+        "issued_at": "2026-07-16T17:04:01+00:00",
+        "status": "PASS",
+        "repo_head": "25975531ab966eb113d79bc130b9b4493001b1f6"
+      },
+      "claim": {
+        "path": "claims/618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2.json",
+        "sha256": "42a0864453d4b5357c4cc6e0a146ec11ede8e9858143190b263825466338ca5f",
+        "size_bytes": 571,
+        "consumed_at": "2026-07-16T17:04:02+00:00",
+        "consumer": "g005-x1-sealed-runlab"
+      },
+      "input": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json",
+        "sha256": "d60a0ba7d02437d7fce625280f2b890d9667ea3785956e236084194a2aed0790",
+        "size_bytes": 473456
+      },
+      "run_log": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/log.txt",
+        "sha256": "de7b2fe04be4fd0ae406f7bcb79e3a3057fc2cf9f6c48713d2af5697fb2cae6e",
+        "size_bytes": 3580,
+        "canonical_result": true
+      },
+      "run_status": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1/run/status.json",
+        "sha256": "20060f061fbf9503435caaf12e6ac6c0e35d0a752d1c422058ec669842c48b2e",
+        "size_bytes": 474,
+        "state": "exited",
+        "exit_code": 0,
+        "started_utc": "2026-07-16T17:05:12+00:00",
+        "ended_utc": "2026-07-16T17:07:55+00:00",
+        "target_args": []
+      }
+    },
+    "c2": {
+      "terminal_report": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_terminal_report.md",
+      "nonidentification_evidence": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c2_nonidentification_evidence.json",
+      "preregistration": {
+        "path": "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md",
+        "sha256": "084928f444d1f7b729fea648c5ba46f2d7f1696d2450c469b895c3e65991fa60",
+        "size_bytes": 12220,
+        "authority": "committed_sealed_preregistration"
+      },
+      "static_dependency_guard": {
+        "path": "scripts/g005_c2_nonidentification_guard.py",
+        "sha256": "a0273c212922fc93317fb5cdb5b70074ac1c526b8800913a265e71f95633c653",
+        "size_bytes": 573,
+        "authority": "static_nonexecution_dependency_sentinel",
+        "declarations_only": true,
+        "invocation_present": false
+      }
+    },
+    "n_trials_ledger": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl"
+    }
+  },
+  "branch_terminal_statuses": {
+    "c1": {
+      "experiment_id": "alpha_restart_20260710-g005-c1",
+      "hypothesis_id": "G005-C1-TIME-SHIFT",
+      "head_at_attempt": "25975531ab966eb113d79bc130b9b4493001b1f6",
+      "preregistration": {
+        "path": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+        "sha256": "af4b8258cebc3442c7cb3749971af7bbf56f0d27fe3f48f8440695eaee1c79d8",
+        "size_bytes": 11423,
+        "status": "SEALED"
+      },
+      "builder_attempt_transcript": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt",
+        "sha256": "8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b",
+        "size_bytes": 1740,
+        "capture_kind": "parent_captured_managed_job_transcript",
+        "source_job": "bg_6",
+        "exit_code": 1,
+        "capture_is_original_builder_written_log": false,
+        "execution_timestamp": "unavailable_not_asserted",
+        "execution_timestamp_asserted": false,
+        "provenance_note": "This transcript is an after-the-fact parent capture of the managed job output, not an original builder-written log; the exact execution timestamp is unavailable and not asserted."
+      },
+      "terminal_decision": "UNDETERMINED",
+      "terminal_status": "INPUT_SCHEMA_MISMATCH",
+      "builder_attempts": 1,
+      "builder_command": "python scripts/build_g005_c1_input.py",
+      "exit_status": "nonzero",
+      "exit_code": 1,
+      "failed_before_input_artifact": true,
+      "input_artifact_created": false,
+      "traceback_root": "ValueError: t0 must be a nonempty string",
+      "l3_key_schema_observed": {
+        "t0": "int64",
+        "code": "large_string",
+        "day": "int32",
+        "off": "int16"
+      },
+      "downstream_actions_observed_false_value_meaning": "false means the downstream action was not observed.",
+      "downstream_actions_observed": {
+        "target": false,
+        "finalizer": false,
+        "receipt": false,
+        "claim": false,
+        "runlab": false,
+        "engine": false,
+        "db_write": false,
+        "registration": false,
+        "promotion": false,
+        "retry": false,
+        "rescue": false,
+        "ledger_append": false
+      },
+      "kill_evaluated": false,
+      "pass_evaluated": false,
+      "target_invoked": false,
+      "retry": false,
+      "rescue": false,
+      "gate_bound_measurement": false
+    },
+    "x1": {
+      "experiment_id": "alpha_restart_20260710-g005-x1",
+      "hypothesis_id": "G005-X1-EXIT-COMPETING-RISK",
+      "head_at_execution": "25975531ab966eb113d79bc130b9b4493001b1f6",
+      "terminal_decision": "PASS",
+      "claim_type": "descriptive_not_causal",
+      "descriptive": true,
+      "noncausal": true,
+      "nonpromotable": true,
+      "sole_receipt_claim_runlab_execution": true,
+      "receipt_id": "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2",
+      "runlab_state": "exited",
+      "runlab_exit_code": 0,
+      "decision_evidence": {
+        "raw_group_means": {
+          "RR8": 0.6783137254901961,
+          "GPTAUTH_G8": -0.05538633818589026
+        },
+        "raw_contrast": 0.7337000636760863,
+        "standardized_contrast": -0.05715673621331205,
+        "residual_ratio": 0.07790204613985911,
+        "annual_raw_contrasts": {
+          "2022": 0.7027777777777778,
+          "2023": 0.7352685300302375
+        },
+        "annual_signs_label": "+/+",
+        "annual_sign_conflict": false,
+        "undefined_reasons": [],
+        "undetermined_reasons": [],
+        "kill_reasons": []
+      },
+      "side_effect_counters": {
+        "engine_calls": 0,
+        "db_writes": 0,
+        "strategy_registrations": 0,
+        "promotions": 0,
+        "retries": 0,
+        "rescue_runs": 0,
+        "ledger_append": 0
+      },
+      "strategy_candidate_created": false,
+      "promotion_proposed": false
+    },
+    "c2": {
+      "experiment_id": "alpha_restart_20260710-g005-c2",
+      "hypothesis_id": "G005-C2-ACTIVATION-ORDER",
+      "head": "25975531ab966eb113d79bc130b9b4493001b1f6",
+      "terminal_decision": "UNDETERMINED",
+      "terminal_status": "nonidentified",
+      "terminal_reason": "dependency/schema nonidentification",
+      "current_prereg_static_guard_bindings": true,
+      "h37_identified": false,
+      "h38_identified": false,
+      "kill_evaluated": false,
+      "pass_evaluated": false,
+      "target_invoked": false,
+      "materialized": false,
+      "gate_bound_measurement": false,
+      "required_inputs_absent": [
+        "exact_first_activation_timestamp_for_clause16",
+        "exact_first_activation_timestamp_for_clause37",
+        "exact_first_activation_timestamp_for_clause38",
+        "outcome",
+        "exact_pre_existing_activation_trace_authority"
+      ],
+      "zero_counters": {
+        "invocation": 0,
+        "materialization": 0,
+        "receipt": 0,
+        "claim": 0,
+        "target": 0,
+        "outcome": 0,
+        "n_trials": 0,
+        "engine": 0,
+        "db_write": 0,
+        "registration": 0,
+        "promotion": 0
+      }
+    }
+  },
+  "n_trials_ledger_explanation": {
+    "c1": "No n_trials row: the single builder/materializer attempt failed before input artifact creation, so there was no gate-bound measurement, receipt, claim, runlab, finalizer, or target.",
+    "c2": "No n_trials row: C2 is nonidentified under current preregistration/static guard bindings and had no invocation, materialization, receipt, claim, target, or outcome.",
+    "x1": {
+      "gate_bound_measurement_existed": true,
+      "ledger_row_appended": false,
+      "v2_append_validation_rejected_before_mutation": true,
+      "rejection_message": "candidate_set may be empty only for a negative_or_kill measurement",
+      "reason": "A positive descriptive PASS has no promotable strategy candidate; candidate_set cannot truthfully be empty unless the measurement is negative_or_kill.",
+      "negative_or_kill_falsified": false,
+      "fake_buy_hash": false,
+      "fake_sell_hash": false,
+      "fake_candidate": false,
+      "confirmed_no_receipt_or_series_row_in_ledger": true,
+      "ledger_search_patterns_with_no_matches": [
+        "618f8aeb2ea25d65291f41040a38234d985d6ca4896434e35b7b2c58fd44bbc2",
+        "G005-X1",
+        "g005-x1",
+        "alpha_restart_20260710-g005-x1",
+        "G005|g005"
+      ]
+    }
+  },
+  "overall_terminal_summary": {
+    "family_closure": "mixed_terminal_statuses",
+    "all_hypotheses_passed": false,
+    "all_hypotheses_failed": false,
+    "strategy_candidate": false,
+    "engine_request": false,
+    "engine_execution": false,
+    "db_write": false,
+    "registration": false,
+    "promotion": false,
+    "retry": false,
+    "rescue": false,
+    "fake_ledger_row": false,
+    "terminal_statement": "G005 closes with C1 UNDETERMINED/INPUT_SCHEMA_MISMATCH, X1 descriptive noncausal nonpromotable PASS, and C2 UNDETERMINED/nonidentified. No strategy candidate, engine request, registration, promotion, retry, or rescue is authorized or observed."
+  },
+  "evidence_inference_boundary": {
+    "evidence": [
+      "C1 terminal artifacts bind preregistration docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md (sha256 af4b8258cebc3442c7cb3749971af7bbf56f0d27fe3f48f8440695eaee1c79d8, size 11423) and parent-captured transcript docs/research/condition_research/research_runs/alpha_restart_20260710/g005/c1_builder_attempt_bg_6.txt (sha256 8f2ad9f760f5efad49bf14f9cc692dd5c473762176c7a5631795cf939e123d0b, size 1740, capture_kind parent_captured_managed_job_transcript, source_job bg_6, exit_code 1, not an original builder-written log, exact execution timestamp unavailable/not asserted); they record one failed builder attempt before c1_input.json creation with INPUT_SCHEMA_MISMATCH and no downstream C1 execution/target/retry.",
+      "X1 receipt, claim, seal, run log, and run status record the sole PASS runlab execution with exit code 0, residual_ratio 0.07790204613985911, annual signs +/+, and side-effect zero counters.",
+      "C2 terminal artifacts record current committed preregistration/static guard bindings, no invocation, and dependency/schema nonidentification.",
+      "Ledger content search observed no X1 receipt ID, X1 series, or G005 row."
+    ],
+    "inference": [
+      "The G005 family is terminal with mixed statuses, not all passed and not all failed.",
+      "X1 PASS is descriptive only and cannot be promoted or converted into a strategy candidate.",
+      "The n_trials ledger has no truthful row to append for C1/C2, and the X1 v2 append rejection must remain fail-closed without fake negative_or_kill or fake candidate fields."
+    ]
+  },
+  "synthesis_actions_not_performed": {
+    "tests": false,
+    "gates": false,
+    "targets": false,
+    "formatters": false,
+    "ledger_append_or_runner": false,
+    "commits": false,
+    "database_touch": false,
+    ".gjc_touch": false
+  }
+}

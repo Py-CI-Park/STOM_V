@@ -1,6 +1,9 @@
 # B-트랙 2단계 — 타 전략 가지 확장 사전등록 (다전략 깊은 표본 합동) — 봉인본 (2026-07-14)
 
 > 지위: **봉인본.** 에이전트 초안(§13 미결 8건)을 메인 세션이 핵심 실사 독립 재확인(api_compat current 127 · 코어 7종 전원 실재·시간분기 구조 · Tick_B_* 21종) 후 §14에서 전건 확정했다. **본 커밋이 봉인 커밋이다** — 측정(신규 비트 산출·가지 발화 집계~)은 이 커밋 이후에만, 사후 변경은 새 사전등록으로만. §13은 초안 원문 보존(§14가 확정본 — 상충 시 §14 우선).
+> evidence_contract: **LEGACY_V1**
+> promotion_authority: **NONE**
+> G001: this historical prereg/result remains readable, but it is not SEALED-v2 and no one-use gate receipt may be reconstructed after measurement. Promotion requires a new preregistration and a fresh complete v2 evidence chain.
 > 상위: B-트랙 봉인본 `2026-07-13_b_track_branch_decomposition_preregistration.md`(§3 가지 파스·§10 확장 조건 3종·§14-F4 3분법) + 판정 `research_runs/alpha_restart_20260710/b_track/b_branch_summary.json`(**본 트랙 착수 근거 — anchor (c) 미결**), O-4 봉인본(§7 AND 프록시 하한)·`alpha_lab/o4lab/bits.py`(신규 비트 산출 패턴), D1 봉인 §4·§5(U-보류 심볼·패리티 게이트 전례), `w2_strategy_inventory.json`(전략 인벤토리·api_compat — **known 창 성과 포함, 시드 선정 근거로만·성능 주장 금지**), W5 어휘, 창-지위 원장 §2·§3.
 > 문체·구조: B-트랙·O-4 봉인본과 동일 형식(측정 전 봉인·표 중심·결론 먼저·쉬운 설명 병기·§14 봉인 결정 기록).
 > 원본 접근: 본 초안 작성은 대상 전략 매수식 **원문 텍스트 정독(read-only URI, ast 파스)** + B-트랙 판정 json + W2 인벤토리 정독 + 실물 parquet 스키마·지문(sha)까지. **엔진 백테 0회, 가지 발화 집계 0회, 신규 비트 산출 0회, L3·값 분포 관측 0회.** known 창(2024/2025) 무접촉(선정 근거로만 랭킹 조회).

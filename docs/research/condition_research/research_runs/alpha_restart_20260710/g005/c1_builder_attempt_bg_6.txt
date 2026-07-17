@@ -1,0 +1,35 @@
+capture_kind=parent_captured_managed_job_transcript
+source_job=bg_6
+capture_is_original_builder_written_log=false
+command=python scripts/build_g005_c1_input.py
+cwd=C:/System_Trading/STOM/STOM_V.wt-alpha-audit
+exit_code=1
+execution_timestamp=unavailable_not_asserted (exact execution timestamp unavailable/not asserted)
+
+Traceback (most recent call last):
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 445, in <module>
+    main()
+    ~~~~^^
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 439, in main
+    snapshot = materialize()
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 426, in materialize
+    snapshot = build_snapshot(
+        l3_path,
+    ...<4 lines>...
+        contract=contract,
+    )
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 389, in build_snapshot
+    rows = _joined_rows(l3_file, d1_file, expected_joined_rows)
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 300, in _joined_rows
+    l3_keys = _key_columns(l3)
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 283, in _key_columns
+    _identity_string(t0, "t0"),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 271, in _identity_string
+    _fail(f"{name} must be a nonempty string")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\System_Trading\STOM\STOM_V.wt-alpha-audit\scripts\build_g005_c1_input.py", line 147, in _fail
+    raise ValueError(message)
+ValueError: t0 must be a nonempty string
+
+Command exited with code 1

@@ -1,14 +1,9 @@
-"""D1 산출물 — npz 교차검증·판정 로드·summary.json·리포트·n_trials 원장 (사전등록 §11).
+"""D1 산출물 — npz 교차검증·판정 로드·summary.json·리포트 (사전등록 §11).
 
-- verify_vs_npz: 재산출 은행이 Jul-11 v2a npz(발견창 체크포인트)와 일별 온셋·L3
-  벡터 net 이 원소 동일함을 전수 대조(결정론 증명).
-- load_bank_for_judgment: 은행+비트 조인, 라벨된 온셋만, net_pp=l3_net×100.
-- build_summary / render_report: 절별 전 수치 정본(JSON) + 쉬운 설명·판정표 리포트.
-- append_n_trials: series D1, type-b = 자격 절 수만큼 append.
+Legacy n_trials ledger writes are retired; report and analysis APIs remain read-only.
 """
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
@@ -17,9 +12,8 @@ import numpy as np
 import pandas as pd
 
 from alpha_lab.clause_lab.clauses import CLAUSE_SPECS, spec_by_num
-
 __all__ = [
-    "append_n_trials",
+    "LegacyEvidenceWriteBlockedError",
     "build_summary",
     "load_bank_for_judgment",
     "render_report",
@@ -33,6 +27,10 @@ CONTAMINATION_LABEL = (
     "(a) 새 전략 성능 주장이 아니고, (b) 절의 보편적 유효성 주장이 아니며, "
     "(c) 다른 출구를 쓰면 지도가 달라진다(L3 는 RR8_12 출구 조건부)."
 )
+class LegacyEvidenceWriteBlockedError(RuntimeError):
+    """Raised when retired D1 evidence-writing compatibility API is called."""
+
+
 
 
 def verify_vs_npz(parts_dir, npz_dir) -> Dict[str, object]:
@@ -267,36 +265,9 @@ def render_report(summary: Mapping[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def append_n_trials(
-    ledger_path, judgment: Mapping[str, object], *,
-    session: str = "alpha-restart-d1", window: str = "2022-03-23~2023-12-31(발견창)",
-) -> int:
-    """자격 절 수만큼 series D1 type-b 행 append(D5-R 원장 포맷). 반환: append 행수."""
-    per = judgment["per_clause"]
-    ts = datetime.now(timezone.utc).isoformat()
-    denom = judgment["fdr_denominator"]
-    rows: List[dict] = []
-    for n in judgment["qualified_nums"]:
-        r = per[n]
-        cls = r.get("classification", "inconclusive" if not r["floor_pass"] else "none")
-        result = (
-            f"{cls} — Δnet {_fmt(r['delta_pp'])}%p, "
-            f"CI[{_fmt(r['ci_low_pp'])},{_fmt(r['ci_high_pp'])}], "
-            f"양측p {r['p_two_sided']:.4f}, FDR생존 {r.get('fdr_survive', False)}, "
-            f"MDE {_fmt(r['mde_pp'])}%p, 연도부호 "
-            f"{r['year_delta'][2022]['sign']}/{r['year_delta'][2023]['sign']}, "
-            f"표본 {r['n_sat']}/{r['n_unsat']}, floor_pass {r['floor_pass']} "
-            f"(FDR 분모={denom})"
-        )
-        rows.append({
-            "ts": ts, "series": "D1", "window": window,
-            "trial_type": "b(오프라인 봉인 판정)",
-            "target": (f"D1 절 #{n} ({r['text']}) A/B 분해 — 만족 vs 미만족 L3 평균 Δ "
-                       "≥+0.10%p ∧ 일자블록 CI하한>0 ∧ BH-FDR ∧ 연도 동부호 "
-                       "(사전등록 §7, 후보 단위 type-b)"),
-            "result": result, "session": session,
-        })
-    with open(ledger_path, "a", encoding="utf-8") as f:
-        for row in rows:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    return len(rows)
+def append_n_trials(*_args, **_kwargs) -> None:
+    """Retired compatibility shim; legacy D1 ledger writes are prohibited."""
+    raise LegacyEvidenceWriteBlockedError(
+        "legacy-evidence-write-blocked: D1 legacy ledger writes are retired; "
+        "use the authenticated v2 evidence chain"
+    )

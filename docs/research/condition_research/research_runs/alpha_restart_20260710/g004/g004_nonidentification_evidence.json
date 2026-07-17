@@ -1,0 +1,153 @@
+{
+  "schema": "g004-nonidentification-evidence-v1",
+  "schema_version": 1,
+  "experiment": {
+    "experiment_id": "alpha_restart_20260710-g004",
+    "terminal_decision": "UNDETERMINED",
+    "terminal_stage": "dependency_closure",
+    "nonidentification_type": "dependency_nonidentification"
+  },
+  "repository": {
+    "head": "cfe5f4ab283bd5bfaf9301d04fc2c2879ccc3986"
+  },
+  "g002_dependency": {
+    "requires_same_common_cohort": true,
+    "common_cohort_identified": false,
+    "reason": "G004 requires the same G002 common cohort, but G002's sole canonical identity-only commitment failed at identity_projection before identity crosswalk, design marker, materialized input, full attempt, receipt, claim, result, or outcome.",
+    "g002_terminal_decision": "UNDETERMINED",
+    "g002_failure_stage": "identity_projection",
+    "g002_report": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_u7_f0_terminal_report.md",
+      "sha256": "fdbffdcd66269f8fc5cc6feef3e0663c191cb2532ada5c52b937c2cf1d813552"
+    },
+    "g002_evidence": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/g002_identity_failure_evidence.json",
+      "sha256": "abce305b4d1397a2e7c11f878c6ee661f0412ac0ee4f4c84317278d9954cd712"
+    },
+    "identity_artifacts_from_g002_evidence": {
+      "identity_attempt": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_attempt.json",
+        "sha256": "b178ccdc0498dff171bb9c73a1f08186c5089507c785b8a4a28bce3aa537c1cc",
+        "size_bytes": 185,
+        "state": "reserved"
+      },
+      "identity_status": {
+        "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g002/identity_status.json",
+        "sha256": "0e43be2f1092c75e15d0a40e4fb7ef66b0ca07aae25e3179b607bf07aa5dbd50",
+        "size_bytes": 182,
+        "state": "failed"
+      }
+    },
+    "failed_before": [
+      "identity crosswalk",
+      "design marker",
+      "materialized input",
+      "full attempt",
+      "receipt",
+      "claim",
+      "result",
+      "outcome"
+    ],
+    "absent_dependency_artifacts": [
+      "identity_crosswalk.json",
+      "identity_design_marker.json",
+      "materialization_attempt.json",
+      "materialization_status.json",
+      "u7_f0_materialized_input.json",
+      "seal",
+      "receipt",
+      "claim",
+      "result"
+    ]
+  },
+  "substudies": {
+    "P1": {
+      "identified": false,
+      "missing_prerequisites": [
+        "common denominator",
+        "path/exit outcomes"
+      ],
+      "kill_or_pass_evaluated": false
+    },
+    "M1": {
+      "identified": false,
+      "missing_prerequisites": [
+        "match/exclusion partition",
+        "outcome support"
+      ],
+      "kill_or_pass_evaluated": false
+    },
+    "S1": {
+      "identified": false,
+      "missing_prerequisites": [
+        "exact common cohort",
+        "code/day/week cluster contribution table"
+      ],
+      "kill_or_pass_evaluated": false
+    }
+  },
+  "decision_limits": {
+    "kill_evaluated": false,
+    "pass_evaluated": false,
+    "path_bands_claimed": false,
+    "missingness_bounds_claimed": false,
+    "fragility_statistics_claimed": false,
+    "candidate_claimed": false,
+    "live_claimed": false,
+    "numeric_outcome_claimed": false
+  },
+  "side_effect_counters": {
+    "engine": 0,
+    "db_writes": 0,
+    "registration": 0,
+    "promotion": 0,
+    "full_attempt": 0,
+    "target_runs": 0,
+    "outcome_computations": 0
+  },
+  "g004_execution": {
+    "g004_invocations": 0,
+    "n_trials_rows_appended": 0,
+    "retry_or_rescue": false,
+    "receipt_or_claim_invented": false,
+    "preregistration_created": false,
+    "measurement_receipt_created": false,
+    "no_prereg_or_measurement_receipt_reason": "No G004 estimand or invocation exists."
+  },
+  "prohibited_actions_observed": {
+    "g002_rerun": false,
+    "fabricated_cohort": false,
+    "engine_run": false,
+    "db_write": false,
+    "registration": false,
+    "promotion": false,
+    "known_2024_plus_selection": false
+  },
+  "audit_sources": [
+    {
+      "kind": "agenda",
+      "path": "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",
+      "hash_recorded": false,
+      "use": "P1/M1/S1 agenda, common-cohort discipline, and contamination rules."
+    },
+    {
+      "kind": "n_trials_ledger",
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
+      "hash_recorded": false,
+      "use": "Audit source only; this closure appends zero rows."
+    },
+    {
+      "kind": "durable_goals",
+      "path": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/goals.json",
+      "hash_recorded": false,
+      "use": "Referenced for the G004 objective and its G002 common-cohort dependency; no .gjc hash is recorded."
+    },
+    {
+      "kind": "durable_ledger",
+      "path": ".gjc/_session-019f6093-0be6-7000-b496-a9b6b2305f30/ultragoal/ledger.jsonl",
+      "hash_recorded": false,
+      "use": "Referenced for the G002-to-G004 dependency sequence; no .gjc hash is recorded."
+    }
+  ],
+  "statement_scope": "Dependency and absence evidence only; no rescue analysis and no unsupported numeric outcome claim."
+}

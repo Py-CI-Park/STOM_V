@@ -7,13 +7,21 @@
 
 from __future__ import annotations
 
+import ast
 import datetime as dt
+import contextlib
+import importlib.machinery
+import hashlib
 import json
+import os
+import multiprocessing
 from pathlib import Path
+import shutil
+import subprocess
 
 import pytest
 
-from alpha_lab.discipline import ledger, lint, prereg, trials_report, windows
+from alpha_lab.discipline import evidence, ledger, lint, measure_gate, prereg, trials_report, windows
 
 ROOT = Path(__file__).resolve().parents[2]
 REAL_LEDGER = (
@@ -28,7 +36,7 @@ REAL_LEDGER = (
 REAL_RUNS_DIR = REAL_LEDGER.parent
 
 VALID_ROW = {
-    "ts": "2026-07-12T23:00:00",
+    "ts": "2026-07-14T00:03:00+00:00",
     "series": "D1",
     "window": "2022-03-23~2023-12-31(발견창)",
     "trial_type": "b(오프라인 봉인 판정)",
@@ -140,80 +148,355 @@ class TestDateTokens:
 
 
 class TestAppendTrial:
-    def test_append_success_and_line_format(self, tmp_path):
+    def test_v1_writer_is_blocked_before_creating_an_arbitrary_path(self, tmp_path):
+        path = tmp_path / "arbitrary-v1.jsonl"
+        with pytest.raises(ledger.LegacyLedgerWriteBlockedError):
+            ledger.append_trial(path=path, **VALID_ROW)
+        assert not path.exists()
+def _sealed_contract(*, roots, dynamic_python=(), non_python=(), authority_paths=None, ledger_path="ledger.jsonl") -> str:
+    contract = {
+        "schema_version": 2,
+        "hypothesis_id": "H-unit",
+        "discovery_window": {"start": "2022-03-23", "end": "2023-12-31"},
+        "primary_estimand": "mean spread",
+        "sample_floors": {"qualified": 2},
+        "multiplicity_family": "unit family",
+        "kill_rule": "non-positive effect",
+        "ledger_path": ledger_path,
+        "authority_paths": authority_paths if authority_paths is not None else {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        },
+        "dependency_roots": list(roots),
+        "dynamic_python_dependencies": list(dynamic_python),
+        "non_python_dependencies": list(non_python),
+    }
+    return "> 지위: **SEALED**\n완성본\n```json prereg-contract-v2\n" + json.dumps(contract, sort_keys=True) + "\n```\n"
+def _canonical_seal_path(root, document):
+    return root / "seals" / f"{hashlib.sha256(document.read_bytes()).hexdigest()}.seal.json"
+@contextlib.contextmanager
+def _temporary_trusted_external_root(root):
+    """Expose a synthetic external package through sysconfig, never sys.path."""
+    original_get_paths = prereg.sysconfig.get_paths
+
+    def get_paths(*args, **kwargs):
+        paths = original_get_paths(*args, **kwargs)
+        paths["purelib"] = str(root)
+        return paths
+
+    prereg.sysconfig.get_paths = get_paths
+    try:
+        yield
+    finally:
+        prereg.sysconfig.get_paths = original_get_paths
+
+
+
+def _bindings(tmp_path):
+    input_file, result_file = tmp_path / "input.json", tmp_path / "result.json"
+    input_file.write_text('{"input": 1}\n', encoding="utf-8")
+    result_file.write_text('{"result": 1}\n', encoding="utf-8")
+    ref = lambda file: {"path": file.name, "sha256": hashlib.sha256(file.read_bytes()).hexdigest()}
+    return [ref(input_file)], [ref(result_file)], [{"name": "candidate-a", "buy_sha256": "b" * 64, "sell_sha256": "c" * 64}]
+
+def _v2_chain(tmp_path):
+    if shutil.which("git") is None:
+        pytest.skip("git is required for authoritative v2 receipt fixtures")
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    doc = tmp_path / "prereg.md"
+    code = tmp_path / "measure.py"
+    code.write_text("value = 1\n", encoding="utf-8")
+    doc.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "prereg.md", "measure.py"], check=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "-c", "user.name=tester", "-c", "user.email=t@example.com",
+         "commit", "-q", "-m", "fixture"],
+        check=True,
+    )
+    receipt = measure_gate.finalize_and_issue_gate_receipt_v2(
+        doc,
+        repo_root=tmp_path,
+        code_files=(code,),
+        manifest_path=_canonical_seal_path(tmp_path, doc),
+        sealed_at="2026-07-14T00:00:00+00:00",
+        issued_at="2026-07-14T00:01:00+00:00",
+        nonce="unit-run",
+    )
+    assert receipt["custody"] == {
+        "mode": "continuous-finalizer-v1",
+        "launch_authoritative": True,
+    }
+    receipt_path = tmp_path / "receipts" / f"{receipt['receipt_id']}.json"
+    measure_gate.claim_gate_receipt_v2(
+        receipt_path,
+        repo_root=tmp_path,
+        consumer="unit-batch",
+        consumed_at="2026-07-14T00:02:00+00:00",
+    )
+    usage_path = tmp_path / "claims" / f"{receipt['receipt_id']}.json"
+    return receipt_path, usage_path, *_bindings(tmp_path)
+def _append_v2_worker(queue, kwargs):
+    try:
+        ledger.append_trial_v2(**kwargs)
+    except ledger.LedgerSchemaError as exc:
+        queue.put(("rejected", str(exc)))
+    else:
+        queue.put(("appended", ""))
+
+
+
+
+class TestLedgerV2:
+    def test_append_v2_valid_identity_and_mixed_reading(self, tmp_path):
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
         path = tmp_path / "ledger.jsonl"
-        record = ledger.append_trial(path=path, **VALID_ROW)
-        assert record == VALID_ROW
-        line = path.read_text(encoding="utf-8").splitlines()[0]
-        parsed = json.loads(line)
-        assert list(parsed.keys()) == list(ledger.REQUIRED_KEYS)  # 키 순서 계약
-        assert json.dumps(parsed, ensure_ascii=False) == line  # 왕복 byte 동일
-
-    @pytest.mark.parametrize("key", list(ledger.REQUIRED_KEYS))
-    def test_empty_required_key_rejected(self, tmp_path, key):
-        with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(**{key: "  "}))
-
-    def test_bad_ts_rejected(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(ts="어제쯤"))
-
-    def test_trial_type_d_rejected(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
-            ledger.append_trial(
-                path=tmp_path / "l.jsonl", **_row(trial_type="d(신규 유형)")
-            )
-        assert "규약 개정" in str(excinfo.value)  # type-d는 원장 §5로만(A6 조건)
-
-    def test_window_without_date_fail_closed(self, tmp_path):
-        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
-            ledger.append_trial(path=tmp_path / "l.jsonl", **_row(window="발견창 전체"))
-        assert "fail-closed" in str(excinfo.value)
-
-    def test_known_window_rejected_without_known_ok(self, tmp_path):
-        with pytest.raises(windows.WindowViolation) as excinfo:
-            ledger.append_trial(
-                path=tmp_path / "l.jsonl",
-                **_row(window="2025-01-01~2026-02-27(known/audit)"),
-            )
-        assert "선택·튜닝 금지" in str(excinfo.value)
-
-    def test_known_window_allowed_with_known_ok(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        ledger.append_trial(
+        ledger._append_record(path, VALID_ROW)
+        record = ledger.append_trial_v2(
             path=path,
-            known_ok=True,
-            **_row(window="2025-01-01~2026-02-27(known/audit, veto 기록)"),
+            repo_root=tmp_path,
+            gate_receipt_path=receipt_path,
+            gate_usage_path=usage_path,
+            input_artifacts=input_artifacts,
+            result_artifacts=result_artifacts,
+            candidate_set=candidate_set,
+            **_row(ts="2026-07-14T00:03:00+00:00"),
         )
-        assert len(ledger.read_all(path)) == 1
+        assert list(record) == list(ledger.V2_REQUIRED_KEYS)
+        assert record["evidence_id"] == evidence.sha256_canonical(record["evidence"])
+        assert [row.get("schema_version", 1) for row in ledger.read_all(path)] == [1, 2]
+    def test_append_v2_replay_is_rejected_without_a_second_row(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        kwargs = {
+            "repo_root": tmp_path, "gate_receipt_path": receipt_path, "gate_usage_path": usage_path,
+            "input_artifacts": inputs, "result_artifacts": results, "candidate_set": candidates,
+            "path": tmp_path / "ledger.jsonl", **_row(),
+        }
+        ledger.append_trial_v2(**kwargs)
+        with pytest.raises(ledger.LedgerSchemaError, match="gate receipt claim"):
+            ledger.append_trial_v2(**kwargs)
+        assert len(ledger.read_all(tmp_path / "ledger.jsonl")) == 1
 
-    def test_2024_window_gated_for_exit_series(self, tmp_path):
-        row = _row(series="D5-R", window="2024-01-01~2024-12-31(조건부)")
-        with pytest.raises(windows.WindowViolation):
-            ledger.append_trial(path=tmp_path / "l.jsonl", **row)
-        ledger.append_trial(path=tmp_path / "l.jsonl", known_ok=True, **row)
+    def test_append_v2_concurrent_claim_attempts_create_one_row(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        kwargs = {
+            "repo_root": tmp_path, "gate_receipt_path": receipt_path, "gate_usage_path": usage_path,
+            "input_artifacts": inputs, "result_artifacts": results, "candidate_set": candidates,
+            "path": tmp_path / "ledger.jsonl", **_row(),
+        }
+        context = multiprocessing.get_context("spawn")
+        queue = context.Queue()
+        processes = [context.Process(target=_append_v2_worker, args=(queue, kwargs)) for _ in range(2)]
+        for process in processes:
+            process.start()
+        outcomes = [queue.get(timeout=30)[0] for _ in processes]
+        for process in processes:
+            process.join(timeout=30)
+            assert process.exitcode == 0
+        assert sorted(outcomes) == ["appended", "rejected"]
+        assert len(ledger.read_all(tmp_path / "ledger.jsonl")) == 1
 
-    def test_2024_window_free_for_non_exit_series(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        ledger.append_trial(
-            path=path, **_row(series="스냅샷-신규", window="2024-01-01~2024-06-30(조건부 검증)")
+    def test_append_v2_rejects_noncontract_ledger_path(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError, match="sealed contract ledger_path"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "side-ledger.jsonl", **_row(),
+            )
+
+    def test_append_v2_rejects_backdated_ledger_timestamp(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError, match="ledger.ts must not precede consumed_at"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "ledger.jsonl", **_row(ts="2026-07-14T00:01:30+00:00"))
+
+    def test_append_v2_rejects_relocated_evidence_files(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        relocated = tmp_path / "receipt-copy.json"
+        relocated.write_bytes(receipt_path.read_bytes())
+        with pytest.raises(ledger.LedgerSchemaError, match="canonical receipt path"):
+            ledger.append_trial_v2(
+                repo_root=tmp_path, gate_receipt_path=relocated, gate_usage_path=usage_path,
+                input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+                path=tmp_path / "ledger.jsonl", **_row())
+
+
+    def test_append_v2_rejects_usage_mismatch_and_changed_code(self, tmp_path):
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path)
+        usage = json.loads(usage_path.read_text(encoding="utf-8"))
+        usage["receipt_id"] = "b" * 64
+        usage_path.write_text(json.dumps(usage), encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(
+                repo_root=tmp_path,
+                gate_receipt_path=receipt_path,
+                gate_usage_path=usage_path,
+                input_artifacts=input_artifacts,
+                result_artifacts=result_artifacts,
+                candidate_set=candidate_set,
+                path=tmp_path / "ledger.jsonl",
+                **_row(),
+            )
+        receipt_path, usage_path, input_artifacts, result_artifacts, candidate_set = _v2_chain(tmp_path / "second")
+        (tmp_path / "second" / "measure.py").write_text("value = 2\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(
+                repo_root=tmp_path / "second",
+                gate_receipt_path=receipt_path,
+                gate_usage_path=usage_path,
+                path=tmp_path / "second" / "ledger.jsonl",
+                input_artifacts=input_artifacts,
+                result_artifacts=result_artifacts,
+                candidate_set=candidate_set,
+                **_row(),
+            )
+
+    def test_append_v2_rejects_artifact_tamper_and_candidate_mismatch(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        (tmp_path / "input.json").write_text('{"input": 2}\n', encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=candidates, path=tmp_path / "ledger.jsonl", **_row())
+        inputs, results, candidates = _bindings(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=list(reversed(candidates)) + [{"name": "candidate-a", "buy_sha256": "d" * 64, "sell_sha256": "e" * 64}], path=tmp_path / "ledger.jsonl", **_row())
+
+    def test_append_v2_allows_empty_candidates_only_for_negative_kill(self, tmp_path):
+        receipt_path, usage_path, inputs, results, _ = _v2_chain(tmp_path)
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], path=tmp_path / "ledger.jsonl", **_row())
+        record = ledger.append_trial_v2(repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path, input_artifacts=inputs, result_artifacts=results, candidate_set=[], negative_or_kill=True, path=tmp_path / "ledger.jsonl", **_row())
+        assert record["evidence"]["candidate_set_sha256"] == evidence.sha256_canonical([])
+    def test_candidate_identity_requires_exact_buy_sell_hashes_and_name(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        usage = json.loads(usage_path.read_text(encoding="utf-8"))
+        evidence_id, identity = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=candidates, negative_or_kill=False, repo_root=tmp_path,
         )
-        assert ledger.aggregate(path)["known_window_contacts"] == 0
+        assert identity["candidate_set"] == candidates
+        renamed = [{**candidates[0], "name": "candidate-b"}]
+        changed_buy = [{**candidates[0], "buy_sha256": "d" * 64}]
+        renamed_id, _ = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=renamed, negative_or_kill=False, repo_root=tmp_path,
+        )
+        changed_buy_id, _ = evidence.build_evidence_identity(
+            receipt, usage, input_artifacts=inputs, result_artifacts=results,
+            candidate_set=changed_buy, negative_or_kill=False, repo_root=tmp_path,
+        )
+        assert evidence_id not in {renamed_id, changed_buy_id}
+        with pytest.raises(evidence.EvidenceSchemaError):
+            evidence.validate_measurement_bindings(
+                input_artifacts=inputs, result_artifacts=results,
+                candidate_set=[{"name": "candidate-a", "sha256": "c" * 64}],
+                negative_or_kill=False, repo_root=tmp_path,
+            )
+    def test_promotion_manifest_issuer_is_exclusive_and_canonical(self, tmp_path):
+        receipt_path, usage_path, inputs, results, candidates = _v2_chain(tmp_path)
+        ledger_path = tmp_path / "ledger.jsonl"
+        record = ledger.append_trial_v2(
+            repo_root=tmp_path, gate_receipt_path=receipt_path, gate_usage_path=usage_path,
+            input_artifacts=inputs, result_artifacts=results, candidate_set=candidates,
+            path=ledger_path, **_row(),
+        )
+        with pytest.raises(evidence.EvidenceSchemaError, match="promotions_dir"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "caller-output",
+            )
+        with pytest.raises(evidence.EvidenceSchemaError, match="PRE.created_at must not precede ledger.ts"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:02:30+00:00", output_dir=tmp_path / "promotions",
+            )
+        manifest = evidence.issue_promotion_manifest_v2(
+            tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+            ledger_path=ledger_path, evidence_id=record["evidence_id"],
+            created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+        )
+        manifest_path = tmp_path / "promotions" / f"{record['evidence_id']}.pre.json"
+        assert evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)[0] == manifest
+        assert set(manifest["ledger"]) == {
+            "path", "row_ordinal", "record_sha256", "evidence_id",
+        }
+        ledger._append_record(ledger_path, VALID_ROW)
+        assert evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)[0] == manifest
+        rows = ledger_path.read_text(encoding="utf-8").splitlines()
+        ledger_path.write_text("\n".join(reversed(rows)) + "\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="committed ledger row"):
+            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
+        ledger_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        tampered = json.loads(rows[0])
+        tampered["result"] = "tampered"
+        ledger_path.write_text(json.dumps(tampered, ensure_ascii=False) + "\n" + rows[1] + "\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            evidence.verify_promotion_manifest_v2(manifest_path, repo_root=tmp_path)
+        ledger_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        copied = tmp_path / "copied.json"
+        copied.write_bytes(manifest_path.read_bytes())
+        with pytest.raises(evidence.EvidenceSchemaError, match="path is not canonical"):
+            evidence.verify_promotion_manifest_v2(copied, repo_root=tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="ledger_path"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=tmp_path / "alternate.jsonl", evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
+        with pytest.raises(FileExistsError):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
+        ledger._append_record(ledger_path, record)
+        with pytest.raises(evidence.EvidenceSchemaError, match="exactly one v2 row"):
+            evidence.issue_promotion_manifest_v2(
+                tmp_path, gate_receipt_path=receipt_path, gate_claim_path=usage_path,
+                ledger_path=ledger_path, evidence_id=record["evidence_id"],
+                created_at="2026-07-14T00:04:00+00:00", output_dir=tmp_path / "promotions",
+            )
 
-    def test_append_preserves_crlf_convention(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        first = json.dumps(VALID_ROW, ensure_ascii=False)
-        path.write_bytes(first.encode("utf-8") + b"\r\n")
-        ledger.append_trial(path=path, **_row(target="둘째 행"))
-        data = path.read_bytes()
-        assert data.count(b"\r\n") == 2  # 기존 CRLF 관례 유지
-        assert len(ledger.read_all(path)) == 2
 
-    def test_append_repairs_missing_trailing_newline(self, tmp_path):
-        path = tmp_path / "l.jsonl"
-        path.write_bytes(json.dumps(VALID_ROW, ensure_ascii=False).encode("utf-8"))
-        ledger.append_trial(path=path, **_row(target="둘째 행"))
-        assert len(ledger.read_all(path)) == 2  # 행 붙음 없음
+class TestStrictV1Reads:
+    @pytest.mark.parametrize("bad", [
+        {**VALID_ROW, "extra": "no"},
+        _row(target=1),
+        _row(ts="not-a-timestamp"),
+        _row(trial_type="d(disallowed)"),
+    ])
+    def test_malformed_v1_rows_fail_closed(self, tmp_path, bad):
+        path = tmp_path / "ledger.jsonl"
+        path.write_text(json.dumps(bad, ensure_ascii=False) + "\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError):
+            ledger.read_all(path)
+
+    def test_valid_historical_v1_roundtrip(self, tmp_path):
+        path = tmp_path / "ledger.jsonl"
+        raw = json.dumps(VALID_ROW, ensure_ascii=False)
+        path.write_text(raw + "\n", encoding="utf-8")
+        assert ledger._serialize(ledger.read_all(path)[0]) == raw
+    def test_malformed_v2_read_fails_closed_with_line_number(self, tmp_path):
+        path = tmp_path / "ledger.jsonl"
+        broken = {
+            **VALID_ROW,
+            "schema_version": 2,
+            "evidence_id": "a" * 64,
+            "evidence": {},
+        }
+        path.write_text(json.dumps(broken, ensure_ascii=False) + "\n", encoding="utf-8")
+        with pytest.raises(ledger.LedgerSchemaError) as excinfo:
+            ledger.read_all(path)
+        assert "1행" in str(excinfo.value)
 
 
 class TestReadAggregate:
@@ -236,9 +519,9 @@ class TestReadAggregate:
 
     def test_aggregate_counts_and_sqrt(self, tmp_path):
         path = tmp_path / "l.jsonl"
-        ledger.append_trial(path=path, **_row(series="D1"))
-        ledger.append_trial(path=path, **_row(series="D1", trial_type="a(엔진 확인)"))
-        ledger.append_trial(path=path, **_row(series="S-트랙"))
+        ledger._append_record(path, _row(series="D1"))
+        ledger._append_record(path, _row(series="D1", trial_type="a(엔진 확인)"))
+        ledger._append_record(path, _row(series="S-트랙"))
         agg = ledger.aggregate(path)
         assert agg["total"] == 3
         assert agg["by_series"]["D1"]["n"] == 2
@@ -337,8 +620,2230 @@ class TestPrereg:
         prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
         with pytest.raises(FileExistsError):
             prereg.write_skeleton(target, title="테스트", series_kind="신규 가설")
+    def test_finalize_prereg_uses_only_canonical_seal_path_and_binds_authority(self, tmp_path):
+        code = tmp_path / "measure.py"
+        code.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        with pytest.raises(evidence.EvidenceSchemaError, match="canonical contract seal path"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=tmp_path / "arbitrary.seal.json", sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        seal = prereg.finalize_prereg(
+            document, repo_root=tmp_path, code_files=(code,),
+            manifest_path=canonical, sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert canonical.is_file()
+        assert seal["ledger_path"] == "ledger.jsonl"
+        assert seal["authority_paths"]["promotions_dir"] == "promotions"
+        tampered = {**seal, "authority_paths": {**seal["authority_paths"], "seal_dir": "other-seals"}}
+        with pytest.raises(evidence.EvidenceSchemaError, match="authority_paths"):
+            evidence.validate_prereg_seal(tampered, repo_root=tmp_path)
+
+    def test_finalize_prereg_rejects_parent_swap_before_write(self, tmp_path, monkeypatch):
+        code = tmp_path / "measure.py"
+        code.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        events = []
+
+        class SwappedGuard:
+            def hold_path(self, path):
+                events.append(("hold", Path(path)))
+            def validate_file(self, path):
+                events.append(("validate", Path(path)))
+                raise evidence.EvidenceSchemaError("authority parent identity changed")
+
+        @contextlib.contextmanager
+        def swapped_guard(*args, **kwargs):
+            yield SwappedGuard()
+
+        monkeypatch.setattr(prereg, "authority_mutation_guard", swapped_guard)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=canonical, sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        assert events and not canonical.exists()
+    def test_hold_path_establishes_missing_parent_and_rejects_substitution(self, tmp_path, monkeypatch):
+        target_db = tmp_path / "measure.py"
+        target_db.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "promotion_journal/nested",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        target = tmp_path / "promotion_journal" / "nested" / "seal.json"
+
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(target)
+            assert target.parent.is_dir()
+            if os.name == "nt":
+                assert guard._windows_handles
+            else:
+                assert guard._path_key(target.parent) in guard._target_dir_fds
+            assert not target.exists()
+
+        (tmp_path / "promotion_journal" / "nested").rmdir()
+        (tmp_path / "promotion_journal").rmdir()
+        replacement = tmp_path / "replacement"
+        replacement.mkdir()
+        original_mkdir = os.mkdir
+        substituted = False
+
+        def substitute_component(path, *args, **kwargs):
+            nonlocal substituted
+            result = original_mkdir(path, *args, **kwargs)
+            if not substituted and Path(path).name == "promotion_journal":
+                candidate = tmp_path / "promotion_journal"
+                candidate.rmdir()
+                try:
+                    candidate.symlink_to(replacement, target_is_directory=True)
+                except OSError:
+                    pytest.skip("symlink/junction creation is unavailable")
+                substituted = True
+            return result
+
+        monkeypatch.setattr(prereg.os, "mkdir", substitute_component)
+        with pytest.raises(evidence.EvidenceSchemaError, match="non-symlink|reparse|securely hold"):
+            with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+                guard.hold_path(target)
+        assert substituted
+    @pytest.mark.parametrize(("source", "dynamic_python"), [
+        ("import package.plugin\n", ()),
+        ("__import__('package.plugin')\n", ("package/plugin.py",)),
+        (
+            "import importlib\nimportlib.import_module('package.plugin')\n",
+            ("package/plugin.py",),
+        ),
+    ])
+    def test_finalize_prereg_rejects_redirected_package_path_before_import(
+        self, tmp_path, source, dynamic_python,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text(source, encoding="utf-8")
+        initializer.write_text("__path__ = ['redirected']\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=dynamic_python),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="import-resolution/runtime identity global binding",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("initializer_source", [
+        "(__path__,) = (['redirected'],)\n",
+        "__path__ += ['redirected']\n",
+        "del __path__\n",
+        "for __path__ in (['redirected'],):\n    pass\n",
+        "[None for __path__ in (['redirected'],)]\n",
+        "(__path__ := ['redirected'])\n",
+        "match ['redirected']:\n    case __path__:\n        pass\n",
+        "from sys import path as __path__\n",
+    ])
+    def test_finalize_prereg_rejects_alternate_package_path_bindings(
+        self, tmp_path, initializer_source,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import package.plugin\n", encoding="utf-8")
+        initializer.write_text(initializer_source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="identity global binding|sealed mutation",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_allows_package_identity_global_reads(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import package.plugin\n", encoding="utf-8")
+        initializer.write_text("observed_path = __path__\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, initializer, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert "package/__init__.py" in [item["path"] for item in seal["code_manifest"]]
+    @pytest.mark.parametrize("source", [
+        "import runpy\nrunpy.run_path('plugin.py')\n",
+        "from builtins import exec as execute\nexecute('x = 1')\n",
+        "loaders = {'run': __import__}\nloaders['run']('plugin')\n",
+        "eval(compile(open('plugin.py').read(), 'plugin.py', 'exec'))\n",
+        "from functools import partial\nimport importlib\nload = partial(importlib.import_module, 'plugin')\nload()\n",
+        "import importlib\nload = importlib.import_module\nload('plugin')\n",
+        "import importlib\nloaders = (importlib.import_module,)\nloaders[0]('plugin')\n",
+        "def wrapper(loader):\n    loader('plugin')\nwrapper(__import__)\n",
+        "import importlib\nfor loader in (importlib,):\n    loader.import_module('plugin')\n",
+        "import importlib\n[loader.import_module('plugin') for loader in (importlib,)]\n",
+        "import importlib\nlist(map(lambda module: module.import_module(\"local_plugin\"), [importlib]))\n",
+        "import importlib\nimportlib.import_module('builtins').eval('1 + 1')\n",
+        "import builtins\nimport importlib\nlist(map(builtins.getattr(importlib, 'import_module'), ['local_plugin']))\n",
+        "type(object).__getattribute__(object, '__class__')\n",
+        "import pickle\npickle.loads(b'payload')\n",
+        "import importlib\ndef run():\n    for loader in (importlib,):\n        loader.import_module('plugin')\nrun()\n",
+        "import importlib\nclass Executed:\n    for loader in (importlib,):\n        loader.import_module('plugin')\n",
+        "import importlib\ndef outer():\n    class Holder:\n        pass\n    holder = Holder()\n    holder.importlib.import_module('plugin')\nouter()\n",
+        "import importlib\n[loader.import_module('plugin') for (loader,) in ((importlib,),)]\n",
+        "import pydoc\nlist(map(pydoc.importfile, ['plugin.py']))\n",
+        "import pydoc\nlist(filter(pydoc.importfile, ['plugin.py']))\n",
+        "import pydoc\nsorted(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\nmin(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\nmax(['plugin.py'], key=pydoc.importfile)\n",
+        "import pydoc\niter(pydoc.importfile, None)\n",
+        "import runpy\nimport sys\nsys.modules[__name__].run_path = runpy.run_path\nrun_path('plugin.py')\n",
+    ])
+    def test_finalize_prereg_rejects_indirect_or_unprovable_execution(self, tmp_path, source):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text(source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_rejects_decorated_callback_carrier_through_map(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "import pydoc\n"
+            "def replace(function):\n    return pydoc.importfile\n"
+            "@replace\n"
+            "def carrier(path):\n    return path\n"
+            "list(map(carrier, ['plugin.py']))\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unproven callback"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("source", [
+        "import pydoc\nstr = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\nint = pydoc.importfile\nlist(map(int, ['plugin.py']))\n",
+        "from pydoc import importfile as str\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef run(str):\n    list(map(str, ['plugin.py']))\nrun(pydoc.importfile)\n",
+        "import pydoc\ndef run(str=pydoc.importfile):\n    list(map(str, ['plugin.py']))\nrun()\n",
+        "import pydoc\nlist(map(str, ['plugin.py']) for str in [pydoc.importfile])\n",
+        "import pydoc\nmatch pydoc.importfile:\n    case str:\n        list(map(str, ['plugin.py']))\n",
+        "def decorate(callback):\n    return callback\n@decorate\ndef str(path):\n    return path\nlist(map(str, ['plugin.py']))\n",
+    ])
+    def test_finalize_prereg_rejects_shadowed_safe_builtin_callback(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
 
 
+    @pytest.mark.parametrize("source", [
+        "import runpy\nimport sys\nsys.modules[__name__].run_path = runpy.run_path\nrun_path('plugin.py')\n",
+        "import runpy\nimport sys\nnamespace = sys.modules[__name__]\nnamespace.run_path = runpy.run_path\n",
+        "import runpy\nimport sys\nnamespace = sys.modules[__name__].__dict__\nnamespace['run_path'] = runpy.run_path\n",
+        "import runpy\nimport sys\ndef namespace():\n    return sys.modules[__name__]\nnamespace().run_path = runpy.run_path\n",
+        "import runpy\nsys.__dict__['run_path'] = runpy.run_path\n",
+        "import runpy\nglobals()['run_path'] = runpy.run_path\n",
+        "import runpy\nlocals()['run_path'] = runpy.run_path\n",
+        "import runpy\nvars()['run_path'] = runpy.run_path\n",
+    ])
+    def test_finalize_prereg_rejects_namespace_export_mutation(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="namespace export mutation|module-level object mutation|higher-order or unsafe executable callable",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("source", [
+        "import pydoc\ndef rebind():\n    global str\n    str = pydoc.importfile\nrebind()\nlist(map(str, ['plugin.py']))\n",
+        "import builtins\nimport pydoc\nbuiltins.str = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef namespace():\n    return globals()\nalias = namespace\nalias()['str'] = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\ndef namespace():\n    marker = None\n    return globals()\nnamespace()['str'] = pydoc.importfile\nlist(map(str, ['plugin.py']))\n",
+        "import pydoc\nsetattr(globals(), 'str', pydoc.importfile)\n",
+        "import pydoc\ndelattr(pydoc, 'render_doc')\n",
+        "import builtins\nimport pydoc\ndef namespace():\n    marker = None\n    return builtins.__dict__\ndef mutate(callback):\n    callback().update({'str': pydoc.importfile})\nmutate(namespace)\nlist(map(str, ['plugin.py']))\n",
+        "import runpy\nimport sys\ndef self_module():\n    marker = None\n    return sys.modules[__name__]\ndef mutate(callback):\n    callback().__dict__.__setitem__('run_path', runpy.run_path)\nmutate(self_module)\nrun_path('plugin.py')\n",
+    ], ids=(
+        "global_str_callback", "builtins_str", "alias_return_helper",
+        "multi_statement_helper", "setattr", "delattr",
+        "multi_statement_builtins_dict_helper_update_callback",
+        "self_module_helper_setitem_mutator",
+    ))
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    def test_finalize_prereg_rejects_sealed_global_export_mutation(
+        self, tmp_path, source, package
+    ):
+        carrier_dir = tmp_path / "carrier" if package else tmp_path
+        carrier_dir.mkdir(exist_ok=True)
+        carrier = carrier_dir / "__init__.py" if package else carrier_dir / "carrier.py"
+        measure = tmp_path / "measure.py"
+        measure.write_text("import carrier\n", encoding="utf-8")
+        carrier.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match=(
+            "global or nonlocal|builtins namespace|module-level object|dynamic attribute"
+            "|function-body object mutation|function-body mutating method"
+        )):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "import builtins\nbuiltins.sealed_export, local = (1, 2)\n",
+        "namespace = globals()\nnamespace |= {'sealed_export': 1}\n",
+    ], ids=("builtins_tuple_destructuring", "namespace_name_ior"))
+    def test_finalize_prereg_rejects_recursive_store_and_name_augassign(
+        self, tmp_path, source
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    @pytest.mark.parametrize("statement", [
+        "for carrier.sealed_export in (1,):\n    pass\n",
+        "import contextlib\nwith contextlib.nullcontext() as carrier.sealed_export:\n    pass\n",
+    ], ids=("for_target", "with_target"))
+    def test_finalize_prereg_rejects_carrier_store_targets_before_seal(
+        self, tmp_path, package, statement
+    ):
+        carrier_dir = tmp_path / "carrier" if package else tmp_path
+        carrier_dir.mkdir(exist_ok=True)
+        carrier = carrier_dir / "__init__.py" if package else carrier_dir / "carrier.py"
+        carrier.write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import carrier\n{statement}", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_allows_pure_name_assignment_and_arithmetic(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("value = 1\nresult = value + 2\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py"]
+    def test_dynamic_dependency_rejects_comprehension_attribute_store(self, tmp_path):
+        tree = ast.parse("result = [item for item in values]\n")
+        tree.body[0].value.generators[0].target = ast.Attribute(
+            value=ast.Name(id="carrier", ctx=ast.Load()),
+            attr="sealed_export",
+            ctx=ast.Store(),
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed mutation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
+    @pytest.mark.parametrize("source", [
+        "def update(state):\n    state.value = 1\n",
+        "def update(state):\n    state['value'] = 2\n",
+        "def update(state):\n    state.update({'value': 3})\n",
+        "def update(state):\n    state.__setitem__('value', 4)\n",
+    ], ids=("attribute_store", "subscript_store", "update", "setitem"))
+    def test_dynamic_dependency_rejects_function_body_object_mutation(self, tmp_path, source):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="function-body object mutation|function-body mutating method|unresolved executable receiver parameter",
+        ):
+            prereg._dynamic_local_dependencies(
+                ast.parse(source), tmp_path / "measure.py", tmp_path
+            )
+    @pytest.mark.parametrize("source", [
+        "import importlib\ndef carrier():\n    pass\ncarrier.loader = importlib\ncarrier.loader.import_module('plugin')\n",
+        "import importlib\nclass Carrier:\n    pass\nCarrier.loader = importlib\nCarrier.loader.import_module('plugin')\n",
+        "import importlib\ndef carrier():\n    pass\ncarrier.loader = {}\ncarrier.loader['module'] = importlib\ncarrier.loader['module'].import_module('plugin')\n",
+        "import importlib\ndef carrier():\n    pass\ncarrier.holder = carrier\ncarrier.holder.loader = importlib\ncarrier.holder.loader.import_module('plugin')\n",
+    ])
+    def test_dynamic_dependency_rejects_attribute_capability_carriers(self, tmp_path, source):
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="module-level object mutation|unresolved executable receiver",
+        ):
+            prereg._dynamic_local_dependencies(ast.parse(source), tmp_path / "measure.py", tmp_path)
+    @pytest.mark.parametrize(("carrier_source", "receiver"), [
+        (
+            "import importlib\ndef holder():\n    pass\nholder.loader = importlib\n",
+            "carrier.holder.loader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Holder:\n    pass\nHolder.loader = importlib\n",
+            "carrier.Holder.loader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Holder:\n    pass\nholder = Holder()\nholder.__dict__['loader'] = importlib\n",
+            "carrier.holder.__dict__['loader'].import_module('plugin')",
+        ),
+        (
+            "import importlib\ndef exported():\n    pass\nexported.import_module = importlib.import_module\n",
+            "loader = carrier.exported\nloader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Exported:\n    pass\nExported.import_module = importlib.import_module\n",
+            "loader = carrier.Exported\nloader.import_module('plugin')",
+        ),
+        (
+            "import importlib\nclass Exported:\n    pass\nexported = Exported()\nexported.__dict__['import_module'] = importlib.import_module\n",
+            "loader = carrier.exported\nloader.import_module('plugin')",
+        ),
+    ])
+    def test_finalize_prereg_rejects_cross_module_capability_carriers(
+        self, tmp_path, carrier_source, receiver
+    ):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text(f"import carrier\n{receiver}\n", encoding="utf-8")
+        carrier.write_text(carrier_source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="module-level object mutation|unresolved executable receiver",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_rejects_local_module_reexported_run_path(self, tmp_path):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        carrier.write_text(
+            "def run_path(path):\n    return path\nfrom runpy import run_path\n",
+            encoding="utf-8",
+        )
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    def test_finalize_prereg_rejects_package_initializer_reexported_run_path(self, tmp_path):
+        package = tmp_path / "carrier"
+        package.mkdir()
+        measure, initializer, plugin = (
+            tmp_path / "measure.py",
+            package / "__init__.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        initializer.write_text(
+            "def run_path(path):\n    return path\nfrom runpy import run_path\n",
+            encoding="utf-8",
+        )
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, initializer),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("package", [False, True], ids=("module", "package_initializer"))
+    def test_finalize_prereg_rejects_decorator_replaced_local_run_path(self, tmp_path, package):
+        package_dir = tmp_path / "carrier" if package else tmp_path
+        package_dir.mkdir(exist_ok=True)
+        measure = tmp_path / "measure.py"
+        carrier = package_dir / "__init__.py" if package else package_dir / "carrier.py"
+        measure.write_text("import carrier\ncarrier.run_path('plugin.py')\n", encoding="utf-8")
+        carrier.write_text(
+            "import pydoc\n"
+            "def replace(function):\n    return pydoc.importfile\n"
+            "@replace\n"
+            "def run_path(path):\n    return path\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+
+    @pytest.mark.parametrize("source", [
+        (
+            "class Loader:\n"
+            "    def run_path(path):\n"
+            "        return path\n"
+            "Loader.run_path('plugin.py')\n"
+        ),
+        (
+            "class Loader:\n"
+            "    class Nested:\n"
+            "        def run_path(path):\n"
+            "            return path\n"
+            "Loader.Nested.run_path('plugin.py')\n"
+        ),
+        (
+            "import runpy\n"
+            "class Loader:\n"
+            "    for Loader in (runpy,):\n"
+            "        Loader.run_path('plugin.py')\n"
+        ),
+        (
+            "def outer():\n"
+            "    class Loader:\n"
+            "        def run_path(path):\n"
+            "            return path\n"
+            "    return Loader.run_path('plugin.py')\n"
+            "outer()\n"
+        ),
+    ], ids=("class_method", "nested_class_method", "class_for_rebind", "nested_function_class"))
+    def test_finalize_prereg_rejects_unproven_class_callable_api(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "import pydoc\nmodule_value: pydoc.importfile('plugin.py')\n",
+        (
+            "import pydoc\n"
+            "class Holder:\n"
+            "    class_value: pydoc.importfile('plugin.py')\n"
+        ),
+        (
+            "import pydoc\n"
+            "def outer():\n"
+            "    def inner(value: pydoc.importfile('plugin.py')) -> int:\n"
+            "        return 1\n"
+            "    return inner('value')\n"
+        ),
+        "import pydoc\ndef annotated(value: pydoc.importfile('plugin.py'), /):\n    return value\n",
+        "import pydoc\ndef annotated(*items: pydoc.importfile('plugin.py')):\n    return items\n",
+        "import pydoc\ndef annotated(*, item: pydoc.importfile('plugin.py')):\n    return item\n",
+        "import pydoc\ndef annotated(**items: pydoc.importfile('plugin.py')):\n    return items\n",
+        "import pydoc\ndef annotated() -> pydoc.importfile('plugin.py'):\n    return None\n",
+    ], ids=("module", "class", "nested_function", "posonly", "vararg", "kwonly", "kwarg", "return"))
+    def test_finalize_prereg_rejects_executable_annotations(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("source", [
+        "__import__('plugin', globals=None, locals=None)\n",
+        "__import__('plugin', fromlist=('not_local',))\n",
+        "__import__('plugin', level=0)\n",
+        "from builtins import __import__ as load\nload('plugin', None, None)\n",
+        "import importlib\nimportlib.import_module('.plugin')\n",
+        "import importlib as loader\nloader.import_module('plugin', package='package')\n",
+        "from importlib import import_module as load\nload('plugin', None)\n",
+    ], ids=(
+        "builtin_globals_locals", "builtin_fromlist", "builtin_level",
+        "builtin_alias", "relative_target", "package_keyword", "import_module_alias",
+    ))
+    def test_finalize_prereg_rejects_non_exact_dynamic_module_imports(self, tmp_path, source):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text(source, encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="dynamic module import"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, plugin),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize("source", [
+        "value: Trigger['go']\n",
+        "class Holder:\n    value: Trigger['go']\n",
+        "def outer():\n    value: Trigger['go']\n",
+    ], ids=("module", "class", "nested_function"))
+    def test_finalize_prereg_rejects_implicit_protocol_annotations(self, tmp_path, source):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+    def test_dynamic_dependency_rejects_implicit_protocol_type_alias(self, tmp_path):
+        tree = ast.parse("marker = None\n")
+        type_alias = type("TypeAlias", (ast.AST,), {"_fields": ("value", "type_params")})()
+        type_alias.value = ast.parse("Trigger['go']", mode="eval").body
+        type_alias.type_params = []
+        tree.body.append(type_alias)
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
+
+    def test_finalize_prereg_allows_simple_non_call_annotations(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "module_value: (int, 'str')\n"
+            "def pure(value: int, legacy: 'str', /, *items: str, named: float = 1.0, **extra: bool) -> 'int':\n"
+            "    return value\n"
+            "pure(1)\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-15T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
+
+    def test_dynamic_dependency_rejects_executable_type_parameter_bound(self, tmp_path):
+        tree = ast.parse("def generic():\n    pass\n")
+        function = tree.body[0]
+        function.type_params = [type(
+            "TypeParameter",
+            (),
+            {"bound": ast.parse("pydoc.importfile('plugin.py')", mode="eval").body, "default_value": None},
+        )()]
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="executable annotation"):
+            prereg._dynamic_local_dependencies(tree, tmp_path / "measure.py", tmp_path)
+    def test_finalize_prereg_rejects_unclassified_static_module_call(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("import pydoc\npydoc.importfile('plugin.py')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize("source", [
+        "from pydoc import importfile as print\nprint('plugin.py')\n",
+        "import pydoc\ndef relay(print):\n    print('plugin.py')\nrelay(pydoc.importfile)\n",
+        "import pydoc\n[print('plugin.py') for print in [pydoc.importfile]]\n",
+        "import pydoc\nmatch pydoc.importfile:\n    case print:\n        print('plugin.py')\n",
+    ])
+    def test_finalize_prereg_rejects_shadowed_or_parameter_bare_callable(
+        self, tmp_path, source
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    def test_finalize_prereg_allows_unshadowed_builtin_in_comprehension(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "values = [print(value) for value in ['ok']]\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
+    def test_finalize_prereg_allows_unshadowed_safe_builtin_callback(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "values = list(map(str, [1, 2]))\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        manifest = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure,),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in manifest["code_manifest"]] == ["measure.py"]
+    @pytest.mark.parametrize(("carrier_source", "measure_source"), [
+        (
+            "def exported(name):\n    return name\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+        (
+            "class exported:\n    def __init__(self, name):\n        self.name = name\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+        (
+            "class Carrier:\n    pass\nexported = Carrier.__dict__\n",
+            "from carrier import exported\nexported('plugin')\n",
+        ),
+    ])
+    def test_finalize_prereg_rejects_direct_local_imported_callable_carriers(
+        self, tmp_path, carrier_source, measure_source
+    ):
+        measure, carrier = tmp_path / "measure.py", tmp_path / "carrier.py"
+        measure.write_text(measure_source, encoding="utf-8")
+        carrier.write_text(carrier_source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved callable alias"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure, carrier),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    @pytest.mark.parametrize(("declaration", "relative"), [
+        ("def exported(name):\n    return name\n", False),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", False),
+        ("def exported(name):\n    return name\n", True),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", True),
+    ])
+    def test_finalize_prereg_rejects_importfrom_shadowing_local_callable(
+        self, tmp_path, declaration, relative
+    ):
+        package = tmp_path / "package" if relative else tmp_path
+        package.mkdir(exist_ok=True)
+        initializer = package / "__init__.py"
+        if relative:
+            initializer.write_text("", encoding="utf-8")
+        measure, carrier = package / "measure.py", package / "carrier.py"
+        import_statement = "from .carrier import exported" if relative else "from carrier import exported"
+        measure.write_text(
+            f"{declaration}{import_statement}\nexported('plugin')\n", encoding="utf-8"
+        )
+        carrier.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        root = "package/measure.py" if relative else "measure.py"
+        document.write_text(_sealed_contract(roots=(root,)), encoding="utf-8")
+        code_files = (measure, carrier, initializer) if relative else (measure, carrier)
+
+        if relative:
+            (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="unresolved callable alias|function-body object mutation|unresolved local fromlist import",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=code_files,
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+
+    @pytest.mark.parametrize(("declaration", "relative"), [
+        ("def exported(name):\n    return name\n", False),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", False),
+        ("def exported(name):\n    return name\n", True),
+        ("class exported:\n    def __init__(self, name):\n        self.name = name\n", True),
+    ])
+    def test_finalize_prereg_rejects_local_wildcard_import_after_callable_declaration(
+        self, tmp_path, declaration, relative
+    ):
+        package = tmp_path / "package" if relative else tmp_path
+        package.mkdir(exist_ok=True)
+        initializer = package / "__init__.py"
+        if relative:
+            initializer.write_text("", encoding="utf-8")
+        measure, carrier = package / "measure.py", package / "carrier.py"
+        import_statement = "from .carrier import *" if relative else "from carrier import *"
+        measure.write_text(
+            f"{declaration}{import_statement}\nexported('plugin')\n", encoding="utf-8"
+        )
+        carrier.write_text(
+            "import importlib\ndef exported(name):\n    return importlib.import_module(name)\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        root = "package/measure.py" if relative else "measure.py"
+        document.write_text(_sealed_contract(roots=(root,)), encoding="utf-8")
+        code_files = (measure, carrier, initializer) if relative else (measure, carrier)
+
+        if relative:
+            (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match="wildcard import is unsupported|sealed mutation|unresolved local fromlist import"
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=code_files,
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+    def test_finalize_prereg_allows_direct_local_module_function_and_scans_plugin(self, tmp_path):
+        measure, carrier, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "carrier.py",
+            tmp_path / "plugin.py",
+        )
+        measure.write_text("import carrier\ncarrier.safe_func()\n", encoding="utf-8")
+        carrier.write_text(
+            "import importlib\ndef safe_func():\n    return importlib.import_module('plugin')\n",
+            encoding="utf-8",
+        )
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=("plugin.py",)
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path) == {
+            "measure.py", "carrier.py", "plugin.py"
+        }
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match="dynamic_python_dependencies"
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    @pytest.mark.parametrize(("source", "dynamic_python"), [
+        ("import package.plugin\n", ()),
+        ("__import__('package.plugin')\n", ("package/plugin.py",)),
+        (
+            "import importlib\nimportlib.import_module('package.plugin')\n",
+            ("package/plugin.py",),
+        ),
+    ])
+    def test_code_manifest_rejects_package_module_collision_for_every_import_form(
+        self, tmp_path, source, dynamic_python,
+    ):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "measure.py").write_text(source, encoding="utf-8")
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=dynamic_python
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    def test_local_receiver_provenance_rejects_package_module_collision(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        source = "import package.plugin\npackage.plugin.run()\n"
+        tree = ast.parse(source)
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("from {target} import VALUE\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("import", "import_from", "builtin_dynamic", "importlib_dynamic"))
+    @pytest.mark.parametrize(("parts", "target"), [
+        ((), "plugin"),
+        (("package",), "package.plugin"),
+        (("package", "nested"), "package.nested.plugin"),
+    ], ids=("root", "regular_package", "nested_package"))
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ], ids=("bytecode", "extension"))
+    def test_code_manifest_rejects_importable_artifact_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, parts, target, suffix,
+    ):
+        package = tmp_path
+        for part in parts:
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        plugin = package / "plugin.py"
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        plugin.with_suffix(suffix).write_bytes(b"unsealed executable artifact")
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        target_path = plugin.relative_to(tmp_path).as_posix()
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="bytecode/native import artifact",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    @pytest.mark.parametrize("artifact_part", [0, 1, 2], ids=(
+        "root_package", "nested_package", "module",
+    ))
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ])
+    def test_local_receiver_provenance_rejects_artifact_in_every_import_segment(
+        self, tmp_path, artifact_part, suffix,
+    ):
+        package = tmp_path
+        package_parts = ("package", "nested")
+        for part in package_parts:
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        plugin = package / "plugin.py"
+        plugin.write_text("def run():\n    return None\n", encoding="utf-8")
+        segments = (
+            tmp_path / "package",
+            tmp_path / "package" / "nested",
+            plugin,
+        )
+        artifact = (
+            segments[artifact_part] / f"__init__{suffix}"
+            if artifact_part < 2
+            else plugin.with_suffix(suffix)
+        )
+        artifact.write_bytes(b"unsealed executable artifact")
+        source = "import package.nested.plugin\npackage.nested.plugin.run()\n"
+        tree = ast.parse(source)
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="bytecode/native import artifact",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
+
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("static_import", "builtin_import", "importlib_import"))
+    @pytest.mark.parametrize(("namespace_parts", "target", "target_path"), [
+        (("namespace",), "namespace.target", "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package.namespace.target",
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_code_manifest_rejects_implicit_namespace_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, namespace_parts, target, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    @pytest.mark.parametrize(("namespace_parts", "target", "target_path"), [
+        (("namespace",), "namespace.target", "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package.namespace.target",
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_local_receiver_provenance_rejects_implicit_namespace(
+        self, tmp_path, namespace_parts, target, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("def run():\n    return None\n", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        tree = ast.parse(f"import {target}\n{target}.run()\n")
+        _, aliases = prereg._dynamic_call_kinds(tree)
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg._reject_unresolved_module_receivers(
+                tree, aliases, tmp_path / "measure.py", tmp_path
+            )
+
+    @pytest.mark.parametrize(("source_template", "dynamic_python"), [
+        ("import {target}\n", ()),
+        ("__import__('{target}')\n", ("{target_path}",)),
+        (
+            "import importlib\nimportlib.import_module('{target}')\n",
+            ("{target_path}",),
+        ),
+    ], ids=("static_import", "builtin_import", "importlib_import"))
+    @pytest.mark.parametrize("target", [
+        "namespace.target",
+        "package.namespace.target",
+    ], ids=("root_package", "nested_package"))
+    def test_code_manifest_allows_sealed_packages_for_every_import_form(
+        self, tmp_path, source_template, dynamic_python, target,
+    ):
+        package = tmp_path
+        expected = {"measure.py"}
+        for part in target.split("."):
+            package /= part
+            package.mkdir()
+            (package / "__init__.py").write_text("", encoding="utf-8")
+            expected.add((package / "__init__.py").relative_to(tmp_path).as_posix())
+        target_path = "/".join((*target.split("."), "__init__.py"))
+        (tmp_path / "measure.py").write_text(
+            source_template.format(target=target), encoding="utf-8"
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                dynamic_python=tuple(
+                    item.format(target_path=target_path) for item in dynamic_python
+                ),
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == expected
+
+    @pytest.mark.parametrize(("namespace_parts", "target_path"), [
+        (("namespace",), "namespace/target/__init__.py"),
+        (
+            ("package", "namespace"),
+            "package/namespace/target/__init__.py",
+        ),
+    ], ids=("root_namespace", "nested_namespace"))
+    def test_dependency_roots_reject_implicit_namespace_ancestry(
+        self, tmp_path, namespace_parts, target_path,
+    ):
+        target_file = tmp_path / target_path
+        target_file.parent.mkdir(parents=True)
+        target_file.write_text("", encoding="utf-8")
+        for index in range(1, len(namespace_parts)):
+            package = tmp_path.joinpath(*namespace_parts[:index])
+            (package / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=(target_path,)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"implicit namespace package is unsupported: {'.'.join(namespace_parts)}",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    @pytest.mark.parametrize("suffix", [
+        importlib.machinery.BYTECODE_SUFFIXES[0],
+        importlib.machinery.EXTENSION_SUFFIXES[0],
+    ], ids=("bytecode", "extension"))
+    def test_unimported_dependency_root_artifact_is_inert(self, tmp_path, suffix):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (code / "entry.py").with_suffix(suffix).write_bytes(b"inert artifact")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("code/entry.py",)), encoding="utf-8"
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"code/entry.py"}
+    def test_direct_script_rejects_legacy_plugin_pyc_sibling(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import plugin\n", encoding="utf-8")
+        (code / "plugin.pyc").write_bytes(b"legacy bytecode")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    @pytest.mark.parametrize("kind", ("source", "package", "namespace", "extension"))
+    def test_direct_script_rejects_local_import_sibling_kinds(self, tmp_path, kind):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import plugin\n", encoding="utf-8")
+        if kind == "source":
+            (code / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        elif kind == "extension":
+            (code / f"plugin{importlib.machinery.EXTENSION_SUFFIXES[0]}").write_bytes(b"extension")
+        else:
+            plugin = code / "plugin"
+            plugin.mkdir()
+            if kind == "package":
+                (plugin / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_rejects_shadow_in_imported_dependency(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import shared\n", encoding="utf-8")
+        (code / "alpha.py").write_text("DECOY = True\n", encoding="utf-8")
+        (tmp_path / "shared.py").write_text("import alpha\n", encoding="utf-8")
+        (tmp_path / "alpha.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unsealed direct-script local import candidate: alpha",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_rejects_multiple_dependency_root_parent_ambiguity(self, tmp_path):
+        for directory in ("one", "two"):
+            script_dir = tmp_path / directory
+            script_dir.mkdir()
+            (script_dir / "entry.py").write_text("import plugin\n", encoding="utf-8")
+            (script_dir / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("one/entry.py", "two/entry.py")),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous direct-script import across dependency-root parents: plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_direct_script_allows_repo_package_without_sibling(self, tmp_path):
+        code = tmp_path / "code"
+        code.mkdir()
+        (code / "entry.py").write_text("import alpha.plugin\n", encoding="utf-8")
+        alpha = tmp_path / "alpha"
+        alpha.mkdir()
+        (alpha / "__init__.py").write_text("", encoding="utf-8")
+        (alpha / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("code/entry.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"code/entry.py", "alpha/__init__.py", "alpha/plugin.py"}
+    def test_code_manifest_rejects_nested_package_module_collision(self, tmp_path):
+        package = tmp_path / "package"
+        nested = package / "nested"
+        nested.mkdir(parents=True)
+        (tmp_path / "measure.py").write_text(
+            "import package.nested.plugin\n", encoding="utf-8"
+        )
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "nested.py").write_text("DECOY = True\n", encoding="utf-8")
+        (nested / "__init__.py").write_text("", encoding="utf-8")
+        (nested / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package\.nested",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    def test_code_manifest_rejects_collision_in_package_initializer_closure(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        (tmp_path / "package.py").write_text("DECOY = True\n", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("package/plugin.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"ambiguous local module/package resolution: package",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_code_manifest_resolves_nonambiguous_module_and_package(self, tmp_path):
+        package = tmp_path / "package"
+        package.mkdir()
+        measure, module, initializer, plugin = (
+            tmp_path / "measure.py",
+            tmp_path / "module.py",
+            package / "__init__.py",
+            package / "plugin.py",
+        )
+        measure.write_text("import module\nimport package.plugin\n", encoding="utf-8")
+        module.write_text("VALUE = 1\n", encoding="utf-8")
+        initializer.write_text("", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "module.py", "package/__init__.py", "package/plugin.py"}
+
+    def test_dynamic_dependency_allows_static_module_and_sealed_local_calls(self, tmp_path):
+        source = "import numpy as np\ndef sealed_local():\n    return np.mean([1, 2])\nsealed_local()\n"
+        assert prereg._dynamic_local_dependencies(
+            ast.parse(source), tmp_path / "measure.py", tmp_path
+        ) == set()
+    def test_static_receiver_assignment_alias_is_rejected(self, tmp_path):
+        carrier = tmp_path / "carrier.py"
+        measure = tmp_path / "measure.py"
+        carrier.write_text("from os import system as mean\n", encoding="utf-8")
+        measure.write_text(
+            "import carrier\n"
+            "import numpy\n"
+            "receiver = carrier\n"
+            "receiver.mean('calc.exe')\n"
+            "receiver = numpy\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="unresolved executable receiver",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_code_manifest_rejects_unaudited_stdlib_import(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("import antigravity\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",)), encoding="utf-8"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved external import: antigravity",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+    def test_code_manifest_allows_trusted_external_from_sysconfig_root(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "numpy.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import numpy\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"measure.py"}
+    @pytest.mark.parametrize(
+        "name",
+        (
+            "sys",
+            pytest.param(
+                "_frozen_importlib",
+                marks=pytest.mark.skipif(
+                    importlib.machinery.FrozenImporter.find_spec("_frozen_importlib")
+                    is None,
+                    reason="interpreter has no _frozen_importlib frozen module",
+                ),
+            ),
+        ),
+        ids=("builtin", "frozen"),
+    )
+    def test_code_manifest_rejects_local_builtin_or_frozen_collision(self, tmp_path, name):
+        (tmp_path / f"{name}.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import {name}\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"ambiguous local/external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+        (tmp_path / f"{name}.py").unlink()
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"unresolved external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    def test_code_manifest_rejects_local_startup_root_collision(self, tmp_path, monkeypatch):
+        startup = tmp_path / "startup"
+        startup.mkdir()
+        name = "startup_only_module"
+        (startup / f"{name}.py").write_text("VALUE = 'startup'\n", encoding="utf-8")
+        (tmp_path / f"{name}.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"import {name}\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        monkeypatch.setattr(prereg, "_INITIAL_INTERPRETER_PATHS", (str(startup),))
+        monkeypatch.setattr(prereg, "_INITIAL_INTERPRETER_PREFIXES", (startup,))
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"ambiguous local/external import: {name}",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_code_manifest_rejects_unresolved_external_import_before_seal(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("import sealed_unknown_plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match=r"unresolved external import: sealed_unknown_plugin"
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+
+        (tmp_path / "sealed_unknown_plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="code_files must equal derived Python dependency closure",
+        ):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(measure,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-15T00:00:00+00:00",
+            )
+        assert not _canonical_seal_path(tmp_path, document).exists()
+
+    def test_code_manifest_rejects_post_added_local_shadow_of_trusted_external(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "numpy.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import numpy\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"measure.py"}
+            (tmp_path / "numpy.py").write_text("VALUE = 2\n", encoding="utf-8")
+            with pytest.raises(
+                evidence.EvidenceSchemaError, match=r"ambiguous local/external import: numpy"
+            ):
+                prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    def test_code_manifest_rejects_local_stdlib_collision_before_local_closure(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "shutil.py").write_text("VALUE = 'trusted'\n", encoding="utf-8")
+        (tmp_path / "shutil.py").write_text("VALUE = 'local'\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import shutil\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with _temporary_trusted_external_root(trusted):
+            with pytest.raises(
+                evidence.EvidenceSchemaError,
+                match=r"ambiguous local/external import: shutil",
+            ):
+                prereg.derive_prereg_code_manifest(
+                    document.read_text(encoding="utf-8"), tmp_path
+                )
+    def test_dynamic_dependency_rejects_assignment_derived_static_module_alias(self, tmp_path):
+        plugin = tmp_path / "plugin.py"
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        source = (
+            "import importlib as imported_module\n"
+            "loader = imported_module\n"
+            "loader.import_module('plugin')\n"
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError, match="unresolved executable receiver"
+        ):
+            prereg._dynamic_local_dependencies(
+                ast.parse(source), tmp_path / "measure.py", tmp_path
+            )
+    def test_finalize_prereg_allows_hashed_direct_dynamic_import(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("from importlib import import_module\ndef sealed_local():\n    return 'ok'\nsealed_local()\nplugin = import_module('plugin')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-14T00:00:00+00:00",
+        )
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
+    def test_finalize_prereg_allows_exact_builtin_dynamic_import(self, tmp_path):
+        measure, plugin = tmp_path / "measure.py", tmp_path / "plugin.py"
+        measure.write_text("plugin = __import__('plugin')\n", encoding="utf-8")
+        plugin.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), dynamic_python=("plugin.py",)),
+            encoding="utf-8",
+        )
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, plugin),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-15T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in seal["code_manifest"]] == ["measure.py", "plugin.py"]
+    def test_absolute_local_dotted_import_rejects_absence_then_seals_post_added_module(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import alpha_lab.future_plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved local absolute import: alpha_lab\.future_plugin",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+        (package / "future_plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/future_plugin.py"}
+
+    def test_absolute_nested_local_dotted_import_seals_every_initializer(self, tmp_path):
+        package = tmp_path / "alpha_lab" / "nested"
+        package.mkdir(parents=True)
+        (tmp_path / "alpha_lab" / "__init__.py").write_text("", encoding="utf-8")
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("import alpha_lab.nested.plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {
+            "measure.py",
+            "alpha_lab/__init__.py",
+            "alpha_lab/nested/__init__.py",
+            "alpha_lab/nested/plugin.py",
+        }
+
+    @pytest.mark.parametrize("source", [
+        "plugin = __import__('alpha_lab.plugin')\n",
+        "import importlib\nplugin = importlib.import_module('alpha_lab.plugin')\n",
+    ], ids=("builtin", "importlib"))
+    def test_absolute_dynamic_local_dotted_import_seals_full_module(self, tmp_path, source):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), dynamic_python=("alpha_lab/plugin.py",)
+            ),
+            encoding="utf-8",
+        )
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/plugin.py"}
+
+    def test_local_package_fromlist_rejects_missing_submodule_or_binding(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("from alpha_lab import missing\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=r"unresolved local fromlist import: alpha_lab\.missing",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_local_package_fromlist_seals_resolved_submodule(self, tmp_path):
+        package = tmp_path / "alpha_lab"
+        package.mkdir()
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        (package / "plugin.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text("from alpha_lab import plugin\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == {"measure.py", "alpha_lab/__init__.py", "alpha_lab/plugin.py"}
+
+    @pytest.mark.parametrize(("module_name", "module_source"), [
+        ("alpha_lab", "EXPORTED = 1\n"),
+        ("carrier", "EXPORTED = 1\n"),
+    ], ids=("package_initializer", "non_package_module"))
+    def test_local_fromlist_allows_only_proven_final_binding(
+        self, tmp_path, module_name, module_source
+    ):
+        if module_name == "alpha_lab":
+            module = tmp_path / module_name
+            module.mkdir()
+            source = module / "__init__.py"
+            expected = {"measure.py", "alpha_lab/__init__.py"}
+        else:
+            source = tmp_path / f"{module_name}.py"
+            expected = {"measure.py", "carrier.py"}
+        source.write_text(module_source, encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(f"from {module_name} import EXPORTED\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+
+        assert prereg.derive_prereg_code_manifest(
+            document.read_text(encoding="utf-8"), tmp_path
+        ) == expected
+        source.write_text("EXPORTED = 1\nEXPORTED = 2\n", encoding="utf-8")
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match=rf"unresolved local fromlist import: {module_name}\.EXPORTED",
+        ):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    def test_recheck_authority_paths_rejects_case_nested_hardlink_and_symlink_aliases(self, tmp_path):
+        target = tmp_path / "measure.py"
+        target.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        assert prereg.revalidate_authority_paths(tmp_path, authority) == authority
+
+        protected = {**authority, "target_db": "_DATABASE/measure.py"}
+        (tmp_path / "_DATABASE").mkdir()
+        (tmp_path / "_DATABASE" / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="protected"):
+            prereg.recheck_authority_paths(protected, tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="semantically distinct"):
+            prereg.recheck_authority_paths({**authority, "promotions_dir": "Seals"}, tmp_path)
+        with pytest.raises(evidence.EvidenceSchemaError, match="semantically distinct"):
+            prereg.recheck_authority_paths({**authority, "promotions_dir": "seals/archive"}, tmp_path)
+
+        hardlink = tmp_path / "hardlink.py"
+        hardlink.hardlink_to(target)
+        document = tmp_path / "hardlink-prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",),
+                authority_paths={**authority, "target_db": "hardlink.py"},
+            ),
+            encoding="utf-8",
+        )
+        canonical = _canonical_seal_path(tmp_path, document)
+        original_document = document.read_bytes()
+        with pytest.raises(evidence.EvidenceSchemaError, match="hardlink"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(target,),
+                manifest_path=canonical,
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        assert document.read_bytes() == original_document
+        assert not canonical.exists()
+        hardlink.unlink()
+        ledger_source = tmp_path / "ledger-source.jsonl"
+        ledger_source.write_text("{}\n", encoding="utf-8")
+        ledger_alias = tmp_path / "ledger-alias.jsonl"
+        ledger_alias.hardlink_to(ledger_source)
+        document = tmp_path / "ledger-hardlink-prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), ledger_path="ledger-alias.jsonl"),
+            encoding="utf-8",
+        )
+        with pytest.raises(evidence.EvidenceSchemaError, match="ledger_path.*hardlink"):
+            prereg.finalize_prereg(
+                document,
+                repo_root=tmp_path,
+                code_files=(target,),
+                manifest_path=_canonical_seal_path(tmp_path, document),
+                sealed_at="2026-07-14T00:00:00+00:00",
+            )
+        ledger_alias.unlink()
+
+        linked = tmp_path / "linked"
+        try:
+            linked.symlink_to(tmp_path / "seals", target_is_directory=True)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink or reparse"):
+            prereg.recheck_authority_paths({**authority, "seal_dir": "linked"}, tmp_path)
+        seals = tmp_path / "seals"
+        seals.mkdir()
+        assert prereg.revalidate_authority_paths(tmp_path, authority) == authority
+        seals.rmdir()
+        seals.write_text("swapped", encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="directory"):
+            prereg.revalidate_authority_paths(tmp_path, authority)
+    @pytest.mark.skipif(os.name != "nt", reason="Windows final-handle hardlink validation")
+    def test_absent_ledger_hardlink_race_is_rejected_before_append(self, tmp_path):
+        target_db = tmp_path / "measure.py"
+        target_db.write_text("VALUE = 1\n", encoding="utf-8")
+        authority = {
+            "seal_dir": "seals",
+            "promotions_dir": "promotions",
+            "catalog_dir": "catalog",
+            "target_db": "measure.py",
+            "journal_dir": "journal",
+            "backup_dir": "backups",
+        }
+        target, source = tmp_path / "ledger.jsonl", tmp_path / "race-source.jsonl"
+        source.write_text("{}\n", encoding="utf-8")
+        source_before = source.read_bytes()
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(target)
+            original_open = guard.open_path
+            raced = False
+
+            def open_after_hardlink(path, flags, mode=0o666):
+                nonlocal raced
+                if Path(path) == target and flags == os.O_RDONLY and not raced:
+                    target.hardlink_to(source)
+                    raced = True
+                return original_open(path, flags, mode)
+
+            guard.open_path = open_after_hardlink
+            with pytest.raises(evidence.EvidenceSchemaError, match="hardlinked"):
+                ledger._append_record(target, VALID_ROW, guard=guard)
+        assert raced
+        assert source.read_bytes() == source_before
+
+    def test_finalize_prereg_allows_declared_read_only_json_inputs(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        data, rows = tmp_path / "data.json", tmp_path / "rows.jsonl"
+        data.write_text('{"value": 1}\n', encoding="utf-8")
+        rows.write_text('{"value": 2}\n', encoding="utf-8")
+        measure.write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as data_handle:\n"
+            "    result = json.load(data_handle)\n"
+            "with open('rows.jsonl', mode='r', encoding='utf-8') as rows_handle:\n"
+            "    rows = [json.loads(line) for line in rows_handle]\n"
+            "print(json.dumps(result))\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=("measure.py",), non_python=("data.json", "rows.jsonl"),
+            ),
+            encoding="utf-8",
+        )
+
+        seal = prereg.finalize_prereg(
+            document,
+            repo_root=tmp_path,
+            code_files=(measure, data, rows),
+            manifest_path=_canonical_seal_path(tmp_path, document),
+            sealed_at="2026-07-16T00:00:00+00:00",
+        )
+
+        assert [item["path"] for item in seal["code_manifest"]] == [
+            "data.json", "measure.py", "rows.jsonl",
+        ]
+
+    @pytest.mark.parametrize("source", [
+        "import json\nwith open(path, mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('undeclared.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('C:/outside.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='w', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='a', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r+', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='rb', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8', errors='ignore') as handle:\n    result = json.load(handle)\n",
+        "import json\nhandle = open('data.json', mode='r', encoding='utf-8')\nresult = json.load(handle)\n",
+        "import json as js\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = js.load(handle)\n",
+        "reader = open\n",
+        "import json\ndecoder = json.load\n",
+        "import pickle as json\nimport json\njson.loads('payload')\n",
+        "import json\nimport pickle as json\njson.loads('payload')\n",
+        "import os as json\nimport json\njson.loads('payload')\n",
+        "import yaml as json\nimport json\njson.loads('payload')\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\njson.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    def nested():\n        return json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = [json.load(handle) for value in (1,)]\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    for handle in ():\n        pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    with open('data.json', mode='r', encoding='utf-8') as other:\n        result = json.load(other)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = (handle := handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    result = json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    def nested(handle):\n        return handle\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    try:\n        pass\n    except Exception as handle:\n        pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    match 1:\n        case handle:\n            pass\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    callback = lambda: json.load(handle)\n",
+        "import json\nwith open('data.json', mode='r', encoding='utf-8') as handle:\n    class Nested:\n        value = json.load(handle)\n",
+        "import json\nimport pickle\nreader = pickle\nreader.loads(payload)\nreader = json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n    result = reader.load(stream)\n",
+        "import json\nreader = json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n    result = reader.load(stream)\n",
+    ], ids=(
+        "dynamic_path", "undeclared_path", "absolute_path", "write_mode", "append_mode",
+        "update_mode", "binary_mode", "extra_open_option", "not_context_manager",
+        "json_alias", "open_indirection", "json_indirection",
+        "pickle_as_json_before_import", "pickle_as_json_after_import", "os_as_json",
+        "yaml_as_json", "load_after_with", "nested_function_load", "comprehension_load",
+        "for_handle_rebinding", "nested_with", "walrus_handle_rebinding", "duplicate_handle",
+        "parameter_handle_rebinding", "except_handle_rebinding", "match_handle_rebinding",
+        "lambda_load", "class_load", "ordered_receiver_alias", "direct_receiver_alias",
+    ))
+    def test_sealed_json_input_rejects_every_non_exact_capability(self, tmp_path, source):
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        (tmp_path / "measure.py").write_text(source, encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="sealed JSON"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+    @pytest.mark.parametrize("binding", [
+        "import sys as handle\n",
+        "from sys import stdin as handle\n",
+        "def handle():\n    pass\n",
+        "async def handle():\n    pass\n",
+        "class handle:\n    pass\n",
+    ], ids=("import_alias", "importfrom_alias", "function", "async_function", "class"))
+    def test_sealed_json_input_rejects_every_handle_binding_event(self, tmp_path, binding):
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+        (tmp_path / "measure.py").write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as handle:\n"
+            "    result = json.load(handle)\n"
+            + binding,
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="sealed JSON input does not permit handle rebinding",
+        ):
+            prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            )
+
+    def test_sealed_json_input_rejects_declared_symlink_outside_repo(self, tmp_path):
+        outside = tmp_path.parent / f"{tmp_path.name}-outside.json"
+        outside.write_text('{"value": 1}\n', encoding="utf-8")
+        linked = tmp_path / "data.json"
+        try:
+            linked.symlink_to(outside)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        (tmp_path / "measure.py").write_text(
+            "import json\n"
+            "with open('data.json', mode='r', encoding='utf-8') as handle:\n"
+            "    result = json.load(handle)\n",
+            encoding="utf-8",
+        )
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="resolves outside repo_root"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+        outside.unlink()
+    def test_declared_dependency_rejects_in_repo_symlink_and_hardlink(self, tmp_path):
+        target = tmp_path / "measure.py"
+        target.write_text("VALUE = 1\n", encoding="utf-8")
+        linked = tmp_path / "linked.py"
+        try:
+            linked.symlink_to(target)
+        except OSError:
+            pytest.skip("symlink creation is unavailable")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("linked.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink|reparse"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+        linked.unlink()
+        alias = tmp_path / "alias.py"
+        try:
+            os.link(target, alias)
+        except OSError:
+            pytest.skip("hardlink creation is unavailable")
+        document.write_text(_sealed_contract(roots=("alias.py",)), encoding="utf-8")
+        with pytest.raises(evidence.EvidenceSchemaError, match="hardlink"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_finalize_rejects_snapshot_change_without_writing_a_seal(self, tmp_path, monkeypatch):
+        code = tmp_path / "measure.py"
+        code.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._snapshot_file
+        changed = False
+
+        def swap_after_review(root, relative, snapshots, field):
+            nonlocal changed
+            snapshot = original(root, relative, snapshots, field)
+            if relative == "measure.py" and not changed:
+                changed = True
+                code.write_text("VALUE = 2\n", encoding="utf-8")
+            return snapshot
+
+        monkeypatch.setattr(prereg, "_snapshot_file", swap_after_review)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(code,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+    def test_finalize_uses_snapshotted_local_module_api_before_revalidation(self, tmp_path, monkeypatch):
+        measure, carrier = tmp_path / "measure.py", tmp_path / "carrier.py"
+        measure.write_text("import carrier\ncarrier.run()\n", encoding="utf-8")
+        carrier.write_text("def run():\n    return 'benign'\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._snapshot_file
+        swapped = False
+
+        def swap_carrier_after_snapshot(root, relative, snapshots, field):
+            nonlocal swapped
+            snapshot = original(root, relative, snapshots, field)
+            if relative == "carrier.py" and not swapped:
+                swapped = True
+                carrier.write_text("from os import system as run\n", encoding="utf-8")
+            return snapshot
+
+        monkeypatch.setattr(prereg, "_snapshot_file", swap_carrier_after_snapshot)
+        with pytest.raises(evidence.EvidenceSchemaError, match="identity changed"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure, carrier),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert swapped and not canonical.exists()
+
+    def test_finalize_rejects_dependency_root_symlink_swap_before_closure_snapshot(
+        self, tmp_path, monkeypatch,
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        outside = tmp_path.parent / f"{tmp_path.name}-replacement.py"
+        outside.write_text("VALUE = 2\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original = prereg._parse_contract
+        parsed = 0
+
+        def substitute_root_after_contract_parse(text, root):
+            nonlocal parsed
+            contract = original(text, root)
+            parsed += 1
+            if parsed == 3:
+                measure.unlink()
+                try:
+                    measure.symlink_to(outside)
+                except OSError:
+                    pytest.skip("symlink creation is unavailable")
+            return contract
+
+        monkeypatch.setattr(prereg, "_parse_contract", substitute_root_after_contract_parse)
+        with pytest.raises(evidence.EvidenceSchemaError, match="symlink|reparse"):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+        outside.unlink()
+
+    @pytest.mark.parametrize("replacement", (
+        lambda text: text + "\n",
+        lambda text: text.replace('"seal_dir": "seals"', '"seal_dir": "other-seals"'),
+    ), ids=("document_bytes", "authority_paths"))
+    def test_finalize_rejects_document_change_between_preliminary_and_retained_snapshot(
+        self, tmp_path, monkeypatch, replacement,
+    ):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        original_guard = prereg.authority_mutation_guard
+
+        @contextlib.contextmanager
+        def mutate_document_after_preliminary_snapshot(*args, **kwargs):
+            with original_guard(*args, **kwargs) as guard:
+                document.write_text(replacement(document.read_text(encoding="utf-8")), encoding="utf-8")
+                yield guard
+
+        monkeypatch.setattr(prereg, "authority_mutation_guard", mutate_document_after_preliminary_snapshot)
+        with pytest.raises(
+            evidence.EvidenceSchemaError,
+            match="changed between preliminary and authority review",
+        ):
+            prereg.finalize_prereg(
+                document, repo_root=tmp_path, code_files=(measure,),
+                manifest_path=canonical, sealed_at="2026-07-16T00:00:00+00:00",
+            )
+        assert not canonical.exists()
+
+    @pytest.mark.parametrize(
+        ("script_relative", "shadow_relative"),
+        (("measure.py", "json.py"), ("json.py", None)),
+        ids=("repository_shadow", "direct_script_shadow"),
+    )
+    def test_json_shadow_is_rejected_at_derive_time(
+        self, tmp_path, script_relative, shadow_relative,
+    ):
+        measure = tmp_path / script_relative
+        measure.parent.mkdir(parents=True, exist_ok=True)
+        measure.write_text(
+            "import json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n"
+            "    result = json.load(stream)\n",
+            encoding="utf-8",
+        )
+        if shadow_relative is not None:
+            (tmp_path / shadow_relative).write_text("VALUE = 1\n", encoding="utf-8")
+        if script_relative != "measure.py":
+            (tmp_path / "measure.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(
+                roots=(script_relative,), non_python=("data.json",),
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(evidence.EvidenceSchemaError, match="unresolved executable receiver"):
+            prereg.derive_prereg_code_manifest(document.read_text(encoding="utf-8"), tmp_path)
+
+    def test_trusted_external_json_accepts_only_exact_reader_syntax(self, tmp_path):
+        trusted = tmp_path / "trusted"
+        trusted.mkdir()
+        (trusted / "json.py").write_text("VALUE = 1\n", encoding="utf-8")
+        measure = tmp_path / "measure.py"
+        measure.write_text(
+            "import json\nwith open('data.json', mode='r', encoding='utf-8') as stream:\n"
+            "    result = json.load(stream)\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "data.json").write_text('{"value": 1}\n', encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(
+            _sealed_contract(roots=("measure.py",), non_python=("data.json",)),
+            encoding="utf-8",
+        )
+
+        with _temporary_trusted_external_root(trusted):
+            assert prereg.derive_prereg_code_manifest(
+                document.read_text(encoding="utf-8"), tmp_path
+            ) == {"data.json", "measure.py"}
+
+    @pytest.mark.skipif(os.name != "nt", reason="Windows authority handles enforce share denial")
+    def test_windows_canonical_sidecar_writer_is_denied_while_publisher_handle_is_live(self, tmp_path):
+        measure = tmp_path / "measure.py"
+        measure.write_text("VALUE = 1\n", encoding="utf-8")
+        document = tmp_path / "prereg.md"
+        document.write_text(_sealed_contract(roots=("measure.py",)), encoding="utf-8")
+        canonical = _canonical_seal_path(tmp_path, document)
+        authority = prereg._parse_contract(document.read_text(encoding="utf-8"), tmp_path)["authority_paths"]
+
+        with prereg.authority_mutation_guard(tmp_path, authority, fields=("seal_dir",)) as guard:
+            guard.hold_path(canonical)
+            publisher_fd = guard._open_windows_path(
+                canonical, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666,
+            )
+            try:
+                os.write(publisher_fd, b"publisher")
+                with pytest.raises(evidence.EvidenceSchemaError, match="cannot securely open"):
+                    guard._open_windows_path(canonical, os.O_WRONLY, 0o666)
+            finally:
+                os.close(publisher_fd)
+        assert canonical.read_bytes() == b"publisher"
 # ---------------------------------------------------------------------------
 # trials_report — 시행 병기 블록 (소비 전용)
 # ---------------------------------------------------------------------------
@@ -348,8 +2853,8 @@ class TestTrialsReport:
     def _make_ledger(self, tmp_path) -> Path:
         path = tmp_path / "l.jsonl"
         for i in range(3):
-            ledger.append_trial(path=path, **_row(series="D1", target=f"절 #{i}"))
-        ledger.append_trial(path=path, **_row(series="S-트랙"))
+            ledger._append_record(path, _row(series="D1", target=f"절 #{i}"))
+        ledger._append_record(path, _row(series="S-트랙"))
         return path
 
     def test_block_contents(self, tmp_path):
