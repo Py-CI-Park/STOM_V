@@ -157,6 +157,16 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [archiveLoadError, setArchiveLoadError] = useState_v4("");
   const archiveRequestRef = useRef_v4(0);
 
+  // 성능(2026-07-17): /runs 는 527런 3MB 대형 페이로드. 과거엔 deps 에 liveState.run_id/status 가
+  //   있어 WS 상태 하이드레이션마다 3MB 를 3회 재요청(9MB/로드)했다. 아카이브는 런 '종료' 시에만
+  //   새 항목이 생기므로 active→inactive 전이에서만 재조회한다(app.jsx 와 동일 규약).
+  const prevRunsActiveRef = useRef_v4(false);
+  const [runsEpoch, setRunsEpoch] = useState_v4(0);
+  useEffect_v4(() => {
+    const active = liveState.status === "running" || liveState.status === "stopping";
+    if (prevRunsActiveRef.current && !active) setRunsEpoch((e) => e + 1);
+    prevRunsActiveRef.current = active;
+  }, [liveState.status]);
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
@@ -181,7 +191,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     };
     load();
     return () => { cancelled = true; };
-  }, [baseUrl, isDemo, liveState.run_id, liveState.status]);
+  }, [baseUrl, isDemo, runsEpoch]);
 
   const fetchRunState = useCallback_v4(() => {
     if (!selectedRun || isDemo || !baseUrl) {

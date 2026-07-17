@@ -39,7 +39,7 @@ import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, EVOLUTION_SUBTAB_CONTR
 import { UiStateBlock, MetricList } from "./ui-state.jsx";
 import { pageOwnerContract } from "./dashboard-inventory.jsx";
 import { INITIAL_STATE } from "./conn-backend.jsx";
-const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
+const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a, useRef: useRef_a } = React;
 
 function App() {
   const initialDashboardRoute = dashboardRouteFromLocation();
@@ -85,6 +85,16 @@ function App() {
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   // run 목록 로드(GET /runs). 데모/연결 전이면 빈 목록. baseUrl 변경 시 재조회.
+  //   성능(2026-07-17): /runs 는 527런 3MB 대형 페이로드다. 과거엔 deps 에 liveState.run_id/
+  //   status 가 있어 WS 상태 하이드레이션마다 3MB 를 3회씩 재요청(9MB)했다. 아카이브 목록은
+  //   런이 '종료'될 때만 새 항목이 생기므로, active→inactive 전이에서만 재조회한다.
+  const prevRunsActiveRef = useRef_a(false);
+  const [runsEpoch, setRunsEpoch] = useState_a(0);
+  useEffect_a(() => {
+    const active = liveState.status === "running" || liveState.status === "stopping";
+    if (prevRunsActiveRef.current && !active) setRunsEpoch((e) => e + 1); // 방금 종료 → 새 아카이브 가능
+    prevRunsActiveRef.current = active;
+  }, [liveState.status]);
   useEffect_a(() => {
     if (isDemoSrc || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
@@ -99,7 +109,7 @@ function App() {
       })
       .catch(() => { if (!cancelled) setRunList([]); });
     return () => { cancelled = true; };
-  }, [baseUrl, isDemoSrc, liveState.run_id, liveState.status]);
+  }, [baseUrl, isDemoSrc, runsEpoch]);
 
   // 선택 run의 state를 /run_state로 재구성해 가져온다(LIVE면 스킵). 30초 자동 새로고침.
   const fetchRunState = useCallback_a(() => {

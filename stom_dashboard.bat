@@ -3,7 +3,7 @@ setlocal
 set "STOM_PY313=C:\Python\64\Python31313\python.exe"
 
 rem STOM AI web dashboard launcher.
-rem Default UI: main dashboard (/ui). v4 preview terminal: /ui/v4, legacy: /ui/evolution
+rem Default UI: V4 graph-first dashboard (/ui). Legacy shell: /ui/?dashboard_version=legacy
 rem Optional environment overrides before running this file:
 rem   set STOM_DASHBOARD_HOST=127.0.0.1
 rem   set STOM_DASHBOARD_PORT=8770

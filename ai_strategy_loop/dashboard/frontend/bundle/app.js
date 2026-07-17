@@ -33465,7 +33465,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { ResearchLabPanel });
 
   // ai_strategy_loop/dashboard/frontend/app.jsx
-  var { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
+  var { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a, useRef: useRef_a } = React;
   function App() {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const initialDashboardRoute = dashboardRouteFromLocation();
@@ -33499,6 +33499,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [runList, setRunList] = useState_a([]);
     const [fetchedRunState, setFetchedRunState] = useState_a(null);
     const isDemoSrc = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const prevRunsActiveRef = useRef_a(false);
+    const [runsEpoch, setRunsEpoch] = useState_a(0);
+    useEffect_a(() => {
+      const active = liveState.status === "running" || liveState.status === "stopping";
+      if (prevRunsActiveRef.current && !active) setRunsEpoch((e) => e + 1);
+      prevRunsActiveRef.current = active;
+    }, [liveState.status]);
     useEffect_a(() => {
       if (isDemoSrc || !baseUrl) {
         setRunList([]);
@@ -33516,7 +33523,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => {
         cancelled = true;
       };
-    }, [baseUrl, isDemoSrc, liveState.run_id, liveState.status]);
+    }, [baseUrl, isDemoSrc, runsEpoch]);
     const fetchRunState = useCallback_a(() => {
       if (!selectedRun || isDemoSrc || !baseUrl) {
         setFetchedRunState(null);
@@ -35025,6 +35032,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [fetchedRunState, setFetchedRunState] = useState_v4(null);
     const [archiveLoadError, setArchiveLoadError] = useState_v4("");
     const archiveRequestRef = useRef_v4(0);
+    const prevRunsActiveRef = useRef_v4(false);
+    const [runsEpoch, setRunsEpoch] = useState_v4(0);
+    useEffect_v4(() => {
+      const active2 = liveState.status === "running" || liveState.status === "stopping";
+      if (prevRunsActiveRef.current && !active2) setRunsEpoch((e) => e + 1);
+      prevRunsActiveRef.current = active2;
+    }, [liveState.status]);
     useEffect_v4(() => {
       if (isDemo || !baseUrl) {
         setRunList([]);
@@ -35052,7 +35066,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => {
         cancelled = true;
       };
-    }, [baseUrl, isDemo, liveState.run_id, liveState.status]);
+    }, [baseUrl, isDemo, runsEpoch]);
     const fetchRunState = useCallback_v4(() => {
       if (!selectedRun || isDemo || !baseUrl) {
         setFetchedRunState(null);

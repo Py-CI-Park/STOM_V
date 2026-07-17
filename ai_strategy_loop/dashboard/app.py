@@ -91,6 +91,26 @@ _DASHBOARD_FAVICON_SVG = (
     "</svg>"
 )
 
+# `?v=<hash>` 지문이 붙은 정적 자산(.js/.css)에 far-future immutable 캐시를 부여한다.
+#   webui-build 가 내용 변경마다 ?v= 해시를 갱신하므로(내용 주소화) 지문 응답은 안전하게
+#   장기 캐시가 가능하다. Starlette StaticFiles 기본값은 Cache-Control 을 안 붙여, 2.3MB
+#   정적 자산(app.js 2MB 포함)이 매 로드 재검증/재다운로드되던 '크롬 느림'의 주원인이었다.
+#   지문 없는 요청과 .html 은 no-store 로 남겨 셸 HTML(핸들러가 직접 no-store 서빙)과 정합.
+class _FingerprintedStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: Any) -> Response:  # type: ignore[override]
+        response = await super().get_response(path, scope)
+        try:
+            lower = path.lower()
+            query = scope.get("query_string", b"") or b""
+            fingerprinted = b"v=" in query
+            if lower.endswith(".html"):
+                response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            elif fingerprinted and (lower.endswith(".js") or lower.endswith(".css")):
+                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        except Exception:  # noqa: BLE001 - 캐시 헤더 부여 실패가 정적 서빙을 막지 않는다.
+            pass
+        return response
+
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
 _STRICT_CANDIDATE_IDENTITY_ENV = "STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY"
@@ -4061,7 +4081,7 @@ def create_app(
                     name=mount_name,
                 )
     if os.path.isdir(_FRONTEND_DIR):
-        app.mount("/ui", StaticFiles(directory=_FRONTEND_DIR, html=True), name="ui")
+        app.mount("/ui", _FingerprintedStaticFiles(directory=_FRONTEND_DIR, html=True), name="ui")
 
     return app
 
