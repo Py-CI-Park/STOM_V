@@ -42,6 +42,8 @@
 | 2026-07-01 | `2026-07-01_process_research_v2_handoff_and_sell_axis.md` | process-research v2 전체 핸드오프: 실전 검증 결과, 커밋 정리 결과, 매도 조건식 연구축 |
 | 2026-07-01 | `2026-07-01_uncommitted_inventory_and_commit_plan.md` | 커밋 전 인벤토리와 커밋 후 `.gjc`/`.omo` 보류 상태 정리 기록 |
 | 2026-07-02 | `2026-07-02_sell_only_repair_validation_handoff.md` | sell-only repair 실전 검증: parent buy 고정, parent sell 단일축 후보 6개 공식 백테스트, hard stop 축 후속 연구 방향 |
+| 2026-07-17 | `2026-07-17_alpha_lab_full_research_report.md` | Alpha Lab 전체 연구 정본: prior target, audit G001~G010, sell D1, current X1을 결과·한계·승인 경계와 함께 통합 |
+| 2026-07-17 | `plans/2026-07-17_alpha_lab_audit_branch_integration_handoff.md` | audit branch를 foundation branch에 반영하기 위한 승인 분리형 전체 핸드오프: 충돌, 검증, 롤백, worktree 보존 절차 |
 
 ## 원본 보고서 핵심
 
