@@ -42,7 +42,17 @@ _SCRATCH = Path(r"C:\Temp\claude\C--System-Trading-STOM-STOM-V-wt-alpha"
 _PROGRESS = _OUT / "x1_engine_progress.txt"
 
 # B1 봉인 프로파일(§14-F8) — A 런과 동일해야 하는 CLI 인자.
-PROFILE = ("--timeframe", "tick", "--betting", "5", "--avg-time", "30")
+# engines8 은 B1 원장 프로파일 문자열("…/tick/engines8") 명기값 — CLI 기본 4와
+# 다르므로 명시한다(1차 기동이 기본 4로 돈 것을 파리티 위반으로 교정).
+PROFILE = ("--timeframe", "tick", "--betting", "5", "--avg-time", "30",
+           "--engines", "8")
+
+# 후보 실행 순서·런당 타임아웃(초) — 가벼운 후보 먼저(메커니즘 검증),
+# DROP5(시총 게이트 제거 — 보유·매도평가 폭증 후보)는 마지막에 확장 예산.
+# 1차 기동 실측: DROP5 2022 가 3600s 초과(기준 A 197s) — 그 자체가 §7-C2
+# 식붕괴 방향 신호이나, 판정 수치 확보를 위해 2h 까지 허용한다.
+RUN_ORDER = ("DROP29", "DROP31", "DROP15", "DROP5")
+TIMEOUT_SEC = {"DROP29": 3600, "DROP31": 3600, "DROP15": 5400, "DROP5": 7200}
 
 
 def _log(msg: str) -> None:
@@ -111,11 +121,15 @@ def main() -> int:
          f"conflicts={len(reg['conflicts'] or [])} (멱등)")
 
     # 2) 8런 순차 — A 와 동일 기구(stom_backtest CLI) + scratch env.
+    # 엔진 stdout/stderr 는 파이프가 아니라 **파일**로 받는다: 1차 기동에서
+    # capture_output 파이프를 손자(멀티프로세싱 워커)들이 상속해, 타임아웃
+    # 정리 단계의 communicate() 가 고아 워커 종료까지 영구 대기했다(실측
+    # 7시간). 파일 핸들이면 이 행이 구조적으로 불가능하고 진행 로그도 남는다.
     env = dict(os.environ)
     env["STOM_ALLOW_MINIMAL_SETTING"] = "1"
     env["STOM_CLI_DB_STRATEGY"] = str(_SCRATCH)
     n_run = n_skip = n_fail = 0
-    for cand in variants.CANDIDATES:
+    for cand in RUN_ORDER:
         name = variants.strategy_name(cand)
         for yr, (s, e) in sorted(orchestrate.YEAR_WINDOWS.items()):
             out_json = _B_DIR / f"B_{cand}_{yr}.json"
@@ -127,19 +141,44 @@ def main() -> int:
                    "--buy", name, "--sell", orchestrate.SELL_NAME,
                    "--start", str(s), "--end", str(e), *PROFILE,
                    "--format", "json", "-o", str(out_json), "--quiet"]
-            _log(f"run: {cand} {yr} ({name})")
+            budget = TIMEOUT_SEC[cand]
+            _log(f"run: {cand} {yr} ({name}) budget={budget}s")
             t0 = datetime.now()
-            proc = subprocess.run(cmd, cwd=str(_REPO), env=env,
-                                  capture_output=True, text=True,
-                                  encoding="utf-8", errors="replace",
-                                  timeout=3600)
+            elog_path = _B_DIR / f"B_{cand}_{yr}.engine.log"
+            timed_out = False
+            with open(elog_path, "ab") as elog:
+                proc = subprocess.Popen(cmd, cwd=str(_REPO), env=env,
+                                        stdin=subprocess.DEVNULL,
+                                        stdout=elog, stderr=subprocess.STDOUT)
+                try:
+                    rc = proc.wait(timeout=budget)
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    # 트리 킬 — 워커까지 정리(고아 잔존 방지).
+                    subprocess.run(["taskkill", "/PID", str(proc.pid),
+                                    "/T", "/F"], capture_output=True,
+                                   timeout=60)
+                    rc = proc.wait(timeout=60)
             dt = (datetime.now() - t0).total_seconds()
-            ok = _run_ok(out_json)
             n_run += 1
+            if timed_out:
+                out_json.write_text(json.dumps({
+                    "status": "timeout",
+                    "note": (f"엔진 {budget}s 예산 초과 — 기준 A(197~243s) 대비 "
+                             "폭주. §7-C4 실행 실패이자 C2 식붕괴 방향 증거로 "
+                             "판정에 그대로 사용."),
+                    "elapsed_seconds": dt,
+                    "config": {"buy_strategy": name,
+                               "sell_strategy": orchestrate.SELL_NAME,
+                               "start_date": str(s), "end_date": str(e)},
+                }, ensure_ascii=False, indent=1), encoding="utf-8")
+                n_fail += 1
+                _log(f"TIMEOUT: {cand} {yr} ({dt:.0f}s) — 트리킬·기록 후 계속")
+                continue
+            ok = _run_ok(out_json)
             if not ok:
                 n_fail += 1
-                _log(f"FAIL: {cand} {yr} rc={proc.returncode} ({dt:.0f}s) "
-                     f"stderr_tail={proc.stderr[-300:] if proc.stderr else ''}")
+                _log(f"FAIL: {cand} {yr} rc={rc} ({dt:.0f}s) — engine.log 참조")
             else:
                 m = json.loads(out_json.read_text(encoding="utf-8"))["metrics"]
                 _log(f"done: {cand} {yr} ({dt:.0f}s) profit={m['total_profit_krw']:,.0f} "
