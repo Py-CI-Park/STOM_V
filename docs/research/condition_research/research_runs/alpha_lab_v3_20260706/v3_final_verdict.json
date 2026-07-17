@@ -1,0 +1,106 @@
+{
+  "generated_at": "2026-07-07T00:55:13+09:00",
+  "program": "alpha_lab_v3_p4_gate_oos",
+  "branch": "research/alpha-lab-v2-20260706",
+  "prereg_sha_v3": "50d3d38ae9ee999d80c06a35f9745149ad10af5bd44e903ef754289a6babfa88",
+  "annex_sha256": "568dc06156d433afa8e72f3f8d27794cb574d063670b6009fe68ce6604d84003",
+  "prereg_sha_v2": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "seal_verification": {
+    "method": "alpha_lab.registry.verify_seal(path, expected_sha) 실행 - 파일 바이트 sha256 재계산 후 봉인값 비교",
+    "checked_before_any_action": true,
+    "results": [
+      {"file": "preregistration_v3.json", "expected_sha256": "50d3d38ae9ee999d80c06a35f9745149ad10af5bd44e903ef754289a6babfa88", "status": "OK"},
+      {"file": "v3_feature_annex.json", "expected_sha256": "568dc06156d433afa8e72f3f8d27794cb574d063670b6009fe68ce6604d84003", "status": "OK"},
+      {"file": "preregistration_v2.json", "expected_sha256": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b", "status": "OK"}
+    ],
+    "all_verified": true,
+    "sealviolation_raised": false
+  },
+  "input_hillclimb_report_cross_check": {
+    "source_file": "docs/research/condition_research/research_runs/alpha_lab_v3_20260706/v3_hillclimb_report.json",
+    "orchestrator_supplied_summary_matches_file": true,
+    "fields_reconciled": [
+      "runs_used=29", "seeds_run=10", "train_gate_passed=0", "go=false", "status=partial",
+      "best.name=ALP_V3H_06_T014", "best.profit_pct=-59.26", "best.mdd=57.53",
+      "best.trades=49", "best.daily_avg_trades=0.1", "best.train_gate_pass=false",
+      "seeds_baseline_range.mdd_min_pct=57.53", "seeds_baseline_range.mdd_max_pct=249.1",
+      "seeds_baseline_range.profit_pct_min=-59.26", "seeds_baseline_range.profit_pct_max=-250.94",
+      "n_trials_ledger_total.V3M=107", "n_trials_ledger_total.V3H=29", "n_trials_ledger_total.all=136",
+      "engine_budget_sealed_total_max=260", "hillclimb_budget_sealed.per_seed_max=20",
+      "hillclimb_budget_sealed.total_max=200"
+    ],
+    "n_trials_ledger_independent_recount": {
+      "method": "alpha_lab.registry.total_trials(ledger_path, program) 실행 (n_trials_ledger.jsonl 2줄 직접 합산)",
+      "V3M": 107,
+      "V3H": 29,
+      "all": 136,
+      "matches_orchestrator_report": true
+    },
+    "seed_final_results_all_10": {
+      "ALP_V2SEED_01": {"profit_pct": -96.86, "mdd": 96.95, "trades": 2241, "daily_avg_trades": 3.3, "train_gate_pass": false},
+      "ALP_V2SEED_02": {"profit_pct": -113.28, "mdd": 112.99, "trades": 2329, "daily_avg_trades": 3.4, "train_gate_pass": false},
+      "ALP_V2SEED_03": {"profit_pct": -98.93, "mdd": 102.21, "trades": 1271, "daily_avg_trades": 1.9, "train_gate_pass": false},
+      "ALP_V2SEED_04": {"profit_pct": -117.57, "mdd": 116.83, "trades": 709, "daily_avg_trades": 1.0, "train_gate_pass": false},
+      "ALP_V2SEED_05": {"profit_pct": -215.63, "mdd": 214.9, "trades": 6777, "daily_avg_trades": 10.0, "train_gate_pass": false},
+      "ALP_V2SEED_06": {"profit_pct": -59.26, "mdd": 57.53, "trades": 49, "daily_avg_trades": 0.1, "train_gate_pass": false, "note": "20 trials used (baseline 1 + hillclimb 19); best of round"},
+      "ALP_V2SEED_07": {"profit_pct": -146.22, "mdd": 146.22, "trades": 8154, "daily_avg_trades": 12.0, "train_gate_pass": false},
+      "ALP_V2SEED_08": {"profit_pct": -246.32, "mdd": 245.37, "trades": 11648, "daily_avg_trades": 17.2, "train_gate_pass": false},
+      "ALP_V2SEED_09": {"profit_pct": -224.04, "mdd": 223.63, "trades": 7716, "daily_avg_trades": 11.4, "train_gate_pass": false},
+      "ALP_V2SEED_10": {"profit_pct": -250.94, "mdd": 249.1, "trades": 6411, "daily_avg_trades": 9.5, "train_gate_pass": false}
+    }
+  },
+  "gate_execution": {
+    "rule_applied_verbatim": "preregistration_v3.json.hillclimb.p3_go: \"train 게이트(흑자·일평균>=0.3·mdd 상한 35) 통과 >=1 -> P4, 전멸이면 P5-대안\"",
+    "candidates_passed_train_gate": 0,
+    "p4_gates_executed": false,
+    "holdout_2022_run": false,
+    "oos_sealed_run": false,
+    "oos_sealed_window": "2025-01~2026-02",
+    "oos_sealed_window_status": "미개봉 보존 (unopened — no attempt made, per protocol: 0 train-gate survivors means no candidate is eligible to consume the one-shot OOS window)",
+    "slippage_stress_run": false,
+    "reason": "train_gate_passed=0 (10/10 시드 전멸) — 사전등록 봉인 규칙상 게이트 통과 후보가 0이면 P4 게이트(2022 홀드아웃 재현·OOS 봉인창·슬리피지 tick2/tick3)를 실행하지 않고 정직 기록 후 종료한다. 엔진 실행 이번 세션(P4) 0회."
+  },
+  "root_cause_chain_3_cycles": {
+    "cycle_1_v1_standalone_buy_formula": "단독 매수식 채굴(v1) — economical edge 미확인 (알파 랩 1사이클 판정, 55abe67c)",
+    "cycle_2_v2_filter_axis": "챔피언 AND 채굴리프 필터 축(v2) — 6필터 x 5창 = 30회 전량 성공 0 (교집합 붕괴, v2_filter_ab_verdict.json)",
+    "cycle_3_v3_p0_offline_diagnostic": {
+      "base_mean_L3_net_pct": -1.022,
+      "base_median_pct": -1.297,
+      "best_leaf_ev_pct": -0.106,
+      "ev_ci_low_positive_leaves": 0,
+      "ev_positive_point_leaves": 0,
+      "leaves_checked": 76,
+      "conclusion": "확장 피처공간(파생 18항 포함 43열)에서도 오프라인 EV 양의 리프 없음 (best leaf EV조차 -0.106%)"
+    },
+    "cycle_3_v3_p2_mining_this_session": {
+      "n_leaves_generated": 107,
+      "ev_ci_pos": 0,
+      "per_year_pass": 0,
+      "n_adopted": 0,
+      "final_candidates": 0,
+      "conclusion": "EV 기준 채택 방법론(day-block bootstrap CI_low>0)으로도 채택 후보 0건 — P0 진단 재확인"
+    },
+    "cycle_3_v3_p3_hillclimb_this_session": {
+      "seeds_run": 10,
+      "runs_used": 29,
+      "train_gate_passed": 0,
+      "mdd_range_pct": [57.53, 249.1],
+      "profit_pct_range": [-250.94, -59.26],
+      "conclusion": "실엔진 백테스트로 재확인 — 10개 시드 전부 흑자 전환 실패. 챔피언의 풍부한 맥락 필터(VI 근접, 라운드피겨 회피, 902/905 구간별 세부조건, 매수/매도 잔량비 등) 없이 단독 임계 결합만으로는 역선택을 걸러내지 못해 비용을 이기지 못함"
+    },
+    "cross_cycle_conclusion": "'단독 리프 매수식' 패러다임(챔피언 맥락 필터 없이 임계 결합만으로 매수 시점을 정하는 접근)이 v1 단독 매수식 -> v2 채굴 필터 -> v3 힐클라임 기준선까지 3사이클 연속으로 economical edge를 내지 못한다는 것이 실측 결론이다."
+  },
+  "n_trials_ledger_total": {"V3M": 107, "V3H": 29, "all": 136},
+  "n_trials_ledger_delta_this_p4_task": 0,
+  "engine_budget_sealed_total_max": 260,
+  "hillclimb_budget_sealed": {"per_seed_max": 20, "total_max": 200},
+  "engine_budget_used_v3_program_to_date": 29,
+  "engine_budget_used_this_p4_task": 0,
+  "engine_budget_remaining_for_p5_pivot": 231,
+  "final_success": false,
+  "go": false,
+  "status": "partial",
+  "winners": [],
+  "pivot_recommended": "preregistration_v3.json.pivot_p5_alt — 밴드-생성기+국소탐색(인간 시드 이웃), 본선 P0 검증 자산 재사용, 동일 게이트(gates_p4 그대로 적용). 그것도 전멸 시 정직 종결 보고(추가 pivot 없음, 사전등록에 4번째 대안 없음).",
+  "notes": "P4 임무는 사전등록 봉인 hillclimb.p3_go 규칙에 따라 게이트를 실행하지 않고 종결한다. 근거: (1) 3점 봉인 세트(preregistration_v3, v3_feature_annex, preregistration_v2) verify_seal 3/3 OK, (2) 오케스트레이터 제공 힐클라임 요약이 실제 v3_hillclimb_report.json 원본과 전 필드 일치(byte-level 재확인 완료), (3) n_trials_ledger.jsonl 독립 재합산 결과 V3M=107/V3H=29/전체=136으로 보고값과 일치, (4) train_gate_passed=0(10/10 시드 전멸)이므로 gates_p4(2022 홀드아웃, OOS 봉인창 2025-01~2026-02, 슬리피지 tick2/tick3) 미실행 — OOS 봉인창은 미개봉 보존, 엔진 예산은 260 중 29만 소진(잔여 231, P5로 이월). 이번 P4 태스크 자체의 엔진 실행/채굴 실행은 0회이므로 n_trials_ledger.jsonl에 신규 append 없음(이중장부 방지 원칙상 실행 없는 항목은 기록하지 않음). 결론: v3 성공 판정 불가 — PIVOT 권고(P5, pivot_p5_alt)."
+}

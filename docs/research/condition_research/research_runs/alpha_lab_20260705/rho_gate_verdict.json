@@ -1,0 +1,404 @@
+{
+ "schema": "alpha_lab_rho_gate_verdict_v1",
+ "stage": "P1_rho_gate_engine_confirmation",
+ "created_at": "2026-07-06T05:18:00.034028+09:00",
+ "seal_verification": {
+  "v1": {
+   "sha256": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+   "verified": true
+  },
+  "p3": {
+   "sha256": "6a75e83149a843c59ef7227de6071aa79b8eda0d9690d2507bbd42ad01b9ad54",
+   "verified": true
+  },
+  "p5": {
+   "sha256": "84eeb95a5c426ab32371b95f51d7c5a624497f12d77773c770e63ca61edc2aeb",
+   "verified": true
+  }
+ },
+ "decision_rule": {
+  "source": "sealed preregistration_v1.json mining_spec.rho_gate — 판정 임계는 봉인값만 사용",
+  "sealed_rho_gate": {
+   "go": 0.5,
+   "hold": 0.2,
+   "n_rules": 10
+  },
+  "branches": {
+   "go": "rho >= 0.5 → 본빌드 진행 권고",
+   "hold": "0.2 <= rho < 0.5 → 보류 — 번역 계층 결함 진단에 한해 1회 재판정 가능(재선별·임계 하향 금지)",
+   "abandon": "rho < 0.2 → 포기(CSS_V7 재판)"
+  },
+  "metric": "Spearman rho(채굴 lift 순위 vs 엔진 PF 순위, n_rules=10) — scipy.stats.spearmanr(average ties)",
+  "pf_definition": "cli/research_metrics.py:34 calculate_profit_factor — 거래 CSV(utf-8-sig, dashboard 선례 backtest_analysis.py:98) '수익금' gross_profit/|gross_loss|; 무손실+이익시 inf, 무이익시 0.0",
+  "zero_trade_rule": "거래 0건(no_trades)은 PF=-inf 센티널 최하위 동률(실 PF>=0.0이므로 항상 아래), 동률은 average ties — 이번 실측에서는 해당 규칙 0개",
+  "censored_rule_policy": "타임아웃 검열(censored_timeout)은 거래 0건이 아니므로 어떤 순위도 부여하지 않음(추정 금지) — 전 배치 경우의 수에 대한 attainable rho 구간으로만 다룸"
+ },
+ "engine_profile": {
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "frozen_fields": {
+   "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_config_tick_official_full_warm64_20260704.json",
+   "bt_timeframe": "tick",
+   "bt_full_start": 20220323,
+   "bt_full_end": 20260227,
+   "bt_betting": "5",
+   "bt_avg_time": 30,
+   "bt_engine_mode": "warm",
+   "bt_warm_engine_count": 64,
+   "bt_universe_start_time": 90000,
+   "bt_universe_end_time": 92800,
+   "bt_warm_run_timeout": 300
+  },
+  "strategy_db_env": "STOM_CLI_DB_STRATEGY=C:/System_Trading/STOM/STOM_V.wt-alpha/_database/strategy.db",
+  "loop_runs_db": "ai_strategy_loop\\state\\loop_runs.db",
+  "run_ids": [
+   "alp_rho_gate_warm64_chunk01_20260706",
+   "alp_rho_gate_warm64_chunk02_20260706",
+   "alp_rho_gate_warm64_chunk03_20260706",
+   "alp_rho_gate_warm64_chunk04_20260706",
+   "alp_rho_gate_warm64_chunk05_supplement08_20260706",
+   "alp_rho_gate_warm64_chunk06_supplement09_20260706",
+   "alp_rho_gate_warm64_chunk07_supplement10_20260706"
+  ]
+ },
+ "coverage": {
+  "n_rules_sealed": 10,
+  "measured_ok": 8,
+  "censored_timeout": 2,
+  "censored_names": [
+   "ALP_RM_08",
+   "ALP_RM_09"
+  ],
+  "censoring_evidence": "bt_warm_run_timeout=300s(동결 프로파일) 초과 — ALP_RM_08 2회(356s/344s), ALP_RM_09 2회(361s/359s), 각각 gen0-fresh 단독 세션 포함 재현",
+  "engine_attempts_total": 12
+ },
+ "per_rule": [
+  {
+   "name": "ALP_RM_01",
+   "rule_id": "P1-s02-l019",
+   "mined_lift": 3.874019081646003,
+   "lift_rank_desc": 1,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 1,
+     "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+     "status": "ok",
+     "reason": "mdd 376.9 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.5569386062124443,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -38095762.0,
+   "total_profit_pct": -380.08,
+   "trades": 981,
+   "mdd": 376.89,
+   "daily_avg_trades": 1.0,
+   "gate_passed": false,
+   "gate_reason": "mdd 376.9 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_01_20260706035925.csv",
+   "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+   "pf_rank_desc_within_measured": 5.0
+  },
+  {
+   "name": "ALP_RM_02",
+   "rule_id": "P1-s04-l011",
+   "mined_lift": 3.5734434377237414,
+   "lift_rank_desc": 2,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 1,
+     "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+     "status": "ok",
+     "reason": "mdd 397.6 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.5857304480999487,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -202998002.0,
+   "total_profit_pct": -408.29,
+   "trades": 6845,
+   "mdd": 397.57,
+   "daily_avg_trades": 7.2,
+   "gate_passed": false,
+   "gate_reason": "mdd 397.6 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_02_20260706040044.csv",
+   "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+   "pf_rank_desc_within_measured": 4.0
+  },
+  {
+   "name": "ALP_RM_03",
+   "rule_id": "P1-s03-l026",
+   "mined_lift": 3.1211971871913198,
+   "lift_rank_desc": 3,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 1,
+     "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+     "status": "ok",
+     "reason": "mdd 118.8 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.7247455940937024,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -11826414.0,
+   "total_profit_pct": -118.44,
+   "trades": 598,
+   "mdd": 118.83,
+   "daily_avg_trades": 0.6,
+   "gate_passed": false,
+   "gate_reason": "mdd 118.8 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_03_20260706040204.csv",
+   "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+   "pf_rank_desc_within_measured": 2.0
+  },
+  {
+   "name": "ALP_RM_04",
+   "rule_id": "P1-s00-l026",
+   "mined_lift": 2.9865752265796766,
+   "lift_rank_desc": 4,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 2,
+     "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+     "status": "ok",
+     "reason": "mdd 125.4 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.7297020084272492,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -12572414.0,
+   "total_profit_pct": -125.69,
+   "trades": 672,
+   "mdd": 125.43,
+   "daily_avg_trades": 0.7,
+   "gate_passed": false,
+   "gate_reason": "mdd 125.4 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_04_20260706040928.csv",
+   "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+   "pf_rank_desc_within_measured": 1.0
+  },
+  {
+   "name": "ALP_RM_05",
+   "rule_id": "P1-s02-l020",
+   "mined_lift": 2.653243110732709,
+   "lift_rank_desc": 5,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 2,
+     "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+     "status": "ok",
+     "reason": "mdd 504 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.6062752740420738,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -125361096.0,
+   "total_profit_pct": -501.1,
+   "trades": 4166,
+   "mdd": 503.97,
+   "daily_avg_trades": 4.4,
+   "gate_passed": false,
+   "gate_reason": "mdd 504 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_05_20260706041042.csv",
+   "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+   "pf_rank_desc_within_measured": 3.0
+  },
+  {
+   "name": "ALP_RM_06",
+   "rule_id": "P1-s03-l007",
+   "mined_lift": 2.58093625210415,
+   "lift_rank_desc": 6,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 2,
+     "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+     "status": "ok",
+     "reason": "mdd 807 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.5062801004896964,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -125984689.0,
+   "total_profit_pct": -834.64,
+   "trades": 4651,
+   "mdd": 806.97,
+   "daily_avg_trades": 4.9,
+   "gate_passed": false,
+   "gate_reason": "mdd 807 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_06_20260706041207.csv",
+   "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+   "pf_rank_desc_within_measured": 8.0
+  },
+  {
+   "name": "ALP_RM_07",
+   "rule_id": "P1-s01-l029",
+   "mined_lift": 2.578586367779071,
+   "lift_rank_desc": 7,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 3,
+     "run_id": "alp_rho_gate_warm64_chunk03_20260706",
+     "status": "ok",
+     "reason": "mdd 1119 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.5188853391051955,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -1403257691.0,
+   "total_profit_pct": -1122.52,
+   "trades": 49273,
+   "mdd": 1118.96,
+   "daily_avg_trades": 51.8,
+   "gate_passed": false,
+   "gate_reason": "mdd 1119 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_07_20260706042317.csv",
+   "run_id": "alp_rho_gate_warm64_chunk03_20260706",
+   "pf_rank_desc_within_measured": 7.0
+  },
+  {
+   "name": "ALP_RM_08",
+   "rule_id": "P1-s04-l027",
+   "mined_lift": 2.3759105531186786,
+   "lift_rank_desc": 8,
+   "n_attempts": 2,
+   "attempt_summary": [
+    {
+     "chunk_no": 3,
+     "run_id": "alp_rho_gate_warm64_chunk03_20260706",
+     "status": "error",
+     "reason": "[alp_rho_gate:ALP_RM_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) "
+    },
+    {
+     "chunk_no": 5,
+     "run_id": "alp_rho_gate_warm64_chunk05_supplement08_20260706",
+     "status": "error",
+     "reason": "[alp_rho_gate:ALP_RM_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) "
+    }
+   ],
+   "engine_status": "censored_timeout",
+   "engine_pf": null,
+   "pf_basis": "unmeasurable — 동결 프로파일 bt_warm_run_timeout=300s 초과(전 시도 재현), CSV/metrics 미생성",
+   "profit": null,
+   "total_profit_pct": null,
+   "trades": null,
+   "mdd": null,
+   "daily_avg_trades": null,
+   "gate_passed": false,
+   "gate_reason": "[alp_rho_gate:ALP_RM_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+   "csv_path": null,
+   "run_id": "alp_rho_gate_warm64_chunk05_supplement08_20260706"
+  },
+  {
+   "name": "ALP_RM_09",
+   "rule_id": "P1-s00-l012",
+   "mined_lift": 2.283397595869657,
+   "lift_rank_desc": 9,
+   "n_attempts": 2,
+   "attempt_summary": [
+    {
+     "chunk_no": 4,
+     "run_id": "alp_rho_gate_warm64_chunk04_20260706",
+     "status": "error",
+     "reason": "[alp_rho_gate:ALP_RM_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) "
+    },
+    {
+     "chunk_no": 6,
+     "run_id": "alp_rho_gate_warm64_chunk06_supplement09_20260706",
+     "status": "error",
+     "reason": "[alp_rho_gate:ALP_RM_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) "
+    }
+   ],
+   "engine_status": "censored_timeout",
+   "engine_pf": null,
+   "pf_basis": "unmeasurable — 동결 프로파일 bt_warm_run_timeout=300s 초과(전 시도 재현), CSV/metrics 미생성",
+   "profit": null,
+   "total_profit_pct": null,
+   "trades": null,
+   "mdd": null,
+   "daily_avg_trades": null,
+   "gate_passed": false,
+   "gate_reason": "[alp_rho_gate:ALP_RM_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+   "csv_path": null,
+   "run_id": "alp_rho_gate_warm64_chunk06_supplement09_20260706"
+  },
+  {
+   "name": "ALP_RM_10",
+   "rule_id": "P1-s03-l011",
+   "mined_lift": 2.108220761005318,
+   "lift_rank_desc": 10,
+   "n_attempts": 1,
+   "attempt_summary": [
+    {
+     "chunk_no": 7,
+     "run_id": "alp_rho_gate_warm64_chunk07_supplement10_20260706",
+     "status": "ok",
+     "reason": "mdd 581.9 > mdd_cap 35"
+    }
+   ],
+   "engine_status": "ok",
+   "engine_pf": 0.5456470707886317,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -641121223.0,
+   "total_profit_pct": -581.47,
+   "trades": 19730,
+   "mdd": 581.92,
+   "daily_avg_trades": 20.7,
+   "gate_passed": false,
+   "gate_reason": "mdd 581.9 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM_10_20260706050253.csv",
+   "run_id": "alp_rho_gate_warm64_chunk07_supplement10_20260706",
+   "pf_rank_desc_within_measured": 6.0
+  }
+ ],
+ "rho_measured_subset": 0.5000000000000001,
+ "rho_measured_subset_n": 8,
+ "rho_attainable_bounds_n10": {
+  "min": -0.07294866524160776,
+  "max": 0.6565379871744699,
+  "method": "검열 2규칙 의사 PF를 실측 8값의 모든 구간 중점·양끝 밖·정확 동률 후보(17개)로 전수 대입(17x17) — 모든 순위 위상 커버",
+  "branches_attainable": [
+   "abandon",
+   "go",
+   "hold"
+  ]
+ },
+ "rho_scenario_censored_tied_last": {
+  "value": 0.6565379871744699,
+  "note": "검열=최하위 동률로 '가정'했을 때의 참고값 — 봉인 규정에 없는 imputation이므로 판정에 사용하지 않음"
+ },
+ "rho": 0.5000000000000001,
+ "rho_note": "rho 필드는 실측 8규칙 진단값 — 봉인 n=10 rho는 검열로 미산출(coverage/bounds 참조)",
+ "verdict": "blocked_indeterminate_engine_censoring",
+ "verdict_basis": "sealed rho(n=10) 미산출 — 검열 2규칙의 순위 배치에 따라 분지가 갈림(attainable: ['abandon', 'go', 'hold']); 추정 금지 규율에 따라 imputation 거부",
+ "rules_with_trades": 8,
+ "top_rule_pf": 0.7297020084272492,
+ "n_trials_ledger_total_after": 725,
+ "raw_asset_paths": {
+  "note": "git add 금지 자산 — 경로만 기재",
+  "loop_runs_db": "ai_strategy_loop\\state\\loop_runs.db",
+  "trade_csvs": [
+   "backtest/csv\\stock_bt_ALP_RM_01_20260706035925.csv",
+   "backtest/csv\\stock_bt_ALP_RM_02_20260706040044.csv",
+   "backtest/csv\\stock_bt_ALP_RM_03_20260706040204.csv",
+   "backtest/csv\\stock_bt_ALP_RM_04_20260706040928.csv",
+   "backtest/csv\\stock_bt_ALP_RM_05_20260706041042.csv",
+   "backtest/csv\\stock_bt_ALP_RM_06_20260706041207.csv",
+   "backtest/csv\\stock_bt_ALP_RM_07_20260706042317.csv",
+   "backtest/csv\\stock_bt_ALP_RM_10_20260706050253.csv"
+  ],
+  "backtest_db": "_database/backtest.db (stock_bt — 엔진 자체 기록)"
+ }
+}

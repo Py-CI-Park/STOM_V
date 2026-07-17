@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "schema": "g003-veto-evidence-v2",
+  "kind": "g003_static_o3_or_o4_veto_evidence",
+  "verdict": "FAIL",
+  "receipt": {
+    "path": "receipts/b3b43660d61cbc60374ced737f65f0369160d20c12255a25461f01aef9c41e2d.json",
+    "receipt_id": "b3b43660d61cbc60374ced737f65f0369160d20c12255a25461f01aef9c41e2d",
+    "sha256": "6bc232e863b3bf18649cd05dd0eb4a2add837b7a31771f95dc6634d5291cecd7",
+    "repo_head": "14d44aca6a63531aff5d73a843e2697d25fb0db3"
+  },
+  "claim": {
+    "path": "claims/b3b43660d61cbc60374ced737f65f0369160d20c12255a25461f01aef9c41e2d.json",
+    "sha256": "b0199a66294cbfecd2cc10766f5f813b05ff1a830f0786a66b756e15960aaa09",
+    "consumer": "g003-veto-measure-v1",
+    "consumed_at": "2026-07-16T01:12:00+00:00"
+  },
+  "seal": {
+    "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/evidence/seals/fa128213c250aa3aecdb9c281307136cbd604a4ac5a8f5d69c7df609356fa0e1.seal.json",
+    "sha256": "ecc8299f3eef70eae861258fd459df5fc87b3e3b6ced0f9cb97086eaaa7ece99",
+    "prereg_path": "docs/research/condition_research/plans/2026-07-16_g003_negative_veto_preregistration.md",
+    "prereg_sha256": "fa128213c250aa3aecdb9c281307136cbd604a4ac5a8f5d69c7df609356fa0e1"
+  },
+  "target": {
+    "path": "scripts/g003_veto_measure.py",
+    "sha256": "31686ef7abce1af1ea483f7ecacd9c622230c4d2f55ababa64f9351e619854fe"
+  },
+  "launch": {
+    "run_control_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/run_ctl/v1",
+    "status_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/run_ctl/v1/status.json",
+    "status_sha256": "77d54eb6b2da81c570f6a927472740c5bd7964913e04dbe51c3d1b20695d6688",
+    "log_path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/run_ctl/v1/log.txt",
+    "log_sha256": "a50f67d158afe48053b0b33f89dfa754db9e0d28d097d80b1da81433106c983a",
+    "state": "exited",
+    "exit_code": 0,
+    "target_launches": 1,
+    "started_utc": "2026-07-16T05:10:36+00:00",
+    "ended_utc": "2026-07-16T05:11:03+00:00"
+  },
+  "side_effect_counters": {
+    "engine_runs": 0,
+    "DB_writes": 0,
+    "strategy_registrations": 0
+  },
+  "integrity_reasons": [],
+  "source_artifacts": [
+    {"path": "docs/research/condition_research/research_runs/alpha_lab_20260705/distill/champion_ledger.jsonl", "sha256": "72b6a082774a61c235f865a61b34d8162ced1972a8e2e7ccc1be7252aff01477", "size": 779908},
+    {"path": "docs/research/condition_research/research_runs/alpha_lab_20260705/p3_rejoin_chunk_1of2.json", "sha256": "a21d0144ca012af3965c74628bc16df584cc11d2aa4fbb0895070de03b77fc54", "size": 240191},
+    {"path": "docs/research/condition_research/research_runs/alpha_lab_20260705/p3_rejoin_chunk_2of2.json", "sha256": "58fd87bb74c6af2d24cacc3f033f9ea42458f33ae8040804e9867cd4b4817c9e", "size": 245320},
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_input.json", "sha256": "69da0107b9c46ac01e1a3527aeef17063bf3a0ca992c7e25f16582dd562c79d2", "size": 109105},
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json", "sha256": "13a03c57c9ecc74473f88537f6c053ae879e86085b3ac0f9014191d93490f4ba", "size": 9857},
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json", "sha256": "65f20ea3f229f03420c8ef088b60c64b7810330575ddb163096ca95461e1ea37", "size": 141365}
+  ],
+  "provenance_parquet_verification": [
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_onset_bank.parquet", "pre_sha256": "ca06411c7471f9550c8a8727adad4680c60a6bd9431dc23f56043edea519c859", "pre_size": 13061453, "post_sha256": "ca06411c7471f9550c8a8727adad4680c60a6bd9431dc23f56043edea519c859", "post_size": 13061453},
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/stats_map_o4/o4_candidate_bits.parquet", "pre_sha256": "105850275408b061d2406da3ec888bfd27a037531183f5827bd178392315b724", "pre_size": 4878692, "post_sha256": "105850275408b061d2406da3ec888bfd27a037531183f5827bd178392315b724", "post_size": 4878692},
+    {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet", "pre_sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56", "pre_size": 6783855, "post_sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56", "post_size": 6783855}
+  ],
+  "measurements": {
+    "driver": "O3 OR O4",
+    "deep_anchor_overlap": "diagnostic_only",
+    "years": {
+      "2022": {"year": "2022", "baseline_profit": 4130117.0, "shadow_profit": 600898.0, "delta_profit": -3529219.0, "baseline_mdd": 836647.0, "shadow_mdd": 530457.0, "delta_mdd": 306190.0, "census_count": 101, "drop_count": 64, "drop_rate": 0.6336633663366337, "retained_count": 37, "retained_rate": 0.36633663366336633, "retained_notional_rate": 0.3663497225535083, "positive_trade_count": 59, "positive_false_drop_count": 43, "positive_false_drop_rate": 0.7288135593220338, "positive_false_drop_share_of_drops": 0.671875, "o3_count": 46, "o4_count": 35, "o4_carrier_match_count": 35, "deep_anchor_overlap_count": 17},
+      "2023": {"year": "2023", "baseline_profit": 5649359.0, "shadow_profit": 724698.0, "delta_profit": -4924661.0, "baseline_mdd": 949568.0, "shadow_mdd": 1098092.0, "delta_mdd": -148524.0, "census_count": 197, "drop_count": 114, "drop_rate": 0.5786802030456852, "retained_count": 83, "retained_rate": 0.4213197969543147, "retained_notional_rate": 0.42147786190072517, "positive_trade_count": 114, "positive_false_drop_count": 69, "positive_false_drop_rate": 0.6052631578947368, "positive_false_drop_share_of_drops": 0.6052631578947368, "o3_count": 80, "o4_count": 69, "o4_carrier_match_count": 69, "deep_anchor_overlap_count": 35}
+    },
+    "combined": {"baseline_profit": 9779476.0, "shadow_profit": 1325596.0, "delta_profit": -8453880.0, "baseline_mdd": 949568.0, "shadow_mdd": 1098092.0, "delta_mdd": -148524.0, "census_count": 298, "drop_count": 178, "drop_rate": 0.5973154362416108, "retained_count": 120, "retained_rate": 0.40268456375838924, "retained_notional_rate": 0.40279278850218253, "positive_trade_count": 173, "positive_false_drop_count": 112, "positive_false_drop_rate": 0.6473988439306358, "positive_false_drop_share_of_drops": 0.6292134831460674, "o3_count": 126, "o4_count": 104, "o4_carrier_match_count": 104, "deep_anchor_overlap_count": 52, "o4_equivalence_mismatches": 0}
+  },
+  "caveats": [
+    "Historical drop-only diagnostics; not OOS or live evidence.",
+    "No dynamic capital reallocation, resizing, re-entry, cash reuse, compounding, opportunity cost, or scheduling changes."
+  ],
+  "candidate_set": [],
+  "negative_or_kill": true,
+  "report": {"path": "docs/research/condition_research/research_runs/alpha_restart_20260710/g003/g003_veto_report.md", "sha256": "cfde96cb871456f388596a3abd7803ac6011ecd960fc93d9b3cd80ae78c2ceb8"}
+}

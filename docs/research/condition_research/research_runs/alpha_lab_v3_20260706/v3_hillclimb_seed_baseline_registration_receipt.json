@@ -1,0 +1,191 @@
+{
+ "generated_at": "2026-07-06T23:29:43.958765",
+ "db": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db",
+ "name_map": {
+  "ALP_V2SEED_01": "ALP_V3H_01_T000",
+  "ALP_V2SEED_02": "ALP_V3H_02_T000",
+  "ALP_V2SEED_03": "ALP_V3H_03_T000",
+  "ALP_V2SEED_04": "ALP_V3H_04_T000",
+  "ALP_V2SEED_05": "ALP_V3H_05_T000",
+  "ALP_V2SEED_06": "ALP_V3H_06_T000",
+  "ALP_V2SEED_07": "ALP_V3H_07_T000",
+  "ALP_V2SEED_08": "ALP_V3H_08_T000",
+  "ALP_V2SEED_09": "ALP_V3H_09_T000",
+  "ALP_V2SEED_10": "ALP_V3H_10_T000"
+ },
+ "inserted_count": 10,
+ "conflicts": [],
+ "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db.bak.alpha_lab_20260706T232943",
+ "inserted": [
+  {
+   "name": "ALP_V3H_01_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "eeeec1b7c0984c6e90b789ef586cb1a7a55a1e6a08b06b18bca07bfa8b6f8700",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_01",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 3.242,
+    "support": 2038
+   }
+  },
+  {
+   "name": "ALP_V3H_02_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "38002de0560562c59431541a71304080b684af9d07c52b3cd425a643165a1690",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_02",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 3.199,
+    "support": 2012
+   }
+  },
+  {
+   "name": "ALP_V3H_03_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "64ed5dee0105fe788576dff43208e5654fd973fa829115bd8e362dec14e53309",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_03",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 3.098,
+    "support": 2000
+   }
+  },
+  {
+   "name": "ALP_V3H_04_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "9cab6c98c53b8c737883b4b438b8f025d75820f0286c0fe16662da39d7c054e7",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_04",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.648,
+    "support": 2000
+   }
+  },
+  {
+   "name": "ALP_V3H_05_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "2b0d4ad44e9d9388c7ba3a4c4e87131edc4baf220836a72c8895dc8248d69029",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_05",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.63,
+    "support": 4004
+   }
+  },
+  {
+   "name": "ALP_V3H_06_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "de2ff831485092bfa26167f97de4a121e39edc032b53ff8bf221b533b39251f3",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_06",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.523,
+    "support": 2000
+   }
+  },
+  {
+   "name": "ALP_V3H_07_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "2298d330755e7a583baf0e4aee6f333dc1893cc6645bd83956493e5d5b04a221",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_07",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.486,
+    "support": 6760
+   }
+  },
+  {
+   "name": "ALP_V3H_08_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "a28859e0c6553d022642ee8203699c29e1ff535b2d9b50e12497dcd8cf44a735",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_08",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.33,
+    "support": 8038
+   }
+  },
+  {
+   "name": "ALP_V3H_09_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "cdb4d782921b549bdf2dbee1b8e37bbdd2a66a2ea61605158e579fdc219ccf04",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_09",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.225,
+    "support": 3382
+   }
+  },
+  {
+   "name": "ALP_V3H_10_T000",
+   "tables": [
+    "stockbuy",
+    "stocksell"
+   ],
+   "buy_sha256": "88e8838e776c8439d1ce9c9e29cfdc13b3f60d5e44812ba8004d1e5699685a5d",
+   "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "meta": {
+    "role": "v3_hillclimb_seed_baseline",
+    "seed_name": "ALP_V2SEED_10",
+    "trial": 0,
+    "kind": "baseline",
+    "lift": 2.21,
+    "support": 6579
+   }
+  }
+ ]
+}

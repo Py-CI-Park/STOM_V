@@ -1,0 +1,79 @@
+{
+ "schema": "alpha_lab_rho_retrial_universe_proxy_evidence_v1",
+ "mode": "read-only (file:...?mode=ro)",
+ "definition": {
+  "flag": "종목 테이블 행의 관심종목 != 0",
+  "member": "같은 초 moneytop.거래대금순위 세미콜론 리스트에 코드 포함 (moneytop 행 부재 초는 member=False)",
+  "agreement": "flag == member 행 비율"
+ },
+ "days": [
+  {
+   "date": "20230601",
+   "db": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\stock_tick_20230601.db",
+   "n_code_tables": 82,
+   "moneytop_seconds": 1799,
+   "moneytop_hms_min": 90002,
+   "moneytop_hms_max": 93000,
+   "distinct_관심종목_values": [
+    0,
+    1
+   ],
+   "all_rows": {
+    "total": 137029,
+    "agree": 137029,
+    "agreement_pct": 100.0,
+    "flag1_member0": 0,
+    "flag0_member1": 0,
+    "moneytop_row_missing": 1
+   },
+   "window_90001_92500": {
+    "total": 114536,
+    "agree": 114536,
+    "agreement_pct": 100.0,
+    "flag1_member0": 0,
+    "flag0_member1": 0
+   },
+   "top5_disagreeing_codes": []
+  },
+  {
+   "date": "20240103",
+   "db": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\stock_tick_20240103.db",
+   "n_code_tables": 60,
+   "moneytop_seconds": 1801,
+   "moneytop_hms_min": 90000,
+   "moneytop_hms_max": 93000,
+   "distinct_관심종목_values": [
+    0,
+    1
+   ],
+   "all_rows": {
+    "total": 101198,
+    "agree": 101198,
+    "agreement_pct": 100.0,
+    "flag1_member0": 0,
+    "flag0_member1": 0,
+    "moneytop_row_missing": 0
+   },
+   "window_90001_92500": {
+    "total": 84534,
+    "agree": 84534,
+    "agreement_pct": 100.0,
+    "flag1_member0": 0,
+    "flag0_member1": 0
+   },
+   "top5_disagreeing_codes": []
+  }
+ ],
+ "combined": {
+  "all_rows": {
+   "total": 238227,
+   "agree": 238227,
+   "agreement_pct": 100.0
+  },
+  "window_90001_92500": {
+   "total": 199070,
+   "agree": 199070,
+   "agreement_pct": 100.0
+  }
+ }
+}

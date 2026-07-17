@@ -1,0 +1,72 @@
+{
+ "kind": "x1_variants_report",
+ "champion_buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+ "candidates": {
+  "DROP5": {
+   "strategy_name": "ALP_X1_DROP5",
+   "clause": 5,
+   "kind": "gate_disable",
+   "branch": "902+905",
+   "buy_variant_sha256": "dff07376c07d3a8e1476abeea60607c6250274398a4da46be8e9d2f7d4fed6f5",
+   "compile_ok": true,
+   "removed_lines": [
+    "else:",
+    "매수 = False",
+    "if 시가총액 < 3000:",
+    "else:",
+    "매수 = False",
+    "if 시가총액 < 3000:"
+   ],
+   "added_lines": [
+    "if True:",
+    "if True:"
+   ],
+   "buy_txt": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\x1\\variants\\ALP_X1_DROP5.buy.txt"
+  },
+  "DROP15": {
+   "strategy_name": "ALP_X1_DROP15",
+   "clause": 15,
+   "kind": "line_delete",
+   "branch": "902+905",
+   "buy_variant_sha256": "a408cb26ee12cc37785aa4386c1b76fdb8f5d4c2d43170a57035912dc49a8ede",
+   "compile_ok": true,
+   "removed_lines": [
+    "elif not (1.5 < 회전율):",
+    "매수 = False",
+    "elif not (회전율 > 1.5):",
+    "매수 = False"
+   ],
+   "added_lines": [],
+   "buy_txt": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\x1\\variants\\ALP_X1_DROP15.buy.txt"
+  },
+  "DROP29": {
+   "strategy_name": "ALP_X1_DROP29",
+   "clause": 29,
+   "kind": "line_delete",
+   "branch": "905",
+   "buy_variant_sha256": "1efc0fe16d1ff281ca6ddbb6d4a2d44453a4e0193e180d3b23823c6b5c053c7a",
+   "compile_ok": true,
+   "removed_lines": [
+    "elif not (매도총잔량 * 0.10 < 매수총잔량 * 1.0):",
+    "매수 = False"
+   ],
+   "added_lines": [],
+   "buy_txt": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\x1\\variants\\ALP_X1_DROP29.buy.txt"
+  },
+  "DROP31": {
+   "strategy_name": "ALP_X1_DROP31",
+   "clause": 31,
+   "kind": "line_edit",
+   "branch": "902",
+   "buy_variant_sha256": "3233754bcee42c1c36455ceb587a73a7acdbdcfe2504bf765f41b3b824a5d107",
+   "compile_ok": true,
+   "removed_lines": [
+    "elif not (매도총잔량 > 매수총잔량 * 0.10 and 매도총잔량 < 매수총잔량 * 2.0):"
+   ],
+   "added_lines": [
+    "elif not (매도총잔량 < 매수총잔량 * 2.0):"
+   ],
+   "buy_txt": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\x1\\variants\\ALP_X1_DROP31.buy.txt"
+  }
+ }
+}

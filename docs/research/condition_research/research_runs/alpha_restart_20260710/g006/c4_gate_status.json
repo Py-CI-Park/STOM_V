@@ -1,0 +1,114 @@
+{
+  "schema": "g006-c4-gate-status-v1",
+  "schema_version": 1,
+  "experiment_id": "alpha_restart_20260710-g006-c4",
+  "depends_on": "alpha_restart_20260710-g006-c3",
+  "status": "CLOSED",
+  "status_metadata_only": true,
+  "c4_opened": false,
+  "c4_executed": false,
+  "c4_metrics_generated": false,
+  "terminal_decision": "UNDETERMINED",
+  "closure_reason": "C3 stopped at Phase 0 with status DNF_UNIDENTIFIED before C4 opening/execution or C4 outcome/metric read/computation because formal true-DNF/stateful activation authority is absent.",
+  "evidence": {
+    "c3_status": "DNF_UNIDENTIFIED",
+    "c3_terminal_decision": "UNDETERMINED",
+    "c3_terminal_phase": "Phase 0",
+    "formal_candidate_count": 0,
+    "kill_evaluated": false,
+    "motif_generation_executed": false,
+    "c4_outcome_read_executed": false,
+    "c4_outcome_metric_computation_executed": false,
+    "d1_descriptor": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+      "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+      "size_bytes": 6783855,
+      "rows": 863446,
+      "schema_compact": "code/day/off/t0 + bit_1..bit_39",
+      "day_range": {
+        "min": 20220323,
+        "max": 20231228
+      },
+      "off_range": {
+        "min": 11,
+        "max": 1799
+      },
+      "nulls_present": false
+    },
+    "clause_dictionary_descriptor": {
+      "path": "alpha_lab/clause_lab/clauses.py",
+      "sha256": "def0f5c8750c19c02b52f026461422572641b36730d28e5bdfa97f20deabb7d4",
+      "size_bytes": 21405,
+      "maps_predicates": true,
+      "contains_authoritative_first_activation_trace": false
+    },
+    "true_dnf_activation_timestamp_or_trace_artifact_found": false,
+    "authority_search_receipt": {
+      "pre_artifact_head": "81901b3d",
+      "root_scope": "docs/research/condition_research/research_runs/alpha_restart_20260710",
+      "tool_names": [
+        "functions.find",
+        "functions.search"
+      ],
+      "protected_db_outcome_scan": false,
+      "result": "no authoritative true-DNF/stateful activation timestamp/trace artifact found",
+      "post_search_g006_artifacts_excluded_from_authority": true
+    }
+  },
+  "inference": {
+    "c4_gate_open": false,
+    "c4_closed": true,
+    "c4_outcome_read_allowed": false,
+    "c4_outcome_reads_prohibited": true,
+    "flat39": false,
+    "off_timestamp": false,
+    "flat39_allowed_as_trigger_authority": false,
+    "off_allowed_as_activation_timestamp": false,
+    "formal_candidate_count": 0,
+    "c4_metric_computation_allowed": false,
+    "c4_metrics_computed": false,
+    "c4_outcome_metric_computation_executed": false,
+    "portfolio_scheduler_executed": false,
+    "incremental_total_profit_computed": false,
+    "mdd_computed": false,
+    "candidate_table_created": false,
+    "outcome_dependent_motif_selection_executed": false,
+    "absence_statement": "C4 is closed because C3 is unidentified; this is not negative motif evidence."
+  },
+  "c4_outcome_metric_read_policy": {
+    "c4_outcome_read_allowed": false,
+    "prohibit_c4_outcome_metric_reads": true,
+    "prohibited_surfaces": [
+      "engine results",
+      "backtest outputs",
+      "database outcome queries",
+      "n_trials outcome fields",
+      "portfolio incremental profit metrics",
+      "MDD metrics",
+      "scheduler performance metrics",
+      "candidate outcome tables",
+      "manual rescue or retry outcome inspection"
+    ],
+    "allowed_surfaces": [
+      "terminal nonidentification evidence",
+      "C4 closed status metadata"
+    ],
+    "policy_statement": "No C4 outcome/metric, DB, engine, retry, rescue, or candidate outcome read is permitted under this G006 closure."
+  },
+  "zero_counters": {
+    "engine": 0,
+    "db_writes": 0,
+    "registration": 0,
+    "promotion": 0,
+    "retry": 0,
+    "rescue": 0,
+    "c4_outcome_reads": 0,
+    "c4_outcome_computations": 0,
+    "c4_metrics": 0,
+    "portfolio_scheduler_runs": 0,
+    "ledger_rows_appended": 0,
+    "receipts_created": 0,
+    "claims_created": 0
+  },
+  "statement_scope": "Machine-readable C4 CLOSED status metadata and scoped C4 outcome/metric-read prohibition only; no generic planning-session outcome-read counter is asserted, and no C4 metric, candidate table, durable receipt/claim, or ledger row is produced."
+}

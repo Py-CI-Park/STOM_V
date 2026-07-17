@@ -1,0 +1,67 @@
+{
+ "days_measured": 2,
+ "consolidate": {
+  "n_parts": 437,
+  "n_onsets": 702613,
+  "n_labeled": 702279,
+  "per_variant": {
+   "P20": {
+    "n_onsets": 427489,
+    "n_labeled": 427249,
+    "n_2022": 168877,
+    "n_2023": 258612
+   },
+   "P300": {
+    "n_onsets": 114521,
+    "n_labeled": 114463,
+    "n_2022": 45057,
+    "n_2023": 69464
+   },
+   "DH": {
+    "n_onsets": 89165,
+    "n_labeled": 89145,
+    "n_2022": 35218,
+    "n_2023": 53947
+   },
+   "OP": {
+    "n_onsets": 66978,
+    "n_labeled": 66963,
+    "n_2022": 29931,
+    "n_2023": 37047
+   },
+   "VI": {
+    "n_onsets": 4460,
+    "n_labeled": 4459,
+    "n_2022": 1743,
+    "n_2023": 2717
+   }
+  },
+  "bank_write": {
+   "bank_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\o3\\o3_breakout_onset_bank.parquet",
+   "n_rows": 702613,
+   "onset_type": "breakout",
+   "exit_label": "L3_RR8_12",
+   "source_seal": "2026-07-12_o3_breakout_onset_preregistration.md",
+   "audit_tag": "RR8_12-conditional",
+   "dedup_keys": [
+    "day",
+    "code",
+    "t0",
+    "variant"
+   ],
+   "contract": {
+    "ok": true,
+    "n_rows": 702613,
+    "dedup_keys": [
+     "day",
+     "code",
+     "t0",
+     "variant"
+    ],
+    "violations": []
+   },
+   "written": true
+  },
+  "bank_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\o3\\o3_breakout_onset_bank.parquet"
+ }
+}

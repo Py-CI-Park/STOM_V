@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B1 청산 패치 (실전 이관) — 연구 상세</title>
+<style>
+:root{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+@media (prefers-color-scheme:dark){:root{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;
+  --line:#2E332B;--accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}}
+:root[data-theme="light"]{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+:root[data-theme="dark"]{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;--line:#2E332B;
+  --accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15px;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px}
+h1,h2,h3{font-family:"Batang","Nanum Myeongjo","Apple Myungjo",serif;text-wrap:balance;line-height:1.35}
+h1{font-size:30px;margin:10px 0 6px}
+h2{font-size:22px;margin:0 0 4px;padding-top:8px}
+h3{font-size:17px;margin:22px 0 8px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
+.lede{font-size:15.5px;max-width:70ch}
+.masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.meta-grid b{color:var(--ink);font-weight:600}
+.themebtn{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.kpi .value{font-family:"Batang",serif;font-size:26px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.pos{color:var(--up)}.neg{color:var(--down)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin:14px 0}
+th{background:var(--accent-soft);color:var(--ink);text-align:left;font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+td.best{font-weight:700}
+.barrow{display:grid;grid-template-columns:172px 1fr 118px;gap:10px;align-items:center;margin:7px 0}
+.barrow .blabel{font-size:13px;text-align:right;color:var(--muted)}
+.barrow .bval{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.track{background:var(--code-bg);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.fill{height:100%;border-radius:4px 3px 3px 4px}
+.fill.acc{background:var(--accent)}.fill.up{background:var(--up)}.fill.dn{background:var(--down)}
+.fill.ghost{background:var(--muted);opacity:.45}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:14px 0}
+.chart .ctitle{font-size:13px;font-weight:700;margin-bottom:10px}
+.chart .cnote{font-size:12px;color:var(--muted);margin-top:10px}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px}
+.callout.warn{border-left-color:var(--mark-line);background:var(--mark)}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 11px;margin-right:6px;vertical-align:1px}
+.badge.kill{background:var(--down-soft);color:var(--down)}
+.badge.posv{background:var(--up-soft);color:var(--up)}
+.badge.hold{background:var(--code-bg);color:var(--muted)}
+.badge.live{background:var(--accent-soft);color:var(--accent)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:16px;overflow-x:auto;font-family:"Consolas","D2Coding",monospace;font-size:12.5px;line-height:1.62;margin:10px 0}
+pre .c{color:var(--code-dim)}pre .k{color:var(--accent);font-weight:700}
+pre mark{background:var(--mark);color:inherit;border-radius:3px;padding:1px 2px;outline:1px solid var(--mark-line)}
+.codehead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-size:12.5px;color:var(--muted);margin-top:14px}
+.codehead b{color:var(--ink);font-size:14px}
+.sha{font-family:"Consolas",monospace;background:var(--code-bg);padding:1px 7px;border-radius:4px;font-size:11.5px}
+.timeline{list-style:none;margin:14px 0;padding:0}
+.timeline li{display:grid;grid-template-columns:96px 92px 1fr;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline}
+.timeline li:last-child{border-bottom:none}
+.timeline .tdate{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.funnel{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.fstep{border-radius:5px;padding:9px 14px;color:#fff;font-size:13.5px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.score{display:grid;gap:8px;margin:14px 0}
+.srow{display:grid;grid-template-columns:minmax(150px,220px) 1fr 84px;gap:10px;align-items:center;font-size:13px}
+.srow .sname{text-align:right;color:var(--muted)}
+.srow .spts{font-weight:700;font-variant-numeric:tabular-nums}
+.studycard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0}
+.studycard .shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.studycard h3{margin:0;font-size:16px}
+.studycard .easy{font-size:13.5px;margin:8px 0 4px}
+.studycard .method{font-size:12.5px;color:var(--muted);margin:6px 0 10px}
+.studycard .ev{font-size:11.5px;color:var(--muted);margin-top:10px;word-break:break-all}
+.evfoot{font-size:11.5px;color:var(--muted);margin-top:16px;border-top:1px dashed var(--line);padding-top:8px;word-break:break-all}
+.repgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin:16px 0}
+.repcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.repcard .rtitle{font-family:"Batang",serif;font-size:15px;font-weight:700}
+.repcard .rone{font-size:12.5px;color:var(--muted);flex:1}
+.repcard .rmeta{font-size:11.5px;color:var(--muted)}
+.repcard a.open{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+a{color:var(--accent)}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+footer code{font-family:"Consolas",monospace;font-size:11.5px}
+.tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.tabbtn.active{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px}
+.tabpanel>section:first-of-type{border-top:none}
+body.js .tabpanel{display:none}
+body.js .tabpanel.active{display:block}
+@media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div>
+    <div class="eyebrow"><a href="../research_lab_report.html">← 허브로</a> · 연구 상세 보고서</div>
+    <h1>B1 청산 패치 (실전 이관) <span class="badge live">실전이관</span></h1>
+    <div class="meta-grid">
+      <span>연구 ID <b>b1</b></span>
+      <span>봉인 <b class="num">2026-07-12</b> · <span class="sha">1ca2c7aa</span></span>
+      <span>판정 <b>실전이관</b></span>
+    </div>
+  </div>
+  <button class="themebtn" id="themebtn" type="button">🌙 다크 / ☀️ 라이트</button>
+</header>
+<nav class="tabs" role="tablist"><button class="tabbtn active" data-tab="overview">개요</button><button class="tabbtn" data-tab="method">방법·봉인</button><button class="tabbtn" data-tab="results">결과</button><button class="tabbtn" data-tab="fulltable">수치 전표</button><button class="tabbtn" data-tab="verdict">판정·한정</button><button class="tabbtn" data-tab="evidence">증거·재현</button></nav>
+<div id="tab-overview" class="tabpanel active"><section>
+  <div class="eyebrow">① 개요</div>
+  <h2>질문과 판정 <span class="badge live">실전이관</span></h2>
+  <p class="lede">"120초 들고도 최고 1%도 못 갔고 지금 손실이면 잘라라" — 매수는 그대로, 매도에 절 하나 추가.</p>
+  <div class="kpis"><div class="kpi"><div class="label">엔진 A/B 4런</div><div class="value num" style="font-size:20px">전체 PASS</div></div><div class="kpi"><div class="label">2년 ΣΔ</div><div class="value num" style="font-size:20px">+1,538,872원</div></div><div class="kpi"><div class="label">연도 동방향</div><div class="value num" style="font-size:20px">예(+)</div></div></div>
+  <p class="method">해석: 챔피언 매도식 + 저활력 절단 절 1개 → 전략 DB 등록·절차서 완비</p>
+</section></div><div id="tab-method" class="tabpanel"><section>
+  <div class="eyebrow">② 방법·봉인</div>
+  <h2>측정 방법과 사전등록 봉인</h2>
+  <p class="lede"><b>방법.</b> 챔피언 매도식 + 저활력 절단 절 1개. STOM 엔진 A/B 4런(2022·2023 × 원본/B1, tick·배팅 500만)으로 실측 검증 → 전략 DB 등록.</p>
+  <div class="tablebox"><table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>봉인 커밋</td><td><span class="sha">1ca2c7aa</span></td></tr>
+    <tr><td>봉인 문서</td><td><code>docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md</code></td></tr>
+    <tr><td>봉인 규약</td><td>사전등록 §13 미결 전건을 §14 결정으로 확정한 뒤에만 측정(번복 0회)</td></tr>
+    <tr><td>측정창</td><td>발견창 2022-03-23 ~ 2023-12-31 (known 2024/2025 미접촉)</td></tr>
+  </table></div>
+  <p class="muted" style="font-size:13px">측정 절차는 SOP-M 9단계(봉인 확인→measure_gate→분리 기동→감시→게이트 검수→원장 기입→판정)를 따른다. 상세는 허브 '원장·규율' 탭.</p>
+</section></div><div id="tab-results" class="tabpanel"><section>
+  <div class="eyebrow">③ 결과</div>
+  <h2>핵심 차트·수치</h2>
+  <div class="tablebox"><table><tr><th>지표</th><th>2022 원본</th><th>2022 B1</th><th>2023 원본</th><th>2023 B1</th></tr><tr><td style="color:var(--muted)">총수익 (원)</td><td class="num">+4130117</td><td class="num best pos">+5077504</td><td class="num">+5649359</td><td class="num best pos">+6240844</td></tr><tr><td style="color:var(--muted)">자본 대비 수익률 (%)</td><td class="num">+82.1</td><td class="num best pos">+101.3</td><td class="num">+56.5</td><td class="num best pos">+124.2</td></tr><tr><td style="color:var(--muted)">엔진 CAGR (%)</td><td class="num">+106.3</td><td class="num best pos">+131.2</td><td class="num">+57.9</td><td class="num best pos">+127.2</td></tr><tr><td style="color:var(--muted)">거래수</td><td class="num">101</td><td class="num best pos">102</td><td class="num">197</td><td class="num best pos">198</td></tr><tr><td style="color:var(--muted)">승률 (%)</td><td class="num">58.4</td><td class="num">55.9</td><td class="num">57.9</td><td class="num">49.0</td></tr><tr><td style="color:var(--muted)">거래당 평균수익률 (%)</td><td class="num">+0.82</td><td class="num best pos">+0.99</td><td class="num">+0.57</td><td class="num best pos">+0.63</td></tr><tr><td style="color:var(--muted)">최대낙폭 MDD (%)</td><td class="num">9.19</td><td class="num best">5.21</td><td class="num">6.98</td><td class="num">8.65</td></tr><tr><td style="color:var(--muted)">평균 보유시간 (초)</td><td class="num">541</td><td class="num best">316</td><td class="num">417</td><td class="num best">271</td></tr></table></div><div class="chart"><div class="ctitle">연도별 총수익 — 원본 vs B1 (만원)</div><div class="barrow"><span class="blabel">2022 원본</span><div class="track"><div class="fill dn" style="width:66.2%"></div></div><span class="bval num ">+413만</span></div><div class="barrow"><span class="blabel">2022 B1</span><div class="track"><div class="fill up" style="width:81.4%"></div></div><span class="bval num pos">+508만</span></div><div class="barrow"><span class="blabel">2023 원본</span><div class="track"><div class="fill dn" style="width:90.5%"></div></div><span class="bval num ">+565만</span></div><div class="barrow"><span class="blabel">2023 B1</span><div class="track"><div class="fill up" style="width:100.0%"></div></div><span class="bval num pos">+624만</span></div><div class="cnote">두 해 모두 같은 방향(+) 개선 · 값은 엔진 metrics json 원값.</div></div>
+</section></div><div id="tab-fulltable" class="tabpanel"><section>
+  <div class="eyebrow">④ 수치 전표</div>
+  <h2>판정 json 필드 전량</h2>
+  <div class="tablebox"><table><tr><th>필드</th><th>값</th></tr><tr><td><span style="white-space:normal">all_pass</span></td><td><span style="white-space:normal">참</span></td></tr><tr><td><span style="white-space:normal">both_pos</span></td><td><span style="white-space:normal">참</span></td></tr><tr><td><span style="white-space:normal">agg_dP</span></td><td><span style="white-space:normal">1538872</span></td></tr><tr><td><span style="white-space:normal">y2022.pA</span></td><td><span style="white-space:normal">4130117</span></td></tr><tr><td><span style="white-space:normal">y2022.pB</span></td><td><span style="white-space:normal">5077504</span></td></tr><tr><td><span style="white-space:normal">y2022.nA</span></td><td><span style="white-space:normal">101</span></td></tr><tr><td><span style="white-space:normal">y2022.nB</span></td><td><span style="white-space:normal">102</span></td></tr><tr><td><span style="white-space:normal">y2022.dP</span></td><td><span style="white-space:normal">947387</span></td></tr><tr><td><span style="white-space:normal">y2022.dNpct</span></td><td><span style="white-space:normal">0.990099</span></td></tr><tr><td><span style="white-space:normal">y2022.verdict</span></td><td><span style="white-space:normal">참</span></td></tr><tr><td><span style="white-space:normal">y2023.pA</span></td><td><span style="white-space:normal">5649359</span></td></tr><tr><td><span style="white-space:normal">y2023.pB</span></td><td><span style="white-space:normal">6240844</span></td></tr><tr><td><span style="white-space:normal">y2023.nA</span></td><td><span style="white-space:normal">197</span></td></tr><tr><td><span style="white-space:normal">y2023.nB</span></td><td><span style="white-space:normal">198</span></td></tr><tr><td><span style="white-space:normal">y2023.dP</span></td><td><span style="white-space:normal">591485</span></td></tr><tr><td><span style="white-space:normal">y2023.dNpct</span></td><td><span style="white-space:normal">0.507614</span></td></tr><tr><td><span style="white-space:normal">y2023.verdict</span></td><td><span style="white-space:normal">참</span></td></tr></table></div><p class="muted" style="font-size:12px">판정 json 주요 필드(17개 중 상위 80) — 대용량 컬렉션은 항목 수로 요약.</p>
+</section></div><div id="tab-verdict" class="tabpanel"><section>
+  <div class="eyebrow">⑤ 판정·한정</div>
+  <h2>판정문과 정직한 한정 <span class="badge live">실전이관</span></h2>
+  <div class="callout"><b>판정.</b> B1 청산 패치 (실전 이관) — <b>실전이관</b>. 챔피언 매도식 + 저활력 절단 절 1개 → 전략 DB 등록·절차서 완비</div>
+  <h3>딱지 (강제 인쇄)</h3>
+  <ul style="font-size:13.5px;line-height:1.8"><li>딱지: L3=RR8_12 출구 조건부 · 발견창 2개 연도 조건부 진단 · 성능 주장 아님 · 최종 심판=U-4 감독형 소액 실전</li></ul>
+  <div class="callout warn"><b>정직한 한정</b> — 발견창(2022-2023) 성적이며 시간축 OOS 가 아니다. L3 라벨은 챔피언 출구에 조건부. 최종 검증은 감독형 소액 실전(B1 전례).</div>
+</section></div><div id="tab-evidence" class="tabpanel"><section>
+  <div class="eyebrow">⑥ 증거·재현</div>
+  <h2>근거 파일·재생성·관련 커밋</h2>
+  <div class="tablebox"><table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>근거 파일</td><td style="white-space:normal"><code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json</code> · <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json</code> · <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json</code></td></tr>
+    <tr><td>재생성 명령</td><td><code style="white-space:normal">d5r_b1_live/ 엔진 A/B 런 스크립트(재현) — 절차서 참조</code></td></tr>
+    <tr><td>봉인 커밋</td><td><span class="sha">1ca2c7aa</span></td></tr>
+    <tr><td>봉인 문서</td><td><code>docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md</code></td></tr>
+  </table></div>
+  <p class="muted" style="font-size:12px">엔진 백테 0회 · 원본 read-only · 신규 시장 데이터 수집 0. 수치는 판정 json 원문에서 로드(재계산 없음).</p>
+</section></div>
+<footer>
+  단일 자가완결 HTML(외부 의존 0·상대 링크) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
+  생성 커밋 <code>7f354821</code> · 생성 시각 <code>2026-07-17 15:36 대한민국 표준시</code> · <a href="../research_lab_report.html">← 허브로</a><br>
+  수치는 판정 json 원문에서 로드(재계산 없음·원장 count 만 aggregate). 정적 서사는 결산 v1 계승.
+  <span class="muted">wt-dev 이식: reports/ 폴더 복사 + 대시보드 iframe/정적 서빙.</span>
+</footer>
+</div>
+<script>
+(function(){
+  var b=document.body; b.classList.add('js');
+  var btns=[].slice.call(document.querySelectorAll('.tabbtn'));
+  var panels=[].slice.call(document.querySelectorAll('.tabpanel'));
+  function show(id){
+    if(!document.getElementById('tab-'+id)){id='overview';}
+    btns.forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===id);});
+    panels.forEach(function(p){p.classList.toggle('active',p.id==='tab-'+id);});
+  }
+  btns.forEach(function(x){x.addEventListener('click',function(){location.hash='tab-'+x.getAttribute('data-tab');});});
+  window.addEventListener('hashchange',function(){show((location.hash||'').replace('#tab-',''));});
+  show((location.hash||'').replace('#tab-','')||'overview');
+  var tb=document.getElementById('themebtn');
+  if(tb){tb.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    var next=(cur||sys)==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    tb.textContent=next==='dark'?'☀️ 라이트':'🌙 다크';
+  });}
+})();
+</script>
+</body>
+</html>

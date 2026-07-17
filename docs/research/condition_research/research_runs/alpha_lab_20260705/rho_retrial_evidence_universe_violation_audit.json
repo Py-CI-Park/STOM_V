@@ -1,0 +1,92 @@
+{
+ "schema": "alpha_lab_rho_retrial_universe_violation_audit_v1",
+ "total_violations_audited": 664,
+ "tally": {
+  "flag1_not_member": 664,
+  "flag0_not_member": 0,
+  "row_missing_at_buy_sec": 0
+ },
+ "examples_first10": [
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240507",
+   "hms": 92151,
+   "name": "와이씨켐",
+   "code": "112290",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_10",
+   "date": "20240507",
+   "hms": 90146,
+   "name": "삼화콘덴서",
+   "code": "001820",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_10",
+   "date": "20240508",
+   "hms": 90041,
+   "name": "성문전자",
+   "code": "014910",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240510",
+   "hms": 90622,
+   "name": "LB인베스트먼트",
+   "code": "309960",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240510",
+   "hms": 91229,
+   "name": "클래시스",
+   "code": "214150",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240510",
+   "hms": 91335,
+   "name": "피노",
+   "code": "033790",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_10",
+   "date": "20240510",
+   "hms": 91332,
+   "name": "피노",
+   "code": "033790",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240513",
+   "hms": 90408,
+   "name": "가온전선",
+   "code": "000500",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240514",
+   "hms": 90124,
+   "name": "시노펙스",
+   "code": "025320",
+   "kind": "flag1"
+  },
+  {
+   "rule": "ALP_RM_07",
+   "date": "20240514",
+   "hms": 90323,
+   "name": "와이씨",
+   "code": "232140",
+   "kind": "flag1"
+  }
+ ],
+ "reading": "flag1_not_member = 저장 관심종목=1인데 같은 초 moneytop 리스트에 코드 부재(데이터 수준 불일치 — 엔진 게이트는 정상 동작). flag0/row_missing은 명칭 해석·스냅샷 정렬 한계 분류."
+}

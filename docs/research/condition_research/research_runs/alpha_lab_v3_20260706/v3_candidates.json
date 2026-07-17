@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-07-06T22:50:56.099546",
+  "prereg_sha_v3": "50d3d38ae9ee999d80c06a35f9745149ad10af5bd44e903ef754289a6babfa88",
+  "final_candidates": 0,
+  "go": false,
+  "status": "partial",
+  "notes": "최종 후보 0건 (>= 3 필요) - PIVOT 검토: 최종 후보가 3 미만이다. 힐클라임(V3H)은 hillclimb.seeds 봉인값에 따라 ALP_V2SEED_01~10만으로 진행하거나 (P2 채택 후보 0건 중 전이예산통과 0건을 보조 시드로 병기), 0건이면 preregistration_v3.pivot_p5_alt(밴드-생성기+국소탐색)로 전환할지 오케스트레이터가 판단해야 한다.",
+  "candidates": []
+}

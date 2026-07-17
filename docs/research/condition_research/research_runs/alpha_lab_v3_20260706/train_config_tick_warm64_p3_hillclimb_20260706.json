@@ -1,0 +1,50 @@
+{
+ "provider": "gpt_auth",
+ "bt_engine_mode": "warm",
+ "bt_warm_engine_count": 64,
+ "bt_betting": "5",
+ "bt_avg_time": 30,
+ "min_daily_trades": 0.5,
+ "mdd_cap": 35.0,
+ "winner_objective": "uptrend",
+ "autopsy_enabled": false,
+ "bt_full_start": 20220323,
+ "bt_full_end": 20241231,
+ "max_generations": 1,
+ "bt_timeout": 14400,
+ "bt_warm_run_timeout": 300,
+ "equity_points_enabled": true,
+ "bt_timeframe": "tick",
+ "bt_universe_start_time": 90000,
+ "bt_universe_end_time": 92800,
+ "_comment": "Plan B P5 official tick lattice profile; DB full period; warm64; preflight required before full run.",
+ "condition_discovery_preset": "fast",
+ "condition_discovery_process": "fast-discovery",
+ "_official_profile": {
+  "schema": "plan_b_p5_official_profile_v1",
+  "lane": "tick",
+  "source_db_range": {
+   "path": "_database/stock_tick_back.db",
+   "table_count": 2427,
+   "temporal_row_count": 124235459,
+   "index_min_len_filter": 14,
+   "min_index": "20220323090000",
+   "max_index": "20260227093000",
+   "start_date": 20220323,
+   "end_date": 20260227,
+   "skipped_no_index_tables": [],
+   "skipped_no_index_table_count": 0
+  },
+  "time_window_policy": "fast-discovery runtime resolves tick to 09:00:00-09:28:00; raw DB reaches 09:30:00 but is not claimed as runtime window.",
+  "full_run_forbidden_until_preflight_receipt": true
+ },
+ "_derived": {
+  "schema": "alpha_lab_v3_hillclimb_train_window_config_v1",
+  "base_config": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "changed_fields_only": [
+   "bt_full_start",
+   "bt_full_end"
+  ],
+  "window_basis": "preregistration_v3.json gates_p4.oos_sealed(2025-01~2026-02) 직전까지 — P3 train은 OOS 봉인창을 침범하지 않는다"
+ }
+}

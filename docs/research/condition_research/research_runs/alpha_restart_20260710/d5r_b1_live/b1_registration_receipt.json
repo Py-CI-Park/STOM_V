@@ -1,0 +1,45 @@
+{
+  "pre": {
+    "incumbent_buy_sha": "348c5181",
+    "mirror_file_sha": "348c5181",
+    "mirror_is_byte_exact": true,
+    "incumbent_sell_sha": "8ef01e0e",
+    "patch_sell_sha": "48018620"
+  },
+  "register": {
+    "inserted": [
+      {
+        "name": "ALP_D5R_B1_S",
+        "tables": [
+          "stockbuy",
+          "stocksell"
+        ],
+        "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+        "sell_sha256": "48018620eb7bd3a0938233f35490c2565d92397cef3927a0237c37da146b0f9e",
+        "meta": {
+          "series": "D5-R B1 감독형 소액 실전 이관 (U-4)",
+          "buy_note": "ALP_V4_RR8_12 매수 원문(348c5181)의 byte-exact 미러 — 신규 매수 전략 아님(registrar 쌍 계약의 기계적 산물)",
+          "sell_note": "rr8_12 매도(8ef01e0e) + 절 1개(보유시간>=120 ∧ 최고수익률<1.0 ∧ 수익률<0.0 → 매도, # D5R_B1_저활력절단)",
+          "canonical_pairing": "매수 ALP_V4_RR8_12 + 매도 ALP_D5R_B1_S",
+          "prereg": "2026-07-12_d5r_conditional_exit_preregistration.md (ac5ca448)",
+          "engine_ab": "2022 Δ+947,387 / 2023 Δ+591,485 / ΣΔ+1,538,872 — 4런 전체 PASS"
+        }
+      }
+    ],
+    "conflicts": [],
+    "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db.bak.alpha_lab_20260712T213918"
+  },
+  "post": {
+    "db_buy_sha": "348c5181",
+    "db_sell_sha": "48018620",
+    "buy_mirror_ok": true,
+    "sell_patch_ok": true,
+    "incumbent_unchanged": true,
+    "row_counts": {
+      "stockbuy": 165,
+      "stocksell": 110
+    }
+  },
+  "name": "ALP_D5R_B1_S",
+  "ts": "2026-07-12T21:39:18.108033"
+}

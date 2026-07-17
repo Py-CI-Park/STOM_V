@@ -1,0 +1,12 @@
+[
+  {
+    "label": "alp_rho_gate:ALP_RM_10:P1-s03-l011",
+    "buy": "ALP_RM_10",
+    "sell": "ALP_RM_10",
+    "rank": 10,
+    "rule_id": "P1-s03-l011",
+    "mined_lift": 2.108220761005318,
+    "chunk_no": 7,
+    "note": "chunk04 abort로 미시도 — 단독 supplement, 새 run_id, 동결 프로파일 그대로"
+  }
+]

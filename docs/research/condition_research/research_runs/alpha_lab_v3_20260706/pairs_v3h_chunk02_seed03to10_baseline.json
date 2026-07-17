@@ -1,0 +1,10 @@
+[
+ {"label": "v3h:seed03:T000", "buy": "ALP_V3H_03_T000", "sell": "ALP_V3H_03_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_03)"},
+ {"label": "v3h:seed04:T000", "buy": "ALP_V3H_04_T000", "sell": "ALP_V3H_04_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_04)"},
+ {"label": "v3h:seed05:T000", "buy": "ALP_V3H_05_T000", "sell": "ALP_V3H_05_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_05)"},
+ {"label": "v3h:seed06:T000", "buy": "ALP_V3H_06_T000", "sell": "ALP_V3H_06_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_06)"},
+ {"label": "v3h:seed07:T000", "buy": "ALP_V3H_07_T000", "sell": "ALP_V3H_07_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_07)"},
+ {"label": "v3h:seed08:T000", "buy": "ALP_V3H_08_T000", "sell": "ALP_V3H_08_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_08)"},
+ {"label": "v3h:seed09:T000", "buy": "ALP_V3H_09_T000", "sell": "ALP_V3H_09_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_09)"},
+ {"label": "v3h:seed10:T000", "buy": "ALP_V3H_10_T000", "sell": "ALP_V3H_10_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_10)"}
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "label": "alp_v2f:F03:full",
+    "buy": "ALP_V2F_03",
+    "sell": "ALP_V2F_03",
+    "policy": "champion AND leaf filter (V2F rank 3)"
+  },
+  {
+    "label": "alp_v2f:F04:full",
+    "buy": "ALP_V2F_04",
+    "sell": "ALP_V2F_04",
+    "policy": "champion AND leaf filter (V2F rank 4)"
+  }
+]

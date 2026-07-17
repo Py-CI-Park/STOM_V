@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "kind": "algorithm-boundary-report",
+  "surface": "algorithm",
+  "contractRef": {
+    "hypothesisId": "G005-X1-EXIT-COMPETING-RISK",
+    "sealedPreregistration": "docs/research/condition_research/plans/2026-07-16_g005_x1_competing_risk_preregistration.md",
+    "builder": "scripts/build_g005_x1_input.py",
+    "target": "scripts/g005_x1_competing_risk.py",
+    "tests": "tests/unit/test_alpha_g005_x1.py",
+    "input": "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json",
+    "discoveryWindow": {
+      "start": "2022-03-23",
+      "end": "2023-12-31"
+    },
+    "expectedFilteredCounts": {
+      "2022": 510,
+      "2023": 1148,
+      "total": 1658
+    },
+    "sourceFiles": [
+      {
+        "slot": "RR8_12",
+        "group": "RR8",
+        "sha256": "f5e3807f26c32d8e2409a56ed1cdc89c80c13b37bcf36f0dbed811595e2ee9ed",
+        "sizeBytes": 153817,
+        "rawRows": 454
+      },
+      {
+        "slot": "RR8_0",
+        "group": "RR8",
+        "sha256": "ae90e89663dd1a704535893556a05954b016ec6b6ece766b9eeb236153fdd06c",
+        "sizeBytes": 115829,
+        "rawRows": 338
+      },
+      {
+        "slot": "RR8_21",
+        "group": "RR8",
+        "sha256": "a22af054c264087d2b87f52ac178b7fe19d49a3c71e660965f6803b83083131f",
+        "sizeBytes": 128654,
+        "rawRows": 380
+      },
+      {
+        "slot": "GPTAUTH_G8",
+        "group": "GPTAUTH_G8",
+        "sha256": "830a003a046e6e1f14372838c458badb198dedb069539d2b6e8ede7f807eb4cd",
+        "sizeBytes": 464671,
+        "rawRows": 1447
+      }
+    ],
+    "decisionPrecedence": [
+      "UNDETERMINED",
+      "KILL",
+      "PASS"
+    ],
+    "killRuleSummary": "source/provenance/schema/parser/denominator/cause-support/raw-zero/annual-zero/bootstrap-undefined fail first as UNDETERMINED; only after those checks can residual_ratio >= 0.8 or annual sign conflict KILL; otherwise residual_ratio < 0.8 with same nonzero annual signs PASS."
+  },
+  "parentVerification": {
+    "executorRanCommands": false,
+    "scope": "Static read-only adversarial analysis artifact only; this executor did not run tests, gates, linters, formatters, builders, targets, commits, or .gjc.",
+    "parentObserved": [
+      {
+        "command": "python -m pytest tests/unit/test_alpha_g005_c1.py tests/unit/test_alpha_g005_x1.py -q",
+        "result": "61 passed in 13.12s",
+        "claimSource": "parent assignment context"
+      },
+      {
+        "command": "authoritative manifests/probe",
+        "result": "passed",
+        "claimSource": "parent assignment context"
+      },
+      {
+        "command": "git diff --check",
+        "result": "clean",
+        "claimSource": "parent assignment context"
+      }
+    ],
+    "readOnlyEvidenceInspected": [
+      "docs/research/condition_research/plans/2026-07-16_g005_x1_competing_risk_preregistration.md:1-123",
+      "scripts/build_g005_x1_input.py:1-380",
+      "scripts/g005_x1_competing_risk.py:1-827",
+      "tests/unit/test_alpha_g005_x1.py:1-428",
+      "docs/research/condition_research/research_runs/alpha_restart_20260710/g005/x1_input.json:1-130,15020-15125"
+    ]
+  },
+  "contractCoverage": [
+    {
+      "id": "coverage-timestamp-cause-precedence",
+      "contractRef": "Prereg §§3-5 requires strict 14-digit buy/sell timestamps, same-day validation, buy-date window filtering, and fixed mutually-exclusive cause order forced_cap > stop_loss > trailing > time_exit > profit_take > other.",
+      "status": "covered",
+      "evidence": [
+        "Builder validates buy/sell timestamps with %Y%m%d%H%M%S, filters by buy_time year before row output, rejects sell-day mismatch, and preserves raw condition strings: scripts/build_g005_x1_input.py:250-303.",
+        "Target validates timestamp shape/calendar and row day equality before statistics: scripts/g005_x1_competing_risk.py:230-251,309-339.",
+        "Target cause classifier encodes preregistered precedence literally: scripts/g005_x1_competing_risk.py:393-404.",
+        "Unit tests exercise forced-cap text/time precedence and lower-priority substring collisions: tests/unit/test_alpha_g005_x1.py:172-180."
+      ],
+      "adversarialCaseRefs": [
+        "case-timestamp-cause-precedence"
+      ]
+    },
+    {
+      "id": "coverage-source-count-window-drift",
+      "contractRef": "Prereg §§2-3 and §9 require four exact CSV sources, pre/post identity binding, 2022/2023-only denominator 510/1148/1658, no source substitution, and no window drift.",
+      "status": "covered",
+      "evidence": [
+        "Input contract and materialized counts bind 2022=510, 2023=1148, total=1658 with group/slot breakdowns: x1_input.json:1-112.",
+        "Input source records carry matching pre/post sha256, size_bytes, and raw_rows for all four CSVs: x1_input.json:15046-15123.",
+        "Builder captures source identity before and after materialization and fail-closes on hash/size/raw-row drift or denominator mismatch: scripts/build_g005_x1_input.py:233-247,342-355.",
+        "Target revalidates contract descriptor, source pre/post identities, rows, counts, and zero side-effect counters before statistics: scripts/g005_x1_competing_risk.py:342-390.",
+        "Tests cover prereg window stability, builder drift/raw-count mismatch, and target count/source mismatch producing UNDETERMINED: tests/unit/test_alpha_g005_x1.py:31-35,89-101,290-300."
+      ],
+      "adversarialCaseRefs": [
+        "case-source-count-window-drift"
+      ]
+    },
+    {
+      "id": "coverage-side-effect-counters-zero",
+      "contractRef": "Prereg §9 and input/target contracts authorize no engine execution, DB write, strategy registration, promotion, retry, or rescue side effect.",
+      "status": "covered",
+      "evidence": [
+        "Builder declares materialization-only behavior and zero side-effect counters: scripts/build_g005_x1_input.py:1-5,29-38,356-363.",
+        "Target caveat and result schema carry zero counters for engine_calls, db_writes, strategy_registrations, promotions, retries, and rescue_runs: scripts/g005_x1_competing_risk.py:19-30,731-746.",
+        "Input snapshot contains exact zero counters: x1_input.json:15037-15045.",
+        "Tests require missing, nonzero, or extra side-effect counter state to become UNDETERMINED: tests/unit/test_alpha_g005_x1.py:326-359."
+      ],
+      "adversarialCaseRefs": [
+        "case-side-effect-counters",
+        "case-zero-side-effects"
+      ]
+    },
+    {
+      "id": "coverage-undetermined-precedence",
+      "contractRef": "Prereg §§6-8 place missing positive-weight cause support, raw_contrast==0, annual raw zero, and undefined bootstrap replicate ahead of KILL/PASS.",
+      "status": "covered",
+      "evidence": [
+        "Target records missing group/cause support, raw zero, annual missing/zero, and annual sign conflict separately: scripts/g005_x1_competing_risk.py:471-598.",
+        "Target decision ladder returns UNDETERMINED before bootstrap/KILL/PASS, then KILL, then PASS: scripts/g005_x1_competing_risk.py:760-779.",
+        "Tests cover missing positive-weight support, raw zero, annual zero, undefined bootstrap replicate, ratio boundary KILL, and annual sign conflict KILL: tests/unit/test_alpha_g005_x1.py:194-235,268-287."
+      ],
+      "adversarialCaseRefs": [
+        "case-missing-support-raw-annual-zero"
+      ]
+    },
+    {
+      "id": "coverage-bootstrap-replacement-modulo-rejection",
+      "contractRef": "Prereg §7 requires year-stratified trading-day-block bootstrap with replacement, no dropped replicates, fixed draw count/seed, and exact nearest-rank CI.",
+      "status": "covered",
+      "evidence": [
+        "Target groups rows into per-year day blocks and draws each year independently with replacement: scripts/g005_x1_competing_risk.py:601-620,645-678.",
+        "Target draw_index uses a 64-bit rejection threshold before modulo, avoiding modulo-biased candidate acceptance: scripts/g005_x1_competing_risk.py:630-642.",
+        "Target surfaces first undefined replicate as UNDETERMINED and computes nearest-rank intervals only from defined complete replicate statistics: scripts/g005_x1_competing_risk.py:681-728.",
+        "Tests cover replacement behavior, deterministic stream stability, black-box balance, and undefined replicate fail-closed behavior: tests/unit/test_alpha_g005_x1.py:224-266."
+      ],
+      "adversarialCaseRefs": [
+        "case-replacement-sampling-modulo-rejection"
+      ]
+    },
+    {
+      "id": "coverage-public-private-authority",
+      "contractRef": "Only public measure(snapshot) is authoritative; test-only overrides may exist only behind non-authoritative private helper output markers.",
+      "status": "covered",
+      "evidence": [
+        "Public measure(snapshot) hard-wires SOURCE_FILES, EXPECTED_FILTERED_COUNTS, BOOTSTRAP_DRAWS, BOOTSTRAP_SEED, and no bootstrap_plan override: scripts/g005_x1_competing_risk.py:809-818.",
+        "Private test helper accepts overrides but always adds NON_AUTHORITATIVE_TEST_ONLY_NOT_VALID_FOR_EVIDENCE marker: scripts/g005_x1_competing_risk.py:749-806.",
+        "Tests assert public signature rejects override kwargs and private helper marks results as non-authoritative: tests/unit/test_alpha_g005_x1.py:303-312."
+      ],
+      "adversarialCaseRefs": [
+        "case-public-override-private-marker"
+      ]
+    },
+    {
+      "id": "coverage-optimized-python-fail-closed",
+      "contractRef": "Algorithm must not rely on asserts or optimization-sensitive metadata; malformed input must fail closed under python -O.",
+      "status": "covered",
+      "evidence": [
+        "Target validation uses explicit _fail/X1MeasureError paths, not asserts, for schema/timestamp/source/count/counter failures: scripts/g005_x1_competing_risk.py:118-119,342-390.",
+        "Test executes the public measure path under sys.executable -O and expects UNDETERMINED for malformed input: tests/unit/test_alpha_g005_x1.py:362-380.",
+        "Tests also assert no executable annotations are present and production constants are immutable tuples: tests/unit/test_alpha_g005_x1.py:383-427."
+      ],
+      "adversarialCaseRefs": [
+        "case-optimized-python"
+      ]
+    },
+    {
+      "id": "coverage-unrelated-exception-propagation",
+      "contractRef": "Only intentional sealed integrity/measure failures become UNDETERMINED; unrelated runtime errors must not be laundered into an evidence decision.",
+      "status": "covered",
+      "evidence": [
+        "Target catches X1MeasureError around snapshot validation and bootstrap integrity only; compute_statistics RuntimeError is outside that catch scope: scripts/g005_x1_competing_risk.py:760-770.",
+        "Test monkeypatches compute_statistics to raise RuntimeError and verifies public measure propagates it: tests/unit/test_alpha_g005_x1.py:315-323."
+      ],
+      "adversarialCaseRefs": [
+        "case-unrelated-exception-propagation"
+      ]
+    },
+    {
+      "id": "coverage-metadata-only-correction",
+      "contractRef": "G009 correction must preserve sealed algorithm semantics while making scanner/runtime metadata safe: literal input path, no executable annotations, immutable production constants, and unchanged sealed counts.",
+      "status": "covered",
+      "evidence": [
+        "Target __main__ opens only the scanner-valid literal INPUT_PATH and then calls measure(payload): scripts/g005_x1_competing_risk.py:821-826.",
+        "Tests parse the target AST to require one literal open, no executable annotations, prereg/window stability, input row count 1658, expected counts 510/1148/1658, and immutable constants: tests/unit/test_alpha_g005_x1.py:383-427.",
+        "Input metadata still binds the sealed window and counts: x1_input.json:1-112."
+      ],
+      "adversarialCaseRefs": [
+        "case-metadata-only-correction"
+      ]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-timestamp-cause-precedence",
+      "scenario": "A row contains multiple cause substrings, or sell_time is exactly/after 09:30, or buy/sell/day timestamps could invite timezone/day-rollover correction.",
+      "expectedBehavior": "Strict local wall-clock strings are validated; buy/sell/day mismatch is UNDETERMINED; classifier assigns the first preregistered cause only, with forced_cap taking precedence over lower-priority text.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/build_g005_x1_input.py:250-303",
+        "scripts/g005_x1_competing_risk.py:230-251,309-339,393-404",
+        "tests/unit/test_alpha_g005_x1.py:172-180"
+      ]
+    },
+    {
+      "id": "case-source-count-window-drift",
+      "scenario": "An input substitutes a CSV, mutates hash/size/raw rows between pre/post, includes 2024+ rows, or changes expected 2022/2023 denominators.",
+      "expectedBehavior": "Builder and target fail closed before statistics; count/source drift is UNDETERMINED rather than PASS/KILL rescue.",
+      "staticResult": "passed",
+      "evidence": [
+        "x1_input.json:1-112,15046-15123",
+        "scripts/build_g005_x1_input.py:233-247,342-355",
+        "scripts/g005_x1_competing_risk.py:342-390",
+        "tests/unit/test_alpha_g005_x1.py:31-35,89-101,290-300"
+      ]
+    },
+    {
+      "id": "case-side-effect-counters",
+      "scenario": "A materialized input or target result omits side-effect counters, adds unexpected keys, or reports any nonzero engine/DB/registration/promotion/retry/rescue count.",
+      "expectedBehavior": "Validation returns UNDETERMINED and cannot continue to algorithm statistics; valid artifacts carry exact zero counters.",
+      "staticResult": "passed",
+      "evidence": [
+        "x1_input.json:15037-15045",
+        "scripts/g005_x1_competing_risk.py:23-30,387-390,731-746",
+        "tests/unit/test_alpha_g005_x1.py:326-359"
+      ]
+    },
+    {
+      "id": "case-missing-support-raw-annual-zero",
+      "scenario": "A positive pooled cause weight lacks support in one group, raw contrast is zero, annual contrast is zero, or an annual sign conflict appears after integrity checks.",
+      "expectedBehavior": "Missing support/raw-zero/annual-zero are first-priority UNDETERMINED; annual sign conflict is KILL only after UNDETERMINED reasons are absent.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:508-517,551-587,760-779",
+        "tests/unit/test_alpha_g005_x1.py:194-221,277-287"
+      ]
+    },
+    {
+      "id": "case-replacement-sampling-modulo-rejection",
+      "scenario": "Bootstrap sampling accidentally samples without replacement, uses modulo directly with biased 64-bit candidates, drops undefined replicates, or accepts invalid plan lengths.",
+      "expectedBehavior": "Each year draws exactly its observed number of day blocks with replacement; candidate values below rejection threshold are redrawn before modulo; invalid/undefined replicate paths fail closed.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:601-728",
+        "tests/unit/test_alpha_g005_x1.py:224-266"
+      ]
+    },
+    {
+      "id": "case-public-override-private-marker",
+      "scenario": "A caller attempts to use test-only source/count/bootstrap overrides as authoritative production evidence.",
+      "expectedBehavior": "Public measure accepts only snapshot and hard-wires production constants; private override helper marks its outputs NON_AUTHORITATIVE_TEST_ONLY_NOT_VALID_FOR_EVIDENCE.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:749-818",
+        "tests/unit/test_alpha_g005_x1.py:303-312"
+      ]
+    },
+    {
+      "id": "case-optimized-python",
+      "scenario": "The target is executed under optimized Python where asserts and some metadata assumptions could be stripped or ignored.",
+      "expectedBehavior": "Malformed input still returns UNDETERMINED via explicit validation; no assert/type-annotation-only enforcement is required.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:118-119,342-390",
+        "tests/unit/test_alpha_g005_x1.py:362-380,383-427"
+      ]
+    },
+    {
+      "id": "case-unrelated-exception-propagation",
+      "scenario": "A non-contract runtime bug occurs during statistic computation.",
+      "expectedBehavior": "The error propagates for investigation and is not converted into an authoritative UNDETERMINED decision.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:760-770",
+        "tests/unit/test_alpha_g005_x1.py:315-323"
+      ]
+    },
+    {
+      "id": "case-metadata-only-correction",
+      "scenario": "A scanner/runtime hardening correction accidentally changes algorithm inputs, counts, constants, or metric semantics.",
+      "expectedBehavior": "Only metadata/scanner-safe structure changes are accepted: literal input open, no executable annotations, immutable constants, same prereg window and sealed input counts.",
+      "staticResult": "passed",
+      "evidence": [
+        "scripts/g005_x1_competing_risk.py:821-826",
+        "tests/unit/test_alpha_g005_x1.py:383-427",
+        "x1_input.json:1-112"
+      ]
+    },
+    {
+      "id": "case-zero-side-effects",
+      "scenario": "The QA artifact itself or inspected X1 surfaces imply engine execution, DB writes, strategy registration, promotion, retry, rescue, target invocation, or builder/materializer execution by this executor.",
+      "expectedBehavior": "This report remains static/read-only and records no executor-run commands; X1 input/target zero counters remain exact zeros; parent-run verification is cited only as parent context.",
+      "staticResult": "passed",
+      "evidence": [
+        "parentVerification.executorRanCommands=false",
+        "x1_input.json:15037-15045",
+        "scripts/build_g005_x1_input.py:1-5,29-38",
+        "scripts/g005_x1_competing_risk.py:19-30,731-746"
+      ]
+    }
+  ],
+  "verdict": "passed",
+  "blockers": []
+}

@@ -1,0 +1,64 @@
+{
+  "generated_at": "2026-07-06T14:16:57.548678",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_lab_v2_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "dates_requested": [
+    "20240103"
+  ],
+  "days_built": [
+    "20240103"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 1,
+  "n_samples": 9108,
+  "labels": {
+    "L3_pos": {
+      "n": 9108,
+      "positives": 1029,
+      "positive_rate": 0.1129776021080369
+    }
+  },
+  "per_day": {
+    "20240103": {
+      "n_samples": 9108,
+      "shard": "20240103.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9108,
+          "positives": 1029,
+          "positive_rate": 0.1129776021080369
+        },
+        "L3_net": {
+          "n": 9108,
+          "mean": -0.010979472484850551,
+          "p10": -0.025034314021468163,
+          "p50": -0.014002454467117786,
+          "p90": 0.01341405622661119
+        }
+      },
+      "l3_stats": {
+        "fired": 7598,
+        "forced_cap": 1510,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 22.28
+}

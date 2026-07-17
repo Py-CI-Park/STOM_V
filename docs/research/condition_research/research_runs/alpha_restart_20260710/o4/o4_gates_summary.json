@@ -1,0 +1,158 @@
+{
+ "kind": "o4_gate_report",
+ "reused_integrity": {
+  "kind": "d1_pairwise_integrity",
+  "bank": {
+   "exists": true,
+   "sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
+   "sha_match": true,
+   "n_rows": 863446,
+   "rows_match": true,
+   "schema": [
+    "code",
+    "day",
+    "off",
+    "t0",
+    "year",
+    "updown_q",
+    "mktcap_b",
+    "time_b",
+    "l3_net",
+    "l3_labeled",
+    "l3_clause",
+    "l3_exit"
+   ],
+   "schema_match": true,
+   "match": true
+  },
+  "bits": {
+   "exists": true,
+   "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+   "sha_match": true,
+   "n_rows": 863446,
+   "rows_match": true,
+   "schema": [
+    "code",
+    "day",
+    "off",
+    "t0",
+    "bit_1",
+    "bit_2",
+    "bit_3",
+    "bit_4",
+    "bit_5",
+    "bit_6",
+    "bit_7",
+    "bit_8",
+    "bit_9",
+    "bit_10",
+    "bit_11",
+    "bit_12",
+    "bit_13",
+    "bit_14",
+    "bit_15",
+    "bit_16",
+    "bit_17",
+    "bit_18",
+    "bit_19",
+    "bit_20",
+    "bit_21",
+    "bit_22",
+    "bit_23",
+    "bit_24",
+    "bit_25",
+    "bit_26",
+    "bit_27",
+    "bit_28",
+    "bit_29",
+    "bit_30",
+    "bit_31",
+    "bit_32",
+    "bit_33",
+    "bit_34",
+    "bit_35",
+    "bit_36",
+    "bit_37",
+    "bit_38",
+    "bit_39"
+   ],
+   "schema_match": true,
+   "match": true
+  },
+  "all_match": true,
+  "expected": {
+   "bank_sha256": "0b6268e0eff8e73831539aba8ff83b8a02608405269732a33c78565c3bfa22fd",
+   "bits_sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+   "n_rows": 863446
+  }
+ },
+ "o4_key_integrity": {
+  "kind": "o4_key_integrity",
+  "n_o4": 863446,
+  "n_d1": 863446,
+  "expected_rows": 863446,
+  "rows_match": true,
+  "schema_match": true,
+  "n_key_dup": 0,
+  "keys_match": true,
+  "pass": true
+ },
+ "new_bit_parity": {
+  "kind": "o4_new_bit_parity",
+  "n_onsets": 100,
+  "n_bits": 5,
+  "n_pairs": 500,
+  "n_agree": 500,
+  "agreement_pct": 100.0,
+  "n_mismatch": 0,
+  "per_bit_agree": {
+   "o4_netbuy_gt1": 100,
+   "o4_qty_022": 100,
+   "o4_qty_035": 100,
+   "o4_qty_050": 100,
+   "o4_avoid_gap_lt8": 100
+  },
+  "mismatches": [],
+  "pass": true
+ },
+ "inclusion_sanity": {
+  "kind": "o4_inclusion_sanity",
+  "n_onsets": 863446,
+  "checks": [
+   {
+    "subset": "o4_qty_050",
+    "superset": "o4_qty_035",
+    "subset_mult": 0.5,
+    "superset_mult": 0.35,
+    "n_violation": 0,
+    "pass": true
+   },
+   {
+    "subset": "o4_qty_035",
+    "superset": "bit_38",
+    "subset_mult": 0.35,
+    "superset_mult": 0.3,
+    "n_violation": 0,
+    "pass": true
+   },
+   {
+    "subset": "bit_38",
+    "superset": "o4_qty_022",
+    "subset_mult": 0.3,
+    "superset_mult": 0.22,
+    "n_violation": 0,
+    "pass": true
+   },
+   {
+    "subset": "o4_qty_022",
+    "superset": "bit_37",
+    "subset_mult": 0.22,
+    "superset_mult": 0.2,
+    "n_violation": 0,
+    "pass": true
+   }
+  ],
+  "pass": true
+ },
+ "gate_pass": true
+}

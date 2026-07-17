@@ -1,0 +1,181 @@
+{
+  "schema": "alpha_lab_v5_candidate_characterization_v1",
+  "created_at": "2026-07-07T14:35:00",
+  "stage": "r0_candidate_characterization",
+  "preregistration_sha256": "15144e1286be14cb9afb403d3fa55bd3f87543d215991ac25558f5a85601b731",
+  "discovery_window": {"start_ym": "202203", "end_ym": "202412", "n_months": 34},
+  "discovery_config_path": "docs/research/condition_research/research_runs/alpha_lab_v5_20260707/discovery_config_tick_warm64_2022_2024_v5_20260707.json",
+  "v4_ensemble_reconstruction": {
+    "method": "alpha_lab.ensemble.portfolio.static_equal(champions) — v4_ensemble_frozen.json의 ensemble_a_static_equal(RR8_12,RR8_0,RR8_21,GPTAUTH_G8) 4종 monthly_pnl(v4_characterization.json)을 그대로 재구성",
+    "cross_check": "재구성한 blend에 alpha_lab.ensemble.portfolio.risk_adjusted_metrics 적용 결과 profit=7059585.0, mdd=599844.75, calmar=11.769020233985543 — docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_assembly_report.json.discovery.ensemble_a와 완전 일치(byte-exact) 확인 완료."
+  },
+  "candidates": [
+    {
+      "name": "CSS_V7_MIN_MASTER",
+      "buy_sha": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "sell_sha": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "discovery_status": "not_attempted",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "data_gap_min_db_no_discovery_coverage",
+      "note": "min timeframe. 로컬 _database/stock_min_back.db 실측 범위(202504070900~202602271519)가 봉인 discovery 창(2022-03~2024-12)을 전혀 커버하지 않아 백테 자체를 시도하지 않았다(v5_candidate_pool.json 참조). 별도로, 이 조건식도 self.Buy/Sell 7인자 레거시 호출을 사용함을 정적 감사로 확인했다 — 설사 min 데이터가 있었더라도 아래 8개와 동일하게 실패했을 가능성이 높다(참고 정보, 조작적 결론 아님)."
+    },
+    {
+      "name": "CSS_V7_TICK_MASTER",
+      "buy_sha": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "sell_sha": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "run_id": "alp_v5_r0_discovery_chunk1_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=340"
+    },
+    {
+      "name": "C_T_900_920_STUDY",
+      "buy_sha": "510c1934f0f707c6f756221e0abf85130c3396cc16fba9efcbdb17473528bead",
+      "sell_sha": "7424b3fa0272752c17b4f2699ccad166d02aa3f8329f8a72573391cf78229c22",
+      "run_id": "alp_v5_r0_discovery_chunk1_retry_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=341"
+    },
+    {
+      "name": "C_T_900_920_U2",
+      "buy_sha": "902cb36b87f5828548531583cd4aa16ed4a5a2a597b3db3abba217cb0f86e2e3",
+      "sell_sha": "e61d8ba393ae74de73d07e0cd291861bc3edeec1050cbc7d06a0750d67cba5c6",
+      "run_id": "alp_v5_r0_discovery_chunk2_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=338"
+    },
+    {
+      "name": "C_T_900_920_U2_FS",
+      "buy_sha": "1fdc3814f737cbfbf12481b0bfce3eb8f123dd98382cf08b03fd44b6df5ada53",
+      "sell_sha": "221fce3d0127361ac3b44ed07b260fb5f67e0aae51f5adb3c8e4adcbf0cb8fb0",
+      "run_id": "alp_v5_r0_discovery_chunk5_20260707",
+      "gen_no": 1,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=347"
+    },
+    {
+      "name": "Study_20250715",
+      "buy_sha": "dc45993746f53d48a01b6ff01f2b69fb8c9f343273347e9050858fa9ee2fcaf2",
+      "sell_sha": "bab71873209cf3f2ec6445c765dcd55acd52c9c46c78b830eae2abce410b5bed",
+      "run_id": "alp_v5_r0_discovery_chunk3_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=336"
+    },
+    {
+      "name": "Study_20250715_2",
+      "buy_sha": "6468dc0dccddc5167003ba41b0002c2910421a6ad48d44a15b2f7e95ad866694",
+      "sell_sha": "e0b6a0328d8b0128e8e96090d3b0eb2936b8d611faf0e24205def51c00bf888a",
+      "run_id": "alp_v5_r0_discovery_chunk4_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no; observed_elapsed_s=56 (다른 실패 표면 — 시간초과 아닌 '무거래' 조기 종료, 동일 근본원인의 다른 증상)"
+    },
+    {
+      "name": "Study_20250720",
+      "buy_sha": "6f6a959995a0be27562fbbfa3a458ca47e3ceebe8fc5e07a65dea03cc9d1f7ac",
+      "sell_sha": "2ea980b9ddd9913ee834d1388e051a115b5fec622fd83cd26e123b59ad21924d",
+      "run_id": "alp_v5_r0_discovery_chunk4_20260707",
+      "gen_no": 1,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no; observed_elapsed_s=340"
+    },
+    {
+      "name": "Study_20250720_2",
+      "buy_sha": "b3e275d8b15c897673eadf7abbb74ae3103538db9bb2bad178c376524175f51b",
+      "sell_sha": "3534f64df2732fa5560b543005133acae419e7e51dda262dc179834aeac8ecd3",
+      "run_id": "alp_v5_r0_discovery_chunk5_20260707",
+      "gen_no": 0,
+      "discovery_status": "error",
+      "discovery_profit": null,
+      "discovery_mdd": null,
+      "discovery_calmar": null,
+      "corr_with_v4": null,
+      "qualified": false,
+      "exclusion_cause": "engine_arity_mismatch_self_buy_sell_7args",
+      "error_detail": "warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no; observed_elapsed_s=62 (다른 실패 표면 — 시간초과 아닌 '무거래' 조기 종료, 동일 근본원인의 다른 증상)"
+    }
+  ],
+  "root_cause": {
+    "summary": "8개 백테 시도 후보 전원(8/8)이 discovery 백테에 실패했다. 원인은 개별 전략의 수익성/선택도가 아니라, 9개 완전쌍 전원(CSS_V7_MIN_MASTER 포함)이 공유하는 구조적 결함이다: buy/sell 코드가 self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이) / self.Sell(...동일 7인자)라는 레거시 호출부를 쓰는데, 현재 backtest/backengine_base.py의 실제 시그니처는 Buy(self, buy_long=False)/Sell(self, sell_long=False)(0~1개 인자)다. self.Strategy() 호출이 bare except로 감싸여 있어(backengine_base.py:725-730) TypeError가 나면 BackStop(3)으로 조용히 죽고 '백테중지완료' 신호를 보내지 않는다(566-574행 분기) — 그 결과가 300초 시간초과(엔진 복구 생략) 또는 무거래 조기종료('backtest completed without metrics')로 표면화된다.",
+    "static_evidence": "9개 완전쌍 전원(buy+sell 18개 코드) 정규식 감사 결과 self.Buy/self.Sell 호출부 인자 개수 = 7 (전원 동일). 대조로 v4 성공 챔피언 ALP_V4_RR8_12의 buy 코드는 self.Buy() — 0인자로 현재 API와 일치함을 직접 확인.",
+    "documented_precedent": "docs/update_log/2026-07-03_css_v7_root_cause_before_plan_b.md, docs/update_log/2026-07-03_css_v7_plan_b_precheck_timeout_diagnosis.md — 2026-07-03(이번 R0보다 4일 전)에 CSS_V7 비-OPT 25개 조건식 중 21개가 동일 결함으로 Plan C tick smoke에서 timeout을 일으켰음을 이미 확정 진단(엔진/데이터 성능 문제 아님). 이번 R0의 8/8 실패는 그 진단과 완전히 부합하며, 결함 범위가 CSS_V7 계열을 넘어 C_T_900_920/Study 계열까지 포함함을 추가로 확인한 것이다.",
+    "not_a_reimplementation": "이 근본원인 확정은 alpha_lab/ensemble/portfolio.py·robustness.py·adaptive_timing.py 재구현이 아니다 — 그 모듈들은 애초에 호출되지 않았다(CSV가 하나도 생성되지 않아 monthly_pnl_from_csv에 입력할 원자료 자체가 없음). corr_with_v4가 전원 null인 이유가 바로 이것이다."
+  },
+  "engine_runs": {
+    "n_attempted": 8,
+    "n_ok": 0,
+    "n_error": 8,
+    "run_ids": [
+      "alp_v5_r0_discovery_chunk1_20260707",
+      "alp_v5_r0_discovery_chunk1_retry_20260707",
+      "alp_v5_r0_discovery_chunk2_20260707",
+      "alp_v5_r0_discovery_chunk3_20260707",
+      "alp_v5_r0_discovery_chunk4_20260707",
+      "alp_v5_r0_discovery_chunk5_20260707"
+    ]
+  },
+  "selection_rule_applied": {
+    "qualify_rule_sealed": "discovery profit > 0 AND (후보 월별P&L vs v4앙상블 상관) < 0.6",
+    "result": "0/8 qualified — 유효 discovery_profit 측정치가 존재하는 후보가 0건이므로 어떤 후보도 profit>0 조건을 평가할 원자료가 없다.",
+    "select_rule_sealed": "자격자 중 상관 최저(동률 → discovery calmar 최고) 1종",
+    "select_result": "자격자 0 → 선택 대상 없음(N/A)",
+    "kill_rule_sealed": "자격자 0 → 비상관 복합 없음, v4 그대로 머지 권고",
+    "verdict": "kill",
+    "verdict_reason": "8/8 후보가 self.Buy/Sell 7-arg 레거시 API 결함(사전 문서화된 기존 결함, 2026-07-03)으로 discovery 백테를 완주하지 못해 유효 profit/corr 측정치가 전무하다. 이는 v4 등가중 앙상블(상관 0.816)의 실측 성과 미달이 아니라 후보 풀 자체가 실행 불가능했다는 실행 게이트 실패다."
+  },
+  "recommendation_to_orchestrator": [
+    "v5는 R0에서 봉인 kill_rule에 따라 종결한다 — v4 ensemble_a_static_equal을 그대로 배포자산으로 유지 권고(v4_final_verdict.md 결론 불변).",
+    "CSS_V7_MIN/CSS_V7_TICK/C_T_900_920/Study 4개 sealed type 전원이 self.Buy/Sell 7-arg 레거시 결함을 공유한다 — 이는 v5 R0 실행의 실패가 아니라 strategy.db에 남아있는 조건식 생성물 자체의 사전 존재 결함이다(2026-07-03 문서가 CSS_V7만 진단했으나 이번에 C_T_900_920/Study까지 동일 결함임을 추가 확인).",
+    "향후 사이클에서 이 4개 type을 비상관 후보로 재시도하려면 (a) self.Buy()/self.Sell() 정규형으로 조건식을 수리(단, '완전 B+S 쌍 그대로 사용' 제약과 상충하므로 별도 승인/사전등록 필요)하거나 (b) CSS_V7_OPT_* 4개(이미 정규형, 2026-07-03 문서 확인)처럼 정규형인 완전쌍을 strategy.db에서 새로 물색하는 두 경로 중 하나가 선행돼야 한다.",
+    "engine 예산: 8회 사용(봉인 40 중) — 잔여 32회. 시간 비용: prepare 1회당 약 241~287초(64엔진) + 실패 후보당 56~347초, 총 약 40분 소요."
+  ]
+}

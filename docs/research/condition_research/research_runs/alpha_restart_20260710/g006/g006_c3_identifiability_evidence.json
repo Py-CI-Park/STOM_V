@@ -1,0 +1,231 @@
+{
+  "schema": "g006-c3-identifiability-evidence-v1",
+  "schema_version": 1,
+  "experiment_id": "alpha_restart_20260710-g006-c3",
+  "terminal": {
+    "terminal_decision": "UNDETERMINED",
+    "status": "DNF_UNIDENTIFIED",
+    "terminal_phase": "Phase 0",
+    "kill_evaluated": false,
+    "pass_evaluated": false,
+    "formal_candidate_count": 0,
+    "c4_closed": true,
+    "c4_outcome_read_allowed": false
+  },
+  "evidence": {
+    "d1_descriptor": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+      "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+      "size_bytes": 6783855,
+      "rows": 863446,
+      "schema_compact": "code/day/off/t0 + bit_1..bit_39",
+      "key_columns": [
+        "code",
+        "day",
+        "off",
+        "t0"
+      ],
+      "bit_columns": [
+        "bit_1",
+        "bit_2",
+        "bit_3",
+        "bit_4",
+        "bit_5",
+        "bit_6",
+        "bit_7",
+        "bit_8",
+        "bit_9",
+        "bit_10",
+        "bit_11",
+        "bit_12",
+        "bit_13",
+        "bit_14",
+        "bit_15",
+        "bit_16",
+        "bit_17",
+        "bit_18",
+        "bit_19",
+        "bit_20",
+        "bit_21",
+        "bit_22",
+        "bit_23",
+        "bit_24",
+        "bit_25",
+        "bit_26",
+        "bit_27",
+        "bit_28",
+        "bit_29",
+        "bit_30",
+        "bit_31",
+        "bit_32",
+        "bit_33",
+        "bit_34",
+        "bit_35",
+        "bit_36",
+        "bit_37",
+        "bit_38",
+        "bit_39"
+      ],
+      "day_range": {
+        "min": 20220323,
+        "max": 20231228
+      },
+      "off_range": {
+        "min": 11,
+        "max": 1799
+      },
+      "nulls_present": false,
+      "contains_outcome": false,
+      "contains_true_dnf_activation_timestamp": false,
+      "contains_stateful_activation_trace": false
+    },
+    "clause_dictionary_descriptor": {
+      "path": "alpha_lab/clause_lab/clauses.py",
+      "sha256": "def0f5c8750c19c02b52f026461422572641b36730d28e5bdfa97f20deabb7d4",
+      "size_bytes": 21405,
+      "predicate_count": 39,
+      "maps_predicates": true,
+      "authority_scope": "predicate dictionary only",
+      "contains_authoritative_first_activation_trace": false,
+      "contains_activation_timestamp": false
+    },
+    "authority_search": {
+      "reproducible_receipt": {
+        "pre_artifact_head": "81901b3d",
+        "worktree_root": "C:/System_Trading/STOM/STOM_V.wt-alpha-audit",
+        "root_scope": "docs/research/condition_research/research_runs/alpha_restart_20260710",
+        "tool_names": [
+          "functions.find",
+          "functions.search"
+        ],
+        "filename_patterns": [
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*activation*",
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*trace*",
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*dnf*"
+        ],
+        "content_patterns": [
+          "true-DNF",
+          "stateful activation",
+          "activation timestamp",
+          "activation trace",
+          "first activation",
+          "trace authority"
+        ],
+        "protected_db_outcome_scan": false,
+        "protected_db_outcome_scan_note": "No protected DB or outcome scan was performed; search was limited to run-root authority artifacts.",
+        "file_counts_reported": false,
+        "timestamps_reported": false,
+        "result": "no authoritative true-DNF/stateful activation timestamp/trace artifact found",
+        "post_search_g006_artifacts_excluded_from_authority": [
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_identifiability_evidence.json",
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/g006_c3_terminal_report.md",
+          "docs/research/condition_research/research_runs/alpha_restart_20260710/g006/c4_gate_status.json"
+        ],
+        "post_search_exclusion_reason": "These G006 terminal/status artifacts were created after the pre-artifact authority search and are excluded from authority-source status.",
+        "receipt_scope_note": "This inline reproducibility receipt is audit metadata only and does not assert a durable claim, ledger receipt, or authority artifact."
+      },
+      "scope": "docs/research/condition_research/research_runs/alpha_restart_20260710",
+      "filename_patterns_checked": [
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*activation*",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*trace*",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/**/*dnf*"
+      ],
+      "content_terms_checked": [
+        "true-DNF",
+        "stateful activation",
+        "activation timestamp",
+        "activation trace",
+        "first activation",
+        "trace authority"
+      ],
+      "tool_names": [
+        "functions.find",
+        "functions.search"
+      ],
+      "protected_db_outcome_scan": false,
+      "true_dnf_activation_timestamp_or_trace_artifact_found": false,
+      "search_conclusion": "no authoritative true-DNF/stateful activation timestamp/trace artifact found",
+      "authority_exclusion_note": "G006 terminal/status artifacts were created after this pre-artifact authority search and excluded from authority."
+    }
+  },
+  "inference": {
+    "nonidentification_type": "formal_true_dnf_stateful_activation_authority_absent",
+    "status": "DNF_UNIDENTIFIED",
+    "terminal_decision": "UNDETERMINED",
+    "reasoning": [
+      "D1 provides a final bit snapshot keyed by code/day/off/t0, not a formal true-DNF or stateful first-activation trace.",
+      "alpha_lab/clause_lab/clauses.py maps clause predicates but is not an authoritative activation timestamp or transition ledger.",
+      "No run-local filename or content authority establishes true-DNF activation timestamps before C3 candidate generation or C4 outcome/metric work."
+    ],
+    "flat39": false,
+    "off_timestamp": false,
+    "flat39_allowed_as_true_dnf": false,
+    "off_allowed_as_activation_timestamp": false,
+    "motif_generation_executed": false,
+    "candidate_generation_executed": false,
+    "candidate_selection_outcome_reads": 0,
+    "outcome_dependent_motif_selection_executed": false,
+    "c4_outcome_read_executed": false,
+    "c4_outcome_metric_computation_executed": false,
+    "formal_candidate_count": 0,
+    "candidate_table_created": false,
+    "candidate_table_included": false,
+    "c3_motif_mining_executed": false,
+    "c4_metrics_computed": false,
+    "c4_closed": true,
+    "c4_outcome_read_allowed": false,
+    "absence_statement": "This is absence of identification authority, not negative motif evidence.",
+    "dormant_statistical_parameters_scope": "preregistration only; no dormant parameter was executed as a result."
+  },
+  "zero_counters": {
+    "engine": 0,
+    "db_writes": 0,
+    "registration": 0,
+    "promotion": 0,
+    "retry": 0,
+    "rescue": 0,
+    "candidate_selection_outcome_reads": 0,
+    "c4_outcome_reads": 0,
+    "c4_outcome_computations": 0,
+    "motif_mining": 0,
+    "candidate_generation": 0,
+    "formal_candidates": 0,
+    "c4_metrics": 0,
+    "ledger_rows_appended": 0,
+    "receipts_created": 0,
+    "claims_created": 0
+  },
+  "actions_observed": {
+    "engine_run": false,
+    "db_write": false,
+    "registration": false,
+    "promotion": false,
+    "retry": false,
+    "rescue": false,
+    "candidate_selection_outcome_read": false,
+    "outcome_dependent_motif_selection": false,
+    "c4_outcome_read": false,
+    "c4_outcome_computation": false,
+    "motif_generation": false,
+    "fake_receipt": false,
+    "fake_claim": false,
+    "fake_ledger_row": false
+  },
+  "prohibitions_active": {
+    "engine_run": true,
+    "db_write": true,
+    "registration": true,
+    "promotion": true,
+    "retry": true,
+    "rescue": true,
+    "candidate_selection_l3_outcome_h300_read": true,
+    "outcome_dependent_motif_selection": true,
+    "c4_outcome_read": true,
+    "c4_outcome_computation": true,
+    "motif_generation": true,
+    "fake_receipt": true,
+    "fake_claim": true,
+    "fake_ledger_row": true
+  },
+  "statement_scope": "Terminal identifiability evidence and inference only; historical D1 ablation summary/report were provenance context only; no outcome/L3/h300 field was used for C3 candidate generation (none occurred), no outcome-dependent motif selection occurred, and no C4 outcome/metric read or computation occurred."
+}

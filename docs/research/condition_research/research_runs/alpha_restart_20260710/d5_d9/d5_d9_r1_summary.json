@@ -1,0 +1,109 @@
+{
+ "kind": "d5_d9_r1_summary",
+ "generated": "2026-07-12T14:09:21.176969+00:00",
+ "preregistration": "2026-07-12_d5_d9_transition_onset_preregistration.md (§14 봉인)",
+ "days_measured": 437,
+ "consolidate": {
+  "n_parts": 437,
+  "n_onsets": 154027,
+  "n_observable": 116085,
+  "n_new_obs": 6911,
+  "n_reentry_obs": 109174,
+  "n_labeled_obs": 113832,
+  "parity_n_rows": 58656484,
+  "parity_n_match": 58656484,
+  "parity_match_pct": 1.0,
+  "parity_gate_pass": true,
+  "floors": {
+   "new": {
+    "n": 6752,
+    "n_2022": 2979,
+    "n_2023": 3773,
+    "floor_total": 100,
+    "floor_year": 30,
+    "floor_pass": true
+   },
+   "reentry": {
+    "n": 107080,
+    "n_2022": 50889,
+    "n_2023": 56191,
+    "floor_total": 150,
+    "floor_year": 40,
+    "floor_pass": true
+   },
+   "pooled": {
+    "n": 113832,
+    "n_2022": 53868,
+    "n_2023": 59964,
+    "floor_total": 150,
+    "floor_year": 40,
+    "floor_pass": true
+   }
+  },
+  "bank_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\d5_d9\\d9_transition_bank.parquet"
+ },
+ "reproduction_gate": {
+  "spot_days": [],
+  "reproduction_pass": null
+ },
+ "overlap": {
+  "surge_n_keys": 31738,
+  "primary_window": 30,
+  "cap": 0.5,
+  "per_window": {
+   "0": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 3650,
+     "rate": 0.03144247749493905
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 226,
+     "rate": 0.03270149037765881
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 3424,
+     "rate": 0.03136277868356935
+    }
+   },
+   "30": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 73688,
+     "rate": 0.6347762415471422
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 3881,
+     "rate": 0.561568513963247
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 69807,
+     "rate": 0.6394104823492773
+    }
+   },
+   "60": {
+    "pooled": {
+     "n": 116085,
+     "n_overlap": 98645,
+     "rate": 0.8497652582159625
+    },
+    "new": {
+     "n": 6911,
+     "n_overlap": 5540,
+     "rate": 0.8016206048328751
+    },
+    "reentry": {
+     "n": 109174,
+     "n_overlap": 93105,
+     "rate": 0.852812940810083
+    }
+   }
+  },
+  "primary_pooled_rate": 0.6347762415471422,
+  "gate_pass": false
+ }
+}

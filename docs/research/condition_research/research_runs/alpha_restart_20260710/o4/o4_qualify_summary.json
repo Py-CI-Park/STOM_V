@@ -1,0 +1,2625 @@
+{
+ "kind": "o4_qualification",
+ "n_candidates": 158,
+ "n_qualified": 158,
+ "fdr_denominator": 158,
+ "qualified_cids": [
+  "F4@0.22",
+  "F4@0.22+A",
+  "F4@0.22+G@30000",
+  "F4@0.22+G@30000+A",
+  "F4@0.22+G@50000",
+  "F4@0.22+G@50000+A",
+  "F4@0.35",
+  "F4@0.35+A",
+  "F4@0.35+G@30000",
+  "F4@0.35+G@30000+A",
+  "F4@0.35+G@50000",
+  "F4@0.35+G@50000+A",
+  "F4@0.50",
+  "F4@0.50+A",
+  "F4@0.50+G@30000",
+  "F4@0.50+G@30000+A",
+  "F4@0.50+G@50000",
+  "F4@0.50+G@50000+A",
+  "F3",
+  "F3+A",
+  "F3+F4@0.22",
+  "F3+F4@0.22+A",
+  "F3+F4@0.22+G@30000",
+  "F3+F4@0.22+G@30000+A",
+  "F3+F4@0.22+G@50000",
+  "F3+F4@0.22+G@50000+A",
+  "F3+F4@0.35",
+  "F3+F4@0.35+A",
+  "F3+F4@0.35+G@30000",
+  "F3+F4@0.35+G@30000+A",
+  "F3+F4@0.35+G@50000",
+  "F3+F4@0.35+G@50000+A",
+  "F3+F4@0.50",
+  "F3+F4@0.50+A",
+  "F3+F4@0.50+G@30000",
+  "F3+F4@0.50+G@30000+A",
+  "F3+F4@0.50+G@50000",
+  "F3+F4@0.50+G@50000+A",
+  "F2",
+  "F2+A",
+  "F2+F4@0.22",
+  "F2+F4@0.22+A",
+  "F2+F4@0.22+G@30000",
+  "F2+F4@0.22+G@30000+A",
+  "F2+F4@0.22+G@50000",
+  "F2+F4@0.22+G@50000+A",
+  "F2+F4@0.35",
+  "F2+F4@0.35+A",
+  "F2+F4@0.35+G@30000",
+  "F2+F4@0.35+G@30000+A",
+  "F2+F4@0.35+G@50000",
+  "F2+F4@0.35+G@50000+A",
+  "F2+F4@0.50",
+  "F2+F4@0.50+A",
+  "F2+F4@0.50+G@30000",
+  "F2+F4@0.50+G@30000+A",
+  "F2+F4@0.50+G@50000",
+  "F2+F4@0.50+G@50000+A",
+  "F2+F3",
+  "F2+F3+A",
+  "F2+F3+F4@0.22",
+  "F2+F3+F4@0.22+A",
+  "F2+F3+F4@0.22+G@30000",
+  "F2+F3+F4@0.22+G@30000+A",
+  "F2+F3+F4@0.22+G@50000",
+  "F2+F3+F4@0.22+G@50000+A",
+  "F2+F3+F4@0.35",
+  "F2+F3+F4@0.35+A",
+  "F2+F3+F4@0.35+G@30000",
+  "F2+F3+F4@0.35+G@30000+A",
+  "F2+F3+F4@0.35+G@50000",
+  "F2+F3+F4@0.35+G@50000+A",
+  "F2+F3+F4@0.50",
+  "F2+F3+F4@0.50+A",
+  "F2+F3+F4@0.50+G@30000",
+  "F2+F3+F4@0.50+G@30000+A",
+  "F2+F3+F4@0.50+G@50000",
+  "F2+F3+F4@0.50+G@50000+A",
+  "F1",
+  "F1+A",
+  "F1+F4@0.22",
+  "F1+F4@0.22+A",
+  "F1+F4@0.22+G@30000",
+  "F1+F4@0.22+G@30000+A",
+  "F1+F4@0.22+G@50000",
+  "F1+F4@0.22+G@50000+A",
+  "F1+F4@0.35",
+  "F1+F4@0.35+A",
+  "F1+F4@0.35+G@30000",
+  "F1+F4@0.35+G@30000+A",
+  "F1+F4@0.35+G@50000",
+  "F1+F4@0.35+G@50000+A",
+  "F1+F4@0.50",
+  "F1+F4@0.50+A",
+  "F1+F4@0.50+G@30000",
+  "F1+F4@0.50+G@30000+A",
+  "F1+F4@0.50+G@50000",
+  "F1+F4@0.50+G@50000+A",
+  "F1+F3",
+  "F1+F3+A",
+  "F1+F3+F4@0.22",
+  "F1+F3+F4@0.22+A",
+  "F1+F3+F4@0.22+G@30000",
+  "F1+F3+F4@0.22+G@30000+A",
+  "F1+F3+F4@0.22+G@50000",
+  "F1+F3+F4@0.22+G@50000+A",
+  "F1+F3+F4@0.35",
+  "F1+F3+F4@0.35+A",
+  "F1+F3+F4@0.35+G@30000",
+  "F1+F3+F4@0.35+G@30000+A",
+  "F1+F3+F4@0.35+G@50000",
+  "F1+F3+F4@0.35+G@50000+A",
+  "F1+F3+F4@0.50",
+  "F1+F3+F4@0.50+A",
+  "F1+F3+F4@0.50+G@30000",
+  "F1+F3+F4@0.50+G@30000+A",
+  "F1+F3+F4@0.50+G@50000",
+  "F1+F3+F4@0.50+G@50000+A",
+  "F1+F2",
+  "F1+F2+A",
+  "F1+F2+F4@0.22",
+  "F1+F2+F4@0.22+A",
+  "F1+F2+F4@0.22+G@30000",
+  "F1+F2+F4@0.22+G@30000+A",
+  "F1+F2+F4@0.22+G@50000",
+  "F1+F2+F4@0.22+G@50000+A",
+  "F1+F2+F4@0.35",
+  "F1+F2+F4@0.35+A",
+  "F1+F2+F4@0.35+G@30000",
+  "F1+F2+F4@0.35+G@30000+A",
+  "F1+F2+F4@0.35+G@50000",
+  "F1+F2+F4@0.35+G@50000+A",
+  "F1+F2+F4@0.50",
+  "F1+F2+F4@0.50+A",
+  "F1+F2+F4@0.50+G@30000",
+  "F1+F2+F4@0.50+G@30000+A",
+  "F1+F2+F4@0.50+G@50000",
+  "F1+F2+F4@0.50+G@50000+A",
+  "F1+F2+F3",
+  "F1+F2+F3+A",
+  "F1+F2+F3+F4@0.22",
+  "F1+F2+F3+F4@0.22+A",
+  "F1+F2+F3+F4@0.22+G@30000",
+  "F1+F2+F3+F4@0.22+G@30000+A",
+  "F1+F2+F3+F4@0.22+G@50000",
+  "F1+F2+F3+F4@0.22+G@50000+A",
+  "F1+F2+F3+F4@0.35",
+  "F1+F2+F3+F4@0.35+A",
+  "F1+F2+F3+F4@0.35+G@30000",
+  "F1+F2+F3+F4@0.35+G@30000+A",
+  "F1+F2+F3+F4@0.35+G@50000",
+  "F1+F2+F3+F4@0.35+G@50000+A",
+  "F1+F2+F3+F4@0.50",
+  "F1+F2+F3+F4@0.50+A",
+  "F1+F2+F3+F4@0.50+G@30000",
+  "F1+F2+F3+F4@0.50+G@30000+A",
+  "F1+F2+F3+F4@0.50+G@50000",
+  "F1+F2+F3+F4@0.50+G@50000+A"
+ ],
+ "floor_n": 2000,
+ "floor_year": 400,
+ "per_candidate": {
+  "F4@0.22": {
+   "cid": "F4@0.22",
+   "family": "F4",
+   "bits": [
+    "o4_qty_022"
+   ],
+   "n_fire": 51508,
+   "year_counts": {
+    "2022": 12783,
+    "2023": 38725
+   },
+   "floor_pass": true
+  },
+  "F4@0.22+A": {
+   "cid": "F4@0.22+A",
+   "family": "A|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 41128,
+   "year_counts": {
+    "2022": 10224,
+    "2023": 30904
+   },
+   "floor_pass": true
+  },
+  "F4@0.22+G@30000": {
+   "cid": "F4@0.22+G@30000",
+   "family": "F4|G",
+   "bits": [
+    "bit_16",
+    "o4_qty_022"
+   ],
+   "n_fire": 37581,
+   "year_counts": {
+    "2022": 8990,
+    "2023": 28591
+   },
+   "floor_pass": true
+  },
+  "F4@0.22+G@30000+A": {
+   "cid": "F4@0.22+G@30000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 28723,
+   "year_counts": {
+    "2022": 6873,
+    "2023": 21850
+   },
+   "floor_pass": true
+  },
+  "F4@0.22+G@50000": {
+   "cid": "F4@0.22+G@50000",
+   "family": "F4|G",
+   "bits": [
+    "bit_17",
+    "o4_qty_022"
+   ],
+   "n_fire": 42704,
+   "year_counts": {
+    "2022": 10520,
+    "2023": 32184
+   },
+   "floor_pass": true
+  },
+  "F4@0.22+G@50000+A": {
+   "cid": "F4@0.22+G@50000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 33225,
+   "year_counts": {
+    "2022": 8165,
+    "2023": 25060
+   },
+   "floor_pass": true
+  },
+  "F4@0.35": {
+   "cid": "F4@0.35",
+   "family": "F4",
+   "bits": [
+    "o4_qty_035"
+   ],
+   "n_fire": 28387,
+   "year_counts": {
+    "2022": 6394,
+    "2023": 21993
+   },
+   "floor_pass": true
+  },
+  "F4@0.35+A": {
+   "cid": "F4@0.35+A",
+   "family": "A|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 22199,
+   "year_counts": {
+    "2022": 4992,
+    "2023": 17207
+   },
+   "floor_pass": true
+  },
+  "F4@0.35+G@30000": {
+   "cid": "F4@0.35+G@30000",
+   "family": "F4|G",
+   "bits": [
+    "bit_16",
+    "o4_qty_035"
+   ],
+   "n_fire": 21352,
+   "year_counts": {
+    "2022": 4609,
+    "2023": 16743
+   },
+   "floor_pass": true
+  },
+  "F4@0.35+G@30000+A": {
+   "cid": "F4@0.35+G@30000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 16083,
+   "year_counts": {
+    "2022": 3463,
+    "2023": 12620
+   },
+   "floor_pass": true
+  },
+  "F4@0.35+G@50000": {
+   "cid": "F4@0.35+G@50000",
+   "family": "F4|G",
+   "bits": [
+    "bit_17",
+    "o4_qty_035"
+   ],
+   "n_fire": 23864,
+   "year_counts": {
+    "2022": 5334,
+    "2023": 18530
+   },
+   "floor_pass": true
+  },
+  "F4@0.35+G@50000+A": {
+   "cid": "F4@0.35+G@50000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 18226,
+   "year_counts": {
+    "2022": 4047,
+    "2023": 14179
+   },
+   "floor_pass": true
+  },
+  "F4@0.50": {
+   "cid": "F4@0.50",
+   "family": "F4",
+   "bits": [
+    "o4_qty_050"
+   ],
+   "n_fire": 16702,
+   "year_counts": {
+    "2022": 3488,
+    "2023": 13214
+   },
+   "floor_pass": true
+  },
+  "F4@0.50+A": {
+   "cid": "F4@0.50+A",
+   "family": "A|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 12879,
+   "year_counts": {
+    "2022": 2683,
+    "2023": 10196
+   },
+   "floor_pass": true
+  },
+  "F4@0.50+G@30000": {
+   "cid": "F4@0.50+G@30000",
+   "family": "F4|G",
+   "bits": [
+    "bit_16",
+    "o4_qty_050"
+   ],
+   "n_fire": 12906,
+   "year_counts": {
+    "2022": 2537,
+    "2023": 10369
+   },
+   "floor_pass": true
+  },
+  "F4@0.50+G@30000+A": {
+   "cid": "F4@0.50+G@30000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 9621,
+   "year_counts": {
+    "2022": 1885,
+    "2023": 7736
+   },
+   "floor_pass": true
+  },
+  "F4@0.50+G@50000": {
+   "cid": "F4@0.50+G@50000",
+   "family": "F4|G",
+   "bits": [
+    "bit_17",
+    "o4_qty_050"
+   ],
+   "n_fire": 14208,
+   "year_counts": {
+    "2022": 2916,
+    "2023": 11292
+   },
+   "floor_pass": true
+  },
+  "F4@0.50+G@50000+A": {
+   "cid": "F4@0.50+G@50000+A",
+   "family": "A|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 10717,
+   "year_counts": {
+    "2022": 2178,
+    "2023": 8539
+   },
+   "floor_pass": true
+  },
+  "F3": {
+   "cid": "F3",
+   "family": "F3",
+   "bits": [
+    "bit_10"
+   ],
+   "n_fire": 860322,
+   "year_counts": {
+    "2022": 361878,
+    "2023": 498444
+   },
+   "floor_pass": true
+  },
+  "F3+A": {
+   "cid": "F3+A",
+   "family": "A|F3",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8"
+   ],
+   "n_fire": 766359,
+   "year_counts": {
+    "2022": 324712,
+    "2023": 441647
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22": {
+   "cid": "F3+F4@0.22",
+   "family": "F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_qty_022"
+   ],
+   "n_fire": 51029,
+   "year_counts": {
+    "2022": 12585,
+    "2023": 38444
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22+A": {
+   "cid": "F3+F4@0.22+A",
+   "family": "A|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 40718,
+   "year_counts": {
+    "2022": 10056,
+    "2023": 30662
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22+G@30000": {
+   "cid": "F3+F4@0.22+G@30000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_qty_022"
+   ],
+   "n_fire": 37180,
+   "year_counts": {
+    "2022": 8819,
+    "2023": 28361
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22+G@30000+A": {
+   "cid": "F3+F4@0.22+G@30000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 28381,
+   "year_counts": {
+    "2022": 6730,
+    "2023": 21651
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22+G@50000": {
+   "cid": "F3+F4@0.22+G@50000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_qty_022"
+   ],
+   "n_fire": 42265,
+   "year_counts": {
+    "2022": 10339,
+    "2023": 31926
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.22+G@50000+A": {
+   "cid": "F3+F4@0.22+G@50000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 32849,
+   "year_counts": {
+    "2022": 8012,
+    "2023": 24837
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35": {
+   "cid": "F3+F4@0.35",
+   "family": "F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_qty_035"
+   ],
+   "n_fire": 28120,
+   "year_counts": {
+    "2022": 6297,
+    "2023": 21823
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35+A": {
+   "cid": "F3+F4@0.35+A",
+   "family": "A|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 21975,
+   "year_counts": {
+    "2022": 4911,
+    "2023": 17064
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35+G@30000": {
+   "cid": "F3+F4@0.35+G@30000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_qty_035"
+   ],
+   "n_fire": 21130,
+   "year_counts": {
+    "2022": 4526,
+    "2023": 16604
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35+G@30000+A": {
+   "cid": "F3+F4@0.35+G@30000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 15900,
+   "year_counts": {
+    "2022": 3395,
+    "2023": 12505
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35+G@50000": {
+   "cid": "F3+F4@0.35+G@50000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_qty_035"
+   ],
+   "n_fire": 23618,
+   "year_counts": {
+    "2022": 5245,
+    "2023": 18373
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.35+G@50000+A": {
+   "cid": "F3+F4@0.35+G@50000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 18022,
+   "year_counts": {
+    "2022": 3973,
+    "2023": 14049
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50": {
+   "cid": "F3+F4@0.50",
+   "family": "F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_qty_050"
+   ],
+   "n_fire": 16548,
+   "year_counts": {
+    "2022": 3437,
+    "2023": 13111
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50+A": {
+   "cid": "F3+F4@0.50+A",
+   "family": "A|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 12751,
+   "year_counts": {
+    "2022": 2639,
+    "2023": 10112
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50+G@30000": {
+   "cid": "F3+F4@0.50+G@30000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_qty_050"
+   ],
+   "n_fire": 12781,
+   "year_counts": {
+    "2022": 2495,
+    "2023": 10286
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50+G@30000+A": {
+   "cid": "F3+F4@0.50+G@30000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 9520,
+   "year_counts": {
+    "2022": 1850,
+    "2023": 7670
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50+G@50000": {
+   "cid": "F3+F4@0.50+G@50000",
+   "family": "F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_qty_050"
+   ],
+   "n_fire": 14066,
+   "year_counts": {
+    "2022": 2869,
+    "2023": 11197
+   },
+   "floor_pass": true
+  },
+  "F3+F4@0.50+G@50000+A": {
+   "cid": "F3+F4@0.50+G@50000+A",
+   "family": "A|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 10601,
+   "year_counts": {
+    "2022": 2138,
+    "2023": 8463
+   },
+   "floor_pass": true
+  },
+  "F2": {
+   "cid": "F2",
+   "family": "F2",
+   "bits": [
+    "bit_4"
+   ],
+   "n_fire": 851556,
+   "year_counts": {
+    "2022": 357116,
+    "2023": 494440
+   },
+   "floor_pass": true
+  },
+  "F2+A": {
+   "cid": "F2+A",
+   "family": "A|F2",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8"
+   ],
+   "n_fire": 758780,
+   "year_counts": {
+    "2022": 320586,
+    "2023": 438194
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22": {
+   "cid": "F2+F4@0.22",
+   "family": "F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 51242,
+   "year_counts": {
+    "2022": 12684,
+    "2023": 38558
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22+A": {
+   "cid": "F2+F4@0.22+A",
+   "family": "A|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 40912,
+   "year_counts": {
+    "2022": 10143,
+    "2023": 30769
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22+G@30000": {
+   "cid": "F2+F4@0.22+G@30000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 37373,
+   "year_counts": {
+    "2022": 8922,
+    "2023": 28451
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22+G@30000+A": {
+   "cid": "F2+F4@0.22+G@30000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 28563,
+   "year_counts": {
+    "2022": 6821,
+    "2023": 21742
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22+G@50000": {
+   "cid": "F2+F4@0.22+G@50000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 42483,
+   "year_counts": {
+    "2022": 10445,
+    "2023": 32038
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.22+G@50000+A": {
+   "cid": "F2+F4@0.22+G@50000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 33052,
+   "year_counts": {
+    "2022": 8106,
+    "2023": 24946
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35": {
+   "cid": "F2+F4@0.35",
+   "family": "F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 28265,
+   "year_counts": {
+    "2022": 6353,
+    "2023": 21912
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35+A": {
+   "cid": "F2+F4@0.35+A",
+   "family": "A|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 22104,
+   "year_counts": {
+    "2022": 4960,
+    "2023": 17144
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35+G@30000": {
+   "cid": "F2+F4@0.35+G@30000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 21256,
+   "year_counts": {
+    "2022": 4581,
+    "2023": 16675
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35+G@30000+A": {
+   "cid": "F2+F4@0.35+G@30000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 16013,
+   "year_counts": {
+    "2022": 3443,
+    "2023": 12570
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35+G@50000": {
+   "cid": "F2+F4@0.35+G@50000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 23765,
+   "year_counts": {
+    "2022": 5304,
+    "2023": 18461
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.35+G@50000+A": {
+   "cid": "F2+F4@0.35+G@50000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 18153,
+   "year_counts": {
+    "2022": 4025,
+    "2023": 14128
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50": {
+   "cid": "F2+F4@0.50",
+   "family": "F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 16632,
+   "year_counts": {
+    "2022": 3464,
+    "2023": 13168
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50+A": {
+   "cid": "F2+F4@0.50+A",
+   "family": "A|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 12823,
+   "year_counts": {
+    "2022": 2665,
+    "2023": 10158
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50+G@30000": {
+   "cid": "F2+F4@0.50+G@30000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 12852,
+   "year_counts": {
+    "2022": 2520,
+    "2023": 10332
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50+G@30000+A": {
+   "cid": "F2+F4@0.50+G@30000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 9580,
+   "year_counts": {
+    "2022": 1873,
+    "2023": 7707
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50+G@50000": {
+   "cid": "F2+F4@0.50+G@50000",
+   "family": "F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 14151,
+   "year_counts": {
+    "2022": 2897,
+    "2023": 11254
+   },
+   "floor_pass": true
+  },
+  "F2+F4@0.50+G@50000+A": {
+   "cid": "F2+F4@0.50+G@50000+A",
+   "family": "A|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 10673,
+   "year_counts": {
+    "2022": 2164,
+    "2023": 8509
+   },
+   "floor_pass": true
+  },
+  "F2+F3": {
+   "cid": "F2+F3",
+   "family": "F2|F3",
+   "bits": [
+    "bit_10",
+    "bit_4"
+   ],
+   "n_fire": 848550,
+   "year_counts": {
+    "2022": 355558,
+    "2023": 492992
+   },
+   "floor_pass": true
+  },
+  "F2+F3+A": {
+   "cid": "F2+F3+A",
+   "family": "A|F2|F3",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8"
+   ],
+   "n_fire": 756096,
+   "year_counts": {
+    "2022": 319202,
+    "2023": 436894
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22": {
+   "cid": "F2+F3+F4@0.22",
+   "family": "F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 50772,
+   "year_counts": {
+    "2022": 12493,
+    "2023": 38279
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22+A": {
+   "cid": "F2+F3+F4@0.22+A",
+   "family": "A|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 40510,
+   "year_counts": {
+    "2022": 9981,
+    "2023": 30529
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22+G@30000": {
+   "cid": "F2+F3+F4@0.22+G@30000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 36980,
+   "year_counts": {
+    "2022": 8757,
+    "2023": 28223
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22+G@30000+A": {
+   "cid": "F2+F3+F4@0.22+G@30000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 28228,
+   "year_counts": {
+    "2022": 6683,
+    "2023": 21545
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22+G@50000": {
+   "cid": "F2+F3+F4@0.22+G@50000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_qty_022"
+   ],
+   "n_fire": 42052,
+   "year_counts": {
+    "2022": 10270,
+    "2023": 31782
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.22+G@50000+A": {
+   "cid": "F2+F3+F4@0.22+G@50000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_022"
+   ],
+   "n_fire": 32683,
+   "year_counts": {
+    "2022": 7958,
+    "2023": 24725
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35": {
+   "cid": "F2+F3+F4@0.35",
+   "family": "F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 28003,
+   "year_counts": {
+    "2022": 6260,
+    "2023": 21743
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35+A": {
+   "cid": "F2+F3+F4@0.35+A",
+   "family": "A|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 21885,
+   "year_counts": {
+    "2022": 4883,
+    "2023": 17002
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35+G@30000": {
+   "cid": "F2+F3+F4@0.35+G@30000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 21038,
+   "year_counts": {
+    "2022": 4501,
+    "2023": 16537
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35+G@30000+A": {
+   "cid": "F2+F3+F4@0.35+G@30000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 15834,
+   "year_counts": {
+    "2022": 3378,
+    "2023": 12456
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35+G@50000": {
+   "cid": "F2+F3+F4@0.35+G@50000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_qty_035"
+   ],
+   "n_fire": 23523,
+   "year_counts": {
+    "2022": 5218,
+    "2023": 18305
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.35+G@50000+A": {
+   "cid": "F2+F3+F4@0.35+G@50000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_035"
+   ],
+   "n_fire": 17953,
+   "year_counts": {
+    "2022": 3954,
+    "2023": 13999
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50": {
+   "cid": "F2+F3+F4@0.50",
+   "family": "F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 16480,
+   "year_counts": {
+    "2022": 3415,
+    "2023": 13065
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50+A": {
+   "cid": "F2+F3+F4@0.50+A",
+   "family": "A|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 12697,
+   "year_counts": {
+    "2022": 2623,
+    "2023": 10074
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50+G@30000": {
+   "cid": "F2+F3+F4@0.50+G@30000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 12729,
+   "year_counts": {
+    "2022": 2480,
+    "2023": 10249
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50+G@30000+A": {
+   "cid": "F2+F3+F4@0.50+G@30000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 9481,
+   "year_counts": {
+    "2022": 1840,
+    "2023": 7641
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50+G@50000": {
+   "cid": "F2+F3+F4@0.50+G@50000",
+   "family": "F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_qty_050"
+   ],
+   "n_fire": 14011,
+   "year_counts": {
+    "2022": 2852,
+    "2023": 11159
+   },
+   "floor_pass": true
+  },
+  "F2+F3+F4@0.50+G@50000+A": {
+   "cid": "F2+F3+F4@0.50+G@50000+A",
+   "family": "A|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_qty_050"
+   ],
+   "n_fire": 10559,
+   "year_counts": {
+    "2022": 2126,
+    "2023": 8433
+   },
+   "floor_pass": true
+  },
+  "F1": {
+   "cid": "F1",
+   "family": "F1",
+   "bits": [
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 373834,
+   "year_counts": {
+    "2022": 157097,
+    "2023": 216737
+   },
+   "floor_pass": true
+  },
+  "F1+A": {
+   "cid": "F1+A",
+   "family": "A|F1",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 336742,
+   "year_counts": {
+    "2022": 142562,
+    "2023": 194180
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22": {
+   "cid": "F1+F4@0.22",
+   "family": "F1|F4",
+   "bits": [
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 47183,
+   "year_counts": {
+    "2022": 11897,
+    "2023": 35286
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22+A": {
+   "cid": "F1+F4@0.22+A",
+   "family": "A|F1|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 38017,
+   "year_counts": {
+    "2022": 9591,
+    "2023": 28426
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22+G@30000": {
+   "cid": "F1+F4@0.22+G@30000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 34011,
+   "year_counts": {
+    "2022": 8301,
+    "2023": 25710
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22+G@30000+A": {
+   "cid": "F1+F4@0.22+G@30000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 26215,
+   "year_counts": {
+    "2022": 6388,
+    "2023": 19827
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22+G@50000": {
+   "cid": "F1+F4@0.22+G@50000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 38857,
+   "year_counts": {
+    "2022": 9739,
+    "2023": 29118
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.22+G@50000+A": {
+   "cid": "F1+F4@0.22+G@50000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 30492,
+   "year_counts": {
+    "2022": 7614,
+    "2023": 22878
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35": {
+   "cid": "F1+F4@0.35",
+   "family": "F1|F4",
+   "bits": [
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 26561,
+   "year_counts": {
+    "2022": 6072,
+    "2023": 20489
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35+A": {
+   "cid": "F1+F4@0.35+A",
+   "family": "A|F1|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 20924,
+   "year_counts": {
+    "2022": 4772,
+    "2023": 16152
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35+G@30000": {
+   "cid": "F1+F4@0.35+G@30000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 19816,
+   "year_counts": {
+    "2022": 4356,
+    "2023": 15460
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35+G@30000+A": {
+   "cid": "F1+F4@0.35+G@30000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 15028,
+   "year_counts": {
+    "2022": 3289,
+    "2023": 11739
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35+G@50000": {
+   "cid": "F1+F4@0.35+G@50000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 22229,
+   "year_counts": {
+    "2022": 5046,
+    "2023": 17183
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.35+G@50000+A": {
+   "cid": "F1+F4@0.35+G@50000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 17098,
+   "year_counts": {
+    "2022": 3852,
+    "2023": 13246
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50": {
+   "cid": "F1+F4@0.50",
+   "family": "F1|F4",
+   "bits": [
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 15776,
+   "year_counts": {
+    "2022": 3323,
+    "2023": 12453
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50+A": {
+   "cid": "F1+F4@0.50+A",
+   "family": "A|F1|F4",
+   "bits": [
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12234,
+   "year_counts": {
+    "2022": 2570,
+    "2023": 9664
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50+G@30000": {
+   "cid": "F1+F4@0.50+G@30000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12102,
+   "year_counts": {
+    "2022": 2403,
+    "2023": 9699
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50+G@30000+A": {
+   "cid": "F1+F4@0.50+G@30000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 9065,
+   "year_counts": {
+    "2022": 1790,
+    "2023": 7275
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50+G@50000": {
+   "cid": "F1+F4@0.50+G@50000",
+   "family": "F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 13360,
+   "year_counts": {
+    "2022": 2762,
+    "2023": 10598
+   },
+   "floor_pass": true
+  },
+  "F1+F4@0.50+G@50000+A": {
+   "cid": "F1+F4@0.50+G@50000+A",
+   "family": "A|F1|F4|G",
+   "bits": [
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 10131,
+   "year_counts": {
+    "2022": 2073,
+    "2023": 8058
+   },
+   "floor_pass": true
+  },
+  "F1+F3": {
+   "cid": "F1+F3",
+   "family": "F1|F3",
+   "bits": [
+    "bit_10",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 371780,
+   "year_counts": {
+    "2022": 156068,
+    "2023": 215712
+   },
+   "floor_pass": true
+  },
+  "F1+F3+A": {
+   "cid": "F1+F3+A",
+   "family": "A|F1|F3",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 334924,
+   "year_counts": {
+    "2022": 141650,
+    "2023": 193274
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22": {
+   "cid": "F1+F3+F4@0.22",
+   "family": "F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 46738,
+   "year_counts": {
+    "2022": 11710,
+    "2023": 35028
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22+A": {
+   "cid": "F1+F3+F4@0.22+A",
+   "family": "A|F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 37631,
+   "year_counts": {
+    "2022": 9429,
+    "2023": 28202
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22+G@30000": {
+   "cid": "F1+F3+F4@0.22+G@30000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 33644,
+   "year_counts": {
+    "2022": 8141,
+    "2023": 25503
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22+G@30000+A": {
+   "cid": "F1+F3+F4@0.22+G@30000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 25897,
+   "year_counts": {
+    "2022": 6251,
+    "2023": 19646
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22+G@50000": {
+   "cid": "F1+F3+F4@0.22+G@50000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 38452,
+   "year_counts": {
+    "2022": 9569,
+    "2023": 28883
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.22+G@50000+A": {
+   "cid": "F1+F3+F4@0.22+G@50000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 30140,
+   "year_counts": {
+    "2022": 7467,
+    "2023": 22673
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35": {
+   "cid": "F1+F3+F4@0.35",
+   "family": "F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 26312,
+   "year_counts": {
+    "2022": 5980,
+    "2023": 20332
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35+A": {
+   "cid": "F1+F3+F4@0.35+A",
+   "family": "A|F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 20713,
+   "year_counts": {
+    "2022": 4693,
+    "2023": 16020
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35+G@30000": {
+   "cid": "F1+F3+F4@0.35+G@30000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 19612,
+   "year_counts": {
+    "2022": 4278,
+    "2023": 15334
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35+G@30000+A": {
+   "cid": "F1+F3+F4@0.35+G@30000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 14858,
+   "year_counts": {
+    "2022": 3223,
+    "2023": 11635
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35+G@50000": {
+   "cid": "F1+F3+F4@0.35+G@50000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 22001,
+   "year_counts": {
+    "2022": 4962,
+    "2023": 17039
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.35+G@50000+A": {
+   "cid": "F1+F3+F4@0.35+G@50000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 16907,
+   "year_counts": {
+    "2022": 3780,
+    "2023": 13127
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50": {
+   "cid": "F1+F3+F4@0.50",
+   "family": "F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 15634,
+   "year_counts": {
+    "2022": 3275,
+    "2023": 12359
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50+A": {
+   "cid": "F1+F3+F4@0.50+A",
+   "family": "A|F1|F3|F4",
+   "bits": [
+    "bit_10",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12116,
+   "year_counts": {
+    "2022": 2528,
+    "2023": 9588
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50+G@30000": {
+   "cid": "F1+F3+F4@0.50+G@30000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 11989,
+   "year_counts": {
+    "2022": 2364,
+    "2023": 9625
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50+G@30000+A": {
+   "cid": "F1+F3+F4@0.50+G@30000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 8974,
+   "year_counts": {
+    "2022": 1757,
+    "2023": 7217
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50+G@50000": {
+   "cid": "F1+F3+F4@0.50+G@50000",
+   "family": "F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 13230,
+   "year_counts": {
+    "2022": 2718,
+    "2023": 10512
+   },
+   "floor_pass": true
+  },
+  "F1+F3+F4@0.50+G@50000+A": {
+   "cid": "F1+F3+F4@0.50+G@50000+A",
+   "family": "A|F1|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 10025,
+   "year_counts": {
+    "2022": 2035,
+    "2023": 7990
+   },
+   "floor_pass": true
+  },
+  "F1+F2": {
+   "cid": "F1+F2",
+   "family": "F1|F2",
+   "bits": [
+    "bit_4",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 368777,
+   "year_counts": {
+    "2022": 154338,
+    "2023": 214439
+   },
+   "floor_pass": true
+  },
+  "F1+F2+A": {
+   "cid": "F1+F2+A",
+   "family": "A|F1|F2",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 332247,
+   "year_counts": {
+    "2022": 140113,
+    "2023": 192134
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22": {
+   "cid": "F1+F2+F4@0.22",
+   "family": "F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 46926,
+   "year_counts": {
+    "2022": 11801,
+    "2023": 35125
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22+A": {
+   "cid": "F1+F2+F4@0.22+A",
+   "family": "A|F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 37809,
+   "year_counts": {
+    "2022": 9512,
+    "2023": 28297
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22+G@30000": {
+   "cid": "F1+F2+F4@0.22+G@30000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 33809,
+   "year_counts": {
+    "2022": 8235,
+    "2023": 25574
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22+G@30000+A": {
+   "cid": "F1+F2+F4@0.22+G@30000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 26061,
+   "year_counts": {
+    "2022": 6338,
+    "2023": 19723
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22+G@50000": {
+   "cid": "F1+F2+F4@0.22+G@50000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 38642,
+   "year_counts": {
+    "2022": 9666,
+    "2023": 28976
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.22+G@50000+A": {
+   "cid": "F1+F2+F4@0.22+G@50000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 30325,
+   "year_counts": {
+    "2022": 7557,
+    "2023": 22768
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35": {
+   "cid": "F1+F2+F4@0.35",
+   "family": "F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 26441,
+   "year_counts": {
+    "2022": 6031,
+    "2023": 20410
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35+A": {
+   "cid": "F1+F2+F4@0.35+A",
+   "family": "A|F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 20831,
+   "year_counts": {
+    "2022": 4740,
+    "2023": 16091
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35+G@30000": {
+   "cid": "F1+F2+F4@0.35+G@30000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 19722,
+   "year_counts": {
+    "2022": 4328,
+    "2023": 15394
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35+G@30000+A": {
+   "cid": "F1+F2+F4@0.35+G@30000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 14960,
+   "year_counts": {
+    "2022": 3269,
+    "2023": 11691
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35+G@50000": {
+   "cid": "F1+F2+F4@0.35+G@50000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 22132,
+   "year_counts": {
+    "2022": 5016,
+    "2023": 17116
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.35+G@50000+A": {
+   "cid": "F1+F2+F4@0.35+G@50000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 17027,
+   "year_counts": {
+    "2022": 3830,
+    "2023": 13197
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50": {
+   "cid": "F1+F2+F4@0.50",
+   "family": "F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 15707,
+   "year_counts": {
+    "2022": 3299,
+    "2023": 12408
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50+A": {
+   "cid": "F1+F2+F4@0.50+A",
+   "family": "A|F1|F2|F4",
+   "bits": [
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12179,
+   "year_counts": {
+    "2022": 2552,
+    "2023": 9627
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50+G@30000": {
+   "cid": "F1+F2+F4@0.50+G@30000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12049,
+   "year_counts": {
+    "2022": 2386,
+    "2023": 9663
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50+G@30000+A": {
+   "cid": "F1+F2+F4@0.50+G@30000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 9025,
+   "year_counts": {
+    "2022": 1778,
+    "2023": 7247
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50+G@50000": {
+   "cid": "F1+F2+F4@0.50+G@50000",
+   "family": "F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 13304,
+   "year_counts": {
+    "2022": 2743,
+    "2023": 10561
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F4@0.50+G@50000+A": {
+   "cid": "F1+F2+F4@0.50+G@50000+A",
+   "family": "A|F1|F2|F4|G",
+   "bits": [
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 10088,
+   "year_counts": {
+    "2022": 2059,
+    "2023": 8029
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3": {
+   "cid": "F1+F2+F3",
+   "family": "F1|F2|F3",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 366792,
+   "year_counts": {
+    "2022": 153352,
+    "2023": 213440
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+A": {
+   "cid": "F1+F2+F3+A",
+   "family": "A|F1|F2|F3",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1"
+   ],
+   "n_fire": 330489,
+   "year_counts": {
+    "2022": 139239,
+    "2023": 191250
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22": {
+   "cid": "F1+F2+F3+F4@0.22",
+   "family": "F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 46490,
+   "year_counts": {
+    "2022": 11621,
+    "2023": 34869
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22+A": {
+   "cid": "F1+F2+F3+F4@0.22+A",
+   "family": "A|F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 37431,
+   "year_counts": {
+    "2022": 9356,
+    "2023": 28075
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22+G@30000": {
+   "cid": "F1+F2+F3+F4@0.22+G@30000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 33450,
+   "year_counts": {
+    "2022": 8081,
+    "2023": 25369
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22+G@30000+A": {
+   "cid": "F1+F2+F3+F4@0.22+G@30000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 25750,
+   "year_counts": {
+    "2022": 6206,
+    "2023": 19544
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22+G@50000": {
+   "cid": "F1+F2+F3+F4@0.22+G@50000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 38245,
+   "year_counts": {
+    "2022": 9502,
+    "2023": 28743
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.22+G@50000+A": {
+   "cid": "F1+F2+F3+F4@0.22+G@50000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_022"
+   ],
+   "n_fire": 29980,
+   "year_counts": {
+    "2022": 7415,
+    "2023": 22565
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35": {
+   "cid": "F1+F2+F3+F4@0.35",
+   "family": "F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 26197,
+   "year_counts": {
+    "2022": 5943,
+    "2023": 20254
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35+A": {
+   "cid": "F1+F2+F3+F4@0.35+A",
+   "family": "A|F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 20625,
+   "year_counts": {
+    "2022": 4665,
+    "2023": 15960
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35+G@30000": {
+   "cid": "F1+F2+F3+F4@0.35+G@30000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 19522,
+   "year_counts": {
+    "2022": 4253,
+    "2023": 15269
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35+G@30000+A": {
+   "cid": "F1+F2+F3+F4@0.35+G@30000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 14794,
+   "year_counts": {
+    "2022": 3206,
+    "2023": 11588
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35+G@50000": {
+   "cid": "F1+F2+F3+F4@0.35+G@50000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 21908,
+   "year_counts": {
+    "2022": 4935,
+    "2023": 16973
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.35+G@50000+A": {
+   "cid": "F1+F2+F3+F4@0.35+G@50000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_035"
+   ],
+   "n_fire": 16840,
+   "year_counts": {
+    "2022": 3761,
+    "2023": 13079
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50": {
+   "cid": "F1+F2+F3+F4@0.50",
+   "family": "F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 15567,
+   "year_counts": {
+    "2022": 3253,
+    "2023": 12314
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50+A": {
+   "cid": "F1+F2+F3+F4@0.50+A",
+   "family": "A|F1|F2|F3|F4",
+   "bits": [
+    "bit_10",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 12063,
+   "year_counts": {
+    "2022": 2512,
+    "2023": 9551
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50+G@30000": {
+   "cid": "F1+F2+F3+F4@0.50+G@30000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 11938,
+   "year_counts": {
+    "2022": 2349,
+    "2023": 9589
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50+G@30000+A": {
+   "cid": "F1+F2+F3+F4@0.50+G@30000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_16",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 8936,
+   "year_counts": {
+    "2022": 1747,
+    "2023": 7189
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50+G@50000": {
+   "cid": "F1+F2+F3+F4@0.50+G@50000",
+   "family": "F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 13176,
+   "year_counts": {
+    "2022": 2701,
+    "2023": 10475
+   },
+   "floor_pass": true
+  },
+  "F1+F2+F3+F4@0.50+G@50000+A": {
+   "cid": "F1+F2+F3+F4@0.50+G@50000+A",
+   "family": "A|F1|F2|F3|F4|G",
+   "bits": [
+    "bit_10",
+    "bit_17",
+    "bit_4",
+    "o4_avoid_gap_lt8",
+    "o4_netbuy_gt1",
+    "o4_qty_050"
+   ],
+   "n_fire": 9984,
+   "year_counts": {
+    "2022": 2023,
+    "2023": 7961
+   },
+   "floor_pass": true
+  }
+ }
+}

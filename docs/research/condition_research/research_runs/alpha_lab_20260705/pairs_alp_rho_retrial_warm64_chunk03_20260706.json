@@ -1,0 +1,22 @@
+[
+  {
+    "label": "alp_rho_retrial:ALP_RM2_07:P1-s01-l029",
+    "buy": "ALP_RM2_07",
+    "sell": "ALP_RM2_07",
+    "rank": 7,
+    "rule_id": "P1-s01-l029",
+    "mined_lift": 2.578586367779071,
+    "retrial_of": "ALP_RM_07",
+    "chunk_no": 3
+  },
+  {
+    "label": "alp_rho_retrial:ALP_RM2_08:P1-s04-l027",
+    "buy": "ALP_RM2_08",
+    "sell": "ALP_RM2_08",
+    "rank": 8,
+    "rule_id": "P1-s04-l027",
+    "mined_lift": 2.3759105531186786,
+    "retrial_of": "ALP_RM_08",
+    "chunk_no": 3
+  }
+]

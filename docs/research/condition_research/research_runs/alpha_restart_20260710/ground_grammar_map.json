@@ -1,0 +1,66 @@
+{
+ "tick_buy_vars": [
+  "[행 스칼라 — backtest/backengine_kiwoom_tick.py:11-16이 utility/setting_base.py:155 list_stock_tick 컬럼을 그대로 언팩] 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내, VI해제시간(dt_ymdhms로 datetime 변환), VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격",
+  "[호가 스칼라] 매도호가1~5, 매수호가1~5, 매도잔량1~5, 매수잔량1~5, 매도총잔량, 매수총잔량, 매도수5호가잔량합 (backengine_kiwoom_tick.py:14-16)",
+  "[유니버스 플래그] 관심종목 — moneytop 거래대금 상위 순위 내면 1 (엔진이 매수 exec 전에 `if not 관심종목: continue`로 강제 게이트, backengine_kiwoom_tick.py:89,117,145)",
+  "[파생 스칼라] 순매수금액(=초당매수금액-초당매도금액), 종목명, 종목코드, 데이터길이(=tick_count), 체결시간(=index), 시분초, 호가단위 (backengine_kiwoom_tick.py:25-27)",
+  "[옵션 스칼라] 리스크점수 — dict_set['시장리스크분석'] ON이고 tick_count>=30일 때 RiskAnalyzer 산출, 기본 0 (backengine_kiwoom_tick.py:18-23)",
+  "[상태 변수] 매수(True로 시작), 매도(False로 시작) — exec 직전 `매수, 매도 = True, False` (backengine_kiwoom_tick.py:87); 최적화 변수 self.vars[n]",
+  "[N초전 조회 함수 — 변수명N(이전틱수)] 현재가N, 시가N, 고가N, 저가N, 등락율N, 당일거래대금N, 체결강도N, 고저평균대비등락율N, 저가대비고가등락율N, 초당매수금액N, 초당매도금액N, 당일매수금액N, 당일매도금액N, 최고매수금액N, 최고매수가격N, 최고매도금액N, 최고매도가격N, 초당매수수량N, 초당매도수량N, 초당거래대금N, 거래대금증감N, 전일비N, 회전율N, 전일동시간비N, 시가총액N, 라운드피겨위5호가이내N, VI해제시간N, VI가격N, VI호가단위N, 매도호가1N~5N, 매수호가1N~5N, 매도잔량1N~5N, 매수잔량1N~5N, 매도총잔량N, 매수총잔량N, 매도수5호가잔량합N, 관심종목N (trade/base_strategy.py:946-1026 SetGlobalsFunc)",
+  "[구간연산 함수 — 이름(구간틱수[, 이전틱수])] 이동평균(사전계산 윈도우 tick=60/150/300/600/1200, 그 외는 calc=True로 즉석계산), 최고현재가, 최저현재가, 체결강도평균, 최고체결강도, 최저체결강도, 최고초당매수수량, 최고초당매도수량, 누적초당매수수량, 누적초당매도수량, 초당거래대금평균, 등락율각도, 당일거래대금각도, 전일비각도, 경과틱수(조건명) (trade/base_strategy.py:305-376, 1028-1036; 사전계산 avg 윈도우는 --avg-time avg_list에 등록된 틱수만 — 미등록 사용 시 엔진 중지, backengine_base.py:438 CheckAvglist)",
+  "[단일 복합조건 함수] 이평지지, 시가지지, 변동성, 구간저가대비현재가등락율, 구간고가대비현재가등락율, 거래대금평균대비비율, 체결강도평균대비비율, 구간호가총잔량비율, 매수수량변동성, 매도수량변동성, 횡보감지, 고가미갱신지속틱수, 저가미갱신지속틱수, 고점기준등락율각도, 저점기준등락율각도, 연속상승, 연속하락, 호가갭발생, 변동성급증, 변동성급감, 가격급등, 가격급락, 거래대금급증, 거래대금급감, 체결강도급등, 체결강도급락, 호가상승압력, 호가하락압력, 매수수량급증, 매수수량급감, 매도수량급증, 매도수량급감, 이평돌파, 이평이탈, 시가돌파, 시가이탈 (base_strategy.py:1038-1073)",
+  "[합성 복합조건 함수] 이평지지후이평돌파, 이평지지후이평이탈, 횡보후가격급등, 횡보후가격급락, 횡보후연속상승, 횡보후연속하락, 연속상승및가격급등, 연속하락및가격급락, 거래대금급증및연속상승, 거래대금급감및연속하락, 호가상승압력및매수수량급증, 호가하락압력및매도수량급증, 매수수량급증및가격급등, 매도수량급증후가격급락, 변동성급증및구간최고가갱신, 변동성급감및구간최저가갱신, 거래대금급증및구간최고가갱신, 거래대금급감후구간최저가갱신, 거래대금급증및가격급등, 거래대금급감및가격급락, 체결강도급등및호가상승압력, 체결강도급락및호가하락압력, 시가근접황보후시가돌파, 시가근접황보후시가이탈, 저가갱신후가격급등, 고가갱신후가격급락 (base_strategy.py:1075-1100)",
+  "[기타] now() 함수(백테스트 시 시뮬레이션 시각, base_strategy.py:1139-1140); 사용자수식(formula) 등록 시 수식명(pre=0) 형태 함수로 주입 (base_strategy.py:1142-1151)"
+ ],
+ "tick_sell_only_vars": [
+  "[보유 컨텍스트 스칼라 — 보유중일 때만 바인딩, backengine_kiwoom_tick.py:92-94,148-150] 보유중, 매수가, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간(datetime), 포지션, 수익금, 수익률, 보유시간(tick=초 단위, min=분 단위; backengine_base.py:849-857 GetHoldInfo)",
+  "[매도전용 동적청산 복합조건 함수] 횡보상태장기보유, 변동성급증_역추세매도, 장기보유종목_동적익절청산, 거래대금비율기반_동적청산, 호가압력기반_동적청산, 이평기반_동적청산, 변동성기반_동적청산, 변동성급증기반_동적청산 (base_strategy.py:1101-1108; 매수전략 사용 금지 — utility/ai_agent/system_prompt/v1/forbidden.md)",
+  "[OMS(tick2/min2) 전용 추가] 분할매수횟수/분할매도횟수 등 분할·정정 상태 (back_static.py:63-89 get_trade_info(2), backengine_base_oms.py 경유; 비OMS 엔진에는 없음)",
+  "매도조건 라벨: `매도 = True` 직전 줄(주석)이 매도조건명으로 기록됨 (back_static.py:202-213 SetSellCond)"
+ ],
+ "min_or_day_vars": [
+  "분봉 엔진(backtest/backengine_kiwoom_min.py:10-16, 컬럼=utility/setting_base.py:168 list_stock_min_base+list_indicator)은 초당* 계열이 분당* 계열로 대체: 분당매수수량, 분당매도수량, 분당거래대금, 분당매수금액, 분당매도금액 (+N함수: 분당매수수량N, 분당매도수량N, 분당거래대금N, 분당매수금액N, 분당매도금액N, 최고분당매수수량, 최고분당매도수량, 누적분당매수수량, 누적분당매도수량, 분당거래대금평균)",
+  "분봉 전용 추가 스칼라: 분봉시가, 분봉고가, 분봉저가 (+분봉시가N/분봉고가N/분봉저가N, 최고분봉고가, 최저분봉저가); 시분초는 HHMM+'00' 형태",
+  "이동평균 사전계산 윈도우가 5/10/20/60/120 (tick의 60/150/300/600/1200과 다름, setting_base.py:177)",
+  "TA-Lib 보조지표 28종은 분봉 전용 컬럼(list_indicator, setting_base.py:211-214): AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR — `이름_N(이전봉수)` 형태 조회 (base_strategy.py:1110-1137), 매수식 내 self.indicator(...) 선언 줄은 indistg로 분리 컴파일 (back_static.py:144-163)",
+  "N의 단위가 분봉 수(1분봉)로 바뀜; 보유시간 단위 분 (backengine_base.py:854)"
+ ],
+ "market_or_universe_vars": [
+  "코스피/코스닥 지수: 조건식 네임스페이스에 없음 (trade/base_strategy.py 전체에 지수 변수 부재 — grep 확인; 지수는 back_static.py PlotShow의 결과 그래프 비교용 yfinance 조회뿐)",
+  "시장 폭(breadth), VI 발동수: 없음 — 종목별 VI해제시간/VI가격/VI호가단위만 존재(자기 종목의 VI)",
+  "moneytop 순위값: 직접 접근 불가. moneytop 테이블(backtest/back_static.py:129 GetMoneytopQuery, backtest/backtest.py:155)은 일자별 대상 종목 선정과 '관심종목' 0/1 플래그로만 반영됨. 순위 숫자 자체는 조건식에서 못 읽음",
+  "사용 가능한 유일한 유니버스 변수: 관심종목(0/1)과 관심종목N(n) — 거래대금 상위 순위 내 여부",
+  "옵션: 리스크점수(dict_set['시장리스크분석'] ON 시, trade/risk_analyzer.py 기반) — 단 자기 종목 배열로 계산되는 종목 수준 점수이지 시장 수준 변수가 아님",
+  "결론: 횡단면/시장 수준 변수는 조건식에서 접근 불가. 조건식은 항상 단일 종목 시계열 스코프에서만 평가된다"
+ ],
+ "grammar_capabilities": [
+  "조건식은 Python 코드 그대로 compile→exec(self.buystg/sellstg)로 엔진 Strategy 프레임 안에서 실행됨 (back_static.py:144-174, backengine_kiwoom_tick.py:90,94) — and/or/not, 비교연산, 산술, 괄호, 삼항(IfExp), min/max/abs/int 등 builtins 사용 가능 (alpha_lab/translate/idioms.py:9-16 실측 근거)",
+  "매수식 규약: `매수`가 True로 시작, `if not (조건): 매수 = False` 화이트리스트 필터 누적 후 `if 매수: self.Buy()` (utility/ai_agent/system_prompt/v1/examples.md); 매도식 규약: `매도 = False` 시작, `if 조건: 매도 = True` 나열 후 `if 매도: self.Sell()` — 매도 = True 직전 주석 줄이 매도조건명 기록 (back_static.py:202)",
+  "N초전/N봉전 참조: 모든 기본 스칼라에 `변수명N(n)` 함수 제공 (틱=n틱(초)전, 분봉=n봉전; base_strategy.py:81-)",
+  "구간(윈도우) 함수: `이름(구간틱수[, 이전틱수[, calc]])` — 이동평균/최고현재가/최저현재가/체결강도평균/각도류 등. 사전계산 컬럼(이동평균 봉인 윈도우, avg_list 틱수)이 있으면 O(1), 아니면 calc로 즉석 재계산 (base_strategy.py:305-370)",
+  "경과틱수(조건명): dict_set '경과틱수설정'에 등록한 조건이 참이 된 뒤 경과 틱수 조회 (base_strategy.py:372-376, backengine_base.py:165-177)",
+  "최적화 변수 self.vars[n]: 최적화/전진분석/GA에서 격자 치환 (backengine_kiwoom_tick.py:72-128); 사용자수식(formula DB)은 수식명(pre) 함수로 주입되어 선/범위/화살표 데이터 생성 가능 (backengine_kiwoom_tick.py:42-70)",
+  "복합조건 함수 61종(단일 35 + 합성 26)과 매도전용 동적청산 8종이 SetGlobalsFunc으로 총 181개 함수형 이름 주입 (trade/base_strategy.py:946-1138; 목록 봉인 문서 utility/ai_agent/system_prompt/v1/variables_reference.md)"
+ ],
+ "grammar_limits": [
+  "AI 게이트(ai_strategy_loop/brain/variable_scope.py·token_check) 및 forbidden.md 기준 금지 토큰: import, exec, eval, open, compile, 이중밑줄(__) 접근 — 화이트리스트(기본 스칼라+181 함수+매수/매도 상태+매도전용 잔고변수) 외 이름 사용 금지",
+  "매수식에서 매도전용 변수(수익률·최고수익률·최저수익률·보유시간·매수가·보유수량 등) 사용 불가 — 해당 시점에 바인딩 자체가 없어 NameError (forbidden.md (a))",
+  "타임프레임 혼용 불가: 초당* 변수는 min 스코프에서, 분당*/분봉*/TA지표는 tick 스코프에서 NameError (alpha_lab/translate/idioms.py:20-21)",
+  "구간 함수의 사전계산 윈도우 제약: avg_list(--avg-time)에 없는 틱수를 쓰면 엔진이 중지됨(backengine_base.py:438 CheckAvglist); 이동평균 봉인 윈도우는 tick 60/150/300/600/1200, min 5/10/20/60/120",
+  "당일 데이터 스코프: 하루 단위로 InitTradeInfo/tick_count 리셋(backengine_base.py:717-744) — 전일 데이터 참조 불가, 매수 평가도 tick_count >= avgtime(또는 vars[0]) 경과 후에만 시작 (backengine_kiwoom_tick.py:130-137)",
+  "횡단면 참조 불가: 다른 종목·시장 지수·순위 데이터를 조건식에서 읽을 방법 없음(단일 종목 배열 arry_code만 스코프에 존재)",
+  "사용자 정의 함수/클래스 선언은 게이트에서 차단(순수 조건 표현식만 허용); 부동소수 등호 비교는 번역기 레벨에서 금지(idioms.py OPS는 >, >=, <, <= 만)",
+  "매수는 관심종목=1인 틱에서만 평가됨(엔진 강제) — 조건식으로 우회 불가"
+ ],
+ "cost_model": "\"엔진 체결/비용 모델: (1) 체결가 — 시장가 주문이 호가창을 걸어 올라가며 체결(_calc_fill_amount, backengine_base.py:507-518): 매수는 매도호가1~N, 매도는 매수호가1~N 잔량 소진 방식(매수/매도시장가잔량범위 설정), 잔량 부족 시 미체결 → 자연 슬리피지가 호가 잔량으로 내생화됨. (2) 수수료/세금 — GetKiwoomPgSgSp(utility/static.py:753-760): 거래세 매도금액×0.18%(int 절사), 수수료 매수·매도 각 0.015%(10원 단위 절사). (3) tick2/tick3 슬리피지 정의 — ai_strategy_loop/fitness/slippage_profiles.py: DEFAULT_SLIPPAGE_TICKS=(0,1,2,3), 진입 +N틱·매도 -N틱 불리 체결을 KRX 호가단위 밴드를 한 틱씩 단계 통과(step)하며 계산(예: 매수 1999 +2틱=2005, 선형 아님; 매도는 0 바닥 클램프), 조정손익 = 원 수익금 - 수량×(매수측 상승분+매도측 하락분), 세금 감소분 환급 없음(보수적). alpha_lab 봉인 상수(alpha_lab/dataset/labels.py:42-49): FEE_RATE=0.00015, TAX_RATE=0.0018, ADVERSE_TICKS=2(tick2), net_rate = (sell×(1-0.0018-0.00015) - buy×(1+0.00015)) / (buy×(1+0.00015)); L1 라벨 임계 +1%, L2 트리플배리어 TP+3%/SL-2%/300초. 알파랩 게이트 체인은 '스모크→train→OOS→슬리피지 tick2'를 hard gate로 사용(alpha_lab/__init__.py:7), tick0/1/3은 advisory 프로파일(cli/research_loop.py:193,1244).\"",
+ "backtest_invocation": "\"공식 CLI: `python stom_backtest.py --buy <매수전략명> --sell <매도전략명> --start YYYYMMDD --end YYYYMMDD [--timeframe tick|min] [--betting 백만원단위] [--avg-time 60 또는 60,120] [--start-time 90000] [--end-time 152800] [--engines 4] [--oms] [--divid-mode '종목코드별 분류'|'일자별 분류'|'한종목 로딩'] [--one-code A005930] [--timeout 3600] [--format json|text] [-o result.json] [--quiet]` (stom_backtest.py → cli/config.py:76 parse_args). 전략명은 _database/strategy.db의 stockbuy/stocksell 테이블에서 조회(`--list-strategies`로 목록, JSON config는 `--config file.json`). Exit codes: 0 성공/1 인자 오류/2 실행 오류/3 타임아웃 (cli/config.py:43-73). 프로그래매틱: `from cli.config import BacktestConfig; from cli.runner import run_backtest; result = run_backtest(BacktestConfig(buy_strategy=..., sell_strategy=..., start_date=..., end_date=..., is_tick=True))` — run_backtest(cli/runner.py:351)가 GUI backengine_start 프로토콜을 재구현: BackSubTotal 20개 + 엔진 프로세스(BackEngineKiwoomTick/Tick2/Min/Min2 — oms=False면 Tick/Min, True면 Tick2/Min2) 기동, DICT_SET 동기화(_sync_dict_set), moneytop 조회 후 결과 metrics dict 반환. 결과 per-trade CSV는 backtest/csv/, 집계는 _database/backtest.db stock_bt 테이블.\"",
+ "notes": [
+  "엔진 4종(kiwoom): tick/min = 비OMS 즉시체결 시뮬, tick2/min2 = BackEngineBaseOms 기반 주문관리(지정가·분할·정정) 시뮬 (backtest/backengine_kiwoom_*.py). '백테주문관리적용'(--oms)으로 선택. 주의: 파일명 tick2와 슬리피지 프로파일 'tick2'는 무관 — 전자는 OMS 엔진, 후자는 ±2틱 불리체결 프로파일",
+  "조건식 문법 봉인 문서: utility/ai_agent/system_prompt/v1/{variables_reference.md(181 함수 화이트리스트), forbidden.md, examples.md, idiom_dictionary.md} — tests/unit/test_ai_dictionary.py가 SetGlobalsFunc AST 추출로 문서-코드 일치를 검증",
+  "번역 계층: alpha_lab/translate/idioms.py(봉인 25피처→매수식 조각, 파생식 max()/삼항 전개), alpha_lab/hillclimb/features_v3.py(43피처 화이트리스트 — 구간함수는 avg_list=[30] 동결로 '함수(30)' 고정, 이동평균만 봉인 5윈도우)",
+  "매수 스냅샷/매도 스냅샷/MFE·MAE가 결과 행에 자동 병기됨: B_현재가~B_분봉저가 14컬럼, S_현재가~S_매도총잔량 5컬럼, R_매수후최고수익률/R_매수후최저수익률/R_MFE/R_MAE (backtest/back_static.py:24-36, backengine_base.py:536-564) — 조건식 변수는 아니고 사후 분석용 컬럼",
+  "장 마감(일 경계)에는 LastSell이 강제 청산하며 매도조건 '전략종료청산' 기록 (backengine_base.py:874-900); 미체결 시 최우선호가로 전량 체결 처리",
+  "데이터 소스: _database/stock_tick_back.db(초 스냅샷)/stock_min_back.db(분봉), 로딩 시 add_rolling_data(utility/static.py)가 이동평균·각도·avg_list 파생 컬럼을 사전계산해 배열 뒤에 붙임 (backengine_base.py:351-436)",
+  "선물(backengine_future_*)은 BUY_LONG/SELL_SHORT/SELL_LONG/BUY_SHORT 상태 변수 규약으로 다름(back_static.py:216-298); 본 조사는 주식(kiwoom) 기준"
+ ]
+}

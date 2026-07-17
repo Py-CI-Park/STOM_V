@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-07-07T14:42:27+09:00",
+  "program": "alpha_lab_v5_r1r2_composite_selection_ensemble_judgment",
+  "branch": "research/alpha-lab-v2-20260706",
+  "mission": "R1+R2 — 복합 선택 + 5-way 앙상블 판정",
+  "prereg_sha_v5": "15144e1286be14cb9afb403d3fa55bd3f87543d215991ac25558f5a85601b731",
+  "seal_verification": {
+    "method": "alpha_lab.registry.verify_seal(path, expected_sha) 직접 실행 — 파일 바이트 sha256 재계산 후 봉인값 비교",
+    "checked_before_any_action": true,
+    "results": [
+      {"file": "preregistration_v5.json", "expected_sha256": "15144e1286be14cb9afb403d3fa55bd3f87543d215991ac25558f5a85601b731", "status": "OK"}
+    ],
+    "all_verified": true,
+    "sealviolation_raised": false
+  },
+  "input_r0_cross_check": {
+    "source_files": [
+      "docs/research/condition_research/research_runs/alpha_lab_v5_20260707/v5_candidate_pool.json",
+      "docs/research/condition_research/research_runs/alpha_lab_v5_20260707/v5_candidate_characterization.json"
+    ],
+    "n_complete_pairs_identified": 9,
+    "n_backtestable_in_discovery_window": 8,
+    "n_excluded_data_gap": 1,
+    "n_discovery_attempted": 8,
+    "n_discovery_ok": 0,
+    "n_discovery_error": 8,
+    "n_trials_ledger_independent_recount": {
+      "method": "alpha_lab.registry.total_trials(ledger_path, 'V5C') 직접 실행 (n_trials_ledger.jsonl 1줄 합산)",
+      "V5C": 8,
+      "matches_r0_report": true
+    },
+    "registry_allowed_programs_check": {
+      "method": "python -m pytest tests/unit/test_alpha_registry.py -q",
+      "result": "22 passed",
+      "note": "R0가 additive로 추가한 V5C 태그(alpha_lab/registry.py ALLOWED_PROGRAMS)가 기존 P1/P2/P3/P5/V2M/V2F/V3M/V3H/V4E와 함께 정상 작동함을 확인(회귀/삭제 없음)."
+    },
+    "root_cause_confirmed": "self.Buy(7인자)/self.Sell(7인자) 레거시 호출 대 현재 backtest/backengine_base.py 실제 시그니처 Buy(self, buy_long=False)/Sell(self, sell_long=False)(0~1인자) 간 arity 불일치 — strategy.db에 남은 조건식 생성물의 사전 존재 결함(2026-07-03 CSS_V7 비-OPT 21건에서 이미 확정 진단된 것과 동일). 이번 R0에서 결함 범위가 C_T_900_920/Study 계열까지 확장됨을 추가 확인함. v5 실행 실패가 아니라 후보풀 자체의 실행가능성 결함임."
+  },
+  "selection_rule_application": {
+    "rule_applied_verbatim": {
+      "qualify": "discovery profit > 0 AND (후보 월별P&L vs v4앙상블 상관) < 0.6",
+      "select": "자격자 중 상관 최저(동률 → discovery calmar 최고) 1종",
+      "kill": "자격자 0 → 비상관 복합 없음, v4 그대로 머지 권고"
+    },
+    "n_qualified": 0,
+    "qualified_candidates": [],
+    "selected_candidate": null,
+    "branch_taken": "kill",
+    "reason": "8/8 discovery 백테 시도 전부가 error(런타임 arity 결함)로 종료되어 유효한 profit/corr 측정치가 존재하는 후보가 0건이다 — discovery profit > 0 조건을 평가할 원자료 자체가 없다. 나머지 1건(CSS_V7_MIN_MASTER)은 min DB 데이터 갭으로 시도조차 되지 않았다. 따라서 corr_with_v4도 전원 null이며, 불일치하는 초기치도 없으므로 동률 판정이랑 calmar tie-break까지도 갈 필요 없이 kill 분기가 즉시 확정된다."
+  },
+  "r2_steps_executed": {
+    "step2_oos_backtest_selected_candidate": {
+      "executed": false,
+      "reason": "선택 후보 없음(select_result N/A) — 사전등록 oos_rule('선택 후보만 OOS 백테, 재시도 금지')상 실행 대상 자체가 존재하지 않는다. 일방적으로 후보를 고르거나 OOS 봉인창(2025-01~2026-02, 재사용 자원)을 소비하는 것은 사전등록 규율 위반이므로 수행하지 않았다."
+    },
+    "step3_five_way_ensemble_assembly": {
+      "executed": false,
+      "reason": "5-way 조립은 v4 4종 + 선택 1종을 전제로 하는데 선택된 5번째 후보가 없다 — 임의의 후보를 대체 편입하면 봉인 select 규칙을 우회하는 것이므로 수행하지 않았다(alpha_lab.ensemble.portfolio.static_equal/robustness.py 미호출, 재구현 없음)."
+    },
+    "step4_improvement_rule_evaluation": {
+      "executed": false,
+      "reason": "5-way 성과 데이터 자체가 존재하지 않아 improvement_rule(OOS calmar 비교, 4창 MDD 비교)을 적용할 입력이 없다 — 평가 대상 없음(N/A), 별도 계산 없이 '미개선'으로 귀결된다."
+    }
+  },
+  "engine_budget": {
+    "sealed_max": 40,
+    "used_r0": 8,
+    "used_this_r1r2_task": 0,
+    "cumulative_used": 8,
+    "remaining": 32
+  },
+  "n_trials_ledger_delta_this_task": 0,
+  "v4_baseline_unchanged": {
+    "deployment_asset": "ensemble_a_static_equal (RR8_12/RR8_0/RR8_21/GPTAUTH_G8, 등가중 1/4, always-on, 무타이밍)",
+    "oos_profit": 2608362.0,
+    "oos_mdd": 493590.75,
+    "oos_calmar": 5.2844628875237225,
+    "source": "docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_final_verdict.md, v4_oos_verdict.json — 이번 태스크에서 재실행 없이 인용만"
+  },
+  "final_success": false,
+  "improvement": false,
+  "verdict": "kill",
+  "selected": null,
+  "oos_calmar_4way": 5.2844628875237225,
+  "oos_calmar_5way": null,
+  "mdd_win_count": null,
+  "recommendation": "v5 비상관 복합 시도는 R0 특성화 단계에서 자격자 0/8로 종결한다. v4 ensemble_a_static_equal(4챗피언 등가중, OOS calmar 5.2845)을 변경 없이 배포자산으로 유지 권고한다. strategy.db의 CSS_V7_MIN/TICK, C_T_900_920, Study 4개 sealed type은 self.Buy/Sell 7-arg 레거시 결함(2026-07-03 사전 확정)으로 현재 엔진 API와 arity 불일치 — 향후 재시도하려면 (a) 조건식을 self.Buy()/self.Sell() 정규형으로 수리(별도 사전등록 재승인 필요) 또는 (b) CSS_V7_OPT_* 등 이미 정규형인 완전쌍을 새로 물색하는 경로 중 하나가 선행돼야 한다.",
+  "integrity": {
+    "engine_processes_started_this_task": 0,
+    "git_commit_made": false,
+    "backtest_graph_touched": false,
+    "existing_files_modified_this_task": false,
+    "note": "이번 R1+R2 태스크는 R0 산출물 검증(verify_seal, 독립 재합산, 렉지스트리 테스트)만 수행하고 신규 파일 2건(v5_final_verdict.json/.md)만 생성했다 — 기존 파일 수정 0건, 엔진 실행 0회, git 커밋 0건."
+  },
+  "notes": "R0(후보 특성화)가 이미 kill을 확정했으므로(selection_rule_applied.verdict=kill, v5_candidate_characterization.json), 이번 R1+R2 태스크는 그 판정을 독립적으로 재검증하고(verify_seal green, total_trials 재합산 일치, registry 단위테스트 22/22 green) 사전등록된 kill 분기 규칙을 그대로 적용해 종결했다. 자격자가 0이므로 2단계(OOS 백테)와 3~4단계(5-way 조립 및 개선판정)는 사전등록상 조건부(자격자 있으면)로 명시되어 있어 실행하지 않았다 — 이는 실행 누락이 아니라 봉인 규칙의 직접 적용이다. 엔진 예산은 R0의 8회만 소진되었고(봉인 40 중 잔여 32) 이번 태스크는 추가 0회를 사용했다. n_trials_ledger.jsonl은 신규 append 없음(실행 없는 항목은 이중장부 방지 원칙상 기록하지 않음, v3 선례 승계). 배포자산은 v4_final_verdict.md의 ensemble_a_static_equal로 불변이며 이번 판정으로 인해 변경되지 않는다."
+}

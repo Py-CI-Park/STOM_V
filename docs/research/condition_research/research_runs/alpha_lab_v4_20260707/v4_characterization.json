@@ -1,0 +1,707 @@
+{
+ "schema": "alpha_lab_v4_characterization_v1",
+ "discovery_window": {
+  "start_ym": "202203",
+  "end_ym": "202412",
+  "n_months": 34
+ },
+ "n_champions_registered": 5,
+ "n_champions_measured": 4,
+ "excluded_slugs": [
+  "TICK902U3"
+ ],
+ "champions": [
+  {
+   "slug": "RR8_12",
+   "name": "OOSStable_Open902_TurnoverMin_v1",
+   "alp_name": "ALP_V4_RR8_12",
+   "buy_sha": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+   "sell_sha": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "run_id": "alp_v4_r0_discovery_chunk1_20260707",
+   "gen_no": 0,
+   "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_12_20260707074238.csv",
+   "discovery_status": "ok",
+   "discovery_profit": 12631722.0,
+   "discovery_mdd": 4.78,
+   "discovery_total_profit_pct": 126.38,
+   "discovery_trade_count": 454,
+   "discovery_daily_avg_trades": 0.7,
+   "discovery_payoff_ratio": 1.225583734946168,
+   "discovery_gate_passed": true,
+   "discovery_gate_reason": "ok",
+   "excluded_from_ranking": false,
+   "monthly_pnl_months_observed": 34,
+   "monthly_pnl": [
+    [
+     "202203",
+     6326.0
+    ],
+    [
+     "202204",
+     1080613.0
+    ],
+    [
+     "202205",
+     -61519.0
+    ],
+    [
+     "202206",
+     653075.0
+    ],
+    [
+     "202207",
+     406565.0
+    ],
+    [
+     "202208",
+     1051655.0
+    ],
+    [
+     "202209",
+     535489.0
+    ],
+    [
+     "202210",
+     -235480.0
+    ],
+    [
+     "202211",
+     483759.0
+    ],
+    [
+     "202212",
+     209634.0
+    ],
+    [
+     "202301",
+     907572.0
+    ],
+    [
+     "202302",
+     769959.0
+    ],
+    [
+     "202303",
+     67592.0
+    ],
+    [
+     "202304",
+     383670.0
+    ],
+    [
+     "202305",
+     744674.0
+    ],
+    [
+     "202306",
+     54296.0
+    ],
+    [
+     "202307",
+     539462.0
+    ],
+    [
+     "202308",
+     1123514.0
+    ],
+    [
+     "202309",
+     -662395.0
+    ],
+    [
+     "202310",
+     223637.0
+    ],
+    [
+     "202311",
+     586630.0
+    ],
+    [
+     "202312",
+     910748.0
+    ],
+    [
+     "202401",
+     87404.0
+    ],
+    [
+     "202402",
+     -56266.0
+    ],
+    [
+     "202403",
+     1358111.0
+    ],
+    [
+     "202404",
+     65560.0
+    ],
+    [
+     "202405",
+     403768.0
+    ],
+    [
+     "202406",
+     179350.0
+    ],
+    [
+     "202407",
+     85087.0
+    ],
+    [
+     "202408",
+     435643.0
+    ],
+    [
+     "202409",
+     -575881.0
+    ],
+    [
+     "202410",
+     243981.0
+    ],
+    [
+     "202411",
+     -336572.0
+    ],
+    [
+     "202412",
+     962061.0
+    ]
+   ]
+  },
+  {
+   "slug": "RR8_0",
+   "name": "CapLimited_2500_Comparator",
+   "alp_name": "ALP_V4_RR8_0",
+   "buy_sha": "3d14a1f4fb1062cfb76cc13b6ff31fd857c5ac46be6b716a84473fc2d9349623",
+   "sell_sha": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+   "run_id": "alp_v4_r0_discovery_chunk1_20260707",
+   "gen_no": 1,
+   "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_0_20260707074352.csv",
+   "discovery_status": "ok",
+   "discovery_profit": 11404295.0,
+   "discovery_mdd": 8.0,
+   "discovery_total_profit_pct": 226.9,
+   "discovery_trade_count": 338,
+   "discovery_daily_avg_trades": 0.5,
+   "discovery_payoff_ratio": 1.2306569721021874,
+   "discovery_gate_passed": true,
+   "discovery_gate_reason": "ok",
+   "excluded_from_ranking": false,
+   "monthly_pnl_months_observed": 34,
+   "monthly_pnl": [
+    [
+     "202203",
+     46110.0
+    ],
+    [
+     "202204",
+     1008640.0
+    ],
+    [
+     "202205",
+     111285.0
+    ],
+    [
+     "202206",
+     479533.0
+    ],
+    [
+     "202207",
+     195988.0
+    ],
+    [
+     "202208",
+     406647.0
+    ],
+    [
+     "202209",
+     295176.0
+    ],
+    [
+     "202210",
+     -37426.0
+    ],
+    [
+     "202211",
+     577041.0
+    ],
+    [
+     "202212",
+     170209.0
+    ],
+    [
+     "202301",
+     842188.0
+    ],
+    [
+     "202302",
+     841169.0
+    ],
+    [
+     "202303",
+     776894.0
+    ],
+    [
+     "202304",
+     639440.0
+    ],
+    [
+     "202305",
+     496838.0
+    ],
+    [
+     "202306",
+     -166237.0
+    ],
+    [
+     "202307",
+     228248.0
+    ],
+    [
+     "202308",
+     250064.0
+    ],
+    [
+     "202309",
+     -578298.0
+    ],
+    [
+     "202310",
+     477958.0
+    ],
+    [
+     "202311",
+     723717.0
+    ],
+    [
+     "202312",
+     56790.0
+    ],
+    [
+     "202401",
+     -351633.0
+    ],
+    [
+     "202402",
+     423263.0
+    ],
+    [
+     "202403",
+     1186877.0
+    ],
+    [
+     "202404",
+     8378.0
+    ],
+    [
+     "202405",
+     160845.0
+    ],
+    [
+     "202406",
+     321968.0
+    ],
+    [
+     "202407",
+     142339.0
+    ],
+    [
+     "202408",
+     491976.0
+    ],
+    [
+     "202409",
+     152513.0
+    ],
+    [
+     "202410",
+     243981.0
+    ],
+    [
+     "202411",
+     -319272.0
+    ],
+    [
+     "202412",
+     1101086.0
+    ]
+   ]
+  },
+  {
+   "slug": "RR8_21",
+   "name": "ProfitLead_TrailKeep070_2025Comparator",
+   "alp_name": "ALP_V4_RR8_21",
+   "buy_sha": "157b58b0f7618de11f52d534e5f7c61b28bf11e7404ef3885dc4d52ab2da2099",
+   "sell_sha": "01a1673baf10ebfe502f25cfbf8f37f683cc0805676f4a4b795d6860a45da9ef",
+   "run_id": "alp_v4_r0_discovery_chunk1_20260707",
+   "gen_no": 2,
+   "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_21_20260707074459.csv",
+   "discovery_status": "ok",
+   "discovery_profit": 11134615.0,
+   "discovery_mdd": 7.14,
+   "discovery_total_profit_pct": 221.35,
+   "discovery_trade_count": 380,
+   "discovery_daily_avg_trades": 0.6,
+   "discovery_payoff_ratio": 1.1815616704155438,
+   "discovery_gate_passed": true,
+   "discovery_gate_reason": "ok",
+   "excluded_from_ranking": false,
+   "monthly_pnl_months_observed": 34,
+   "monthly_pnl": [
+    [
+     "202203",
+     46110.0
+    ],
+    [
+     "202204",
+     1032234.0
+    ],
+    [
+     "202205",
+     -90036.0
+    ],
+    [
+     "202206",
+     443355.0
+    ],
+    [
+     "202207",
+     -5239.0
+    ],
+    [
+     "202208",
+     498800.0
+    ],
+    [
+     "202209",
+     324760.0
+    ],
+    [
+     "202210",
+     186512.0
+    ],
+    [
+     "202211",
+     162603.0
+    ],
+    [
+     "202212",
+     205326.0
+    ],
+    [
+     "202301",
+     949981.0
+    ],
+    [
+     "202302",
+     436722.0
+    ],
+    [
+     "202303",
+     760025.0
+    ],
+    [
+     "202304",
+     689560.0
+    ],
+    [
+     "202305",
+     558669.0
+    ],
+    [
+     "202306",
+     -24389.0
+    ],
+    [
+     "202307",
+     341296.0
+    ],
+    [
+     "202308",
+     261558.0
+    ],
+    [
+     "202309",
+     -560413.0
+    ],
+    [
+     "202310",
+     470347.0
+    ],
+    [
+     "202311",
+     778707.0
+    ],
+    [
+     "202312",
+     864851.0
+    ],
+    [
+     "202401",
+     -204870.0
+    ],
+    [
+     "202402",
+     -402001.0
+    ],
+    [
+     "202403",
+     1037121.0
+    ],
+    [
+     "202404",
+     21873.0
+    ],
+    [
+     "202405",
+     426003.0
+    ],
+    [
+     "202406",
+     98170.0
+    ],
+    [
+     "202407",
+     291056.0
+    ],
+    [
+     "202408",
+     551048.0
+    ],
+    [
+     "202409",
+     75784.0
+    ],
+    [
+     "202410",
+     256525.0
+    ],
+    [
+     "202411",
+     -376759.0
+    ],
+    [
+     "202412",
+     1029326.0
+    ]
+   ]
+  },
+  {
+   "slug": "GPTAUTH_G8",
+   "name": "GPTGen8_HighCoverage_FailedProfitContext",
+   "alp_name": "ALP_V4_GPTAUTH_G8",
+   "buy_sha": "83e7322e2efd540d18e960ad2128d57d01f4d4d061f62c91bb352312ab514e73",
+   "sell_sha": "4ed51bb1a051bec150789e89257d4b623ef800567d64d2d9bf86359df59992a9",
+   "run_id": "alp_v4_r0_discovery_chunk2_20260707",
+   "gen_no": 0,
+   "csv_path": "backtest/csv\\stock_bt_ALP_V4_GPTAUTH_G8_20260707075127.csv",
+   "discovery_status": "ok",
+   "discovery_profit": -6932292.0,
+   "discovery_mdd": 77.05,
+   "discovery_total_profit_pct": -69.34,
+   "discovery_trade_count": 1447,
+   "discovery_daily_avg_trades": 2.1,
+   "discovery_payoff_ratio": 1.4531765756277173,
+   "discovery_gate_passed": false,
+   "discovery_gate_reason": "mdd 77.05 > mdd_cap 35",
+   "excluded_from_ranking": false,
+   "monthly_pnl_months_observed": 34,
+   "monthly_pnl": [
+    [
+     "202203",
+     -845490.0
+    ],
+    [
+     "202204",
+     1267632.0
+    ],
+    [
+     "202205",
+     378185.0
+    ],
+    [
+     "202206",
+     566305.0
+    ],
+    [
+     "202207",
+     -12173.0
+    ],
+    [
+     "202208",
+     130021.0
+    ],
+    [
+     "202209",
+     123982.0
+    ],
+    [
+     "202210",
+     -302705.0
+    ],
+    [
+     "202211",
+     659431.0
+    ],
+    [
+     "202212",
+     -603110.0
+    ],
+    [
+     "202301",
+     -234195.0
+    ],
+    [
+     "202302",
+     789632.0
+    ],
+    [
+     "202303",
+     1210859.0
+    ],
+    [
+     "202304",
+     -321418.0
+    ],
+    [
+     "202305",
+     -1451412.0
+    ],
+    [
+     "202306",
+     -516721.0
+    ],
+    [
+     "202307",
+     -635615.0
+    ],
+    [
+     "202308",
+     -852985.0
+    ],
+    [
+     "202309",
+     -598273.0
+    ],
+    [
+     "202310",
+     -797901.0
+    ],
+    [
+     "202311",
+     225372.0
+    ],
+    [
+     "202312",
+     -652541.0
+    ],
+    [
+     "202401",
+     -286495.0
+    ],
+    [
+     "202402",
+     -620291.0
+    ],
+    [
+     "202403",
+     -40729.0
+    ],
+    [
+     "202404",
+     -298739.0
+    ],
+    [
+     "202405",
+     -223942.0
+    ],
+    [
+     "202406",
+     -704819.0
+    ],
+    [
+     "202407",
+     -384281.0
+    ],
+    [
+     "202408",
+     -310812.0
+    ],
+    [
+     "202409",
+     88047.0
+    ],
+    [
+     "202410",
+     -494693.0
+    ],
+    [
+     "202411",
+     -55857.0
+    ],
+    [
+     "202412",
+     -1126561.0
+    ]
+   ]
+  },
+  {
+   "slug": "TICK902U3",
+   "name": "ALP_V4_TICK902U3",
+   "alp_name": "ALP_V4_TICK902U3",
+   "buy_sha": "f7f0680164551313fc3df893d79e549caf0e1aec5299a192ac4a72ce71335a6b",
+   "sell_sha": "a5bc95783e41701055a5563fd8268c9f05c6016be17c145246d4c1240043ca13",
+   "run_id": "alp_v4_r0_discovery_chunk2_20260707",
+   "gen_no": 1,
+   "csv_path": null,
+   "discovery_status": "error",
+   "discovery_gate_passed": false,
+   "discovery_gate_reason": "[TICK902U3] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+   "excluded_from_ranking": true,
+   "exclusion_cause": "discovery_backtest_timeout_300s",
+   "monthly_pnl_months_observed": 0,
+   "monthly_pnl": []
+  }
+ ],
+ "corr_matrix": {
+  "RR8_12": {
+   "RR8_12": 1.0,
+   "RR8_0": 0.706829,
+   "RR8_21": 0.772737,
+   "GPTAUTH_G8": 0.077385
+  },
+  "RR8_0": {
+   "RR8_12": 0.706829,
+   "RR8_0": 1.0,
+   "RR8_21": 0.816166,
+   "GPTAUTH_G8": 0.307781
+  },
+  "RR8_21": {
+   "RR8_12": 0.772737,
+   "RR8_0": 0.816166,
+   "RR8_21": 1.0,
+   "GPTAUTH_G8": 0.177178
+  },
+  "GPTAUTH_G8": {
+   "RR8_12": 0.077385,
+   "RR8_0": 0.307781,
+   "RR8_21": 0.177178,
+   "GPTAUTH_G8": 1.0
+  }
+ },
+ "max_pairwise_corr": 0.816166,
+ "max_pairwise_corr_pair": [
+  "RR8_0",
+  "RR8_21"
+ ],
+ "best_single_by_risk_adj": {
+  "slug": "RR8_12",
+  "name": "OOSStable_Open902_TurnoverMin_v1",
+  "risk_adj_ratio": 2642619.665272,
+  "discovery_profit": 12631722.0,
+  "discovery_mdd": 4.78,
+  "ranked_pool": "gate_passed_only"
+ }
+}

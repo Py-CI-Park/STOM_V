@@ -7,3 +7,19 @@ ai_strategy_loop/dashboard/frontend/bundle/*.js   text eol=lf
 ai_strategy_loop/dashboard/frontend/bundle/*.json text eol=lf
 ai_strategy_loop/dashboard/webui-build/src/*.ts   text eol=lf
 ai_strategy_loop/dashboard/webui-build/src/*.mjs  text eol=lf
+
+# 러너-소스 신뢰-해시 게이트(alpha_lab/runlab/bootstrap.py)는 아래 파일들의 LF 바이트를 SHA256 으로 핀한다.
+#   core.autocrlf=true 환경에서 체크아웃 시 CRLF 로 변환되면 디스크 바이트가 달라져
+#   신뢰-해시 게이트가 worktree/플랫폼마다 비결정적으로 깨진다(감사 랩에서 이식된 이식성 결함).
+#   아래를 LF 로 고정해 모든 worktree 에서 동일 바이트·동일 해시로 게이트가 결정적으로 통과하게 한다.
+alpha_lab/__init__.py                    text eol=lf
+alpha_lab/runlab/__init__.py             text eol=lf
+alpha_lab/runlab/bootstrap.py            text eol=lf
+alpha_lab/runlab/child_wrap.py           text eol=lf
+alpha_lab/runlab/detached_runner.py      text eol=lf
+alpha_lab/runlab/sealed_execution.py     text eol=lf
+alpha_lab/runlab/contract.py             text eol=lf
+alpha_lab/runlab/watchdog.py             text eol=lf
+alpha_lab/discipline/__init__.py         text eol=lf
+alpha_lab/discipline/evidence.py         text eol=lf
+alpha_lab/discipline/prereg.py           text eol=lf

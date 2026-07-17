@@ -1,0 +1,469 @@
+{
+ "schema": "alpha_lab_p5_exitchk_compare_v1",
+ "replay_reference": {
+  "best": {
+   "ev_pct": 0.2914,
+   "ci": [
+    0.0276,
+    0.5598
+   ],
+   "mdd_pp": 85.43,
+   "hold_mean_sec": 293.2
+  },
+  "champion_analog": {
+   "ev_pct": 0.008,
+   "ci": [
+    -0.3,
+    0.3113
+   ],
+   "mdd_pp": 126.12,
+   "hold_mean_sec": 796.2
+  },
+  "paired_delta": {
+   "delta_pp": 0.283,
+   "ci": [
+    0.067,
+    0.495
+   ],
+   "p": 0.001
+  }
+ },
+ "windows": {
+  "full": {
+   "run_id": "alp_exitchk_warm64_full_20260706",
+   "a": {
+    "gen_no": 0,
+    "buy_name": "ALP_EXITCHK_A_INCUMBENT",
+    "sell_name": "ALP_EXITCHK_A_INCUMBENT",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706054143.csv",
+    "trade_count": 665,
+    "daily_avg_trades": 0.7,
+    "mdd": 7.14,
+    "profit": 15284154.0,
+    "total_profit_pct": 152.94,
+    "payoff_ratio": 1.170724600989262,
+    "strategy_gist": "alp_exitchk:A_incumbent:full",
+    "created_at": 1783284106.623936,
+    "trade_stats": {
+     "csv_rows": 665,
+     "ev_pct_per_trade_mean": 0.459699,
+     "ev_pct_per_trade_median": 0.59,
+     "ev_pct_per_trade_std": 3.187728,
+     "win_rate": 0.547368,
+     "profit_sum_krw": 15284154,
+     "hold_sec_mean": 385.81,
+     "hold_sec_median": 221.0,
+     "sell_condition_counts": {
+      "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 161,
+      "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 159,
+      "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 97,
+      "        elif 4.5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:": 80,
+      "전략종료청산": 62,
+      "    if 수익률 >= 9 or 수익률 <= -5.0:": 38,
+      "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 29,
+      "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 23,
+      "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 16
+     },
+     "n_days": 463
+    },
+    "equity_points": 0
+   },
+   "b": {
+    "gen_no": 1,
+    "buy_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_B_HARD5_TS300_20260706054259.csv",
+    "trade_count": 635,
+    "daily_avg_trades": 0.7,
+    "mdd": 8.1,
+    "profit": 17124632.0,
+    "total_profit_pct": 171.28,
+    "payoff_ratio": 1.3442701177545178,
+    "strategy_gist": "alp_exitchk:B_hard5_ts300:full",
+    "created_at": 1783284182.5154548,
+    "trade_stats": {
+     "csv_rows": 635,
+     "ev_pct_per_trade_mean": 0.538929,
+     "ev_pct_per_trade_median": 0.13,
+     "ev_pct_per_trade_std": 3.523018,
+     "win_rate": 0.524409,
+     "profit_sum_krw": 17124632,
+     "hold_sec_mean": 292.47,
+     "hold_sec_median": 300.0,
+     "sell_condition_counts": {
+      "elif 보유시간 >= 300:": 584,
+      "if 수익률 <= -5.0:": 51
+     },
+     "n_days": 463
+    },
+    "equity_points": 0
+   },
+   "delta": {
+    "profit_krw": 1840478.0,
+    "total_profit_pct_pp": 18.34,
+    "ev_pp_per_trade": 0.0792,
+    "mdd_pp": 0.96,
+    "hold_sec_mean": -93.34,
+    "trade_count": -30
+   },
+   "paired_bootstrap": {
+    "point_delta_pp": 0.0792,
+    "ci95": [
+     -0.1044,
+     0.2533
+    ],
+    "p_one_sided_le0": 0.209,
+    "n_boot_effective": 1000,
+    "n_days": 463,
+    "method": "joint day-block bootstrap (같은 날 표본을 A/B 동시 재추출), stat=mean, seed=20260706 — 봉인 격자 부트스트랩 규약(entry_day 블록) 미러"
+   }
+  },
+  "y2022": {
+   "run_id": "alp_exitchk_warm64_y2022_20260706",
+   "a": {
+    "gen_no": 0,
+    "buy_name": "ALP_EXITCHK_A_INCUMBENT",
+    "sell_name": "ALP_EXITCHK_A_INCUMBENT",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706054742.csv",
+    "trade_count": 101,
+    "daily_avg_trades": 0.5,
+    "mdd": 9.19,
+    "profit": 4130117.0,
+    "total_profit_pct": 82.1,
+    "payoff_ratio": 1.3175658667561674,
+    "strategy_gist": "alp_exitchk:A_incumbent:y2022",
+    "created_at": 1783284465.0297692,
+    "trade_stats": {
+     "csv_rows": 101,
+     "ev_pct_per_trade_mean": 0.816832,
+     "ev_pct_per_trade_median": 1.33,
+     "ev_pct_per_trade_std": 3.140156,
+     "win_rate": 0.584158,
+     "profit_sum_krw": 4130117,
+     "hold_sec_mean": 540.89,
+     "hold_sec_median": 308.0,
+     "sell_condition_counts": {
+      "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 29,
+      "전략종료청산": 19,
+      "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 18,
+      "        elif 4.5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:": 14,
+      "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 9,
+      "    if 수익률 >= 9 or 수익률 <= -5.0:": 5,
+      "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 5,
+      "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 2
+     },
+     "n_days": 85
+    },
+    "equity_points": 0
+   },
+   "b": {
+    "gen_no": 1,
+    "buy_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_B_HARD5_TS300_20260706054807.csv",
+    "trade_count": 102,
+    "daily_avg_trades": 0.5,
+    "mdd": 4.89,
+    "profit": 6667787.0,
+    "total_profit_pct": 132.77,
+    "payoff_ratio": 2.155312974989637,
+    "strategy_gist": "alp_exitchk:B_hard5_ts300:y2022",
+    "created_at": 1783284491.1117957,
+    "trade_stats": {
+     "csv_rows": 102,
+     "ev_pct_per_trade_mean": 1.306275,
+     "ev_pct_per_trade_median": 0.9,
+     "ev_pct_per_trade_std": 3.444345,
+     "win_rate": 0.568627,
+     "profit_sum_krw": 6667787,
+     "hold_sec_mean": 298.21,
+     "hold_sec_median": 300.0,
+     "sell_condition_counts": {
+      "elif 보유시간 >= 300:": 100,
+      "if 수익률 <= -5.0:": 2
+     },
+     "n_days": 85
+    },
+    "equity_points": 0
+   },
+   "delta": {
+    "profit_krw": 2537670.0,
+    "total_profit_pct_pp": 50.67,
+    "ev_pp_per_trade": 0.4894,
+    "mdd_pp": -4.3,
+    "hold_sec_mean": -242.68,
+    "trade_count": 1
+   }
+  },
+  "y2023": {
+   "run_id": "alp_exitchk_warm64_y2023_20260706",
+   "a": {
+    "gen_no": 0,
+    "buy_name": "ALP_EXITCHK_A_INCUMBENT",
+    "sell_name": "ALP_EXITCHK_A_INCUMBENT",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706055215.csv",
+    "trade_count": 197,
+    "daily_avg_trades": 0.8,
+    "mdd": 6.98,
+    "profit": 5649359.0,
+    "total_profit_pct": 56.48,
+    "payoff_ratio": 1.144446928782027,
+    "strategy_gist": "alp_exitchk:A_incumbent:y2023",
+    "created_at": 1783284739.090666,
+    "trade_stats": {
+     "csv_rows": 197,
+     "ev_pct_per_trade_mean": 0.57401,
+     "ev_pct_per_trade_median": 1.03,
+     "ev_pct_per_trade_std": 3.017121,
+     "win_rate": 0.57868,
+     "profit_sum_krw": 5649359,
+     "hold_sec_mean": 416.95,
+     "hold_sec_median": 257.0,
+     "sell_condition_counts": {
+      "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 52,
+      "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 48,
+      "        elif 4.5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:": 29,
+      "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 21,
+      "전략종료청산": 17,
+      "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 8,
+      "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 8,
+      "    if 수익률 >= 9 or 수익률 <= -5.0:": 7,
+      "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 7
+     },
+     "n_days": 132
+    },
+    "equity_points": 0
+   },
+   "b": {
+    "gen_no": 1,
+    "buy_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_B_HARD5_TS300_20260706055248.csv",
+    "trade_count": 184,
+    "daily_avg_trades": 0.8,
+    "mdd": 7.97,
+    "profit": 8243994.0,
+    "total_profit_pct": 82.43,
+    "payoff_ratio": 1.5774318024669325,
+    "strategy_gist": "alp_exitchk:B_hard5_ts300:y2023",
+    "created_at": 1783284771.7297683,
+    "trade_stats": {
+     "csv_rows": 184,
+     "ev_pct_per_trade_mean": 0.895761,
+     "ev_pct_per_trade_median": 0.265,
+     "ev_pct_per_trade_std": 3.071553,
+     "win_rate": 0.581522,
+     "profit_sum_krw": 8243994,
+     "hold_sec_mean": 302.4,
+     "hold_sec_median": 300.0,
+     "sell_condition_counts": {
+      "elif 보유시간 >= 300:": 175,
+      "if 수익률 <= -5.0:": 9
+     },
+     "n_days": 132
+    },
+    "equity_points": 0
+   },
+   "delta": {
+    "profit_krw": 2594635.0,
+    "total_profit_pct_pp": 25.95,
+    "ev_pp_per_trade": 0.3218,
+    "mdd_pp": 0.99,
+    "hold_sec_mean": -114.55,
+    "trade_count": -13
+   }
+  },
+  "y2024": {
+   "run_id": "alp_exitchk_warm64_y2024_20260706",
+   "a": {
+    "gen_no": 0,
+    "buy_name": "ALP_EXITCHK_A_INCUMBENT",
+    "sell_name": "ALP_EXITCHK_A_INCUMBENT",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706055658.csv",
+    "trade_count": 156,
+    "daily_avg_trades": 0.6,
+    "mdd": 13.58,
+    "profit": 2852246.0,
+    "total_profit_pct": 56.77,
+    "payoff_ratio": 1.2784754714367348,
+    "strategy_gist": "alp_exitchk:A_incumbent:y2024",
+    "created_at": 1783285021.288054,
+    "trade_stats": {
+     "csv_rows": 156,
+     "ev_pct_per_trade_mean": 0.365128,
+     "ev_pct_per_trade_median": 0.185,
+     "ev_pct_per_trade_std": 3.250466,
+     "win_rate": 0.50641,
+     "profit_sum_krw": 2852246,
+     "hold_sec_mean": 363.68,
+     "hold_sec_median": 205.5,
+     "sell_condition_counts": {
+      "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 40,
+      "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 37,
+      "        elif 4.5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:": 22,
+      "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 18,
+      "전략종료청산": 13,
+      "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 12,
+      "    if 수익률 >= 9 or 수익률 <= -5.0:": 8,
+      "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 3,
+      "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 3
+     },
+     "n_days": 114
+    },
+    "equity_points": 0
+   },
+   "b": {
+    "gen_no": 1,
+    "buy_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_B_HARD5_TS300_20260706055728.csv",
+    "trade_count": 151,
+    "daily_avg_trades": 0.6,
+    "mdd": 17.96,
+    "profit": 1487421.0,
+    "total_profit_pct": 14.88,
+    "payoff_ratio": 1.2365273514089457,
+    "strategy_gist": "alp_exitchk:B_hard5_ts300:y2024",
+    "created_at": 1783285051.5350902,
+    "trade_stats": {
+     "csv_rows": 151,
+     "ev_pct_per_trade_mean": 0.196026,
+     "ev_pct_per_trade_median": -0.21,
+     "ev_pct_per_trade_std": 3.365758,
+     "win_rate": 0.483444,
+     "profit_sum_krw": 1487421,
+     "hold_sec_mean": 292.79,
+     "hold_sec_median": 300.0,
+     "sell_condition_counts": {
+      "elif 보유시간 >= 300:": 140,
+      "if 수익률 <= -5.0:": 11
+     },
+     "n_days": 114
+    },
+    "equity_points": 0
+   },
+   "delta": {
+    "profit_krw": -1364825.0,
+    "total_profit_pct_pp": -41.89,
+    "ev_pp_per_trade": -0.1691,
+    "mdd_pp": 4.38,
+    "hold_sec_mean": -70.89,
+    "trade_count": -5
+   }
+  },
+  "y2025": {
+   "run_id": "alp_exitchk_warm64_y2025_20260706",
+   "a": {
+    "gen_no": 0,
+    "buy_name": "ALP_EXITCHK_A_INCUMBENT",
+    "sell_name": "ALP_EXITCHK_A_INCUMBENT",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706060150.csv",
+    "trade_count": 190,
+    "daily_avg_trades": 0.8,
+    "mdd": 12.87,
+    "profit": 3062696.0,
+    "total_profit_pct": 30.66,
+    "payoff_ratio": 1.0868551081437703,
+    "strategy_gist": "alp_exitchk:A_incumbent:y2025",
+    "created_at": 1783285313.5941129,
+    "trade_stats": {
+     "csv_rows": 190,
+     "ev_pct_per_trade_mean": 0.322684,
+     "ev_pct_per_trade_median": 0.355,
+     "ev_pct_per_trade_std": 3.159021,
+     "win_rate": 0.542105,
+     "profit_sum_krw": 3062696,
+     "hold_sec_mean": 292.25,
+     "hold_sec_median": 167.0,
+     "sell_condition_counts": {
+      "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 48,
+      "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 46,
+      "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 38,
+      "        elif 4.5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:": 15,
+      "    if 수익률 >= 9 or 수익률 <= -5.0:": 12,
+      "전략종료청산": 11,
+      "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 11,
+      "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 5,
+      "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 4
+     },
+     "n_days": 116
+    },
+    "equity_points": 0
+   },
+   "b": {
+    "gen_no": 1,
+    "buy_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell_name": "ALP_EXITCHK_B_HARD5_TS300",
+    "status": "ok",
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_ALP_EXITCHK_B_HARD5_TS300_20260706060227.csv",
+    "trade_count": 178,
+    "daily_avg_trades": 0.7,
+    "mdd": 18.53,
+    "profit": 1354097.0,
+    "total_profit_pct": 13.53,
+    "payoff_ratio": 1.1776521861088456,
+    "strategy_gist": "alp_exitchk:B_hard5_ts300:y2025",
+    "created_at": 1783285350.5089335,
+    "trade_stats": {
+     "csv_rows": 178,
+     "ev_pct_per_trade_mean": 0.152191,
+     "ev_pct_per_trade_median": -0.115,
+     "ev_pct_per_trade_std": 3.941426,
+     "win_rate": 0.483146,
+     "profit_sum_krw": 1354097,
+     "hold_sec_mean": 281.96,
+     "hold_sec_median": 300.0,
+     "sell_condition_counts": {
+      "elif 보유시간 >= 300:": 155,
+      "if 수익률 <= -5.0:": 23
+     },
+     "n_days": 116
+    },
+    "equity_points": 0
+   },
+   "delta": {
+    "profit_krw": -1708599.0,
+    "total_profit_pct_pp": -17.13,
+    "ev_pp_per_trade": -0.1705,
+    "mdd_pp": 5.66,
+    "hold_sec_mean": -10.29,
+    "trade_count": -12
+   }
+  }
+ },
+ "full_agreement": {
+  "engine_delta_ev_pp": 0.0792,
+  "vs_mission_spec_ci_0.0276_0.5598": true,
+  "vs_paired_delta_ci_0.067_0.495": true,
+  "same_sign_as_prediction": true
+ }
+}

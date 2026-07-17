@@ -1,0 +1,427 @@
+{
+ "schema": "alpha_lab_v2_filter_ab_verdict_v1",
+ "created_at": "2026-07-06T16:57:29.754995+09:00",
+ "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+ "success_rule_sealed": {
+  "superior": "full.profit > A.full.profit AND full.mdd <= A.full.mdd",
+  "risk_improved": "full.mdd <= A.full.mdd - 2.0 AND full.profit >= 0.85 * A.full.profit",
+  "common_floor": "full.trades >= 266 AND 연도 4창 중 >=3 profit > 0",
+  "success": "(superior OR risk_improved) AND common_floor"
+ },
+ "control_A": {
+  "frozen": {
+   "full": {
+    "profit": 15284154.0,
+    "mdd": 7.14,
+    "trades": 665
+   },
+   "y2022": {
+    "profit": 4130117.0,
+    "mdd": 9.19,
+    "trades": 101
+   },
+   "y2023": {
+    "profit": 5649359.0,
+    "mdd": 6.98,
+    "trades": 197
+   },
+   "y2024": {
+    "profit": 2852246.0,
+    "mdd": 13.58,
+    "trades": 156
+   },
+   "y2025": {
+    "profit": 3062696.0,
+    "mdd": 12.87,
+    "trades": 190
+   }
+  },
+  "source": "preregistration_v2.json control_A_frozen (loop_runs.db alp_exitchk_warm64_* 실측 동결 — 재실행 0회)"
+ },
+ "per_filter": [
+  {
+   "name": "ALP_V2F_01",
+   "windows": {
+    "full": {
+     "status": "ok",
+     "profit": 160128.0,
+     "mdd": 14.18,
+     "trades": 31,
+     "run_id": "alp_v2f_warm64_full_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706151701.csv"
+    },
+    "y2022": {
+     "status": "ok",
+     "profit": -232601.0,
+     "mdd": 6.77,
+     "trades": 8,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706155118.csv"
+    },
+    "y2023": {
+     "status": "ok",
+     "profit": 206296.0,
+     "mdd": 4.25,
+     "trades": 6,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706160833.csv"
+    },
+    "y2024": {
+     "status": "ok",
+     "profit": 700968.0,
+     "mdd": 5.6,
+     "trades": 10,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706162525.csv"
+    },
+    "y2025": {
+     "status": "ok",
+     "profit": -514535.0,
+     "mdd": 11.78,
+     "trades": 7,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706164219.csv"
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 2,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -15124026.0,
+    "mdd": 7.04,
+    "trades": -634
+   }
+  },
+  {
+   "name": "ALP_V2F_02",
+   "windows": {
+    "full": {
+     "status": "ok",
+     "profit": 160128.0,
+     "mdd": 14.18,
+     "trades": 31,
+     "run_id": "alp_v2f_warm64_full_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706151824.csv"
+    },
+    "y2022": {
+     "status": "ok",
+     "profit": -232601.0,
+     "mdd": 6.77,
+     "trades": 8,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706155154.csv"
+    },
+    "y2023": {
+     "status": "ok",
+     "profit": 206296.0,
+     "mdd": 4.25,
+     "trades": 6,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706160905.csv"
+    },
+    "y2024": {
+     "status": "ok",
+     "profit": 700968.0,
+     "mdd": 5.6,
+     "trades": 10,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706162556.csv"
+    },
+    "y2025": {
+     "status": "ok",
+     "profit": -514535.0,
+     "mdd": 11.78,
+     "trades": 7,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706164252.csv"
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 2,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -15124026.0,
+    "mdd": 7.04,
+    "trades": -634
+   }
+  },
+  {
+   "name": "ALP_V2F_03",
+   "windows": {
+    "full": {
+     "status": "ok",
+     "profit": 608814.0,
+     "mdd": 4.39,
+     "trades": 10,
+     "run_id": "alp_v2f_warm64_full_20260706_c2",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706152558.csv"
+    },
+    "y2022": {
+     "status": "ok",
+     "profit": -75075.0,
+     "mdd": 1.5,
+     "trades": 2,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706155229.csv"
+    },
+    "y2023": {
+     "status": "ok",
+     "profit": 211586.0,
+     "mdd": 4.33,
+     "trades": 3,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706160936.csv"
+    },
+    "y2024": {
+     "status": "ok",
+     "profit": 563222.0,
+     "mdd": 2.13,
+     "trades": 4,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706162625.csv"
+    },
+    "y2025": {
+     "status": "ok",
+     "profit": -90919.0,
+     "mdd": 1.82,
+     "trades": 1,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c1",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706164323.csv"
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 2,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -14675340.0,
+    "mdd": -2.75,
+    "trades": -655
+   }
+  },
+  {
+   "name": "ALP_V2F_04",
+   "windows": {
+    "full": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_full_20260706_c2",
+     "csv_path": null
+    },
+    "y2022": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c2",
+     "csv_path": null
+    },
+    "y2023": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c2",
+     "csv_path": null
+    },
+    "y2024": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c2",
+     "csv_path": null
+    },
+    "y2025": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c2",
+     "csv_path": null
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 0,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -15284154.0,
+    "mdd": -7.14,
+    "trades": -665
+   }
+  },
+  {
+   "name": "ALP_V2F_05",
+   "windows": {
+    "full": {
+     "status": "ok",
+     "profit": 112551.0,
+     "mdd": 8.58,
+     "trades": 14,
+     "run_id": "alp_v2f_warm64_full_20260706_c3",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706154057.csv"
+    },
+    "y2022": {
+     "status": "ok",
+     "profit": -91404.0,
+     "mdd": 3.59,
+     "trades": 3,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c2",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706160025.csv"
+    },
+    "y2023": {
+     "status": "ok",
+     "profit": 155795.0,
+     "mdd": 4.38,
+     "trades": 4,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c2",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706161724.csv"
+    },
+    "y2024": {
+     "status": "ok",
+     "profit": -128017.0,
+     "mdd": 2.57,
+     "trades": 4,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c2",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706163430.csv"
+    },
+    "y2025": {
+     "status": "ok",
+     "profit": 176177.0,
+     "mdd": 3.52,
+     "trades": 3,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c2",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706165132.csv"
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 2,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -15171603.0,
+    "mdd": 1.4400000000000004,
+    "trades": -651
+   }
+  },
+  {
+   "name": "ALP_V2F_06",
+   "windows": {
+    "full": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_full_20260706_c3",
+     "csv_path": null
+    },
+    "y2022": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2022_20260706_c2",
+     "csv_path": null
+    },
+    "y2023": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2023_20260706_c2",
+     "csv_path": null
+    },
+    "y2024": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2024_20260706_c2",
+     "csv_path": null
+    },
+    "y2025": {
+     "status": "error",
+     "profit": 0.0,
+     "mdd": 0.0,
+     "trades": 0,
+     "run_id": "alp_v2f_warm64_y2025_20260706_c2",
+     "csv_path": null
+    }
+   },
+   "reconciliation_ok": true,
+   "superior": false,
+   "risk_improved": false,
+   "common_floor": {
+    "trades_ok": false,
+    "trades_floor": 266,
+    "positive_years": 0,
+    "years_ok": false,
+    "ok": false
+   },
+   "success": false,
+   "delta_vs_A_full": {
+    "profit": -15284154.0,
+    "mdd": -7.14,
+    "trades": -665
+   }
+  }
+ ],
+ "success_filters": [],
+ "n_success": 0,
+ "oos": {
+  "executed": false,
+  "window": "validation_sealed 2025-01~2026-02",
+  "control_A_oos": null,
+  "survivors": []
+ },
+ "budget_used": {
+  "ab_runs": 30,
+  "ab_runs_max_sealed": 30,
+  "oos_runs": 0
+ },
+ "best_filter": {
+  "name": "ALP_V2F_03",
+  "delta_profit_full": -14675340.0,
+  "delta_mdd_full": -2.75
+ }
+}

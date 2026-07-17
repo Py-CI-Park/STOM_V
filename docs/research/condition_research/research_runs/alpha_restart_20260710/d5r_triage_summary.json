@@ -1,0 +1,1156 @@
+{
+ "kind": "d5r_conditional_exit_triage",
+ "generated": "2026-07-12T17:21:21",
+ "preregistration": "2026-07-12_d5r_conditional_exit_preregistration.md (ac5ca448)",
+ "window": "2022-03-23~2023-12-31(발견 가용)",
+ "objective": "총수익 상향(give-back 회수) — 판정량 Δnet=net(패치)−net(현직)",
+ "champion_base": "RR8_12 (sell sha 8ef01e0e)",
+ "load_report": {
+  "per_champion": {
+   "RR8_12": {
+    "discovery_rows": 298,
+    "accepted": 298,
+    "exclusions": {}
+   },
+   "RR8_0": {
+    "discovery_rows": 221,
+    "accepted": 221,
+    "exclusions": {}
+   },
+   "RR8_21": {
+    "discovery_rows": 246,
+    "accepted": 160,
+    "exclusions": {
+     "foreign_sell_condition": 86
+    }
+   }
+  },
+  "exclusions": {},
+  "total_accepted": 679,
+  "unique_dedup": 318
+ },
+ "population": {
+  "family_accepted_rows": 679,
+  "deduped_unique": 318,
+  "dedup_key": "(진입일자, code6, 진입시각)",
+  "note": "GPTAUTH_G8 제외(별개 매도식·영향거래 0, §7); RR8_21 86건 foreign(0.7 트레일 변형) 제외"
+ },
+ "R1_lower_bound": [
+  {
+   "candidate": "A1",
+   "family": "A",
+   "population_def": "inc_cond==5(trailing)",
+   "n_pop": 86,
+   "n_2022": 32,
+   "n_2023": 54,
+   "backstop": "pop>=100 ∧ 연>=30",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "A2",
+   "family": "A",
+   "population_def": "inc_cond==5(trailing)",
+   "n_pop": 86,
+   "n_2022": 32,
+   "n_2023": 54,
+   "backstop": "pop>=100 ∧ 연>=30",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B1",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 77,
+   "n_2022": 27,
+   "n_2023": 50,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B2",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 88,
+   "n_2022": 34,
+   "n_2023": 54,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B3",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 64,
+   "n_2022": 25,
+   "n_2023": 39,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B4",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 72,
+   "n_2022": 30,
+   "n_2023": 42,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B5",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 51,
+   "n_2022": 20,
+   "n_2023": 31,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  },
+  {
+   "candidate": "B6",
+   "family": "B",
+   "population_def": "held≥T ∧ best_T<x ∧ sp_T<y",
+   "n_pop": 60,
+   "n_2022": 23,
+   "n_2023": 37,
+   "backstop": "pop>=150 ∧ 연>=40",
+   "qualifies": false,
+   "verdict": "inconclusive(kill-2)"
+  }
+ ],
+ "R1_help_hurt_map": {
+  "120": {
+   "n_held": 235,
+   "grid": [
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp<0",
+     "n": 11,
+     "n_2022": 7,
+     "n_2023": 4,
+     "mean_cut_benefit": -0.5909,
+     "mean_benefit_2022": -0.5029,
+     "mean_benefit_2023": -0.745
+    },
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp>=0",
+     "n": 18,
+     "n_2022": 9,
+     "n_2023": 9,
+     "mean_cut_benefit": -1.5311,
+     "mean_benefit_2022": -1.3989,
+     "mean_benefit_2023": -1.6633
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp<0",
+     "n": 11,
+     "n_2022": 3,
+     "n_2023": 8,
+     "mean_cut_benefit": -1.6064,
+     "mean_benefit_2022": -4.41,
+     "mean_benefit_2023": -0.555
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp>=0",
+     "n": 57,
+     "n_2022": 17,
+     "n_2023": 40,
+     "mean_cut_benefit": -0.6204,
+     "mean_benefit_2022": -0.7324,
+     "mean_benefit_2023": -0.5728
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp<0",
+     "n": 77,
+     "n_2022": 27,
+     "n_2023": 50,
+     "mean_cut_benefit": 0.3796,
+     "mean_benefit_2022": 0.4319,
+     "mean_benefit_2023": 0.3514
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp>=0",
+     "n": 16,
+     "n_2022": 4,
+     "n_2023": 12,
+     "mean_cut_benefit": -0.0256,
+     "mean_benefit_2022": 2.0275,
+     "mean_benefit_2023": -0.71
+    },
+    {
+     "best_bin": "best>=3.0",
+     "sp_sign": "sp>=0",
+     "n": 45,
+     "n_2022": 18,
+     "n_2023": 27,
+     "mean_cut_benefit": -0.3764,
+     "mean_benefit_2022": -0.5133,
+     "mean_benefit_2023": -0.2852
+    }
+   ]
+  },
+  "180": {
+   "n_held": 203,
+   "grid": [
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp<0",
+     "n": 8,
+     "n_2022": 5,
+     "n_2023": 3,
+     "mean_cut_benefit": -1.3712,
+     "mean_benefit_2022": -0.302,
+     "mean_benefit_2023": -3.1533
+    },
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp>=0",
+     "n": 9,
+     "n_2022": 4,
+     "n_2023": 5,
+     "mean_cut_benefit": 0.6544,
+     "mean_benefit_2022": -0.5425,
+     "mean_benefit_2023": 1.612
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp<0",
+     "n": 14,
+     "n_2022": 2,
+     "n_2023": 12,
+     "mean_cut_benefit": -0.1329,
+     "mean_benefit_2022": 1.255,
+     "mean_benefit_2023": -0.3642
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp>=0",
+     "n": 53,
+     "n_2022": 19,
+     "n_2023": 34,
+     "mean_cut_benefit": -0.7872,
+     "mean_benefit_2022": -1.0595,
+     "mean_benefit_2023": -0.635
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp<0",
+     "n": 64,
+     "n_2022": 25,
+     "n_2023": 39,
+     "mean_cut_benefit": 0.0611,
+     "mean_benefit_2022": 0.5848,
+     "mean_benefit_2023": -0.2746
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp>=0",
+     "n": 10,
+     "n_2022": 2,
+     "n_2023": 8,
+     "mean_cut_benefit": 0.84,
+     "mean_benefit_2022": 1.75,
+     "mean_benefit_2023": 0.6125
+    },
+    {
+     "best_bin": "best>=3.0",
+     "sp_sign": "sp>=0",
+     "n": 45,
+     "n_2022": 14,
+     "n_2023": 31,
+     "mean_cut_benefit": -0.3433,
+     "mean_benefit_2022": -0.9857,
+     "mean_benefit_2023": -0.0532
+    }
+   ]
+  },
+  "240": {
+   "n_held": 177,
+   "grid": [
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp<0",
+     "n": 9,
+     "n_2022": 3,
+     "n_2023": 6,
+     "mean_cut_benefit": -0.1189,
+     "mean_benefit_2022": 0.5667,
+     "mean_benefit_2023": -0.4617
+    },
+    {
+     "best_bin": "1.0<=best<1.5",
+     "sp_sign": "sp>=0",
+     "n": 7,
+     "n_2022": 5,
+     "n_2023": 2,
+     "mean_cut_benefit": 0.4457,
+     "mean_benefit_2022": 0.228,
+     "mean_benefit_2023": 0.99
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp<0",
+     "n": 18,
+     "n_2022": 2,
+     "n_2023": 16,
+     "mean_cut_benefit": -1.5333,
+     "mean_benefit_2022": 1.045,
+     "mean_benefit_2023": -1.8556
+    },
+    {
+     "best_bin": "1.5<=best<3.0",
+     "sp_sign": "sp>=0",
+     "n": 43,
+     "n_2022": 18,
+     "n_2023": 25,
+     "mean_cut_benefit": -0.4572,
+     "mean_benefit_2022": -0.7428,
+     "mean_benefit_2023": -0.2516
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp<0",
+     "n": 51,
+     "n_2022": 20,
+     "n_2023": 31,
+     "mean_cut_benefit": 0.2559,
+     "mean_benefit_2022": 0.771,
+     "mean_benefit_2023": -0.0765
+    },
+    {
+     "best_bin": "best<1.0",
+     "sp_sign": "sp>=0",
+     "n": 6,
+     "n_2022": 2,
+     "n_2023": 4,
+     "mean_cut_benefit": 0.56,
+     "mean_benefit_2022": 1.785,
+     "mean_benefit_2023": -0.0525
+    },
+    {
+     "best_bin": "best>=3.0",
+     "sp_sign": "sp>=0",
+     "n": 43,
+     "n_2022": 14,
+     "n_2023": 29,
+     "mean_cut_benefit": -0.1744,
+     "mean_benefit_2022": -0.4364,
+     "mean_benefit_2023": -0.0479
+    }
+   ]
+  }
+ },
+ "R1_kill1": {
+  "kill1_fires": false,
+  "criterion": "저활력(best_T<1.5 ∧ sp_T<0) 절단이득 > 승자(best_T>=3.0) 절단이득 이 2022·2023 모두 성립하면 상태-강건 분리. 어느 T 라도 성립하면 순수 레짐 아님(kill-1 미발동); 실패 T 는 레짐-취약.",
+  "state_robust_T": [
+   120
+  ],
+  "regime_fragile_T": [
+   180,
+   240
+  ],
+  "per_T": {
+   "120": {
+    "T": 120,
+    "low_benefit_2022": 0.2394,
+    "win_benefit_2022": -0.5133,
+    "n_low_2022": 34,
+    "n_win_2022": 18,
+    "low_benefit_2023": 0.2702,
+    "win_benefit_2023": -0.2852,
+    "n_low_2023": 54,
+    "n_win_2023": 27,
+    "separates_both_years": true
+   },
+   "180": {
+    "T": 180,
+    "low_benefit_2022": 0.437,
+    "win_benefit_2022": -0.9857,
+    "n_low_2022": 30,
+    "n_win_2022": 14,
+    "low_benefit_2023": -0.4802,
+    "win_benefit_2023": -0.0532,
+    "n_low_2023": 42,
+    "n_win_2023": 31,
+    "separates_both_years": false
+   },
+   "240": {
+    "T": 240,
+    "low_benefit_2022": 0.7443,
+    "win_benefit_2022": -0.4364,
+    "n_low_2022": 23,
+    "n_win_2022": 14,
+    "low_benefit_2023": -0.1389,
+    "win_benefit_2023": -0.0479,
+    "n_low_2023": 37,
+    "n_win_2023": 29,
+    "separates_both_years": false
+   }
+  }
+ },
+ "L3_repro_gate": {
+  "threshold": 0.999,
+  "n_pairs": 1303,
+  "match_rate_overall": 1.0,
+  "err_median_pp_overall": 0.0,
+  "err_p99_pp_overall": 0.0,
+  "err_max_pp_overall": 0.0,
+  "gate_pass": true,
+  "engine_used": "pure",
+  "per_candidate": {
+   "A1": {
+    "n_affected": 78,
+    "n_match": 78,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "A2": {
+    "n_affected": 103,
+    "n_match": 103,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B1": {
+    "n_affected": 208,
+    "n_match": 208,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B2": {
+    "n_affected": 252,
+    "n_match": 252,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B3": {
+    "n_affected": 165,
+    "n_match": 165,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B4": {
+    "n_affected": 197,
+    "n_match": 197,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B5": {
+    "n_affected": 133,
+    "n_match": 133,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   },
+   "B6": {
+    "n_affected": 167,
+    "n_match": 167,
+    "match_rate": 1.0,
+    "err_median_pp": 0.0,
+    "err_p99_pp": 0.0,
+    "err_max_pp": 0.0,
+    "mismatches": []
+   }
+  }
+ },
+ "R3_triage": [
+  {
+   "candidate": "A1",
+   "family": "A",
+   "adopt_floor": 0.2,
+   "n_affected": 51,
+   "mean_dnet_pp": 0.2165,
+   "sum_dwon_krw": 551445,
+   "ci_low_pp": -0.1204,
+   "ci_high_pp": 0.6189,
+   "p_one_sided": 0.1375,
+   "mde_pp": 0.5285,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 21,
+     "mean_dnet": 0.5662,
+     "sign": 1
+    },
+    "2023": {
+     "n": 30,
+     "mean_dnet": -0.0283,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 11,
+     "mean_dnet": 1.0145,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 10,
+     "mean_dnet": 0.073,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 14,
+     "mean_dnet": -0.1014,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 16,
+     "mean_dnet": 0.0356,
+     "sign": 1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 48,
+      "mean_dnet": 0.114,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 30,
+      "mean_dnet": 0.1327,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 0,
+      "mean_dnet": null,
+      "sign": 0
+     }
+    },
+    "base_sign": 1,
+    "agree": 2,
+    "consistent_2of3": true
+   },
+   "overlap": null,
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": false,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "A2",
+   "family": "A",
+   "adopt_floor": 0.2,
+   "n_affected": 66,
+   "mean_dnet_pp": 0.1505,
+   "sum_dwon_krw": 497313,
+   "ci_low_pp": -0.1236,
+   "ci_high_pp": 0.4919,
+   "p_one_sided": 0.175,
+   "mde_pp": 0.4399,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 27,
+     "mean_dnet": 0.443,
+     "sign": 1
+    },
+    "2023": {
+     "n": 39,
+     "mean_dnet": -0.0521,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 12,
+     "mean_dnet": 0.86,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 15,
+     "mean_dnet": 0.1093,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 20,
+     "mean_dnet": -0.1735,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 19,
+     "mean_dnet": 0.0758,
+     "sign": 1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 61,
+      "mean_dnet": 0.0905,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 42,
+      "mean_dnet": 0.0133,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 0,
+      "mean_dnet": null,
+      "sign": 0
+     }
+    },
+    "base_sign": 1,
+    "agree": 2,
+    "consistent_2of3": true
+   },
+   "overlap": null,
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": false,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B1",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 90,
+   "mean_dnet_pp": 0.2918,
+   "sum_dwon_krw": 1313500,
+   "ci_low_pp": -0.1654,
+   "ci_high_pp": 0.7005,
+   "p_one_sided": 0.08,
+   "mde_pp": 0.619,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 29,
+     "mean_dnet": 0.5583,
+     "sign": 1
+    },
+    "2023": {
+     "n": 61,
+     "mean_dnet": 0.1651,
+     "sign": 1
+    }
+   },
+   "both_year_same_sign": true,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 11,
+     "mean_dnet": 0.8764,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 18,
+     "mean_dnet": 0.3639,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 35,
+     "mean_dnet": 0.128,
+     "sign": 1
+    },
+    "2023H2": {
+     "n": 26,
+     "mean_dnet": 0.215,
+     "sign": 1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 87,
+      "mean_dnet": 0.3668,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 61,
+      "mean_dnet": 0.1852,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 60,
+      "mean_dnet": 0.5438,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 90,
+    "held_ge_T": 235,
+    "overlap_rate": 0.383,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": false,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B2",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 109,
+   "mean_dnet_pp": 0.0743,
+   "sum_dwon_krw": 405542,
+   "ci_low_pp": -0.268,
+   "ci_high_pp": 0.4291,
+   "p_one_sided": 0.3625,
+   "mde_pp": 0.4983,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 39,
+     "mean_dnet": 0.3072,
+     "sign": 1
+    },
+    "2023": {
+     "n": 70,
+     "mean_dnet": -0.0554,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 13,
+     "mean_dnet": 0.9477,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 26,
+     "mean_dnet": -0.0131,
+     "sign": -1
+    },
+    "2023H1": {
+     "n": 43,
+     "mean_dnet": -0.1149,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 27,
+     "mean_dnet": 0.0393,
+     "sign": 1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 103,
+      "mean_dnet": 0.137,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 76,
+      "mean_dnet": 0.0289,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 73,
+      "mean_dnet": 0.3821,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 109,
+    "held_ge_T": 235,
+    "overlap_rate": 0.4638,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": false,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B3",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 71,
+   "mean_dnet_pp": 0.1721,
+   "sum_dwon_krw": 614683,
+   "ci_low_pp": -0.308,
+   "ci_high_pp": 0.6314,
+   "p_one_sided": 0.2225,
+   "mde_pp": 0.6715,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 27,
+     "mean_dnet": 0.6641,
+     "sign": 1
+    },
+    "2023": {
+     "n": 44,
+     "mean_dnet": -0.1298,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 10,
+     "mean_dnet": 1.017,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 17,
+     "mean_dnet": 0.4565,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 28,
+     "mean_dnet": -0.2754,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 16,
+     "mean_dnet": 0.125,
+     "sign": 1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 68,
+      "mean_dnet": 0.2554,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 49,
+      "mean_dnet": 0.0265,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 48,
+      "mean_dnet": 0.2331,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 71,
+    "held_ge_T": 203,
+    "overlap_rate": 0.3498,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": true,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B4",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 86,
+   "mean_dnet_pp": 0.048,
+   "sum_dwon_krw": 209820,
+   "ci_low_pp": -0.3439,
+   "ci_high_pp": 0.5163,
+   "p_one_sided": 0.37,
+   "mde_pp": 0.6149,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 34,
+     "mean_dnet": 0.4974,
+     "sign": 1
+    },
+    "2023": {
+     "n": 52,
+     "mean_dnet": -0.2458,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 12,
+     "mean_dnet": 0.9875,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 22,
+     "mean_dnet": 0.23,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 35,
+     "mean_dnet": -0.2957,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 17,
+     "mean_dnet": -0.1429,
+     "sign": -1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 81,
+      "mean_dnet": 0.0879,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 59,
+      "mean_dnet": 0.0502,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 57,
+      "mean_dnet": 0.2667,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 86,
+    "held_ge_T": 203,
+    "overlap_rate": 0.4236,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": true,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B5",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 56,
+   "mean_dnet_pp": 0.2129,
+   "sum_dwon_krw": 600679,
+   "ci_low_pp": -0.3596,
+   "ci_high_pp": 0.7219,
+   "p_one_sided": 0.2475,
+   "mde_pp": 0.7731,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 22,
+     "mean_dnet": 0.8355,
+     "sign": 1
+    },
+    "2023": {
+     "n": 34,
+     "mean_dnet": -0.19,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 9,
+     "mean_dnet": 1.1044,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 13,
+     "mean_dnet": 0.6492,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 22,
+     "mean_dnet": -0.035,
+     "sign": -1
+    },
+    "2023H2": {
+     "n": 12,
+     "mean_dnet": -0.4742,
+     "sign": -1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 54,
+      "mean_dnet": 0.2781,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 39,
+      "mean_dnet": 0.0708,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 40,
+      "mean_dnet": 0.076,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 56,
+    "held_ge_T": 177,
+    "overlap_rate": 0.3164,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": true,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  },
+  {
+   "candidate": "B6",
+   "family": "B",
+   "adopt_floor": 0.1,
+   "n_affected": 72,
+   "mean_dnet_pp": 0.1833,
+   "sum_dwon_krw": 664539,
+   "ci_low_pp": -0.3771,
+   "ci_high_pp": 0.6751,
+   "p_one_sided": 0.2325,
+   "mde_pp": 0.7521,
+   "n_boot": 400,
+   "seed": 20260712,
+   "year_direction": {
+    "2022": {
+     "n": 29,
+     "mean_dnet": 0.6503,
+     "sign": 1
+    },
+    "2023": {
+     "n": 43,
+     "mean_dnet": -0.1316,
+     "sign": -1
+    }
+   },
+   "both_year_same_sign": false,
+   "half_year_sign": {
+    "2022H1": {
+     "n": 11,
+     "mean_dnet": 1.1155,
+     "sign": 1
+    },
+    "2022H2": {
+     "n": 18,
+     "mean_dnet": 0.3661,
+     "sign": 1
+    },
+    "2023H1": {
+     "n": 29,
+     "mean_dnet": 0.0641,
+     "sign": 1
+    },
+    "2023H2": {
+     "n": 14,
+     "mean_dnet": -0.5371,
+     "sign": -1
+    }
+   },
+   "family_consistency": {
+    "per_champion": {
+     "RR8_12": {
+      "n": 69,
+      "mean_dnet": 0.2019,
+      "sign": 1
+     },
+     "RR8_0": {
+      "n": 49,
+      "mean_dnet": 0.2718,
+      "sign": 1
+     },
+     "RR8_21": {
+      "n": 49,
+      "mean_dnet": 0.342,
+      "sign": 1
+     }
+    },
+    "base_sign": 1,
+    "agree": 3,
+    "consistent_2of3": true
+   },
+   "overlap": {
+    "b_fired": 72,
+    "held_ge_T": 177,
+    "overlap_rate": 0.4068,
+    "le_0.50": true,
+    "le_0.55": true,
+    "le_0.60": true,
+    "kill4_fires": false
+   },
+   "diagnostic_class": "reject",
+   "backstop_qualifies": false,
+   "regime_fragile": true,
+   "final_verdict": "inconclusive(kill-2: 표본 하한 미달)"
+  }
+ ],
+ "headline": {
+  "n_candidates": 8,
+  "n_backstop_qualified": 0,
+  "kill1_fires": false,
+  "l3_gate_pass": true,
+  "best_candidate": "B1",
+  "best_mean_dnet_pp": 0.2918,
+  "best_ci_low_pp": -0.1654,
+  "any_pass": false
+ }
+}

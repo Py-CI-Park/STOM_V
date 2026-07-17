@@ -1,0 +1,122 @@
+{
+  "generated_at": "2026-07-06T14:33:35.466657",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_lab_v2_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "dates_requested": [
+    "20231204",
+    "20231215",
+    "20231228"
+  ],
+  "days_built": [
+    "20231204",
+    "20231215",
+    "20231228"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 3,
+  "n_samples": 33410,
+  "labels": {
+    "L3_pos": {
+      "n": 33410,
+      "positives": 4643,
+      "positive_rate": 0.13897036815324754
+    }
+  },
+  "per_day": {
+    "20231204": {
+      "n_samples": 11059,
+      "shard": "20231204.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11059,
+          "positives": 1836,
+          "positive_rate": 0.16601862736232934
+        },
+        "L3_net": {
+          "n": 11059,
+          "mean": -0.007801552114218238,
+          "p10": -0.02305419445037842,
+          "p50": -0.012689138762652874,
+          "p90": 0.019028497859835625
+        }
+      },
+      "l3_stats": {
+        "fired": 8727,
+        "forced_cap": 2332,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231215": {
+      "n_samples": 10664,
+      "shard": "20231215.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10664,
+          "positives": 1301,
+          "positive_rate": 0.12199924981245311
+        },
+        "L3_net": {
+          "n": 10664,
+          "mean": -0.010332102235921358,
+          "p10": -0.024873344227671623,
+          "p50": -0.012434674426913261,
+          "p90": 0.013963459245860597
+        }
+      },
+      "l3_stats": {
+        "fired": 8394,
+        "forced_cap": 2270,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231228": {
+      "n_samples": 11687,
+      "shard": "20231228.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11687,
+          "positives": 1506,
+          "positive_rate": 0.1288611277487807
+        },
+        "L3_net": {
+          "n": 11687,
+          "mean": -0.01020919291833823,
+          "p10": -0.025592854246497154,
+          "p50": -0.013558827340602875,
+          "p90": 0.015192047692835331
+        }
+      },
+      "l3_stats": {
+        "fired": 9746,
+        "forced_cap": 1941,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 87.28
+}

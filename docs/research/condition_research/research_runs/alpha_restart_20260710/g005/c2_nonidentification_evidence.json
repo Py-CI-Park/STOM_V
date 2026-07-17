@@ -1,0 +1,173 @@
+{
+  "schema": "g005-c2-nonidentification-v1",
+  "schema_version": 1,
+  "deterministic": true,
+  "experiment": {
+    "experiment_id": "alpha_restart_20260710-g005-c2",
+    "hypothesis_id": "G005-C2-ACTIVATION-ORDER",
+    "terminal_decision": "UNDETERMINED",
+    "terminal_status": "nonidentified",
+    "nonidentification_type": "dependency_schema_nonidentification",
+    "statistical_kill": false,
+    "kill_evaluated": false,
+    "pass_evaluated": false,
+    "outcome_claim_made": false
+  },
+  "repository": {
+    "head": "25975531ab966eb113d79bc130b9b4493001b1f6",
+    "short_head": "25975531"
+  },
+  "authoritative_sources": {
+    "prereg": {
+      "path": "docs/research/condition_research/plans/2026-07-16_g005_c2_activation_order_preregistration.md",
+      "sha256": "084928f444d1f7b729fea648c5ba46f2d7f1696d2450c469b895c3e65991fa60",
+      "size_bytes": 12220,
+      "authority": "committed_sealed_preregistration"
+    },
+    "static_dependency_guard": {
+      "path": "scripts/g005_c2_nonidentification_guard.py",
+      "sha256": "a0273c212922fc93317fb5cdb5b70074ac1c526b8800913a265e71f95633c653",
+      "size_bytes": 573,
+      "authority": "static_nonexecution_dependency_sentinel",
+      "declarations_only": true,
+      "invocation_present": false,
+      "notes": "Contains declarations only and no invocation."
+    },
+    "agenda": {
+      "path": "docs/research/condition_research/2026-07-14_alpha_lab_full_audit_and_research_agenda.md",
+      "sha256": "3aeebffb511bf6f9a1114602ec35d05edb3917bf2346c64aba48ebc9ee08e14b",
+      "size_bytes": 21373,
+      "authority": "committed_research_agenda"
+    },
+    "d1_bits_sentinel": {
+      "path": "docs/research/condition_research/research_runs/alpha_restart_20260710/stats_map/d1_onset_clause_bits.parquet",
+      "sha256": "4df57b776bc1cb1ca7afc42e9eecd1b80c6fecbedd13e8379e017530a6600e56",
+      "size_bytes": 6783855,
+      "rows": 863446,
+      "schema_compact": "code/day/off/t0 + bit_1..bit_39",
+      "schema_fields": [
+        "code",
+        "day",
+        "off",
+        "t0",
+        "bit_1",
+        "bit_2",
+        "bit_3",
+        "bit_4",
+        "bit_5",
+        "bit_6",
+        "bit_7",
+        "bit_8",
+        "bit_9",
+        "bit_10",
+        "bit_11",
+        "bit_12",
+        "bit_13",
+        "bit_14",
+        "bit_15",
+        "bit_16",
+        "bit_17",
+        "bit_18",
+        "bit_19",
+        "bit_20",
+        "bit_21",
+        "bit_22",
+        "bit_23",
+        "bit_24",
+        "bit_25",
+        "bit_26",
+        "bit_27",
+        "bit_28",
+        "bit_29",
+        "bit_30",
+        "bit_31",
+        "bit_32",
+        "bit_33",
+        "bit_34",
+        "bit_35",
+        "bit_36",
+        "bit_37",
+        "bit_38",
+        "bit_39"
+      ],
+      "safe_sentinel_snapshot": true,
+      "can_identify_activation_order": false
+    }
+  },
+  "missing_required_inputs": [
+    "exact_first_activation_timestamp_for_clause16",
+    "exact_first_activation_timestamp_for_clause37",
+    "exact_first_activation_timestamp_for_clause38",
+    "outcome",
+    "exact_pre_existing_activation_trace_authority"
+  ],
+  "nonidentification_evidence": {
+    "required_timestamp_format": "exact 14-digit Asia/Seoul YYYYMMDDHHMMSS string on the same day as day/t0; no rounding, repair, timezone conversion, or day rollover correction",
+    "safe_sentinel_limitation": "The D1 bits sentinel contains code/day/off/t0 and final bit_1..bit_39 snapshot fields only; it contains no transition timestamp, activation order, outcome, or trace authority.",
+    "snapshot_cannot_identify_order": true,
+    "off_cannot_identify_order": true,
+    "pairwise_proxy_banned": true,
+    "flat_final_bit_proxy_banned": true,
+    "d1_interaction_reuse_banned": true,
+    "c1_tie_logic_reuse_banned": true
+  },
+  "siblings": {
+    "H37": {
+      "comparison": "16->37 minus 37->16",
+      "pressure_clause": 37,
+      "identified": false,
+      "kill_evaluated": false,
+      "pass_evaluated": false,
+      "reason": "Absent exact first activation timestamps for clause16 and clause37, absent outcome, and absent exact pre-existing trace authority."
+    },
+    "H38": {
+      "comparison": "16->38 minus 38->16",
+      "pressure_clause": 38,
+      "identified": false,
+      "kill_evaluated": false,
+      "pass_evaluated": false,
+      "reason": "Absent exact first activation timestamps for clause16 and clause38, absent outcome, and absent exact pre-existing trace authority."
+    }
+  },
+  "decision_limits": {
+    "terminal_dependency_schema_nonidentification": true,
+    "statistical_kill_claimed": false,
+    "pass_claimed": false,
+    "matched_sets_computed": false,
+    "annual_estimates_computed": false,
+    "pooled_ci_computed": false,
+    "bootstrap_replicates_computed": false,
+    "numeric_outcome_claimed": false,
+    "future_trace_attachment_allowed": false,
+    "future_study_requires_new_hypothesis_outside_g005": true
+  },
+  "zero_counters": {
+    "invocation": 0,
+    "materialization": 0,
+    "receipt": 0,
+    "claim": 0,
+    "target": 0,
+    "outcome": 0,
+    "n_trials": 0,
+    "engine": 0,
+    "db_write": 0,
+    "registration": 0,
+    "promotion": 0
+  },
+  "prohibited_actions_observed": {
+    "target_invocation": false,
+    "actual_materialization": false,
+    "measurement": false,
+    "receipt_created": false,
+    "claim_created": false,
+    "n_trials_row_appended": false,
+    "engine_run": false,
+    "db_write": false,
+    "strategy_registration": false,
+    "promotion": false,
+    "known_2024_plus_extension": false,
+    "retry_rerun_rescue": false,
+    "future_trace_attachment": false
+  },
+  "terminal_statement": "Under the committed G005-C2 preregistration, absent exact first activation timestamps for 16/37/38, absent outcome, and absent exact pre-existing trace authority make H37 and H38 nonidentified. KILL/PASS are not evaluated; no outcome claim is made; no future trace may be attached to G005."
+}

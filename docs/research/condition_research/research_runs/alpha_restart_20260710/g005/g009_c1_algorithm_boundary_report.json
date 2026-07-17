@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "kind": "algorithm-boundary-report",
+  "surface": "algorithm",
+  "contractRef": {
+    "hypothesisId": "G005-C1-TIME-SHIFT",
+    "preregistration": {
+      "path": "docs/research/condition_research/plans/2026-07-16_g005_c1_time_shift_preregistration.md",
+      "status": "SEALED",
+      "evidence": [
+        "prereg lines 9-12 fix hypothesis, 2022-03-23..2023-12-31 discovery window, pairs (16,37)/(16,38), and conjunctive family semantics",
+        "prereg lines 18-31 bind source fingerprints, exact (code,day,off,t0) 1:1 join, joined_rows=863446, labeled_rows=862932, finite required fields",
+        "prereg lines 35-41 set pooled and annual cell floors and prohibit outcome-based relaxation",
+        "prereg lines 57-64 fix Python random.Random(2026071601), 400 replicates, group/order/call-count rules, joint bit37/bit38 shifting, and nearest-rank Q(.95)",
+        "prereg lines 68-71 fix bootstrap seed 2026071602, 20000 annual whole-day draws, nearest-rank CI, and undefined-draw UNDETERMINED precedence",
+        "prereg lines 76-80 fix PASS/KILL/UNDETERMINED precedence and prohibit rescue/rerun/promotion",
+        "prereg lines 87-91 bind c1_input materialization and scripts/g005_c1_time_shift.py target without DB/registration/promotion authority"
+      ]
+    },
+    "builder": {
+      "path": "scripts/build_g005_c1_input.py",
+      "inspectedEvidence": [
+        "lines 13-36 define production paths, window, pairs, row/cell floors, seeds, replicate/draw counts",
+        "lines 41-72 define sealed source descriptors and row schema",
+        "lines 88-140 emit the same contract constants embedded into snapshots, including no engine_run/database_write/registration/promotion/retry/rescue",
+        "lines 195-218 validate path/sha256/size/rows and optional Arrow provenance before reads",
+        "lines 221-341 validate Arrow schema, exact typed keys, duplicate-free 1:1 key equality, finite l3_net, discovery-window/labeled filtering, and sorted eligible output",
+        "lines 359-375 re-describe sources after materialization and fail if pre/post descriptors differ",
+        "lines 405-425 write deterministic JSON with exclusive create and fail if sealed output exists"
+      ]
+    },
+    "target": {
+      "path": "scripts/g005_c1_time_shift.py",
+      "inspectedEvidence": [
+        "lines 6-23 define literal input path, result schema, window, pairs, floors, seeds, and draw counts",
+        "lines 66-118 define production contract constants matching builder, including decision precedence and forbidden operations",
+        "lines 237-314 normalize and reject nonfinite, bool/numeric type drift, invalid dates, out-of-window days, malformed identities, and non-bit values",
+        "lines 278-359 validate source keys, pre/post equality, sealed source descriptors, row_flow floors, and duplicate-free typed rows",
+        "lines 464-499 enforce pooled/annual cell floors before observed interactions",
+        "lines 502-527 require eligible rows sorted by (code,day,off,t0) and contiguous (code,day) groups",
+        "lines 549-668 implement MT/random-compatible randrange without importing random in the target",
+        "lines 671-784 enforce one nonzero offset call per shiftable group per replicate, skip singletons without RNG, shift bit37/bit38 jointly, and report support/calls",
+        "lines 852-904 fail undefined bootstrap draws and calculate annual nearest-rank CI",
+        "lines 982-1021 keep measure() pure over a supplied snapshot, catch only sentinel integrity failures as UNDETERMINED, re-raise accidental KeyError, and only then decide PASS/KILL",
+        "lines 1024-1032 read the literal c1_input JSON and print one JSON result; no builder/materializer/DB/engine call is present"
+      ]
+    },
+    "tests": {
+      "path": "tests/unit/test_alpha_g005_c1.py",
+      "inspectedEvidence": [
+        "lines 267-314 cover builder join validation, deterministic canonical JSON, pre/post descriptors, and exclusive output",
+        "lines 317-349 cover exact discovery-window filtering before materialization",
+        "lines 352-378 cover builder/target contract-constant parity",
+        "lines 381-474 cover source hash/schema drift and typed identity/day/off rejection in the builder",
+        "lines 476-510 cover target schema/hash/floor/window/order fail-closed UNDETERMINED behavior",
+        "lines 512-531 cover Python -O optimized-mode fail-closed behavior",
+        "lines 534-573 cover linear-shaped normalization and duplicate key sentinel rejection",
+        "lines 576-590 cover accidental KeyError re-raise rather than masking",
+        "lines 593-641 cover production-shape linear accumulation and large hot-path behavior",
+        "lines 647-711 cover target identity/numeric-string/type drift and row_flow remainder tamper",
+        "lines 714-827 cover nearest-rank boundaries, interaction formula, singleton skipping, joint pressure shifts, RNG stream parity, bootstrap sampling, and custom MT parity for production cardinalities",
+        "lines 830-904 compare optimized placebo/bootstrap/leave-one-code-out helpers to naive references at scale",
+        "lines 908-927 cover PASS, KILL, and undefined-placebo precedence",
+        "lines 930-968 cover literal plain JSON main input and mocked JSON output"
+      ]
+    },
+    "analysisBoundary": "Read-only static adversarial QA artifact. Executor did not run tests, gates, builders, targets, materializers, commits, .gjc, or DB/protected-path operations. Parent-run verification is recorded separately below."
+  },
+  "parentVerification": {
+    "source": "parent context supplied with assignment",
+    "commands": [
+      {
+        "command": "python -m pytest tests/unit/test_alpha_g005_c1.py tests/unit/test_alpha_g005_x1.py -q",
+        "reportedResult": "61 passed in 13.12s",
+        "scope": "parent-observed focused C1/X1 unit suite"
+      }
+    ],
+    "additionalReportedChecks": [
+      {
+        "check": "authoritative manifests/probe",
+        "reportedResult": "passed"
+      },
+      {
+        "check": "git diff --check",
+        "reportedResult": "clean"
+      }
+    ],
+    "executorCommandClaim": "none; this artifact records static inspection plus parent-run evidence only"
+  },
+  "contractCoverage": [
+    {
+      "id": "sealed-contract-and-parity",
+      "contract": "C1 is a single sealed 2022-2023 time-shift family with fixed pairs (16,37) and (16,38), fixed seeds/floors, and no rescue/promotion authority.",
+      "implementationEvidence": [
+        "builder contract_constants lines 88-140",
+        "target contract_constants lines 66-118"
+      ],
+      "testEvidence": [
+        "test_builder_and_target_contract_constants_match lines 352-378"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "source-provenance-and-join",
+      "contract": "L3 and local D1 sources must match sealed path/sha256/size/row descriptors, be bound pre/post, and join exactly 1:1 on (code,day,off,t0).",
+      "implementationEvidence": [
+        "builder source descriptors lines 41-54 and validation lines 195-218",
+        "builder exact schema/key join lines 221-341",
+        "builder pre/post drift check lines 359-375",
+        "target source pre/post equality and descriptor validation lines 272-291"
+      ],
+      "testEvidence": [
+        "builder deterministic/pre-post test lines 267-314",
+        "source hash and Arrow schema drift test lines 381-407",
+        "target bad hash UNDETERMINED test lines 486-491"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "window-and-type-boundary",
+      "contract": "Eligible rows are 2022-03-23..2023-12-31, years 2022/2023, finite y, typed integer day/off/year, nonempty string identities, and bit values only.",
+      "implementationEvidence": [
+        "builder typed value/window functions lines 229-272 and filtering lines 318-341",
+        "target typed normalization and window rejection lines 237-314"
+      ],
+      "testEvidence": [
+        "builder window filtering lines 317-349",
+        "builder identity/day/off rejection lines 409-474",
+        "target window/order fail-closed lines 499-510",
+        "target identity/numeric-string rejection lines 647-696"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "row-flow-order-and-tamper",
+      "contract": "Snapshot row_flow, row count floors, duplicate-free keys, sorted rows, and contiguous groups must not be tampered after materialization.",
+      "implementationEvidence": [
+        "builder row_flow lines 344-356",
+        "target row_flow and duplicate validation lines 317-359",
+        "target sorted/contiguous group validation lines 502-527"
+      ],
+      "testEvidence": [
+        "target shuffled-row UNDETERMINED lines 506-510",
+        "duplicate-key rejection lines 534-573",
+        "row_flow remainder tamper test lines 701-711"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "estimand-cell-floor-and-undefined-values",
+      "contract": "Observed I=mu11-mu10-mu01+mu00 is evaluated only after pooled and annual cell floors pass; undefined/nonfinite cell means yield UNDETERMINED before PASS/KILL.",
+      "implementationEvidence": [
+        "target interaction and cell mean logic lines 397-456",
+        "target cell floor enforcement lines 464-480",
+        "target observed interaction undefined guards lines 483-499"
+      ],
+      "testEvidence": [
+        "floor failure UNDETERMINED lines 493-497",
+        "nearest-rank and interaction formula lines 714-725",
+        "PASS/KILL/undefined precedence lines 908-927"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "placebo-rng-and-call-order",
+      "contract": "For each replicate 0..399, sorted shiftable groups use one Python-random-compatible randrange(1,n), singletons consume no RNG, and bit37/bit38 share the same offset.",
+      "implementationEvidence": [
+        "target custom MT randrange lines 549-668",
+        "target group rolling and joint bit shifts lines 671-725",
+        "target replicate loop/support/call reporting lines 747-784"
+      ],
+      "testEvidence": [
+        "joint singleton skip and stream parity lines 728-755",
+        "vectorized source indices and RNG stream parity lines 758-779",
+        "custom MT parity across production seeds/cardinalities lines 804-827"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "bootstrap-and-quantiles",
+      "contract": "Bootstrap uses annual whole-day clusters with seed 2026071602, exact draw count, nearest-rank CI, and no dropping undefined draws.",
+      "implementationEvidence": [
+        "target nearest-rank lines 367-374",
+        "target whole-day sampling lines 787-819",
+        "target day-cell aggregation and undefined draw fail-closed lines 830-904"
+      ],
+      "testEvidence": [
+        "bootstrap whole-day multiplicity and RNG stream parity lines 782-801",
+        "optimized bootstrap versus naive reference lines 843-848"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "decision-precedence",
+      "contract": "Integrity/schema/provenance/join/floor/nonfinite/undefined-replicate failures are UNDETERMINED first; identified measurements PASS only if both pairs pass all thresholds, else KILL.",
+      "implementationEvidence": [
+        "target sentinel handling and computation order lines 982-996",
+        "target pair_pass and PASS/KILL rule lines 998-1020"
+      ],
+      "testEvidence": [
+        "schema/hash/floor/window/order fail-closed lines 476-510",
+        "PASS/KILL/undefined precedence lines 908-927"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "exception-and-optimized-mode-boundary",
+      "contract": "Expected integrity failures remain fail-closed without asserts, including Python -O, while accidental exceptions are not swallowed.",
+      "implementationEvidence": [
+        "target _fail sentinel line 171-172",
+        "target catches only sentinel KeyError and re-raises others lines 992-996"
+      ],
+      "testEvidence": [
+        "optimized mode subprocess check lines 512-531",
+        "accidental KeyError re-raise lines 576-590"
+      ],
+      "status": "covered"
+    },
+    {
+      "id": "production-shape-complexity-and-side-effects",
+      "contract": "Algorithmic hot paths must remain production-shape safe and pure; target measurement performs no filesystem writes, engine calls, DB writes, registrations, or promotions.",
+      "implementationEvidence": [
+        "target cons/list-based hot paths lines 196-208, 502-527, 603-611, 680-704, 795-819, 870-904",
+        "measure() docstring states pure snapshot measurement lines 982-983",
+        "main only reads literal JSON and prints lines 1024-1032",
+        "contract forbidden_operations lines 109-117"
+      ],
+      "testEvidence": [
+        "source scans and large hot-path checks lines 593-641",
+        "optimized helpers versus naive and large leave-one-code-out checks lines 830-904",
+        "literal plain JSON main input and output tests lines 930-968"
+      ],
+      "status": "covered"
+    }
+  ],
+  "adversarialCases": [
+    {
+      "caseId": "window-edges",
+      "threat": "Rows just outside the sealed 2022-03-23..2023-12-31 discovery window are smuggled into eligible_rows or materialized input.",
+      "expectedBoundary": "Builder filters non-window rows before materialization and target rejects any out-of-window day as UNDETERMINED before outcome evaluation.",
+      "evidence": [
+        "prereg lines 9-10 and 29-31",
+        "builder _in_discovery_window/filter lines 265-266 and 323-325",
+        "target _day rejects outside window lines 263-269",
+        "tests lines 317-349 and 499-504"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "type-drift",
+      "threat": "JSON/parquet types drift to numeric strings, bool-as-number, empty identities, nonfinite y, non-bit values, or malformed dates.",
+      "expectedBoundary": "Typed normalization rejects non-string identities, bool/int confusion, numeric strings for day/year/off, invalid YYYYMMDD, nonfinite l3_net, and non-0/1 bits before measurement.",
+      "evidence": [
+        "builder typed validators lines 229-272 and l3_net finite check line 334",
+        "target typed validators lines 237-314",
+        "builder tests lines 409-474",
+        "target tests lines 647-696"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "source-pre-post-drift",
+      "threat": "An input is built from one source snapshot but reported against another, or pre/post descriptors are tampered.",
+      "expectedBoundary": "Builder records source descriptors before and after and fails if bytes/provenance drift; target requires exact source keys, pre/post equality, and sealed descriptors.",
+      "evidence": [
+        "builder source validation lines 195-218 and pre/post drift lines 359-375",
+        "target validate_sources lines 278-291",
+        "tests lines 267-314, 381-407, and 486-491"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "row-order-duplicate-tamper",
+      "threat": "Eligible rows are reordered, duplicated, made noncontiguous by group, or row_flow is altered to preserve apparent counts.",
+      "expectedBoundary": "Target validates exact row_flow fields/count math, duplicate-free (code,day,off,t0), sorted rows, and contiguous (code,day) groups before placebo/decision output.",
+      "evidence": [
+        "target _normalize_rows lines 317-335",
+        "target row_flow validation lines 338-359",
+        "target _ordered_groups lines 502-527",
+        "tests lines 506-510, 534-573, and 701-711"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "cell-floors",
+      "threat": "A sparse or outcome-convenient cell layout slips into PASS/KILL despite pooled or annual cells below sealed floors.",
+      "expectedBoundary": "Pooled and 2022/2023 annual cell counts are enforced for each pair before observed/placebo/bootstrap decision paths; failures become UNDETERMINED, not KILL/PASS.",
+      "evidence": [
+        "prereg lines 35-41",
+        "target _enforce_cell_floors lines 464-480",
+        "measure order lines 982-990",
+        "test high-floor case lines 493-497"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "rng-parity-call-order",
+      "threat": "Optimized target RNG drifts from Python random.Random, consumes calls for singleton groups, shifts bit37/bit38 independently, changes group order, or advances the stream out of order.",
+      "expectedBoundary": "Custom MT randrange matches Python random for production seeds/cardinalities; one randrange(1,n) is consumed per shiftable group in sorted order; singletons consume no calls; bit37/bit38 use the same shifted source indices.",
+      "evidence": [
+        "target RNG implementation lines 549-668",
+        "target shifted group/source logic lines 671-725 and replicate loop lines 747-784",
+        "tests lines 728-779 and 804-827"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "undefined-replicate",
+      "threat": "A placebo replicate or bootstrap draw lacks one of the required four finite cell means and is silently dropped or treated as a negative result.",
+      "expectedBoundary": "Undefined placebo or bootstrap cell means raise the integrity sentinel and return UNDETERMINED before PASS/KILL; no replicate/draw drop path is present.",
+      "evidence": [
+        "prereg lines 70-71",
+        "target placebo undefined guard lines 741-743",
+        "target bootstrap undefined guard lines 864-866",
+        "test undefined-placebo precedence lines 923-927"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "pass-kill-precedence",
+      "threat": "A single pair/year/threshold failure is rescued, or an integrity failure is mislabeled KILL/PASS.",
+      "expectedBoundary": "All integrity checks run inside the sentinel block before decision; PASS requires all pair_pass booleans true for both fixed pairs and all annual lower CIs >0; otherwise identified measurements KILL.",
+      "evidence": [
+        "prereg lines 76-80",
+        "target measure order and sentinel handling lines 982-996",
+        "target decision lines 998-1020",
+        "tests lines 908-927"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "accidental-exceptions",
+      "threat": "A real coding error or missing internal key is swallowed as UNDETERMINED, hiding a defect behind the fail-closed path.",
+      "expectedBoundary": "Only KeyError values shaped as (FAIL_SENTINEL, reason) are converted to UNDETERMINED; unrelated KeyError is re-raised.",
+      "evidence": [
+        "target _fail sentinel lines 171-172",
+        "target exception handler lines 992-996",
+        "test monkeypatch accidental KeyError lines 576-590"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "optimized-python",
+      "threat": "Integrity checks rely on assert or debug-only behavior and disappear under python -O.",
+      "expectedBoundary": "Checks are explicit function logic and sentinel failures; parent-reported tests include a python -O subprocess case yielding UNDETERMINED for malformed snapshot shape.",
+      "evidence": [
+        "target explicit _fail line 171-172 and snapshot-shape check lines 338-340",
+        "test optimized-mode subprocess lines 512-531"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "production-shape-complexity",
+      "threat": "Placebo/bootstrap/leave-one-code-out helpers accidentally use quadratic tuple/list concatenation or per-code rescans that are harmless in toy tests but unsafe for 862932 rows and 400/20000 randomized loops.",
+      "expectedBoundary": "Hot paths use cons/freezing, grouped/range aggregation, vectorized source indices, and optimized day-cell aggregation; tests scan for forbidden concatenation/rescan patterns and compare optimized helpers to naive references on bounded large shapes.",
+      "evidence": [
+        "target cons helpers lines 196-208, group/rng loops lines 680-704, bootstrap aggregation lines 830-904, leave-one-code ranges lines 907-979",
+        "tests lines 593-641, 830-904"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseId": "zero-side-effects",
+      "threat": "Algorithm target or analysis path performs hidden DB writes, engine calls, registration/promotion, retry/rescue, compressed/dynamic path reads, or materialization side effects.",
+      "expectedBoundary": "measure() is pure over a provided snapshot, target main only opens the literal c1_input path and prints JSON, and the contract lists forbidden operations; this QA artifact did not execute builder/target/materializer.",
+      "evidence": [
+        "builder/target forbidden_operations contract lines 131-139 and 109-117 respectively",
+        "target measure docstring line 983",
+        "target main literal read/print lines 1024-1032",
+        "tests lines 930-968"
+      ],
+      "status": "passed"
+    }
+  ],
+  "verdict": "passed",
+  "blockers": []
+}

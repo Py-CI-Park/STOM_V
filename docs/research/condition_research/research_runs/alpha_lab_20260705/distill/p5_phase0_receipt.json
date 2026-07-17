@@ -1,0 +1,529 @@
+{
+  "program": "P5",
+  "phase": "phase0_champion_ledger_wiring",
+  "created_utc": "2026-07-05T15:31:41+00:00",
+  "preregistration_sha256": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+  "champion_condition_id": "rr8_12_turnover_min_902=1.5",
+  "champion_buy_strategy_id": "GATE_rr8_12_turnover_min_902_1_5_B",
+  "csv_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv",
+  "selection_rule": "explicit list: all wt-dev backtest/csv stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_*.csv present on 2026-07-06 (32 files); probe measured every file tick-format (buy-time 14 digits) so the sealed tick-only recommendation excludes none",
+  "excluded": [],
+  "sources": [
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628014938.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 190,
+      "kept": 190,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 190
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628094538.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 101,
+      "kept": 101,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 101
+      },
+      "entry_day_range": [
+        "20220323",
+        "20221222"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095000.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 197,
+      "kept": 197,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 197
+      },
+      "entry_day_range": [
+        "20230102",
+        "20231219"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095425.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 156,
+      "kept": 156,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 156
+      },
+      "entry_day_range": [
+        "20240103",
+        "20241227"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095906.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 190,
+      "kept": 190,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 190
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628100641.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 190,
+      "kept": 190,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 190
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 190,
+      "kept": 190,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 190
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701170259.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701234317.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701234829.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701235232.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 177,
+      "kept": 177,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 177
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701235624.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702000012.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 176,
+      "kept": 176,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 176
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702000359.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 182,
+      "kept": 182,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 182
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702000718.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702001243.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702001644.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 177,
+      "kept": 177,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 177
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702002041.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702002436.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 176,
+      "kept": 176,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 176
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702002843.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 182,
+      "kept": 182,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 182
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702003256.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702003702.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702005928.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702010333.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 177,
+      "kept": 177,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 177
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702010748.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702011148.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 176,
+      "kept": 176,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 176
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702011551.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 182,
+      "kept": 182,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 182
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702011954.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260702012354.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 175,
+      "kept": 175,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 175
+      },
+      "entry_day_range": [
+        "20250103",
+        "20251230"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260703180848.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 2,
+      "kept": 2,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 2
+      },
+      "entry_day_range": [
+        "20250103",
+        "20250103"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260703224647.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 2,
+      "kept": 2,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 2
+      },
+      "entry_day_range": [
+        "20250103",
+        "20250103"
+      ]
+    },
+    {
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\backtest\\csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260704002106.csv",
+      "source": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "rows": 543,
+      "kept": 543,
+      "dropped": 0,
+      "buy_time_digit_hist": {
+        "14": 543
+      },
+      "entry_day_range": [
+        "20230102",
+        "20251230"
+      ]
+    }
+  ],
+  "rows_in": 5641,
+  "kept_after_normalize": 5641,
+  "dropped_rows": 0,
+  "unique": 671,
+  "dup_count": 4970,
+  "dup_return_mismatch_count": 2103,
+  "columns_seen": [
+    "종목명",
+    "시가총액",
+    "매수시간",
+    "매도시간",
+    "보유시간",
+    "매수가",
+    "매도가",
+    "매수금액",
+    "매도금액",
+    "수익률",
+    "수익금",
+    "수익금합계",
+    "매도조건",
+    "추가매수시간",
+    "B_현재가",
+    "B_등락율",
+    "B_당일거래대금",
+    "B_거래대금증감",
+    "B_체결강도",
+    "B_시가총액",
+    "B_회전율",
+    "B_전일동시간비",
+    "B_매수총잔량",
+    "B_매도총잔량",
+    "B_시분초",
+    "B_분봉시가",
+    "B_분봉고가",
+    "B_분봉저가",
+    "S_현재가",
+    "S_등락율",
+    "S_체결강도",
+    "S_매수총잔량",
+    "S_매도총잔량",
+    "R_매수후최고수익률",
+    "R_매수후최저수익률",
+    "R_MFE",
+    "R_MAE"
+  ],
+  "n_columns": 37,
+  "ledger_path": "docs/research/condition_research/research_runs/alpha_lab_20260705/distill/champion_ledger.jsonl",
+  "ledger_records": 671,
+  "ledger_schema_version": 1,
+  "identity_fields": [
+    "전략명",
+    "종목코드",
+    "진입일자",
+    "진입시각"
+  ],
+  "dedup_policy": "first-wins, scan order = filename ascending (earliest run wins)",
+  "stats": {
+    "strategies": [
+      "GATE_rr8_12_turnover_min_902_1_5_B"
+    ],
+    "distinct_entry_days": 448,
+    "entry_day_min": "20220323",
+    "entry_day_max": "20251230",
+    "positive_return_count": 368,
+    "positive_return_rate": 0.548435
+  },
+  "n_trials_note": "scan is wiring, not a search trial - n_trials_ledger.jsonl untouched",
+  "source_csv_access": "read-only"
+}

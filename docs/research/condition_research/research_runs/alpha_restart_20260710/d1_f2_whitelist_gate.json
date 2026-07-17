@@ -1,0 +1,120 @@
+{
+ "gate_kind": "d1_f2_whitelist",
+ "sample_days": [
+  "20220323",
+  "20220324",
+  "20220325",
+  "20220328",
+  "20220329",
+  "20220330"
+ ],
+ "local_def_parity": {
+  "시가등락율": {
+   "n": 1000,
+   "max_abs_err": 0.0,
+   "n_nonfinite": 0,
+   "pass": true
+  },
+  "시가대비등락율": {
+   "n": 1000,
+   "max_abs_err": 0.0,
+   "n_nonfinite": 0,
+   "pass": true
+  },
+  "VI아래5호가": {
+   "n": 1000,
+   "max_abs_err": 0.0,
+   "n_nonfinite": 0,
+   "pass": true
+  }
+ },
+ "n1_delay_parity": {
+  "symbol": "초당거래대금N1",
+  "n": 1000,
+  "max_abs_err": 0.0,
+  "pass": true
+ },
+ "p3_reproduction": {
+  "n_onsets": 100,
+  "n_clauses": 39,
+  "n_pairs": 3900,
+  "n_agree": 3900,
+  "agreement_pct": 100.0,
+  "n_mismatch": 0,
+  "pass": true
+ },
+ "p3_mismatches": [],
+ "qualified": {
+  "qualified_nums": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   38
+  ],
+  "n_qualified": 38,
+  "fdr_denominator": 38,
+  "sealed_cap": 39,
+  "u_promoted": [
+   10,
+   12,
+   13,
+   19,
+   20,
+   36
+  ],
+  "u_held_excluded": [],
+  "pure_dup_merged_out": [
+   39
+  ],
+  "pure_dup_pairs": [
+   [
+    15,
+    39
+   ]
+  ],
+  "symbol_parity_pass": {
+   "시가등락율": true,
+   "시가대비등락율": true,
+   "VI아래5호가": true,
+   "초당거래대금N1": true
+  },
+  "base_m_count": 33
+ },
+ "gate_pass": true,
+ "generated": "2026-07-12T10:04:26.815281+00:00",
+ "note": "F2 화이트리스트 게이트 — 효과 관측 전 1회 실행. 자격 절 수 38 = 39 유니크 − 순수중복 1(#15≡#39, §8 병합); U-보류 6절 전부 로컬정의/지연 패리티(오차 0) 통과로 M 승격. §13-F2 헤드라인 33~39 는 순수중복을 2로 센 범위이고, §8 병합 적용 시 운영 자격은 32~38; 본 실행은 38(전 U 승격·1 병합)."
+}

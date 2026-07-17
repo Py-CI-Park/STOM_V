@@ -1,0 +1,18 @@
+{
+ "kind": "v2_labeler_equivalence",
+ "generated": "2026-07-06T14:05:35.473320",
+ "sealed_threshold": 0.999,
+ "compare_basis": "replay.replay_champion_exit (P5 재현게이트 검증 스칼라)",
+ "n_ledger_rows": 671,
+ "n_trades": 667,
+ "exclusions": {
+  "foreign_sell_condition": 4
+ },
+ "n_time_match": 667,
+ "n_price_match": 667,
+ "n_both_match": 667,
+ "cond_match_rate": 1.0,
+ "equivalence_pct": 100.0,
+ "gate_pass": true,
+ "mismatches": []
+}

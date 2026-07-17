@@ -1,0 +1,804 @@
+{
+  "champion_gate": {
+    "n_champions": 4,
+    "n_pass_l1": 0,
+    "gate_passed": false,
+    "threshold": "L1 occupied-cell EV(h300) > pooled L1 mean_net; >=3/4 champions",
+    "champions": [
+      {
+        "champion": "RR8_0",
+        "coverage": {
+          "total": 338,
+          "discovery": 221,
+          "in_window_of_discovery": 221,
+          "outside_window": 0,
+          "after_discovery": 117
+        },
+        "pooled_l1_mean_net": -0.010419324841156936,
+        "pooled_l0_mean_net": -0.01037439197930563,
+        "champ_l1_cell_ev": -0.011753095400680208,
+        "champ_l0_cell_ev": -0.011606282088285126,
+        "champ_l1_3axis_cell_ev": -0.011568500376474597,
+        "l1_coverage_pct": 100.0,
+        "l1_advantage": -0.0013337705595232712,
+        "passed": false,
+        "l1_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 101,
+            "cell_mean_net": -0.012726960915177757,
+            "cell_n": 18902,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 71,
+            "cell_mean_net": -0.00990170748867799,
+            "cell_n": 28662,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 39,
+            "cell_mean_net": -0.013008546416531827,
+            "cell_n": 32412,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010389485538331552,
+            "cell_n": 35647,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.009270302434920443,
+            "cell_n": 32381,
+            "judged": true
+          }
+        ],
+        "l0_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 101,
+            "cell_mean_net": -0.012457992156064163,
+            "cell_n": 821850,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 71,
+            "cell_mean_net": -0.009883650967894843,
+            "cell_n": 1159444,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 39,
+            "cell_mean_net": -0.012916463889897534,
+            "cell_n": 1266471,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010376667401692049,
+            "cell_n": 1349346,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.009118242054229014,
+            "cell_n": 1287791,
+            "judged": true
+          }
+        ]
+      },
+      {
+        "champion": "RR8_21",
+        "coverage": {
+          "total": 380,
+          "discovery": 246,
+          "in_window_of_discovery": 246,
+          "outside_window": 0,
+          "after_discovery": 134
+        },
+        "pooled_l1_mean_net": -0.010419324841156936,
+        "pooled_l0_mean_net": -0.01037439197930563,
+        "champ_l1_cell_ev": -0.011818717614791325,
+        "champ_l0_cell_ev": -0.011671479551756531,
+        "champ_l1_3axis_cell_ev": -0.011614915130315168,
+        "l1_coverage_pct": 100.0,
+        "l1_advantage": -0.0013993927736343885,
+        "passed": false,
+        "l1_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 111,
+            "cell_mean_net": -0.012726960915177757,
+            "cell_n": 18902,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 75,
+            "cell_mean_net": -0.00990170748867799,
+            "cell_n": 28662,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 50,
+            "cell_mean_net": -0.013008546416531827,
+            "cell_n": 32412,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010389485538331552,
+            "cell_n": 35647,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.009270302434920443,
+            "cell_n": 32381,
+            "judged": true
+          }
+        ],
+        "l0_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 111,
+            "cell_mean_net": -0.012457992156064163,
+            "cell_n": 821850,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 75,
+            "cell_mean_net": -0.009883650967894843,
+            "cell_n": 1159444,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 50,
+            "cell_mean_net": -0.012916463889897534,
+            "cell_n": 1266471,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010376667401692049,
+            "cell_n": 1349346,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.009118242054229014,
+            "cell_n": 1287791,
+            "judged": true
+          }
+        ]
+      },
+      {
+        "champion": "RR8_12",
+        "coverage": {
+          "total": 454,
+          "discovery": 298,
+          "in_window_of_discovery": 298,
+          "outside_window": 0,
+          "after_discovery": 156
+        },
+        "pooled_l1_mean_net": -0.010419324841156936,
+        "pooled_l0_mean_net": -0.01037439197930563,
+        "champ_l1_cell_ev": -0.011532843815587042,
+        "champ_l0_cell_ev": -0.01140055938584896,
+        "champ_l1_3axis_cell_ev": -0.01142604346582839,
+        "l1_coverage_pct": 100.0,
+        "l1_advantage": -0.0011135189744301052,
+        "passed": false,
+        "l1_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 119,
+            "cell_mean_net": -0.012726960915177757,
+            "cell_n": 18902,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 118,
+            "cell_mean_net": -0.00990170748867799,
+            "cell_n": 28662,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 48,
+            "cell_mean_net": -0.013008546416531827,
+            "cell_n": 32412,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010389485538331552,
+            "cell_n": 35647,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 5,
+            "cell_mean_net": -0.009270302434920443,
+            "cell_n": 32381,
+            "judged": true
+          }
+        ],
+        "l0_cells_2axis": [
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 119,
+            "cell_mean_net": -0.012457992156064163,
+            "cell_n": 821850,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 118,
+            "cell_mean_net": -0.009883650967894843,
+            "cell_n": 1159444,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 48,
+            "cell_mean_net": -0.012916463889897534,
+            "cell_n": 1266471,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 8,
+            "cell_mean_net": -0.010376667401692049,
+            "cell_n": 1349346,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              1,
+              -1
+            ],
+            "trades": 5,
+            "cell_mean_net": -0.009118242054229014,
+            "cell_n": 1287791,
+            "judged": true
+          }
+        ]
+      },
+      {
+        "champion": "GPTAUTH_G8",
+        "coverage": {
+          "total": 1447,
+          "discovery": 893,
+          "in_window_of_discovery": 893,
+          "outside_window": 0,
+          "after_discovery": 554
+        },
+        "pooled_l1_mean_net": -0.010419324841156936,
+        "pooled_l0_mean_net": -0.01037439197930563,
+        "champ_l1_cell_ev": -0.012045817428250364,
+        "champ_l0_cell_ev": -0.011980814627850195,
+        "champ_l1_3axis_cell_ev": -0.011955344183363878,
+        "l1_coverage_pct": 100.0,
+        "l1_advantage": -0.001626492587093428,
+        "passed": false,
+        "l1_cells_2axis": [
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 567,
+            "cell_mean_net": -0.013008546416531827,
+            "cell_n": 32412,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 303,
+            "cell_mean_net": -0.010389485538331552,
+            "cell_n": 35647,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              1,
+              -1
+            ],
+            "trades": 18,
+            "cell_mean_net": -0.009726151634260067,
+            "cell_n": 33788,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 3,
+            "cell_mean_net": -0.012726960915177757,
+            "cell_n": 18902,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.00990170748867799,
+            "cell_n": 28662,
+            "judged": true
+          }
+        ],
+        "l0_cells_2axis": [
+          {
+            "cell": [
+              1,
+              3,
+              -1
+            ],
+            "trades": 567,
+            "cell_mean_net": -0.012916463889897534,
+            "cell_n": 1266471,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              2,
+              -1
+            ],
+            "trades": 303,
+            "cell_mean_net": -0.010376667401692049,
+            "cell_n": 1349346,
+            "judged": true
+          },
+          {
+            "cell": [
+              1,
+              1,
+              -1
+            ],
+            "trades": 18,
+            "cell_mean_net": -0.009664496443424922,
+            "cell_n": 1264479,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              3,
+              -1
+            ],
+            "trades": 3,
+            "cell_mean_net": -0.012457992156064163,
+            "cell_n": 821850,
+            "judged": true
+          },
+          {
+            "cell": [
+              0,
+              2,
+              -1
+            ],
+            "trades": 2,
+            "cell_mean_net": -0.009883650967894843,
+            "cell_n": 1159444,
+            "judged": true
+          }
+        ]
+      }
+    ]
+  },
+  "tick_equivalence_spotcheck": {
+    "n_checked": 55,
+    "n_missed": 5,
+    "max_abs_err_updown": 0.0,
+    "max_abs_err_mktcap": 0.0
+  },
+  "overlay_advisory": {
+    "human_hall_common_band": {
+      "band": "09:00-09:30 all buckets, all updown quartiles (only recorded human-hall band; reference_strategies.json)",
+      "l0": {
+        "n_band_cells": 24,
+        "pooled_all": -0.01037439197930563,
+        "pooled_band": -0.01037439197930563,
+        "band_advantage": 0.0
+      },
+      "l1": {
+        "n_band_cells": 24,
+        "pooled_all": -0.010419324841156936,
+        "pooled_band": -0.010419324841156936,
+        "band_advantage": 0.0
+      }
+    },
+    "strategy_condition_bands": {
+      "note": "human_hall_19 lack parseable condition code (benchmark outside strategy.db; only common band 09:00-09:30). Overlaid instead: parseable champion+seed condition bands. 등락율 gate is broad; true q2/q3 concentration is compound-filter driven (see champion gate).",
+      "strategies": [
+        {
+          "strategy": "ALP_V4_RR8_0",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              2500.0
+            ],
+            "sibun": [
+              90200.0,
+              90700.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "ALP_V4_RR8_21",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90700.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "ALP_V4_RR8_12",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90700.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "ALP_V4_GPTAUTH_G8",
+          "bands": {
+            "updown": [
+              3.0,
+              13.0
+            ],
+            "mktcap": [
+              null,
+              5000.0
+            ],
+            "sibun": [
+              90500.0,
+              91000.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 6,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010823045299196792,
+            "band_advantage": -0.0004486533198911624
+          },
+          "l1": {
+            "n_band_cells": 6,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.010845719551869457,
+            "band_advantage": -0.00042639471071252016
+          }
+        },
+        {
+          "strategy": "C_T_902_905_U3_B",
+          "bands": {
+            "updown": [
+              1.0,
+              null
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90500.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "Tick_B_902_905",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90500.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "Tick_B_902_905_2",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90500.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        },
+        {
+          "strategy": "Tick_B_902_905_Study",
+          "bands": {
+            "updown": [
+              1.0,
+              15.0
+            ],
+            "mktcap": [
+              null,
+              3000.0
+            ],
+            "sibun": [
+              90200.0,
+              90500.0
+            ]
+          },
+          "l0": {
+            "n_band_cells": 8,
+            "pooled_all": -0.01037439197930563,
+            "pooled_band": -0.010403944245463087,
+            "band_advantage": -2.9552266157457582e-05
+          },
+          "l1": {
+            "n_band_cells": 8,
+            "pooled_all": -0.010419324841156936,
+            "pooled_band": -0.01048572325408971,
+            "band_advantage": -6.639841293277354e-05
+          }
+        }
+      ]
+    }
+  },
+  "csv_files": {
+    "RR8_0": "stock_bt_ALP_V4_RR8_0_20260707074352.csv",
+    "RR8_21": "stock_bt_ALP_V4_RR8_21_20260707074459.csv",
+    "RR8_12": "stock_bt_ALP_V4_RR8_12_20260707074238.csv",
+    "GPTAUTH_G8": "stock_bt_ALP_V4_GPTAUTH_G8_20260707075127.csv"
+  }
+}

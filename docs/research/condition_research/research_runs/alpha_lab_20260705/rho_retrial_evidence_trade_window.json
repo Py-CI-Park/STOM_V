@@ -1,0 +1,257 @@
+{
+ "schema": "alpha_lab_rho_retrial_trade_window_evidence_v2",
+ "world_definition": "코드 ∈ moneytop[초] AND 90001 <= HHMMSS <= 92500 (preregistration_v1.json label_spec.grid)",
+ "signal_second_basis": "CSV B_시분초(매수 스냅샷 행 시분초) — 매수시간%1e6과 전 건 일치(불일치 0)",
+ "buy_ts_vs_b_sibuncho_mismatch": 0,
+ "pf_note": "pf_in_world_subset_diagnostic은 참고 진단값 — 봉인 판정에 사용하지 않음(판정은 재백테로만). 산식은 cli/research_metrics.py calculate_profit_factor 미러.",
+ "n_csvs": 8,
+ "censored_without_csv": [
+  "ALP_RM_08",
+  "ALP_RM_09"
+ ],
+ "per_rule": {
+  "ALP_RM_01": {
+   "trades": 981,
+   "time_violation": 52,
+   "time_violation_pct": 5.3,
+   "hms_hist": {
+    "090001-092500": 929,
+    "092501-092800": 52
+   },
+   "universe_judged": 938,
+   "universe_violation": 0,
+   "universe_violation_pct_of_judged": 0.0,
+   "out_of_world": 52,
+   "out_of_world_pct": 5.3,
+   "unresolved_code": 43,
+   "missing_day_db": 0,
+   "profit_sum_all": -38095762,
+   "profit_sum_out_of_world": -2412968,
+   "pf_official_recomputed": 0.556939,
+   "pf_in_world_subset_diagnostic": 0.58269,
+   "in_world_subset_n": 887,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 29,
+    "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 7,
+    "    if 수익률 >= 9 or 수익률 <= -5.0:": 2,
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 11,
+    "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 2,
+    "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 1
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_01_20260706035925.csv"
+  },
+  "ALP_RM_02": {
+   "trades": 6845,
+   "time_violation": 74,
+   "time_violation_pct": 1.08,
+   "hms_hist": {
+    "090001-092500": 6771,
+    "092501-092800": 74
+   },
+   "universe_judged": 6688,
+   "universe_violation": 9,
+   "universe_violation_pct_of_judged": 0.13,
+   "out_of_world": 83,
+   "out_of_world_pct": 1.21,
+   "unresolved_code": 157,
+   "missing_day_db": 0,
+   "profit_sum_all": -202998002,
+   "profit_sum_out_of_world": -1834703,
+   "pf_official_recomputed": 0.58573,
+   "pf_in_world_subset_diagnostic": 0.581943,
+   "in_world_subset_n": 6611,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 49,
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 15,
+    "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 3,
+    "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 6,
+    "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 1
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_02_20260706040044.csv"
+  },
+  "ALP_RM_03": {
+   "trades": 598,
+   "time_violation": 0,
+   "time_violation_pct": 0.0,
+   "hms_hist": {
+    "090001-092500": 598
+   },
+   "universe_judged": 585,
+   "universe_violation": 21,
+   "universe_violation_pct_of_judged": 3.59,
+   "out_of_world": 21,
+   "out_of_world_pct": 3.51,
+   "unresolved_code": 13,
+   "missing_day_db": 0,
+   "profit_sum_all": -11826414,
+   "profit_sum_out_of_world": -622568,
+   "pf_official_recomputed": 0.724746,
+   "pf_in_world_subset_diagnostic": 0.714583,
+   "in_world_subset_n": 564,
+   "time_violation_sell_conditions": {},
+   "csv": "backtest/csv/stock_bt_ALP_RM_03_20260706040204.csv"
+  },
+  "ALP_RM_04": {
+   "trades": 672,
+   "time_violation": 3,
+   "time_violation_pct": 0.45,
+   "hms_hist": {
+    "090001-092500": 669,
+    "092501-092800": 3
+   },
+   "universe_judged": 658,
+   "universe_violation": 20,
+   "universe_violation_pct_of_judged": 3.04,
+   "out_of_world": 22,
+   "out_of_world_pct": 3.27,
+   "unresolved_code": 14,
+   "missing_day_db": 0,
+   "profit_sum_all": -12572414,
+   "profit_sum_out_of_world": -1192550,
+   "pf_official_recomputed": 0.729702,
+   "pf_in_world_subset_diagnostic": 0.729549,
+   "in_world_subset_n": 636,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 3
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_04_20260706040928.csv"
+  },
+  "ALP_RM_05": {
+   "trades": 4166,
+   "time_violation": 27,
+   "time_violation_pct": 0.65,
+   "hms_hist": {
+    "090001-092500": 4139,
+    "092501-092800": 27
+   },
+   "universe_judged": 4056,
+   "universe_violation": 6,
+   "universe_violation_pct_of_judged": 0.15,
+   "out_of_world": 33,
+   "out_of_world_pct": 0.79,
+   "unresolved_code": 110,
+   "missing_day_db": 0,
+   "profit_sum_all": -125361096,
+   "profit_sum_out_of_world": -558740,
+   "pf_official_recomputed": 0.606275,
+   "pf_in_world_subset_diagnostic": 0.601861,
+   "in_world_subset_n": 4023,
+   "time_violation_sell_conditions": {
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 6,
+    "전략종료청산": 19,
+    "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 2
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_05_20260706041042.csv"
+  },
+  "ALP_RM_06": {
+   "trades": 4651,
+   "time_violation": 654,
+   "time_violation_pct": 14.06,
+   "hms_hist": {
+    "090001-092500": 3997,
+    "092501-092800": 654
+   },
+   "universe_judged": 4478,
+   "universe_violation": 17,
+   "universe_violation_pct_of_judged": 0.38,
+   "out_of_world": 668,
+   "out_of_world_pct": 14.36,
+   "unresolved_code": 173,
+   "missing_day_db": 0,
+   "profit_sum_all": -125984689,
+   "profit_sum_out_of_world": -18316205,
+   "pf_official_recomputed": 0.50628,
+   "pf_in_world_subset_diagnostic": 0.528441,
+   "in_world_subset_n": 3832,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 434,
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 157,
+    "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 56,
+    "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 5,
+    "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 1,
+    "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 1
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_06_20260706041207.csv"
+  },
+  "ALP_RM_07": {
+   "trades": 49273,
+   "time_violation": 2310,
+   "time_violation_pct": 4.69,
+   "hms_hist": {
+    "090001-092500": 46963,
+    "092501-092800": 2310
+   },
+   "universe_judged": 48433,
+   "universe_violation": 315,
+   "universe_violation_pct_of_judged": 0.65,
+   "out_of_world": 2614,
+   "out_of_world_pct": 5.31,
+   "unresolved_code": 840,
+   "missing_day_db": 0,
+   "profit_sum_all": -1403257691,
+   "profit_sum_out_of_world": -61094693,
+   "pf_official_recomputed": 0.518885,
+   "pf_in_world_subset_diagnostic": 0.526633,
+   "in_world_subset_n": 45858,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 1661,
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 480,
+    "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 106,
+    "    elif 최고수익률 > 3 and 최고수익률 * 0.6 >= 수익률:": 13,
+    "if 등락율 > 29.5:": 33,
+    "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 14,
+    "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 2,
+    "        elif 등락율각도(30) < 5 and 등락율각도(30) >= 0 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 1
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_07_20260706042317.csv"
+  },
+  "ALP_RM_10": {
+   "trades": 19730,
+   "time_violation": 161,
+   "time_violation_pct": 0.82,
+   "hms_hist": {
+    "090001-092500": 19569,
+    "092501-092800": 161
+   },
+   "universe_judged": 19376,
+   "universe_violation": 276,
+   "universe_violation_pct_of_judged": 1.42,
+   "out_of_world": 433,
+   "out_of_world_pct": 2.19,
+   "unresolved_code": 354,
+   "missing_day_db": 0,
+   "profit_sum_all": -641121223,
+   "profit_sum_out_of_world": -10278102,
+   "pf_official_recomputed": 0.545647,
+   "pf_in_world_subset_diagnostic": 0.545501,
+   "in_world_subset_n": 18948,
+   "time_violation_sell_conditions": {
+    "전략종료청산": 113,
+    "elif 보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간)):": 30,
+    "elif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):": 14,
+    "if 등락율 > 29.5:": 1,
+    "        if 등락율각도(30) >= 10 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 < -0.5:": 2,
+    "        elif 등락율각도(30) < 10 and 등락율각도(30) >= 5 and (초당매도수량 - 초당매수수량) >= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 < -0.7:": 1
+   },
+   "csv": "backtest/csv/stock_bt_ALP_RM_10_20260706050253.csv"
+  }
+ },
+ "total": {
+  "trades": 86916,
+  "time_violation": 3281,
+  "time_violation_pct": 3.77,
+  "universe_judged": 85212,
+  "universe_violation": 664,
+  "universe_violation_pct_of_judged": 0.78,
+  "out_of_world": 3926,
+  "out_of_world_pct": 4.52,
+  "unresolved_code": 1704,
+  "missing_day_db": 0
+ },
+ "diagnostic_rho_measured8": {
+  "note": "참고 진단값 — 봉인 판정 불사용. n=8(검열 2규칙 제외), scipy.stats.spearmanr(average ties)",
+  "rho_official_pf_recomputed": 0.5000000000000001,
+  "rho_in_world_subset_pf": 0.5476190476190477,
+  "verdict_rho_measured_subset_crosscheck": 0.5000000000000001
+ }
+}

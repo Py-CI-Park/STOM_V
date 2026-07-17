@@ -1,0 +1,247 @@
+{
+  "status": "success",
+  "metrics": {
+    "trade_count": 177,
+    "daily_avg_trades": 0.9,
+    "win_rate": 56.5,
+    "avg_profit_pct": 0.72,
+    "total_profit_pct": 63.71,
+    "total_profit_krw": 6378766,
+    "cagr": 82.52,
+    "mdd_pct": 5.37,
+    "mdd_amount": 0.0,
+    "tpi": 1.31,
+    "seed_capital": 10012530.0,
+    "max_hold_count": 2,
+    "avg_hold_time": 691.84,
+    "day_count": 197
+  },
+  "bootstrap": {
+    "avg_return": 0.0,
+    "ci_lower": 0.0,
+    "ci_upper": 0.0
+  },
+  "config": {
+    "buy_strategy": "ALP_X1_DROP15",
+    "sell_strategy": "ALP_V4_RR8_12",
+    "start_date": "20220323",
+    "end_date": "20221231"
+  },
+  "timestamp": "2026-07-17 15:02:59",
+  "csv_path": "backtest/csv\\stock_bt_ALP_X1_DROP15_20260717150251.csv",
+  "checkpoint_status": "success",
+  "last_checkpoint": "csv_detected",
+  "elapsed_seconds": 244.197,
+  "checkpoints": [
+    {
+      "name": "preflight_started",
+      "elapsed_seconds": 0.0,
+      "detail": {
+        "buy_strategy": "ALP_X1_DROP15",
+        "sell_strategy": "ALP_V4_RR8_12",
+        "start_date": 20220323,
+        "end_date": 20221231,
+        "is_tick": true,
+        "engine_count": 8
+      }
+    },
+    {
+      "name": "dict_set_synced",
+      "elapsed_seconds": 0.0,
+      "detail": {}
+    },
+    {
+      "name": "backtest_watermark_ready",
+      "elapsed_seconds": 0.354,
+      "detail": {
+        "backtest_rowid_watermark": 6687
+      }
+    },
+    {
+      "name": "engine_processes_started",
+      "elapsed_seconds": 24.999,
+      "detail": {
+        "engine_count": 8
+      }
+    },
+    {
+      "name": "stock_back_db_selected",
+      "elapsed_seconds": 24.999,
+      "detail": {
+        "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\stock_tick_back.db"
+      }
+    },
+    {
+      "name": "moneytop_loaded",
+      "elapsed_seconds": 26.946,
+      "detail": {
+        "rows": 347449
+      }
+    },
+    {
+      "name": "engine_data_load_requested",
+      "elapsed_seconds": 31.337,
+      "detail": {
+        "expected_count": 8,
+        "data_list_count": 1890,
+        "avg_list": [
+          30
+        ]
+      }
+    },
+    {
+      "name": "engine_data_response_wait_started",
+      "elapsed_seconds": 31.337,
+      "detail": {
+        "expected_count": 8,
+        "timeout_seconds": 3600
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 123.251,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 1,
+        "response_index": 0,
+        "chunk_count": 196
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 126.475,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 2,
+        "response_index": 1,
+        "chunk_count": 192
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 131.615,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 3,
+        "response_index": 2,
+        "chunk_count": 190
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 136.527,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 4,
+        "response_index": 3,
+        "chunk_count": 179
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 138.862,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 5,
+        "response_index": 4,
+        "chunk_count": 189
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 150.852,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 6,
+        "response_index": 5,
+        "chunk_count": 197
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 158.953,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 7,
+        "response_index": 6,
+        "chunk_count": 193
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 161.631,
+      "detail": {
+        "expected_count": 8,
+        "received_count": 8,
+        "response_index": 7,
+        "chunk_count": 194
+      }
+    },
+    {
+      "name": "shared_data_loaded",
+      "elapsed_seconds": 161.632,
+      "detail": {
+        "back_count": 1530
+      }
+    },
+    {
+      "name": "engine_data_load_completed",
+      "elapsed_seconds": 161.632,
+      "detail": {
+        "back_count": 1530,
+        "expected_count": 8,
+        "received_count": 8,
+        "received_lengths": [
+          196,
+          192,
+          190,
+          179,
+          189,
+          197,
+          193,
+          194
+        ]
+      }
+    },
+    {
+      "name": "back_count_ready",
+      "elapsed_seconds": 161.632,
+      "detail": {
+        "back_count": 1530
+      }
+    },
+    {
+      "name": "backtest_process_started",
+      "elapsed_seconds": 171.991,
+      "detail": {
+        "pid": 189536
+      }
+    },
+    {
+      "name": "backtest_process_finished",
+      "elapsed_seconds": 243.732,
+      "detail": {
+        "exitcode": 0
+      }
+    },
+    {
+      "name": "csv_detected",
+      "elapsed_seconds": 244.196,
+      "detail": {
+        "csv_path": "backtest/csv\\stock_bt_ALP_X1_DROP15_20260717150251.csv"
+      }
+    },
+    {
+      "name": "shared_memory_cleanup_started",
+      "elapsed_seconds": 244.197,
+      "detail": {
+        "shared_info_count": 1530
+      }
+    },
+    {
+      "name": "shared_memory_cleanup_completed",
+      "elapsed_seconds": 244.198,
+      "detail": {}
+    }
+  ]
+}

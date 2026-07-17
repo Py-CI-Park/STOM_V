@@ -1,0 +1,1344 @@
+[
+ {
+  "id": "D1",
+  "name": "Idea1 재생: 경로/시퀀스 채굴",
+  "design": {
+   "direction_id": "D1",
+   "direction_name": "앵커-경로 모티프 채굴 (Anchored Path-Motif Mining)",
+   "one_line": "서지 온셋을 앵커 사건으로 잡고, 그 후 d초간의 전개(유지·가속·되돌림 깊이·각도 지속)를 윈도우30+이전틱수 오프셋 좌표계로 기술한 경로 피처 공간에서, 전이-EV 채택 기준으로 시퀀스 모티프를 채굴해 STOM 매수식으로 번역한다.",
+   "core_hypothesis": "챔피언 엣지는 단일 시점 상태값이 아니라 \"서지 발생 → N초 유지/가속 → 얕은 되돌림 → 진입\"이라는 시간 전개 경로에 있다. v1/v2/v3가 채굴한 43피처는 전부 시점 t의 스냅샷(오프셋 0)이었고, 앵커 사건 기준 상대 통계량(서지 d초 후의 유지비율, 온셋 후 고점 대비 되돌림 깊이, 두 윈도우 간 가속도)은 그 공간의 좌표축에 존재하지 않았다. 이 앵커-상대 경로 좌표계에서는 스냅샷 공간에 없던 양(+) EV 포켓이 존재할 수 있으며, 존재한다면 STOM의 구간함수(구간틱수, 이전틱수) 문법으로 손실 없이 번역된다.",
+   "why_not_refuted": "DIGEST 3번 각 항목과 대조: (a) 스냅샷 43피처 얕은트리 v1/v2/v3(양EV 리프 0/107) — 표본 단위와 데이터 표현이 다르다. v3의 파생 18항(derived.py)은 각도·rolling max 포함이지만 전부 '시점 t에서의 오프셋 0 값'이고, hillclimb/features_v3.py는 구간함수를 함수(30)으로 동결해 이전틱수 오프셋 피처가 0개였다. 본 설계의 피처는 앵커(서지 온셋) 상대 좌표: 초당거래대금평균(30)/초당거래대금평균(30,30) 유지비율, 체결강도평균(30)-체결강도평균(30,30) 가속, (최고현재가(30)-현재가)/최고현재가(30) 되돌림, 등락율각도(30)∧등락율각도(30,30) 지속 — 43피처 화이트리스트의 어떤 축-정렬 규칙으로도 표현 불가한 새 좌표다. 표본 단위도 그리드 초/규칙 온셋이 아니라 '앵커 사건+지연 d'다(v3 transition.py는 스냅샷 규칙의 온셋 EV 재측정이었지 경로 피처 채굴이 아님). (b) 고정지평/stride 라벨 — 사용하지 않는다. L3 챔피언 매도식 리플레이(labels_v2.py) 유지, stride는 앵커 사건으로 대체. (c) 이벤트 5족 FDR 0/138 — P2는 사건의 '무조건부 한계 EV'를 측정했고 사건 후 경로 형상으로 조건화한 2차 구조는 측정한 적이 없다. 본 설계에서 사건은 신호가 아니라 앵커(표본 정의)이고, 검정 대상은 사건×경로형상 결합이다. (d) 콜드 LLM — 무관(LLM 생성 없음). (e) score-sum — 무관. (f) 다밴드 야간 캠페인 — 그것은 엔진-루프 격자 변이(wt-dev식)였고 본 설계는 오프라인 통계 채굴+엔진 최종심판이다. (g,h) 청산/타이밍 — 현직 매도식 고정으로 무관. (i) 구식 API — 현행 문법만 사용. 정직한 자기반박 여지: RC-0의 기저 EV -1.022%는 이 공간에도 적용되는 비용 중력이고, 앵커 조건화만으로 그것을 넘는다는 보장이 없다 — 그래서 킬 기준 1번(앵커 기저 EV+경로 피처 EV 기울기 진단, 엔진 0회)을 채굴 착수 전에 두어, 기울기가 없으면 conjunction 탐색 없이 즉시 종결한다.",
+   "mechanism_steps": [
+    "1) 데이터/샤드: alpha_lab/dataset/reader.py(read-only)+cache.py(npz v3 additive)로 발견창(2022-03~2024-12 중 사전등록 월 분할) 샤드를 증축. derived.py compute_derived_tick(avg=30)로 윈도우30 파생을 재계산하고, 오프셋 피처는 그 시리즈의 shift(30)/shift(60)로 파생(새 모듈 alpha_lab/dataset/path_features.py, 12~16개 봉인 어휘). parity.py 스팟 패리티(>=99.9%)를 오프셋 열에도 적용해 annex 봉인.",
+    "2) 앵커 추출: 초당거래대금/초당거래대금평균(30)>=2.0의 FALSE→TRUE 온셋을 alpha_lab/mining/transition.py transition_mask/extract_transitions로 추출(시리즈=일:종목, 09:00~09:20 창, 관심종목=1). 지연 d∈{5,15,30}(봉인)별로 표본 시각 t0+d를 만들고 그 시점의 경로 피처 행렬 X_path를 구성.",
+    "3) 라벨: labels_v2.py build_l3_labels — entry=(t0+d+1초) 매도호가1+2틱, 챔피언 현직 매도식(sha 8ef01e0e) 리플레이 실현 net_rate(L3_net). 표본 단위=앵커+지연 사건 1건=라벨 1건.",
+    "4) 진단 게이트(킬1, 엔진 0회): 앵커 무조건부 EV와 각 경로 피처의 십분위-EV 기울기를 stats_common.day_block_bootstrap으로 측정. 전 피처 top-bottom 십분위 EV 격차 <0.3pp면 채굴 착수 없이 종결 보고.",
+    "5) 모티프 채굴: 새 모듈 alpha_lab/mining/path_motifs.py — 봉인 어휘 12~16피처×분위 임계 격자에서 depth<=3 conjunction 전수(또는 mining/trees.py 얕은트리 병행). 채택은 mining/ev_adopt.py adopt_by_ev(CI_low>0, 2023·2024 각 연도 EV>0, support>=1000, BH-FDR q=0.05) + transition.measure_transition_ev의 일평균 발화 예산 [5,60] 동시 통과.",
+    "6) 번역: alpha_lab/translate/idioms.py의 봉인 조각 사전에 오프셋-윈도우 이디엄(함수(30,30)/함수(30,60), 앵커식 초당거래대금N(d)>초당거래대금평균(30,d)*k)을 추가 봉인하고 codegen.py로 매수식 생성. 매도식은 ALP_EXITCHK_A_INCUMBENT 원문 고정(라벨-엔진 정합).",
+    "7) triage: 내부 블라인드 월(채굴에 한 번도 안 쓴 사전등록 월 집합)에서 오프라인 EV 재측정 — EV<=0 후보 탈락.",
+    "8) 엔진 최종심판: 스모크 2~3회(오프셋 구간함수 값 검증 포함) → 생존 후보(<=10개)를 stom_backtest.py --avg-time 30으로 train 창 확인 → 2022 holdout → tick3 민감도. 2025-01~2026-02는 known/audit로만 병기 보고."
+   ],
+   "example_condition_sketch": "매수 = True\nif not (90000 <= 시분초 < 92000):\n    매수 = False\nelif not (관심종목 == 1):\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (2.0 < 등락율 <= 15.0):\n    매수 = False\n# 앵커: 30초 전 서지 존재 (초당거래대금이 당시 평균의 2.5배)\nelif not (초당거래대금N(30) > 초당거래대금평균(30, 30) * 2.5):\n    매수 = False\n# 경로1 유지: 최근 30초 평균 거래대금이 직전 30초 평균의 1.5배 이상\nelif not (초당거래대금평균(30) > 초당거래대금평균(30, 30) * 1.5):\n    매수 = False\n# 경로2 각도 지속: 지금과 30초 전 모두 양의 등락율각도\nelif not (등락율각도(30) > 3 and 등락율각도(30, 30) > 3):\n    매수 = False\n# 경로3 얕은 되돌림: 최근 30초 고점 대비 -1.0% 이내\nelif not ((최고현재가(30) - 현재가) / 최고현재가(30) * 100 < 1.0):\n    매수 = False\n# 경로4 체결강도 가속\nelif not (체결강도평균(30) > 체결강도평균(30, 30) + 5):\n    매수 = False\nif 매수:\n    self.Buy()\n# 매도식: ALP_EXITCHK_A_INCUMBENT(챔피언 현직, sha 8ef01e0e) 원문 고정 — 라벨과 동일 청산 규율",
+   "expressibility": "전 어휘가 STOM 문법 1:1 대응: 구간연산 함수 이름(구간틱수[, 이전틱수]) 시그니처(trade/base_strategy.py:305-376)가 초당거래대금평균/체결강도평균/최고현재가/등락율각도 전부에 존재하고, 구간틱수를 30으로 고정하면 avg_list=[30] 공식 프로파일 안에서 안전(CheckAvglist 중지 회피). 산술/나눗셈/비교는 챔피언 원문이 이미 쓰는 관용구. 번역갭 위험 2건: (1) 이전틱수 오프셋이 사전계산 컬럼 경로에서 기대값을 주는지 — 스모크 단계에서 알려진 값 단위검증으로 확인(실패 시 calc=True 폴백, 속도 비용만 발생); (2) 앵커 '온셋' 의미론 — 엔진은 상태 참 구간 연속 발화하므로 온셋 정확 재현이 아니라 전이율 예산 [5,60]/일 게이트로 발화 폭주를 통제(v3 transition.py 봉인 규약 그대로). 오프라인 미러는 derived.py 윈도우30 시리즈의 shift라 패리티 비용이 거의 0.",
+   "data_requirements": "tick DB(_database/stock_tick_back.db, 2022-03-23~2026-02-27, read-only URI)만 필요. 발견창은 2022-03~2024-12에서 사전등록 월 분할(TRAIN 채굴월 / VAL 재현월 / 내부 블라인드월 — 기존 v1~v3 캐시에 쓰인 60일과 겹치는 월은 TRAIN에만 배정). strategy.db의 ALP_EXITCHK_A_INCUMBENT 매도식 원문(sha 검증). min DB 불요. 기존 npz 샤드는 cache.py v3 additive 계약으로 경로 피처 열만 증축.",
+   "sample_size_estimate": "앵커(서지비율>=2.0 온셋, 09:00~09:20, moneytop 유니버스): P2 실측 42,363 이벤트/138셀 규모에서 서지족 비중을 감안하면 발견창 90~120거래일 기준 약 3만~8만 앵커 표본 예상. 채택 규칙 수준에서는 support>=1000(봉인) ∧ 전이 5~60건/일 예산을 동시 요구 — 90일 창에서 규칙당 450~5,400 전이가 허용 범위. depth<=3 conjunction 격자 n_trials는 약 2,000~5,000(봉인 원장 기록, FDR 분모).",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py — read-only DB 연결",
+    "alpha_lab/dataset/cache.py — npz 샤드 v3 additive 증축(extra_features)",
+    "alpha_lab/dataset/derived.py — 윈도우30 파생 미러(오프셋은 shift 재사용)",
+    "alpha_lab/dataset/parity.py — 오프셋 열 스팟 패리티 게이트",
+    "alpha_lab/dataset/labels_v2.py — L3 챔피언 매도식 리플레이 라벨(재사용, 표본 단위만 앵커+지연으로 변경)",
+    "alpha_lab/mining/transition.py — 온셋 추출·전이 EV·발화 예산 [5,60]",
+    "alpha_lab/mining/ev_adopt.py + alpha_lab/stats_common.py — EV CI/연도별/FDR 채택",
+    "alpha_lab/mining/trees.py — 얕은트리 병행 채굴",
+    "alpha_lab/translate/idioms.py + alpha_lab/translate/codegen.py — 오프셋 이디엄 추가 봉인 후 번역",
+    "alpha_lab/hillclimb/engine_eval.py + cli/runner.py — 최종 엔진 확인",
+    "신규 2개: alpha_lab/dataset/path_features.py(어휘 12~16 봉인), alpha_lab/mining/path_motifs.py(conjunction 전수기)"
+   ],
+   "engine_budget_estimate": "총 <=60회 봉인: 스모크/오프셋 함수 값 검증 3회 + 생존 후보 <=10개 × train 창 확인 ~30회 + 2022 holdout ~10회 + tick3 민감도 ~10회 + 예비 7회. 오프라인 단계(1~5,7)는 엔진 0회.",
+   "oos_validation_plan": "3층 구조로 신뢰 확보. (1) 발견창 내부: 월 단위 사전등록 분할 — TRAIN(채굴), VAL(2023·2024 연도별 EV>0 재현), 내부 블라인드 월 집합(v1~v3 캐시에 한 번도 포함되지 않은 월로 구성, 생존 후보에 한해 1회 개봉·재시도 금지). (2) 엔진층: train 창 + 2022 holdout 엔진 확인, CI·연도 역전·MDD·거래수를 P5 프로토콜대로 전수 기록. (3) 2025-01~2026-02는 known/audit 증거로만 병기 — 이 창의 수치를 blind OOS 성과로 주장하는 문장은 산출물에서 금지(C-013 준수). 최종 fresh 판정은 2026-03 이후 미래 데이터 적재 또는 v4 프로토콜식 소액 감독형 페이퍼 운용으로만 가능하며, 그 전까지 후보 지위는 '엔진 확인 통과 + audit창 일관' 상한으로 표기한다.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 시드(인간/격자) 생성 → 엔진 백테 채점 → 힐클라임으로, 탐색 자체가 엔진-인-더-루프이고 표본 단위가 '전략 1회 백테 성과'다. 본 설계는 발견이 전부 오프라인(앵커 사건 표본 × 경로 피처 × 일블록 부트스트랩 EV)이고 엔진은 최종심판 <=60회로 강등되며, 표본 단위가 '전이 사건 1건=라벨 1건'이라 통계 검정력·FDR 통제가 백테 횟수와 분리된다. 힐클라임 뮤테이션도 없다 — 후보는 채택 게이트를 통과한 모티프 원문 그대로 번역된다. 시드 공급 병목을 우회하는 것이 아니라 시드 개념 자체를 앵커-경로 통계로 대체한다.",
+   "kill_criteria": [
+    "킬1(채굴 전, 엔진 0회): 앵커 무조건부 EV 진단에서 전 경로 피처의 top-bottom 십분위 EV 격차 <0.3pp(일블록 부트스트랩) — 경로 좌표계에 기울기 없음 확정, conjunction 탐색 없이 종결.",
+    "킬2(채택): adopt_by_ev(CI_low>0 ∧ 2023·2024 각 EV>0 ∧ support>=1000 ∧ FDR q=0.05) ∧ 전이율 [5,60]/일 동시 통과 후보 0개 — v3 0/107의 경로판 재현으로 간주, 종결.",
+    "킬3(내부 블라인드): 개봉 1회에서 후보 EV<=0 — 해당 후보 즉시 탈락, 전 후보 탈락 시 프로그램 종결.",
+    "킬4(엔진): train 창 profit<=0 또는 MDD가 챔피언 기준선(7.14%) 대비 2배 초과, 또는 2022 holdout 역전 — 후보 기각.",
+    "킬5(예산): 엔진 60회 소진 시 생존자 없으면 무조건 종결(연장 금지).",
+    "킬6(번역갭): 스모크에서 오프셋 구간함수 값이 오프라인 미러와 1틱/0.01 초과 불일치이고 calc=True 폴백도 불일치 — 전 후보 blocked 처리 후 종결 보고."
+   ],
+   "expected_value_case": "성공 시: 챔피언과 진입 논리(앵커-경로 대 이산 시간분기 상태 게이트)가 구조적으로 다른 신규 흑자 패밀리 1~3개 — v5가 실패한 '비상관 앙상블 재료' 공백을 정확히 메꾼다. v4 앙상블(수익 2.6M/MDD 0.49M/calmar 5.28)에 상관 낮은 5번째 다리를 추가하면 다각화 이득이 v4 실측(위험조정 +38%)의 연장선에서 기대된다. 근거: (1) 챔피언 원문 자체가 경로형 절(당일거래대금각도 밴드, 서지비율, 누적수량 비교)로 흑자를 실증 — 경로 정보에 엣지가 실린다는 존재 증명; (2) v4 성공 원인이 순수 다각화이므로 신규 패밀리의 한계 기여는 절대수익이 작아도 성립; (3) 실패해도 킬1~2가 엔진 0회로 조기 발동해 비용이 오프라인 계산 1~2일에 그치고, '경로 좌표계에도 EV 없음'이라는 부정 지도가 데이터-우선 채굴 종결 논거를 완결한다.",
+   "risks": [
+    "RC-0 중력: 기저 EV -1.022% 비용 헛들은 앵커 조건화 후에도 지배할 수 있다 — 3사이클 연속 실패의 인접 공간이라는 사전확률이 본질적으로 낮다.",
+    "챔피언 재발견 위험: 채택 모티프가 사실상 rr8 계보의 서지비율+각도 절 재조합이면 비상관 가치가 없다 — 채택 후 챔피언과의 일치 상관(일별 손익 상관) 검사 필요.",
+    "오프셋 구간함수 의미론 검증 전 불확실성: 이전틱수 인자의 엔진 실동작(사전계산 컬럼 인덱싱 vs 즉석계산)이 미확인 — 킬6으로 통제하나 초기 스모크 실패 시 어휘 절반이 무효화될 수 있다.",
+    "온셋-연속발화 갭: 오프라인은 온셋 1건을 측정하지만 엔진은 참 구간 연속 발화+슬롯 점유·재진입 상호작용 — 전이율 예산으로 완화되나 P5식 엔진 역전 가능성 상존.",
+    "내부 블라인드 월의 순도: v1~v3 캐시 월과의 중첩 감사가 불완전하면 블라인드 주장 훼손 — 사전등록 시 캐시 원장 대조 필수.",
+    "다중비교 팽창: 지연 d 3종 × 어휘 격자로 n_trials가 수천 — FDR 분모 정직 기록 없으면 winner's curse."
+   ],
+   "confidence_0_100": 28
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "핵심 차별성 주장은 코드로 검증됨: trade/base_strategy.py의 _Parameter_Area/_Parameter_Angle(305-376행 부근)은 실제로 (tick, pre) 2인자 시그니처를 갖고, pre(이전틱수)!=0일 때 사전계산 컬럼의 _Parameter_Previous 경로 또는 _get_double_pre_index 즉석계산 경로가 존재한다 — 오프셋 어휘의 엔진 표현 가능성은 허풍이 아니다.",
+     "재탐사 아님(데이터 표현): alpha_lab/hillclimb/features_v3.py 헤더가 'avg_list=[30] 동결값 30 고정: 함수(30)'을 명시 — v3까지의 43피처는 전부 오프셋 0 스냅샷이었고 이전틱수 축은 탐사된 적 없다. D1의 함수(30,30)/shift 기반 앵커-상대 피처는 실질적으로 새 좌표축이다.",
+     "재탐사 아님(표본 단위): alpha_lab/mining/transition.py docstring이 확인하듯 v3 전이 샘플러는 '스냅샷 규칙의 FALSE→TRUE 온셋에서 EV 재측정'이었지 앵커 사건+지연 d 표본에서의 경로 피처 채굴이 아니다. P2 이벤트족(docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md 40행: 'FDR 0/138 — 사건 후 분포에도 비용 이길 EV 없음')은 사건의 무조건부 한계 EV였고, 사건×경로형상 조건화는 미측정 — 겹치되 동일하지 않다.",
+     "그러나 방법론(depth<=3 conjunction + ev_adopt + trees.py + 동일 발견창 09시 tick 공간)은 v3와 대부분 공유하고, docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md는 '데이터에서 새 규칙을 채굴한다는 접근이 세 번 연속 winner 0 — 재현된 과학적 결론'으로 종결하고 챔피언-이웃 피벗을 권고했다. D1은 그 결론의 인접 공간 4번째 시도이므로 부분 겹침 = FIX이며 경계 조건이 필수다.",
+     "킬1 문턱(십분위 top-bottom 0.3pp)은 RC-0 기저 -1.022%(같은 plan 문서 RC-0 절) 대비 경제적으로 너무 관대하다 — 0.3pp 기울기는 게이트를 통과시키지만 depth 3 결합으로도 비용 헛들을 못 넘을 공산이 크고, 그 경우 conjunction 탐색·FDR 분모만 낭비된다.",
+     "채굴기가 오프셋 항 없는 순수 스냅샷 conjunction으로 수렴하면 그것은 이름만 바꾼 v3 재탐사가 된다 — 현 설계에는 이를 막는 구조적 제약이 없다.",
+     "라벨(labels_v2 L3 챔피언 매도식 리플레이)은 실패 목록 (b) 고정지평/stride가 아닌 검증된 경로 재사용, 2025-01~2026-02 창은 known/audit로만 병기 — DIGEST 6·8 위생 준수. 엔진 예산 60회 봉인과 킬6 번역갭 게이트도 P5 교훈 반영."
+    ],
+    "required_fixes": [
+     "오프셋 필수 제약을 사전등록에 봉인: 채택 후보(모티프)는 반드시 이전틱수 pre>0 항을 1개 이상 포함해야 한다. 오프셋 0 항만으로 구성된 conjunction은 43피처 스냅샷 공간(v1~v3, 양EV 리프 0/107)의 재탐사이므로 채택 자격 자체를 박탈한다.",
+     "킬1을 경제 기준으로 강화: top-bottom 십분위 격차 0.3pp 단독이 아니라 '최상 십분위(또는 depth 2 결합 상위 셀)의 조건부 EV가 RC-0 기저 -1.022%를 유의미하게 상회(예: CI 상한이 0에 근접하거나 격차>=1.0pp)'를 병행 요구하도록 문턱을 사전등록하라. 아니면 0.3pp가 depth 3 결합으로 양EV에 도달 가능하다는 정량 근거를 봉인 문서에 명시하라.",
+     "챔피언 재발견 게이트를 리스크 서술에서 봉인 채택 기준으로 승격: 엔진 확인 통과 후보는 rr8 계보 및 GPTAUTH_G8과의 일별 손익 상관 상한(예: |rho|<0.6)을 통과해야 '비상관 패밀리'로 보고 가능 — 미통과 시 파라미터 쌍둥이(상관 0.816 사례)로 분류.",
+     "온셋-연속발화 갭의 오프라인 사전 측정 추가: 엔진 투입 전에 동일 후보의 state-mask(연속 참 구간) 기준 EV도 transition.py state_mask로 병행 측정해 온셋 EV와의 괴리를 기록하라. 괴리가 크면 P5식 엔진 역전의 예고 신호이므로 해당 후보의 엔진 예산 배정을 후순위로 내린다.",
+     "내부 블라인드 월 순도 감사를 사전등록 산출물로 고정: v1~v3 npz 캐시 원장(사용 60일)과의 월 단위 대조표를 봉인 커밋에 포함하고, 대조표 없는 블라인드 개봉은 무효로 규정하라."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "[표현 가능성 검증됨] trade/base_strategy.py:305-376 실측 — _초당거래대금평균/_체결강도평균/_최고현재가/_등락율각도 전부 (tick, pre=0, calc=False) 시그니처를 실제로 갖는다. pre!=0일 때 사전계산 경로는 _Parameter_Previous(cidx, pre)(base_strategy.py:75-79)로 'indexn-pre 행의 사전계산 윈도우 컬럼'을 반환하므로 오프라인 shift(30) 미러와 의미론이 정확히 일치한다(행 단위 shift = pre 단위). 제안이 '미확인'이라고 정직하게 표기한 오프셋 의미론이 실제로는 코드상 성립 방향이며, calc=True 폴백(:319-320 _get_double_pre_index 즉석계산)도 실존한다.",
+     "[스케치 어휘 전수 실존] 초당거래대금N(pre)는 base_strategy.py:135에 정의되고 :969에서 전략 네임스페이스에 노출된다. 구간틱수 30 고정 시 avg_list 프로파일([w_unit], trade/formula_manager.py:103) 내에서 안전하다는 주장도 base_strategy.py:316 'tick in self.avg_list' 분기와 일치.",
+     "[인프라 재사용 실존] alpha_lab/dataset/{reader,cache,derived,parity,labels_v2}.py, alpha_lab/mining/{transition,ev_adopt,trees}.py, alpha_lab/translate/{idioms,codegen}.py, alpha_lab/hillclimb/engine_eval.py, alpha_lab/stats_common.py 전부 실존 확인. labels_v2.py:436 build_l3_labels가 entry=(t0+1초) 매도호가1+2틱 비용모형으로 이미 구현되어 있어 라벨 파이프는 표본 단위 변경만 필요하다는 주장이 사실.",
+     "[데이터/엔진 경로 실존] _database/stock_tick_back.db 실존, cli/runner.py와 stom_backtest.py 실존. 발견창 2022-03~2024-12와 2022 holdout은 tick DB 범위(2022-03-23~) 안이며 개봉된 2025-01~2026-02 창을 blind로 재사용하지 않는 설계로 DIGEST 6과 무모순.",
+     "[실패 목록과의 구분 성립] 오프셋(이전틱수) 피처는 v1/v2/v3 43피처 스냅샷 공간에 0개였다는 주장은 hillclimb/features_v3.py 동결 규약과 부합하고, 표본 단위(앵커+지연 사건)와 채택 기준(전이-EV+발화예산)이 DIGEST 3(a)(b)(c)와 다른 축임을 각 항목별로 반박했다. 킬1(엔진 0회 기울기 진단)이 RC-0 비용 중력에 대한 조기 종결 장치로 실재해 실패 비용이 유계.",
+     "[표본/예산 현실성] P2 실측 42,363이벤트 기반 앵커 3만~8만 추정은 보수적이고 support>=1000은 P3(346)식 표본 부족과 거리가 멀다. 엔진 <=60회 분해(스모크3+train30+holdout10+tick3민감도10+예비7)가 구체적.",
+     "[잔여 위험, 비치명] (i) 사전계산 컬럼의 pre 오프셋이 '행'=1초 정렬을 전제하는데 무체결 초 결측 행이 있으면 30행!=30초 — 기존 parity.py >=99.9% 스팟 패리티와 킬6 스모크가 이를 잡도록 이미 설계에 포함. (ii) 스케치의 (최고현재가(30)-현재가)/최고현재가(30) 절은 장 초반 tick_count 부족 시 최고현재가=0 반환(base_strategy.py:321)으로 ZeroDivisionError 가능 — codegen 가드 1줄 필요하나 스모크 단계에서 자명하게 발견되는 수준. (iii) 온셋-연속발화 갭은 P5식 엔진 역전 위험으로 남지만 킬4가 통제."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "[성립] 거래 EV 기준 경제성: 채택 게이트가 p-value가 아니라 챔피언 현직 매도식 리플레이 net_rate(tick2 슬리피지+수수료 내재, alpha_lab/dataset/labels_v2.py 실존 확인) 기반 CI_low>0 + 연도별 EV>0이며, adopt_by_ev는 alpha_lab/mining/ev_adopt.py:79에 실존 — -1.022% 비용 헛들을 '넘었는지'를 표본 수준에서 직접 측정하는 설계다.",
+     "[성립] 표현력 주장 실증: trade/base_strategy.py:305-370에서 초당거래대금평균/체결강도평균/최고현재가/등락율각도 전부 (tick, pre, calc) 시그니처와 calc=True 폴백을 확인 — 번역갭 주장이 공상이 아니고 킬6이 잔여 의미론 위험을 봉쇄한다.",
+     "[성립] wt-dev 차별성: 표본 단위가 '앵커 사건 1건=라벨 1건'인 오프라인 채굴 + 엔진 ≤60회 최종심판으로, 엔진-인-더-루프 힐클라임(시드→백테채점→뮤테이션)과 구조적으로 다르다. transition_mask/measure_transition_ev(alpha_lab/mining/transition.py:120,179) 등 인용 인프라 전부 실존.",
+     "[성립] 회전율/용량: 발화 예산 [5,60]/일 + support>=1000은 챔피언 실측 거래 규모(GPTAUTH 550거래)와 정합하고, tick3 민감도가 엔진 단계에 포함된다.",
+     "[결함1-치명] 포트폴리오 적합성이 게이트가 아니라 소망: 앵커가 챔피언 공통 구조의 서지 트리거(평균 2~2.5배, 09시 창, 소형주, 등락율 밴드) 그대로여서 example_condition_sketch 자체가 사실상 rr8 계보 변주다. RR8_12/0/21 상관 0.816 전례상 채택 모티프의 기본 귀결은 '챔피언 쌍둥이'인데, 일별 손익 상관 검사가 risks 항목의 노트일 뿐 채택/킬 기준(임계·측정창·대상 v4 4다리)으로 봉인되어 있지 않다. expected_value_case의 전 가치가 '비상관 5번째 다리'에 걸려 있으므로 이 공백은 엔진 60회 예산을 쌍둥이 검증에 낭비시킬 수 있다.",
+     "[결함2] 킬4 MDD 기준이 단독 전략 기준(챔피언 7.14%의 2배≈14%)이라 v4 앙상블(MDD 493,590, calmar 5.28)에의 한계 MDD 기여를 판정하지 않는다 — 심사 렌즈 (4)항 미충족.",
+     "[결함3] 킬1의 '십분위 격차 0.3pp'는 기저 EV -1.022% 위에서 top 십분위가 여전히 -0.7~-0.9%인 경우에도 통과한다 — 격차만으로는 conjunction이 비용 헛들을 넘는 경제 경로가 성립함을 보이지 못하므로, 채굴 착수 정당화 기준으로 불완전하다."
+    ],
+    "required_fixes": [
+     "비상관 게이트를 정식 채택 기준으로 승격: 채택 후보별로 v4 4챔피언 각각과의 일별 손익 상관을 사전등록 임계(예: max ρ < 0.5)와 측정창과 함께 봉인하고, 초과 시 '쌍둥이 기각'으로 킬 처리한다. 엔진 예산 배분도 이 게이트 통과 후보에만 train/holdout 회차를 쓰도록 순서를 명시한다.",
+     "킬4를 포트폴리오-한계 기준으로 보강: 단독 MDD 2배 상한 외에, v4+후보 등가중 앙상블의 calmar/MDD가 v4 단독 대비 악화되면 기각하는 audit-창 병기 기준을 추가한다(2025-01~2026-02는 known/audit 지위로만).",
+     "킬1에 경제 경로 요건 추가: 십분위 격차 0.3pp와 함께 '최소 1개 경로 피처의 top 십분위 조건부 EV가 사전등록 하한(예: > -0.3pp, conjunction 여지 근거 명시)을 넘을 것'을 요구해, 기울기는 있으나 전 구간 심적자인 공간에서 conjunction 탐색에 착수하는 경우를 차단한다."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D2",
+  "name": "Idea2 재생: 조건부 사건·새 사건족",
+  "design": {
+   "direction_id": "D2",
+   "direction_name": "2세대 조건부 이벤트 스터디 — 사건 시퀀스(dyad) x 상태 x 챔피언 리플레이 라벨",
+   "one_line": "사건을 단독 트리거가 아니라 조건부 분포의 축으로 재정의해, \"사건 쌍(선행사건→후행사건, Δt)\" x 상태 층화 표본을 챔피언 매도규율 리플레이 라벨(L3_net)로 채점하고 계층적 FDR로 생존 셀만 STOM 조건식으로 번역하는 프로그램.",
+   "core_hypothesis": "단일 사건의 무조건부 사후 분포에는 비용(-1.022% 기저)을 이기는 EV가 없음이 확정됐지만(FDR 0/138), 사건의 \"역사\" — 즉 (1) 첫 발생 vs 재발생(재서지), (2) 선행사건→후행사건 시퀀스(예: VI해제 후 60초 내 재서지, 신고가 실패 후 재시도), (3) 사건 간 간격 Δt — 는 스냅샷 피처 공간에도 단일 사건 셀에도 존재하지 않는 미탐사 정보 축이다. 챔피언(rr8_12)이 실제로 쓰는 서지 정의(국소 30초 기준선 x 2.0~2.5배)는 봉인된 E3(당일누적 기준선 x K=10)와 조작적으로 다르므로, \"챔피언형 국소 서지의 재발화 + 상태 게이트\" 시퀀스 셀에는 아직 측정되지 않은 조건부 EV 포켓이 존재할 수 있다. 성공하면 rr8 계보와 비상관인 5번째 앙상블 멤버(GPTAUTH_G8급)를 얻는다.",
+   "why_not_refuted": "DIGEST 3번 각 항목과 대조: (c) 이벤트 5족 FDR 0/138 — 표본단위가 다르다: P2는 {단일 사건족 x 정적 상태 셀}이었고 D2는 {사건 쌍/시퀀스 x Δt bin x 상태 셀}이다. 또 라벨이 다르다: P2는 고정지평 60/180/300초 매수호가1 청산(outcomes.py:51), D2는 챔피언 매도규율 리플레이 L3_net이다. 또 사건 정의가 다르다: 봉인 E3는 SURGE_K=10 x 당일누적/경과초 기준선(detectors.py:165-169)인데 챔피언은 초당거래대금평균(30) x 2.0~2.5배(passport 실측) — 챔피언형 국소 서지는 사건족으로 측정된 적이 없다. 기존 138셀의 raw EV 재활용은 하지 않는다(금지 준수). (a) 스냅샷 43피처 트리 0/107 — 시퀀스 사건(\"60초 전 1차 서지 존재\")은 순간 스냅샷 피처의 축정렬 depth≤4 규칙으로 표현 불가능한 시간적 사건-역사 패턴이므로 같은 공간의 재탐사가 아니다. (b) 고정지평/stride 라벨 + lift — D2는 L3_net 리플레이 라벨 + EV CI하한>0 채택 기준(v3 교훈 계승) + 사건 시점 자체가 자연 전이 샘플(stride 그리드 아님). (f) 다밴드 자동발굴 0/40 — 그것은 챔피언 구조의 파라미터 밴드 탐색이었고 D2는 사건-시퀀스 공간이므로 별개. (d) 콜드 LLM — 미사용. (e)(g)(h)(i) — 청산/레짐/구식API와 무관(매도식은 검증 챔피언 매도식 고정). 정직한 한계: RC-0(공간 평균 -1.022%)은 시퀀스 조건화에도 그대로 적용되는 강한 사전 반증 압력이며, \"조건화 축을 하나 더 얹으면 살아난다\"는 가설은 P2에서 이미 한 번(상태 층화) 실패했다. 따라서 confidence는 낮게 두고 family 수준 사전 게이트에서 조기 kill하는 설계를 채택한다.",
+   "mechanism_steps": [
+    "[1 데이터→사건 스트림] alpha_lab/events/detectors.py의 detect_events를 그대로 재사용해 E1~E5 원시 스트림 생성 + 신규 모듈 alpha_lab/events/sequences.py: (i) 챔피언형 국소 서지 E3'(초당거래대금 >= 초당거래대금평균(30) x 2.5 등가 오프라인 재계산 — dataset/derived.py 패리티 패턴 재사용), (ii) 시퀀스 조합기: 사전등록된 8개 사건족만 생성 — S1 VI해제→60초내 E3' 재서지, S2 E3' 첫 서지→30~120초내 2차 서지(재서지), S3 E2 신고가→60초내 고가 미돌파 후 재접근(신고가 재시도), S4 E4 갭개장→300초내 첫 E3', S5 E3'→60초내 E2 동반, S6 E5 라운드피겨 이탈→재진입, S7 개장 5분 패턴(09:00~09:05 누적 E3' 발생 횟수>=2), S8 E1 단독이되 챔피언 상태게이트 안(대조군). 각 시퀀스는 (선행 t_a, 후행 t_b, Δt=t_b-t_a) 기록, 불응기 120초 유지.",
+    "[2 통계량] 라벨: 고정지평 폐기, alpha_lab/distill/replay.py + dataset/labels_v2.py의 챔피언 매도규율 리플레이 L3_net(tick2 불리체결 + 수수료/세금 — labels.py adverse_fill/net_rate 재사용, 재구현 금지). 층화: events/outcomes.py attach_cells 재사용(시총 x 시간밴드 x 등락율) + Δt bin(0~30/30~60/60~120초) 축 추가. 셀 통계: stats_common.py day_block_bootstrap(EV, 95% CI, p_one_sided) + 플라시보 2종(random_time_matched, shift_plus_60) 동일 파이프 — cli/alpha_events.py의 수집/병합/봉인 검증 구조(collect-name/from-collected) 그대로 이식.",
+    "[3 후보 선별 — 계층적 FDR] 신규 alpha_lab/stats_hier.py: 2단계 Benjamini-Bogomolov. Stage A(family): 8개 시퀀스족의 풀링 EV를 BH q_A=0.10으로 검정 — 통과 family만 Stage B 진입(미통과 family의 셀은 검정 자체를 안 함 → 다중비교 폭발 차단). Stage B(leaf): 선택 family 내 셀만 BH q_B=0.05 x (선택 family 수/8) 선택보정. 전체 leaf 검정 예산 ≤600을 사전등록하고 registry.append_trials로 n_trials 원장에 전수 기록. 채택 기준은 p가 아니라 EV: CI하한>0 AND 연도별(2022/2023) EV 부호 일치 AND 플라시보 대비 차이 유의 AND 셀 n>=200, family n>=2,000.",
+    "[4 STOM 문법 번역] alpha_lab/translate/idioms.py + codegen.py 재사용: 생존 셀 → 매수식(시퀀스는 구간함수 시차 인자로 표현: 초당거래대금평균(10,30) 류 '과거 창' 참조 + 필요 시 dict_set 경과틱수설정 등록). 매도식은 rr8_12 검증 매도식 원문 고정(Idea5 교훈 — 청산 발명 금지). avg_list 등록 틱수(--avg-time 10,30,60)를 번역기 출력 메타에 명시.",
+    "[5 번역 패리티 게이트 — triage] 신규 alpha_lab/events/parity_events.py(dataset/parity.py 패턴 재사용): 표본일 5일에서 오프라인 시퀀스 발화 시각 vs 엔진 조건식 발화 시각(cli/runner.py run_backtest 1일 실행, per-trade CSV 대조)을 대조 — 발화 시각 일치율 >=95% 미달 시 해당 후보는 엔진 주장 자격 박탈(idea2 문서의 translation/parity gate first 원칙 이행). 이후 mining/transition.py + ev_adopt.py로 일평균 발화 예산(5~60건/일) 검문.",
+    "[6 엔진 확인 — final judge] alpha_lab/__init__.py 게이트 체인(스모크→train→OOS→슬리피지 tick2) 무특혜 통과: train(2022-03~2023-12) 흑자 + CI 0 제외 → holdout(2024) 부호 재현 → OOS 창 1회 개봉(재시도 금지) → tick3 민감도. P5 기각 기준 역적용: CI 0 포함/연도 역전/MDD 악화 중 하나라도 발생 시 기각. 통과자는 v4 앙상블 5번째 멤버 후보로 상관 측정(ensemble/portfolio.py) 후 감독형 프로토콜에 편입 제안."
+   ],
+   "example_condition_sketch": "S2 재서지(첫 국소 서지 30~40초 후 2차 서지 + 고점 유지) 매수식 스케치 — avg_list에 10,30,60 등록 전제, 매도식은 rr8_12 검증 매도식 원문 고정:\n\n매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (시분초 < 90700):\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (1.0 < 등락율 <= 12.0):\n    매수 = False\nelif not (초당거래대금 > 초당거래대금평균(30) * 2.5):            # 지금: 2차 서지\n    매수 = False\nelif not (초당거래대금평균(10, 30) > 초당거래대금평균(60, 30) * 2.0):  # 30~40초 전: 1차 서지 존재\n    매수 = False\nelif not (현재가 > 최고현재가(60, 10) * 0.995):                   # 1차 서지 고점 미붕괴(재시도 아님)\n    매수 = False\nelif not (초당매수수량 > 초당매도수량):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (현재가 < VI가격 - VI호가단위 * 5):\n    매수 = False\nif 매수:\n    self.Buy()",
+   "expressibility": "대부분 표현 가능: 시퀀스의 \"과거 사건 존재\"는 구간함수의 이전틱수 인자(초당거래대금평균(구간,이전), 최고현재가(구간,이전), 초당거래대금N(n))로 자연 표현되고, 이는 챔피언들이 이미 쓰는 패턴이라 번역갭이 작다. 위험 3가지: (1) VI 계열 시퀀스(S1)는 VI해제시간이 datetime이라 (now()-VI해제시간).total_seconds() 형태 산술이 필요 — 게이트 화이트리스트/토큰 검사 통과 여부와 VI 미발동 시 기본값 처리를 패리티 게이트에서 반드시 실측 확인(불가하면 S1은 경과틱수(조건명) + dict_set 경과틱수설정 등록으로 우회하거나 drop). (2) 오프라인 감지기의 '직전 관측 행' 의미와 엔진의 틱 결측 처리 차이 → 발화 시각 일치율 95% 게이트로 방어. (3) 구간함수 틱수는 avg_list 미등록 시 엔진 중지 — 번역기 출력에 --avg-time 요구 목록을 동봉해 운영 실수 차단. 불응기 120초는 조건식으로 직접 표현 불가(엔진은 상태 참인 동안 연속 발화) — 재발화 폭주는 전이 샘플링 검문(일평균 발화 5~60건)과 엔진 실측으로 판정하며, 오프라인 통계와 엔진 발화 프로필의 이 괴리(RC-2)를 패리티 단계에서 정량 기록한다.",
+   "data_requirements": "tick DB(_database/stock_tick_YYYYMMDD.db) 09:00-09:30 창만 사용(채굴 이력과 동일 창 — 비용 모형/기저율이 이 창에서 실측돼 있음). 발견창 2022-03~2023-12(약 440거래일), 확인창 2024년(약 245일), known/audit 창 2025-01~2026-02(개봉 순서 최후, fresh 주장 금지). min DB 불필요. 신규 수집 없음 — 기존 62GB tick DB로 충분. 챔피언 매도규율 리플레이 라벨 계산을 위해 distill/replay 경로가 요구하는 행 범위(사건 후 최대 보유 한도)까지 로딩.",
+   "sample_size_estimate": "P2 실측 42,363 단일 사건(측정창 기준)에서 시퀀스 결합률 10~25% 가정 시 측정창당 4천~1만 건. 발견창(약 440일)으로 확장 시 family당 대략 3천~3만 건 예상 — family 하한 2,000(봉인), 셀 하한 200(봉인, P2 MIN_N 재사용). Δt bin 3개 x 기존 층화(시총3 x 시간밴드 x 등락율3) 중 사전등록로 셀 수를 family당 ≤40으로 상한, 전체 leaf 검정 ≤600. S1(VI 시퀀스)은 희소해 family 하한 미달 가능성 높음 — 미달 시 검정 없이 정직 drop.",
+   "offline_pipeline": [
+    "alpha_lab/events/detectors.py — E1~E5 감지기 원형 재사용(수정 없음, 시퀀스 조합기의 입력)",
+    "alpha_lab/events/outcomes.py — attach_cells/aggregate_cells/compare_with_placebo/random_time_matched/shift_plus_60 재사용(라벨 함수만 L3_net으로 주입 확장)",
+    "alpha_lab/stats_common.py — day_block_bootstrap, bh_fdr (계층 래퍼 stats_hier.py가 이를 호출)",
+    "alpha_lab/dataset/reader.py(connect_ro/load_stock_rows), dataset/labels.py(adverse_fill/net_rate — 재구현 금지), dataset/labels_v2.py + distill/replay.py(챔피언 매도규율 리플레이 라벨)",
+    "alpha_lab/dataset/derived.py + dataset/parity.py — 챔피언형 국소 서지 E3' 재계산기의 패리티 검증 패턴",
+    "alpha_lab/mining/transition.py + mining/ev_adopt.py — 전이 EV 재측정, 발화 예산 검문",
+    "alpha_lab/translate/idioms.py + translate/codegen.py — STOM 매수식 번역",
+    "alpha_lab/registry.py + cli/alpha_common.py — 봉인 검증(verified_prereg_or_none)·n_trials 원장·수집/병합 청크 규율(cli/alpha_events.py 구조 이식)",
+    "cli/runner.py(run_backtest/BacktestConfig) — 패리티 게이트와 엔진 확인",
+    "alpha_lab/ensemble/portfolio.py + ensemble/robustness.py — 생존자 v4 앙상블 상관/기여 측정",
+    "신규 작성: alpha_lab/events/sequences.py(시퀀스 조합기), alpha_lab/stats_hier.py(2단계 BB-FDR), alpha_lab/events/parity_events.py(발화 시각 패리티), cli/alpha_sequences.py(alpha_events.py 포크)"
+   ],
+   "engine_budget_estimate": "총 ≤60회 봉인: 번역 패리티 5회(표본일 1일 실행 x 후보군) + train 게이트 ≤40회(생존 후보 x 창) + 2024 확인 ≤8회 + OOS 봉인창 개봉 후보당 1회 재시도 금지 ≤5회 + tick3 민감도 ≤2회. 오프라인 발견 단계는 엔진 0회. 시간 예산: 시퀀스 감지/라벨링 ~2일(청크 수집 병렬), 통계/번역 ~1일, 엔진 ~1일 — 총 ~4~5일.",
+   "oos_validation_plan": "진짜 미개봉 창이 없다는 사실을 전제로 4중 방어: (1) 시간 분리 — 발견은 2022-03~2023-12만, 2024는 발견에 일절 미사용 후 확인창으로 1회 개봉(교차창이 아니라 순방향 단일 개봉, 채택기준에 2024 부호 일치 포함), 2025-01~2026-02는 known/audit로 명시 표기하고 '참고 감사'로만 최후 1회 실행 — 어떤 문서에서도 fresh blind로 주장하지 않는다(C-013 준수). (2) 통계 방어 — 플라시보 2종 동일 파이프 + 계층 FDR + 사전등록 leaf 예산 ≤600 + n_trials 원장 전수 기록으로 winner's curse를 선택 단계에서 절감하고, 채택은 p가 아니라 EV CI하한>0. (3) 엔진 방어 — P5 기각 기준(CI 0 포함/연도 역전/MDD 악화)을 사전등록 기각 기준으로 역적용. (4) 유일한 진짜 fresh OOS는 미래 데이터 — 통과자는 즉시 배포하지 않고 2026-03+ 신규 데이터 축적분에 대한 shadow 판정(v4 감독형 프로토콜과 동일: 소액 감독/킬스위치/미래 재검증 의무)을 승격 조건으로 문서화한다. 이 프로그램 안에서 '실전 보장' 주장은 구조적으로 불가능함을 산출물에 명기한다.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 시드(인간/격자) 생성→백테 채점→힐클라임으로, 백테스트가 반복 평가자이고 탐색 단위가 '조건식 파라미터'다. D2는 (1) 탐색 단위가 조건식이 아니라 '사건 시퀀스의 조건부 EV 분포'이고, (2) 백테스트는 반복 평가자가 아니라 최종 심판 1회이며(오프라인 발견 → 엔진 ≤60회 봉인), (3) 후보 생성이 힐클라임 뮤테이션이 아니라 사전등록된 8개 사건족의 통계 검정에서 나오고, (4) 산출 목표가 챔피언 개선/변종이 아니라 rr8 계보와 비상관인 독립 패밀리(앙상블 5번째 멤버)다. 시드 공급 병목을 힐클라임 바깥의 사건-시퀀스 통계로 푸는 것이므로, 성공 시 wt-dev 루프에 '검증된 신규 시드'를 공급하는 상류가 된다.",
+   "kill_criteria": [
+    "K1(family 조기 kill): 발견창에서 8개 시퀀스족 중 풀링 EV CI하한>0(tick2 비용 차감 후)인 family가 0개면 즉시 전체 종결 — 셀 수준 검정 없이 clean negative 보고(P2 판정 형식 계승)",
+    "K2(표본): family 표본 <2,000이면 해당 family 무검정 drop, 전 family 미달이면 종결",
+    "K3(플라시보): 생존 셀의 real EV가 random/shift 플라시보 EV와 유의차 없으면 셀 기각",
+    "K4(번역 패리티): 오프라인/엔진 발화 시각 일치율 <95%인 후보는 엔진 주장 자격 박탈, 수정 불가 시 후보 폐기(사후 정의 변경 금지)",
+    "K5(엔진): train CI 0 포함 OR 연도(2022/2023/2024) 중 하나라도 부호 역전 OR MDD가 rr8_12 단독(7.14%) 대비 악화 → 후보 기각",
+    "K6(전역): 사전등록 leaf 예산 600 소진 + 엔진 예산 60회 소진 시점에 생존 0이면 '사건-시퀀스 공간에도 이 창의 비용을 이기는 EV 없음'을 확정 기록하고 종결 — 재분할/임계완화/셀 재정의로 되살리기 금지"
+   ],
+   "expected_value_case": "성공 시나리오: 1~2개 시퀀스 셀이 전 게이트 통과 → GPTAUTH_G8급(연 300~600거래, 단순 게이트 체인, rr8 계보와 상관 <0.5) 독립 패밀리 확보 → v4 정적 등가중을 4→5멤버로 확장. 근거: v4의 성공 원인이 순수 다각화(DIGEST 4)이므로 비상관 멤버 1개 추가의 한계 기여가 크고, v5가 실패한 이유는 후보의 API 실행 불가(재료 부족)였지 다각화 논리의 반증이 아니었다. 기대 규모는 OOS 위험조정(calmar) 개선이지 단독 신규 챔피언이 아니다 — 보수적으로 앙상블 MDD 10~20% 추가 절감 또는 calmar 소폭 개선. 실패 시나리오(더 개연적): K1에서 조기 종결되며, '사건 역사 축에도 EV 없음'이라는 새 부정 지도를 leaf 검정 0~수십 회의 저비용으로 확정 — 이 자체가 후속 연구의 탐색 공간을 좁히는 자산이다.",
+   "risks": [
+    "RC-0 중력: 09:00-09:30 창의 기저 EV -1.022%는 시퀀스 조건화에도 그대로 적용 — 상태 층화 1회 실패(P2) 전례상 시퀀스 축도 못 이길 확률이 높다(주 리스크, K1로 저비용 방어)",
+    "리플레이 라벨의 낙관 편향: L3_net은 챔피언 매도규율 가정인데 신규 패밀리 보유 분포가 챔피언과 다르면 라벨-엔진 괴리 발생(P5의 리플레이→엔진 반전 전례) — 엔진 최종 심판으로만 방어 가능",
+    "발화 프로필 괴리(RC-2): 사건은 이산 시점이지만 엔진 조건식은 구간 연속 발화 — 불응기 미표현으로 거래수 폭증/EV 희석 가능, 패리티+발화예산 검문으로 부분 방어",
+    "S1(VI 시퀀스) 문법 위험: VI해제시간 datetime 산술의 게이트 통과 불확실 — 우회 실패 시 가장 유망해 보이는 family를 잃음",
+    "다중비교 잔존 위험: 계층 FDR로 축소해도 family 8 x 셀 ≤40 설계 자체가 사전 선택이며, 사건족 정의에 연구자 자유도가 있다 — 사전등록 봉인 전 정의 변경 금지로 방어",
+    "2024 확인창은 v3 교차창 검증에서 집계 수준으로 이미 노출된 적 있음 — 완전 virgin이 아님을 문서에 명기하고 채택 가중치를 낮춤",
+    "기회비용: 4~5일 + 엔진 60회 예산이 D5(밴드-생성기) 같은 고확률 경로와 경합"
+   ],
+   "confidence_0_100": 28
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "(c) 이벤트 5족 FDR 0/138 대조 — 실질 차이 확인됨: 표본단위(단일 사건 셀 → 사건쌍 x Δt bin), 라벨(고정지평 60/180/300초, alpha_lab/events/outcomes.py:51 DEFAULT_HORIZONS 실측 확인 → 챔피언 매도규율 리플레이 L3_net), 사건 정의(봉인 E3 = SURGE_K x 당일누적/경과초 기준선, alpha_lab/events/detectors.py:164-169 실측 확인 → 챔피언형 국소 30초 기준선 x 2.5는 사건족으로 측정된 적 없음). 데이터/라벨/표본단위/목적함수 중 3개 축이 다르므로 이름만 바꾼 재탐사는 아님.",
+     "(a) 스냅샷 43피처 트리 0/107 대조 — '60초 전 1차 서지 존재' 류 사건-역사 축은 순간 스냅샷의 축정렬 depth<=4 규칙 공간에 없음. docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md의 v3 반증(RC-1: 엣지가 파생 피처 공간에 없음)은 피처 공간에 대한 결론이지 시간적 사건-시퀀스 공간에 대한 결론이 아님 — 같은 공간 재탐사 아님.",
+     "(b)(d)(e)(f)(g)(h)(i) 대조 — 라벨은 L3_net + EV CI하한>0 채택(고정지평/lift 아님), 콜드 LLM 미사용, score-sum 미사용, 다밴드 파라미터 탐색 아님, 매도식은 rr8_12 원문 고정(청산 발명 금지 준수), 레짐 로직 없음, 신규 codegen이므로 구식 API 무관 — 전부 비중첩.",
+     "그러나 부분 중첩이 실재함: (1) S8(E1 단독 x 챔피언 상태게이트)은 {단일 사건 x 정적 상태 셀}로 P2(c)와 동일 표본단위 공간이며 라벨만 다름 — 대조군 명목이지만 채택 풀에 들어가면 재탐사가 됨. (2) 동일 detectors/attach_cells/09:00-09:30 창/시총x시간밴드x등락율 층화 재사용은 인프라 공유이자 공간 부분 공유. (3) docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md:40이 P2를 'RC-0의 이벤트판 — 사건 후 분포에도 비용 이길 EV 없음'으로 확정했고, D2의 핵심 가설('조건화 축 하나 더')은 상태 층화에서 이미 1회 실패한 패턴의 변형 — 제안서 스스로 confidence 28로 인정하며 K1 조기 kill로 방어하므로 FAIL 사유까지는 아님.",
+     "통계 위생(DIGEST 8) 유지 확인: 사전등록 leaf 예산 <=600, 계층 BB-FDR, 플라시보 2종 동일 파이프, n_trials 원장, 재백테/패리티 게이트(K4), P5 기각기준 역적용(K5), 2025-01~2026-02를 known/audit로 명시(C-013 준수). 엔진 예산 <=60회로 3사이클 실측(101회) 대비 절제됨.",
+     "리플레이 라벨의 낙관 편향(P5의 리플레이→엔진 반전 전례)과 RC-2 발화 프로필 괴리를 제안서가 자인하고 엔진 최종 심판 + 발화예산 검문으로 방어 — 반증 회피가 아니라 정직한 리스크 등재."
+    ],
+    "required_fixes": [
+     "S8 경계 조건 명문화: S8은 P2와 동일한 {단일 사건 x 상태 셀} 공간이므로 '캘리브레이션/대조군 전용, 채택·번역·엔진 주장 자격 영구 박탈'을 봉인 문서에 명시하라. S8이 우연히 CI하한>0이 나와도 조건식으로 번역하지 않는다는 조항이 없으면 (c) 재탐사 금지 위반이 된다.",
+     "E3'(챔피언형 국소 서지) 정의를 측정 시작 전 사전등록·봉인하라(창=30초, K=2.5, 결측 처리 규칙 포함). 사건족 정의의 연구자 자유도를 제안서가 자인했으므로, 첫 발화 통계를 본 뒤 창/배수를 조정하는 경로를 봉인으로 차단해야 P2와의 '사건 정의가 다르다' 주장이 사후합리화로 전락하지 않는다.",
+     "기존 P2 138셀 산출물과의 접촉 금지 절차화: 새 파이프라인이 기존 셀 EV/순위 파일을 읽지 않음을 코드 리뷰 체크리스트(cli/alpha_sequences.py)에 명시하고, 봉인 검증(registry.verified_prereg_or_none)에 포함하라.",
+     "2024 확인창의 부분 노출(v3 교차창 집계 노출) 감가를 정성 문구가 아니라 채택 기준에 반영하라 — 예: 2024 단독 부호 일치를 필요조건으로 유지하되 '2024만 통과하고 train CI가 경계선인 후보는 자동 기각' 같은 기계적 규칙으로 사전등록.",
+     "S1(VI datetime 산술) 문법 통과 여부를 발견 단계 착수 전 1일 스모크로 선판정하라(엔진 예산 60회 내 산입). 발견 후 번역 불가 판명 시 '가장 유망한 family 상실'이 사후 정의 변경 유혹을 만들므로, 표현 불가 확정 시 S1을 시작 전에 drop하는 분기를 봉인에 명시."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 7.5,
+    "reasons": [
+     "인프라 재사용 주장 전수 실측 확인: alpha_lab/events/detectors.py(SURGE_K=10, E3 정의 165-169행 — 제안의 인용과 정확 일치), alpha_lab/events/outcomes.py(DEFAULT_HORIZONS 51행, attach_cells/aggregate_cells/compare_with_placebo/random_time_matched/shift_plus_60 모두 실존), alpha_lab/stats_common.py(day_block_bootstrap 106행, bh_fdr 148행), alpha_lab/distill/replay.py(replay_champion_exit 238행 — rr8_12 passport 매도식 원문 내장), alpha_lab/dataset/labels_v2.py(L3_net 456/525행), alpha_lab/registry.py(append_trials 80행), cli/alpha_common.py(verified_prereg_or_none 186행), cli/alpha_events.py, alpha_lab/translate/idioms.py+codegen.py, alpha_lab/mining/transition.py+ev_adopt.py, alpha_lab/ensemble/portfolio.py — 신규 작성 4모듈(sequences.py/stats_hier.py/parity_events.py/cli/alpha_sequences.py) 외 전부 실존",
+     "엔진 API 리스크(v5 전멸 원인) 해소 확인: 스케치의 self.Buy() 무인자 호출은 현행 API와 일치(backtest/backengine_base.py:791 def Buy(self, buy_long=False)) — 구식 7-arg API 아님",
+     "시퀀스 표현의 핵심 문법 실존 확인: 구간함수의 이전틱 인자(tick, pre=0) 시그니처가 trade/base_strategy.py:314-334(_Parameter_Area, _최고현재가)와 backtest/back_code_test.py:259,286에서 확인됨 — '초당거래대금평균(10,30)', '최고현재가(60,10)' 류 과거창 참조는 실제 지원 문법이며 챔피언이 이미 쓰는 패턴이라는 주장 성립",
+     "avg_list 배선 실존: cli/runner.py:33-39(_normalize_avg_list)+545-554에서 BacktestConfig.avg_time이 엔진 avg_list로 전달되고 backtest/backengine_base.py:359(add_rolling_data)+438(CheckAvglist)로 검증됨 — 번역기 출력에 --avg-time 요구 목록 동봉 계획이 실제 배선과 정합. 단 '미등록 시 엔진 중지' 주장은 부정확(base_strategy는 316-321행에서 미등록 틱을 on-the-fly 계산 fallback) — 어느 쪽이든 제안의 완화책이 커버하므로 비치명",
+     "패리티 게이트 실행 가능: cli/runner.py:337-351(run_backtest + _find_latest_csv per-trade CSV 탐지)로 발화 시각 대조 실현 가능, dataset/derived.py에 초당거래대금평균 오프라인 재계산+parity.py 패턴 실존",
+     "데이터/표본 현실성: 발견창 2022-03~2023-12는 tick DB 실존 범위(2022-03-23~) 내, min DB 불요, 신규 수집 없음. P2 실측 42,363 단일사건 기반 시퀀스 결합률 10~25% 추정은 보수적이며 family 하한 2,000 미달 시 무검정 drop(K2)으로 P3형 표본 사망을 사전 차단",
+     "실패 확정 목록과의 차별성 성립: 표본단위(사건쌍xΔt), 라벨(L3_net 리플레이 vs 고정지평 매수호가1 — outcomes.py:9,51,116으로 P2 라벨과 다름 확인), 사건 정의(챔피언형 국소 서지 E3'는 봉인 E3의 당일누적 기준선과 조작적으로 다름 확인)가 모두 실제 코드 수준에서 구분됨 — 같은 데이터 같은 방식 재탐사 금지 조항 위반 아님",
+     "잔여 리스크는 전부 정직 기재 + kill criteria로 방어: RC-0 기저 -1.022% 중력(K1 family 조기 kill), 불응기 조건식 미표현(RC-2, 패리티+발화예산 검문), S1 VI datetime 산술 불확실(drop fallback), confidence 28로 자체 평가도 정직 — 실행 가능성 렌즈에서 치명 결함 없음"
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 6,
+    "reasons": [
+     "[사실검증 통과] 제안의 핵심 사실 주장은 저장소와 일치한다: (a) 봉인 E3는 당일누적/경과초 기준선 x SURGE_K (alpha_lab/events/detectors.py:164-169) — 챔피언의 국소 30초 기준선 x 2.0~2.5배와 조작적으로 다르다는 주장은 참. (b) P2 라벨은 고정지평 60/180/300초 봉인 (alpha_lab/events/outcomes.py:51 DEFAULT_HORIZONS). (c) 비용 기저 -1.022%는 docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md:15에 실측 기록. (d) P2 사전등록·원장 증거 실존 (docs/research/condition_research/research_runs/alpha_lab_20260705/event_cells_report.json, p3_preregistration_v1.json, n_trials_ledger.jsonl). (e) 재사용 주장 모듈 전부 실존 (alpha_lab/mining/transition.py의 measure_transition_ev, ensemble/portfolio.py, translate/codegen.py, distill/replay.py).",
+     "[경제성 논리 — 부분 인정] 채택 기준이 p값이 아니라 tick2 비용 차감 후 EV CI하한>0이고, 챔피언 rr8_12가 같은 창·같은 소형주·국소 서지 게이트로 실제 +15.28M을 냈다는 실존 증명이 있으므로 '조건화가 -1.022% 헛들을 이길 수 있다'는 경로 자체는 공상이 아니다. K1 family 조기 kill로 실패 시 비용이 leaf 검정 0~수십 회로 캡핑된다.",
+     "[치명적 경제 결함 — 비상관 주장 미방어] 기대가치 전체가 'rr8 계보와 상관<0.5인 5번째 멤버'에 걸려 있는데, S2/S5/S7의 생존 셀은 챔피언과 동일한 창(09:00-09:30)·동일 유니버스(시총<3000억)·동일 신호族(국소 서지 x2.5)에서 발화한다 — 스케치 매수식은 rr8_12에 시차 절 2개를 얹은 형태로, DIGEST 2의 파라미터 쌍둥이(상관 0.816) 함정과 구조적으로 같아질 위험이 높다. 그런데 상관 측정(ensemble/portfolio.py)이 엔진 예산 60회를 다 쓴 '이후' 최종 단계에만 배치되어 있어, 파라미터 쌍둥이를 걸러내지 못한 채 예산을 소진할 수 있다. 이것은 통계 문제가 아니라 포트폴리오 경제성 설계 결함이다.",
+     "[발화 프로필 괴리 — 게이트 강도 부족] 오프라인 EV는 불응기 120초의 이산 사건 기준인데 엔진은 상태 참 동안 연속 발화한다(제안 스스로 RC-2로 인정). mining/transition.py 전이 EV 재측정이 '검문'으로만 언급되고 사전등록 통과 기준(전이 EV CI하한>0 유지 등)이 없다 — 이 간극이 P5의 리플레이→엔진 반전 전례를 그대로 재현할 수 있는 지점이다.",
+     "[차별성 — 통과] 탐색 단위(사건 시퀀스 조건부 분포 vs 조건식 파라미터), 평가자 역할(엔진 최종 심판 ≤60회 vs 반복 채점), 후보 생성(사전등록 통계 검정 vs 힐클라임 뮤테이션) 모두 wt-dev 루프와 실질적으로 다르고, 실패 확정 목록 (a)(b)(c)(f)와의 표본단위·라벨·사건정의 차이 주장도 코드 수준에서 확인된다.",
+     "[winner's curse 방어 — 통과] 계층 FDR + leaf 예산 ≤600 사전등록 + 플라시보 2종 + n_trials 원장 + OOS 1회 개봉 + P5 기각 기준 역적용 + 2025-01~2026-02 known/audit 명시(C-013) — 기존 위생 체계(registry.py, stats_common.py) 위에 얹혀 있어 신뢰 가능.",
+     "[회전율/용량 — 조건부 통과] 일평균 발화 5~60건 예산과 연 300~600거래 목표는 GPTAUTH_G8(550거래) 실적과 정합하나, 소형주 서지 순간의 체결 규모 가정이 명시되지 않았다(tick2 불리체결 라벨은 있으나 주문 크기 가정 부재).",
+     "[기대규모 — 정직] 성공 시 calmar 소폭 개선/MDD 10~20% 절감이라는 보수적 주장과 confidence 28은 v4 성공 원인(순수 다각화) 및 P2 실패 전례와 정합 — 수익 경로가 공상적이지 않다."
+    ],
+    "required_fixes": [
+     "[F1 — 조기 상관 게이트 추가(필수)] 오프라인 발견 단계에서 생존 셀의 발화 시각을 rr8_12 챔피언 발화 시각(per-trade CSV)과 대조하는 중복도/상관 프록시 게이트를 사전등록하라 — 예: 진입 시각 중복률 상한(예 ≤30%) 또는 일별 수익 프록시 상관 상한(예 ρ<0.5)을 엔진 예산 투입 '전'에 검문. 미달 후보는 '파라미터 쌍둥이'로 분류해 엔진 주장 자격 박탈. 현재 설계처럼 상관 측정을 최종 단계에만 두면 60회 예산을 쌍둥이에 소진하고 기대가치 케이스(5번째 비상관 멤버)가 무효화된다.",
+     "[F2 — 전이 EV를 통과 기준으로 승격] mining/transition.py 전이 샘플링 EV 재측정을 '검문'이 아니라 사전등록 게이트로 명시하라: 전이(연속발화 등가) 기준 EV CI하한>0 유지 실패 시 후보 기각. 불응기 미표현으로 인한 EV 희석은 K4 발화시각 패리티 95%로는 잡히지 않는 별개 실패 모드다.",
+     "[F3 — family별 경제 메커니즘 사전등록] 8개 시퀀스족 각각에 대해 -1.022% 헛들을 이길 미시구조 논리(예: 재서지=수요 지속성 확인으로 역선택 비용 감소)와 기대 부호를 사전등록 문서에 기록하라. 현재는 '미탐사 축'이라는 탐색 논리만 있고 거래 EV 논리가 family 수준에서 비어 있어, 생존 셀이 나와도 사후 합리화와 구분이 안 된다.",
+     "[F4 — 체결 용량 가정 명시] v4 감독형 프로토콜과 동일한 주문 크기·호가 소진 가정을 문서화하고, 소형주(<3000억) 서지 순간 tick2 가정이 그 크기에서 유효한지 1줄이라도 근거를 달아라(예: 챔피언 실측 체결 데이터 참조)."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D3",
+  "name": "Idea3 재생: 표본 확장 + 잔여경로 라벨",
+  "design": {
+   "direction_id": "D3",
+   "direction_name": "Idea3 재생 — 전이력 챔피언 원장 확장 + 잔여경로 라벨 + 교차챔피언 손실꼬리 베토",
+   "one_line": "4챔피언 조건식을 2022-03~2024-12 전체 tick 이력에 엔진 재실행해 dedup 원장 수천 건을 만들고, 반사실 잔여경로 라벨로 손실꼬리에 반복 출현하는 미시구조 상태를 찾아, 챔피언 매수식 원문 뒤에 붙이는 단일 베토 절로 포트폴리오 MDD를 낮춘다.",
+   "core_hypothesis": "v4 앙상블의 잔여 위험(MDD 493,590원)의 상당 부분은 다각화로 제거되지 않는 '상관된 손실꼬리'(4챔피언이 같은 날 같은 유형의 진입에서 동시 손실)이며, 그 꼬리 진입의 순간 미시구조 상태(스프레드·근접호가집중·잔량불균형 등 봉인 25피처 중 STOM 표현 가능 부분집합)는 이익 진입과 통계적으로 구분 가능하다. P3의 판정불가는 가설 반증이 아니라 표본 346<2,000의 측정 실패였으므로(C-007), 표본을 엔진 재실행 원장 생성으로 확장하면 판정 가능해진다. 채택 목적함수는 단일거래 EV가 아니라 '베토 적용 후 4챔피언 등가중 포트폴리오 MDD 감소(수익 희생 ≤10%)'다.",
+   "why_not_refuted": "DIGEST 3번 각 항목 대조: (a) 스냅샷 43피처 얕은트리 채굴 0/107 — 다름: 표본 단위가 '임의 그리드 초'(기저 EV -1.022%인 비용 지배 공간)가 아니라 '챔피언이 실제 발화한 거래'(이미 양EV 모집단)다. 목적도 양EV 리프 발굴이 아니라 손실꼬리 베토라 RC-0(공간에 EV 없음)이 적용되지 않는다. (b) 고정지평/stride 라벨+lift — 다름: 라벨이 엔진 미러 반사실 재생(replay_path/replay_champion_exit)의 잔여경로 실현손익이고, 채택 기준이 lift가 아니라 포트폴리오 MDD 델타의 일블록 부트스트랩 CI다. (c) 이벤트 FDR 0/138 — 다름: 시행 모집단이 시장 전수 사건이 아니라 챔피언 진입이고, 검정 대상이 조건부 수익 EV가 아니라 손실꼬리 농축(enrichment)이다. (d) 콜드 LLM 0/88 — LLM 미사용, 해당 없음. (e) score-sum -111M — 불리언 화이트리스트 베토 1절, 점수합산 아님. (f) 다밴드 자동발굴 0/40 — 신규 진입 생성 없음, 챔피언 원문 불변+베토 1절 추가만. (g) 전역 청산 교체 엔진 기각 — 매도식 무접촉. replay는 라벨 재료·triage로만 쓰고 최종 심판은 엔진(C-014 준수). (h) adaptive timing OOS 4/4 실패 — 정적 상태 베토, 타이밍/레짐 없음. (i) 구식 API 실행불가 — 4챔피언은 v4에서 현행 API 실행 실증됨. 가장 가까운 선례는 v2 필터 전멸(0/6)인데, 그것은 '전수 그리드→챔피언' 방향의 교집합 소멸(10/665)이었고 본 설계는 '챔피언→미시구조' 방향으로 P3와 동일 방향이되 P3의 유일 사인(표본)을 직접 수술한다. 이 설계는 idea3 실패문서 §6의 미승인 가설 1~5(대형 dedup 코호트·residual-path 라벨·portfolio-MDD 목적·cross-champion veto·엔진 최종심판)를 그대로 실행하는 것이다. 단 정직한 잔여 위험: dedup 후에도 2,000 미달 가능성이 실존하며, 그 경우 자체 kill한다(억지 생존 금지).",
+   "mechanism_steps": [
+    "1. 사전등록 봉인: d3_preregistration_v1.json 작성·sha256 커밋 — dedup 규칙, 표본 하한 2단계(전체분석 ≥2,000 클러스터 / 제한분석 1,200~2,000은 Bonferroni 5가설), 손실꼬리 정의(클러스터 net손익 최하 십분위), 검정 피처 목록(봉인 25피처 중 STOM 정확표현 가능 부분집합만 — 사전 expressibility 감사), FDR q=0.10, 교차계보 재현 요건, 포트폴리오 MDD 채택 기준, 엔진 예산 ≤80회, 발견/검증 창 분할.",
+    "2. 원장 생성(채굴 아님): cli/runner.py run_backtest(BacktestConfig)로 4챔피언(GATE_rr8_12/0/21_*, GPTAUTH_G8) × 연도 청크(2022-03~12, 2023, 2024) = 12회 엔진 실행, --start-time 90000 --end-time 92800, per-trade CSV(backtest/csv/) 수집. 2025-01~2026-02 원장은 v4 기존 산출 재사용(재실행 불필요, known/audit 표기).",
+    "3. dedup(신규 alpha_lab/mcl/dedup.py): 클러스터 키 = (종목코드, 진입일자, 진입초 60초 버킷, 계보) — RR8 3종(상관 0.816 쌍둥이)은 같은 (종목,일자,버킷)이면 1클러스터로 붕괴, 대표는 최초 진입, 멤버십 보존. GPTAUTH는 별도 계보. 클러스터 수를 봉인 하한과 대조 — 미달 시 즉시 정직 종결.",
+    "4. 재조인+피처: alpha_lab/mcl/rejoin.py(종목명→코드 해석, tick ro 적재) + alpha_lab/mcl/features.py compute_features로 진입 t0의 봉인 피처 측정(표현가능 부분집합).",
+    "5. 잔여경로 라벨(신규 alpha_lab/mcl/residual_labels.py): alpha_lab/distill/replay.py의 replay_champion_exit(발동 절 번호=청산절별 손실 기여)와 replay_path(실청산 이후 92900까지 매수호가1 경로)를 재사용해 residual_MAE/MFE(청산 후 반사실 최대불리/유리경로), 회복실패 플래그, 절단 없는 최대불리경로를 계산 — censored R_MFE/MAE 문제를 직접 해소.",
+    "6. 손실꼬리 스크리닝: alpha_lab/mcl/screening.py + alpha_lab/stats_common.py — 발견창(2022-03~2023-12) 클러스터에서 최하 십분위 vs 나머지의 피처 분포 순위검정, BH-FDR q=0.10, 그리고 RR8 계보와 GPTAUTH 계보 양쪽에서 방향 일치 농축이어야 생존(cross-champion loss-tail veto 요건).",
+    "7. 오프라인 포트폴리오 목적함수(신규 alpha_lab/mcl/portfolio_veto_eval.py): 생존 베토 후보를 원장에 적용(해당 클러스터 거래 제거) → 챔피언별 월손익 재구성 → alpha_lab/ensemble/portfolio.py static_equal + risk_adjusted_metrics로 MDD/calmar 델타, 일블록 부트스트랩 CI. 통과 기준: 발견창 MDD ≥15% 감소 CI 0 배제 ∧ 수익 감소 ≤10% ∧ 거래 제거율 ≤30%.",
+    "8. STOM 번역: alpha_lab/translate/idioms.py 규약 + translate/codegen.py로 베토 절 생성(챔피언 매수식 원문 끝, self.Buy() 직전에 `if 매수: ... 매수=False` 1절 삽입). 근사 표현이 필요한 피처는 alpha_lab/dataset/parity.py 스팟 패리티 ≥99.9% 통과 시만 허용, 아니면 후보 탈락.",
+    "9. 엔진 확인(최종 심판): alpha_lab/bridge/registrar.py로 GATE_*_D3VETO 변형 등록 → 검증창(2024년, 봉인 1회 원샷)에서 4챔피언 원문 vs 베토판 앙상블 비교(MDD·수익·연도별 역전·CI — P5 기각 항목 전수 기록). 이후 2025-01~2026-02는 선택에 쓰지 않는 감사 리포트로만 병기. 최종 후보 ≤5.",
+    "10. 판정·프로토콜: v4 감독형 프로토콜 형식으로 판정문 작성 — 채택돼도 '감독형 후보'까지만이며 2026-03+ 미래 데이터 재검증 의무를 명기."
+   ],
+   "example_condition_sketch": "챔피언 매수식 원문(예: rr8_12 passport 전문) 맨 끝 `if 매수: self.Buy()` 직전에 삽입하는 베토 1절 — 즉시형 피처 F7(스프레드)·F6(근접호가집중) 조합 예시:\\n\\n# ---------- D3 미시구조 손실꼬리 베토 (원문 불변, 추가 절) ----------\\nif 매수:\\n    호가스프레드비율 = (매도호가1 - 매수호가1) / 현재가\\n    근접호가집중도 = (매수잔량1 + 매도잔량1) / max(매수총잔량 + 매도총잔량, 1)\\n    if 호가스프레드비율 > 0.004 and 근접호가집중도 < 0.05:\\n        매수 = False   # 엷은 호가판 + 넓은 스프레드 = 손실꼬리 상태 베토\\nif 매수:\\n    self.Buy()\\n\\n(임계값 0.004/0.05은 자리표시자 — 실제 값은 발견창 손실꼬리 분위수에서 사전등록 규칙으로 1회 확정, 힐클라임 튜닝 금지.) 매도식 방침: 현직 챔피언 매도식 무접촉(P5 기각 존중, C-009).",
+   "expressibility": "즉시형 4종은 정확 표현 가능: F6=(매수잔량1+매도잔량1)/(매수총잔량+매도총잔량), F7=(매도호가1-매수호가1)/현재가, F8=라운드피겨위5호가이내, F10=현재가/VI가격-1 — 전부 행 스칼라와 허용 builtins(max)만 사용. 윈도우형 중 F1은 누적초당매수수량(w)/누적초당매도수량(w)로, F9는 체결강도-체결강도N(w)로 정확 표현 가능(w는 --avg-time avg_list 등록 필수 — 미등록 시 엔진 중지 주의). F3(잔량 불균형 평균)·F5(매도잔량1 평균)·F11(원거리합 max)은 구간함수가 잔량 컬럼을 지원하지 않아 정확 표현 불가 — 매도잔량1N(w) 소수점 조회 근사만 가능하므로 사전등록 단계에서 '정확표현 가능 부분집합'으로 후보를 제한하고, 근사가 불가피한 생존 후보는 dataset/parity.py 스팟 패리티 ≥99.9% 미달 시 탈락시킨다. 번역갭 위험은 v1~v3에서 실증된 최대 함정이므로 expressibility 필터를 스크리닝 이전에 둔다(표현 불가 피처에 n_trials를 쓰지 않음).",
+   "data_requirements": "_database/stock_tick_back.db(2022-03-23~2026-02-27, 62GB, read-only URI 전용), _database/strategy.db의 4챔피언 GATE_* buy/sell 행(sha256은 passport와 대조), stockinfo 매핑 테이블(stock_tick_back.db::stockinfo, fallback code_info.db), 엔진 산출 per-trade CSV(backtest/csv/)와 backtest.db stock_bt, v4 기존 2025-01~2026-02 원장(재사용). min DB는 불필요(챔피언은 tick 전용). 신규 외부 데이터 없음.",
+   "sample_size_estimate": "rr8_12 실측 190거래/약 14개월(≈13.6/월) 기준 46개월(2022-03~2025-12 중 발견+검증창 34개월)로 외삽하면 RR8 변형당 약 450~650건, 3쌍둥이 raw 합계 1,400~1,900건이나 상관 0.816이므로 dedup 후 계보 클러스터 약 700~1,100건 추정. GPTAUTH_G8은 실측 550거래(전 기간)로 발견+검증창 약 380~450건. 합계 dedup 클러스터 약 1,100~1,600건이 중심 추정 — 봉인 하한 2,000에 미달할 현실적 확률이 있다. 따라서 2단계 하한을 사전등록: ≥2,000이면 25피처(표현가능 부분집합) FDR 전체분석, 1,200~1,999이면 사전지정 5가설 Bonferroni 제한분석만, <1,200이면 무조건 kill. 실제 수는 단계 2(원장 생성) 직후 확정되며 그 전에 어떤 스크리닝도 하지 않는다.",
+   "offline_pipeline": [
+    "alpha_lab/distill/replay.py — replay_path·replay_champion_exit·kiwoom_pgsgsp (잔여경로 라벨·절별 기여, 원장 671행 전수 대조로 검증된 엔진 미러)",
+    "alpha_lab/mcl/rejoin.py — 종목명→코드 해석 + tick 재조인",
+    "alpha_lab/mcl/features.py — 봉인 25피처 측정(표현가능 부분집합)",
+    "alpha_lab/mcl/screening.py + alpha_lab/stats_common.py — 재라벨·FDR·부트스트랩(통계 재구현 금지 규율)",
+    "alpha_lab/dataset/reader.py·labels.py(net_rate/adverse_fill)·parity.py — ro 접근·비용 v1·번역 패리티",
+    "alpha_lab/ensemble/portfolio.py — static_equal·risk_adjusted_metrics(포트폴리오 MDD 목적함수)",
+    "alpha_lab/distill/ledger_wiring.py — 원장 identity 규약",
+    "alpha_lab/translate/idioms.py·codegen.py — STOM 문법 번역",
+    "alpha_lab/bridge/registrar.py·receipts.py — 전략 등록·영수증",
+    "cli/runner.py run_backtest + cli/config.py BacktestConfig — 원장 생성·엔진 확인",
+    "신규 3모듈: alpha_lab/mcl/dedup.py, alpha_lab/mcl/residual_labels.py, alpha_lab/mcl/portfolio_veto_eval.py"
+   ],
+   "engine_budget_estimate": "봉인 상한 ≤80회. 내역: 원장 생성 12회(4챔피언 × 3연도 청크, 창 90000~92800 한정, 청크당 수십 분~2시간 추정 — 62GB DB지만 아침 28분 창만 로딩), 검증창(2024) 엔진 확인 = 최종 후보 ≤5 × 4챔피언 = ≤20회 + 원문 기준선 4회, 슬리피지 tick3 민감도 ≤10회, 예비 ≤10회. 여유분 포함 총 ≤60회 예상, 80회 봉인. 벽시계 약 3~5일(v1~v3 실측 101회/3사이클 대비 소규모).",
+   "oos_validation_plan": "3층 구조로 known-창 오염을 회피한다. (1) 발견/검증 분할을 미개봉 구간 안에서: 발견 = 2022-03~2023-12, 검증 = 2024-01~2024-12(사전 봉인, 후보당 엔진 1회 원샷, 재시도 금지). 이 창들은 지금까지 09:00-09:30 채굴 이력은 있으나 '챔피언 원장 손실꼬리 베토'라는 본 가설로는 미개봉이며, 스크리닝은 발견창에서만 수행한다. (2) 2025-01~2026-02는 C-013대로 known/audit로만 사용 — 선택·튜닝에 절대 쓰지 않고, 최종 후보의 v4 기준선 대비 anti-regression 감사 리포트로만 병기(악화 시 kill 사유는 되지만 개선이 채택 근거가 되지는 않음 — 비대칭 사용을 사전등록에 명기). (3) 최종 채택은 v4 감독형 프로토콜과 동일하게 2026-03+ 미래 데이터 재검증 통과 전까지 '감독형 후보'로 제한하고, 킬스위치·소액 감독 조건을 판정문에 명기한다. 추가 위생: 일블록 부트스트랩 CI, 연도별 부호 일관성(P5식 역전 검사), n_trials 원장 기록, dedup·하한·꼬리정의 전부 측정 전 봉인.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 '시드 생성 → 백테 채점 → 매수 임계 힐클라임'으로 신규/변형 전략의 단일전략 수익을 탐색한다. D3는 (1) 시드를 전혀 생성·변형하지 않고 고정된 4챔피언 코호트만 다루며, (2) 탐색 공간이 매수 임계 격자가 아니라 봉인 미시구조 상태 25피처의 손실꼬리 농축이고, (3) 라벨이 백테 점수가 아니라 반사실 잔여경로(현직 청산으로 절단되지 않은 경로 위험)이며, (4) 목적함수가 단일전략 수익이 아니라 4챔피언 등가중 '포트폴리오 MDD'로, wt-dev에는 존재하지 않는 포트폴리오 수준 최적화다. (5) 산출물도 신규 전략이 아니라 챔피언 원문에 붙는 방어 레이어 1절이다. 힐클라임·격자 치환·score-sum을 일절 쓰지 않는다.",
+   "kill_criteria": [
+    "dedup 클러스터 <1,200 → 즉시 kill, Idea3를 '표본 확보 불가로 종결'로 정직 기록(엔진 12회 소모 후 최속 판정 가능 — 1차 관문)",
+    "발견창 FDR(또는 Bonferroni 5가설) 생존 + RR8·GPTAUTH 양 계보 방향일치 농축을 만족하는 피처 0개 → kill(v2 필터 전멸의 재판이면 그대로 인정)",
+    "생존 피처가 전부 STOM 정확표현 불가(근사 패리티 <99.9% 포함) → kill(번역갭으로 정직 종결)",
+    "오프라인 통과 후보의 2024 검증창 엔진 확인에서 MDD 감소 CI가 0 포함, 또는 수익 감소 >10%, 또는 연도별 부호 역전(P5 기각 항목 재현) → 해당 후보 kill, 전멸 시 프로그램 kill",
+    "베토가 클러스터 >30% 제거(과잉필터 = 사실상 신규 전략화) → 후보 kill",
+    "2025-01~2026-02 감사 리포트에서 v4 기준선 대비 악화 → kill(개선은 채택 근거 불가, 악화만 기각 근거 — 비대칭 봉인)",
+    "엔진 예산 80회 소진 시 무조건 중단·현상태 판정"
+   ],
+   "expected_value_case": "성공 시 v4 감독형 후보의 직접 업그레이드: 감사창 기준 MDD 493,590원의 ≥15% 감소(약 74,000원+)를 수익 희생 ≤10%로 달성하면 calmar 5.28 → 약 5.6~6.5, 킬스위치(약 740k) 대비 여유가 커져 감독형 소액 운용의 생존성이 실질 개선된다. 근거: v4의 성공 원인은 순수 다각화인데 다각화는 '비상관 손실'만 제거하고 4챔피언이 공유하는 아침 급등주 도메인의 상관된 꼬리(동일 유형 진입의 동시 손실)는 남긴다 — 그 잔여 꼬리를 겨냥하는 도구는 상태 베토뿐이며, 이는 v4가 남긴 유일하게 미탐사된 위험 축이다. 실패해도 산출물이 있다: 전이력 dedup 챔피언 원장(수천 건)과 잔여경로 라벨 데이터셋은 후속 모든 챔피언 연구(비상관 확장, 청산 연구 재개)의 공용 자산이 된다.",
+   "risks": [
+    "표본이 dedup 후에도 1,200~1,600에 그쳐 제한분석(5가설)만 가능할 확률이 상당 — 검정력 저하로 진짜 효과도 못 잡는 2종 오류 위험",
+    "손실꼬리의 진짜 원인이 진입 시점 미시구조가 아니라 진입 후 시장 전체 충격(지수 급락·동반 VI)일 수 있음 — 조건식은 횡단면/지수 접근 불가라 그 경우 표현 자체가 불가능",
+    "P5가 보여준 '챔피언은 이미 국소 최적' 선례 — 매수측도 손튜닝이 이미 나쁜 상태를 걸러냈다면 잔여 꼬리는 미시구조로 비식별일 수 있음",
+    "원장 생성 12회의 2022~2024 실행은 챔피언의 해당 창 성과를 개봉하는 행위 — 이후 이 창을 다른 가설의 blind로 쓸 수 없게 되는 기회비용(사전등록에 개봉 범위 명기 필요)",
+    "replay 기반 잔여경로 라벨과 엔진 현실의 잔차(체결 컨벤션·슬롯 점유·재진입) — P5 교훈대로 라벨은 triage 전용, 최종은 엔진이지만 라벨 단계 왜곡이 후보 선별을 오도할 수 있음",
+    "베토 임계의 사전등록 1회 확정 규칙이 약하면 사실상 튜닝이 됨 — 분위수 규칙을 봉인하고 재조정 금지를 엄수해야 함",
+    "2024 검증창 1회 원샷 실패 시 재시도 불가 설계라 운/불운 분산에 취약(그러나 이것이 winner's curse 방어의 대가)"
+   ],
+   "confidence_0_100": 42
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "실패목록 대조 결과 이름만 바꾼 재탐사는 아니다: (a) 얕은트리 채굴과는 표본단위가 다르고(임의 그리드 초의 EV -1.022% 비용지배 공간 vs 챔피언 실발화 거래), (b) 고정지평/stride 라벨과는 라벨이 다르며(반사실 잔여경로 실현손익), (c) 이벤트 FDR과는 시행 모집단·검정 대상이 다르고(손실꼬리 농축), (e)(f)(h)는 구조적으로 무관, (g) 매도식 무접촉으로 P5 기각을 존중, (i) 4챔피언은 v4에서 현행 API 실행 실증. 데이터/라벨/표본단위/목적함수 4개 전부가 실패 항목 대비 실질적으로 다르다.",
+     "docs/research/condition_research/plans/2026-07-07_alpha_lab_idea3_microstructure_layer_failure_improvement_reuse.md §1·§3은 P3를 '반증'이 아닌 '표본 346<2,000 판정불가'로 확정했고(C-007), §6 미래가설 1~5(대형 dedup 코호트, residual-path 라벨, portfolio-MDD 목적, cross-champion veto, 엔진 최종심판)가 본 설계와 정확히 일치한다 — 즉 이 방향은 실패공간 재탐사가 아니라 실패문서가 명시적으로 승인 대기시킨 후속 가설의 실행이다.",
+     "그러나 치명적 미해결 대조가 하나 있다: docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md 33행은 '챔피언→전수 방향은 표본 부족(346~671건) — 양방향 실측 종결'로 이 방향 자체를 닫았고(RC-3: 챔피언 표본 희소), D3의 자체 중심 추정(dedup 1,100~1,600)은 전체분석 하한 2,000에 미달해 RC-3가 전이력 확장 후에도 구속력 있음을 사실상 자인한다. 설계는 이를 정직하게 인정하지만, kill 하한 1,200이 자기 추정 범위(1,100~1,600) 바로 아래에 놓여 '거의 확실히 검정력 저하 제한분석 트랙으로 진입하도록' 설계된 문턱 쇼핑으로 읽힐 여지가 있다 — 경계 조건 명시 없이는 '종결된 방향의 개명 재실행' 반론을 완전히 기각할 수 없다.",
+     "2단계 하한(≥2,000 전체 / 1,200~1,999 Bonferroni 5가설)은 원래 봉인 2,000을 사후적으로 완화하는 구조다. 측정 전 사전등록이므로 형식적 위생은 지키지만, 완화 사유가 검정력 분석이 아니라 '표본이 부족할 것 같아서'라면 봉인 하한 제도 자체를 무력화하는 선례가 된다(DIGEST 8 위반 경계).",
+     "가장 가까운 선례인 v2 필터 전멸(0/6, 교집합 소멸 10/665)과의 구분 논리(방향 역전 + P3 유일 사인 수술)는 docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md §1 표와 정합한다. 원장 생성 12회가 2022~2024 챔피언 성과를 개봉하는 기회비용은 설계가 스스로 risks에 인정했으나 사전등록 항목으로 명세되지 않았다.",
+     "발견창(2022-03~2023-12)이 rr8 계보 손튜닝 구간과 겹칠 경우 손실꼬리 분포가 챔피언 in-sample 잔차를 반영할 수 있는데, 2024 검증창 확인 기준이 MDD 델타만이고 농축 방향 재현을 요구하지 않아 이 오염 경로가 열려 있다.",
+     "표본단위·라벨·목적함수의 실질 변경 + 실패문서 §6과의 직접 계승 + 정직한 kill 기준(억지 생존 금지)으로 FAIL은 아니나, RC-3 '종결' 판정과의 정면 충돌 해소 및 하한 완화의 검정력 정당화가 봉인 이전에 문서화돼야 하므로 FIX."
+    ],
+    "required_fixes": [
+     "사전등록에 2026-07-06 root-cause 문서 33행의 '챔피언→전수 방향 양방향 실측 종결(RC-3)' 판정과의 차별점을 정량 명기하라: 기대 클러스터 수(1,100~1,600) vs P3 실측(346)의 배수, residual-path 라벨과 portfolio-MDD 목적함수가 RC-3 종결 논거를 어떻게 우회하는지를 조항으로 넣고, 이 조항 없이는 착수 금지.",
+     "2단계 하한(2,000/1,200)을 검정력 분석으로 정당화하라: 손실꼬리 십분위(클러스터의 10%)에서 FDR q=0.10 및 Bonferroni 5가설 각각이 탐지 가능한 최소 효과크기를 계산해 봉인하고, 1,200이라는 숫자가 자기 추정 범위 바로 아래 편의 배치가 아님을 수치로 입증하라. Bonferroni 5가설의 피처·방향은 원장 생성 이전에 명명·봉인하라.",
+     "원장 생성 12회가 개봉하는 범위(4챔피언 × 2022-03~2024-12 성과)를 사전등록에 '개봉 원장'으로 명기하고, 이 창을 향후 어떤 가설의 blind로 쓸 수 없게 되는지 포기 목록을 함께 봉인하라.",
+     "rr8 계보·GPTAUTH의 손튜닝/힐클라임에 사용된 데이터 창을 조사·기록하고, 발견창(2022-03~2023-12)과 겹치면 2024 검증창 엔진 확인 기준에 'MDD 델타 CI'뿐 아니라 '손실꼬리 농축 방향의 검증창 재현'을 추가 통과 요건으로 봉인하라.",
+     "베토 임계 확정 규칙(어느 분위수, 어느 창, 1회)을 사전등록 JSON에 실행 가능한 수식 수준으로 명세해 사실상 튜닝 여지를 제거하라."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "재사용 주장 인프라가 전부 실존 확인됨: alpha_lab/distill/replay.py에 replay_champion_exit(238행)·replay_path(380행)·kiwoom_pgsgsp(109행), alpha_lab/ensemble/portfolio.py에 static_equal(124행)·risk_adjusted_metrics(64행), cli/runner.py run_backtest(351행), alpha_lab/mcl/{screening,features,rejoin}.py, alpha_lab/dataset/parity.py, alpha_lab/stats_common.py, alpha_lab/translate/{idioms,codegen}.py, alpha_lab/bridge/registrar.py 모두 존재. 신규 작성은 dedup/residual_labels/portfolio_veto_eval 3개 소형 모듈뿐이라 구현 부담이 현실적.",
+     "설계가 idea3 실패문서의 승인 대기 가설 1~5를 문자 그대로 실행하는 구조임을 원문 대조로 확인: docs/research/condition_research/plans/2026-07-07_alpha_lab_idea3_microstructure_layer_failure_improvement_reuse.md §6(대형 dedup 코호트, residual-path 라벨, portfolio-MDD 목적, cross-champion veto, 엔진 최종심판). P3 사인이 표본 346<2,000(같은 문서 §5 및 synthesis 문서 50행)이라는 주장도 증거와 일치 — 반증된 가설의 재탐사가 아니라 측정 실패의 수술이 맞다.",
+     "표본 하한 2,000은 이미 alpha_lab/mcl/screening.py에 MIN_POOL_N=2000(120행)·MIN_CELL_N=500으로 코드화돼 있고, 제안은 자체 중심 추정(dedup 1,100~1,600)이 이 하한에 미달할 확률을 정직하게 인정하며 2단계 하한(≥2,000 전체분석 / 1,200~1,999 Bonferroni 5가설 / <1,200 kill)을 새 사전등록으로 봉인 — 억지 생존 설계가 아니라 1차 관문(엔진 12회 후 즉시 판정)이 있는 fail-fast 구조.",
+     "엔진 API 리스크(v5 8/8 전멸 원인) 부재: 4챔피언은 v4에서 현행 API 실행이 실증된 원문 그대로이고, 산출물은 self.Buy() 직전 '매수=False' 불리언 베토 1절 삽입이라 신규 API 표면이 없다. 스케치의 변수(매도호가1/매수호가1/매수잔량1/매도잔량1/매수총잔량/매도총잔량/현재가)는 전부 표준 tick 네임스페이스 행 스칼라이며, 표현 불가 피처(F3/F5/F11)를 스크리닝 이전 expressibility 필터로 배제하고 근사는 parity ≥99.9% 게이트를 두는 것은 v1~v3 번역갭 교훈의 올바른 내면화.",
+     "데이터·예산 실존: tick DB 2022-03~2026-02가 필요 전부(챔피언은 tick 전용, min DB 불필요), 창을 90000~92800로 한정한 원장 생성 12회 + 확인 ≤48회는 v1~v3 실측 101회 대비 소규모. 발견(2022-03~2023-12)/검증(2024) 분할은 미개봉 구간 내에 있고, 2025-01~2026-02를 선택에 쓰지 않는 비대칭 감사(known/audit) 처리는 C-013과 정합.",
+     "잔여 유보(감점 사유, 치명 아님): (1) 중심 추정대로면 제한분석(5가설)으로 착지할 확률이 높아 검정력 부족으로 inconclusive 재연 위험이 상당 — 다만 그 경우 kill 규칙이 봉인돼 있어 실행 가능성 결함은 아님. (2) 2025-01~2026-02 원장의 'v4 기존 산출 재사용'은 해당 per-trade CSV가 실제 보존돼 있는지 실행 초기에 확인 필요. (3) F1/F9 윈도우 피처는 avg_list 미등록 시 엔진 중지라는 함정을 제안 스스로 명기함. (4) 손실꼬리의 원인이 횡단면 충격이면 조건식으로 표현 불가라는 리스크도 자인 — 정직한 42% 신뢰도와 일관."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "placeholder"
+    ],
+    "required_fixes": []
+   }
+  ]
+ },
+ {
+  "id": "D4",
+  "name": "Idea4 재생: 조건식 내장 정적 게이트",
+  "design": {
+   "direction_id": "D4",
+   "direction_name": "Idea4 재생: 조건식 내장 정적 위험감속 절 — 시장수준 불가 인증 + 종목수준 당일이력 대용물 한정 kill-first 감사",
+   "one_line": "시장 수준 레짐 변수는 STOM 문법에 존재하지 않음을 공식 인증(불가 판정)하고, 유일하게 표현 가능한 종목 수준 당일 자기 이력 대용물(저가대비고가등락율·등락율각도·VI 근접)로 챔피언 매수식에 정적 진입억제 절 1개를 붙일 가치가 있는지를 표본 하한 검문 우선의 kill-first 절차로 판정한다.",
+   "core_hypothesis": "챔피언 4종(RR8_12/RR8_0/RR8_21/GPTAUTH_G8)의 꼬리 손실 거래는 진입 틱 시점에 이미 관측 가능한 \"종목 자신의 당일 위험 상태\"(당일 변동폭 과대 = 저가대비고가등락율 상단, 하락 모멘텀 = 등락율각도(30) 음수 심화, VI 직후 재점화)에 통계적으로 집중되어 있으며, 이 상태를 항상 켜져 있는 정적 매수 억제 절(타이밍 예측·P&L lookback 없음)로 내장하면 수익 95% 이상 보존 하에 앙상블 MDD를 낮출 수 있다. 단, 사이징 상한은 self.Buy()가 무인자 API라 조건식에서 표현 불가이므로 산출물은 이진 진입 억제 절로 한정된다.",
+   "why_not_refuted": "[선결 정직 판정] 과제가 요구한 시장 수준 변수(코스피/코스닥 지수, 시장 폭, 전 종목 VI 발동수)는 trade/base_strategy.py 전체 grep 0건으로 문법에 부재함을 재확인했다(지수는 back_static.py PlotShow의 결과 그래프용 yfinance 조회뿐). 따라서 원안 \"위험한 날 자동 감속\"의 시장 수준 형태는 불가 판정이며, 본 설계는 종목 수준 대용물로 명시 축소된다. 실패 목록 대조: (a) v1/v2/v3 스냅샷 43피처 채굴 — 다른 점 3가지: 표본 단위(전 시점 그리드가 아니라 챔피언 실거래에 조건부), 라벨(고정지평이 아니라 챔피언 원장의 엔진 실현손익), 목적함수(단독 양EV 발굴이 아니라 이미 흑자인 포트폴리오의 MDD/꼬리 축소 — flagged 거래군의 평균·꼬리가 unflagged보다 유의하게 나쁜지만 판정). 단 후보 피처(저가대비고가등락율 등)가 v3 43피처 화이트리스트와 겹칠 수 있음을 인정하고, Phase 1 착수 전 features_v3.py 채택·기각 원장과 대조해 동일 (피처,임계,라벨) 조합이면 즉시 제외한다. v2 필터 0/6과의 대조: v2는 트리에서 채굴된 필터였고 교집합 소멸(10/665)로 죽었다 — 본안은 사전 지정 대용물 ≤5개(채굴 아님)이고 교집합이 아니라 flagged 거래 제거의 반사실 P&L로 측정한다. 그래도 구조적 근접성이 크므로 confidence를 낮게 둔다. (b) 고정지평/lift — 라벨이 챔피언 실현손익이고 채택 기준이 lift가 아니라 MDD 개선이므로 비해당. (c) 이벤트 5족 FDR 0 — VI해제를 진입 시드로 쓰지 않고 억제(veto) 방향으로만 쓰며, 전 종목 이벤트 셀이 아니라 챔피언 거래 조건부 측정, 가설 수 ≤5로 FDR 유지. (d) 콜드 LLM — LLM 생성 없음. (e) score-sum — 점수 합산 없음. (f) 다밴드 야간 캠페인 — 밴드 탐색 없음, 절 1개 고정. (g) 전역 청산 교체 — 매도식 무접촉, 매수측 절만. (h) adaptive timing/rotation 4/4 실패 — 가장 가까운 항목. 구조적 차이: (h)는 실현 P&L lookback으로 월 단위 on/off를 결정하는 메타 컨트롤러였고 실패 기제가 \"손실 직후 반등월 FLAT 처리\"였다. 본안의 절은 P&L 메모리가 0이고(자기 종목 당일 가격 경로만 입력), 월/일 단위 상태 전환이 없으며, 봉인 후 자유 파라미터 0개다 — 해당 실패 기제가 발생할 수 없다. 다만 v4의 심층 교훈(\"작은 레짐 표본은 조건화를 지지하지 못한다\")은 본안에도 부분 적용되므로 표본 하한 검문을 1순위 kill 게이트로 둔다. (i) v5 구식 API — 현행 챔피언 원문(현행 self.Buy() 무인자)에 절 삽입이고 translate 토큰 게이트로 문법 검증하므로 비해당. 종합: 핵심 전제(시장 수준 변수)가 불가이고 대체 공간이 v2/Idea3 인접이므로, 차별점은 존재하나 얇다 — 설계 자체를 kill-first로 구성하고 confidence 20으로 제출한다.",
+   "mechanism_steps": [
+    "Phase 0 불가 인증(엔진 0회): tests/unit/test_ai_dictionary.py의 SetGlobalsFunc AST 추출 방식을 재사용해 매수 네임스페이스 전수 목록을 기계 생성하고, 시장 수준 변수(지수/폭/전종목 VI 수) 부재를 인증하는 문서 1건 산출 — 향후 동일 제안 영구 차단용 부정 지도. 동시에 self.Buy() 무인자 확인으로 '사이징 상한 절 불가, 이진 억제만 가능'을 명문화.",
+    "Phase 1a 표본 검문(엔진 0회): v4 R0/R3 산출물인 챔피언 4종 per-trade CSV(backtest/csv/, _database/backtest.db stock_bt)에서 발견창(2022-03~2024-12) 거래 수를 정확 집계. 총 거래 <2,000 또는 (아래 대용물로) flagged 거래 <300이면 즉시 kill(Idea3의 346 표본 전례 재현 방지).",
+    "Phase 1b 대용물 사전등록·봉인: 대용물 ≤5개 × 임계 각 1개를 측정 전 고정(예: 저가대비고가등락율>12, 등락율각도(30)<-5, VI해제 후 120초 이내 재진입, 고가미갱신지속틱수>60, 변동성급증(30)). alpha_lab/registry.py verify_seal + n_trials_ledger.jsonl append. features_v3.py 실패 원장과 (피처,임계) 중복 대조 후 중복분 제외.",
+    "Phase 1c 오프라인 측정(엔진 0회): alpha_lab/dataset/reader.py로 tick DB에서 각 챔피언 거래의 진입 틱 시점 대용물 값을 재계산(파생식은 alpha_lab/dataset/parity.py 패리티 검증 통과 필수), 거래를 flagged/unflagged로 층화해 평균 손익·하위 5% 꼬리·일 단위 MDD 기여를 비교. alpha_lab/stats_common.py의 FDR(BH)·부트스트랩 CI 적용. 생존 0이면 kill.",
+    "Phase 2 반사실 triage(엔진 0회): 생존 대용물에 대해 alpha_lab/distill/replay.py + replay_gate.py로 'flagged 진입 제거' 반사실 월별 P&L을 재구성하고 alpha_lab/ensemble/portfolio.py static_equal로 앙상블 MDD 재계산. 수익 보존 <95% 또는 MDD 개선 <15%면 kill. triage는 최종 증명이 아님(C-014).",
+    "Phase 3 번역·정적 검증: alpha_lab/translate/idioms.py+codegen.py로 절 1개를 생성해 챔피언 원문 매수식에 삽입(원문 나머지 불변, buy sha256 재계산·passport 갱신), utility/ai_agent 토큰 게이트 통과 확인. 기존 챔피언 필터에 논리적으로 포섭되는 절(예: 고저평균대비등락율<0은 이미 배제됨)은 무효 처리.",
+    "Phase 4 엔진 확인(별도 승인, 봉인 예산 ≤12회): cli/runner.py run_backtest로 발견창 내부 walk-forward 3분할에서 원본 vs 절 삽입 변형을 비교(챔피언당 원본은 기존 R0 결과 재사용, 변형만 신규 실행). 사후 CSV 슬라이싱 함정 회피를 위해 창 경계는 봉인 시점에 고정. 2025-01~2026-02는 known/audit 참고치로만 병기(선택에 사용 금지), 최종 판정은 2026-03+ 미래 데이터 도착 시까지 유보(deferred verdict)."
+   ],
+   "example_condition_sketch": "rr8_12 매수식 공통 필터 블록에 삽입하는 정적 위험감속 절(항상 평가, P&L 메모리 없음):\\n\\n```python\\n# D4-H1 당일 자기 이력 위험상태 정적 감속 절 (사전등록 임계 봉인)\\n당일위험 = (저가대비고가등락율 > 12.0) or (등락율각도(30) < -5)\\nif 당일위험:\\n    매수 = False\\n```\\n\\n저가대비고가등락율>12 = 개장 직후 이미 12%p 이상 고저 스윙을 만든 휩쏘 종목 억제(챔피언 원문에 미구속 변수), 등락율각도(30)<-5 = 직전 30틱 하락 모멘텀 심화 상태 억제(매도식에는 쓰이나 매수식에는 미구속). 매도식은 무접촉(챔피언 원문 유지, P5 기각 전례 준수). 삽입 위치는 `if not (관심종목 == 1)` 직후 공통 필터로 하여 902/905 두 분기에 동일 적용.",
+   "expressibility": "시장 수준 절: 표현 불가 확정(조건식 스코프는 단일 종목 배열뿐, 지수·폭·전종목 VI 수 변수 부재 — grep 실측 0건). 종목 수준 절: 완전 표현 가능 — 저가대비고가등락율/고저평균대비등락율은 기본 스칼라, 등락율각도(30)·변동성급증은 봉인 181 함수 목록에 존재, VI해제시간은 datetime 스칼라로 now()와 초 차 계산 가능. 사이징 상한: 표현 불가(self.Buy() 무인자, 베팅은 CLI --betting 전역 파라미터) — 이진 진입 억제로만 축소. 번역갭 위험: 낮음(단일 절, 기존 idioms.py 검증 경로 재사용) 단 구간함수 사용 시 avg_list 등록 틱수(30) 확인 필수(미등록 시 엔진 중지).",
+   "data_requirements": "신규 데이터 불필요. (1) v4 사이클의 챔피언 4종 per-trade CSV(backtest/csv/)와 _database/backtest.db stock_bt — 발견창 2022-03~2024-12 거래 원장, (2) tick DB(_database/stock_tick_back.db) 읽기 전용 — 각 거래 진입 틱 시점의 대용물 재계산용(해당 종목·해당 일자만 부분 로딩), (3) 기존 봉인 문서(features_v3.py 실패 원장, n_trials_ledger.jsonl). 2026-03+ 미래 데이터는 최종 판정 시점에만 필요(현재 부재 인정).",
+   "sample_size_estimate": "챔피언 4종 발견창(34개월) 합산 거래 약 1,500~2,500건 추정(GPTAUTH_G8 550건 + rr8 계보 각 190~500건대, 창 길이 비례 외삽). flagged 비율을 10~20%로 가정하면 효과 표본 150~500건 — 봉인 하한(총 2,000 / flagged 300)에 미달할 확률이 높다. Phase 1a에서 정확 집계가 첫 행동이며 미달 시 즉시 kill이 기본 시나리오다.",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py — tick DB 부분 로딩(진입 틱 시점 재계산)",
+    "alpha_lab/dataset/parity.py — 대용물 파생식의 엔진 100% 패리티 검증",
+    "alpha_lab/dataset/labels.py — 봉인 비용 상수(FEE/TAX/ADVERSE_TICKS=2) 재사용",
+    "alpha_lab/stats_common.py — FDR(BH)·부트스트랩 CI",
+    "alpha_lab/mcl/screening.py — 표본 하한 검문 규율",
+    "alpha_lab/distill/replay.py + alpha_lab/distill/replay_gate.py — flagged 진입 제거 반사실 triage",
+    "alpha_lab/ensemble/portfolio.py(static_equal) + robustness.py — 앙상블 MDD 재계산·walk-forward 견고성",
+    "alpha_lab/translate/idioms.py + codegen.py — 절 생성·문법 게이트",
+    "alpha_lab/registry.py — 사전등록 봉인 verify_seal",
+    "alpha_lab/hillclimb/features_v3.py — 실패 피처 원장 중복 대조(재사용은 대조 목적만)",
+    "cli/runner.py run_backtest — Phase 4 엔진 확인(별도 승인 후)"
+   ],
+   "engine_budget_estimate": "Phase 0~2: 0회(전량 오프라인 — 기존 CSV·tick DB 읽기). Phase 4: 봉인 ≤12회(변형 챔피언 4종 × walk-forward 최대 3창, 원본 기준선은 기존 R0 실측 재사용, 재시도 0). 기대 시나리오(표본 미달 kill)에서는 총 0회로 종결.",
+   "oos_validation_plan": "3중 구조로 신뢰를 확보한다. (1) 발견창 내부 walk-forward: 2022-03~2024-12를 봉인 시점에 3분할 고정하고 절 삽입 변형이 3창 중 ≥2창에서 MDD 개선 + 수익 95% 보존을 보여야 통과 — 창 경계 사후 조정 금지(사후 CSV 슬라이싱 함정 명시 차단). (2) 2025-01~2026-02는 known/audit 창으로 명시 표기: 후보 선택·임계 조정에 절대 사용하지 않고, 통과 후보의 참고 성과만 병기한다(C-013 준수). 이 창에서 역방향 결과가 나오면 감점 증거로 기록하되 blind 검증이라 주장하지 않는다. (3) 최종 판정 유보(deferred verdict): 2026-03+ 데이터가 존재하지 않으므로 '배포 승인'은 원천적으로 불가하며, 산출물 최대 지위는 'v4 감독형 프로토콜의 미래 데이터 재검증 항목에 동승하는 조건부 후보'다 — 미래 데이터 도착 시 변형 vs 원본을 동일 창에서 1회 비교하는 것이 유일한 fresh 판정. 추가 방어: 가설 수 ≤5 FDR, n_trials 원장 단일 장부, 봉인 전 kill 기준 명문화, 재시도 0.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 시드 생성→백테 채점→힐클라임의 탐색 루프(병목=시드 공급)다. 본안은 (1) 탐색이 없다 — 사전 지정 대용물 ≤5개와 절 1개, 힐클라임·격자·반복 채점 없음; (2) 백테가 채점기가 아니라 최종 심판 1회다(오프라인 반사실 triage가 후보를 0~1개로 줄인 뒤에만 엔진); (3) 연구 대상이 신규 알파가 아니라 이미 검증된 동결 챔피언 포트폴리오의 위험 조건화이며 목적함수가 수익 최대화가 아니라 MDD/꼬리 축소다; (4) 산출물의 절반이 '불가 인증 문서'(시장 수준 변수 부재 + 사이징 절 불가) — 루프가 생산하지 않는 영구 부정 지도다.",
+   "kill_criteria": [
+    "K0(즉시): Phase 0에서 시장 수준 변수 부재 인증 후, 사용자가 종목 수준 축소안을 승인하지 않으면 프로그램 전체 종료(불가 판정 문서만 남김) — 이것이 기본 경로다.",
+    "K1: 발견창 챔피언 총 거래 <2,000 또는 flagged 거래 <300 (Idea3 346 표본 전례 — 발생 확률 높음, 발생 시 엔진 0회로 종결)",
+    "K2: 대용물 ≤5개 전부 FDR(q=0.1) 비생존 — flagged/unflagged 손익 차이 없음",
+    "K3: 후보 (피처,임계,라벨) 조합이 features_v3.py/v2 필터 실패 원장과 동일 — 재탐사 금지 위반으로 해당 후보 즉시 폐기",
+    "K4: 반사실 triage에서 수익 보존 <95% 또는 앙상블 MDD 개선 <15%",
+    "K5: 엔진 확인에서 walk-forward 3창 중 2창 미만 개선, 또는 어느 창에서든 MDD 악화(P5 기각 패턴), 또는 거래수 급감으로 앙상블 다각화 상관 구조 훼손",
+    "K6: 봉인 위반·재시도·사후 임계 조정 발생 시 결과 무효(SealViolation)"
+   ],
+   "expected_value_case": "성공 시(확률 낮음): v4 감독형 앙상블(OOS calmar 5.28, MDD 493,590원)의 MDD를 15~25% 추가 절감하면서 수익 95%+ 보존 — calmar 6대 진입과 740k kill-switch 여유 확대. 근거: v4의 성공 원인이 손익 비동조 다각화이므로 꼬리 거래 소수 제거만으로 MDD 개선 여지가 있고, GPTAUTH_G8의 discovery MDD 77% 같은 낙폭 집중 전례가 '위험 상태 거래 존재'를 시사한다. 실패 시에도 확보되는 가치: (1) 시장 수준 레짐 절 불가의 영구 인증 문서(향후 동류 제안 원천 차단), (2) 종목 수준 위험 대용물의 조건부 무효 원장(부정 지도 확장), (3) 엔진 예산 소모 0~12회의 저비용 종결.",
+   "risks": [
+    "핵심 전제 소멸 위험(확정적): 과제 원안의 시장 수준 감속은 문법상 불가 — 본안은 축소판이며 축소판의 정보량(자기 종목 당일 경로)이 '위험한 날'을 대변하지 못할 수 있다(시장 급락일에 개별 종목 신호는 지연·잡음).",
+    "v2/Idea3 인접 공간 재탐사 위험: 표본 단위·라벨·목적함수가 다르다는 차별점이 실질적으로 얇을 수 있음 — K1/K3가 방어선이나 통과해도 winner's curse 잔존.",
+    "표본 부족이 기본 시나리오: flagged 부분집합 150~500건 추정으로 꼬리 위험 주장에 부족할 공산이 큼(그래서 kill-first).",
+    "진입 억제의 다각화 부작용: 특정 챔피언의 거래만 선별 제거되면 v4 성공의 원천인 손익 비동조 구조가 훼손될 수 있음(K5에서 상관 재계산으로 감시).",
+    "2025-01~2026-02 오염 위험: known 창 성과를 무의식적으로 선택에 반영하는 프로그램 수준 스누핑 — 봉인 절차와 참고치 분리로 방어하지만 완전 차단은 불가.",
+    "반사실 triage와 엔진 현실의 괴리(P5 전례): flagged 진입 제거는 슬롯 점유·재진입 연쇄를 바꾸므로 리플레이 P&L이 엔진 P&L과 다를 수 있음 — triage는 후보 축소용으로만.",
+    "기회비용: confidence 20짜리 방향에 엔진 예산·시간을 쓰는 것 자체가 손해일 수 있음 — Phase 0(불가 인증, 비용 ~0)만 수행하고 종료하는 선택지를 1순위 권고로 남긴다."
+   ],
+   "confidence_0_100": 20
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "실패 목록 전수 대조 결과 완전 재탐사는 아니나 두 축에서 실질적 겹침이 있다. (1) 피처 공간 겹침 실측: 후보 대용물 저가대비고가등락율은 alpha_lab/dataset/schema.py:40-41의 봉인 25피처에, 등락율각도(30)는 alpha_lab/hillclimb/features_v3.py:15의 파생 18항(43 화이트리스트)에 그대로 존재한다 — 이 43피처 공간은 docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md:19에서 depth<=4 전수 채굴로 양EV 리프 0/107이 확정된 공간이다. (2) 라벨 겹침: 같은 문서 12행에서 v2가 이미 '챔피언 매도 규율 리플레이(실현손익)' 라벨로 챔피언 필터를 시도해 0/6(교집합 소멸 10/665)으로 죽었다 — D4의 '챔피언 원장 실현손익' 라벨은 v2 라벨과 사실상 동종이다.",
+     "그럼에도 FAIL이 아닌 이유: 심사 기준(데이터/라벨/표본단위/목적함수 중 최소 1개 실질 상이)에서 표본단위(전시점 그리드가 아니라 챔피언 실거래 조건부)와 목적함수(단독 양EV 발굴이 아니라 이미 흑자인 동결 포트폴리오의 MDD/꼬리 축소, veto 방향 한정)가 v1/v2/v3·이벤트5족·다밴드 캠페인 어느 것과도 다르다. v2와의 구조 차이(채굴된 필터 교집합 vs 사전지정 <=5개 대용물의 flagged 제거 반사실)도 실재한다.",
+     "실패항목 (h) adaptive timing/rotation과의 구분은 유효: 실패 기제가 '실현 P&L lookback 기반 월단위 on/off'였고 D4 절은 P&L 메모리 0·상태전환 0·봉인 후 자유 파라미터 0이므로 동일 기제가 재현될 수 없다. (g) 전역 청산 교체와도 무관(매도식 무접촉). (i) 구식 API 비해당(현행 무인자 self.Buy() 원문에 절 삽입 + translate 토큰 게이트).",
+     "핵심 전제 검증 통과: trade/base_strategy.py에서 코스피/코스닥/지수/시장폭 grep 0건 실측 — '시장 수준 변수 부재 인증'(Phase 0)은 사실에 부합하며, 산출물의 절반인 영구 부정 지도는 실패 시에도 가치가 남는다.",
+     "설계 자체의 정직성 가점: sample_size_estimate가 스스로 K1 kill(총<2,000/flagged<300)을 기본 시나리오로 명시하고, 기대 경로 엔진 0회, confidence 20 자진 신고, 2025-01~2026-02를 known/audit으로 격리(DIGEST 6 준수), 사후 CSV 슬라이싱 함정 명시 차단. kill-first 구조가 실제로 작동하도록 짜여 있다.",
+     "잔여 우려: 43피처 공간 0/107 확정 후에 같은 피처를 veto 방향으로 재사용하는 것은 '이름만 바꾼 재탐사'와의 경계가 얇다 — v3 결론은 '이 피처들로 진입 신호를 못 만든다'였지 '이 피처들이 손실 거래를 표지하지 못한다'가 아니므로 논리적으로는 미반증 영역이나, K3 대조가 문서상 선언에 그치면 방어선이 무너진다. 따라서 경계 조건 명문화를 요구하는 FIX."
+    ],
+    "required_fixes": [
+     "K3 중복 대조를 사후 선언이 아니라 Phase 1b 봉인의 선행 산출물로 격상하라: 대용물 <=5개 각각에 대해 (피처, 임계, 라벨, 표본단위, 방향) 5-튜플을 features_v3.py 43 화이트리스트 채굴 원장 및 v2 필터 0/6 원장과 대조한 diff 표를 봉인 문서에 포함하고, '동일 피처라도 (표본단위=챔피언 실거래 조건부, 방향=veto, 목적=MDD)가 다르므로 신규 시행'임을 n_trials_ledger.jsonl에 측정 전 기록할 것. 이 표 없이는 Phase 1c 착수 금지.",
+     "라벨 정의를 v2와 명시적으로 분리하라: D4 라벨은 리플레이 재구성 손익이 아니라 R0 엔진 실측 per-trade 원장(backtest/csv/, _database/backtest.db stock_bt)임을 봉인에 못박고, alpha_lab/distill/replay.py 사용은 Phase 2 반사실 triage(후보 축소)로만 한정하라 — Phase 1c 층화 비교에 리플레이 손익이 섞이면 v2 재탐사가 된다.",
+     "결론 범위 제한 절을 봉인에 추가하라: 어떤 대용물이 생존해도 그 해석은 '챔피언 거래 조건부 진입 억제(veto)'로만 유효하며, 단독 진입 신호·양EV 주장으로의 전용은 v1/v3 반증 공간 재진입으로 자동 무효(SealViolation) 처리한다.",
+     "K0 기본 경로를 구속력 있게 만들어라: risks 말미의 'Phase 0만 수행하고 종료 1순위 권고'와 mechanism의 Phase 1 진행이 모순되지 않도록, Phase 0 불가 인증 문서 + Phase 1a 표본 정확 집계까지를 기본 승인 범위로 하고 Phase 1b 이후는 표본 하한 통과 증거 제시 후 별도 승인으로 분리하라.",
+     "K5에 다각화 훼손의 정량 기준을 봉인 시점에 고정하라(현재 '상관 구조 훼손'만 서술): 예컨대 절 삽입 후 4챔피언 쌍상관 최대치가 기존 0.816을 초과하거나 특정 챔피언 거래수 감소율이 타 챔피언 대비 2배 이상 편중되면 kill — 사후 판단 재량을 제거할 것."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 7.5,
+    "reasons": [
+     "표현 가능성 검증됨: 저가대비고가등락율·등락율각도·고가미갱신지속틱수·변동성급증이 매수 네임스페이스에 실존 — utility/ai_agent/system_prompt/v1/variables_reference.md L34/L78/L105/L112 및 utility/setting.py에서 확인. 시장 수준 변수(지수/폭/전종목 VI 수)는 실제로 부재하며 설계안의 '불가 인증 후 종목 수준 축소' 판단은 정직하고 정확하다.",
+     "API 정합성 검증됨: 현행 매수 API는 backtest/backengine_base.py:791 `def Buy(self, buy_long=False)` — 사실상 무인자 호출이므로 '사이징 상한 절 불가, 이진 진입 억제만 가능' 축소가 코드 실측과 일치. v5의 구식 7-arg API 전멸(digest 3-i)과 달리 본안은 현행 챔피언 원문에 절 삽입 + translate 토큰 게이트라 실행 가능성 결함 없음.",
+     "데이터 실존 검증됨: 챔피언 4종 per-trade CSV가 backtest/csv/에 실존(stock_bt_ALP_V4_RR8_12_20260707074238.csv 455행, RR8_0 339행, RR8_21 381행, GPTAUTH_G8 1448행) — 신규 데이터 불필요 주장이 사실. tick DB(2022-03~2026-02)로 진입 틱 시점 대용물 재계산 가능하며 alpha_lab/dataset/parity.py가 실존해 패리티 검증 경로도 실재.",
+     "표본 추정이 현실적이고 자기비판적: CSV 실측 합산 약 2,600행으로 설계안 추정(1,500~2,500)과 정합. 단 GPTAUTH 1448행 vs digest 550거래 불일치는 창 차이로 보이며, Phase 1a 정확 집계가 첫 행동 + K1(총<2,000 또는 flagged<300 즉시 kill)로 Idea3 346 표본 전례를 1순위 게이트로 방어 — 표본 미달을 '기대 시나리오'로 명시한 점이 실행 가능성 심사에서 오히려 강점.",
+     "인프라 재사용 계획이 전부 실존 모듈: alpha_lab/dataset/reader.py, parity.py, labels.py, stats_common.py, mcl/screening.py, distill/replay.py+replay_gate.py, ensemble/portfolio.py+robustness.py, translate/idioms.py+codegen.py, registry.py, hillclimb/features_v3.py, cli/runner.py — 전 항목 파일 실존 확인. 엔진 예산 0~12회(기대 시나리오 0회)로 저비용 종결 구조.",
+     "잔여 리스크는 설계안이 이미 자인·게이트화: (1) 등락율각도(30) 등 구간함수의 avg_list 틱수 등록 확인 필요 — expressibility 절에 명시됨(미확인 시 엔진 중지 위험), (2) 반사실 리플레이와 엔진 P&L 괴리(슬롯 점유·재진입 연쇄) — triage 한정 사용 + Phase 4 엔진 확인으로 처리, (3) v2/Idea3 인접 공간 재탐사 — K3 features_v3.py 원장 대조로 방어. 실행 가능성 렌즈에서 치명 결함 없음."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "placeholder"
+    ],
+    "required_fixes": []
+   }
+  ]
+ },
+ {
+  "id": "D5",
+  "name": "Idea5 재생: 조건부 청산 패치·병렬 변종",
+  "design": {
+   "direction_id": "D5-idea5r-conditional-exit",
+   "direction_name": "Idea5-R: 챔피언 매도식 절 부검 + 조건부 저활력 타임스탑 패치 + 병렬 청산 변종(v4 5번째 슬롯)",
+   "one_line": "현직 챔피언 매도식을 기준선으로 보존한 채, 거래 원장 부검으로 load-bearing 절을 분리하고, '최고수익률이 낮고 수익률도 부진한 장기보유'만 자르는 조건부 타임스탑을 병렬 변종(교체 아님)으로 v4 앙상블 5번째 슬롯에 넣어 포트폴리오 calmar/MDD 개선을 노린다.",
+   "core_hypothesis": "P5 엔진 실측에서 전역 time_stop 300은 손실 절단 자체는 작동했으나(payoff ratio B 1.344 > A 1.171, hard/time 절 발동 51/584건) 2024/25 EV가 역전됐다. 이는 타임스탑이 손실 거래뿐 아니라 '느리게 익는 승자'까지 잘랐기 때문이라는 가설이 데이터로 검증 가능하다. 만약 챔피언 원장에서 '보유시간>=T and 최고수익률<x and 수익률<y'인 저활력 장기보유의 조건부 EV가 연도 불변으로 음(-)이고, 반대로 최고수익률>=x인 장기보유가 2024/25 수익의 원천이라면, 최고수익률 상한을 단 조건부 절단은 전역 후보의 2024/25 역전을 재현하지 않으면서 손실 꼬리와 포트폴리오 MDD를 줄인다. 채택 형태는 현직 교체가 아니라 (1) 감독 리포트 → (2) 소액 병렬 변종(5번째 슬롯) → (3) 조건부 패치 순이며, 판정 지표는 단일 EV가 아니라 포트폴리오 calmar↑ and MDD↓다.",
+   "why_not_refuted": "DIGEST 3번 실패 목록과의 항목별 대조: (g) 전역 청산 교체 기각 — 가장 직접 관련. 차별점 3개: [목적함수] 단일 전략 ΔEV가 아니라 포트폴리오 calmar/MDD(v4 기준선 대비)로 변경, [표본단위] 192조합 최상 1개 선택이 아니라 후보군 사전 ≤12조합 봉인 + 연도별 방향 일치 + 4챔피언 교차 재현 요구, [라벨] 전거래 일괄 적용이 아니라 매도 네임스페이스에서 인과적으로 관측 가능한 보유상태(보유시간·최고수익률·수익률)로 조건화 — 즉 잘리는 모집단 자체가 다르다. 채택 형태도 교체가 아닌 병렬 추가라 기각된 후보의 재포장이 아니다. (h) adaptive timing/regime rotation 4/4 실패 — 본 설계는 달력/레짐 스위칭이 전혀 없다. 조건은 거래별 보유상태 변수이며 항상 켜져 있는(always-on) 절이다. 단 R1 포렌식에서 2022/23 도움 vs 2024/25 해악이 보유상태로 분리되지 않고 순수 연도(레짐) 효과로만 설명되면, 조건부 패치는 위장된 레짐 게이트이므로 즉시 자기기각한다(kill 1번). (a) 스냅샷 43피처 트리 채굴 — 무관: 매수 규칙 채굴이 아니고, 사용하는 변수(보유시간·최고수익률·수익률)는 채굴 이력이 없는 매도전용 네임스페이스다. (c) 이벤트 5족 FDR 0 — 무관: 시장 사건 트리거가 아니라 챔피언 진입 이후 보유상태 조건. (e) score-sum — 무관: v4 정적 등가중 골격을 그대로 확장. (f) 다밴드 야간 캠페인 — 무관: 매수식 자동발굴 아님. (i) v5 구식 API — P5 런에서 동일 매도 네임스페이스 절이 이미 컴파일·실행 검증됨(ALP_EXITCHK_B 등재·10회 전수 ok), 실행 가능성이 선검증된 유일한 방향이다. 자기기각 조건 명시: 포렌식이 보유상태 분리 실패를 보이거나 대상 표본이 하한 미달이면 엔진 예산을 쓰지 않고 종료한다.",
+   "mechanism_steps": [
+    "[R1 포렌식, 엔진 0회] 기존 산출물만 읽기: backtest/csv/의 P5 A/B 페어 per-trade CSV(매도조건 라벨·수익률·보유시간·R_MFE/R_MAE 컬럼 자동 병기됨) + 챔피언 20260628 게이트런 4본 CSV + p5_exitchk_engine_runs.json + loop_runs.db generations. 신규 모듈 alpha_lab/exitlab/forensics.py(distill/ledger_wiring.py의 원장 로딩 재사용)로 (a) incumbent_clause_attribution: 매도조건 라벨별 발동수·EV·손실꼬리 기여·연도 안정성, (b) time_stop_help_hurt_map: 보유시간>=300 거래를 (최고수익률, 수익률) 2차원 격자로 분해해 연도별 잔여 EV 측정 — 저활력 셀이 연도 불변 음(-)인지가 go/no-go",
+    "[R2 사전등록·봉인] alpha_lab/registry.py로 후보군 봉인: 조건부 타임스탑 격자 T∈{180,300} × 최고수익률상한 x∈{0.5,1.0,1.5} × 수익률상한 y∈{-1.0,0.0} = 12조합 상한, 판정 기준(R4)·표본 하한(4챔피언 풀링 영향거래 >=800)·n_trials·엔진 예산을 측정 전 고정. 2025-01~2026-02는 known/audit으로 명기",
+    "[R3 리플레이 triage, 엔진 0회] alpha_lab/distill/replay.py + replay_gate.py로 4챔피언 원장(2022~2024 discovery+validation만)에 반사실 재생. 점추정 불신 — 방향성·발동 분포·손실꼬리 감소만 채점. 통과 조건: 연도별 방향 일치 + 4챔피언 중 >=2에서 동일 방향. 통과 후보를 <=2개로 압축",
+    "[번역] 번역갭 거의 0: 매수식은 챔피언 passport 원문 byte-exact 무수정, 매도식은 현직 절 체인 뒤에 elif 1절 추가(절 순서 보존 — 현직 절이 먼저 평가되고 어느 절도 발동 안 한 경우만 패치 도달). 매도=True 직전 주석 줄로 매도조건명 '조건부저활력타임스탑' 기록되어 엔진 CSV에서 절별 attribution 자동 확보(back_static.py:202 SetSellCond)",
+    "[엔진 확인, 별도 승인] stom_backtest.py로 ALP_ 네임 INSERT-only 등재(+strategy.db 백업) 후 warm64 tick 프로파일, 창 full/2022/2023/2024/2025 × A(현직)/B(패치) × 챔피언 2종 = 20회. 판정: 2024 MDD 악화 없음 + 2024·2025 같은 방향 손실꼬리 감소 + 거래수 변화 ±20% 이내 + 일 블록 페어드 부트스트랩",
+    "[포트폴리오 판정] alpha_lab/ensemble/portfolio.py + robustness.py로 v4 4챔피언 일별 손익에 변종을 5번째 슬롯(소액 균등 또는 1/8)으로 추가한 walk-forward 4창 calmar/MDD 비교. 채택은 R5 우선순위(감독 리포트 → 병렬 변종 → 조건부 패치)로만, 현직 교체는 마지막 수단"
+   ],
+   "example_condition_sketch": "매수식: 챔피언 GATE_rr8_12_turnover_min_902_1_5_B 원문 그대로(sha 348c5181, 1바이트도 수정 금지). 매도식: 현직 GATE_rr8_12_turnover_min_902_1_5_S(sha 8ef01e0e)의 절 체인 전체를 순서 보존한 채 최하단에 다음 1절만 추가 — ```python\\n매도 = False\\nif 등락율 > 29.5:\\n    매도 = True\\nelif 시가대비등락율 < 0 and 수익률 <= -2.0 and 현재가 < 최저현재가(int(60), int(보유시간)):\\n    매도 = True\\n# ... (현직 절 전체 원문 유지) ...\\n# 조건부저활력타임스탑\\nelif 보유시간 >= 300 and 최고수익률 < 1.0 and 수익률 < 0.0:\\n    매도 = True\\nif 매도:\\n    self.Sell()\\n``` — 최고수익률 < 1.0 상한이 핵심: 한 번이라도 +1% 이상 갔던 거래(느린 승자)는 절대 자르지 않아 전역 time_stop 300이 2024/25에 승자를 절단했던 실패 모드를 구조적으로 차단한다. 보유시간·최고수익률·수익률은 모두 매도 exec 네임스페이스에 실측 바인딩된 변수(backengine_kiwoom_tick 보유 컨텍스트).",
+   "expressibility": "번역갭 위험이 5개 방향 중 최저. 필요 변수 3개(보유시간[초], 최고수익률, 수익률)는 매도식 전용 보유 컨텍스트 스칼라로 직접 존재하고, P5 엔진 확인에서 유사 절(수익률<=-5.0 / 보유시간>=300 if/elif)이 이미 컴파일·10회 전수 실행 성공했다. 구간함수·avg_list 의존 없음, 부동소수 등호 비교 없음, 금지 토큰 없음. 유일한 의미론 주의점은 절 순서(현직 절이 먼저 발동하면 패치 미도달)인데, 이는 의도된 설계다 — 패치는 현직이 침묵한 잔여 집합에만 작동한다.",
+   "data_requirements": "신규 수집 0. (1) backtest/csv/의 P5 ALP_EXITCHK A/B per-trade CSV(매도조건·보유시간·R_MFE/R_MAE 병기), (2) 챔피언 4종 20260628 게이트런 per-trade CSV, (3) p5_exitchk_engine_runs.json / p5_exitchk_compare_intermediate.json, (4) loop_runs.db generations(mdd/profit), (5) condition_passports 4종(매수/매도 원문+sha), (6) 반사실 재생용 tick DB read-only(진입 후 가격 경로, 2022-03~2024-12 discovery/validation 창만). 2025-01~2026-02 원장은 audit 전용으로 분리 보관.",
+   "sample_size_estimate": "rr8_12 단독 full 665거래, 4챔피언 풀링 시 약 2,000~2,600거래. 이 중 패치 영향 모집단(현직 절 미발동 상태로 보유시간>=300 도달 + 저활력)은 현직 보유 중앙값이 167~257초로 짧아 거래의 약 20~35%로 추정 → 풀링 400~900건. 봉인 하한은 '4챔피언 풀링 영향거래 >=800'으로 설정하고, 미달 시 게이트런 이력 CSV까지 확장하되 동일 골격 중복(의사반복)은 거래 키로 dedup. 800 미달이 확정되면 엔진 예산 소비 없이 inconclusive 종료(kill 2번).",
+   "offline_pipeline": [
+    "alpha_lab/distill/replay.py — 반사실 청산 경로 재생(P5에서 오차 중앙값 0.0%p·1틱 이내 99.70% 검증된 인프라)",
+    "alpha_lab/distill/replay_gate.py — 리플레이 triage 게이트(방향성·발동분포 채점으로 재목적화)",
+    "alpha_lab/distill/ledger_wiring.py — 챔피언 원장·게이트런 CSV 로딩",
+    "alpha_lab/ensemble/portfolio.py — v4 등가중 포트폴리오 합산·MDD/calmar (5번째 슬롯 시뮬)",
+    "alpha_lab/ensemble/robustness.py — walk-forward 4창·몬테카를로 견고성",
+    "alpha_lab/registry.py — 사전등록·봉인·verify_seal·n_trials 원장",
+    "alpha_lab/stats_common.py — 일 블록 페어드 부트스트랩·FDR",
+    "alpha_lab/dataset/reader.py + labels.py — tick 읽기·봉인 비용 상수(FEE 0.00015/TAX 0.0018/tick2)",
+    "신규 1개만 추가: alpha_lab/exitlab/forensics.py — 절별 attribution + time_stop help/hurt map (기존 CSV/JSON read-only)"
+   ],
+   "engine_budget_estimate": "포렌식(R1)·봉인(R2)·리플레이 triage(R3) = 엔진 0회. 엔진 확인(별도 승인): 후보 최대 2개 중 1개 × 챔피언 2종(rr8_12 + GPTAUTH_G8) × A/B × 5창(full/2022/2023/2024/2025) = 20회. 통과 시 나머지 2챔피언 교차 재현 확장 +8회(2024·2025 창만). 총 상한 28회 — P5 전례(10회)의 약 3배지만 cross-champion 재현 요구 때문이며, 포트폴리오 5번째 슬롯 평가는 기존 챔피언 창 결과 재사용으로 추가 엔진 0회.",
+   "oos_validation_plan": "시간 축: 2022~2023 = 후보 발견(원장·리플레이), 2024 = 고정 검증(엔진, 사전등록 임계 통과 필수), 2025-01~2026-02 = known/audit 창 — blind라고 절대 주장하지 않고 '방향 일치 감사'로만 사용(2024와 같은 방향의 손실꼬리 감소가 재현되는지 이진 체크, 점추정 채택 근거로 사용 금지). 진짜 blind는 2026-03 이후 신규 데이터가 쌓일 때의 전방 OOS + v4 감독형 프로토콜(소액·킬스위치)하 병렬 변종 실측이다. 시간 축의 신뢰 부족은 구조 축으로 보강: (1) cross-champion 재현 — rr8_12에서 동결한 파라미터를 무수정으로 RR8_0/RR8_21/GPTAUTH_G8에 적용해 >=2챔피언 재현을 요구(파라미터 재조정 금지 — 재조정하면 새 봉인), (2) winner's curse 방어 — 후보 12조합 봉인·최상 1개 점추정이 아니라 연도별 방향 반복성으로 채택, (3) 기각 기준선 재사용 — CI 0 포함 / 2024·2025 역방향 / MDD 악화는 P5 전례 그대로 즉시 탈락.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 '매수 시드 생성 → 백테 채점 → 힐클라임'으로 백테스트가 반복 탐색기다. 본 설계는 (1) 탐색 공간이 매수식이 아니라 검증 챔피언의 매도/보유상태 공간, (2) 발견 소스가 격자 시드가 아니라 실현 거래 원장의 반사실 부검, (3) 백테스트는 봉인 예산 <=28회의 최종 심판일 뿐 반복 평가자가 아님(리플레이가 triage 담당), (4) 목적함수가 단일 전략 점수가 아니라 v4 포트폴리오 calmar/MDD, (5) 산출물이 새 전략이 아니라 기존 자산의 위험 감소 패치·병렬 슬롯. 힐클라임·시드 공급 개념 자체가 없다.",
+   "kill_criteria": [
+    "R1 포렌식에서 time_stop의 2022/23 도움 vs 2024/25 해악이 보유상태 변수(최고수익률·수익률·보유시간)로 분리되지 않고 연도(레짐) 효과로만 설명됨 → 조건부 패치는 위장 레짐 게이트이므로 즉시 종료(엔진 0회 소비)",
+    "4챔피언 풀링 패치 영향거래 < 800건 → inconclusive 종료, 엔진 예산 미사용 (P3 표본부족 346/2000 전례의 재발 방지)",
+    "리플레이 triage에서 discovery 연도 간 방향 뒤집힘 또는 4챔피언 중 동일 방향 재현 < 2개 → 해당 후보 폐기, 후보 전멸 시 프로그램 종료",
+    "엔진 확인에서 P5 기각 기준선 중 하나라도 발동: ΔCI 0 포함 + 2024·2025 역방향, 2024 MDD 악화, 거래수 변화 ±20% 초과 → 기각·현행 유지",
+    "포트폴리오 5번째 슬롯 추가가 walk-forward 4창 중 3창 이상에서 calmar 개선 실패 또는 MDD 악화 → 병렬 편입 기각, 감독 리포트 자산으로만 강등",
+    "cross-champion 확장(+8회)에서 두 번째 챔피언 방향 불일치 → 챔피언 특이 과적합으로 판정, 채택 불가"
+   ],
+   "expected_value_case": "성공 시 기대: v4 포트폴리오(OOS 수익 2,608,362/MDD 493,590/calmar 5.28)에 손실꼬리가 절단된 변종을 5번째 슬롯으로 추가해 MDD 10~20% 감소, calmar 5.28 → 5.8~6.3. 근거 3개: (1) P5 실측에서 손실 절단 메커니즘 자체는 실재했다(payoff ratio 1.344>1.171, 2022년엔 MDD -4.30pp 개선) — 실패는 승자 절단 부작용이었고 최고수익률 상한이 그 부작용만 제거, (2) v4의 성공 원인이 순수 다각화였으므로 변종 단독 calmar가 낮아도 현직과 손익 비동조(청산 시점 상이)면 포트폴리오 기여 양(+) — v4 전례에서 다각화만으로 위험조정 +38%, (3) 번역갭·실행성 리스크가 사실상 0이라 연구비 대비 실패 비용이 낮다(엔진 <=28회, 신규 코드 1모듈).",
+   "risks": [
+    "가장 큰 위험: 2024/25 역전이 보유상태가 아니라 레짐 구조(장 초반 반등 속도 변화 등) 때문일 가능성 — 이 경우 조건부 패치도 같은 방향으로 실패한다. R1 포렌식을 엔진보다 먼저 두고 kill 1번으로 방어하지만, 포렌식 자체가 현직 청산에 절단된 관측(생존 편향)이라 완전 분리는 불가",
+    "잔여 집합의 표본 희소: 현직 절이 이미 기민해(보유 중앙값 167~257초) 패치 도달 거래가 적으면 통계력이 부족하고, 효과가 있어도 포트폴리오 기여가 미미할 수 있다",
+    "리플레이의 구조적 한계 재발: 진입 고정 가정 vs 엔진의 슬롯 점유·재진입 변화(P5에서 A 665 vs B 635) — triage 강등으로 완화했지만 제거는 불가",
+    "12조합이라도 다중비교는 존재 — 연도 방향 반복성 요구로 방어하나 2개 discovery 연도는 짧다",
+    "2025-01~2026-02 audit 창 의존 유혹: 방향 체크 이상으로 쓰는 순간 OOS 오염 — 운영 규율로만 방어됨",
+    "cross-champion 재현 요구가 오히려 보수적 기각을 유발해 진짜 챔피언 특이 개선(예: rr8_12만의 청산 결함)을 놓칠 수 있음"
+   ],
+   "confidence_0_100": 48
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "(g) 전역 청산 교체 기각과의 대조: 실질 차별 3축 확인 — 목적함수(단일 ΔEV → v4 포트폴리오 calmar/MDD), 표본단위(192조합 최상선택 → ≤12조합 봉인+연도방향+cross-champion 재현), 라벨(전거래 일괄 → 보유상태 조건화된 잔여 모집단). '최소 1개 실질 차이' 기준을 3개 축에서 충족하므로 이름만 바꾼 재탐사는 아니다. 그러나 데이터 축은 완전 동일(같은 챔피언·같은 tick DB·같은 5창)이고 레버 자체가 기각된 time_stop 300의 조건화 변형이라 (g)와 부분 겹침 — FIX 경계조건 필요.",
+     "(h) adaptive timing/regime rotation 대조: 달력/레짐 스위칭 없음이 설계에 명시되고, 'R1에서 보유상태 분리 실패 시 위장 레짐 게이트로 즉시 자기기각'(kill 1)이 엔진 예산 소비 전에 배치됨 — 유효한 방어.",
+     "(a)(c)(e)(f) 무관 판정 타당: 매수 채굴·이벤트 트리거·score-sum·다밴드 자동발굴 어느 공간도 건드리지 않음. (i) 대조는 오히려 강점 — docs/research/condition_research/research_runs/alpha_lab_20260705/p5_exitchk_engine_runs.json에서 ALP_EXITCHK A/B가 동일 매도 네임스페이스 절로 컴파일·실행 완료(EXIT=0, gate=True)를 확인, 실행가능성 선검증 주장은 사실.",
+     "핵심 수치 사실 검증 통과: docs/research/condition_research/research_runs/alpha_lab_20260705/p5_exitchk_compare_intermediate.json에서 payoff 1.1707/1.3443, B의 sell_condition_counts {보유시간>=300: 584, 수익률<=-5.0: 51}, trade 665/635, per-trade CSV의 매도조건 자동 attribution 모두 실측과 일치. alpha_lab/distill/{replay,replay_gate,ledger_wiring}.py, alpha_lab/ensemble/{portfolio,robustness}.py, alpha_lab/registry.py 전부 존재 — 신규 코드 1모듈 주장 진실.",
+     "치명 결함(FIX 사유 1): p5_exitchk_engine_runs.json이 보여주듯 P5가 동일 챔피언·동일 청산 레버로 full/2022/2023/2024/2025 전 창을 이미 엔진 개봉했다. 그런데 oos_validation_plan은 '2024 = 고정 검증'이라 주장 — 2024는 이 레버 계열에 대해 이미 known이며, R1 포렌식의 '연도 불변 음(-)' 체크가 2024/25 원장을 들여다본 뒤 같은 2024로 엔진 검증하면 자기참조다. 시간 축 blind는 사실상 2026-03+ 전방뿐이고 설계도 이를 인정하나, 2024를 검증창으로 격상한 서술은 DIGEST 8 위생과 충돌.",
+     "순서 결함(FIX 사유 2): mechanism_steps가 R1(help/hurt map 측정) → R2(격자 봉인) 순서다. (MFE,수익률) 2차원 격자를 측정한 뒤 x∈{0.5,1.0,1.5}, y∈{-1.0,0.0}를 봉인하면 봉인이 사후 서류화가 된다 — winner's curse 방어(DIGEST 8)가 형식만 남는 P3/P5 전례의 재발 경로.",
+     "경계 미명시(FIX 사유 3): x를 크게 잡으면 조건부 절이 사실상 전역 time_stop으로 수렴해 기각된 (g) 후보의 재포장이 된다. 패치 발동 모집단이 P5 B의 time_stop 발동 모집단(584건)과 실질적으로 달라야 한다는 동등성 상한이 kill 목록에 없다."
+    ],
+    "required_fixes": [
+     "격자 봉인(R2)을 R1 포렌식보다 먼저 수행하거나, R1의 임계값-정보 제공 분석(help/hurt map)을 2022-2023 원장으로만 제한하라. 현재 순서(측정 후 봉인)는 사전등록이 아니라 사후 서류화다. example_condition_sketch가 이미 T=300/x=1.0/y=0.0을 사전 확정했으므로, 이 사전값 기준 봉인이 오히려 자연스럽다.",
+     "'2024 = 고정 검증' 서술을 철회하고 2024도 known/audit으로 재분류하라(P5가 동일 레버·동일 챔피언으로 2024/2025 엔진창을 이미 개봉 — p5_exitchk_engine_runs.json). 채택 근거의 신뢰 축은 시간 OOS가 아니라 (1) cross-champion 무수정 재현 (2) 2026-03+ 전방 실측 (3) 소액 병렬 킬스위치 운용임을 판정 규칙에 명문화하라.",
+     "(g) 재포장 방지 동등성 게이트 추가: 후보 패치의 발동 거래 집합이 P5 B time_stop 발동 집합(584건 상당)과 겹침률 상한(예: 보유시간>=300 도달 거래의 50~60% 초과 절단 시 전역 후보와 동등 판정·폐기)을 봉인에 포함하라. x 상한이 크면 조건부는 이름뿐이다.",
+     "kill 2의 표본 확장 경로('게이트런 이력 CSV까지 확장')에서 dedup 거래 키 정의(종목·일자·진입시각)를 봉인 시점에 고정하라 — 확장 여부를 결과를 본 뒤 결정하면 표본 하한 게이트가 무력화된다."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "[검증됨] 번역갭·실행성 주장은 사실: 보유시간/최고수익률/수익률은 매도 exec 네임스페이스 실측 바인딩 변수다(backtest/backengine_kiwoom_tick.py:85-149, backengine_kiwoom_tick2.py:86-139). back_static.py:202 SetSellCond의 절별 attribution도 실재하며, P5 A/B per-trade CSV(backtest/csv/stock_bt_ALP_EXITCHK_A_INCUMBENT_*.csv / _B_HARD5_TS300_*.csv)에 매도조건·보유시간·R_매수후최고수익률 컬럼이 실제 병기돼 있음을 확인했다. v5의 구식 API 전멸과 달리 이 방향은 실행 가능성이 선검증됐다는 주장은 정확하다.",
+     "[검증됨] 데이터 요구 자산 전부 실존: p5_exitchk_engine_runs.json / p5_exitchk_compare_intermediate.json / p5_exitchk_registration_receipt.json(docs/research/condition_research/research_runs/alpha_lab_20260705/), 챔피언 passport 4종(docs/research/condition_research/condition_passports/ — rr8_12 passport의 buy sha 348c5181..., sell sha 8ef01e0e...가 설계안 인용과 정확히 일치), 챔피언 per-trade CSV(backtest/csv/stock_bt_ALP_V4_{RR8_12,RR8_0,RR8_21,GPTAUTH_G8}_20260707*.csv), alpha_lab 모듈 8종(distill/replay.py, replay_gate.py, ledger_wiring.py, ensemble/portfolio.py, robustness.py, registry.py, stats_common.py) 모두 확인. 신규 코드 1모듈·엔진 28회 상한도 구체적이다.",
+     "[치명적 불일치 1 — 표본 추정] 실제 원장 실측이 설계안의 '풀링 400~900건, 봉인 하한 >=800'을 반박한다. ALP_V4 full-window CSV 실측: 보유시간>=300 도달 거래는 RR8_12 243 / RR8_0 174 / RR8_21 178 / GPTAUTH_G8 19 = 풀링 614건이 '상한'이며, 여기에 저활력 필터(최고수익률<1.0 and 수익률<0)를 적용하면 95건(RR8_12 43, RR8_0 25, RR8_21 27, GPTAUTH 0)으로 급감한다. 설계안 자체 추정(거래의 20~35%)은 실측 2.5~15%와 모순. T=300 후보군은 자체 kill 2번(<800 → inconclusive)이 사실상 확정 발동하는 구조로, 현재 봉인 설계대로면 프로그램이 R2에서 예산 미사용 사망한다. T=180 후보만 하한을 넘길 가능성이 있으나 봉인 문안이 T별로 분리돼 있지 않다.",
+     "[치명적 불일치 2 — cross-champion 설계] 엔진 확인 챔피언 2종으로 'rr8_12 + GPTAUTH_G8'을 지명했으나 GPTAUTH_G8은 중앙값 보유 75초, 보유>=300 거래 19건, 저활력 영향거래 0건(2,052거래 전수 실측)으로 패치 도달 모집단이 구조적으로 공집합이다. GPTAUTH A/B 페어는 no-op이고 '>=2챔피언 동일 방향 재현' 요구는 GPTAUTH로는 원리적으로 충족 불가. 대안인 RR8_0/RR8_21은 상관 0.816 파라미터 쌍둥이라 교차 재현의 독립 증거력이 약하며, 설계안이 요구한 '거래 키 dedup'은 풀링 표본을 더 줄여 하한 충족을 이중으로 어렵게 한다.",
+     "[통과] DIGEST 3(g) 전역 청산 교체 기각과의 차별화 논리(목적함수·모집단·병렬 채택)는 실행 가능성 관점에서 성립하고, (h) 레짐 게이트 위장에 대한 자기기각(kill 1)과 R1 포렌식 선행 배치도 방어 가능하다. 2025-01~2026-02를 audit 전용으로 격리한 것도 DIGEST 6과 정합."
+    ],
+    "required_fixes": [
+     "표본 하한과 격자의 재정합: 실측(풀링 상한 614건@T=300, 저활력 95건)을 반영해 (a) T별 분리 봉인(T=180 후보군과 T=300 후보군에 각각 실측 기반 하한 설정)하거나 (b) 격자를 T∈{120,180,240}처럼 하향 확장하거나 (c) >=800 하한의 근거를 검정력 계산으로 다시 도출해 조정하라. 현재 문안대로면 kill 2가 R2에서 즉시 발동해 설계 전체가 사문화된다. 봉인 전에 alpha_lab/exitlab/forensics.py로 T별 영향 모집단을 먼저 실측하고 그 수치로 하한을 세우는 순서로 바꿔라.",
+     "cross-champion 재현 대상에서 GPTAUTH_G8 제외 및 재정의: GPTAUTH_G8은 영향거래 0건으로 A/B 비교가 무의미하다. 엔진 확인 2종을 rr8_12 + RR8_0(또는 RR8_21)로 교체하되, RR8 계열이 상관 0.816 쌍둥이임을 봉인 문서에 명시하고 '교차 재현'의 증거 등급을 독립 재현이 아닌 '구조 내 일관성'으로 하향 기재하라. GPTAUTH는 포트폴리오 5번째 슬롯 합산 단계에서만 사용.",
+     "dedup 규칙과 풀링 하한의 상호작용 명문화: RR8 쌍둥이 dedup 후 잔여 표본으로 하한을 판정하는지, dedup 전 풀링으로 판정하는지 봉인 시점에 확정하라. 현재 문안은 두 요구가 서로를 잠식한다.",
+     "패치 영향 모집단 정의의 측정 시점 명시: '보유시간>=T 시점의 최고수익률/수익률'(반사실 평가 시점)과 원장 exit 시점 값은 다르다. R1 포렌식에서 t=T 시점 재구성을 tick 재생으로 수행함을 명시하고, exit-시점 프록시로 하한 판정하지 않도록 봉인 문안에 고정하라."
+    ]
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "[경제 논리 통과] -1.022% 비용 헛들은 신규 진입에 부과되는 기준인데, 본 설계는 매수식 byte-exact 보존으로 신규 회전율 0이며 청산 시점만 바꾼다. 청산 비용(FEE/TAX)은 어차피 모든 거래에서 지불되므로 패치의 ΔEV는 순수하게 '잔여 보유 구간의 조건부 EV' — 원장에서 직접 측정 가능한 경제량이다. 챔피언 자체가 이미 비용 차감 후 +0.46%/거래(backtest/csv/stock_bt_ALP_EXITCHK_A_INCUMBENT_20260706054143.csv, 665거래 mean EV 0.4597)로 실증됨.",
+     "[증거 실재 확인] docs/research/condition_research/research_runs/alpha_lab_20260705/p5_exitchk_engine_runs.json에서 payoff A 1.1707 vs B 1.3443, 거래수 665/635, 매도조건 절별 발동수(예: '보유시간>=300' 계열 라벨 실측 집계)가 제안서 주장과 일치. per-trade CSV에 보유시간·매도조건·R_매수후최고수익률·R_MFE/R_MAE 컬럼 실존 — R1 포렌식이 엔진 0회로 실행 가능하다는 주장은 사실.",
+     "[wt-dev 차별성 통과] 탐색 공간이 매수 시드가 아닌 검증 챔피언의 매도/보유상태 네임스페이스이고, 발견 소스가 격자 힐클라임이 아닌 원장 반사실 부검, 엔진은 봉인 예산 <=28회의 최종 심판 — 루프와 실질적으로 다름. alpha_lab/distill/replay.py·replay_gate.py 등 재사용 인프라 실존 확인.",
+     "[핵심 결함: 5번째 슬롯의 다각화 논리 오적용] 변종은 rr8_12와 매수식이 byte-exact 동일이므로 거래의 ~65-80%(패치 영향 모집단 20-35%의 여집합)가 현직 슬롯과 완전 동일하다. v4의 +38% 위험조정 개선은 '서로 다른 전략 간' 다각화였는데(DIGEST 4), 이를 same-entry exit twin에 적용하는 것은 근거 이전 오류다. v4는 이미 rr8_12/0/21 상관 0.816 삼중 노출(DIGEST 2)인데 5번째 슬롯 추가는 rr8_12 계보 비중을 4/5로 늘려 집중 위험을 오히려 키울 수 있다.",
+     "[실거래 용량 결함] 병렬 변종을 실운용하면 동일 소형주·동일 초에 현직과 변종이 중복 주문 — 체결 물량이 2배가 되어 tick2 슬리피지 가정(DIGEST 5의 비용 기저)이 깨진다. 설계안 어디에도 자본 배분(추가 자본인지 rr8_12 비중 분할인지)과 중복 체결 처리가 명시돼 있지 않다.",
+     "[기대수치 과대] 'MDD 10~20% 감소, calmar 5.28→5.8~6.3'은 거래 20-35%만 달라지는 변종에서 도출 근거가 없는 점추정이다. winner's curse 방어(12조합 봉인·연도 방향 반복·cross-champion 재현·kill 6종)는 설계에 실재하고 견고하나, 기대가치 서술 자체가 자기 규율(점추정 불신)을 위반한다.",
+     "[연구비 대비 위험 낮음] 엔진 <=28회, 신규 코드 1모듈, R1/R3가 엔진 0회 선행 kill 게이트 — 실패 비용이 작아 경제성 심사에서 FAIL 사유는 아님."
+    ],
+    "required_fixes": [
+     "5번째 슬롯 채택의 사전 관문으로 '변종-현직(rr8_12 슬롯) 일별 손익 상관 상한'을 봉인(R2)에 추가하라. 예: 상관 >= 0.9면 additive 5번째 슬롯 금지, rr8_12 비중 내부 분할(대체 배분) 또는 조건부 패치 경로로만 진행. 현재 설계는 same-entry twin의 다각화 기여를 무검증 가정한다.",
+     "실거래 자본/체결 명세를 추가하라: 병렬 변종은 신규 자본 추가가 아니라 rr8_12 배분의 분할(예: 1/2씩)로 운용하며 동일 종목 동시 중복 주문을 금지한다고 명시 — 그렇지 않으면 동일 소형주에 주문량 2배가 되어 tick2 슬리피지 봉인 상수가 무효화된다.",
+     "expected_value_case의 'MDD 10~20% 감소, calmar 5.8~6.3' 점추정을 삭제하거나 R3 리플레이 반사실에서 도출된 구간 추정으로 대체하라. 판정 기준(calmar↑ and MDD↓ walk-forward 3/4창)은 유지하되 사전 기대 수치는 봉인 문서에 넣지 마라."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D6",
+  "name": "신규: 분위수 지도 기반 템플릿 시더",
+  "design": {
+   "direction_id": "D6",
+   "direction_name": "분위수 지도 기반 템플릿 시더 (Quantile-Map Template Seeder)",
+   "one_line": "검증된 T2C3 이산분기 골격(비밴드 게이트+챔피언 매도식)을 고정하고, tick DB에서 \"골격 통과 & 밴드 이완\" 조건부 모집단의 셀별 순수익 분위수 지도를 오프라인으로 1회 측정해, 챔피언 밴드와 비중첩(disjoint)인 양EV 셀만 밴드로 조준·컴파일하는 측정-우선 시드 생성기 — 목적은 단독 챔피언이 아니라 v4 앙상블에 넣을 저상관 멤버 1~2개다.",
+   "core_hypothesis": "챔피언의 엣지는 비밴드 게이트 결합(VI가드·라운드피겨·고저평균>0·호가잔량비·거래대금각도·관심종목) 안에서만 산다. 이 골격을 고정한 조건부 모집단은 raw 그리드(EV -1.022%)와 다른 기저 측도를 가지며, 그 위에서 (시간창 x 시가총액 x 등락율 x 서지배수) 셀별 순수익 분포를 측정하면 (a) 챔피언 자신의 셀은 양EV로 나타나야 하고(계기 검증), (b) 챔피언 밴드 밖(90700~92000 시간창, 다른 등락율/시총 대역)에 표본>=2000·q25>0인 잔존 양EV 셀이 존재할 수 있다. 존재하면 그 셀만 band_compiler로 컴파일해 v4 앙상블의 비상관 멤버로 쓴다. 존재하지 않으면 엔진 0회로 종료한다.",
+   "why_not_refuted": "(a) 스냅샷 43피처 얕은트리 v1/v2/v3 (0/107, 최선 -0.087%): 기저 측도가 다르다. v1/v3는 raw moneytop 그리드(기저 EV -1.022%) 위에서 전역 트리 유도로 코너를 '찾으려' 했고, v2는 챔피언 전체 진입점(이미 밴드로 좁혀진) 위에 필터를 얹었다. D6는 제3의 모집단 — 비밴드 골격은 통과, 밴드 축만 이완 — 위에서 검증된 코너 '주변'의 국소 분포를 측정한다. 탐색이 아니라 측정이며, 트리 깊이 한계로 10여 개 비박스 게이트 결합을 표현 못 하던 문제가 골격 고정으로 소거된다. 차별점 = 표본단위(골격조건부 이완점)+목적함수(앙상블 한계기여). (b) 고정지평/lift 기준: 라벨은 챔피언 매도식 리플레이 실현 순손익(tick2 비용 차감), 채택 통계는 평균이 아니라 q25/q05 꼬리 포함 분위수 — lift 채택 실패와 라벨·통계량 모두 다르다. (c) 이벤트 5족 FDR 0/138: 그 셀들은 골격 없는 사건-앵커 셀이었다. D6 셀은 골격 조건부이며 FDR 절차 자체는 그대로 계승한다. (d) 콜드 LLM 0/88: LLM 부재. band_compiler 결정론 컴파일만 사용. (e) score-sum: 무관 — T2C3 이산분기 화이트리스트 구조 유지. (f) 다밴드 야간 캠페인 0/40 — 핵심 대조: 증거(docs/update_log/2026-06-15_multiband_overnight_results.md) 확인 결과 그 캠페인은 생성기-우선이었다. 밴드 값이 LLM 템플릿 프라이어와 단일축 스윕(예: b1_sec_money_min)에서 나왔고, 측정은 엔진 격상 게이트뿐이었으며, 38/40이 '홍수형'으로 스모크 탈락 — 즉 예산 대부분이 '조준 안 된 밴드는 홍수'라는 학습에 소모됐다. tick DB 조건부 분포 지도는 어디에도 없었다(.omo/evidence/tmap-walkforward/ 하네스·스윕 로그가 전부 엔진 결과 기반). D6는 역순이다: 어떤 후보도 오프라인 지도에서 n>=2000·q25>0·FDR 생존을 먼저 통과하지 않으면 엔진에 못 간다. 홍수는 셀 표본수로 사전 봉쇄된다. 또한 그 캠페인은 신규 구조(바벨·min어휘)와 단독 수익을 노렸고, D6는 골격 불변+비중첩 셀+저상관 채택 기준이다. (g) 전역 청산 교체 기각: 매도식은 챔피언 원문 그대로 — 청산 연구가 아니다. (h) adaptive timing 0/4: 정적 밴드만 산출, 레짐/타이밍 로직 없음. (i) v5 구식 API 8/8: band_compiler 산출물은 현행 정규형(매수=True 체인 + self.Buy())으로 실행 가능성이 구조적으로 보장된다. 정직한 한계: tick DB가 물리적으로 09:00-09:30에 국한됨을 직접 쿼리로 확인했다(종목 테이블 최대 092959). '새 시간 공간'은 90700~92000 정도가 전부이고, 이 협소 공간은 야간 캠페인 iter7 바벨이 스치듯 지나갔던 영역이라 잔존 엣지 확률은 낮다. 그래서 confidence를 낮게 잡고 Phase 0 자기-킬을 최우선 게이트로 설계했다.",
+   "mechanism_steps": [
+    "[0단계 사전등록·봉인] docs/research/condition_research/plans/에 셀 격자(시간 6칸: 90000-90200/90200-90500/90500-90700/90700-91000/91000-91500/91500-92000, 시총 4칸: <1000/1000-2000/2000-3000/3000-5000억, 등락율 4칸: 1-4/4-8/8-15/15-25%, 서지 4칸: 1.5-2/2-3/3-5/>5배 = 384셀), 경계 스냅 격자(등락율 0.5%p·시총 500억·서지 0.5배 단위), 표본 하한 n>=2000(영역=인접 셀 합집합 허용), FDR q=0.10, 엔진 예산 <=20회, 후보 상한 12개, kill 기준 전부를 측정 전 봉인. 진입셀 상한 92000(매도 활주로 확보 — DB가 092959에서 끝나 절단 청산 편향 방지).",
+    "[1단계 모집단 추출 — 신규 alpha_lab/qmap/population.py] alpha_lab/dataset/reader.py+cache.py로 tick DB(관심종목 게이트 포함) 스캔, alpha_lab/dataset/derived.py의 패리티 검증 파생(서지배수=초당거래대금/초당거래대금평균(30) 등)으로 T2C3 비밴드 골격(고저평균대비등락율>0, 현재가<VI가격-VI호가단위*5, not 라운드피겨위5호가이내, 1<초당순매수금액<1000, 초당매수수량>매도총잔량*0.2, 체결강도 50-300, 현재가>고가-(고가-저가)*0.2)을 평가. 통과점을 종목-일-시간셀당 첫 히트+300초 쿨다운으로 중복 제거(규칙 봉인)해 축값(시분초·시가총액·등락율·서지배수)과 함께 기록.",
+    "[2단계 라벨링] alpha_lab/distill/replay.py로 각 점에 RR8_12 매도식 원문을 반사실 재생, alpha_lab/dataset/labels.py 봉인 상수(FEE 0.015%·TAX 0.18%·ADVERSE_TICKS=2)로 net_rate 산출. 리플레이는 triage 계기다(C-014) — 최종 심판 아님.",
+    "[3단계 지도 구축 — 신규 alpha_lab/qmap/map_builder.py] build 창(2022-03~2023-12)에서 셀별 n·EV·q25·q05·승률·부트스트랩 CI를 계산해 JSON 지도 산출. Phase 0 계기 검증: 챔피언(RR8_12/0/21·GPTAUTH) 자신의 밴드에 해당하는 셀들이 지도에서 양EV·정합 순서로 나타나는지 확인 — 실패 시 계기 고장 또는 지도 해상도에서 엣지 비가시 → 즉시 kill(엔진 0회).",
+    "[4단계 셀 선택 — 신규 alpha_lab/qmap/select.py] alpha_lab/stats_common.py의 BH-FDR(q=0.10)로 영역별 EV>+0.20%(비용 헛들 마진) 검정, n>=2000, q05 꼬리 하한, confirm 창(2024-01~2024-12)에서 EV 부호 지속 확인(재선택 금지). 챔피언 밴드와 비중첩(disjoint) 영역 우선, 상위 <=12개 확정. 0개면 kill — 부정 결과 보고서로 종료.",
+    "[5단계 번역 — 신규 alpha_lab/qmap/to_bands.py] 영역 경계를 스냅 격자로 반올림해 BandSpec 벡터화, ai_strategy_loop/brain/band_compiler.py의 TimeBranch/McapBlock/compile_to_code로 결정론 컴파일(seed_902_band.py의 골격 인코딩 재사용). 매도식 = RR8_12 원문 그대로. ai_strategy_loop/seeds/passport.py로 passport 발급(sha256 봉인).",
+    "[6단계 triage → 엔진 확인] 리플레이 triage 통과 후보만 별도 승인 하에 cli/runner.py run_backtest(또는 stom_backtest.py CLI)로 엔진 확인: train 전체기간(2022-03~2024-12) 각 1회, 거래수>=300·profit>0·MDD 정상 통과자만 audit 창(2025-01~2026-02, known 표기) 1회. alpha_lab/ensemble/portfolio.py로 RR8_12 대비 일손익 상관 <0.5 검문, alpha_lab/ensemble/robustness.py로 v4+신규 1/5 등가중 한계 기여(calmar 비악화) 확인. tick3 민감도 <=6회."
+   ],
+   "example_condition_sketch": "전일종가 = 현재가 / (1 + (등락율 / 100))\n시가대비등락율 = ((현재가 - 시가) / 시가) * 100\n초당순매수금액 = (초당매수수량 - 초당매도수량) * 현재가 / 1_000_000\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif 90700 <= 시분초 < 91500:                      # 지도 조준 신규 시간셀 — RR8(~90700)·GPTAUTH(~91000)와 최소 중첩\n    if not (1000 < 현재가 <= 30000):\n        매수 = False\n    elif not (4.0 < 등락율 <= 12.0):               # ← 지도 산출 경계(예시값, 스냅 0.5%p) — q25>0 셀 합집합\n        매수 = False\n    elif not (고저평균대비등락율 > 0):\n        매수 = False\n    elif not (현재가 < VI아래5호가):\n        매수 = False\n    elif 라운드피겨위5호가이내:\n        매수 = False\n    else:\n        if 시가총액 < 2000:                        # ← 지도 산출(예시값, 스냅 500억)\n            if not (1.0 <= 시가대비등락율 < 6.0):\n                매수 = False\n            elif not (1 < 초당순매수금액 < 1000):\n                매수 = False\n            elif not (초당거래대금 / 초당거래대금평균(30) > 3.0):  # ← 지도 산출 서지 배수(예시값)\n                매수 = False\n            elif not (초당매수수량 > 매도총잔량 * 0.30):\n                매수 = False\n            elif not (체결강도 >= 70 and 체결강도 <= 300):\n                매수 = False\n        else:\n            매수 = False\nelse:\n    매수 = False\nif 매수:\n    self.Buy()\n# 매도식 방침: RR8_12 매도식 원문 그대로(수정 금지 — P5 엔진 기각으로 현행 매도가 기준선, C-009). 밴드 경계 4곳(주석 표시)만 지도가 공급하고 골격·게이트·매도는 전부 검증 원형.",
+   "expressibility": "번역갭 위험 낮음. 골격은 seed_902_band.py에 이미 BandStrategy로 완전 인코딩돼 있고(round-trip 논리동등 증명 완료), 지도가 공급하는 것은 BandSpec의 lo/hi 숫자뿐이다. band_compiler.compile_to_code가 엔진 정규형으로 byte-deterministic 컴파일하므로 문법 이탈이 구조적으로 불가능하다. 서지배수(초당거래대금/초당거래대금평균(30))는 avg_list=[30] 등록 필요(--avg-time 30, 챔피언과 동일 관행). 유일한 잔여 갭은 오프라인 리플레이 vs 엔진 체결(호가 잔량 소진 슬리피지)의 차이 — 이는 P5 교훈대로 리플레이=triage, 엔진=최종 심판으로 처리한다.",
+   "data_requirements": "기존 자산만 사용, 신규 데이터 불필요: _database/stock_tick_back.db(직접 쿼리로 확인: 종목 테이블 09:00:01~09:29:59, 2022-03-23~; moneytop 2022-03-23~2026-02-27), 챔피언 passport 4종(매도식 원문+sha256), alpha_lab/dataset 캐시. 제약(확정): tick DB가 물리적으로 09:00-09:30 창에 국한되므로 시간축 확장 불가 — 신규 셀 공간은 90700~92000이 전부이고, 92000 이후 진입은 청산 활주로 부족으로 사전 배제.",
+   "sample_size_estimate": "골격 통과·중복 제거 후 모집단 추정 1만~10만 점(952일 x 일당 수십 점 규모; Phase 1에서 실측 확정). 384 봉인 셀에 분산되므로 개별 셀 중앙값은 수십~수백 점 — 채택 영역은 인접 셀 합집합으로만 n>=2000 충족 가능하며, 현실적으로 FDR·지속성까지 생존하는 영역은 0~3개로 예상. 모집단이 2만 점 미만으로 실측되면 하한 미달 셀이 과반이 되어 kill 기준 2가 조기 발동될 것.",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py + schema.py + cache.py — tick 그리드 로딩·캐시",
+    "alpha_lab/dataset/derived.py + parity.py — 엔진 패리티 검증된 파생 피처(서지배수 등)",
+    "alpha_lab/dataset/labels.py + labels_v2.py — 봉인 비용 상수·net_rate",
+    "alpha_lab/distill/replay.py + replay_gate.py — 챔피언 매도식 반사실 재생(triage)",
+    "alpha_lab/stats_common.py + alpha_lab/mining/stats.py — FDR·부트스트랩",
+    "alpha_lab/mining/ev_adopt.py — EV 채택 기준 골조(기저 모집단만 교체)",
+    "ai_strategy_loop/brain/band_compiler.py + seed_902_band.py — BandStrategy 인코딩·결정론 컴파일",
+    "ai_strategy_loop/seeds/passport.py (cli/seed_lattice.py 경유) — passport 발급",
+    "alpha_lab/hillclimb/engine_eval.py + cli/runner.py — 엔진 확인 호출",
+    "alpha_lab/ensemble/portfolio.py + robustness.py — 상관·앙상블 한계 기여 판정",
+    "신규(소형 4모듈): alpha_lab/qmap/{population,map_builder,select,to_bands}.py"
+   ],
+   "engine_budget_estimate": "오프라인: tick DB 전수 1패스(캐시 재사용, 수 시간, 엔진 무관). 엔진 백테스트 총 <=20회 봉인: 챔피언 재현·패리티 2회 + 후보 train 전체기간 <=12회 + audit 창 1회/생존자(<=4회) + tick3 민감도/ablation <=6회 내 배분. 비교: 야간 캠페인 40회(전원 소모성), 힐클라임 수백 회. Phase 0/4에서 kill되면 엔진 소비 0~2회.",
+   "oos_validation_plan": "3층 구조로 known-창 오염을 격리한다. (1) build 창 2022-03~2023-12에서만 지도 계산·셀 선택, confirm 창 2024-01~2024-12는 부호 지속성 검문 전용(재선택·재조준 금지 — 1회 판정). (2) 2025-01~2026-02는 사전등록 문서에 known/audit evidence로 명기(C-013)하고 생존자당 정확히 1회만 실행하며, blind 주장 금지 + 할인 규칙 적용: audit 창 월평균 수익이 train 창 월평균의 50% 미만이면 기각(winner's curse 수축). n_trials 원장에 지도 셀 수 384와 엔진 시도 전수를 기록해 다중비교를 명시적으로 계상. (3) 진짜 blind는 존재하지 않으므로 채택의 최종 관문은 미래 전방 검증으로 강제: 2026-03 이후 신규 데이터 도착 또는 감독형 소액/페이퍼 전방 운용 >=8주에서 v4 프로토콜과 동일한 킬스위치 기준을 통과해야만 앙상블 편입 — 그 전까지 지위는 '감독형 후보'로 고정하고 실전 보장 표현을 금지한다.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 엔진이 탐색 오라클이다(시드 생성 → 후보마다 백테 채점 → 힐클라임 반복; 병목=시드 공급, 부산물=파라미터 쌍둥이 — RR8 3종 상관 0.816이 그 증거). D6는 엔진을 탐색에서 완전히 제거한다: 탐색 오라클 = tick DB 1회 측정으로 얻은 조건부 분위수 지도이고, 엔진은 <=20회 최종 심판이다. 목적함수도 다르다 — 단독 수익 최대화(힐클라임)가 아니라 챔피언 밴드 비중첩 셀 + 일손익 상관 <0.5 + v4 앙상블 한계 calmar 기여. 힐클라임은 시드 근방에 머물러 쌍둥이를 만들지만, D6는 정의상 챔피언에서 먼 셀만 후보화한다. 산출물 소비처도 다르다: wt-dev 시드 풀이 아니라 v4 앙상블 5번째 슬롯(v5가 재료 부족으로 죽은 그 자리).",
+   "kill_criteria": [
+    "K1(계기 검증, 엔진 0회): build 창 지도에서 챔피언 4종 자신의 셀이 양EV로 재현되지 않으면 즉시 종료 — 리플레이 계기 또는 셀 해상도가 엣지를 못 본다는 뜻이므로 후보 생성 진입 금지.",
+    "K2(셀 생존): n>=2000·EV>+0.20%·q05 하한·FDR q=0.10·2024 부호 지속을 모두 통과하는 챔피언-비중첩 영역이 0개면 종료 — 부정 결과 문서화(엔진 소비 0).",
+    "K3(엔진 확인): <=12 후보 중 train 전체기간 profit>0·거래수>=300·MDD 정상 통과 0개면 종료(iter7형 과적합 판정 그대로 적용).",
+    "K4(비상관성): 엔진 생존자 전원이 RR8_12 일손익 상관 >=0.5(쌍둥이)면 종료 — v4에 한계 기여 없음.",
+    "K5(audit 할인): 2025-01~2026-02 known 창 월평균 수익이 train의 50% 미만이거나 v4+신규 1/5 등가중 calmar가 v4 단독보다 악화되면 기각.",
+    "K6(예산): 엔진 20회 또는 달력 10일 소진 시 무조건 동결·보고."
+   ],
+   "expected_value_case": "성공 시 산출물은 새 단독 챔피언이 아니라 v4 앙상블의 5번째 저상관 멤버 1~2개다. 근거: v4에서 유일하게 작동한 지렛대는 정적 다각화(최선 단일 대비 위험조정 +38%, calmar 5.28)였고, v5는 비상관 재료가 구식 API로 전원 실행 불가해 죽었다 — D6는 정확히 그 빈 슬롯에 현행 API 보장(밴드 컴파일러) 재료를 공급한다. 상관 <0.5·단독 calmar>2 멤버 1개만 추가돼도 1/5 등가중에서 MDD 분산 효과로 앙상블 calmar 개선을 기대할 수 있으며(v4.1 몬테카를로가 다각화 MDD 감소 4/4창 견고성을 이미 실증), 실패해도 '골격 조건부 분포 지도' 자체가 09:00-09:30 창의 잔존 엣지 유무를 정량 종결하는 재사용 자산(부정 지도 완결)으로 남는다.",
+   "risks": [
+    "가장 큰 위험: 09:00-09:30 창은 이미 극도로 채굴된 공간이고(0/107·0/138·0/40), tick DB가 물리적으로 이 창에 국한됨을 확인했으므로 잔존 비중첩 엣지가 없을 사전 확률이 높다 — 기대 결말의 최빈값은 K2 kill이다.",
+    "골격 조건부 모집단이 실측 2만 점 미만이면 셀 표본 하한을 못 채워 지도 해상도가 무의미해진다(Phase 1에서 조기 판명).",
+    "리플레이-엔진 갭: 호가 잔량 소진 체결·슬롯 점유·재진입을 리플레이가 근사 못 해 지도 EV가 낙관 편향될 수 있다(P5 전례) — K3 엔진 확인이 방어하지만 예산을 소모한다.",
+    "90700-92000 후보는 챔피언 밴드와 시간이 달라도 같은 종목·같은 아침 모멘텀 소진 레짐을 거래해 상관이 기대보다 높게 나올 수 있다(K4로 방어).",
+    "2025-01~2026-02 audit 창 재사용에 따른 잔여 오염 — 할인 규칙과 전방 검증 의무로 완화하지만 0은 아니다.",
+    "지도 셀 384개 자체가 다중비교 표면이다 — FDR과 n_trials 원장으로 계상하나, 셀 합집합 선택의 자유도가 암묵 시도 수를 늘리는 잔여 위험이 있다(합집합 규칙을 인접-only로 봉인해 제한)."
+   ],
+   "confidence_0_100": 35
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "항목별 반증 대조 결과 데이터/라벨/표본단위/목적함수 중 최소 2개(표본단위·목적함수)가 실질적으로 다름을 확인 — 이름만 바꾼 재탐사는 아님. (a) v1/v3 대조: docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md 15행이 기저=전체 그리드 평균 -1.022%를 확정하고, v3 실패는 raw 그리드 위 트리 유도(0/107)였음. D6의 '비밴드 골격 통과 & 밴드 이완' 조건부 모집단은 문서상 어느 사이클에서도 측정된 적 없는 제3의 표본단위 — 재탐사 아님.",
+     "(f) 다밴드 야간 캠페인 대조가 핵심 쟁점인데, docs/update_log/2026-06-15_multiband_overnight_results.md 확인 결과 D6의 성격 규정이 정확함: 캠페인은 생성(LLM 템플릿)→스모크 순서의 생성기-우선이었고 38/40이 홍수형 스모크 탈락, 유일 도달 iter7도 단일축 스윕(b1_sec_money_min=1000, 33행)이었으며 tick DB 조건부 분포 지도는 존재하지 않음. D6는 측정→후보 역순 + n>=2000 사전 봉쇄로 탐색 오라클 자체가 다름 — 그러나 D6 스스로 인정하듯 90700~92000 공간은 iter7 바벨이 스친 영역이라 탐색 '공간'은 부분 중첩. 규칙상 부분 중첩은 경계 조건 명시가 필요한 FIX.",
+     "(b)(c)(d)(e)(g)(h)(i) 전 항목 비중첩 확인: 라벨=챔피언 매도식 리플레이 실현 순손익+분위수 통계(고정지평/lift와 다름), 셀=골격 조건부(사건-앵커 아님), LLM 부재, 화이트리스트 이산분기 유지, 매도식 원문 불변(C-009 정합), 정적 밴드만 산출, band_compiler(ai_strategy_loop/brain/band_compiler.py — BandSpec/TimeBranch/emit_clause 실재 확인)가 현행 정규형 컴파일을 구조적으로 보장해 v5 구식 API 함정 재발 불가.",
+     "통계 위생(DIGEST 8) 전부 계승: 사전등록·봉인, BH-FDR q=0.10, n>=2000 하한, 리플레이=triage/엔진=심판(C-014), audit 창 known 표기+50% 할인, n_trials 원장, 전방 검증 의무. Phase 0 계기 자기검증(챔피언 셀 양EV 재현 실패 시 엔진 0회 kill)은 v3의 '계기 신뢰 미검증' 실패를 정면으로 교정한 설계.",
+     "잔여 결함 3건이 FIX 사유: (1) iter7 실패 좌표와의 대조 규칙 미봉인 — 선택 영역이 iter7 기각 코너와 겹칠 때의 처리 규칙 부재. (2) 91500~92000 진입셀의 매도 활주로: DB가 092959에서 끝나는데 챔피언 매도식의 보유시간 분포를 실측하지 않아 후기 셀 라벨의 절단 청산 편향이 미정량 — 진입 상한 92000만으로는 방어 근거 불충분. (3) 인접-only 합집합이라도 합집합 구성 자유도가 n_trials=384 계상 밖의 암묵 시도를 만듦 — 합집합 열거 규칙과 시도 수 계상식이 봉인 문서에 명시돼야 함."
+    ],
+    "required_fixes": [
+     "0단계 사전등록 문서에 iter7 대조 조항 추가: 2026-06-15 캠페인의 iter7 바벨 좌표(및 40후보 밴드 좌표)를 기각 이력 원장으로 첨부하고, D6 선택 영역이 그 좌표와 실질 중첩(축별 IoU 등 봉인 기준)할 경우 별도 정당화 없이는 후보 제외한다는 규칙을 봉인하라.",
+     "Phase 0에 챔피언 매도식 보유시간 분포 실측을 추가하고, 진입셀 상한을 '보유시간 q90 + 진입시각 <= 092959'가 성립하는 셀로 데이터 기반 재산정하라(고정 92000 상한 대신). 절단 청산이 발생하는 리플레이 표본의 처리 규칙(제외 또는 보수적 마감가 청산)을 라벨 명세에 봉인하라.",
+     "인접 셀 합집합의 열거 규칙(허용 형상, 최대 셀 수, 탐색 순서)과 그에 따른 유효 시도 수 산정식을 사전등록에 명시하고, FDR 검정 단위가 '셀'이 아니라 '열거 가능한 영역'임을 n_trials 원장에 반영하라."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "FIX",
+    "score_0_10": 7.5,
+    "reasons": [
+     "[번역갭 — 통과] 골격은 이미 완전 인코딩돼 있음을 확인: C:/System_Trading/STOM/STOM_V.wt-alpha/ai_strategy_loop/brain/seed_902_band.py(BandSpec 벡터화)와 band_compiler.py(compile_to_code, line 389)가 실존하며, 지도가 공급하는 것은 lo/hi 숫자뿐이라는 주장이 코드와 일치한다. 서지배수의 기저 피처 '초당거래대금평균'도 alpha_lab/dataset/derived.py:95,257에 엔진 미러(utility/static.py:103 rolling(30).mean() 패리티 주석 포함)로 구현돼 있어 파생 패리티 주장이 검증됨.",
+     "[엔진 API — 통과] band_compiler.py:191이 산출 정규형을 'if 매수:\\n    self.Buy()' (무인자 현행 API)로 하드코딩하고 있어, v5를 전멸시킨 구식 7-arg self.Buy() 문제가 구조적으로 재발 불가하다는 주장이 사실이다. cli/runner.py, cli/seed_lattice.py, stom_backtest.py, ai_strategy_loop/seeds/passport.py 모두 실존.",
+     "[데이터 — 통과] C:/System_Trading/STOM/STOM_V.wt-alpha/_database/에 stock_tick_20220323.db~stock_tick_20260227.db(일별)와 stock_tick_back.db가 실존해 주장된 커버리지(2022-03-23~2026-02-27)와 정확히 일치. 신규 데이터 요구 없음.",
+     "[선행 실패 대조 — 통과] docs/update_log/2026-06-15_multiband_overnight_results.md 확인 결과 야간 캠페인이 실제로 생성기-우선이었고 38/40이 '홍수형' 스모크 탈락(line 17,26,41)이었음이 문서와 일치 — '측정-우선으로 홍수를 사전 봉쇄한다'는 차별화 논리가 증거에 근거한다. FDR/부트스트랩/EV채택 골조(alpha_lab/stats_common.py, alpha_lab/mining/stats.py, ev_adopt.py)와 리플레이(alpha_lab/distill/replay.py, replay_gate.py), 앙상블 판정(alpha_lab/ensemble/portfolio.py, robustness.py) 전부 실존 — offline_pipeline 목록 중 신규는 qmap 4모듈뿐이라는 주장 검증됨.",
+     "[표본 — 조건부 통과] 384셀 x build 창(~450일, 전체 952일의 절반)이면 모집단 1만~10만 추정에서도 개별 셀 n>=2000은 거의 불가능하고 인접 합집합 의존이 필수인데, 제안이 이를 스스로 인정하고 K2 조기 kill을 봉인했다. P3(346<2000)식 사후 발견이 아니라 사전 설계된 자기-킬이므로 표본 추정은 정직하다.",
+     "[결함 1 — 엔진 예산 산술 불일치] 봉인 총량 <=20회인데 세부 배분이 2(재현·패리티)+12(train)+4(audit)+6(tick3)=24회로 상한을 4회 초과한다. '내 배분'이라는 표현으로 얼버무렸으나 사전등록 문서에 이 상태로 봉인되면 집행 시 재량 해석 여지가 생긴다 — 위생 원칙(digest 8) 위반 소지.",
+     "[결함 2 — 우측 절단 검열 미계량] tick DB가 09:29:59에서 끝나므로 91500~92000 진입점은 잔여 활주로가 10~15분뿐이다. RR8_12 매도식 리플레이가 DB 끝에서 절단되는 비율이 셀별로 체계적으로 다르면(늦은 셀일수록 검열 심함) 지도 EV가 셀 간 비교 불가능해진다. 제안은 '92000 이후 배제'로 완화했지만 92000 이전 셀의 검열률 상한을 사전등록하지 않았다 — Phase 0 계기 검증이 챔피언 셀(이른 시간)만 보므로 이 편향을 못 잡는다."
+    ],
+    "required_fixes": [
+     "엔진 예산 세부 배분을 합계 <=20회로 정합화해 사전등록 문서에 봉인하라(예: 재현·패리티 2 + train 10 + audit 3 + tick3 민감도 5 = 20). '내 배분' 같은 재량 문구 제거.",
+     "리플레이 우측 절단(right-censoring) 규칙을 사전등록에 추가하라: 셀별로 DB 종료(092959) 도달로 강제 청산된 리플레이 비율을 기록하고, 검열률 > X%(예: 20%)인 셀은 지도에서 제외하거나 보수적 라벨(절단 시점 청산가로 확정)을 명시. Phase 0 계기 검증에 '챔피언 셀 검열률 < 임계' 항목을 포함해 늦은 시간셀 EV의 셀 간 비교 가능성을 보장하라."
+    ]
+   },
+   {
+    "lens": "econ",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "경제성 기준이 통계 유의성이 아니라 거래 EV로 설계됨: 라벨이 챔피언 매도식 리플레이 실현 순손익(alpha_lab/dataset/labels.py 봉인 상수 FEE/TAX/ADVERSE_TICKS=2, 즉 tick2 비용 차감 후)이고, 채택 문턱이 EV>+0.20% 순마진 + q25/q05 꼬리 하한이므로 -1.022% 비용 헛들 문제를 '기저 측도 교체(골격 조건부 모집단) + 순EV 마진'으로 정면 처리한다. 챔피언 자기 셀 양EV 재현(K1)을 계기 검증으로 두어 측정기 자체의 경제 타당성을 먼저 확인하는 구조도 건전하다.",
+     "차별성 실증 확인: docs/update_log/2026-06-15_multiband_overnight_results.md를 직접 확인한 결과 야간 캠페인은 생성기-우선(LLM 템플릿 프라이어+단일축 스윕, 측정은 엔진 격상 게이트뿐)이었고 38/40이 홍수형 스모크 탈락으로 예산을 소모했다. D6의 '오프라인 지도 선통과 없이는 엔진 진입 금지' 역순 설계는 이 실패 모드(홍수)를 셀 표본 하한으로 사전 봉쇄하므로 0/40 재탕이 아니다. wt-dev 루프와도 실질적으로 다르다: 엔진이 탐색 오라클(후보당 백테 채점·힐클라임)이 아니라 <=20회 최종 심판이며, 목적함수가 단독 수익이 아니라 챔피언 비중첩+상관<0.5+앙상블 한계 calmar다.",
+     "포트폴리오 적합성 설계가 구체적이고 배선이 실존: alpha_lab/ensemble/portfolio.py(일손익 상관 검문)와 robustness.py(1/5 등가중 한계 기여)가 이미 있고, v5가 구식 API로 죽은 5번째 슬롯에 band_compiler 결정론 컴파일(현행 정규형 보장, ai_strategy_loop/brain/band_compiler.py + seed_902_band.py 실존 확인)로 재료를 공급한다 — 실행 불가 리스크(i)가 구조적으로 제거된 유일한 공급 경로다.",
+     "winner's curse 방어가 설계에 내장: build(22-23)/confirm(24, 재선택 금지 1회 판정)/audit(25-01~26-02 known 명기·1회·50% 할인 규칙) 3층 + FDR q=0.10 + n_trials 원장(셀 384 계상) + 전방 검증(>=8주) 전까지 '감독형 후보' 지위 고정. DIGEST 8항의 위생 요건을 전부 충족하고 사후 CSV 슬라이싱 함정도 리플레이=triage/엔진=심판 분리로 회피한다.",
+     "비용-기대값 정직성: 같은 결과 문서가 '현 데이터에서 추가 흑자 밴드는 희소'라 결론냈고 tick DB가 09:00-09:30에 물리 국한되므로 신규 공간은 90700~92000뿐 — 잔존 엣지 사전확률이 낮다는 최대 약점을 제안 스스로 인정하고(confidence 35, 최빈 결말 K2 kill) 비용을 오프라인 1패스+엔진 <=20회+달력 10일로 봉인했다. 실패 시에도 부정 지도가 09:00-09:30 창의 잔존 엣지 유무를 정량 종결하는 재사용 자산으로 남아, 낮은 성공확률 x 낮은 비용 x 비영(非零) 실패가치의 옵션으로서 경제성이 성립한다. 수익 경로가 공상적이지 않고 오히려 보수적이다.",
+     "잔여 우려(감점 사유, 기각 사유는 아님): (1) 90700-92000 후보가 같은 소형주·같은 아침 모멘텀 소진 레짐을 거래하므로 상관<0.5 통과 확률이 낮아 K4 kill 가능성이 높다 — 방어는 있으나 기대 산출물 1~2개 주장은 낙관적. (2) 후반 시간창은 개장 직후보다 호가 유동성이 얇아 봉인 ADVERSE_TICKS=2가 낙관 편향일 수 있다 — tick3 민감도 <=6회가 배정돼 있으나 셀 선택 단계가 아닌 엔진 단계에서만 잡힌다. (3) 인접 셀 합집합의 자유도가 암묵 시도 수를 늘린다 — 인접-only 봉인으로 제한하나 0은 아니다."
+    ],
+    "required_fixes": []
+   }
+  ]
+ },
+ {
+  "id": "D7",
+  "name": "신규: 보완성-표적 발굴(포트폴리오 기여 라벨)",
+  "design": {
+   "direction_id": "D7",
+   "direction_name": "보완성-표적 발굴 (앙상블 약점구간 가중 포트폴리오 기여 라벨)",
+   "one_line": "단독 EV가 아니라 \"v4 앙상블에 1/5로 편입했을 때의 한계 calmar 개선 + 일간 상관 상한\"을 채택 기준으로 삼아, 이미 엔진 실행된 후보 원장(0비용)과 구조적 직교 셀(아침 서지 이후 시간대·되돌림형) 소규모 봉인 격자에서 다섯 번째 앙상블 멤버를 표적 발굴한다.",
+   "core_hypothesis": "v4의 성공 기제는 순수 다각화였고(GPTAUTH_G8은 발견창 단독 -6,932,292원 실패작이면서 앙상블 승리의 핵심 축 — 존재 증명), 4챔피언은 전부 09:00~09:10 소형주 모멘텀 서지라는 단일 구조족이라 낙폭 구간이 동조한다. 따라서 (1) 목적함수를 단독 수익성에서 \"약점 에피소드 가중 포트폴리오 기여(Δcalmar, 상관 상한)\"로 바꾸면 요구 엣지 문턱이 정량적으로 낮아지고(아래 expected_value_case의 -1.02%→약 -0.35% 논증), (2) 구조적으로 다른 시간대/패턴의 전략이 그 낮아진 문턱을 넘을 수 있다. 후보는 raw 피처 공간 채굴(3연속 반증)이 아니라 이미 엔진 실행된 전략 원장과 봉인된 직교 설계 셀에서만 온다.",
+   "why_not_refuted": "(a) 스냅샷 43피처 얕은트리 채굴 0/107: D7은 (종목,초) 그리드 스냅샷을 채굴하지 않는다. 표본 단위가 '전략의 일간 P&L 시계열'이고 라벨이 '앙상블 한계 calmar 기여'다 — 데이터·라벨·표본단위·목적함수 4개 전부 다르다. (b) 고정지평/stride 라벨+lift: 라벨이 엔진 실현 per-trade CSV의 일간 집계다. 합성 지평 라벨을 아예 쓰지 않는다. (c) 이벤트 5족 FDR 0/138: 이벤트 스터디가 아니다. FDR은 위생 절차로만 유지하고 측정량이 Δcalmar로 다르다. (d) 콜드 LLM 0/88: pool B는 자유 생성이 아니라 사전등록된 직교 설계 셀(시간대 09:10+ / 되돌림형) 소격자 ≤40이고, pool A는 이미 실행된 코드다. (e) score-sum -111M: 점수 합성 없음. v4가 증명한 정적 1/N 등가중만 쓴다. (f) 다밴드 야간캠페인 40후보 PROMISING 0: 그 40후보의 판정 기준이 '단독 수익성'이었다는 점이 정확히 D7의 차별점이다 — 같은 후보들이 pool A로 재입장해 새 목적함수로 재채점된다(데이터는 같아도 라벨·목적함수가 다르며, GPTAUTH_G8 전례가 이 재채점의 존재 증명이다). (g) 전역 청산 교체 기각: 매도식 연구를 하지 않는다. 검증된 챔피언 매도식 계열로 봉인 고정. (h) adaptive timing/rotation 4/4 실패: 타이밍이 아니라 정적 always-on 5번째 멤버 추가 — v4가 성공시킨 바로 그 양식의 확장이다. (i) v5 구식 API 8/8 실행불가: pool A 입장 조건 1번이 현행 API 정적 실행가능성 게이트다. 잔여 정직 리스크: '약점 구간 조건부 EV'는 결국 알려진 데이터의 부분표본 통계라서 (a)의 근본 교훈(유의 패턴≠경제성)이 부분적으로 재적용될 수 있다 — 그래서 kill_criteria 1번(에피소드 구조의 폴드 간 비재현 시 즉시 kill)을 최우선에 둔다.",
+   "mechanism_steps": [
+    "1) 일간 시계열 구축: v4 4챔피언의 발견창(2022-03~2024-12) per-trade CSV(backtest/csv/, _database/backtest.db stock_bt)를 일간 P&L로 집계하고 ensemble_a 일간 곡선을 합성 — 신규 모듈 alpha_lab/complement/daily_series.py (ai_strategy_loop.fitness.equity_series.parse_backtest_series + alpha_lab/ensemble/portfolio.py risk_adjusted_metrics 재사용). CSV 미보존 챔피언은 엔진 재실행 4~8회로 확보.",
+    "2) 약점 가중 봉인: 앙상블 발견창 곡선의 running-peak 대비 일간 낙폭 give-back을 정규화해 가중 w_t로 정의(에피소드=낙폭>봉인 임계 연속 구간). 폴드-train 데이터만으로 산출. 후보를 보기 전에 정의·임계·폴드 경계를 사전등록 봉인 — alpha_lab/complement/weakness.py + alpha_lab/registry.py 봉인.",
+    "3) Pool A 원장 수확(엔진 0회): research_runs 5개 사이클 + 야간캠페인 40후보 + wt-dev AI 루프 세대 후보 등 이미 엔진 실행돼 CSV/월별 P&L이 있는 전략 전수를 수집, 현행 API 정적 실행가능성 검사(v5 교훈 — ai_strategy_loop brain token_check 재사용)와 표본 하한으로 필터 — alpha_lab/complement/ledger_pool.py.",
+    "4) Pool B 직교 셀 생성(봉인 ≤40): 4챔피언과 구조적으로 직교인 설계 셀(시간대 09:10~10:00 / 13:00~15:20, 고점 되돌림-반등형, 소형주)에서 격자 후보를 alpha_lab/translate/idioms.py + codegen.py로 STOM 문법 번역, 매도식은 GPTAUTH_G8 매도식 계열로 고정. 엔진 실행해 일간 P&L 확보(이 실행이 곧 triage 데이터).",
+    "5) 한계 기여 채점: 각 후보를 1/5 봉인 가중으로 편입해 Δcalmar, ΔMDD, 일간 상관(각 챔피언·앙상블 대비 ≤0.3), 약점가중 P&L 점유율을 계산 — alpha_lab/complement/marginal.py (portfolio.static_equal 일간 확장 재사용). 일블록 부트스트랩 CI(alpha_lab/stats_common.py) + 풀 전체 FDR(alpha_lab/mining/ev_adopt.py 기계 재사용).",
+    "6) 폴드 교차검증: 발견창 내부 3개 시간 폴드 — 폴드-train에서 에피소드 식별, 폴드-test에서 Δcalmar 측정. 채택 = Δcalmar>0 폴드 2/3 이상 ∧ 풀드 CI하한>0 ∧ 상관 상한 통과 ∧ FDR 생존.",
+    "7) 엔진 최종 확인(≤10회): 생존자(≤5)를 현행 엔진에서 재실행해 오프라인 수치와 교차검증(P5 교훈 — 리플레이/오프라인은 triage, 엔진이 최종 심판). 5멤버 결합은 v4와 동일하게 오프라인 합산(엔진 신규 기능 불필요).",
+    "8) known-창 감사 거부권: 2025-01~2026-02에서 5멤버 vs 4멤버 Δcalmar 1회 측정 — 음수면 kill, 양수여도 승격 증거로 쓰지 않음(known/audit 표기). 최종 인정은 2026-03+ future 창 또는 v4 프로토콜식 소액 감독 병행 운용으로 유보."
+   ],
+   "example_condition_sketch": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (91000 <= 시분초 < 100000):          # 챔피언 4종(09:10 이전 전용)과 시간대 직교\n    매수 = False\nelif not (500 <= 시가총액 < 3000):\n    매수 = False\nelif not (-3.0 < 등락율 <= 5.0):              # 급등 상태가 아닌 되돌림 국면\n    매수 = False\nelif not (저가대비고가등락율 > 6.0):           # 당일 이미 큰 스윙 존재\n    매수 = False\nelif not (현재가 < 고가 - (고가 - 저가) * 0.5):  # 고점 대비 50% 이상 되돌림\n    매수 = False\nelif not (현재가 > 최저현재가(300) * 1.005):    # 저점 확인 후 반등 개시\n    매수 = False\nelif not (초당거래대금 / 초당거래대금평균(300) > 1.5):\n    매수 = False\nelif not (체결강도 > 100 and 체결강도 > 체결강도평균(60)):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nif 매수:\n    self.Buy()\n# 매도식 방침: 신규 청산 연구 금지(P5 기각 교훈) — GPTAUTH_G8 매도식 원문(hard stop -2.0/트레일/보유시간 240s/92800 청산)을 그대로 봉인 사용. avg_list에 60,300 등록 필수.",
+   "expressibility": "높음. 예시식은 전부 봉인 화이트리스트 변수(시분초, 시가총액, 등락율, 저가대비고가등락율, 고가/저가, 최저현재가, 초당거래대금평균, 체결강도평균, 라운드피겨위5호가이내)와 허용 문법(비교·산술·구간함수)만 사용한다. 구간함수 틱수는 avg_list 등록(--avg-time 60,300)으로 해결. 번역갭 위험은 pool A는 0(이미 실행된 코드), pool B는 alpha_lab/translate 검증 경로 재사용으로 낮음. 유일한 표현 한계: 시장/횡단면 변수 접근 불가라서 '앙상블이 낙폭 중'이라는 상태를 조건식이 직접 알 수 없다 — 그래서 보완성은 조건식 내부 게이트가 아니라 구조적 직교성(시간대·패턴)으로만 구현되며, 이것이 설계의 정직한 제약이자 스누핑 방어이기도 하다(후보가 특정 월을 겨냥할 수 없음).",
+   "data_requirements": "1) v4 4챔피언 발견창(2022-03~2024-12) per-trade CSV — backtest/csv/에 상당수 존재, 미보존분은 엔진 재실행 4~8회로 재생성. 2) Pool A 원장: research_runs 5사이클 + 야간캠페인 + wt-dev 루프의 전략 원문·CSV·월별 P&L. 3) tick DB(2022-03~2026-02)는 pool B 엔진 실행용으로만. 4) 신규 데이터 수집 불필요 — 62GB tick DB의 raw 재채굴을 하지 않는 것이 설계 핵심.",
+   "sample_size_estimate": "발견창 거래일 약 690~700일(월 34개 대비 20배 해상도), 앙상블 낙폭 에피소드 추정 8~15개(폴드당 3~5개 — 이것이 최약점). 후보 표본 하한 봉인: 전체창 거래 ≥300, 약점 에피소드 내 거래 ≥80. Pool A 예상 50~150후보(실행가능성 필터 후 20~60), Pool B ≤40. 풀 전체 n_trials ≤200으로 FDR 분모 봉인.",
+   "offline_pipeline": [
+    "alpha_lab/ensemble/portfolio.py — static_equal·risk_adjusted_metrics·align_monthly_series를 일간 해상도로 확장 재사용(재구현 금지)",
+    "ai_strategy_loop/fitness/equity_series.py — CSV→P&L 시계열 파싱",
+    "alpha_lab/stats_common.py — 일블록 부트스트랩 CI",
+    "alpha_lab/mining/ev_adopt.py — FDR·채택기 기계(측정량만 Δcalmar로 교체)",
+    "alpha_lab/translate/idioms.py + alpha_lab/translate/codegen.py — pool B 후보의 STOM 문법 번역",
+    "alpha_lab/registry.py — 사전등록·봉인·verify_seal",
+    "alpha_lab/hillclimb/engine_eval.py + cli/runner.py run_backtest — 엔진 확인 실행 경로",
+    "alpha_lab/ensemble/robustness.py — walk-forward·몬테카를로 견고성 검사 재사용",
+    "신규 4모듈: alpha_lab/complement/{daily_series,weakness,ledger_pool,marginal}.py"
+   ],
+   "engine_budget_estimate": "봉인 총 ≤80회: 챔피언 일간 CSV 재생성 4~8회 + pool B 격자 ≤40회 + 생존자 엔진 확인 ≤10회 + known-창 감사 5회(4챔피언+후보 1세트) + 예비 ~15회. Pool A triage는 엔진 0회(기존 CSV 재사용)가 설계의 비용 우위.",
+   "oos_validation_plan": "3층 구조. [1층: 발견창 내부 시간 폴드] 모든 적합(에피소드 식별·후보 선택·가중)은 2022-03~2024-12 안에서만, 3폴드 교차로 '폴드-train에서 에피소드 식별 → 폴드-test에서 Δcalmar 검증'을 강제해 약점 구간을 보고 맞추는 스누핑을 구조적으로 차단(에피소드가 폴드 간 재현되지 않으면 그 자체가 kill 신호). [2층: known-창 거부권] 2025-01~2026-02는 known/audit 증거로만 사용 — 5멤버 Δcalmar 1회 측정, 음수면 kill, 양수는 승격 근거로 인용 금지(문서에 known 표기 의무). 반복 측정 금지(n_trials 원장 기록). [3층: future 창 유보] 최종 인정은 2026-03+ 데이터 도착 후 봉인 sha 그대로 1회 평가, 또는 v4 감독형 프로토콜(소액·킬스위치·동일비중)의 병행 운용 실적으로만. 그 전까지 산출물의 최고 지위는 '감독형 후보'이며 'fresh OOS 통과'라는 표현을 쓰지 않는다.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 시드 생성→단독 수익/MDD 채점→힐클라임이다. D7은 4개 축이 다르다: (1) 목적함수 — 단독 점수가 아니라 앙상블 한계 calmar + 상관 상한(wt-dev 루프에서는 GPTAUTH_G8 같은 단독 실패작이 즉시 탈락하지만 D7에서는 최고 후보가 될 수 있음). (2) 후보 공급원 — 새 시드 생성이 아니라 이미 실행된 전략 원장의 재채점이 1차 공급원(wt-dev의 병목인 시드 공급 부족과 무관). (3) 탐색 방식 — 힐클라임 없음, 사전등록 원샷 풀 + FDR. (4) 엔진 역할 — 반복 채점기가 아니라 최종 심판(triage는 전부 오프라인 CSV 재사용).",
+   "kill_criteria": [
+    "K1 (최우선, 스누핑 방어): 발견창 3폴드에서 앙상블 약점 에피소드의 구조(시기·빈도·깊이 분포)가 폴드 간 재현되지 않으면 — 즉 약점이 구조적 레짐이 아니라 일회성 사건이면 — 후보 탐색 착수 전에 프로그램 전체 kill.",
+    "K2: pool A 실행가능성+표본하한 필터 생존 <20 그리고 pool B에서 폴드-일관 Δcalmar>0 후보 0 → kill.",
+    "K3: 상관 상한(일간 corr ≤0.3, 각 챔피언 및 앙상블 대비) ∧ Δcalmar 풀드 CI하한>0 ∧ FDR 생존을 동시 충족하는 후보 0 → kill.",
+    "K4: 엔진 확인에서 오프라인 triage 수치가 재현 안 되면(P5 전례: CI 0 포함·연도 역전·MDD 악화) 해당 후보 kill, 3/3 연속 역전 시 프로그램 kill.",
+    "K5: known-창(2025-01~2026-02) 감사에서 5멤버 Δcalmar<0 → 후보 kill(이 창은 거부권 전용).",
+    "K6: 엔진 예산 80회 소진 또는 n_trials 200 도달 시 무조건 종료·정직 보고."
+   ],
+   "expected_value_case": "성공 시 v4 앙상블의 5멤버 확장으로 MDD 15~30% 감소 + calmar 개선(발견창 기준 예시: MDD 599,845→~450,000, calmar 11.8→14+)이며, 이는 v4가 이미 실증한 다각화 기제의 연장이라 기대 근거가 견고하다. 비용 지배 우회의 정량 논증: 5멤버 등가중에서 새 멤버 P&L을 P_c라 하면 calmar 개선 조건은 0.8·Π + 0.2·P_c > Π·(M5/M4). 낙폭 상쇄로 M5/M4=0.75가 되면 P_c > -0.25·Π — 발견창 Π=7.06M 기준 P_c가 -1.76M(34개월)까지 적자여도 calmar가 개선된다. 거래 500회·베팅 100만 기준 허용 EV ≈ -0.35%/trade로, 기저 그리드 EV -1.022% 대비 요구 엣지가 약 2/3 낮아진다. 단 0이 아니므로(무작위 그리드는 여전히 탈락) 완전한 우회가 아니라 문턱 인하이며, 그 남은 ~0.7pp를 구조적 직교 시간대의 낮은 경쟁 밀도에서 찾는 것이 승부처다. GPTAUTH_G8(단독 실패작→앙상블 핵심 축)이 이 문턱 인하가 실제 승자를 만든 유일한 실측 전례다.",
+   "risks": [
+    "스누핑 잔존 위험: 폴드 교차로 방어해도 발견창 앙상블 곡선 자체가 이미 알려진 데이터라서, 에피소드 8~15개 소표본에 대한 적합은 본질적으로 winner's curse에 노출 — K1/K5/3층 검증으로 완화하지만 제거 불가.",
+    "포트폴리오 수준 표본 부족: 월 34개·에피소드 ~10개는 Δcalmar CI가 넓어질 수 있음. 일간 해상도(~700일)로 완화하나 에피소드 단위 독립성은 여전히 낮음.",
+    "pool A 대부분이 손실 전략이라 -0.35% 문턱조차 못 넘을 수 있음(야간캠페인 40후보 전례) — 이 경우 pool B 직교 셀만 남고, 그건 표본 ≤40의 소격자라 발견 확률이 낮음.",
+    "09:10 이후/오후 시간대는 채굴 이력이 없어(기존 채굴은 09:00-09:30 국한) 기저 EV 자체가 미측정 — 아침보다 더 나쁠 수 있음.",
+    "다섯 번째 멤버 편입은 v4 봉인 구성 변경이므로 새 봉인·새 승인·감독형 재판정이 필요(v4 성과의 자동 승계 아님).",
+    "상관 상한 0.3은 발견창 추정치 — v4 문서가 경고했듯 상관은 창마다 변동하며(GPTAUTH 게이트 반전 전례) future 창에서 동조화되면 다각화 이득이 소멸할 수 있음."
+   ],
+   "confidence_0_100": 44
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "실패 목록 (a)/(b) 대조 — 실질적 차별: 표본단위(전략 일간 P&L 시계열), 라벨(엔진 실현 CSV 집계), 목적함수(앙상블 한계 Δcalmar+상관 상한)가 전부 다르다. docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md가 확정한 RC-0('채굴 피처 공간에 양EV 구역 없음')은 (종목,초) 그리드 스냅샷 공간에 대한 결론이며, D7은 그 공간을 재채굴하지 않는다. 이름만 바꾼 재탐사 아님.",
+     "실패 목록 (f) 대조 — 부분 겹침이나 방어 성립: 야간캠페인 40후보의 pool A 재입장은 같은 데이터·같은 후보지만 판정량이 '단독 수익성'→'포트폴리오 한계 기여'로 바뀐다. GPTAUTH_G8(발견창 단독 -6.9M 실패작이 앙상블 핵심 축)이 이 재채점의 실측 존재 증명이며 DIGEST 2·4와 정합. 심사 기준(데이터/라벨/표본단위/목적함수 중 1개 이상 실질 변경)을 충족.",
+     "실패 목록 (g)/(h) 대조 — 회피 확인: 매도식은 GPTAUTH_G8 계열 봉인 고정(신규 청산 연구 없음), 편입 방식은 v4가 실증한 정적 1/N always-on(타이밍/rotation 아님). docs/update_log의 (C) 경로('챔피언 앙상블' 방향, 본선 야간캠페인 +79% 실증)와 방향 일치.",
+     "실패 목록 (d) 대조 — pool B는 콜드 LLM 자유생성이 아니라 사전등록 직교 설계 셀 ≤40 격자. 그러나 09:10+ / 오후 시간대는 채굴 이력이 없어(DIGEST 6: 채굴 이력은 09:00-09:30 국한) 기저 그리드 EV가 미측정이다. expected_value_case의 '-1.022% → -0.35% 문턱 인하' 논증은 아침 창 기저 EV를 새 시간대에 암묵 이월하고 있어 성립 근거가 없다 — 새 시간대 기저가 -2%라면 문턱 인하로도 못 넘는다. 제안 스스로 risks에 인정했으나 게이트가 없다.",
+     "잔존 위험 — (a)의 근본 교훈('유의 패턴≠경제성')이 부분 재적용됨: 약점 에피소드 8~15개(폴드당 3~5개)는 Δcalmar 추정의 유효 표본으로 극소이며, 3폴드 교차검증의 판정력 자체가 소표본에 종속된다. K1이 이를 최우선 kill로 두었으나 '재현'의 정량 기준이 미봉인 — 사후 재량 판정 여지가 남는다.",
+     "expected_value_case의 M5/M4=0.75(낙폭 25% 상쇄) 가정은 사전 실측 근거가 없는 자유 파라미터다. 이 가정 하나로 허용 EV(-0.35%)와 기대가치 전체가 좌우되므로, 봉인 전 GPTAUTH_G8 편입 시 실측 상쇄율로 교정하지 않으면 winner's curse 방어(DIGEST 8)에 어긋난다.",
+     "통계 위생 준수 확인: 사전등록·봉인(alpha_lab/registry.py), FDR(n_trials ≤200 분모 봉인), 표본 하한(전체 ≥300/에피소드 내 ≥80), 엔진 최종 심판(P5 교훈 K4), known-창(2025-01~2026-02) 거부권 전용·승격 인용 금지 — DIGEST 6·8과 정합. docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md의 OOS 봉인창 재사용 금지 원칙 위반 없음.",
+     "wt-dev 본선 루프와의 구별(DIGEST 7): 목적함수·후보 공급원·탐색 방식·엔진 역할 4축 차별이 구체적이고, 단독 실패작이 최고 후보가 될 수 있다는 점에서 본선 루프가 구조적으로 못 하는 탐색이다."
+    ],
+    "required_fixes": [
+     "Pool B 착수 게이트 추가: 09:10~10:00 / 13:00~15:20 창의 기저 그리드 EV를 소량 표본으로 먼저 실측·봉인하고, '기저 EV가 허용 문턱(-0.35%) 대비 개선 여지 X pp 이상일 때만 pool B 격자 실행'을 사전등록 조건으로 명시하라. 미측정 시간대에 엔진 40회를 무조건 배정하는 현 설계는 (f)식 헛발 재연 위험.",
+     "K1의 '에피소드 구조 폴드 간 재현' 판정을 정량 봉인하라: 폴드당 최소 에피소드 수(예: ≥3), 재현으로 인정할 빈도/깊이 분포 유사성의 수치 기준, 판정 실패 시 자동 kill을 후보 관찰 이전에 registry에 고정. 현재 문구는 사후 재량 해석이 가능하다.",
+     "expected_value_case의 M5/M4=0.75 가정을 제거하거나, v4 실측(GPTAUTH_G8 편입 전후 MDD 상쇄율)으로 대체해 허용 EV 문턱을 재도출·봉인하라. 자유 가정 기반 문턱은 채택 기준의 사전등록 위반이다.",
+     "단독 적자 멤버 채택 시 하방 상한을 봉인하라: Δcalmar 양수라도 발견창 단독 P&L 하한(예: -0.25·Π 초과 손실 금지) 또는 약점가중 기여 양수 필수 같은 독립 조건을 추가해, future 창에서 상관 동조 시(제안 risks 6번 자인) 앙상블이 적자 멤버의 손실만 떠안는 시나리오를 차단하라.",
+     "5멤버 편입이 v4 봉인 구성 변경임을 반영해, 산출물 최고 지위를 '감독형 후보'로 못박고 v4 감독 프로토콜(소액·킬스위치·동일비중) 재판정 절차를 oos_validation_plan 3층에 명시적 봉인 항목으로 포함하라(현재는 서술로만 존재)."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "FIX",
+    "score_0_10": 6,
+    "reasons": [
+     "[치명 결함 아님·핵심은 생존] Pool A(원장 재채점) 경로는 전부 실증됨: 재사용 모듈이 실존한다 — alpha_lab/ensemble/portfolio.py:64/85/124 (risk_adjusted_metrics·align_monthly_series·static_equal), alpha_lab/translate/idioms.py+codegen.py, alpha_lab/registry.py, alpha_lab/mining/ev_adopt.py, ai_strategy_loop/fitness/equity_series.py, cli/runner.py:351 run_backtest. per-trade CSV(backtest/csv/stock_bt_ALP_RM_01_20260706035925.csv)는 매수시간=20220325090107 형식으로 일간 집계 가능.",
+     "[번역갭 통과] 예시식 변수 전부가 엔진 화이트리스트에 실존: utility/setting_base.py:157-192에 저가대비고가등락율·최저현재가·초당거래대금평균·체결강도평균·라운드피겨위5호가이내 확인. v5식 API 전멸 위험은 pool A 입장 게이트로 명시 방어됨.",
+     "[FIX 사유 1 — 데이터 실존 위반] Pool B의 직교 시간대 셀이 데이터와 모순: _database/stock_tick_20220325.db 및 stock_tick_20260227.db 직접 조회 결과 tick DB는 전 기간(2022-03~2026-02) 09:00:00~09:30:00만 수록(moneytop index MIN/MAX = 090000~093000). 예시식의 '91000 <= 시분초 < 100000' 게이트 중 09:30~10:00 구간과 '13:00~15:20' 셀은 발견창(2022-03~2024-12)에 데이터가 아예 없다. min DB(_database/stock_min_20250407.db, 0900~1519 전일 커버)는 2025-04 시작이라 전량이 금지된 known/audit 창(2025-01~2026-02) 내부 — 오후 셀은 발견창 폴드 교차검증 자체가 불가능. 제안서의 리스크 항목('채굴 이력이 없어 기저 EV 미측정')은 이 문제를 '미채굴'로 오진했다 — 실제로는 '데이터 부재'다.",
+     "[FIX 사유 2 — Pool A '엔진 0회' 전제 미검증] research_runs 원장은 docs/research/condition_research/research_runs/에 실존하나, 야간캠페인 40후보·wt-dev 세대 후보의 per-trade CSV 보존 여부는 미확인. 월별 P&L 요약만 남은 후보는 일간 상관(≤0.3)·일간 Δcalmar 계산이 불가하여 엔진 재실행이 필요해지고, 이 경우 ≤80회 예산의 '예비 ~15회'로는 20~60후보를 감당 못 할 수 있다.",
+     "[통과 항목] 표본 추정은 정직(에피소드 8~15개 약점을 스스로 K1 최우선 kill로 봉인, P3식 낙관 없음), known-창 거부권·future 유보 3층 구조는 digest 6·8과 정합, 5멤버 결합을 오프라인 합산으로 처리해 엔진 신규 기능 요구 없음(digest 4의 v4 방식 그대로), GPTAUTH_G8 매도식 봉인은 digest 3(g) 준수.",
+     "[잔여 감점] 09:10~09:28 서브윈도우로 재조정 시 '구조적 직교성'의 폭이 크게 줄어(시간대 직교가 사실상 18분 창 내 후반부+되돌림 패턴으로 축소) 발견 확률 하락 — 설계의 핵심 승부처('낮은 경쟁 밀도의 직교 시간대')가 약화되지만, pool A 재채점+GPTAUTH_G8 존재 증명이 남으므로 프로그램 전체를 죽일 결함은 아님."
+    ],
+    "required_fixes": [
+     "Pool B 셀 재정의: tick DB 실측 커버리지(09:00:00~09:30:00)에 맞춰 '09:10~10:00'을 '09:10~09:28(매도 92800 봉인과 정합)'로 축소하고 '13:00~15:20' 오후 셀은 삭제하거나 min DB known-창 한계를 명시한 별도 비승격(감사 전용) 트랙으로 격리. 예시식 시간 게이트 '91000 <= 시분초 < 100000'을 '91000 <= 시분초 < 92400' 수준으로 수정(보유 240s+92800 청산과 모순 제거).",
+     "직교성 재정의: 시간대 직교가 축소되므로 보완성 원천을 '되돌림-반등 패턴 구조'와 '등락율 음~저밴드(-3~5%)' 직교로 명시 재기술하고, 이 축소가 발견 확률·기대값 논증(expected_value_case)에 미치는 영향을 사전등록 문서에 반영.",
+     "착수 전 Pool A 인벤토리 게이트 추가: 후보별 per-trade CSV 보존 여부를 전수 조사해 '일간 시계열 산출 가능 후보 수'를 봉인 문서에 기록하고, CSV 미보존 후보의 엔진 재실행 소요를 예산에 명시적으로 편성(예: pool B 격자 40회를 줄여 재실행 슬롯 확보 또는 총예산 상향을 사전 승인) — '엔진 0회 triage' 주장을 검증된 수치로 교체.",
+     "min DB 사용 범위 봉인: min DB(2025-04~)는 발견 용도 전면 금지(전량 known-창 내부)를 kill_criteria 또는 봉인 규칙에 명문화."
+    ]
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "[살아남은 이유 — 경제 논리가 실측 전례에 기반] 다각화는 이 프로그램에서 유일하게 OOS로 실증된 기제다. v4_final_verdict.md(docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_final_verdict.md)가 확인해주는 사실: GPTAUTH_G8 발견창 -6,932,292원/-0.689 calmar의 단독 실패작이 ensemble_a OOS 1위(calmar 5.2845, MDD 493,591)의 핵심 축이었고, 발견창 8위 구성이 OOS 1위로 반전됐다. '단독 EV 문턱을 한계 기여로 낮춘다'는 D7의 핵심 주장은 이 실측 데이터와 정합한다. 제안서의 수치 인용은 전부 원장과 일치함을 확인했다.",
+     "[문턱 인하 산술은 성립하나 가정 의존] P_c > -0.25·Π 논증은 M5/M4=0.75(신규 멤버 편입 시 MDD 25% 감소)를 가정으로 깔고 있다. 이 가정이 무너지면(약점 에피소드에서 동조 낙폭) 문턱은 -1.022%로 되돌아간다. 다만 제안이 이를 상관 상한 ≤0.3과 K1/K3로 검증 대상으로 삼고 있어 공상이 아니라 검증 가능한 가설이다 — 단, 상관을 '전체 일간 corr'로만 재는 것은 약점 구간 꼬리 의존성(tail dependence)을 놓칠 수 있다(v4_final_verdict.md §5 모니터링 권고가 이미 '상관 상승 시 다각화 이득 축소'를 경고).",
+     "[치명 결함 1 — calmar 개선 ≠ 실수익] 사용자 목적은 '실수익'(DIGEST 9)이다. 1/5 등가중 편입 시 절대수익 = 0.8·Π + 0.2·P_c 이므로, 제안이 허용하는 P_c=-1.76M 멤버는 발견창 기준 절대수익을 7.06M→5.30M로 25% 깎는다. calmar 개선이 원화 수익으로 환전되려면 'MDD 감소분만큼 베팅 규모를 키운다'는 자본 스케일링 규칙이 필요한데, v4 배포 프로토콜(docs/update_log/2026-07-07_alpha_lab_v4_supervised_deployment_protocol.md)에는 그런 규칙이 없고 D7 설계에도 없다. 적자 예상 멤버를 채택 가능하게 두면 수익은 줄고 위험조정 지표만 오르는 종이 개선이 된다. GPTAUTH_G8 전례조차 OOS에서는 +1,439,459원 흑자였다 — 실측 전례는 '발견창 적자였다가 OOS 흑자'이지 '기대 적자 멤버 편입'이 아니다.",
+     "[치명 결함 2 — pool B 시간대의 기저 EV 미측정] 09:10+/오후 셀의 그리드 기저 EV는 측정된 적이 없다(제안 스스로 risks에서 인정). 아침 -1.022%보다 나쁠 수 있는 미지 지형에 엔진 40회를 사전등록 격자로 먼저 태우는 순서는 비용 비효율 — 기저 EV 소격자 측정을 선행 게이트로 넣지 않으면 40회가 전부 헛돌 수 있다.",
+     "[wt-dev 루프와의 차별성 인정] 목적함수(한계 calmar+상관 상한 vs 단독 점수), 공급원(기실행 원장 재채점 vs 신규 시드), 탐색(원샷 풀+FDR vs 힐클라임), 엔진 역할(최종 심판 vs 반복 채점기) 4축이 실질적으로 다르고, pool A triage 엔진 0회는 진짜 비용 우위다. 실패 목록 (a)~(i)와의 충돌 반박도 각각 성립한다 — 특히 (f) 야간캠페인 40후보의 판정 기준이 단독 수익성이었다는 지적은 정확하다.",
+     "[winner's curse 방어 존재] K1(에피소드 폴드 비재현 시 착수 전 kill) 최우선 배치, n_trials ≤200 봉인, known-창 거부권 전용, future-창 유보, FDR 유지 — DIGEST 8의 위생 요건을 충족한다. 다만 에피소드 8~15개 소표본에 대한 Δcalmar 추정은 본질적으로 잡음이 크고, 제안도 이를 정직하게 최약점으로 명기했다.",
+     "[회전율/용량] 챔피언과 동일한 소형주·건당 ~100만원 베팅 규모의 정적 always-on 추가라 체결 용량·회전율은 기존 4챔피언 운용과 동급 — 현실적. 5멤버 결합이 오프라인 합산으로 충분해 엔진 신규 기능이 불필요한 점도 확인(v4와 동일 방식, portfolio.py static_equal 실재 확인)."
+    ],
+    "required_fixes": [
+     "F1 (필수): 채택 기준에 절대수익 보호 조항 추가 — (i) 후보의 폴드-test 단독 P_c ≥ 0(또는 최소한 pooled CI가 유의미한 적자를 배제)을 공동 조건으로 넣거나, (ii) P_c<0 멤버를 허용하려면 'MDD 감소분에 비례해 총 베팅 규모를 상향하는 자본 스케일링 규칙'을 사전등록 봉인해 calmar 개선이 원화 실수익 개선으로 환전됨을 명시적으로 보장하라. 현 설계는 수익 25% 감소+calmar 개선 조합을 '성공'으로 채택할 수 있다.",
+     "F2 (필수): pool B 착수 전 선행 게이트 — 09:10~10:00 / 13:00~15:20 시간대의 무작위 그리드 기저 EV를 소규모(예: 엔진 2~4회 또는 기존 tick DB 오프라인 계산)로 먼저 측정·봉인하고, 기저 EV가 아침(-1.022%)보다 유의하게 나쁘면 해당 셀을 착수 전 kill하는 K 기준을 추가하라. 미측정 지형에 격자 40회를 먼저 태우는 현 순서는 예산 낭비 위험.",
+     "F3 (권고): 상관 상한을 전체 일간 corr ≤0.3 단일 기준에서 '약점 에피소드 내 조건부 상관(또는 하위 10% 분위 공동낙폭)' 병행 기준으로 강화하라 — 다각화 이득의 성립 조건은 평시 상관이 아니라 낙폭 구간 비동조이며, v4 문서 자체가 상관의 창간 변동을 경고한다.",
+     "F4 (권고): known-창 감사(8단계)의 엔진 5회가 K5 거부권 전용임을 감안하면, 2025-01~2026-02 창에서의 후보 단독 P&L 부호도 함께 기록(채택 근거 아닌 감사 기록)해 F1의 절대수익 보호와 교차 확인하라."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D8",
+  "name": "신규: 미탐사 시간축(09:30 이후·장중·장후반)",
+  "design": {
+   "direction_id": "D8",
+   "direction_name": "미탐사 시간축 — tick 전면 기각, min 오후 세션 조건부 저신뢰 잔존 경로",
+   "one_line": "tick DB는 09:00-09:30만 존재해 원안(장중/장후반 tick 연구)은 데이터 부재로 기각하고, 유일하게 하루 전체를 담은 min DB(11개월, 전부 known 창 내부)에서 오후 세션 이벤트-조건부 EV를 측정하는 소규모 kill-first 타당성 프로브만 남긴다.",
+   "core_hypothesis": "오후 세션(점심 이후~14:50)의 소형주 거래대금 재점화+당일고가 첫 돌파류 사건은, 아침 tick 그리드의 비용 헛들(-1.022%)과 다른 변동성/스프레드 구조 위에 있어 min 타임프레임(분 단위 보유, TA·분당* 피처)에서 비용을 이기는 조건부 양EV 셀이 존재할 수 있고, 존재한다면 09:10 이전 전용인 챔피언 계보와 세션이 겹치지 않아 구조적 비상관 앙상블 레그(v5가 실패한 확장)가 된다. 단, 사전 확률은 낮으며 본 설계의 1차 산출물은 \"오후 min 세션의 기저 비용 헛들 실측\"이라는 지도 자산이다.",
+   "why_not_refuted": "DIGEST 3번 항목별 대조: (a) 스냅샷 43피처 얕은트리 채굴 0/107 — 그 실패는 tick 09:00-09:30 그리드·저장 스냅샷 공간에서 확정된 것(RC-0)이고, 본 안은 데이터(min 분봉·오후 세션·TA 28지표·분당* 계열 — 한 번도 채굴된 적 없는 공간), 표본단위(블랭킷 그리드가 아닌 사전등록 이벤트 전이), 목적함수(lift가 아닌 EV CI하한) 3가지가 모두 다르다. 단 RC-0(\"비용 지배 공간에 양EV 포켓 없음\")이 오후에도 일반화될 실질 위험이 있어 Phase 1에서 오후 기저 헛들을 먼저 실측하고 kill 기준을 아침 판례(-1.022% + FDR 0)와 동형으로 건다. (b) 고정지평/stride 라벨+lift — 본 안은 min 스케일 트리플배리어(실현 경로) 라벨 + v3에서 확립된 EV 채택기(부트스트랩 CI)를 쓰고 stride 그리드가 아닌 전이 시점을 표본화한다. (c) 이벤트 5족 FDR 0/138 — 그 5족(VI해제·개장갭·신고가·거래대금서지·라운드피겨)은 전부 아침 tick 창에서 측정됐다. 본 안의 카탈로그는 오후 고유 기제(점심 횡보 후 당일고가 첫 돌파, 오후 거래대금 재서지, 14:30 이후 마감 수급)로 측정 세션 자체가 다르다 — 프레임워크(사전등록+FDR)는 재사용, 데이터는 신규. (d) 콜드 LLM 생성 — 미사용, 인간 기제 가설 카탈로그다. (e) score-sum — 미사용, 챔피언식 이산 게이트 체인으로 번역한다. (f) 다밴드 야간 캠페인 — 생성기 탐색 자체를 하지 않는다. (g)(h) 전역 청산 교체·adaptive timing — 매도식은 고정하고 제안하지 않는다. (i) 구식 API — 번역 타깃을 현행 self.Buy()/self.Sell() 규약으로 못박고 triage 첫 엔진 실행에서 즉시 검출한다. 자기기각 요소를 정직하게 명시: 원안(tick 장중)은 이미 데이터 부재로 기각됐고, 잔존 min 경로는 blind OOS가 0이며 표본 11개월뿐이므로 confidence를 낮게 두고 kill 기준을 우선한다.",
+   "mechanism_steps": [
+    "Phase 0 스키마/커버리지 검증(엔진 0회): stock_min_back.db가 매도호가1/매수호가1 컬럼을 갖는지, 오후 분봉 결측률(<30%)을 확인 — alpha_lab/dataset/reader.py의 connect_ro/list_day_dbs를 fork한 reader_min.py 신설(그리드=분 단위, moneytop 유니버스=해당 분 행, entry=t0+1분 매도호가1, 정직 제외 규약 동일). 실패 시 즉시 kill.",
+    "Phase 1 기저 비용 헛들 실측(엔진 0회): 오후 시간대 버킷(10:00-11:30 / 점심 11:30-13:00 / 13:00-14:30 / 14:30-15:15)별 moneytop 분 그리드의 무조건 EV 분포를 alpha_lab/dataset/labels.py의 FEE/TAX 상수 + min 스케일 트리플배리어(TP+2%/SL-1.5%/30분)로 측정 — 아침 -1.022%에 대응하는 '오후판 기저율 지도'를 만든다. 동시에 파워 체크: 아침 min 그리드에서 챔피언 구조(소형주×등락율밴드×거래대금서지)의 조건부 EV가 양(+) 방향으로 검출되는지 양성 대조 실험 — 검출 못 하면 파이프라인 검정력 부족으로 오후 null도 무정보이므로 kill.",
+    "Phase 2 사전등록 이벤트 카탈로그 측정(엔진 0회): 오후 고유 사건 ≤8종(당일고가 오후 첫 돌파, 분당거래대금>당일분당평균×k 재서지, 점심 횡보 후 돌파, 14:30 이후 분당매수금액 우위 지속, 오후 VI해제 재도전 등)을 임계값·표본 하한(셀당 ≥2,000, Idea3 봉인 하한 승계)·성공 기준(월블록 부트스트랩 CI하한 EV_net>0)과 함께 봉인 커밋 후 측정 — alpha_lab/mining/ev_adopt.py(EV 채택기+FDR BH) 재사용. discovery(2025-04~09)/confirmation(2025-10~2026-02) 2분할 — 둘 다 known 데이터임을 명기하고 스누핑 저항 필터로만 사용.",
+    "Phase 3 STOM min 문법 번역: 생존 셀을 alpha_lab/translate/idioms.py 확장(min idiom: 분당* 변수, 시분초>=130000 게이트, 이동평균 5/10/20/60/120 봉인 윈도우, 구간함수는 --avg-time 60,120 등록 전제)으로 이산 게이트 체인 매수식으로 변환. 매도식은 탐색하지 않고 고정 방침(하드스톱 -2%/트레일 최고수익률×0.6/보유시간 30분 캡/14:50 이후 청산)으로 봉인.",
+    "Phase 4 엔진 triage(min 엔진 ≤24회): python stom_backtest.py --timeframe min --avg-time 60,120으로 train 창 확인 — 흑자·거래수·MDD 게이트. tick2 슬리피지 프로파일은 tick 전용 정의이므로 min 체결(호가 잔량 소진 모델)에서의 보수적 체결 확인을 별도 기록.",
+    "Phase 5 엔진 확인+판정(min 엔진 ≤12회): 전 구간 1회 + 월별 분해 + CI. 전 결과에 'audit-grade(known 창)' 라벨 강제 — 승격은 2026-03+ future 데이터 게이트 통과 전까지 금지."
+   ],
+   "example_condition_sketch": "매수 = True\nif not (관심종목 == 1): 매수 = False\nelif not (130000 <= 시분초 < 145000): 매수 = False            # 오후 세션 전용(아침 챔피언과 무중첩)\nelif not (시가총액 < 3000): 매수 = False                       # 소형주\nelif not (2.0 < 등락율 <= 15.0): 매수 = False\nelif not (현재가 > 최고현재가(120, 1)): 매수 = False           # 직전 120분(점심 포함) 고가 첫 돌파\nelif not (분당거래대금 > 분당거래대금평균(60) * 3.0): 매수 = False  # 오후 거래대금 재점화\nelif not (체결강도 >= 80): 매수 = False\nelif 라운드피겨위5호가이내: 매수 = False\nif 매수: self.Buy()\n# 실행 전제: --timeframe min --avg-time 60,120 (구간함수 사전계산 등록, 미등록 시 엔진 중지)\n# 매도 방침(고정·탐색 금지): 수익률 <= -2.0 하드스톱 / 최고수익률>2 and 최고수익률*0.6>=수익률 트레일 / 보유시간>30 타임캡 / 시분초>=145000 전량 청산",
+   "expressibility": "양호. min 스코프는 분당거래대금/분당매수금액/분봉고가/TA 28지표/시분초 게이트/최고현재가·이동평균(봉인 윈도우 5/10/20/60/120)을 모두 지원하고, moneytop이 하루 전체를 커버함을 실측 확인해 관심종목 게이트가 오후에도 작동한다. 번역갭 위험: (1) 구간함수는 --avg-time 등록 필수(미등록 시 엔진 중지), (2) 매수 평가는 tick_count>=avgtime 이후 시작 — avg 120이면 약 11:00부터 평가되나 오후 전략이므로 무해, (3) 보유시간 단위가 분으로 바뀜, (4) 장 마감 LastSell 강제청산 존재 — 14:50 자체 청산으로 선제 처리, (5) tick2 슬리피지 프로파일 정의가 tick 호가단위 기반이라 min 확인에서는 엔진 내생 호가잔량 체결 모델에 의존 — 보수성 검증을 Phase 4에 명시.",
+   "data_requirements": "stock_min_back.db(1.46GB, 2025-04-07~2026-02-27, 하루 전체 09:00~15:19 커버 실측 확인, moneytop 분당 1행 80,785행 실측 확인). tick DB는 사용 불가 — stock_tick_back.db(29.7GB)와 일별 DB 모두 09:00-09:30만 존재함을 실측 확인(시간대 분포 hour 9 단독, max 092959). Phase 0에서 min 스키마의 호가 컬럼 존재 확인 필요. 진짜 검증에는 2026-03 이후 min 데이터의 지속 수집이 필수 전제.",
+   "sample_size_estimate": "moneytop 분 그리드 총 80,785분(약 213거래일×380분). 오후 13:00-15:15 창 약 28,700분 × 유니버스 종목수(분당 수십)로 그리드 표본 수십만 code-minute. 이벤트 전이 표본은 사건별 상이 — 셀당 봉인 하한 2,000개를 강제하고 미달 사건(예: 오후 VI 재도전)은 측정만 기록·채택 금지. 월 수 11개는 월블록 부트스트랩의 하한선 수준으로 CI가 넓을 것임을 사전 인정.",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py — connect_ro/list_day_dbs/moneytop_universe/정직제외 규약을 fork해 reader_min.py 작성(분 그리드+오후 창)",
+    "alpha_lab/dataset/labels.py — FEE_RATE 0.00015/TAX_RATE 0.0018 봉인 상수와 트리플배리어 골격 재사용(파라미터만 min 스케일로 신규 봉인)",
+    "alpha_lab/mining/ev_adopt.py — EV 채택기(부트스트랩 CI·FDR BH·빈도 예산) 그대로 재사용",
+    "alpha_lab/mining/transition.py — 이벤트 전이 시점 추출기 재사용(분 단위로 확장)",
+    "alpha_lab/translate/idioms.py — min idiom(분당* 변수·봉인 이동평균 윈도우) 확장",
+    "cli/config.py + cli/runner.py(run_backtest, is_tick=False) — min 엔진 확인 실행 경로",
+    "사전등록·봉인·n_trials 원장 템플릿(전 사이클 자산) — 새 봉인 문서로 승계"
+   ],
+   "engine_budget_estimate": "총 ≤40회(min 엔진 — tick보다 데이터가 작아 회당 비용 낮음): 양성 대조 2~4회 + triage ≤24회 + 확인 ≤12회. Phase 0~2는 엔진 0회(오프라인 전용)이므로 kill이 조기 발동하면 실소모 0~4회로 종료.",
+   "oos_validation_plan": "정면 인정에서 출발한다: min DB 전체(2025-04~2026-02)가 이미 개봉된 known/audit 창(2025-01~2026-02) 내부에 있으므로 이 방향에는 현재 blind OOS가 0이다. 따라서 (1) 모든 결과에 'audit-grade — future-OOS-pending' 라벨을 봉인 단계에서 강제하고 성공 주장·승격·배포를 금지한다. (2) 스누핑 저항 대체 장치: 측정 전 이벤트 카탈로그·임계·표본 하한·판정 기준 봉인 커밋, FDR BH, 월블록 부트스트랩, discovery(2025-04~09)/confirmation(2025-10~2026-02) 2분할 — 분할 통과는 blind 증명이 아니라 후보 축소 필터임을 명문화. (3) 유일한 진짜 검증 = 2026-03 이후 미수집 데이터: '연속 3개월 이상의 미개봉 min 데이터 축적 후 1회 원샷 엔진 확인, 재시도 금지'를 future 게이트로 사전등록한다. (4) 교차 검증 불가 사실 명기: tick DB에 오후 데이터가 없어 타임프레임 교차 확인은 불가능하다. (5) 아침 양성 대조(챔피언 구조의 min 재검출)로 파이프라인 검정력을 별도 입증해 null 결과의 해석 가능성을 확보한다.",
+   "distinctness_from_wtdev_loop": "wt-dev 본선 루프는 tick 09:00-09:30 창에서 시드 생성→백테 채점→힐클라임(엔진이 반복 평가자)이다. 본 안은 (1) 타임프레임이 min, (2) 세션이 오후(본선이 한 번도 다루지 않은 시간대이자 챔피언 계보와 진입 시간 무중첩), (3) 발견이 오프라인 EV 측정(엔진은 최종 심판만), (4) 표본단위가 사전등록 이벤트 전이, (5) 힐클라임·생성기 탐색 부재 — 5개 축 모두 다르다. 성공 시 산출물도 '더 나은 아침 변종'이 아니라 v4 앙상블의 세션-직교 신규 레그다.",
+   "kill_criteria": [
+    "K0(즉시): 원안의 tick 장중/장후반 연구는 이미 기각 — stock_tick_back.db와 일별 tick DB 모두 09:00-09:30만 존재함을 실측 확인(시간대 분포·max index). tick 기반 어떤 오후 연구도 제안 금지.",
+    "K1(Phase 0): min DB에 매도호가1/매수호가1 컬럼이 없거나 오후 분봉 결측률>30% → 진입가/체결 모델 성립 불가로 kill.",
+    "K2(Phase 1): 양성 대조 실패 — 아침 min 그리드에서 챔피언 구조의 조건부 EV 개선이 방향조차 재검출되지 않으면 파이프라인 검정력 부족으로 kill(오후 null이 무정보가 되므로).",
+    "K3(Phase 1+2): 오후 전 버킷 기저 EV가 -0.8% 이하이고 사전등록 이벤트 셀 FDR 생존 0 → 아침 판례(-1.022% + 0/138)의 오후판 확정으로 kill, 기저율 지도만 부정 자산으로 봉인.",
+    "K4(Phase 2): 표본 ≥2,000 충족 셀 중 월블록 CI하한 EV_net>0인 셀 0개 → 오프라인 단계 kill.",
+    "K5(Phase 4): 번역 생존자 전원이 train 창 엔진에서 적자 또는 거래수 미달 → kill.",
+    "K6(상시): 2026-03+ future 게이트 통과 전 어떤 형태의 승격/배포/성공 주장도 발생 시 프로그램 위반으로 중단. future 게이트 1회 원샷 실패 시 최종 kill."
+   ],
+   "expected_value_case": "성공 시: 오후 세션 전용 min 조건식 1개가 future 게이트까지 통과하면, 아침 09:00-09:10 전용인 v4 4챔피언과 진입 시간이 완전히 분리된 구조적 비상관 레그가 되어 v5가 재료 부족으로 실패한 앙상블 비상관 확장을 정확히 메운다(근거: v4 성공 원인이 순수 다각화였고 GPTAUTH_G8 단 하나가 유일한 비상관 자산이라는 확정 증거 — 세션 직교 레그는 상관 구조상 가장 싼 Calmar 개선 수단). 절대 수익이 소액이어도 앙상블 MDD 분산 효과로 위험조정 개선 기여가 가능하다. 실패 시에도 '오후 min 세션 기저 비용 헛들 지도'가 남아 향후 전 시간대 제안을 원천 차단하는 부정 지도 자산이 된다. 다만 기대값의 정직한 평가: blind OOS 부재와 11개월 표본 때문에 near-term 기대값은 낮고, 본 설계의 주 가치는 낮은 비용(엔진 ≤40회, 대부분 오프라인)으로 미탐사 공간의 지도를 확정하는 것이다.",
+   "risks": [
+    "blind OOS 0: min DB 전체가 known 창 내부 — 어떤 긍정 결과도 2026-03+ 데이터 축적 전에는 audit-grade를 넘지 못한다(구조적 한계, 완화 불가).",
+    "RC-0 일반화 위험: 아침에서 확정된 '비용 지배 공간에 양EV 포켓 없음'이 오후에도 성립할 사전 확률이 상당하다 — 오후는 변동성이 낮아 헛들이 오히려 더 나쁠 수 있다.",
+    "표본 11개월: 레짐 1개(2025-04~2026-02)만 관측 — 월블록 CI가 넓고 계절성/레짐 의존을 분리할 수 없다.",
+    "min 해상도 한계: 챔피언 엣지가 초 단위 서지 타이밍에 있었다면 분봉은 그 정보를 잃는다 — 양성 대조(K2)가 이를 조기 검출하지만, 통과해도 오후 신호가 분 해상도로 포착 가능하다는 보장은 없다.",
+    "moneytop 오후 유니버스 성격: 오후 거래대금 상위는 아침과 구성이 달라(대형주 비중 증가 가능) 소형주 필터 후 실표본이 급감할 수 있다.",
+    "체결 모델 불확실: tick2 슬리피지 프로파일이 min에 정의돼 있지 않아 보수성 검증이 별도 필요하다.",
+    "기회비용: 낮은 사전 확률의 방향에 오프라인 공수 수일을 쓰는 것 자체가 비용 — Phase 1 조기 kill 설계로 상한을 묶었다."
+   ],
+   "confidence_0_100": 20
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "PASS",
+    "score_0_10": 7.5,
+    "reasons": [
+     "실패 목록 (a)(b)(c)와의 공간 대조에서 핵심 축인 '데이터'가 실질적으로 다름을 직접 실측으로 확인했다: C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_tick_back.db(29.73GB)의 moneytop 시간 분포는 hour 9 단독(min index 20220323090000, max 20260227093000)으로 09:00-09:30만 존재 — 실패 (a)(c)의 채굴 공간은 물리적으로 아침 tick 창에 국한되며, 오후 min 공간은 한 번도 채굴된 적 없는 공간이 맞다. K0(원안 tick 장중 연구 자기기각)도 사실과 일치한다.",
+     "제안서의 데이터 주장 전수 검증 통과: C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_min_back.db는 1.46GB, moneytop 202504070900~202602271519(09:00~15:19 하루 전체), 정확히 80,785행, 종목 테이블 57컬럼에 매도호가1/매수호가1 포함(K1 성립 가능) — 제안서 수치와 자릿수까지 일치. 과장·허위 주장 없음.",
+     "재사용 자산 실존 확인: alpha_lab/dataset/reader.py(connect_ro/moneytop_universe), alpha_lab/dataset/labels.py(FEE_RATE 0.00015/TAX_RATE 0.0018), alpha_lab/mining/ev_adopt.py, alpha_lab/mining/transition.py, alpha_lab/translate/idioms.py 모두 존재. min 엔진 경로도 실존: cli/config.py --avg-time 파싱(109·163행), cli/runner.py 424행 BackEngineKiwoomMin/Min2 분기 + is_tick=False. 실행 계획이 실코드에 배선된다.",
+     "실패 (b) lift 채택 기준 대비 목적함수(월블록 부트스트랩 CI하한 EV_net>0)와 표본단위(사전등록 이벤트 전이)가 다르고, (d)(e)(f)(g)(h)(i)는 각각 미사용/고정/못박기로 회피 — docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md가 확정한 'v1~v3 실패는 tick 아침 그리드 피처 채굴'이라는 결론과 모순 없음. 단 RC-0(비용 지배 공간에 양EV 포켓 없음)의 오후 일반화 위험을 스스로 1순위 kill(K3)로 걸었고, 아침 양성 대조(K2)로 파이프라인 검정력 부재 시 null의 무정보성까지 차단한 설계는 반증 위생상 모범적이다.",
+     "DIGEST 6(2025-01~2026-02 known 창 blind OOS 재사용 금지)을 위반하지 않는다: min DB 전체가 known 창 내부임을 정면 인정하고 모든 결과에 audit-grade 라벨 강제, 승격은 2026-03+ future 게이트 1회 원샷으로만 허용(K6). blind OOS 0이라는 구조적 약점을 confidence 20으로 정직하게 반영했다.",
+     "잔여 리스크(오후 VI해제 재도전·당일고가 돌파가 이벤트 5족과 '기제 명칭' 수준에서 부분 유사, 11개월 단일 레짐, min 해상도 정보 손실)는 모두 제안서가 자체 명시했고 kill 기준(K2~K4, 셀당 2,000 하한, FDR BH)으로 방어됨 — 이름만 바꾼 재탐사가 아니라 세션·데이터·라벨·표본단위·목적함수가 함께 이동한 신규 공간 프로브다."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 8,
+    "reasons": [
+     "데이터 실존 주장 실측 일치: C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_min_back.db의 moneytop이 정확히 80,785행, index 202504070900~202602271519로 설계안의 수치와 1행 단위까지 일치하며 하루 전체(09:00~15:19)를 커버한다. 반면 stock_tick_back.db moneytop은 max index 20260227093000으로 09:00-09:30 한정임이 확인돼 K0(tick 오후 연구 기각)의 근거가 실측으로 성립한다.",
+     "K1(호가 컬럼) 사전 해소: min 종목 테이블은 57컬럼이며 매도호가5~1/매수호가1~5 및 잔량 컬럼이 실존한다(cp949 인코딩이지만 구조 확인됨) — 진입가 모델(t0+1분 매도호가1) 성립 가능.",
+     "번역갭 주장 검증: 스케치의 min 전용 변수가 엔진 네임스페이스에 실존한다 — backtest/back_code_test.py:349 '분당거래대금평균', :259 '최고현재가', :80에 분당* 계열 등록. min 엔진(backtest/backengine_kiwoom_min.py:118,191)의 tick_count>=avgtime 게이트도 설계안이 기술한 대로이며(avg 120 → 약 11:00부터 평가) 오후 전략에는 무해하다는 판단이 맞다.",
+     "엔진 API 함정(v5 8/8 전멸 원인) 회피 확인: 현행 backtest/backengine_base.py:791 def Buy(self, buy_long=False) — 스케치의 무인자 self.Buy()는 현행 규약이며, triage 첫 실행에서 즉시 검출된다는 방어도 타당하다.",
+     "실행 경로 실존: cli/config.py:105-109에 --timeframe {tick,min}과 --avg-time 콤마 리스트(163-164 파싱), cli/runner.py:424,448,460에 is_tick=False → BackEngineKiwoomMin + DB_STOCK_BACK_MIN + GetMoneytopQuery 분기가 배선돼 있다.",
+     "재사용 인프라 실존: alpha_lab/dataset/reader.py·labels.py, alpha_lab/mining/ev_adopt.py·transition.py, alpha_lab/translate/idioms.py 모두 존재 — 오프라인 파이프라인 계획이 허구 모듈에 의존하지 않는다.",
+     "표본 추정 현실적: 그리드 표본(오후 ~28,700분×분당 유니버스 수십)은 수십만 규모로 타당하고, 이벤트 셀 하한 2,000 미달 시 채택 금지 규약이 P3 실패(346<2000)의 재발을 사전 차단한다. 11개월 표본과 blind OOS 0의 한계를 자인하고 future 게이트(2026-03+)로 승격을 봉쇄한 점도 실행 가능성 렌즈에서 감점 사유가 아니라 정직한 설계다.",
+     "엔진 예산 ≤40회(대부분 오프라인, 조기 kill 시 0~4회)는 min 데이터 규모(1.46GB) 대비 현실적이다.",
+     "잔여 리스크는 설계안이 이미 자인: min 체결/슬리피지 모델의 보수성 미검증(Phase 4 명시), 양성 대조 실패 가능성(K2), 오후 moneytop 유니버스의 소형주 필터 후 표본 급감 — 모두 kill 기준으로 흡수돼 치명 결함이 아니다."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 6.5,
+    "reasons": [
+     "[검증됨] 데이터 주장 전부 실측 일치: stock_min_back.db 1.456GB, moneytop 80,785행, 커버리지 202504070900~202602271519(하루 전체), 종목 테이블에 매도호가1~5/매수호가1~5 컬럼 실존 — K1 성립 가능 (C:/System_Trading/STOM/STOM_V.wt-alpha/_database/stock_min_back.db 직접 조회).",
+     "[검증됨] 재사용 파이프라인 실존: alpha_lab/dataset/labels.py:42-43의 FEE_RATE 0.00015/TAX_RATE 0.0018 봉인 상수와 buy_cost/sell_net 골격(82-83행), alpha_lab/mining/ev_adopt.py, alpha_lab/mining/transition.py, alpha_lab/translate/idioms.py 모두 존재 — 오프라인 공수 추정이 공상이 아님.",
+     "[경제성 통과] -1.022% 헛들을 아침 tick 전용 수치로 정확히 취급하고 Phase 1에서 오후판 기저율을 선실측, K3 kill이 아침 판례(-1.022%+FDR 0/138)와 동형 — 거래 EV 기준(CI하한 EV_net>0) 채택기로 통계 유의성 함정 회피.",
+     "[차별성 통과] wt-dev 루프(tick 09:00-09:30 시드 생성→백테 채점→힐클라임)와 타임프레임·세션·발견방식·표본단위·탐색기법 5축 전부 상이 — DIGEST 7의 '다른 접근' 요구 충족.",
+     "[포트폴리오 적합성 통과] v4 챔피언 전원 09:10 이전 진입(DIGEST 1)이므로 13:00-14:50 세션 직교 레그는 상관 구조상 가장 싼 Calmar 개선 경로 — v5 실패(8/8 구식 API)가 남긴 비상관 공백을 정확히 겨냥하며, 번역 타깃을 현행 self.Buy() 규약으로 못박아 v5 사인(死因) 재발 차단.",
+     "[winner's curse 방어 통과] 봉인 커밋·FDR BH·셀당 2,000 하한·discovery/confirmation 2분할을 blind 증명이 아닌 후보 축소 필터로 명문화·2026-03+ 1회 원샷 future 게이트·아침 양성 대조(K2)로 null 해석력 확보 — DIGEST 8 위생 전부 유지.",
+     "[결함 1 — FIX 사유] min 트리플배리어(TP+2%/SL-1.5%/30분)의 분봉 내 TP/SL 동시터치 모호성 해소 규칙이 봉인 스펙에 없음: 분봉은 intrabar 경로를 잃으므로 낙관(TP-우선) 해소 시 오프라인 EV_net이 체계적으로 부풀어, 편향된 측정 위에 사전등록을 봉인하면 Phase 2~4 전체가 오염된 후보에 소모됨 — K5 엔진 triage가 최후 방어이지만 그 전에 예산과 공수가 편향 후보에 낭비됨.",
+     "[결함 2 — FIX 사유] min 체결 슬리피지 보수성 검증이 Phase 4로 후치: tick2 프로파일이 min에 미정의임을 스스로 인정하면서(risks 6항) 오프라인 채택 문턱(CI하한>0)에 미모델 슬리피지 버퍼가 0 — 진입은 t0+1분 매도호가1로 스프레드를 건너지만 청산측(SL/타임캡) 체결가 가정이 미명세이고, 오후 소형주는 스프레드/변동성 비율이 아침보다 불리할 수 있어 EV_net>0 셀이 실체결에서 음수로 뒤집힐 여지가 채택 기준에 반영 안 됨.",
+     "[감점 요인이나 정직 공시됨] blind OOS 0(min DB 전체가 known 창 내부, DIGEST 6)·표본 11개월·레짐 1개 — near-term 실수익 기대값이 낮음을 설계안이 스스로 인정하고 audit-grade 라벨 강제 + 승격 금지로 처리. 주 산출물이 '오후 기저 헛들 지도'라는 부정 자산 프레임이라 수익 경로가 공상적이지는 않으나, 경제성 렌즈에서 만점을 줄 수 없는 구조적 한계."
+    ],
+    "required_fixes": [
+     "Phase 1/2 봉인 스펙에 intrabar 모호성 비관 해소 규칙 명기: 같은 분봉에서 TP와 SL이 모두 터치 가능하면 SL-우선(pessimistic resolution)으로 라벨링하고, 배리어 체결가는 배리어 가격이 아니라 해당 분봉의 불리한 쪽(저가/매수호가측)으로 봉인 — labels.py 재사용 시 min 스케일 파라미터와 함께 이 규칙을 봉인 커밋에 포함할 것.",
+     "청산측 체결가 가정 명세: SL/트레일/타임캡/14:50 청산 각각에 대해 오프라인 라벨이 사용할 체결가(매수호가1 기준 등 보수측)를 사전 정의하고, 진입(매도호가1)과 대칭으로 스프레드 왕복 비용이 EV_net에 완전 반영됨을 Phase 1 산출물에 검증 항목으로 추가.",
+     "오프라인 채택 문턱에 미모델 슬리피지 버퍼 사전등록: CI하한 EV_net > 0이 아니라 CI하한 EV_net > +δ(예: 오후 버킷별 실측 스프레드 중앙값의 일정 배수 또는 최소 +0.10%)로 봉인하고 δ 산정 근거를 Phase 1 스프레드 실측에서 도출 — min 체결 모델 불확실성을 채택 단계에서 흡수해 K5 도달 전 편향 후보를 차단.",
+     "Phase 4 min 체결 보수성 검증을 통과/실패 기준이 있는 게이트로 승격: 오프라인 EV와 엔진 실현 EV의 괴리 허용 한도(예: 셀 평균 EV 괴리 > 0.3%p면 라벨 모델 재봉인 후 재측정 금지·kill)를 사전등록해 '별도 기록' 수준의 느슨한 문구를 제거."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D9",
+  "name": "신규: 유니버스/횡단면 알파(moneytop churn)",
+  "design": {
+   "direction_id": "D9",
+   "direction_name": "유니버스 전이 알파 — moneytop churn 이벤트 스터디 (순위 진입/재진입/체류)",
+   "one_line": "지금까지 유니버스 필터로만 쓰인 moneytop 순위 그리드를 사건 데이터로 승격시켜, \"순위 진입/재진입 직후 T초\"의 조건부 순EV를 사전등록 이벤트 스터디로 측정하고, 생존 셀만 관심종목N/데이터길이 프록시로 번역해 엔진 최종 심판에 올린다.",
+   "core_hypothesis": "moneytop 거래대금 순위 멤버십의 전이(신규 진입, 이탈 후 재진입, 체류 지속)는 종목 자신의 절대 지표(거래대금 서지 등)와 구분되는 횡단면 정보 — \"다른 종목들을 이겨서 자금 유입 경쟁에서 순위권에 올라온 순간\" — 를 담고 있으며, 소형주×아침 시간대×등락율 밴드 가드와 결합하면 -1.022% 비용 헛들을 넘는 양의 조건부 순EV 셀이 존재한다. 특히 재진입(한 번 밀렸다가 다시 올라옴)은 지속적 수요의 증거로, 1회성 스파이크 진입과 분포가 다를 것이다.",
+   "why_not_refuted": "DIGEST 3번 항목별 대조: (a) 스냅샷 43피처 트리 채굴 0/107 — 43피처(features_v3.py)에 관심종목 이력 차원이 전무하다. 매수 평가 시점엔 엔진 게이트 때문에 관심종목이 항상 1인 상수라 피처로 존재할 수 없었고, moneytop 순위 문자열 자체는 어떤 사이클에서도 채굴 대상 데이터가 아니었다(reader.py에서 유니버스 필터로만 소비). 즉 데이터 축이 새롭다. (b) 고정지평/stride 라벨+lift 기준 — 본 설계의 표본 단위는 stride 그리드가 아니라 멤버십 전이 '사건'이고, 라벨은 L2 트리플배리어 + 챔피언 매도식 리플레이 실현손익(v2 인프라), 채택 기준은 lift가 아니라 tick2 순EV다. (c) 이벤트 5족 FDR 0/138 — 가장 가까운 실패. 그중 '거래대금서지'는 자기 종목 절대 임계(초당거래대금>k×자기평균) 사건이었다. moneytop 진입은 다른 종목들과의 상대 경쟁 결과인 횡단면 사건으로 정의가 다르고, 사건 원천 테이블(moneytop 순위 문자열)이 5족 카탈로그에 없던 신규 원천이다. 단, 거래대금 서지와 상관이 높을 개연성은 인정한다 — 그래서 Phase 3에 '서지 사건과의 중복도(자카드) 측정'을 사전등록하고, 중복도>0.8이면 신규성 상실로 자체 kill한다. (d) 콜드 LLM 0/88 — 해당 없음(순수 데이터 기반). (e)score-sum/(f)다밴드 야간캠페인 — 생성기/점수합산 방식 자체가 아님. (g)전역 청산 교체 — 매도식은 챔피언 원문(rr8_12 sell) 불변 재사용, 청산 연구 아님. (h)adaptive timing — 일 단위 레짐 아닌 초 단위 종목 사건. (i)구식 API — 현행 self.Buy()/self.Sell() 규약으로 작성. 자체 기각 조항: 만약 알파가 순위 '수준'(상위 5위 이내 등)에만 조건부로 존재하고 멤버십 전이에는 없다면 STOM 문법으로 번역 불가이므로 정직 kill한다.",
+   "mechanism_steps": [
+    "Phase 0 — 번역 가능성·데이터 정합 감사(신규 alpha_lab/universe/parity_audit.py, read-only): (1) 행 단위 관심종목 플래그 vs moneytop 거래대금순위 문자열 멤버십의 초 단위 일치율(엔진은 저장 플래그를, 오프라인은 문자열을 쓰므로 불일치율>10%면 발견은 저장 플래그 기준으로 전환), (2) 진입 사건별 사전 이력 분포: 첫 행 시각 vs 첫 플래그=1 시각의 결합분포 — 관심종목N(60) 진짜 조회가 가능한(사전 60틱 이상) 사건 비율 측정, (3) 틱 인덱스 vs 벽시계 초 갭(결측 초율). 표본 30일 무작위.",
+    "Phase 1 — churn 원장 구축(신규 alpha_lab/universe/churn_ledger.py): reader.py의 connect_ro/list_day_dbs/moneytop_universe/load_stock_rows를 재사용해 952일 각 일자에서 (종목,초) 멤버십 시계열을 복원, 사건 추출 — fresh_entry(당일 최초 진입), re_entry(k번째 재진입, 직전 이탈 후 gap초), exit, 그리고 사건 시점 속성(체류시간, 순위 위치=문자열 내 인덱스, 순위 속도, gap 길이) + 스냅샷 피처(schema.py RAW_FEATURES+derive). 09:00:01~09:30:00 창.",
+    "Phase 2 — 사전등록·봉인(Gate 2): 셀 그리드 고정 — 사건형 {re_entry(gap 30~300초), fresh_entry(이력 충분분만), 체류>120초 지속} × 진입 후 경과 {≤10, ≤30, ≤60초} × 가드 {시가총액<3000, 등락율 (1,8]/(2,12], 시분초 900xx~91000} — 총 ≤108셀, n_trials 원장 기록. 라벨: L2 트리플배리어(labels.py) 주라벨 + 챔피언 매도 리플레이(distill/replay.py) 보조라벨, 비용 tick2 net_rate 봉인 상수.",
+    "Phase 3 — 이벤트 스터디 측정(alpha_lab/events/detectors.py에 moneytop 전이 detector 추가, outcomes.py·stats_common.py FDR 재사용): 셀별 순EV·승률·분포, BH-FDR q≤0.10, 표본 하한 n≥2,000, discovery 3분할(2022H2/2023H1/2023H2) 중 2/3 재현 요구. 동시에 거래대금서지 사건과의 자카드 중복도, 순위수준 조건부(번역불가 축) 진단.",
+    "Phase 4 — STOM 번역+패리티 리플레이(translate/idioms.py·codegen.py 확장 — 관심종목N/데이터길이 idiom 추가, dataset/parity.py 재사용): 생존 셀을 '관심종목==1 ∧ 데이터길이>90 ∧ 관심종목N(60)==0 ∧ 관심종목N(10)==1' 형태 게이트 체인으로 번역하고, 표본일에서 번역식 발화 집합 vs 오프라인 사건 집합의 자카드≥0.7 검증(틱 오프셋·클램프 0 함정 검출). _Parameter_Previous가 pre>=tick_count일 때 0을 반환하므로 데이터길이 가드 없는 관심종목N==0은 오독 — 번역기에서 가드 자동 삽입.",
+    "Phase 5 — triage 백테(train 창, stom_backtest.py --buy/--sell --avg-time 30, 매도식은 rr8_12 원문): 생존 후보 ≤6개 × 1회. 수익성·MDD 폭주(v3 힐클라임 MDD 249% 전례) 검문.",
+    "Phase 6 — 엔진 확인(Gate 4, 별도 승인): 통과 후보에 대해 봉인 2024 OOS 1회 개봉 + walk-forward 연도별 역전·CI·거래수·MDD 기록, v4 앙상블 기준선 및 -1.022% 비용 바닥과 대비."
+   ],
+   "example_condition_sketch": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (90030 <= 시분초 < 91000):\n    매수 = False\nelif not (데이터길이 > 90):\n    매수 = False          # 관심종목N(60) 클램프(0 반환) 오독 방지 가드\nelif not (관심종목N(60) == 0):\n    매수 = False          # 60틱(≈60초) 전에는 순위 밖 → 최근 재진입\nelif not (관심종목N(10) == 1):\n    매수 = False          # 최근 10틱은 순위 유지 → 1초성 노이즈 진입 배제\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (2.0 < 등락율 <= 12.0):\n    매수 = False\nelif not (현재가 < VI가격 - VI호가단위 * 5):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (초당거래대금 / 초당거래대금평균(30) > 1.5):\n    매수 = False\nelif not (70 <= 체결강도 <= 300):\n    매수 = False\nif 매수:\n    self.Buy()\n# 매도식 방침: rr8_12 매도식 원문 불변 재사용(P5 교훈 — 신규 전역 청산 발명 금지). --avg-time 30 필수(초당거래대금평균(30)).",
+   "expressibility": "순위 숫자·상위N 티어·횡단면 변수는 조건식 네임스페이스에 없어 직접 표현 불가(확정). 그러나 멤버십 '전이'는 표현 가능: 관심종목(현재 0/1) + 관심종목N(n)(n틱 전 0/1, base_strategy.py:237) + 데이터길이(당일 틱 수)의 조합으로 재진입(\"관심종목N(60)==0 ∧ 관심종목N(10)==1\")과 신규 이력(\"데이터길이<T\") 프록시가 성립한다. 번역갭 3종: (1) _Parameter_Previous(base_strategy.py:75-79)는 pre>=tick_count면 0을 반환 — 이력 부족이 '순위 밖'으로 오독되므로 데이터길이 가드 의무화, (2) N은 벽시계 초가 아니라 그 종목의 행(틱) 인덱스라 결측 초만큼 압축됨 — Phase 4 패리티 리플레이로 자카드≥0.7 검증, (3) 오프라인 발견은 moneytop 문자열, 엔진은 저장 플래그를 쓰므로 두 원천의 불일치율을 Phase 0에서 측정해 발견 기준을 엔진 쪽에 정렬. 순위 '수준'에만 알파가 있으면 번역 불가로 kill. 보조 수단으로 경과틱수(조건명)(dict_set 경과틱수설정 등록 필요)가 있으나 설정 의존이라 2차 옵션.",
+   "data_requirements": "tick 일 DB(stock_tick_YYYYMMDD.db, 2022-03-23~2026-02-27, 952일)의 종목 테이블(관심종목 컬럼 포함 행 스냅샷)과 moneytop 테이블(거래대금순위 세미콜론 문자열) — 전부 read-only URI 연결(reader.py connect_ro). min DB 불요(아침 tick 스코프). 신규 산출물은 churn 원장 parquet/csv(연구 디렉토리)뿐, 원본 DB 무변경.",
+   "sample_size_estimate": "개산: 09:00-09:30 상위권 churn 진입 사건 30~90건/일 × 952일 = 약 3만~8.5만 건. 이 중 사전 이력 60틱 이상 확보(재진입 관측 가능) 비율을 40~60%로 가정하면 1.2만~5만 건. 소형주×등락율 밴드 가드 후 주요 셀당 2천~1만 건으로 봉인 하한 n≥2,000 충족 가능. 단 이 수치는 Phase 0/1 실측으로 확정하며, 하한 미달 셀은 판정 자체를 금지(Idea3 346표본 과잉판정 교훈).",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py — connect_ro/list_day_dbs/moneytop_universe/load_stock_rows 재사용(churn 원장 로더)",
+    "alpha_lab/dataset/schema.py — RAW_FEATURES·derive 스냅샷 피처",
+    "alpha_lab/dataset/labels.py·labels_v2.py — tick2 net_rate 봉인 상수, L2 트리플배리어",
+    "alpha_lab/distill/replay.py — 챔피언 매도식 리플레이 보조라벨",
+    "alpha_lab/events/detectors.py·outcomes.py — 이벤트 스터디 측정 프레임(전이 detector 추가)",
+    "alpha_lab/stats_common.py — FDR/분포 통계",
+    "alpha_lab/translate/idioms.py·codegen.py — STOM 번역(관심종목N idiom 확장)",
+    "alpha_lab/dataset/parity.py — 오프라인-엔진 패리티 검증",
+    "신규 2개 모듈: alpha_lab/universe/parity_audit.py, alpha_lab/universe/churn_ledger.py"
+   ],
+   "engine_budget_estimate": "Phase 0~4는 엔진 0회(전부 오프라인 read-only). Phase 5 triage ≤6회, Phase 6 확인 12~24회(생존 후보 ≤3개 × walk-forward 4~6창 + 재현 런). 총 상한 30회 — 기존 잔여 예산 231회의 13%.",
+   "oos_validation_plan": "2025-01~2026-02는 v4 판정으로 이미 개봉된 known/audit 창이므로 blind 주장 불가, 2026-03+ 데이터는 부재 — 따라서 3단 구조로 신뢰를 확보한다. (1) discovery = 2022-03~2023-12(3분할 교차 재현 요구로 내부 스누핑 억제), (2) 봉인 OOS = 2024-01~2024-12: moneytop churn 사건 수준에서는 미개봉 창(P5/챔피언 집계 수준으로만 알려짐)임을 사전등록 문서에 명시하고 Phase 6에서 단 1회 개봉, 재개봉·재슬라이싱 금지, (3) 2025-01~2026-02는 'known-audit 보조 확인'으로만 보고(성패 판정 지표가 아니라 일관성 기술 통계). 최종 승격 주장은 Gate 6 — 2026-03 이후 미래 데이터 축적 후 재검증 통과 전까지 'research_only / 감독형 후보' 이상으로 표기하지 않는다. n_trials 전수 원장, 사후 CSV 슬라이싱 금지(+1.07M→-1.15M 함정 전례) 유지.",
+   "distinctness_from_wtdev_loop": "wt-dev 본선은 '시드 생성→백테 채점→힐클라임'으로 백테스트가 반복 평가자다. 본 프로그램은 (1) 후보 공간이 파라미터 이웃이 아니라 한 번도 채굴된 적 없는 데이터 축(moneytop 순위 그리드의 멤버십 전이 사건)이고, (2) 발견이 전부 오프라인 이벤트 스터디(FDR·표본하한·교차창 재현)에서 일어나며 엔진은 최종 심판 ≤30회로만 쓰이고, (3) 산출물이 힐클라임 시드가 아니라 사전등록 생존 셀의 직번역 게이트 체인이다. 부수 효과로 생성되는 churn 원장은 실패하더라도 본선 루프의 시드 공급 부족(병목)을 채우는 재사용 자산이 된다.",
+   "kill_criteria": [
+    "K0(Phase 0): 저장 플래그 vs moneytop 문자열 불일치율>10%가 보정 불가이거나, 진입 사건 중 사전 60틱 이력 확보 비율<30%(재진입 관측 자체가 희소) → 번역 가능 표본 부족으로 kill",
+    "K1(Phase 3): tick2 순EV>0 ∧ n≥2,000 ∧ FDR q≤0.10 ∧ 3분할 중 2 재현을 모두 만족하는 셀 0개 → 이벤트 5족 0/138과 같은 결말로 정직 kill",
+    "K2(Phase 3): 생존 셀이 거래대금서지 사건과 자카드>0.8 중복 → 신규성 없음(실패 (c) 재포장)으로 kill",
+    "K3(Phase 3 진단): 알파가 순위 수준(상위 K위)에만 조건부 존재하고 멤버십 전이 축에서는 소멸 → STOM 번역 불가로 kill",
+    "K4(Phase 4): 번역식 발화 vs 오프라인 사건 자카드<0.7 → 번역갭 kill (P1 ρ검열 8/8 적자 전례)",
+    "K5(Phase 5/6): train 적자 또는 MDD 폭주, 봉인 2024 OOS 실패, 연도별 역전+CI 0 포함 → kill, 파라미터 재조정 후 재도전 금지(새 봉인·새 승인 필요)"
+   ],
+   "expected_value_case": "성공 시: GPTAUTH_G8형 단순 게이트 체인 1~2개(예상 연 200~600거래)가 v4 앙상블의 5번째 비상관 다리로 편입 — v5가 재료 부족으로 죽은 '비상관 확장'을 실행 가능 API로 공급한다. v4 성공 원인이 순수 다각화(상관 0.816인 rr8 쌍둥이 3 + GPTAUTH 1)였으므로, 신호 원천이 다른(횡단면 전이) 전략 1개 추가는 위험조정 개선 기대가 구조적으로 정당하다(등가중 1/5 재구성은 별도 봉인 필요). 실패 시에도: 952일 churn 원장(진입/재진입/체류/순위속도 사건 데이터)은 본선 wt-dev 시드 공급 병목을 채우는 재사용 자산 + '횡단면 전이 축도 비었다'는 부정 지도가 남는다.",
+   "risks": [
+    "moneytop 진입이 거래대금 서지의 재포장일 위험(가장 큼) — K2 중복도 게이트로 방어하나, 그 경우 프로그램 전체가 조기 종료됨",
+    "진입 직후는 정의상 추격 매수 국면이라 tick2 불리체결이 가장 큰 지점 — 평균 EV -1.022%보다 나쁠 수 있음(이벤트 스터디가 그대로 드러낼 것)",
+    "저장 관심종목 플래그의 수집기 의존성: 수집 당시 상위N 설정이 기간 중 바뀌었다면 사건 정의가 비정상(非定常) — Phase 0에서 일자별 유니버스 크기 시계열로 검출",
+    "관심종목N의 틱 인덱스 vs 벽시계 갭이 저유동 소형주에서 커서 번역 자카드 미달 가능",
+    "2024 봉인 OOS가 챔피언 집계 수준에서 부분적으로 알려진 창이라는 점 — 사건 수준 미개봉임을 명시해도 완전한 blind는 아니며, 최종 신뢰는 2026-03+ 미래 데이터로만 확보됨",
+    "재진입 관측 가능 사건이 Phase 0 실측에서 예상보다 희소해 표본 하한 미달 셀만 남을 위험"
+   ],
+   "confidence_0_100": 27
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "PASS",
+    "score_0_10": 7,
+    "reasons": [
+     "항목별 반증 대조 결과 실패 목록과 같은 공간의 이름만 바꾼 재탐사가 아니다. 데이터 축이 실질적으로 새롭다: 코드베이스 실사에서 alpha_lab/events/detectors.py의 봉인 사건족은 E1~E5(VI해제·신고가·서지·갭개장·라운드피겨)뿐이고 moneytop 멤버십 전이는 어떤 사건족에도 없다. docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md와 docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md 전문 검색에서 'moneytop/유니버스/관심종목' 채굴 이력 언급 0건 — 3사이클(v1/v2/v3) 어디에서도 이 축이 탐사되지 않았음을 확인.",
+     "가장 위험한 겹침인 실패 (c) 이벤트 5족 0/138 대비: 방법론(이벤트 스터디+FDR+outcomes 재사용)은 동일하지만, 사건 원천 테이블(moneytop 거래대금순위 문자열 = 횡단면 경쟁 결과)이 신규이고, E3 서지의 봉인 정의(detectors.py: SURGE_K=10 × 당일평균, 자기 종목 절대 임계)와 조작적 정의가 구분된다. 렌즈 기준 '데이터/라벨/표본단위/목적함수 중 최소 1개 실질 차이'를 데이터 축에서 충족. 게다가 제안 스스로 K2(서지 사건과 자카드>0.8이면 신규성 상실 kill)를 사전등록해 재포장 위험을 자기 반증 가능하게 만들었다 — 적대적 심사가 요구할 방어를 이미 내장.",
+     "번역갭 주장을 코드로 검증했다: trade/base_strategy.py:75-79의 _Parameter_Previous는 pre >= tick_count일 때 0을 반환(클램프)하고, 관심종목N은 237행에 실존, dict 노출은 1026행 — 제안의 '데이터길이 가드 의무화' 근거가 정확하다. P1 ρ검열 8/8 적자(번역갭)의 재발 방지책(Phase 4 자카드≥0.7 패리티, Phase 0 저장플래그 vs 문자열 불일치 감사, K0/K4 kill)이 구체적이다.",
+     "통계 위생(DIGEST 8) 전항 유지: 사전등록·봉인(Phase 2), FDR q≤0.10, 표본 하한 n≥2,000(Idea3 346표본 교훈 반영), 3분할 교차 재현, 사후 슬라이싱 금지, n_trials 원장. OOS 취급이 정직하다 — 2025-01~2026-02를 blind로 재사용하지 않고 known-audit로 격하, 2024 봉인창의 '부분 기지(旣知)' 한계를 스스로 명시, 최종 승격은 2026-03+ 미래 데이터로 유보. 엔진 예산 ≤30회(잔여의 13%)로 v1~v3의 101회 남용 패턴과 다르다.",
+     "매도식은 rr8_12 원문 불변 재사용으로 실패 (g) 전역 청산 교체를 회피, 현행 self.Buy() 규약으로 실패 (i) 회피, wt-dev 힐클라임 루프와의 차별성(사건 원장 생성→오프라인 발견→직번역, 실패 시에도 churn 원장이 본선 시드 공급 자산)도 성립.",
+     "감점 사유(치명적이지 않음): (1) 제안이 인용한 features_v3.py는 현 워크트리 alpha_lab/mining/에 부재(trees.py·transition.py 등만 존재) — 사실관계 인용의 사소한 부정확. (2) '관심종목은 채굴 대상 데이터가 아니었다'는 서술은 부정확 — alpha_lab/dataset/schema.py:43에 관심종목이 RAW_FEATURES로 실존한다. 다만 제안 자신이 인정하듯 매수 평가 표본에서 상수 1이라 정보량 0이었고, 전이/이력 축(관심종목N)이 미탐사라는 실질 주장은 유효. (3) 진입 직후 추격매수 국면의 tick2 불리체결로 셀 EV가 -1.022% 바닥보다 나쁠 개연성이 높아 K1 종결(0/138 재판) 확률이 상당하다 — confidence 27은 오히려 정직한 자기평가."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 8,
+    "reasons": [
+     "번역갭 핵심 주장이 코드로 실증됨: trade/base_strategy.py:75-79의 _Parameter_Previous가 pre>=tick_count일 때 0을 반환한다는 지적이 정확하고, 데이터길이 가드 의무화는 올바른 해법이다. 관심종목N은 base_strategy.py:237-238(정의)·1026(네임스페이스 등록)과 backtest/back_code_test.py:244(백테 네임스페이스)에 모두 실존한다.",
+     "멤버십 '전이' 표현이 엔진의 기존 지원 패턴임: backtest/backengine_base_oms.py:31-57이 이미 관심종목N(1)로 관심진입/관심이탈을 계산한다. 이는 (a) 전이 idiom이 현행 엔진에서 실행 가능하고 (b) 관심종목=0인 저장 행이 실존함(관심이탈 검출의 전제)을 증명하므로, 사전 이력 부재로 인한 전면 붕괴 위험(가장 치명적일 수 있던 결함)이 코드 증거로 배제된다.",
+     "재사용 인프라 전수 실존 확인: alpha_lab/dataset/reader.py:70-78(moneytop_universe, 거래대금순위 문자열 파서), schema.py:43(관심종목 RAW_FEATURE), labels.py/labels_v2.py, distill/replay.py, events/detectors.py·outcomes.py, stats_common.py, translate/idioms.py·codegen.py, dataset/parity.py 모두 존재. 신규 작성은 universe/ 2개 모듈뿐.",
+     "데이터 실존·API 현행성 충족: tick DB 952일 스코프 내 moneytop 테이블 계약이 reader.py 헤더(4-8행)에 명시돼 있고 min DB 불요. 조건식 스케치는 현행 self.Buy() 규약이며 초당거래대금평균(30)+--avg-time 30 의존성(back_code_test.py:286)을 스스로 명시했다. v5의 구식 API 전멸(3-i) 재발 요인 없음.",
+     "표본 추정(3만~8.5만 사건)은 가정임을 자인하고 Phase 0 실측 + K0 하드킬(사전 60틱 확보율<30% kill)로 봉인했으며, 표본 하한 n>=2,000 미달 셀 판정 금지는 Idea3 교훈을 정확히 반영. 엔진 예산 총 30회(잔여 231회의 13%)로 구체적.",
+     "OOS 계획이 DIGEST 6과 정합: 2025-01~2026-02를 known-audit으로 강등하고 2024를 사건 수준 봉인 OOS로 쓰되 '완전 blind 아님'을 스스로 인정 — 과잉 주장 없음.",
+     "잔여 약점(비치명): 스케치의 2점 프로브(관심종목N(60)==0 ∧ 관심종목N(10)==1)는 발견 셀의 풍부한 속성(k번째 재진입, gap 길이, 체류>120초 지속)을 충실히 표현 못해 상당수 셀이 번역 단계에서 붕괴할 것 — 단 이는 K3/K4(자카드>=0.7) kill 조항으로 사전등록돼 있어 정직 실패 경로가 확보됨. 또한 스케치 주석 '최근 10틱은 순위 유지'는 관심종목N(10) 단일점 검사와 의미가 어긋나는 경미한 부정확."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "[살아남은 부분 — 경제성 판정 기준] 채택 기준이 유의성(lift)이 아니라 tick2 순EV이며 비용 바닥 -1.022%가 봉인 상수로 명시됨. 이 기저 수치는 실제 증거와 일치 확인: docs/research/condition_research/research_runs/alpha_lab_v3_20260706/v3_final_verdict.json(base_mean_L3_net_pct=-1.022) 및 docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md:15. 통계적 유의성 함정을 피한 EV-기준 설계는 econ 렌즈의 1차 요건을 충족한다.",
+     "[살아남은 부분 — 표현성 주장 코드 검증] 핵심 번역 프리미티브가 실재함을 확인: trade/base_strategy.py:75-79 _Parameter_Previous는 pre>=tick_count일 때 정확히 0을 반환하고(설계안의 '클램프 오독' 경고가 정확), :237-238에 _관심종목N, :1026에 조건식 네임스페이스 등록 존재. alpha_lab/dataset/reader.py:70-78 moneytop_universe도 실재 — 오프라인 파이프라인 재사용 주장이 공상이 아니다. 번역갭 3종을 스스로 식별하고 K4 자카드≥0.7 게이트를 걸었다(P1 8/8 적자 전례 방어).",
+     "[살아남은 부분 — 차별성] wt-dev 루프(시드→백테→힐클라임)와 실질적으로 다름: 후보 공간이 파라미터 이웃이 아닌 미채굴 데이터 축(moneytop 멤버십 전이), 발견이 전부 오프라인, 엔진 ≤30회(잔여 예산 231회의 13%)로 최종 심판만. 실패 (c) 이벤트 5족 0/138과의 구분(자기 종목 절대 임계 vs 횡단면 상대 경쟁)도 논리적으로 성립하며, 재포장 위험을 K2 자카드>0.8 자체 kill로 선제 방어 — 적대적으로 죽일 첫 번째 급소를 설계가 이미 막았다.",
+     "[살아남은 부분 — winner's curse 방어] 사전등록 셀 그리드 ≤108 고정, n_trials 원장, BH-FDR q≤0.10, n≥2,000 하한, discovery 3분할 2/3 재현, 2024 봉인 OOS 1회 개봉, 사후 슬라이싱 금지, K5 재조정 재도전 금지. DIGEST 8번 위생 전부 유지.",
+     "[급소 1 — 회전율/경제 규모 하한 부재] 성공 시나리오가 '연 200~600거래 GPTAUTH_G8형'이라 하면서, 생존 셀의 예상 연간 거래수·연간 순이익 하한이 사전등록 게이트에 없다. n≥2,000(952일 기준 일 2건)은 통계 하한이지 경제 하한이 아님 — 순EV +0.1%짜리 셀이 K1을 통과해 엔진 30회 예산을 소모할 수 있다. 경제성 렌즈에서 '살아남았지만 돈이 안 되는' 후보를 걸러낼 문턱이 설계에 없다.",
+     "[급소 2 — v4 포트폴리오 적합성이 측정 항목이 아니라 서사] expected_value_case가 '5번째 비상관 다리'를 기대하지만, 예시 조건식은 초당거래대금/평균(30)>1.5 서지 게이트 + 동일 소형주×등락율×아침 가드를 그대로 포함해 실현 P&L이 rr8 계보와 높게 상관될 개연성이 크다. K2는 '사건 수준' 자카드만 재고, Phase 6에 v4 4개 다리와의 일별 손익 상관·앙상블 MDD 기여 측정이 사전등록되어 있지 않다 — 사건이 새로워도 돈이 같은 날 같은 방향으로 벌리면 다각화 가치는 0이다.",
+     "[감점 — 추격 체결 슬리피지] 설계 스스로 인정하듯 순위 진입 직후는 정의상 추격 매수 국면이라 tick2 상수가 실체결보다 낙관적일 수 있는 바로 그 지점이다. 경과 {≤10,≤30,≤60초} 그리드가 부분 방어하지만 tick3 스트레스 감도는 설계에 없음. confidence 27은 정직하나, 가장 큰 리스크(K2 서지 재포장)가 발동하면 프로그램 전체가 조기 종료되는 단일 실패점 구조."
+    ],
+    "required_fixes": [
+     "Phase 2 사전등록에 경제 하한 게이트 추가: 셀별 예상 연간 거래수 하한(예: ≥100건/년)과 tick2 순EV 기준 예상 연간 순이익 하한(예: v4 앙상블 OOS 연 수익 2.6M의 10% 이상)을 K1과 별도의 K-econ으로 봉인 — 통계 생존이지만 경제 무의미한 셀의 Phase 5/6 예산 소모 차단.",
+     "Phase 6 사전등록에 v4 포트폴리오 적합성 측정 게이트 추가: 생존 후보의 일별 실현 P&L과 v4 4개 다리(rr8_12/0/21, GPTAUTH_G8) 각각의 상관 상한(예: ρ<0.6) 및 앙상블 편입 시 MDD 기여 방향을 명시적 승격 조건으로 — 사건 수준 자카드(K2)만으로는 손익 수준 다각화 가치를 보증하지 못함.",
+     "Phase 5 또는 6에 tick3(또는 봉인된 보수 슬리피지 상수) 감도 1런 추가: 순위 진입 추격 국면의 불리체결 위험이 설계의 자인된 최대 EV 리스크이므로, tick2→tick3 전환 시 순EV 부호가 뒤집히는 후보는 '감독형 후보'로도 승격 금지."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D10",
+  "name": "신규: 분봉 저회전 전략(비용 헛들 탈출)",
+  "design": {
+   "direction_id": "D10",
+   "direction_name": "분봉 저회전 전략 — 비용 헛들 탈출 (full-day min-DB EV 채굴)",
+   "one_line": "tick 스캘핑이 비용(-1.022% 그리드 EV)에 지배되는 것과 달리, 보유 30~240분·목표 +3~10%의 분봉 당일 전략은 왕복비용(~0.5-0.7%)이 목표수익의 10~20%에 불과해, 한 번도 탐사된 적 없는 \"장중 전체(10:00~14:00 포함) 분봉 공간\"에서 약한 엣지도 경제성을 가질 수 있다.",
+   "core_hypothesis": "기존 3사이클 실패(RC-0: \"양EV 포켓 없음\")는 tick DB의 물리적 한계 때문에 09:00:00~09:30:00 창(실측 확인: 952개 일DB 전부 moneytop 1,801행=정확히 30분)에서만 성립이 확정된 결론이다. min DB는 09:00~15:19 전일 커버(moneytop 80,785행 실측)이며, 이 공간 — 특히 오전 급등 후 눌림/재돌파, 장중 60분봉 신고가 돌파 같은 시간 단위 구조 — 는 어떤 실패 사이클도 측정한 적이 없다. 저회전(일 1~5건)·큰 목표폭(+3~10%) 구조에서는 비용/목표 비율이 tick 대비 한 자릿수 배 낮아져, tick에서 비용에 잠식된 수준의 통계 신호도 양(+) EV로 번역될 수 있다. 부수 가치: 성공 시 4챔피언(전부 09:00~09:10 진입)과 시간대·타임프레임이 완전히 분리된 구조적 비상관 자산 — v5가 재료 부족으로 실패한 바로 그 빈 자리를 채운다.",
+   "why_not_refuted": "(a) 스냅샷 43피처 트리채굴 v1/v2/v3 [가장 가까운 실패]: 데이터가 다르다(tick DB 09:00-09:30 vs min DB 전일 — tick DB는 물리적으로 오전 30분만 존재함을 이번 조사에서 실측 확정, 10:00~15:00 분봉 공간은 표본 0건으로 미탐사), 표본단위가 다르다(5초 stride 그리드 vs 분봉 FALSE→TRUE 전이 + 일일 발화예산 1~10건), 라벨이 다르다(L1 +1%/300초·L2 TP3/SL2 vs 매도규율 리플레이 +6/-3/240분 트리플배리어 — 목표폭이 비용의 6~20배), 목적함수는 v3의 EV CI>0 채택기준을 그대로 계승(바꾸는 것은 기준이 아니라 공간). RC-0 결론문 자체가 \"저장 54컬럼 × 임의 그리드 초\" 공간으로 한정을 명시했다. (b) 고정지평/stride+lift: 미사용 — 전이 샘플링 + 리플레이 실현손익 + EV 채택. (c) 이벤트 5족 FDR 0/138: 그 5족은 전부 tick 개장창 사건. D10의 3개 원형(시간 단위 base breakout류)은 다른 데이터의 다른 사건이나, 이것이 가장 유사한 실패 계보임을 인정 — 그래서 원형 카탈로그를 3족×~20셀로 사전등록·소형화하고 FDR 생존 0이면 확장 없이 즉시 kill한다. (d) 콜드 LLM: 미사용. (e) score-sum: 미사용, 화이트리스트 필터체인만. (f) 다밴드 야간 40후보: tick 개장창 생성기 산출물 — 무관. (g) 전역 청산 교체: 챔피언 매도식을 건드리지 않음, 청산은 신규 후보 자신의 사전등록 배리어. (h) adaptive timing/regime: 정적 조건식만. (i) v5 구식 API: 현행 매수/매도+self.Buy() 규약으로 작성, 채점 전 --timeframe min 스모크를 게이트로 강제. 자기기각 조항: 만약 Phase 0에서 min 그리드 기저 EV가 tick과 동급(-1% 이하)으로 나오면 \"비용 탈출\" 전제 자체가 붕괴 → 셀 측정 전 kill.",
+   "mechanism_steps": [
+    "Phase 0a 스키마·커버리지 감사(완료 일부): stock_min_back.db 1,367종목 테이블·57컬럼·moneytop 202504070900~202602271519 실측 확인됨. 신규 모듈 alpha_lab/dataset/min_reader.py — 기존 alpha_lab/dataset/reader.py 패턴 복제(connect_ro read-only URI, moneytop_universe, load_stock_rows)하되 index=YYYYMMDDHHMM 12자리·전일 그리드로 변경. utility/setting_base.py list_stock_min_base와 컬럼 패리티 자동검증.",
+    "Phase 0b 비용 헛들 기저선 측정(사전등록 진단): 발견창의 (종목,분) 전 그리드(관심종목=1)에 대해 +6/-3/240분 트리플배리어 + net_rate(FEE 0.00015/TAX 0.0018) + 분봉 보수 보정(불리 3틱 — min 엔진이 분 스냅샷 체결이라 틱 대비 낙관적이므로 tick2보다 1틱 가산)으로 무조건부 EV 산출. alpha_lab/dataset/labels.py의 net_rate 함수 재사용, 배리어 상수만 min용 신규 봉인. 이 수치가 -1% 이하면 즉시 kill.",
+    "Phase 1 후보 원형 사전등록: 3족 × ~20 파라미터 셀 = 총 ~60셀 봉인. 족A '오전 급등 후 10:00 이후 눌림-재돌파'(등락율 밴드 × 이동평균(20/60) 정배열 × 60분 신고가 돌파), 족B '장중 base breakout + 분당거래대금 서지'(최고현재가(60,1) 돌파 × 분당거래대금/분당거래대금평균(20) 배수), 족C '소형주 오후 재점화'(13:00~14:30 창 × 당일 고가 근접 × 거래대금 재서지). 전부 backfill-호환 서브네임스페이스(가격/거래대금 파생만; 체결강도·호가·분당매수수량은 발견 단계 금지, 실 11개월 검증 단계의 선택적 보강으로만) — 이유는 백필 데이터가 OHLCV급 컬럼만 갖기 때문.",
+    "Phase 2 전이 샘플링 + 리플레이 라벨: alpha_lab/mining/transition.py의 FALSE→TRUE 전이 추출 로직을 min index 산술로 이식, 각 전이에 사전등록 매도규율(+6/-3/240분/트레일 0.6) 리플레이 실현손익 라벨. v2에서 검증된 리플레이 채점기 패턴 재사용.",
+    "Phase 3 EV 채택: alpha_lab/mining/ev_adopt.py 재사용 — 일블록 부트스트랩 CI하한(mean net EV)>0 ∧ 월별 부호 일관성(발견창 7개월 중 5+) ∧ 발화예산 1~10건/일 ∧ 60셀 전체 FDR(BH q=0.1). 생존 0 → kill·부정지도 기록.",
+    "Phase 4 STOM 번역: alpha_lab/translate/idioms.py에 min 관용구 확장(분당* 변수, 이동평균 봉인창 5/10/20/60/120만, 비등록 구간틱수는 --avg-time 등록 또는 calc=True). tests/unit/test_ai_dictionary.py 패턴으로 min 네임스페이스 스모크.",
+    "Phase 5 엔진 triage(최종 심판): python stom_backtest.py --buy <후보> --sell <후보매도> --timeframe min --avg-time 20,60 --start-time 90000 --end-time 152000, cli/runner.py run_backtest 프로그래매틱 경로. 스모크 → 발견창 train → 봉인 홀드아웃 1회 → 슬리피지 민감도. 게이트: 흑자 ∧ 거래수≥300 ∧ MDD≤10% ∧ 월별 역전 없음.",
+    "Phase 6 백필 조사(병행 트랙, 독립 산출물): 키움 opt10080(주식분봉차트) 1분봉 과거 깊이 실측(연속조회 한도), 대안 KIS/eBest API·영웅문 HTS 다운로드 비교. 백필 가능 시 2022~2025-03 OHLCV+거래대금 분봉 + 일별 거래대금 상위로 근사 유니버스 재구성(분 단위 moneytop 불가 — 근사임을 봉인 문서에 명시) → 발견 표본 3배 확장. 백필 불가 시 11개월 단독 진행하되 표본 하한 미달 셀은 inconclusive로만 판정."
+   ],
+   "example_condition_sketch": "매수식(min 스코프): 매수 = True / if not (관심종목 == 1): 매수 = False / elif not (100000 <= 시분초 < 140000): 매수 = False  # 10시~14시, 개장 혼돈·마감 회피 / elif not (시가총액 < 3000): 매수 = False / elif not (2.0 < 등락율 <= 12.0): 매수 = False / elif not (현재가 > 최고현재가(60, 1)): 매수 = False  # 직전 60분봉 고점 돌파(당일 base breakout) / elif not (분당거래대금 > 분당거래대금평균(20) * 3.0): 매수 = False / elif not (현재가 > 이동평균(20) and 이동평균(20) > 이동평균(60)): 매수 = False  # 봉인 사전계산창 20/60 / elif 라운드피겨위5호가이내: 매수 = False / if 매수: self.Buy() — 매도식 방침: 매도 = False 시작, 수익률 >= 6.0 or 수익률 <= -3.0 → 매도=True; 최고수익률 > 3 and 수익률 < 최고수익률 * 0.6 → 매도=True; 보유시간 > 240 → 매도=True(분 단위); 장마감 강제청산은 엔진 LastSell이 처리. 최고현재가(60,1)·분당거래대금평균(20)은 --avg-time 20,60 등록 필요.",
+   "expressibility": "높음. 필요한 전 요소가 min 네임스페이스에 존재: 분당거래대금/분당거래대금평균, 최고현재가, 이동평균(봉인창 5/10/20/60/120), 분봉시가/고가/저가, 시분초(HHMM00 형식 주의), 보유시간(분 단위), TA-Lib 28종(RSI/MACD/BBU 등 — 분봉 전용, 선택적 보강용). 번역갭 위험 3건: (1) 비등록 구간틱수 사용 시 CheckAvglist 엔진 중지 → --avg-time 사전 등록을 번역기 검증 항목화; (2) tick_count>=avgtime 이후에만 매수 평가 → 60봉 요구 시 10:00부터 발화 — 설계와 정합이나 avg-time 값과 시분초 하한의 일관성 검증 필요; (3) min 엔진은 tick 대비 실전·백테 사용 이력이 적어 스모크(원코드 1일 로딩 왕복)를 hard gate로 둔다. 최대 충실도 리스크는 문법이 아니라 체결: 분 스냅샷 호가 체결은 분내 가격 경로를 못 보므로 낙관 편향 — 오프라인 EV에 불리 3틱 가산으로 방어하고 엔진 확인은 tick 시나리오 불가(데이터 부재)임을 한계로 명기.",
+   "data_requirements": "(1) 실측 완료: stock_min_back.db 1.46GB, 1,367종목 테이블, 57컬럼(분당 계열 포함), moneytop 2025-04-07 09:00 ~ 2026-02-27 15:19 전일 커버, 일DB 218개. (2) 실측 완료(부정): tick DB 952일 전부 09:00:00~09:30:00만 존재(3개 표본일 max index 093000) → tick→min 집계 백필 불가 확정. (3) 조사 필요: 키움 opt10080 1분봉 연속조회 과거 깊이(통상 수개월~수년, TR·서버 정책 의존), KIS 오픈API 분봉 깊이, 영웅문 HTS 일괄 다운로드 — 셋 다 OHLCV+거래량(+거래대금)만 제공하므로 백필 컬럼은 가격/거래대금 파생으로 한정되고 체결강도·호가·분당매수수량은 재구성 불가. (4) 백필 시 유니버스 재구성: 일별 거래대금 상위(일봉 데이터로 산출)로 근사 — 분 단위 moneytop과 다른 분포임을 봉인에 명시하고, 실 11개월 창에서 근사 유니버스 vs 실제 moneytop의 후보 발화 일치율을 측정해 괴리 보정.",
+   "sample_size_estimate": "실 min DB 단독: 발견창 2025-04~2025-10(~140거래일) 기준 셀당 전이 수백~수천(느슨한 셀은 2,000+ 도달 가능, 타이트한 셀은 미달 → inconclusive 처리). 엔진 거래수: 일 1~5건 × 11개월 ≈ 220~1,100건/후보 — tick 봉인하한 2,000 미달이 구조적이므로 저빈도용 축소 하한을 사전등록: 엔진 거래 ≥300 ∧ 월별 부호 일관 7/11 ∧ 부트스트랩 CI(광폭 허용) — 하한 축소는 신뢰도 하락으로 정직하게 반영(confidence에 이미 감액). 백필 성공 시(2022~2025, +3년) 전이 3~4배, 걸어야 할 셀만 하한 2,000 정상 충족 가능.",
+   "offline_pipeline": [
+    "alpha_lab/dataset/reader.py — connect_ro/moneytop_universe/load_stock_rows 패턴을 min_reader.py로 이식(핵심 재사용)",
+    "alpha_lab/dataset/labels.py — net_rate(FEE 0.00015/TAX 0.0018)·트리플배리어 골격 재사용, min용 배리어 상수(+6/-3/240분·불리3틱) 신규 봉인",
+    "alpha_lab/mining/transition.py — FALSE→TRUE 전이 샘플러(v3 산출물)를 min index(YYYYMMDDHHMM) 산술로 이식",
+    "alpha_lab/mining/ev_adopt.py — 일블록 부트스트랩 CI·연도별 EV·빈도예산·FDR 채택기 그대로 재사용",
+    "alpha_lab/translate/idioms.py — 번역기 min 관용구 확장(분당* 변수·봉인 이동평균창·avg-time 검증 항목 추가)",
+    "alpha_lab/hillclimb/features_v3.py — 화이트리스트 동결 패턴만 차용(min 서브네임스페이스 화이트리스트 신규)",
+    "cli/config.py + cli/runner.py run_backtest — --timeframe min 엔진 확인 경로(is_tick=False)",
+    "docs/research/condition_research/ 봉인·n_trials 원장 템플릿 — 사전등록 규율 그대로 계승"
+   ],
+   "engine_budget_estimate": "min 엔진 총 ≤100회(봉인): 스모크·문법검증 10, Phase 0 기저선 보조 5, train triage ≤15후보×3=45, 홀드아웃 1회/후보 ≤15, 슬리피지·민감도 ≤15, 예비 10. min DB 1.46GB(tick 62GB의 2.3%)라 회당 수분 예상 — 총 벽시계 1일 미만. 오프라인 파이프라인(전이 채굴·리플레이)이 지배 비용으로 2~3일.",
+   "oos_validation_plan": "진짜 blind 창이 현존하지 않음을 전제로 4겹 방어: (1) 시간 분할 봉인 — 발견 2025-04~2025-10, 내부 홀드아웃 2025-11~2026-02를 측정 시작 전 봉인·후보당 1회 개봉·재시도 금지. 단 이 창은 v4 판정으로 시장 레짐 수준에서 이미 알려진 창이므로 'quasi-blind(레짐 기지, 전략 수준 미개봉)'로만 표기하고 fresh blind 주장 금지(C-013 준수). (2) 직교 분할 — 짝/홀수 거래일 분할 재현성 검사(레짐 누출과 독립인 축). (3) 다중비교 원장 — 60셀 전체 n_trials 기록, FDR q=0.1, 홀드아웃은 FDR 생존자에게만. (4) 최종 심판 유예 — 어떤 결과도 '배포 가능'이 아니라 'v4형 감독 후보'까지만: 2026-03+ 신규 데이터 축적 후 future OOS 1회 통과 전까지 소액 감독형·킬스위치 필수(v4 supervised protocol 준용). 백필 성공 시 추가 층: 2022~2024 백필로 발견, 실 min 11개월 전체를 검증 전용으로 강등 — 발견/검증 데이터 소스 자체가 분리되는 가장 강한 구도.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프 = tick 개장 30분 창에서 시드 생성→백테 반복 채점→힐클라임(백테가 탐색의 평가함수). D10은 (1) 타임프레임이 다르고(분봉), (2) 시간창이 다르고(10:00~14:30 포함 전일 — wt-dev가 물리적으로 접근 불가한 데이터), (3) 발견 메커니즘이 다르다(오프라인 전이-EV 채굴이 발견, 엔진은 후보당 수회의 최종 심판 — 힐클라임을 1차 탐색으로 쓰지 않음), (4) 산출물 포지셔닝이 다르다(챔피언 대체가 아니라 시간대 비중첩 비상관 5번째 멤버). 유일한 공유점은 통계 위생 규율과 번역기 인프라.",
+   "kill_criteria": [
+    "K1(Phase 0b): min 그리드 무조건부 EV(비용·불리3틱 포함) ≤ -1.0% — '비용 탈출' 전제 붕괴 → 셀 측정 전 kill",
+    "K2(Phase 3): 사전등록 60셀 FDR 생존 0 → kill, 부정지도만 기록(이벤트 스터디 실패 계보 확장 확정)",
+    "K3(표본): 백필 불가 ∧ FDR 생존 셀의 발견창 전이 <1,000 ∧ 엔진 예상 거래 <300 → inconclusive 종결(성공/실패 주장 금지, Idea3 교훈 준수)",
+    "K4(Phase 5): 엔진 train에서 흑자 후보 0 또는 전 후보 MDD>10% → kill",
+    "K5(홀드아웃): 2025-11~2026-02 1회 개봉에서 부호 역전 또는 calmar<1 → kill(재슬라이싱·재시도 금지)",
+    "K6(백필 트랙 독립): 분봉 API 과거 깊이 <12개월 ∧ 대안 소스 전무 → 백필 트랙만 종결(본 트랙은 K3 규율로 계속)",
+    "K7(충실도): 근사 유니버스 vs 실제 moneytop 발화 일치율 <70% → 백필 발견 결과를 실 데이터 재확인 없이 사용 금지"
+   ],
+   "expected_value_case": "성공 시나리오: 11개월 홀드아웃 포함 전창에서 흑자·MDD≤10%·거래 300+의 분봉 후보 1~2개. 기대 규모는 챔피언(11개월 환산 ~2.6M 앙상블)의 절반 이하라도 가치가 성립하는 근거 — 4챔피언 전원이 09:00~09:10 진입·수분 보유라 손익 동조가 구조적으로 높은데(rr8 계보 상관 0.816), 분봉 전략은 진입 시간대(10시 이후)·보유 시간(시간 단위)이 완전히 분리돼 v4 앙상블의 한계였던 '실행 가능한 비상관 재료 부재'(v5 kill 사유)를 정확히 메운다. v4에서 순수 다각화만으로 위험조정 +38%였으므로, 비상관 5번째 멤버의 한계 기여는 단독 수익보다 크다. 실패 시나리오도 자산: 'full-day 분봉 공간에도 EV 포켓 없음'이 확정되면 데이터-우선 발굴의 한계가 tick 개장창 국한이 아니라 도메인 전반임이 증명돼 부정지도가 완결된다.",
+   "risks": [
+    "11개월 단일 데이터의 레짐 집중 — 2025-04~2026-02 한 구간의 스타일에 과적합할 수 있고 백필 실패 시 완화 수단이 제한적",
+    "이벤트 스터디 실패 계보와 방법적 근친 — 사건 정의만 바꾼 재시도로 퇴화할 위험(60셀 봉인·확장 금지로 방어하나 잔존)",
+    "min 엔진 체결 충실도 — 분 스냅샷 체결은 분내 경로를 못 봐 낙관 편향, 불리틱 가산은 근사일 뿐이며 실전 이행 시 갭 가능",
+    "오후 시간대 소형주 유동성 — 호가 스프레드·잔량이 오전 서지 대비 얇아 실효 슬리피지가 모델 초과 가능",
+    "백필 데이터의 컬럼 결손·유니버스 근사 — 발견과 검증의 분포 불일치가 가짜 생존자를 만들 수 있음(K7로 방어)",
+    "min 엔진 자체의 사용 이력 부족 — 스모크에서 예상 밖 규약 차이(시분초 형식, avg_list, tick_count 게이트) 발견 시 일정 지연",
+    "2025-11~2026-02 홀드아웃이 레짐 수준에서 오염된 quasi-blind라는 본질적 한계 — 최종 신뢰는 2026-03+ future OOS 전까지 유보"
+   ],
+   "confidence_0_100": 34
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "PASS",
+    "score_0_10": 7.5,
+    "reasons": [
+     "실측 검증 1 — 실패 공간과 물리적으로 분리됨: C:/System_Trading/STOM/STOM_V.wt-alpha/_database 의 stock_tick_*.db 953개 중 무작위 3개(20221012/20240805/20251017)의 moneytop index 범위가 전부 090000~093000으로 확인됨. 즉 v1/v2/v3·이벤트 5족·다밴드 야간캠페인이 재탐사 금지 대상으로 삼는 실패 공간은 tick 09:00-09:30 창에 물리적으로 국한되며, D10의 10:00~14:30 분봉 공간은 어떤 실패 사이클도 표본 1건조차 측정한 적이 없다.",
+     "실측 검증 2 — min DB 주장 정확: _database/stock_min_back.db 1,455,771,648바이트(1.46GB), 테이블 1,381개, moneytop 202504070900~202602271519 / 80,785행 — 제안서의 실측 수치와 정확히 일치. 데이터 주장에 과장 없음.",
+     "문서 대조 — RC-0 결론의 명시적 한정: docs/research/condition_research/plans/2026-07-06_alpha_lab_root_cause_and_v3_plan.md 21행이 RC-0을 '저장 54컬럼(그중 25 화이트리스트) x 임의 그리드 초라는 표본 공간 자체'로 한정 서술. docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md 도 3사이클 실패를 전부 tick 창 채굴로 기술. D10은 데이터(min 전일 vs tick 개장 30분), 표본단위(FALSE→TRUE 전이+일일 발화예산 vs 5초 stride 그리드), 라벨(+6/-3/240분 트리플배리어 리플레이 vs +1%/300초 고정지평) 3개 축이 동시에 다름 — 렌즈 요구(최소 1개)를 초과 충족.",
+     "실패 목록 (a)~(i) 전수 대조 결과 유일한 잔존 근친은 (c) 이벤트 5족 FDR 0/138과의 방법적 유사성인데, 그 5족은 전부 tick 개장창 사건이고 D10은 60셀 사전등록·확장 금지·K2(FDR 생존 0 즉시 kill)로 퇴화 경로를 스스로 차단함. (b) lift 미사용, (d) LLM 미사용, (e) score-sum 미사용, (f) tick 생성기 산출물이라 무관, (g) 챔피언 매도식 무접촉, (h) 정적 조건식만, (i) 현행 API+--timeframe min 스모크 게이트(cli/config.py 105행에 timeframe choices ['tick','min'] 실재 확인)로 각각 해소.",
+     "표현 가능성 실측: utility/setting_base.py 177~206행에 min 네임스페이스 변수(이동평균5/10/20/60/120, 최고현재가, 분당거래대금, 분당거래대금평균) 실재 — 스케치 조건식의 전 요소가 문법적으로 존재.",
+     "통계 위생(DIGEST 8) 준수: 2025-11~2026-02 홀드아웃을 quasi-blind로 정직 표기하고 fresh blind 주장을 금지(DIGEST 6의 개봉창 재사용 금지와 정합), n_trials 원장·FDR q=0.1·자기기각 조항(Phase 0b 기저 EV) 포함. 감점 요인은 신규성 자체가 아니라 실행 리스크 — 11개월 단일 레짐, 거래 하한 300으로의 축소(봉인 2,000 대비), min 엔진 체결 충실도 — 이며 제안서가 confidence 34로 이미 자인함."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "feasible",
+    "verdict": "PASS",
+    "score_0_10": 7.5,
+    "reasons": [
+     "데이터 실존 검증됨: _database/에 stock_min_20250407.db~stock_min_20260227.db 218개 일DB + stock_min_back.db 실재 — 제안의 min DB 커버리지 주장(2025-04-07~2026-02-27)과 정확히 일치. 백필 트랙은 미확정이나 K6로 독립 종결 가능하게 설계됨.",
+     "엔진 API 실행 가능성 검증됨: cli/config.py:105에 --timeframe {tick,min} 실재, backtest/backengine_kiwoom_min.py 실재하며 line 20의 시분초 = int(str(self.index)[8:]+'00')이 제안이 명기한 HHMM00 형식과 정합 — 스케치의 '100000 <= 시분초 < 140000' 표현이 실제로 성립. v5의 구식 self.Buy() 7-arg 전멸 원인을 인지하고 스모크를 hard gate로 봉인함.",
+     "번역갭(변수 네임스페이스) 검증됨: utility/setting_base.py:168 list_stock_min_base에 분당거래대금평균 실재, backtest/back_code_test.py:247/259/349에 이동평균·최고현재가·분당거래대금평균 함수 정의 실재, backtest/backengine_base.py:438 CheckAvglist 실재 — 스케치의 전 요소가 min 네임스페이스로 표현 가능하고, avg-time 20,60 등록 요구와 tick_count 게이트(60봉→10:00 발화)의 일관성까지 제안이 자체 식별함.",
+     "인프라 재사용 계획 구체적·실재: alpha_lab/dataset/reader.py, labels.py, mining/transition.py, mining/ev_adopt.py, translate/idioms.py, hillclimb/features_v3.py 전부 워크트리에 실재 확인 — offline_pipeline 8개 항목이 실존 모듈 기준으로 작성됨. 엔진 예산 ≤100회는 min DB 크기(tick의 ~2%) 대비 현실적.",
+     "표본 추정의 정직성: 엔진 거래 220~1,100건이 tick 봉인하한 2,000에 구조적 미달임을 은폐하지 않고 저빈도용 축소 하한(≥300 ∧ 월별 부호 7/11 ∧ CI)을 사전등록하며 confidence 34로 감액, K3로 미달 시 inconclusive 강제 — P3(346<2000) 실패 계보를 회피가 아니라 규율로 처리함.",
+     "홀드아웃 오염 처리 적법: 2025-11~2026-02가 v4 판정으로 개봉된 창임을 인정하고 quasi-blind로만 표기, fresh blind 주장 금지 — DIGEST 6항의 재사용 금지 조건과 충돌하지 않음. 최종 신뢰는 2026-03+ future OOS로 유보(v4 supervised protocol 준용).",
+     "잔존 약점(치명 아님): (1) min 엔진 분 스냅샷 체결의 낙관 편향은 불리 3틱 가산이 근사일 뿐 tick 대조 검증이 물리적으로 불가(tick DB 09:00-09:30 한정)하나 제안이 한계로 명기함; (2) 이벤트 스터디 실패 계보와의 방법적 근친은 60셀 봉인·K2 즉시 kill로 방어; (3) 자기기각 K1(Phase 0b 기저 EV ≤ -1%)이 전제 붕괴 시 조기 종결을 보장 — 죽일 치명 결함을 찾지 못함."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 6,
+    "reasons": [
+     "[경제성: 살아남음] 비용/목표 산식은 견고하다. 왕복 세금+수수료 0.21%(FEE 0.00015x2+TAX 0.0018, alpha_lab/dataset/labels.py net_rate 재사용)+불리 3틱 가산 대비 목표 +6/-3 배리어는 비용/목표 비율이 tick 스캘핑(-1.022% 그리드 EV 기저) 대비 한 자릿수 배 낮고, K1(Phase 0b에서 min 그리드 무조건부 EV<=-1.0%면 셀 측정 전 kill)이 '비용 탈출' 전제를 측정으로 검증하는 자기기각 조항을 갖췄다. 일 1~5건 x 시간 단위 보유는 회전율/체결 용량 면에서 현실적이다.",
+     "[차별성: 핵심 전제 과장 — FIX 사유] '한 번도 탐사된 적 없는 장중 전체 분봉 공간'은 리포 증거와 모순된다. docs/research/condition_research/2026-06-12_min_timeframe_validation_protocol.md는 min 니치 스윕 2종+LLM 2종 시도(전부 기각), 6/11 야간 96좌표 완주(tmap_min_morning 51 + tmap_min_afternoon 45 — 오후 포함), min 엔진 E2E 검증을 실측 기록하고, docs/research/condition_research/2026-06-13_entry_extension_and_min_roadmap.md는 M-트랙(6 프리미티브 x 6 시간밴드 36셀 전세션 지도)을 이미 사전선언했다. 미탐사인 것은 '전이-EV 채굴 방법론'이지 '분봉 공간' 자체가 아니다.",
+     "[wt-dev 차별성 주장 (2)항 허위] 'wt-dev가 물리적으로 접근 불가한 데이터'는 틀렸다 — 같은 문서가 min 템플릿 빌드/스윕/선택기/LLM 생성기(timeframe=min)까지 루프 인프라에서 이미 작동함을 실측했다. 실질 차별성은 발견 메커니즘(오프라인 전이-EV 채굴 vs 완성구조 스윕 힐클라임)과 FDR 채택기뿐이며, 이 부분만은 유효하다(기존 min 실패가 '완성 구조 던지기'였다는 진단은 2026-06-13 로드맵 자신이 인정).",
+     "[봉인창 충돌] D10의 발견 2025-04~2025-10 / 홀드아웃 2025-11~2026-02는 이미 봉인된 min 프로토콜(2026-06-12 문서: train 2025-04-08~2025-12-31, 고정 OOS 2026-01-01~2026-02-27, min-oos-config.json 동봉)과 창 경계가 다르다. 또한 6/11 min 니치 스윕이 2026-01~02를 train으로 소비한 오염이 공시돼 있는데 D10은 이 선행 개봉 이력을 n_trials/오염 원장에 반영하지 않았다.",
+     "[포트폴리오 적합성: 강점] 4챔피언 전원 09:00~09:10 진입·rr 계보 상관 0.816인 상황에서 10시 이후 진입·시간 단위 보유는 구조적 비상관이 맞고, v5 kill(비상관 후보 8/8 실행 불가)이 남긴 빈자리를 정확히 겨냥한다. quasi-blind 정직 표기·2026-03+ future OOS 전 소액 감독형 유예는 v4 supervised protocol과 정합.",
+     "[winner's curse 방어: 대체로 충족] 60셀 봉인+FDR q=0.1+n_trials 원장+홀드아웃 1회 개봉+거래 하한 축소(2,000->300)의 신뢰도 감액 정직 반영. 다만 오후 소형주 체결 충실도는 균일 '불리 3틱'이 시간대별 스프레드 격차를 못 담아 EV 마진이 얇은 셀에서 가짜 경제성을 만들 수 있다."
+    ],
+    "required_fixes": [
+     "core_hypothesis/why_not_refuted의 '미탐사 공간' 주장을 수정: 2026-06-12 min 프로토콜의 min 니치 2종·LLM 2종 기각, tmap_min morning 51+afternoon 45 스윕, 2026-06-13 M-트랙 사전선언을 선행 이력으로 명시 인용하고, 차별성 근거를 '공간 미탐사'가 아니라 '전이-EV 채굴+FDR 방법론 미적용'으로 재정식화하라. 선행 min 시도들을 D10 n_trials/부정지도 원장에 편입하라.",
+     "distinctness_from_wtdev_loop (2)항 '물리적으로 접근 불가' 문구 삭제 — min 엔진 경로는 루프에서 E2E 검증 완료(2026-06-12 문서). 차별성은 발견 메커니즘과 산출물 포지셔닝으로만 주장하라.",
+     "시간 분할을 기봉인된 min 프로토콜(train ~2025-12-31 / 고정 OOS 2026-01~02, min-oos-config.json)과 정합시키거나, 대체 이유를 명시해 공식 개정으로 봉인하라. 6/11 스윕의 2026-01~02 train 오염 공시를 D10 홀드아웃 설계에 반영하라.",
+     "체결 충실도: 균일 불리 3틱 대신 시간대(10시/11~13시/13~14시반)x시가총액 밴드별 실효 스프레드를 min 데이터(분봉 고저폭·거래대금)로 사전 추정해 밴드별 불리틱을 사전등록하고, 슬리피지 2배 민감도에서도 EV CI하한>0 유지를 Phase 3 채택 조건에 포함하라."
+    ]
+   }
+  ]
+ },
+ {
+  "id": "D11",
+  "name": "신규: 신선 데이터·전방 검증 인프라",
+  "design": {
+   "direction_id": "D11",
+   "direction_name": "신선 데이터 수집 재개 + 봉인 전방 OOS 인프라 (Fresh-Data Forward-Validation Infrastructure)",
+   "one_line": "신호를 캐는 대신 '증거 자체'를 생산한다: 오늘부터 실시간 수집을 재개해 2026-07+ 창을 암호학적으로 봉인된 전방 OOS로 관리하고, 그때까지는 2022-2024 중첩 walk-forward 재봉인 + known 창 다중비교 원장 + 소액 감독형 전방 실증을 유일한 최종 심판으로 제도화한다.",
+   "core_hypothesis": "현 시점에서 어떤 새 조건식 후보도 통계적으로 식별 불가능하다 — 2025-01~2026-02 창은 이미 101+회 엔진 백테와 v4 선택 과정에서 개봉·소비됐고(known/audit), 2026-03 이후 데이터는 존재하지 않는다. 이 상태에서 '유망 후보'는 정의상 winner's curse의 함수다: 이 저장소의 실측이 그 크기를 보여준다 — 사후 CSV 슬라이스 +1.07M이 재백테에서 -1.15M(스윙 약 2.2M ≈ v4 앙상블 14개월 수익 2.6M의 85%), P5 리플레이 강세 후보가 엔진에서 2024/2025 역전. 같은 known 창에 N개 후보를 던지면 무효 후보의 기대 최대 성과가 sqrt(2·ln N)·σ로 자라므로, N=20 수준만 돼도 '가짜 최고'가 진짜 챔피언급 calmar를 흉내낸다. 따라서 유일하게 반박 불가능한 증거는 (1) 봉인된 미개봉 미래 데이터와 (2) 실계좌 전방 실증뿐이고, 이 인프라 없이는 D1~D10 어떤 방향도 '판정 불가'로 끝난다. 핵심 사실: STOM 틱 DB는 API 백필이 불가능하다(호가 10단·초당매수/매도금액·moneytop 순위·VI 상태는 실시간 피드에서만 생성 — trade/stock_korea/kiwoom_strategy_tick.py:230-257이 라이브 데이터로만 행을 조립하고, 저장소 전체에 opt10079/10080 차트 TR 코드가 없음). 분봉도 OHLCV만 백필 가능할 뿐 분당매수수량·호가 컬럼·관심종목 플래그는 재구성 불가 → 2026-03~07 공백(약 90거래일)은 영구 손실이며, 하루 늦게 시작할수록 전방 OOS가 하루씩 늦게 쌓인다. 수집 재개가 곧 알파 연구의 임계 경로다.",
+   "why_not_refuted": "DIGEST 3번 실패 목록과의 대조 — D11은 신호 발굴이 아니라 증거 생산 인프라이므로 실패한 탐색 공간을 아예 통과하지 않는다. (a) 스냅샷 43피처 트리 채굴: 본 방향은 피처도 트리도 사용하지 않는다. 표본 단위가 '초 스냅샷'이 아니라 '전략 수준 전방 손익'이다. (b) 고정지평/stride 라벨·lift 기준: 라벨링 자체가 없다. 판정량은 엔진 실측 손익/MDD/calmar뿐이다. (c) 이벤트 5족 FDR 0: 사건 카탈로그를 만들지 않는다. FDR 절차는 오히려 known-창 다중비교 원장으로 계승·강화한다. (d) 콜드 LLM 생성 0/88: 후보 생성을 하지 않는다. (e)(f) score-sum·다밴드 야간 캠페인: 채점·발굴 루프가 아니다. (g) 전역 청산 교체 엔진 기각, (h) adaptive timing OOS 4/4 실패: 이 두 실패가 바로 D11의 존재 근거다 — '오프라인/리플레이/known 창에서 좋아 보이는 것이 엔진·미래에서 뒤집힌다'는 반복 관측을 일회성 교훈이 아니라 집행 가능한 게이트(봉인 전방 창 + 리더 가드 + 실증 심판)로 제도화한다. (i) v5 구식 API: 무관 — 실행 가능성 선검증은 unseal 요건에 포함시킨다. 차별점 요약: 데이터(2026-07+ 신규 수집 = 문자 그대로 아무도 본 적 없는 데이터), 표본 단위(초 스냅샷 → 전략-일 손익), 목적함수(신호 발견 → 증거 무결성). 셋 모두 다르다. 유일한 자기기각 조건: 사용자가 일일 수집을 지속할 수 없다면 이 방향의 핵심 산출물(전방 창)이 생성되지 않는다 — 그 경우 차선책 3종(중첩 WF·known 원장·소액 실증)만 남으며 이는 kill_criteria에 명시했다.",
+   "mechanism_steps": [
+    "[1. 백필 가능성 확정 감사(반나절, 엔진 0회)] 문서화된 결론을 봉인: 틱 DB는 백필 불가(호가 10단·초당매수/매도금액·VI·관심종목은 실시간 전용 — kiwoom_strategy_tick.py:230-257, opt10079/10080 코드 부재 grep 증거), 분봉은 OHLCV+거래대금만 키움 TR로 부분 백필 가능하나 분당매수수량·호가·관심종목 결손으로 조건식 네임스페이스 패리티 불성립 → '부분 백필 DB는 만들지 않는다'(스키마 오염 방지)를 규약으로 확정. moneytop 테이블도 실시간 산출이므로 공백기 백테는 원천 불가.",
+    "[2. 수집 재개 (사용자 수동, D11의 임계 경로)] STOM GUI 데이터저장 모드로 매 거래일 08:30~15:30 실시간 수집 재개 → _database/stock_tick_back.db / stock_min_back.db / moneytop 증분. 재개 첫날 = T0(전방 OOS 원년). 수집 후 매일 utility/database_check.py로 무결성 점검.",
+    "[3. 신규 모듈 alpha_lab/forward/manifest.py — 일일 공증] 장 마감 후 당일 슬라이스의 (일자, 테이블별 행수, 종목수, 시간 커버리지, SHA256)를 append-only ledger(docs/research/condition_research/forward_oos/ledger.jsonl)에 기록하고 git commit — 커밋 해시가 타임스탬프 공증. 결측일·행수 이상은 즉시 QUARANTINE 마킹.",
+    "[4. 신규 모듈 alpha_lab/forward/seal.py — 창 상태기계] FORWARD_SEALED(연구 코드 접근 금지) → UNSEAL_REQUESTED(후보 buy/sell SHA 동결 + n_trials 예산 + 성공/실패 기준을 alpha_lab/bridge/receipts.py 영수증으로 선등록) → JUDGED → KNOWN(재사용 시 audit 표기 강제). 집행: alpha_lab/dataset/reader.py 진입점에 날짜 가드 래퍼 — seal 경계 이후 날짜 조회는 unseal 토큰 없이는 거부. 분기 1회 개봉(약 60거래일 단위), 개봉 즉시 그 구간은 known으로 강등되고 다음 판정은 새로 쌓인 데이터만 사용.",
+    "[5. 차선책 A — 2022-2024 중첩 walk-forward 재봉인(전방 데이터 축적 대기 중 유일한 discovery 검증)] 2022-03~2024-12를 6개 폴드로 분할, 폴드 k까지 discovery → 폴드 k+1 검증, purge/embargo 1거래일. alpha_lab/ensemble/robustness.py walk_forward·slice_window와 alpha_lab/stats_common.py day_block_bootstrap 재사용, 엔진 실행은 cli/runner.py run_backtest. 판정 문구: 교차폴드 부호 일치 >=4/6은 triage 통과일 뿐 — 승격 증거 아님.",
+    "[6. 차선책 B — known 창(2025-01~2026-02) 다중비교 원장] alpha_lab/registry.py n_trials 회계를 전역 known-창 카운터로 확장: 이 창을 읽는 모든 평가가 카운터를 증가시키고, 보고 지표는 Bonferroni/부트스트랩 보정 후만 인용 가능. 규약: known 창 결과는 후보를 죽일 수만 있고(veto) 승격시킬 수 없다.",
+    "[7. 차선책 C이자 최종 심판 — 소액 감독형 전방 실증] v4 감독형 프로토콜(2026-07-07 문서) 확장: 배포 전 OOS 기대 밴드(거래수/일, 평균 순손익/건, MDD 궤적)를 영수증으로 봉인하고, 20거래일 롤링 손익 부호 + 킬스위치 740k(OOS MDD 1.5배) 순차 감시 규칙을 사전 등록. 실계좌 주문은 사용자 수동 — 인프라는 기대치 대조표와 판정 기준만 제공.",
+    "[8. 판정 루프] 분기 unseal 시: 동결 후보(초기엔 v4 앙상블 4종 원문이 기준 레퍼런스)를 전방 창에서 엔진 1회 확인 + 실증 실적과 대조 → JUDGED 영수증 발행 → 통과 후보만 '수익형' 표기 허용. 이후 D1~D10 계열의 어떤 신규 후보도 이 관문을 통과해야만 승격."
+   ],
+   "example_condition_sketch": "D11은 신규 알파 조건식을 만들지 않는다. 전방 창 판정의 기준 레퍼런스는 v4 챔피언 원문(수정 금지)이며, 예시는 그 구조의 대표형이다(rr8 계보 공통 구조, 전방 OOS 캘리브레이션 대상): 매수 = True / if not (90200 <= 시분초 < 90700): 매수 = False / if not (시가총액 < 3000): 매수 = False / if not (2 < 등락율 < 15): 매수 = False / if not (초당거래대금 > 초당거래대금평균(300) * 2.0): 매수 = False / if not (라운드피겨위5호가이내 == 0): 매수 = False / if not (관심종목 == 1): 매수 = False / if 매수: self.Buy() — 매도식 방침: 챔피언 원문 매도식 유지(P5에서 전역 청산 교체가 엔진 기각됐으므로 현행 매도식이 기준선). 이 식의 전방 창 실측 거래수·EV가 인프라의 표본 축적 속도 캘리브레이터가 된다.",
+   "expressibility": "번역갭 위험 없음 — 새 조건식을 생성하지 않으므로 STOM 문법 번역 단계 자체가 없다. 기준 레퍼런스(v4 4종)는 이미 strategy.db에 등재·엔진 실증된 원문이다. 인프라 코드는 조건식 네임스페이스 밖(파이썬 모듈·ledger·영수증)에서 동작한다. 유일한 문법 접점: 미래에 D1~D10 후보가 이 관문을 통과하려면 unseal 요청 시점에 현행 API(self.Buy() 무인자 규약)로 실행 가능함을 선검증해야 한다는 요건(v5의 8/8 구식 API 실패 재발 방지).",
+   "data_requirements": "필수: (1) 매 거래일 키움 실시간 세션(사용자 로그인) — 데이터저장 모드 가동. 디스크 증가율 약 1.3~1.5GB/월(틱 62GB/47개월 실적 기준), 연 20GB 미만. (2) 기존 tick DB 2022-03-23~2026-02-27(952일)과 min DB(11개월)는 읽기 전용 유지. (3) 2026-03~2026-07 공백 약 90거래일은 영구 결손으로 공식 기록(어떤 후속 연구도 이 구간 성과를 주장 불가). 리스크 확인 필요 1건: 키움 OpenAPI+ 서비스 지속성(REST API 전환 이슈) — 수집 스택이 단종되면 수신부 이식이 선행 과제가 된다.",
+   "sample_size_estimate": "전방 축적 속도: 약 20~21거래일/월. 기준 레퍼런스 거래수 추정 — GPTAUTH_G8 550거래/약 24개월 ≈ 23건/월, rr8 계보 각 20~60건/월(discovery 원장 기준) → 앙상블 합산 약 80~200건/월. 분기 unseal(60거래일)당 전략별 60~180건, 앙상블 250~600건: 전략 수준 손익 부호·CI 판정에는 충분, 피처 수준 채굴(봉인 하한 2,000건)에는 부족 — 그 용도로는 1~3년 축적 필요함을 명시. 중첩 WF 차선책: 2022-2024 내 6폴드, 폴드당 약 110거래일.",
+   "offline_pipeline": [
+    "alpha_lab/bridge/receipts.py — 봉인 영수증·SHA 동결(unseal 선등록에 그대로 재사용)",
+    "alpha_lab/registry.py — n_trials 회계(전역 known-창 카운터로 확장)",
+    "alpha_lab/stats_common.py — day_block_bootstrap(전방 창 CI·중첩 WF 폴드 CI)",
+    "alpha_lab/ensemble/robustness.py — slice_window/walk_forward/subperiod_split/monte_carlo_calmar(중첩 WF 차선책의 계산 원본)",
+    "alpha_lab/ensemble/portfolio.py — risk_adjusted_metrics/static_equal(판정 지표의 유일 원본, 재구현 금지)",
+    "alpha_lab/dataset/reader.py + cache.py — 날짜 가드 래퍼 삽입 지점",
+    "cli/runner.py run_backtest — unseal 판정·폴드 검증의 엔진 진입점",
+    "utility/database_check.py — 일일 수집 무결성 점검",
+    "trade/stock_korea/kiwoom_strategy_tick.py SaveData 경로 — 수집 재개(코드 수정 불필요, 가동만)",
+    "신규 소형 모듈 2개: alpha_lab/forward/manifest.py(일일 해시 공증), alpha_lab/forward/seal.py(창 상태기계) — 각 200줄 미만"
+   ],
+   "engine_budget_estimate": "매우 낮음. 초기 구축: 중첩 WF 재봉인 24~40회(4전략 x 6폴드 + 재확인). 상시 운영: 일일 수집·공증 0회, 분기 unseal당 10~20회. 연간 총 70~120회 수준 — 기존 3사이클(101회)보다 적다.",
+   "oos_validation_plan": "3층 구조로 검증 신뢰를 확보한다. [층1 — 진짜 blind: 2026-07+ 전방 봉인 창] 수집 재개일 T0부터의 데이터는 일일 SHA 공증 + git 커밋 타임스탬프로 봉인되고, 리더 가드가 연구 코드의 접근을 물리적으로 차단한다. unseal은 후보 SHA·기준·예산 선등록 후에만, 분기 1회, 1회성 소비(개봉 즉시 known 강등). 이것이 유일한 fresh blind OOS 공급원이며 시간이 지날수록 자산이 쌓인다. [층2 — 차선 discovery 검증: 2022-2024 중첩 walk-forward] 2025년 이전 데이터만으로 6폴드 순차 검증(purge/embargo 1일). triage 전용 — 승격 증거로 격상 금지. [층3 — 최종 심판: 소액 감독형 전방 실증] 봉인된 기대 밴드(거래수/EV/MDD 궤적)와 실계좌 실측의 순차 대조(20일 롤링 + 740k 킬스위치). known 창(2025-01~2026-02)은 전역 다중비교 카운터 하에서 veto 전용으로만 사용 — 어떤 후보도 이 창의 성과로 승격될 수 없다는 규약을 명문화한다. 이 3층이 없으면 다른 모든 방향의 종착점이 '개봉된 창에서의 선택'이 되어 실측된 winner's curse(+1.07M→-1.15M 스윙, P5 역전)를 그대로 반복한다.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 후보 생성기(시드→백테 채점→힐클라임)이고 병목이 시드 공급이다. D11은 후보를 하나도 생성하지 않는다 — 대신 '무엇이 증거로 인정되는가'를 바꾼다: 봉인 전방 창, 접근 가드, 다중비교 원장, 실증 심판. wt-dev 루프를 포함한 모든 생성기(D1~D10)가 이 관문의 소비자가 되는 직교·선행 계층이며, 루프의 채점 함수(known 창 백테 점수)가 승격 근거가 될 수 없음을 집행한다는 점에서 오히려 기존 루프의 암묵적 전제를 부정한다.",
+   "kill_criteria": [
+    "수집 지속 불가: 재개 후 60거래일 내 커버리지 <80%(결측·QUARANTINE 과다) 또는 사용자가 일일 가동을 유지할 수 없음이 확인되면 전방 창 계획 kill — 차선책 3종만 유지하고 그 한계를 공식 기록",
+    "키움 수집 스택 단종: OpenAPI+ 실시간 피드가 중단되고 이식 비용이 승인되지 않으면 kill",
+    "일일 해시 공증 불일치(변조/손상) 발생 시 해당 창 전체 무효화 — 2회 재발 시 공증 체계 재설계 전까지 unseal 동결",
+    "표본 속도 미달: 2분기 연속 unseal에서 기준 레퍼런스 앙상블 거래수 <150건/분기이면 분기 unseal을 반기로 강등(판정 지연 공식화)",
+    "기준 레퍼런스 자체 불안정: 중첩 WF에서 v4 챔피언들이 부호 일치 <3/6이면 '레퍼런스로 캘리브레이션'이라는 전제가 무너짐 — 인프라는 유지하되 기대 밴드 산출 방식 재봉인",
+    "리더 가드 우회가 코드리뷰에서 1회라도 발견되면 해당 세션의 모든 판정 무효"
+   ],
+   "expected_value_case": "성공 시 직접 수익이 아니라 '수익 주장의 화폐'를 발행한다: (1) 6개월 후 최초의 진짜 blind 창(약 120거래일)이 생겨 v4 앙상블의 전방 재검증(프로토콜 6절 의무)이 가능해지고, 통과 시 v4의 감독형→확신형 격상 근거가 된다(기대 규모: OOS 실측 환산 월 약 19만원/MDD 49만원 페이스의 전방 확인). (2) D1~D10 어떤 방향이든 '판정 가능'해진다 — 현재는 전부 판정 불가. (3) 실측된 선택 편향(2.2M 스윙)의 재발을 구조적으로 차단해, 연간 엔진 예산과 연구 인건을 가짜 승자 추격에서 회수한다. 근거: 이 저장소의 성공 사례(v4)가 정확히 '봉인 미개봉 창 1개'덕에 신뢰를 얻었고, 그 창은 이미 소비됐다 — 같은 종류의 자산을 재생산하는 것이 이 방향이다.",
+   "risks": [
+    "임계 경로가 사용자 수동 가동에 의존 — 자동화해도 키움 로그인 세션은 사람이 필요",
+    "2026-03~07 공백 90거래일은 어떤 수단으로도 복구 불가(이미 발생한 매몰 손실)이며, 재개가 늦어질수록 커진다",
+    "전방 창 축적 속도가 느려 성급한 unseal 압력(분기 미만 개봉 요구)이 발생할 수 있음 — 상태기계로 방어하지만 조직적 규율 문제",
+    "레짐 변화: 2026-07+ 시장이 챔피언 훈련 레짐과 다르면 기준 레퍼런스 실패가 인프라 실패로 오독될 수 있음(구분 지표 필요)",
+    "소액 실증의 표본이 작아 실계좌 슬리피지 추정 분산이 큼",
+    "인프라 자체는 수익을 내지 않으므로 '보이는 성과' 요구와 충돌 가능 — v4 전방 재검증을 첫 산출물로 묶어 완화"
+   ],
+   "confidence_0_100": 76
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "PASS",
+    "score_0_10": 8.5,
+    "reasons": [
+     "항목별 대조 결과 실패 공간 재탐사 없음: (a) 스냅샷 43피처 트리 채굴 — D11은 피처/트리/스냅샷 표본을 전혀 사용하지 않음(표본단위=전략-일 손익). (b) 고정지평 라벨·lift — 라벨링 부재, 판정량은 cli/runner.py run_backtest 엔진 실측뿐. (c) 이벤트 5족 FDR — 사건 카탈로그 미생성, FDR은 known-창 원장으로 계승(재탐사가 아니라 위생 유지, DIGEST 8 요건 충족). (d) 콜드 LLM 생성, (e) score-sum, (f) 다밴드 야간 캠페인 — 후보 생성/채점 루프 자체가 없음. (g)(h) 전역 청산 교체·adaptive timing 실패 — 재탐사가 아니라 이 실패들을 존재 근거로 삼아 게이트화(오히려 반대 방향). (i) v5 구식 API — unseal 선검증 요건으로 흡수. 데이터(2026-07+ 신규 수집)·표본단위(전략-일 손익)·목적함수(증거 무결성) 3개 모두 실질적으로 다름 — PASS 기준(최소 1개)을 초과 충족.",
+     "핵심 사실 주장 검증됨: C:/System_Trading/STOM/STOM_V.wt-alpha/trade/stock_korea/kiwoom_strategy_tick.py의 Strategy()가 호가 10단·초당매수/매도금액·VI해제시간·관심종목을 실시간 피드 data 튜플에서만 조립함을 직접 확인(약 230-257행), 저장소 전체 grep에서 opt10079/opt10080 차트 TR 코드 0건 — '틱 DB 백필 불가, 2026-03~07 공백 영구 손실, 수집 재개가 임계 경로'라는 전제는 조작 불가능한 코드 사실.",
+     "DIGEST 6의 'known 창(2025-01~2026-02) blind OOS 재사용 금지'와 정합: D11은 이 창을 veto 전용 + 전역 다중비교 카운터 하에서만 사용하도록 명문화 — 금지를 위반하는 게 아니라 집행함.",
+     "docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md가 '채굴 3연속 winner 0 = 재현된 과학적 결론'을 확정 — 이 상황에서 신호 발굴이 아닌 증거 생산 인프라는 실패 목록과 직교하는 유일한 계층이며, DIGEST 8(사전등록·봉인·FDR·재백테 게이트)을 폐기가 아니라 제도화하는 방향.",
+     "경미한 겹침 1건(kill 사유 아님): 차선책 A의 2022-2024 중첩 WF는 기존 채굴 이력과 같은 tick DB 구간을 다시 읽지만, 방식이 채굴(피처→리프)이 아니라 동결된 후보의 엔진 폴드 검증이고 'triage 전용, 승격 증거 금지'로 스스로 강등해 놓았음 — DIGEST 3의 '같은 데이터·같은 방식' 요건 중 방식이 다르므로 재탐사 아님.",
+     "잔여 리스크(반증 렌즈 밖, 기록만): 임계 경로가 사용자 수동 수집에 의존하고 인프라 자체는 수익을 내지 않음 — 설계안이 kill_criteria와 risks에 이미 자인하고 있어 은폐 없음."
+    ],
+    "required_fixes": []
+   },
+   {
+    "lens": "feasible",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "[검증 통과] 인용된 재사용 인프라는 전부 실존한다: alpha_lab/bridge/receipts.py, alpha_lab/registry.py, alpha_lab/stats_common.py(day_block_bootstrap:106), alpha_lab/ensemble/robustness.py(slice_window:63/walk_forward:97/subperiod_split:114/monte_carlo_calmar:169), alpha_lab/ensemble/portfolio.py(risk_adjusted_metrics:64/static_equal:124), alpha_lab/dataset/reader.py, cli/runner.py(run_backtest:351), utility/database_check.py — 모든 함수명·경로가 확인됨.",
+     "[검증 통과] 핵심 사실 주장(틱 DB 백필 불가)의 증거가 실측과 일치: trade/stock_korea/kiwoom_strategy_tick.py:230-257의 Strategy()가 초당매수/매도금액·호가10단·VI해제시간·관심종목 등 57개 필드를 실시간 수신 데이터에서만 조립하고, 저장소 전체 grep에서 opt10079/opt10080 차트 TR 코드가 0건 — '수집 재개가 임계 경로'라는 전제는 사실이다.",
+     "[검증 통과] 번역갭·API 리스크 없음: 신규 조건식을 생성하지 않고 기준 레퍼런스가 이미 엔진 실증된 v4 원문이므로 v5의 8/8 구식 API 전멸 경로를 원천 통과하지 않으며, 미래 후보에 대한 API 선검증 요건도 unseal에 포함시켰다.",
+     "[검증 통과] 표본 추정이 정직하다: 분기 unseal당 앙상블 250~600건은 전략 수준 부호/CI 판정용으로만 주장하고, 피처 채굴 하한 2,000건(P3 사망 기준)에 미달함을 스스로 명시 — P3식 표본 과대추정 함정을 피했다. 엔진 예산 연 70~120회도 기존 3사이클 101회 실적 대비 현실적.",
+     "[치명적이지 않으나 필수 보완] 봉인 집행 지점이 실제 유출 경로를 덮지 못한다: mechanism_steps[4]는 alpha_lab/dataset/reader.py 날짜 가드로 '물리적 차단'을 주장하지만, cli/runner.py:351 run_backtest는 alpha_lab reader를 전혀 거치지 않고 config.start_date/end_date로 엔진 프로세스를 직접 스폰해 _database를 읽는다(grep으로 runner.py 내 alpha_lab/dataset import 0건 확인). 즉 가장 지배적인 데이터 소비 경로(엔진 백테스트)가 가드 밖에 있어, end_date를 seal 경계 너머로 지정한 백테 1회로 전방 창이 조용히 개봉된다. known-창 n_trials 전역 카운터(step 6)도 같은 이유로 엔진 경로에서 집계 누락된다.",
+     "[리스크 인지 적절] 임계 경로의 사용자 수동 가동 의존, 키움 OpenAPI+ 단종 리스크, 2026-03~07 90거래일 영구 결손은 모두 kill_criteria/risks에 명시돼 있고 차선책 3종이 독립적으로 실행 가능하다 — 전방 창이 무산돼도 방향 전체가 죽지 않는 구조."
+    ],
+    "required_fixes": [
+     "봉인 가드를 엔진 진입점으로 확장: cli/runner.py run_backtest(:351) 진입부에 seal 경계 검사(config.end_date > seal_boundary이면 unseal 토큰 없이는 거부) + known 창(2025-01~2026-02) 조회 시 registry n_trials 자동 증가를 삽입하라. alpha_lab/dataset/reader.py 단독 가드는 엔진 백테 경로를 덮지 못하므로 '물리적 차단' 주장을 이 choke point 이관 후에만 유지할 수 있다.",
+     "wt-dev 루프·ai_strategy_loop/dashboard 등 runner.py를 우회하는 다른 백테 진입점(ai_strategy_loop/controller/loop.py:244 run_backtest_for, ai_strategy_loop/dashboard/backtest_api.py:1068)의 존재를 감사 목록에 명시하고, 최소한 ledger 사후 감사(백테 로그의 날짜 범위 스캔)로 우회 탐지를 자동화하라 — 현재는 '코드리뷰에서 발견되면 무효'라는 수동 규율에만 의존한다.",
+     "수집 재개 전 1회성 리허설 요건 추가: 데이터저장 모드 1거래일 가동 후 utility/database_check.py 통과 + 기존 스키마(컬럼 57필드)와의 패리티 diff를 T0 선언의 전제 조건으로 명시하라. 4개월 미가동 상태에서 수집 스택이 여전히 동작한다는 것은 현재 검증되지 않은 가정이다."
+    ]
+   },
+   {
+    "lens": "econ",
+    "verdict": "PASS",
+    "score_0_10": 8,
+    "reasons": [
+     "[핵심 사실 검증 통과] 백필 불가 주장을 코드로 확인했다: C:/System_Trading/STOM/STOM_V.wt-alpha/trade/stock_korea/kiwoom_strategy_tick.py:230-257의 Strategy()가 호가 10단·초당매수/매도금액·관심종목·VI 필드를 실시간 피드 데이터로만 행 조립하며, 저장소 전체 grep에서 opt10079/opt10080 차트 TR 코드 0건. 따라서 '수집 재개 = 알파 연구의 임계 경로'는 수사가 아니라 사실이고, 재개 지연 1일 = 전방 OOS 자산 1일 영구 손실이라는 경제 논리가 성립한다.",
+     "[비용 헛들 -1.022% 기준] D11은 새 신호를 만들지 않으므로 자체 거래 EV가 없지만, 수익 경로가 공상적이지 않다: 판정 기준 레퍼런스는 이미 엔진 실측으로 비용 헛들을 넘은 v4 앙상블(OOS 2,608,362원/MDD 493,590원/calmar 5.28 — docs/update_log/2026-07-07_alpha_lab_v4_deployment_readiness_and_merge_plan.md, 2026-07-07_alpha_lab_v4_supervised_deployment_protocol.md 존재 확인)이며, 첫 산출물이 v4 전방 재검증(월 약 19만원 페이스 확인)으로 묶여 있다. 신규 EV를 주장하지 않고 기존 EV의 검증 가능성을 판다는 점에서 정직하다.",
+     "[winner's curse 방어] 심사 기준 (5)를 유일하게 '설계에 포함'하는 수준을 넘어 제품 자체로 삼는다: 봉인 전방 창 + alpha_lab/registry.py n_trials 전역 카운터 + known 창 veto 전용 규약 + 순차 감시 킬스위치. 실측된 +1.07M→-1.15M 스윙(DIGEST 8)과 P5 리플레이 역전(DIGEST 3g/h)의 재발을 구조적으로 차단하며, DIGEST 6('2025-01~2026-02 재사용 금지', '2026-03 이후 데이터 없음')과 유일하게 완전 정합하는 방향이다 — 이 두 사실 하에서 D1~D10은 전부 종착점이 '판정 불가'다.",
+     "[wt-dev 루프 차별성] 시드 생성→백테 채점→힐클라임 루프(DIGEST 7)와 직교: 후보를 0개 생성하고, 오히려 그 루프의 채점 함수(known 창 점수)가 승격 근거가 될 수 없음을 집행하는 상위 관문 계층. 실질적 차별성 명확.",
+     "[비용·용량 현실성] 인용된 재사용 모듈 전부 실존 확인(alpha_lab/bridge/receipts.py, alpha_lab/registry.py, alpha_lab/ensemble/portfolio.py, alpha_lab/ensemble/robustness.py, alpha_lab/dataset/reader.py, cli/runner.py, utility/database_check.py) — 신규는 200줄 미만 모듈 2개. 엔진 예산 연 70~120회는 기존 3사이클(101회)보다 적고, 회전율/체결 용량은 기존 v4 그대로라 신규 위험 없음. 표본 속도의 한계(분기 250~600건 = 전략 수준 판정만 가능, 피처 채굴 불가)도 자인하고 반기 강등 kill criteria로 처리했다.",
+     "[살아남는 약점 — 감점 사유] (a) 직접 수익 0: 인프라 단독으로는 실수익 목표(DIGEST 9)를 한 푼도 진전시키지 못하며 v4 전방 재검증도 6개월 대기가 필요하다. (b) 임계 경로가 사용자 수동 일일 가동에 의존 — 가장 약한 고리가 코드가 아니라 사람이고, 60거래일 커버리지 80% kill 기준이 발동하면 핵심 산출물이 소멸한다. (c) 키움 OpenAPI+ 단종 리스크가 외생 변수. 셋 다 설계가 스스로 명시하고 kill criteria로 가격을 매겼으므로 기각 사유는 아니나 만점은 불가."
+    ],
+    "required_fixes": []
+   }
+  ]
+ },
+ {
+  "id": "D12",
+  "name": "신규: GPTAUTH 비상관 계보 확장",
+  "design": {
+   "direction_id": "D12",
+   "direction_name": "GPTAUTH 비상관 계보 확장 — 포트폴리오 한계기여 목적함수 힐클라임",
+   "one_line": "v4의 유일한 구조적 비상관 레그인 GPTAUTH_G8(90500-91000 단순 게이트 체인, 550거래)의 검증된 이웃 공간을, 단독 수익이 아니라 \"RR8 계보 상관<0.5 + 5슬롯 등가중 포트폴리오 calmar 개선\"을 채택 기준으로 국소 탐색해 v4 5번째 슬롯 후보를 만든다. 1단계는 v5 사인(구식 API)을 원천 차단하는 현행 API 정적 사전 필터다.",
+   "core_hypothesis": "상관은 대체로 \"같은 종목·같은 시간대·같은 트리거\"에서 나온다. GPTAUTH_G8은 이미 시간대(90500-91000, RR8은 <90700 중심)와 진입 트리거(단순 게이트 체인)에서 RR8 계보와 구조적으로 분리돼 있고 실측 비상관(v4 판정)이다. 따라서 GPTAUTH의 밴드 벡터를 (i) 시간창 ±100~300초, (ii) 시가총액 밴드(특히 RR8의 소형주<2500~3000억과 기계적으로 분리되는 2500~7000억 구간), (iii) 서지 배수·체결강도 밴드 축으로 국소 이동시키면, RR8과의 일간 손익 상관을 <0.5로 유지하면서 단독 흑자를 내는 변종이 존재할 확률이 콜드 채굴보다 훨씬 높다(유일하게 재현 성공한 경로 = \"인간 시드 + 국소 탐색\"이기 때문). 채택 목적함수를 단독 성과가 아니라 [기존 4챔피언 train 손익 시계열 동결 + 후보 1/5 합산] 포트폴리오 calmar의 한계 개선으로 두면, v4가 실증한 순수 다각화 메커니즘(위험조정 +38%)이 그대로 5번째 슬롯에 재적용된다.",
+   "why_not_refuted": "(a) 스냅샷 43피처 얕은트리 채굴 0/107: D12는 피처 공간 채굴이 아니다. 엔진 실측 흑자(+1,772,126원/550거래)인 인간 시드의 원문에서 출발하는 국소 파라미터 이동이며, 이는 3사이클 종합 문서가 \"유일하게 작동한 경로\"로 명시한 인간시드+국소탐색 계열이다. (b) 고정지평/stride 라벨·lift 채택: 라벨·lift를 전혀 쓰지 않는다. 채점은 엔진 실측 일간 손익과 포트폴리오 calmar다. (c) 이벤트 5족 FDR 0/138: 이벤트 스터디 아님. (d) 콜드 LLM 생성 0/88: 후보는 LLM이 아니라 결정론 밴드 이동(mutator.py 분위 스텝)으로 생성된다. (e) score-sum -111M: 점수 합산 없음 — v4에서 성공 확정된 정적 1/N 등가중만 쓴다. (f) 다밴드 자동발굴 야간캠페인 PROMISING 0: 그 캠페인은 신규 다밴드 구조를 표준 단독 적합도로 자동 발굴했다. D12는 (1)탐색 시작점이 이미 흑자인 검증 시드이고 (2)목적함수가 단독 점수가 아닌 포트폴리오 한계기여+상관 상한이라 채택되는 후보 집합 자체가 다르다(단독 우수해도 corr>=0.5면 기각, 단독 평범해도 다각화 기여가 크면 채택). 표본 단위도 다르다: 규칙 발화 그리드가 아니라 엔진 실거래 일간 손익 벡터. (g) 전역 청산 교체 기각: 매도식은 GPTAUTH_G8 원문(sha 4ed51bb1)을 바이트 동결하고 변이 금지 — 기각된 공간을 건드리지 않는다. (h) adaptive/regime OOS 4/4 실패: 타이밍·로테이션 없음, 정적 등가중 고정. (i) v5 구식 API 8/8 실행 불가: 이것이 직접 선행 실패이며 두 겹으로 회피한다 — 첫째, 후보의 모체인 GPTAUTH_G8 원문 자체가 현행 API로 엔진 실행이 이미 실측된 코드라서 밴드 임계만 바꾸는 변이는 구성적으로 API 유효성을 상속한다(v5는 구식 아카이브에서 후보를 조달한 것이 사인). 둘째, 그래도 1단계에 AST 정적 게이트(self.Buy()/self.Sell() 무인자 확인, 화이트리스트 외 이름 0, 금지 토큰 0, avg_list 미등록 윈도우 0)를 두어 엔진 예산 소모 전 전량 검문한다. 정직한 잔여 리스크: GPTAUTH 이웃이 GPTAUTH 자신과 고상관(사실상 쌍둥이)일 가능성 — 이 경우 5번째 슬롯 추가가 아니라 GPTAUTH 레그 교체 후보로만 취급하는 분기 규칙을 사전등록한다(kill_criteria 참조). 이 리스크 때문에 confidence를 낮게 둔다.",
+   "mechanism_steps": [
+    "[0단계 사전등록·봉인] preregistration_d12.json 작성·커밋: 이웃 시드 격자(축·값 전부), 채택 기준(corr<0.5, 포트폴리오 calmar +10% 이상, 표본 하한 300거래), 엔진 예산 180회, 창 정의(train 2022-03~2023-12 / validation 2024 / audit 2025-01~2026-02는 known 표기), 매도식 동결 sha. 기존 봉인 템플릿(preregistration_v3.json 형식) 재사용.",
+    "[1단계 API 호환 정적 게이트 — 엔진 0회] 신규 alpha_lab/compat/api_gate.py: ast.parse로 매수/매도 코드 검사 — (i) self.Buy()/self.Sell() 호출이 무인자인지(구식 7-arg 시그니처 즉시 기각), (ii) Name 노드 전수를 variables_reference.md 화이트리스트(tests/unit/test_ai_dictionary.py의 SetGlobalsFunc AST 추출 로직 재사용)와 대조, (iii) 금지 토큰(import/exec/eval/open/compile/__), (iv) 구간함수 인자 틱수가 avg_list={30} 및 이동평균 봉인 윈도우{60,150,300,600,1200} 내인지(backengine_base.py CheckAvglist 미러). GPTAUTH_G8 원문과 모든 뮤턴트에 적용, 통과율 100% 필수.",
+    "[2단계 챔피언 원장 적재 — 엔진 0회] v4 실행 자산인 backtest/csv/ per-trade CSV와 _database/backtest.db stock_bt에서 RR8_12/0/21·GPTAUTH_G8의 train 창 일간 손익 시계열과 (일자,종목코드) 거래 집합을 추출. alpha_lab/ensemble/portfolio.py의 align_monthly_series를 일간 단위로 확장한 alpha_lab/ensemble/daily_series.py(신규 소형 모듈)로 정렬.",
+    "[3단계 이웃 시드 격자 생성 — 엔진 0회] GPTAUTH_G8 매수식을 Clause 3-튜플 밴드 벡터로 파싱(alpha_lab/translate/codegen.py 계약 호환). 사전등록 축: 시간창{90400-90900, 90500-91000원문, 90600-91100, 90700-91200}, 시가총액{1000-5000원문, 2500-7000(RR8 분리 캡), 1000-2500}, 서지 배수{1.5, 1.8원문, 2.2}, 체결강도 밴드{80-260원문, 100-300}. 축당 1~2개 이동만 조합한 결정론 시드 6~8개(전조합 폭발 금지).",
+    "[4단계 오프라인 triage — 엔진 0회] alpha_lab/dataset/reader.py+derived.py(패리티 검증된 파생 재계산기)로 tick DB 09:00-09:30 창에서 각 시드의 발화 (일자,종목,초) 집합을 추정. 기각 규칙: (i) RR8 챔피언 거래 (일자,종목) 집합과의 Jaccard 중첩>0.3(상관 프록시), (ii) 연간 발화 추정<300(표본 하한 미달 예고) 또는 폭주(>5000, 비용 지배 -1.022% 공간 회귀 위험). 생존 시드만 엔진행.",
+    "[5단계 포트폴리오-목적 힐클라임 — 엔진 최대 160회] alpha_lab/hillclimb/loop.py(first-improvement, 시드당 20회)와 mutator.py(분위 스텝 ±2/5%p)를 그대로 재사용하되, evaluate_fn만 신규 alpha_lab/hillclimb/portfolio_objective.py로 교체: cli.runner.run_backtest(BacktestConfig, train 창, avg-time 30)로 후보 실행 → 일간 손익 추출 → [동결된 4챔피언 train 시계열 + 후보]의 1/5 등가중 포트폴리오 calmar 계산(ensemble/portfolio.py risk_adjusted_metrics 재사용) → Metrics로 반환. accept 규칙(사전등록): 후보 단독 profit>0(경제성 바닥) AND corr(후보, RR8 3종 평균 일간손익)<0.5 AND 포트폴리오 calmar 상승. 매도식은 sell_policy.py 방식으로 GPTAUTH 원문 동결.",
+    "[6단계 검증 체인 — 엔진 약 20회] 생존 후보(예상 1~3개): (i) 2024 validation 창 1회 실행 — corr<0.5 재확인 + 5슬롯 calmar가 v4 4슬롯 대비 +10% 이상, 단발·재시도 금지, (ii) 2025-01~2026-02 known/audit 창 1회 — blind가 아님을 문서에 명기하고 v4 기준선(calmar 5.28, MDD 493,590) 대비 비악화 확인, (iii) tick3 슬리피지 민감도(slippage_profiles.py advisory), (iv) walk_forward·monte_carlo_calmar(alpha_lab/ensemble/robustness.py)로 창별 견고성·우위 확률 기록. 통과 시 감독형 프로토콜(v4 supervised deployment protocol의 5슬롯 개정판)로 미래 데이터 검증 의무를 명시한 채 인수인계 — 여기까지가 연구 주장 한계."
+   ],
+   "example_condition_sketch": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (90500 <= 시분초 < 91000):\n    매수 = False\nelif not (초당거래대금 > 20):\n    매수 = False\nelif not (당일거래대금 > 5000):\n    매수 = False\nelif not (80 <= 체결강도 <= 260):\n    매수 = False\nelif not (2500 <= 시가총액 < 7000):   # RR8 소형주 캡(<2500~3000)과 기계적으로 분리된 중형 캡 밴드 — 상관 하향의 구조 레버\n    매수 = False\nelif not (1000 < 현재가 <= 40000):\n    매수 = False\nelif not (3.0 < 등락율 <= 13.0):\n    매수 = False\nelif not (고저평균대비등락율 > 0 and 현재가 < VI가격 - VI호가단위 * 5):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (당일거래대금각도(30) > 8 and 당일거래대금각도(30) < 32):\n    매수 = False\nelif not (초당거래대금 / 초당거래대금평균(30) > 1.8 and 초당거래대금 > 초당거래대금N(1) * 1.25):\n    매수 = False\nelif not (현재가 > 최고현재가(20, 1) and 초당매수수량 > 매도총잔량 * 0.22):\n    매수 = False\nif 매수:\n    self.Buy()\n\n# 매도식 방침: GPTAUTH_G8 원문(sha 4ed51bb1...) 바이트 동결 재사용. 전역 청산 교체는 DIGEST (g)로 기각된 공간이므로 변이 금지.",
+   "expressibility": "번역갭 위험 최소 계열이다. 모든 후보가 GPTAUTH_G8 원문(현행 엔진에서 550거래 실측된 코드)의 밴드 임계값·구간 경계만 바꾼 것이므로 문법은 이미 검증됐다. 사용 함수는 초당거래대금평균(30)·당일거래대금각도(30)·최고현재가(20,1)·초당거래대금N(1)로 전부 181 화이트리스트 내이며, avg-time 30만 등록하면 CheckAvglist 통과(GPTAUTH가 이미 이 프로파일로 실행됨). 유일한 실질 위험은 v5의 재림(구식 API 후보 혼입)인데 1단계 AST 게이트가 엔진 예산 소모 전에 전량 차단한다. 오프라인 triage(발화 집합 추정)와 엔진 발화의 괴리는 존재하나, triage는 기각용 프록시로만 쓰고 채택 판정은 전부 엔진 실측이므로 번역갭이 결론을 오염시키지 않는다.",
+   "data_requirements": "tick DB(_database/stock_tick_back.db) 2022-03~2026-02 중 09:00-09:30 창(발화 구역이 09:10 이전이므로 충분); v4 실행 산출물인 챔피언 4종 per-trade CSV(backtest/csv/)와 _database/backtest.db stock_bt(일간 손익·거래 집합 재구성용 — 없으면 train 창 4회 재실행으로 복원, 예산 +4회); moneytop 테이블(관심종목 게이트); _database/strategy.db의 GPTAUTH_G8 원문(또는 passport 문서 sha 대조); avg-time 30 사전계산 프로파일. min DB 불필요(전 후보 tick 스코프).",
+   "sample_size_estimate": "GPTAUTH_G8 원문이 prior 창에서 550거래. 시간창·서지 이웃은 300~700거래/train 창 예상. 중형 캡(2500-7000) 변종은 서지·VI 조건 발화가 소형주보다 드물어 150~400거래로 얇을 수 있음 — 사전등록 표본 하한: train+validation 합산 300거래 미만이면 inconclusive 처리(Idea3의 346<2000 과잉판정 교훈), 승격 금지. 상관 추정용 일간 손익 벡터는 train 창 약 440거래일로 corr<0.5 판별에 충분.",
+   "offline_pipeline": [
+    "alpha_lab/hillclimb/loop.py — first-improvement 힐클라임 루프(재사용, evaluate_fn만 교체)",
+    "alpha_lab/hillclimb/mutator.py — 결정론 분위 스텝 뮤테이터·accept 골격(재사용, accept 지표만 포트폴리오형으로 사전등록 개정)",
+    "alpha_lab/hillclimb/sell_policy.py — 매도식 동결 정책(재사용)",
+    "alpha_lab/hillclimb/distributions.py, engine_eval.py — 분포 적재·엔진 배선 골격(재사용)",
+    "alpha_lab/ensemble/portfolio.py — risk_adjusted_metrics·static_equal·align 계열(재사용, 일간 단위 확장)",
+    "alpha_lab/ensemble/robustness.py — walk_forward·monte_carlo_calmar·t1/t2 게이트(재사용)",
+    "alpha_lab/dataset/reader.py, derived.py, parity.py — triage용 발화 집합 추정(재사용)",
+    "alpha_lab/translate/codegen.py, idioms.py — Clause 밴드 벡터<->매수식 왕복(재사용)",
+    "cli/runner.py run_backtest + cli/config.py BacktestConfig — 엔진 호출(재사용)",
+    "tests/unit/test_ai_dictionary.py의 SetGlobalsFunc AST 추출 — API 게이트 화이트리스트 소스(재사용)",
+    "신규 소형 모듈 3개: alpha_lab/compat/api_gate.py(AST 정적 게이트), alpha_lab/ensemble/daily_series.py(일간 손익 정렬), alpha_lab/hillclimb/portfolio_objective.py(포트폴리오 한계기여 evaluate_fn)"
+   ],
+   "engine_budget_estimate": "총 ≤180회 봉인: 힐클라임 시드 6~8개 × 시드당 ≤20회 = ≤160회(train 창) + validation 2024 단발 ≤3회 + known audit 창 단발 ≤3회 + tick3 민감도 ≤3회 + 챔피언 원장 복원 필요 시 +4회 + 여유 ≤7회. 4단계 오프라인 triage로 시드가 3개 이하로 줄면 실사용 100회 내외 예상. 소요 약 1.5~2일.",
+   "oos_validation_plan": "전제를 정직하게 박는다: 2025-01~2026-02는 v4 판정에서 개봉된 known/audit 창이고 2026-03+ 데이터는 없다 — 따라서 이 연구는 fresh blind OOS 주장을 원천적으로 할 수 없으며, 산출물의 지위는 최대 '감독형 배포 후보'다. 신뢰 확보 장치: (1) 3창 분리 — 힐클라임은 train(2022-03~2023-12)만 접촉, 2024 전체를 내부 validation으로 힐클라임 종료 후 단발·재시도 금지로 개봉(후보 선택은 2024 결과로만 확정 — winner's curse 방어), 2025-01~2026-02는 최종 audit으로 1회만 실행하고 모든 문서에 known-window discount를 명기. (2) audit 창 통과 기준에 마진 요구 — 포트폴리오 calmar가 v4 기준선 5.28 대비 비악화 + corr<0.5가 train/validation/audit 3창 모두에서 성립(1창이라도 붕괴 시 기각). (3) 사전등록 봉인을 측정 전 커밋하고 n_trials 원장에 힐클라임 전 시행을 기록해 다중비교를 투명화. (4) robustness.py walk_forward 4창 + monte_carlo_calmar로 '우위 확률'을 점추정 대신 분포로 보고. (5) 최종 증명은 미래 데이터 — v4 감독형 프로토콜(소액·킬스위치·미래 재검증 의무)의 5슬롯 개정판으로 2026-03+ 실데이터 검증을 배포 게이트로 이관하고, 통과 전에는 '실전 보장' 표현 금지.",
+   "distinctness_from_wtdev_loop": "wt-dev 루프는 [시드 생성 → 백테 채점 → 힐클라임]에서 채점이 후보 단독의 profit/MDD다. D12는 세 가지가 다르다. (1) 목적함수: 후보 단독 성과가 아니라 [동결 4챔피언 + 후보] 5슬롯 등가중 포트폴리오의 calmar 한계 개선 + RR8 상관 상한 <0.5 — 단독 우수 후보가 기각되고(corr>=0.5) 단독 평범 후보가 채택될 수 있는(다각화 기여) 정반대 선별 압력. wt-dev 루프는 이런 후보를 구조적으로 버린다. (2) 탐색 공간: 임의 시드 공급이 아니라 검증된 비상관 시드(GPTAUTH_G8) 1개의 사전등록 이웃 격자 — 시드 공급 병목 자체를 우회. (3) 전단 게이트: v5 사인을 겨냥한 API 정적 필터와 발화 집합 중첩 triage가 엔진 예산 소모 전에 후보를 거른다 — wt-dev에는 둘 다 없다. 힐클라임 코드는 공유하되 '무엇을 최적화하는가'가 다르므로 재탐사가 아니라 목적함수 교체다.",
+   "kill_criteria": [
+    "1단계 API 게이트에서 GPTAUTH_G8 원문이 통과 못하면(화이트리스트/avg_list 회귀) 즉시 중단 — 전제 붕괴",
+    "4단계 triage 생존 시드 <2개(발화 표본 부족 또는 RR8 중첩 과다)면 프로그램 kill — 이웃 공간이 얇다는 증거로 기록",
+    "힐클라임 예산 소진 시 [단독 profit>0 AND corr<0.5 AND 포트폴리오 calmar 상승] 동시 충족 후보 0개면 kill — 'GPTAUTH는 고립점'을 부정 지도에 등재",
+    "후보의 corr(vs GPTAUTH_G8) > 0.85면 5번째 슬롯 후보 자격 박탈 — GPTAUTH 단독 성과를 train/validation 양창에서 이기는 경우에만 레그 교체 후보로 강등 심사, 아니면 폐기",
+    "2024 validation에서 corr>=0.5 또는 5슬롯 calmar 개선 <+10%면 kill(단발, 재시도 금지)",
+    "known audit 창(2025-01~2026-02)에서 5슬롯 calmar가 v4 기준선 5.28 미만이거나 MDD 악화면 kill",
+    "train+validation 합산 거래수 <300이면 inconclusive — 성공/실패 판정 자체를 금지하고 승격 불가(Idea3 교훈)",
+    "tick3 슬리피지에서 후보 단독 손익 부호가 뒤집히면 kill"
+   ],
+   "expected_value_case": "성공 시: v4 4슬롯(OOS 수익 2,608,362/MDD 493,590/calmar 5.28)에 corr<0.5 레그 1개 추가 — v4가 실증한 순수 다각화 메커니즘(4레그화로 위험조정 +38%)의 한계 체감을 감안해도 5레그화로 calmar +10~20%·MDD 절대액 감소가 합리적 기대이며, 이는 등가중 포트폴리오 이론상 비상관 레그 추가의 분산 감소(1/N 효과)와 v4.1 몬테카를로(우위 확률 75%)의 연장선이다. 부수 이득: 후보가 GPTAUTH 쌍둥이로 판명돼 레그 교체로 강등되더라도, GPTAUTH_G8은 현 4챔피언 중 최악 MDD(15.14)라 그 레그의 상향만으로 포트폴리오 바닥이 개선된다. 실패해도 'GPTAUTH 이웃 공간의 두께'가 부정 지도로 확정돼 v4를 4슬롯 천장으로 공식화하는 결정 근거가 남는다.",
+   "risks": [
+    "구조적 딜레마: 캡 분리(2500-7000억) 변종은 상관은 낮지만 챔피언 엣지가 전부 소형주에 집중돼 있어 단독 흑자 확률이 낮고, 파라미터 이웃 변종은 흑자 확률은 높지만 GPTAUTH 자신과 고상관이라 한계 다각화가 작다 — 두 압력이 동시에 만족되는 교집합이 공집합일 수 있음(주 리스크, confidence를 낮춘 이유)",
+    "중형주(2500억+)에서 초당거래대금 서지·VI 근접 조건의 발화 빈도가 급감해 표본 하한 미달 → inconclusive로 끝날 확률 상당",
+    "GPTAUTH_G8 prior MDD 15.14가 시사하듯 이 계보 자체의 꼬리가 두꺼움 — 이웃도 MDD가 높으면 corr<0.5여도 포트폴리오 MDD를 악화시킬 수 있음(accept에 포트폴리오 calmar를 쓰는 이유이나 audit 창에서 뒤집힐 수 있음)",
+    "train 창(2022-03~2023-12)과 validation(2024)의 레짐 차이로 corr 추정이 불안정할 수 있음 — 3창 동시 corr<0.5 요구가 방어이지만 그만큼 기각률도 높아짐",
+    "챔피언 per-trade CSV가 보존돼 있지 않으면 원장 복원 재실행이 필요(예산 +4회, 결과 재현성 확인 부담)",
+    "known audit 창 판정은 이미 개봉된 창이므로 어떤 결과가 나와도 확증력이 제한적 — 최종 신뢰는 미래 데이터 감독형 검증으로만 확보 가능"
+   ],
+   "confidence_0_100": 38
+  },
+  "verdicts": [
+   {
+    "lens": "refuted",
+    "verdict": "FIX",
+    "score_0_10": 5.5,
+    "reasons": [
+     "[실패 목록 대조 — 렌즈 자체는 통과] (a) 스냅샷 43피처 트리 채굴: D12는 피처 공간 채굴이 아니라 검증 시드의 밴드 임계 국소 이동이며, docs/update_log/2026-07-07_alpha_lab_three_cycle_synthesis_and_decision.md §3이 명시적으로 승인한 pivot_p5_alt(인간 시드 + 국소 파라미터 탐색) 계열이다 — 같은 공간 아님. (b) 고정지평/lift 라벨: 채점이 엔진 실측 일간 손익 + 포트폴리오 calmar로 라벨·lift 미사용 — 다름. (c) 이벤트 FDR·(d) 콜드 LLM·(e) score-sum: 각각 이벤트 스터디 아님/결정론 뮤테이터/정적 1-over-N 등가중으로 회피 확인. (f) 다밴드 야간캠페인: 목적함수(포트폴리오 한계기여+corr 상한)와 표본 단위(엔진 일간 손익 벡터)가 실질적으로 다름 — 채택 집합 자체가 다르다는 논증 유효. (g) 전역 청산 교체: 매도식 sha 4ed51bb1... 바이트 동결(v4_champion_registry.json의 sell_sha256과 일치 확인) — 기각 공간 무접촉. (h) adaptive/regime: 정적 등가중 고정, v4_final_verdict.md §5가 타이밍 오버레이 금지를 명시한 것과 정합. (i) v5 구식 API: AST 사전 게이트 + 현행 API 실측 모체 상속으로 이중 회피 — 설계상 타당. 목적함수/표본단위/탐색공간 3개가 실질적으로 달라 이름만 바꾼 재탐사가 아니다.",
+     "[치명 결함 1 — 시드 전제가 원장과 모순] D12의 핵심 가설은 'GPTAUTH_G8이 엔진 실측 흑자(+1,772,126원/550거래)인 시드'라는 전제 위에 서 있으나, 이 수치는 v4_champion_registry.json의 prior_profit(패스포트 유래, human_name이 문자 그대로 GPTGen8_HighCoverage_FailedProfitContext)이고, D12가 힐클라임할 train+validation을 포함하는 v4 discovery 창(2022-03~2024-12)에서 GPTAUTH_G8의 엔진 실측은 always-on 손익 -6,932,292원 / MDD 10,060,666원(adaptive도 -93,519원)이다(docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_assembly_report.json single_alwayson). v4_final_verdict.md §4-3도 'discovery mdd 77.05% 게이트 실패 → OOS 15.14% 게이트 통과' 반전을 정직 한계로 기록했다. 즉 GPTAUTH가 흑자인 창은 이미 개봉된 known 창(2025-01~2026-02, v4_oos_verdict.json: +1,439,459/605거래)뿐이며, D12가 탐색할 train(2022-03~2023-12)에서 시드는 대규모 적자다.",
+     "[치명 결함 2 — accept 규칙이 자기 파괴적] 사전등록 accept가 'train 창 후보 단독 profit>0'을 요구하는데, 시드가 그 창에서 -6.9M인 이상 분위 스텝 ±2/5%p x 시드당 20회의 first-improvement 국소 이동으로 단독 흑자 도달 확률은 극히 낮다 — 프로그램이 kill_criteria 3번으로 거의 예정된 kill로 끝나며 엔진 예산 최대 160회가 부정 지도 1줄에 소모된다. 반대로 train에서 흑자화에 성공한 뮤턴트는 GPTAUTH의 가치 원천인 2025+ 레짐 거동을 훼손한 과적합일 개연성이 높다(v4_final_verdict.md §4-2 'discovery 순위가 OOS 승자를 예측하지 못했다'와 동일 기제) — 어느 쪽이든 설계 목표와 어긋난다.",
+     "[결함 3 — 2024 validation 오염 미신고] GPTAUTH_G8을 포함한 4챔피언의 v4 선정·측정 창이 2022-03~2024-12(v4_characterization.json discovery_window)이므로, D12의 'validation 2024'는 시드 계보 선택에 이미 사용된 창이다. audit 창에는 known-discount를 명기하면서 2024에는 침묵한 것은 비대칭 — 시드 선택 수준의 누수를 사전등록에 명기해야 한다.",
+     "[긍정 평가] 위 결함은 창 설계·전제 서술의 오류이지 방향 자체의 반증 재탐사가 아니다. 비상관 레그 확장 + 포트폴리오 한계기여 목적함수는 실패 목록 (a)-(i) 어느 것과도 같은 공간이 아니고, wt-dev 루프와의 차별화(목적함수 교체) 논증도 성립한다. kill_criteria·표본 하한·inconclusive 처리(Idea3 교훈 반영)는 통계 위생(DIGEST 8) 기준에 부합한다."
+    ],
+    "required_fixes": [
+     "시드 전제 사실 정정: 사전등록에 GPTAUTH_G8의 창별 엔진 실측을 원장 그대로 기재하라 — discovery(2022-03~2024-12) always-on -6,932,292원/MDD 77.05% 게이트 실패(v4_assembly_report.json), known OOS(2025-01~2026-02) +1,439,459원/605거래/MDD 15.14%(v4_oos_verdict.json). '+1,772,126/550거래 흑자 시드' 서술은 출처(패스포트 prior, 측정 창 불명, human_name=FailedProfitContext)를 명기하고 핵심 가설의 근거에서 제외하라.",
+     "accept 경제성 재설계: train(2022-03~2023-12)에서 '후보 단독 profit>0'은 -6.9M 시드의 국소 이웃에서 사실상 도달 불가 — (i) 단독 흑자 요구를 시드가 실제 작동하는 레짐을 포함하도록 창 구조를 재정의하거나(예: train을 corr·포트폴리오 기여 추정 전용으로 격하하고 경제성 바닥은 별도 창에서 판정, known-discount 명기), (ii) train 단독 흑자를 유지하려면 착수 전 오프라인 발화 추정으로 도달 가능성 근거를 제시하고 조기 중단 규칙(예: 첫 2시드 전 뮤턴트가 임계 미달이면 예산 소진 전 kill)을 추가하라.",
+     "역방향 과적합 가드 추가: train에서 흑자화된 GPTAUTH 뮤턴트가 2025+ 레짐 거동(GPTAUTH 가치의 실제 원천)을 파괴하지 않는지 확인하는 advisory 지표(예: known 창에서 GPTAUTH 원문 대비 거동 유사성/부호 유지)를 사전등록하라 — v4_final_verdict.md §4-2·§4-3의 창간 반전 기제가 직접 근거.",
+     "2024 validation 오염 신고: 4챔피언 선정 창이 2024-12까지 포함(v4_characterization.json)이므로 2024는 시드 계보 수준에서 clean하지 않다 — audit 창과 동일한 known-discount 문구를 2024 판정에도 명기하거나 창 경계를 재정의하라.",
+     "표본 추정 원장 대조: 'GPTAUTH 550거래 prior' 기반의 이웃 300~700거래 추정을 실제 원장(train 창에서의 발화·거래 수)으로 교체하라 — discovery 창에서 게이트 실패한 전략의 train 발화 분포는 prior와 다를 수 있고, 표본 하한 300 판정의 분모가 바뀐다."
+    ]
+   },
+   {
+    "lens": "feasible",
+    "verdict": "FIX",
+    "score_0_10": 7.5,
+    "reasons": [
+     "[검증됨] 재사용 인프라 실존: alpha_lab/hillclimb/{loop,mutator,sell_policy,distributions,engine_eval}.py, alpha_lab/ensemble/{portfolio,robustness}.py, alpha_lab/dataset/{reader,derived,parity}.py, alpha_lab/translate/{codegen,idioms}.py, cli/runner.py의 run_backtest(line 351)와 _normalize_avg_list 전부 확인. loop.py는 evaluate_fn 주입을 명시적으로 지원(loop.py line 11-12, 64-73: 'evaluate_fn(rule) -> Metrics로 호출측이 주입') — '목적함수 교체' 주장의 아키텍처 근거가 실재한다.",
+     "[검증됨] 번역갭 최소 주장 성립: GPTAUTH_G8 원문이 docs/research/condition_research/condition_passports/human_seed_gptauth_B_gen8.md에 전문 보존(sell sha 4ed51bb1... 제안서 인용과 일치, v4_champion_registry.json의 buy/sell sha와 대조 일치). 스케치는 이 엔진 실측 코드(550거래)의 밴드 이동이며 사용 함수(초당거래대금평균/당일거래대금각도/최고현재가/초당거래대금N)는 원문에 이미 존재. 화이트리스트 소스(tests/unit/test_ai_dictionary.py의 SetGlobalsFunc AST 추출, WHITELIST_HEADER) 실존.",
+     "[검증됨] 데이터 실존: _database/에 stock_tick_20220323.db~stock_tick_20260227.db 일별 tick DB, strategy.db, backtest.db 확인. 4챔피언 per-trade CSV(backtest/csv/stock_bt_ALP_V4_RR8_12/RR8_0/RR8_21/GPTAUTH_G8_20260707*.csv) 보존 확인 — 다만 20260707 실행분이 train 창(2022-03~2023-12) 산출인지 불명이라 제안서의 '+4회 재실행 복원' 예비는 필요하고 이미 계상돼 있다.",
+     "[결함-보완가능] accept 규칙 배선 미봉합: loop.py line 19가 mutator.accept를 하드코딩 import하고 line 116에서 호출하며, 봉인된 accept는 'profit>0 AND ((profit up AND mdd 비악화) OR calmar up)'(mutator.py line 199-211). 제안의 accept(단독 profit>0 AND corr<0.5 AND 포트폴리오 calmar 상승)는 'evaluate_fn만 교체'로는 달성 불가 — Metrics 필드 재의미화(calmar=포트폴리오 calmar, corr 위반=status!='ok' 인코딩 등) 또는 accept 개정이 필요한데 제안서는 'accept 지표만 개정'이라고만 적어 매핑이 미정의. 이대로면 'profit up AND mdd 비악화' 분기로 포트폴리오 calmar 개선 없는 후보가 수락될 수 있다.",
+     "[결함-보완가능] 엔진 예산의 시간 추정 미검증: 160회 x train 창(2022-03~2023-12, 일별 tick DB 약 440일) 실행을 '1.5~2일'로 추정했으나 per-run 소요의 실측 근거 없음. 기존 P3 힐클라임 train 창은 2022-03~2024-12(engine_eval.py TRAIN_WINDOW_END=20241231)로 창 정의도 D12와 다르므로 신규 config가 필요(다만 build_train_config가 bt_full_start/end 파라미터화를 이미 지원해 코드 변경은 경미).",
+     "[결함-경미] 스케치가 원문 밴드 이동만이 아님: passport 원문의 시가갭 2개 절(human_seed_gptauth_B_gen8.md line 42-45)이 스케치에서 삭제됨 — '밴드 임계만 바꾸는 변이는 구성적으로 API 유효성을 상속' 주장과 불일치. 절 삭제를 사전등록 move set에 명시하거나 스케치를 원문 절 보존형으로 정정해야 한다.",
+     "표본 추정은 현실적(원문 550거래 prior 실측 기반, 300 하한 inconclusive 규칙으로 Idea3 과잉판정 방어), kill criteria 구체적, v5 사인(구식 API) 회피 이중장치의 소스(현행 API 실측 모체 + AST 게이트)도 실재 — 치명 결함 없음."
+    ],
+    "required_fixes": [
+     "preregistration_d12.json에 accept 배선 방식을 코드 수준으로 확정하라: mutator.accept(loop.py line 116에서 하드코딩 호출)를 그대로 쓸 경우 Metrics 필드 매핑을 명시(예: profit_pct=후보 단독 profit, calmar=5슬롯 포트폴리오 calmar, mdd=포트폴리오 MDD, corr>=0.5는 status!='ok'로 인코딩해 무조건 기각)하거나, accept를 D12 전용으로 개정한다면 개정문 전문과 loop.py 수정 범위를 사전등록에 포함할 것. 현행대로면 'profit up AND mdd 비악화' 분기로 포트폴리오 calmar 미개선 후보가 수락되는 구멍이 있다.",
+     "봉인 전에 GPTAUTH_G8 원문의 train 창(2022-03~2023-12) 1회 실측으로 per-run 소요 시간을 확정하고, 160회 예산의 총 벽시계 시간과 야간 배치 계획을 사전등록에 기록할 것(이 1회는 어차피 챔피언 원장 복원 +4회에 포함 가능).",
+     "example_condition_sketch를 passport 원문(line 42-45 시가갭 2개 절 포함)과 정합시킬 것 — 절 삭제를 변이 연산으로 쓸 거면 사전등록 move set에 '절 삭제' 축을 명시하고 1단계 API 게이트 통과 대상에 포함, 아니면 스케치에서 두 절을 복원.",
+     "2026-07-07자 챔피언 CSV(backtest/csv/stock_bt_ALP_V4_*.csv)가 어느 창의 산출인지 2단계에서 먼저 판정하고, train 창 산출이 아니면 4회 재실행 복원을 예산에서 확정 차감(180회 봉인 내 재배분)할 것."
+    ]
+   },
+   {
+    "lens": "econ",
+    "verdict": "FIX",
+    "score_0_10": 7,
+    "reasons": [
+     "경제성 기저는 통과: 채택 판정 전부가 엔진 실측 손익(tick2 슬리피지 내장)이고 시드 GPTAUTH_G8 자체가 OOS 605거래 +1,439,459원(거래당 약 +2,380원, payoff 1.72)로 실측됨 — docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_oos_verdict.json. -1.022% 비용 헛들은 '엔진 실측 profit>0' 게이트로 구성적으로 처리된다.",
+     "비상관 전제는 실측 근거 있음: GPTAUTH_G8 vs RR8_12/0/21 월간 corr = 0.077/0.308/0.177 — docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_characterization.json corr_matrix. corr<0.5 이웃 존재 가설은 공상이 아니라 측정된 출발점의 국소 연속성 가정.",
+     "회전율·용량 현실적: 0.6~2.2거래/일 아침 스캘프, 중형캡(2500-7000억) 변종은 체결 용량이 오히려 개선. 엔진 예산 180회는 v4 실행 타임스탬프(회당 약 1~2분, v4_characterization.json csv_path 시각 간격)로 1.5~2일 추정과 정합.",
+     "wt-dev 루프와의 차별성 실질적: 표준 루프는 후보 단독 profit/MDD 채점인데 D12는 [동결 4챔피언+후보] 한계 calmar + corr 상한으로 선별 압력이 반전됨(단독 우수+고상관 기각, 단독 평범+다각화 기여 채택). 재사용 모듈(alpha_lab/hillclimb/loop.py, mutator.py, alpha_lab/ensemble/portfolio.py, robustness.py)은 전부 실재 확인.",
+     "winner's curse 방어 설계 내장: 사전등록 봉인, n_trials 원장(alpha_lab_v4_20260707/n_trials_ledger.jsonl 선례), train/validation 분리 + validation 단발 재시도 금지, 표본 하한 300, known-window discount 명기 — 기존 위생 규율과 일치.",
+     "결함 1(핵심): corr 게이트를 v4 증거 척도(월간)에서 일간 손익으로 바꿨는데, 0.6~2.2거래/일 전략의 일간 PnL은 zero-inflated라 Pearson corr가 기계적으로 하향 편향됨 — corr<0.5가 거의 전부 통과하는 무력한 게이트가 될 수 있어 포트폴리오 적합성 판정의 핵심 기준이 공동화될 위험. Jaccard triage(4단계)가 부분 보완이지만 accept 게이트 자체의 척도 정의가 미비.",
+     "결함 2: 5단계 train accept 규칙 '포트폴리오 calmar 상승'에 최소 개선폭(epsilon)이 없어 힐클라임이 노이즈 미세개선을 따라가며 예산을 소모할 수 있음(validation +10% 단발 게이트가 하류 방어이나 예산 낭비).",
+     "결함 3(경미): 설계안이 GPTAUTH_G8 매도식 sha를 '4ed51bb1...'로 인용하나 동결 원장 v4_ensemble_frozen.json의 등록 sha 체계(buy_sha 83e7322e...)와 대조 확인이 안 됨 — 동결 대상 sha는 frozen ensemble에서 역참조해야 함.",
+     "주 리스크(캡분리=저상관·저흑자 vs 파라미터이웃=흑자·쌍둥이 딜레마)를 제안 스스로 정직하게 인정하고 confidence 38로 반영 + kill_criteria 8개가 각 분기를 커버 — 실패 시에도 부정 지도라는 산출물이 남아 기대값 서사가 공상적이지 않음."
+    ],
+    "required_fixes": [
+     "corr 게이트 척도 사전등록 강화: 일간 zero-inflated Pearson 단독 판정 금지. (i) v4 증거와 동일 척도인 월간 corr<0.5를 1차 기준으로 병행하고, (ii) 발화일 중첩 조건부 지표(양쪽 모두 거래한 날 기준 corr 또는 동시발화일 비율)를 보조 지표로 함께 사전등록할 것. GPTAUTH 쌍둥이 판별 0.85 임계도 동일 척도 정의를 명시.",
+     "5단계 힐클라임 accept에 포트폴리오 calmar 최소 개선폭(epsilon, 예: +2% 이상)을 사전등록해 노이즈 추종으로 인한 엔진 예산 소모를 차단.",
+     "GPTAUTH_G8 원문 buy/sell sha를 docs/research/condition_research/research_runs/alpha_lab_v4_20260707/v4_ensemble_frozen.json에서 역참조해 preregistration_d12.json에 기록하고, 설계안의 '4ed51bb1' 인용을 실제 동결 sha로 정정."
+    ]
+   }
+  ]
+ }
+]

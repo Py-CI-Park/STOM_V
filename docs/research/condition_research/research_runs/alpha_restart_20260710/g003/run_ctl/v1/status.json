@@ -1,0 +1,12 @@
+{
+  "state": "exited",
+  "utc": "2026-07-16T05:11:03+00:00",
+  "exit_code": 0,
+  "child_pid": 102940,
+  "ended_utc": "2026-07-16T05:11:03+00:00",
+  "pid": 181528,
+  "target": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha-audit\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\g003\\run_ctl\\v1\\sealed-stage-a_foon3y\\scripts\\g003_veto_measure.py",
+  "target_args": [],
+  "started_utc": "2026-07-16T05:10:36+00:00",
+  "interval_sec": 5.0
+}

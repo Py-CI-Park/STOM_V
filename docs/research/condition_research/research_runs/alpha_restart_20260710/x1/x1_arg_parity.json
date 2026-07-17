@@ -1,0 +1,53 @@
+{
+ "pairs": [
+  {
+   "cand": "DROP5",
+   "year": 2022,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP15",
+   "year": 2022,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP29",
+   "year": 2022,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP31",
+   "year": 2022,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP5",
+   "year": 2023,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP15",
+   "year": 2023,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP29",
+   "year": 2023,
+   "status": "success",
+   "issues": []
+  },
+  {
+   "cand": "DROP31",
+   "year": 2023,
+   "status": "success",
+   "issues": []
+  }
+ ],
+ "parity_ok": true
+}

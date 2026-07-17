@@ -1,0 +1,306 @@
+{
+  "generated_at": "2026-07-06T14:51:57.536498+09:00",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "mining_report": "v2_mining_report.json",
+  "mining_batch": "V2M-L3_pos-20260706T144931",
+  "label": "L3_pos",
+  "selection_rule_sealed": "채택 리프 lift 내림차순 상위 F=6(동률: support desc -> rule json asc)",
+  "tie_break_rule_json": "json.dumps(rule, ensure_ascii=False, separators=(',',':')) asc",
+  "translation": {
+    "module": "alpha_lab.translate.codegen.translate_leaf_rule",
+    "time_guard": null,
+    "universe_guard": null,
+    "round_digits": 1,
+    "note": "리프절만 — 챔피언 매수식 시간·유니버스 동작 보존(봉인 pair 규칙)"
+  },
+  "pair_sealed": {
+    "buy": "(챔피언 매수식 원문) and (리프절) - 그 외 절 추가 금지",
+    "names": "ALP_V2F_01~06",
+    "sell": "챔피언 현직 매도식 원문(A 동일)"
+  },
+  "champion_buy_sha256_prefix": "348c5181",
+  "control_A_frozen": {
+    "full": {
+      "mdd": 7.14,
+      "profit": 15284154.0,
+      "trades": 665
+    },
+    "source": "loop_runs.db alp_exitchk_warm64_* 실측(재실행 0회)",
+    "y2022": {
+      "mdd": 9.19,
+      "profit": 4130117.0,
+      "trades": 101
+    },
+    "y2023": {
+      "mdd": 6.98,
+      "profit": 5649359.0,
+      "trades": 197
+    },
+    "y2024": {
+      "mdd": 13.58,
+      "profit": 2852246.0,
+      "trades": 156
+    },
+    "y2025": {
+      "mdd": 12.87,
+      "profit": 3062696.0,
+      "trades": 190
+    }
+  },
+  "success_rule_sealed": {
+    "common_floor": "full.trades >= 266 AND 연도 4창 중 >=3 profit > 0",
+    "risk_improved": "full.mdd <= A.full.mdd - 2.0 AND full.profit >= 0.85 * A.full.profit",
+    "success": "(superior OR risk_improved) AND common_floor",
+    "superior": "full.profit > A.full.profit AND full.mdd <= A.full.mdd"
+  },
+  "n_adopted_input": 29,
+  "n_candidates": 6,
+  "dedup": {
+    "policy": "동일 리프절 문자열(번역 후) 중복 붕괴 — 첫 등장 유지",
+    "dropped": []
+  },
+  "candidates": [
+    {
+      "name": "ALP_V2F_01",
+      "rank": 1,
+      "rule_id": "V2M-s00-l021",
+      "subset_id": 0,
+      "leaf_id": 21,
+      "rule": [
+        [
+          "초당매수수량",
+          ">",
+          101.5
+        ],
+        [
+          "전일비",
+          "<=",
+          4.994999885559082
+        ],
+        [
+          "전일동시간비",
+          ">",
+          869.8949890136719
+        ]
+      ],
+      "support": 2038,
+      "positives": 741,
+      "lift": 3.24159887084293,
+      "ci_low": 2.62603559048706,
+      "ci_high": 3.9307221526707194,
+      "p": 0.0,
+      "per_year_lift": {
+        "2023": 3.748557259342086,
+        "2024": 2.5784873642372625
+      },
+      "leaf_clause": "(초당매수수량) > 101.5 and (전일비) <= 5.0 and (전일동시간비) > 869.9",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    },
+    {
+      "name": "ALP_V2F_02",
+      "rank": 2,
+      "rule_id": "V2M-s01-l021",
+      "subset_id": 1,
+      "leaf_id": 21,
+      "rule": [
+        [
+          "초당거래대금",
+          ">",
+          6.5
+        ],
+        [
+          "전일비",
+          "<=",
+          5.045000076293945
+        ],
+        [
+          "전일동시간비",
+          ">",
+          837.8250122070312
+        ]
+      ],
+      "support": 2012,
+      "positives": 722,
+      "lift": 3.19929631128052,
+      "ci_low": 2.6479900110776065,
+      "ci_high": 3.797040433387404,
+      "p": 0.0,
+      "per_year_lift": {
+        "2023": 3.5537599562332747,
+        "2024": 2.689412579680457
+      },
+      "leaf_clause": "(초당거래대금) > 6.5 and (전일비) <= 5.0 and (전일동시간비) > 837.8",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    },
+    {
+      "name": "ALP_V2F_03",
+      "rank": 3,
+      "rule_id": "V2M-s02-l004",
+      "subset_id": 2,
+      "leaf_id": 4,
+      "rule": [
+        [
+          "전일비",
+          "<=",
+          4.525000095367432
+        ],
+        [
+          "전일비",
+          "<=",
+          1.7050000429153442
+        ],
+        [
+          "시가총액",
+          "<=",
+          35682.5
+        ],
+        [
+          "거래대금증감",
+          "<=",
+          -206547460096.0
+        ]
+      ],
+      "support": 2000,
+      "positives": 695,
+      "lift": 3.098132966700833,
+      "ci_low": 2.450352384232378,
+      "ci_high": 3.881106655428109,
+      "p": 0.0,
+      "per_year_lift": {
+        "2023": 2.7576416669672734,
+        "2024": 3.4986224693625463
+      },
+      "leaf_clause": "(전일비) <= 4.5 and (전일비) <= 1.7 and (시가총액) <= 35682.5 and (거래대금증감) <= -206547460096.0",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    },
+    {
+      "name": "ALP_V2F_04",
+      "rank": 4,
+      "rule_id": "V2M-s02-l024",
+      "subset_id": 2,
+      "leaf_id": 24,
+      "rule": [
+        [
+          "전일비",
+          ">",
+          4.525000095367432
+        ],
+        [
+          "시가총액",
+          ">",
+          19441.0
+        ],
+        [
+          "거래대금증감",
+          "<=",
+          -395832852480.0
+        ],
+        [
+          "체결강도",
+          "<=",
+          102.08499908447266
+        ]
+      ],
+      "support": 2000,
+      "positives": 594,
+      "lift": 2.6479006938421508,
+      "ci_low": 1.339964637726279,
+      "ci_high": 4.170048815206416,
+      "p": 0.007,
+      "per_year_lift": {
+        "2023": 2.27841573386536,
+        "2024": 2.8675829768196
+      },
+      "leaf_clause": "(전일비) > 4.5 and (시가총액) > 19441.0 and (거래대금증감) <= -395832852480.0 and (체결강도) <= 102.1",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    },
+    {
+      "name": "ALP_V2F_05",
+      "rank": 5,
+      "rule_id": "V2M-s00-l019",
+      "subset_id": 0,
+      "leaf_id": 19,
+      "rule": [
+        [
+          "초당매수수량",
+          ">",
+          101.5
+        ],
+        [
+          "전일비",
+          "<=",
+          4.994999885559082
+        ],
+        [
+          "전일동시간비",
+          "<=",
+          869.8949890136719
+        ],
+        [
+          "전일비",
+          "<=",
+          1.4850000143051147
+        ]
+      ],
+      "support": 4004,
+      "positives": 1181,
+      "lift": 2.6296689164602904,
+      "ci_low": 2.341405361228522,
+      "ci_high": 2.9646075395642306,
+      "p": 0.0,
+      "per_year_lift": {
+        "2023": 2.3383529998329173,
+        "2024": 3.033070603924061
+      },
+      "leaf_clause": "(초당매수수량) > 101.5 and (전일비) <= 5.0 and (전일동시간비) <= 869.9 and (전일비) <= 1.5",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    },
+    {
+      "name": "ALP_V2F_06",
+      "rank": 6,
+      "rule_id": "V2M-s02-l009",
+      "subset_id": 2,
+      "leaf_id": 9,
+      "rule": [
+        [
+          "전일비",
+          "<=",
+          4.525000095367432
+        ],
+        [
+          "전일비",
+          ">",
+          1.7050000429153442
+        ],
+        [
+          "시가총액",
+          "<=",
+          47315.0
+        ],
+        [
+          "거래대금증감",
+          "<=",
+          -414849040384.0
+        ]
+      ],
+      "support": 2000,
+      "positives": 566,
+      "lift": 2.5230838261189517,
+      "ci_low": 1.6234498460240077,
+      "ci_high": 3.5602884572756106,
+      "p": 0.001,
+      "per_year_lift": {
+        "2023": 2.162086942780856,
+        "2024": 2.8182540513513956
+      },
+      "leaf_clause": "(전일비) <= 4.5 and (전일비) > 1.7 and (시가총액) <= 47315.0 and (거래대금증감) <= -414849040384.0",
+      "clause_validated": true,
+      "buy_expr_pair_rule": "(챔피언 매수식 원문) and (리프절)"
+    }
+  ]
+}

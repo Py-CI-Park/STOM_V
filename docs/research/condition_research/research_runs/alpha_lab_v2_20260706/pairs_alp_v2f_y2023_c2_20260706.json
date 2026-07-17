@@ -1,0 +1,20 @@
+[
+  {
+    "label": "alp_v2f:F04:y2023",
+    "buy": "ALP_V2F_04",
+    "sell": "ALP_V2F_04",
+    "policy": "champion AND leaf filter (V2F rank 4)"
+  },
+  {
+    "label": "alp_v2f:F05:y2023",
+    "buy": "ALP_V2F_05",
+    "sell": "ALP_V2F_05",
+    "policy": "champion AND leaf filter (V2F rank 5)"
+  },
+  {
+    "label": "alp_v2f:F06:y2023",
+    "buy": "ALP_V2F_06",
+    "sell": "ALP_V2F_06",
+    "policy": "champion AND leaf filter (V2F rank 6)"
+  }
+]

@@ -1,0 +1,10 @@
+{
+ "kind": "sell_d1_run",
+ "generated": "2026-07-16T20:42:11+00:00",
+ "days": 437,
+ "rows": 862932,
+ "fired_rows": 648907,
+ "cap_rows": 214025,
+ "abl_labeled": 648907,
+ "path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\sell_d1\\sell_d1_deltas.parquet"
+}

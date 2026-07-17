@@ -1,0 +1,116 @@
+[
+ {
+  "label": "v3h:seed06:T001:threshold",
+  "buy": "ALP_V3H_06_T001",
+  "sell": "ALP_V3H_06_T001",
+  "policy": "clause[0] 전일비>1.705->2.69(+2pp)"
+ },
+ {
+  "label": "v3h:seed06:T002:threshold",
+  "buy": "ALP_V3H_06_T002",
+  "sell": "ALP_V3H_06_T002",
+  "policy": "clause[0] 전일비>1.705->0(-2pp)"
+ },
+ {
+  "label": "v3h:seed06:T003:threshold",
+  "buy": "ALP_V3H_06_T003",
+  "sell": "ALP_V3H_06_T003",
+  "policy": "clause[0] 전일비>1.705->3.87(+5pp)"
+ },
+ {
+  "label": "v3h:seed06:T004:threshold",
+  "buy": "ALP_V3H_06_T004",
+  "sell": "ALP_V3H_06_T004",
+  "policy": "clause[0] 전일비>1.705->0(-5pp)"
+ },
+ {
+  "label": "v3h:seed06:T005:threshold",
+  "buy": "ALP_V3H_06_T005",
+  "sell": "ALP_V3H_06_T005",
+  "policy": "clause[1] 전일비<=4.525->5.2(+2pp)"
+ },
+ {
+  "label": "v3h:seed06:T006:threshold",
+  "buy": "ALP_V3H_06_T006",
+  "sell": "ALP_V3H_06_T006",
+  "policy": "clause[1] 전일비<=4.525->3.82(-2pp)"
+ },
+ {
+  "label": "v3h:seed06:T007:threshold",
+  "buy": "ALP_V3H_06_T007",
+  "sell": "ALP_V3H_06_T007",
+  "policy": "clause[1] 전일비<=4.525->6.19(+5pp)"
+ },
+ {
+  "label": "v3h:seed06:T008:threshold",
+  "buy": "ALP_V3H_06_T008",
+  "sell": "ALP_V3H_06_T008",
+  "policy": "clause[1] 전일비<=4.525->2.62(-5pp)"
+ },
+ {
+  "label": "v3h:seed06:T009:threshold",
+  "buy": "ALP_V3H_06_T009",
+  "sell": "ALP_V3H_06_T009",
+  "policy": "clause[2] 시가총액<=47315->53514(+2pp)"
+ },
+ {
+  "label": "v3h:seed06:T010:threshold",
+  "buy": "ALP_V3H_06_T010",
+  "sell": "ALP_V3H_06_T010",
+  "policy": "clause[2] 시가총액<=47315->42630(-2pp)"
+ },
+ {
+  "label": "v3h:seed06:T011:threshold",
+  "buy": "ALP_V3H_06_T011",
+  "sell": "ALP_V3H_06_T011",
+  "policy": "clause[2] 시가총액<=47315->62969(+5pp)"
+ },
+ {
+  "label": "v3h:seed06:T012:threshold",
+  "buy": "ALP_V3H_06_T012",
+  "sell": "ALP_V3H_06_T012",
+  "policy": "clause[2] 시가총액<=47315->34451(-5pp)"
+ },
+ {
+  "label": "v3h:seed06:T013:threshold",
+  "buy": "ALP_V3H_06_T013",
+  "sell": "ALP_V3H_06_T013",
+  "policy": "clause[3] 거래대금증감<=-4.148e+11->-2.8915e+11(+2pp)"
+ },
+ {
+  "label": "v3h:seed06:T014:threshold",
+  "buy": "ALP_V3H_06_T014",
+  "sell": "ALP_V3H_06_T014",
+  "policy": "clause[3] 거래대금증감<=-4.148e+11->-1.22498e+12(-2pp)"
+ },
+ {
+  "label": "v3h:seed06:T015:threshold",
+  "buy": "ALP_V3H_06_T015",
+  "sell": "ALP_V3H_06_T015",
+  "policy": "clause[3] 거래대금증감<=-4.148e+11->-2.08543e+11(+5pp)"
+ },
+ {
+  "label": "v3h:seed06:T016:threshold",
+  "buy": "ALP_V3H_06_T016",
+  "sell": "ALP_V3H_06_T016",
+  "policy": "clause[3] 거래대금증감<=-4.148e+11->-1.22498e+12(-5pp)"
+ },
+ {
+  "label": "v3h:seed06:T017:remove",
+  "buy": "ALP_V3H_06_T017",
+  "sell": "ALP_V3H_06_T017",
+  "policy": "remove clause[0] 전일비>1.705"
+ },
+ {
+  "label": "v3h:seed06:T018:remove",
+  "buy": "ALP_V3H_06_T018",
+  "sell": "ALP_V3H_06_T018",
+  "policy": "remove clause[1] 전일비<=4.525"
+ },
+ {
+  "label": "v3h:seed06:T019:remove",
+  "buy": "ALP_V3H_06_T019",
+  "sell": "ALP_V3H_06_T019",
+  "policy": "remove clause[2] 시가총액<=47315"
+ }
+]
