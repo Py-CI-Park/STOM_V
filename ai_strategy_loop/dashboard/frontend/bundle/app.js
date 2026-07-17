@@ -31550,9 +31550,10 @@ def signal_sell(pos, bar, ind):
     useEffect_hv(() => {
       loadRows();
     }, [selected2]);
-    const hasProfit = rows.some((r) => _hvMetric(r, "profit") != null);
-    const hasPct = rows.some((r) => _hvMetric(r, "total_profit_pct") != null);
+    const hasProfit = rows.some((r) => _hvMetricAny(r, ["net_profit", "profit"]) != null);
+    const hasPct = rows.some((r) => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
     const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
+    const pctIsWinRate = rows.some((r) => (r && r.metrics || {}).win_rate != null);
     const grid = (() => {
       const timeLabels = [];
       const capLabels = [];
@@ -31567,9 +31568,9 @@ def signal_sell(pos, bar, ind):
         if (!cellMap[key]) cellMap[key] = { count: 0, profitSum: 0, pctSum: 0, pctN: 0 };
         const cell = cellMap[key];
         cell.count += 1;
-        const profit = _hvMetric(row, "profit");
+        const profit = _hvMetricAny(row, ["net_profit", "profit"]);
         if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
-        const pct = _hvMetric(row, "total_profit_pct");
+        const pct = _hvMetricAny(row, ["win_rate", "total_profit_pct"]);
         if (pct != null && !Number.isNaN(Number(pct))) {
           cell.pctSum += Number(pct);
           cell.pctN += 1;
@@ -31589,7 +31590,7 @@ def signal_sell(pos, bar, ind):
       },
       campaigns.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uCEA0\uD398\uC778 \uC5C6\uC74C"),
       campaigns.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.research_id, value: c.research_id }, c.label || c.research_id))
-    ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
+    ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
       const cell = grid.cellMap[t + "\xD7" + c];
       const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
       return /* @__PURE__ */ React.createElement(
@@ -31599,7 +31600,7 @@ def signal_sell(pos, bar, ind):
           style: { padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) },
           title: cell ? `${t} \xD7 ${c} \xB7 ${cell.count}\uAC74` : `${t} \xD7 ${c} \xB7 \uB370\uC774\uD130 \uC5C6\uC74C`
         },
-        value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(value) : _hvMoney(value)
+        value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(pctIsWinRate ? value * 100 : value) : _hvMoney(value)
       );
     })))))))));
   }

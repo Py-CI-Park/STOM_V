@@ -341,9 +341,13 @@ function CellHeatmap({ baseUrl, wsStatus }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
-  const hasProfit = rows.some(r => _hvMetric(r, "profit") != null);
-  const hasPct = rows.some(r => _hvMetric(r, "total_profit_pct") != null);
+  // 캠페인 companion 셀 메트릭 키는 net_profit/win_rate(stage1 분해 계약),
+  // loop_run 행은 profit/total_profit_pct — 후보 키로 둘 다 지원한다.
+  const hasProfit = rows.some(r => _hvMetricAny(r, ["net_profit", "profit"]) != null);
+  const hasPct = rows.some(r => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
   const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
+  // 캠페인 win_rate는 0~1 비율, loop_run total_profit_pct는 % 값 — 표시 배율 분기.
+  const pctIsWinRate = rows.some(r => ((r && r.metrics) || {}).win_rate != null);
 
   const grid = (() => {
     const timeLabels = [];
@@ -359,9 +363,9 @@ function CellHeatmap({ baseUrl, wsStatus }) {
       if (!cellMap[key]) cellMap[key] = { count: 0, profitSum: 0, pctSum: 0, pctN: 0 };
       const cell = cellMap[key];
       cell.count += 1;
-      const profit = _hvMetric(row, "profit");
+      const profit = _hvMetricAny(row, ["net_profit", "profit"]);
       if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
-      const pct = _hvMetric(row, "total_profit_pct");
+      const pct = _hvMetricAny(row, ["win_rate", "total_profit_pct"]);
       if (pct != null && !Number.isNaN(Number(pct))) { cell.pctSum += Number(pct); cell.pctN += 1; }
     }
     if (!capLabels.length || !timeLabels.length) return null;
@@ -398,7 +402,7 @@ function CellHeatmap({ baseUrl, wsStatus }) {
               </select>
               {hasProfit && hasPct && (
                 <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "profit" ? "total_profit_pct" : "profit"))}>
-                  값: {effectiveMode === "profit" ? "손익" : "수익률%"}
+                  값: {effectiveMode === "profit" ? "손익" : (pctIsWinRate ? "승률" : "수익률%")}
                 </button>
               )}
             </div>
@@ -437,7 +441,7 @@ function CellHeatmap({ baseUrl, wsStatus }) {
                               style={{ padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) }}
                               title={cell ? `${t} × ${c} · ${cell.count}건` : `${t} × ${c} · 데이터 없음`}
                             >
-                              {value == null ? "\u2014" : (effectiveMode === "total_profit_pct" ? _hvPct(value) : _hvMoney(value))}
+                              {value == null ? "\u2014" : (effectiveMode === "total_profit_pct" ? _hvPct(pctIsWinRate ? value * 100 : value) : _hvMoney(value))}
                             </td>
                           );
                         })}
