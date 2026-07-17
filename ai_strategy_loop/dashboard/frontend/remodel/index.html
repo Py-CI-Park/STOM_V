@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="/ui/remodel/styles/theme.css?v=20260628canonical" />
 </head>
 <body>
+  <!-- B-1: remodel 은 정적 디자인 시안이며 라이브 데이터가 아니다 — 눈에 띄는 가벼운 바로 고지한다.
+       기존 #app 레이아웃에는 영향을 주지 않는다. -->
+  <div style="padding:6px 16px;background:#3a2e0c;color:#f0d38a;font-family:system-ui,sans-serif;font-size:12px;text-align:center;">
+    정적 디자인 시안 — 라이브 데이터 아님 (정본 대시보드는 <a href="/ui/" style="color:#ffdf8a;text-decoration:underline;">/ui</a>)
+  </div>
   <div id="app" class="app-shell"></div>
   <div id="modal-root"></div>
   <script src="/ui/remodel/src/data.js?v=20260628canonical"></script>

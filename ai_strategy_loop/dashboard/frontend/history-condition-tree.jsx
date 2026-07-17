@@ -302,7 +302,24 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
                           background: active ? "rgba(159,180,255,0.08)" : "transparent",
                           cursor: "pointer",
                         }} onClick={() => selectResearch(row.research_id)}>
-                          <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</td>
+                          <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</div>
+                            {(row.series || row.ab_role || (row.gate_passed_count > 0)) && (
+                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 }}>
+                                {row.series && (
+                                  <span className="badge" title="series">{row.series}</span>
+                                )}
+                                {row.ab_role && row.ab_role.pair && (
+                                  <span className="badge" title="A/B 역할(pair·arm)">
+                                    {row.ab_role.pair}{row.ab_role.arm ? "\u00b7" + row.ab_role.arm : ""}
+                                  </span>
+                                )}
+                                {row.gate_passed_count > 0 && (
+                                  <span className="badge ok" title="gate 통과 세대수">gate {row.gate_passed_count}</span>
+                                )}
+                              </div>
+                            )}
+                          </td>
                           <td style={{ padding: "7px 8px", color: "var(--ink-2)" }}>{row.source_kind || "-"}</td>
                           <td style={{ padding: "7px 8px", textAlign: "right" }}>{_hctNum(counts.stages)}</td>
                           <td style={{ padding: "7px 8px", textAlign: "right" }}>{_hctNum(counts.conditions)}</td>
