@@ -44,6 +44,8 @@ _FEEDBACK_TOGGLES = (
     "counterfactual_feedback_enabled",
     "hypothesis_tracking_enabled",
     "feature_importance_feedback_enabled",
+    # 2026-07-16 실 A/B 실측 교훈: 카드 채널 원천 토글 — 연구 프리셋 필수 ON.
+    "analysis_card_v3_enabled",
 )
 
 

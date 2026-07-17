@@ -46,7 +46,9 @@ _COMMON_DISCOVERY: Final[dict[str, PresetValue]] = {
     "bt_betting": "5",
     "bt_universe_start_time": 90000,
     "bt_warm_engine_count": 32,
-    "bt_timeout": 900,
+    # 2026-07-16 실 A/B 실측: 틱 3년 warm 로딩이 15~20분이라 900초면 cold 폴백으로
+    # 전락한다(세대당 전체 재적재 → 실험 불성립). 2400초로 상향.
+    "bt_timeout": 2400,
     "bt_warm_run_timeout": 180,
     "max_generations": 15,
     "mdd_cap": 20.0,
@@ -77,6 +79,10 @@ _COMMON_DISCOVERY: Final[dict[str, PresetValue]] = {
     "hypothesis_tracking_enabled": True,
     "feature_importance_feedback_enabled": True,
     "exit_forensics_feedback_enabled": True,
+    # 2026-07-16 실 A/B 실측: 이 토글 없이는 AnalysisCardV3가 원천 미생성이라
+    # 카드 지시 환류(자유문/typed 모두)가 아예 발화하지 않는다.
+    # 전역 기본 OFF 유지 — 연구 프리셋에서만 ON.
+    "analysis_card_v3_enabled": True,
 }
 
 
