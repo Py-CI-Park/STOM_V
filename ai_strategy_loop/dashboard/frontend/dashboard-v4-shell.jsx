@@ -22,6 +22,7 @@ import { V4History } from "./v4-history.jsx";
 import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Audit } from "./v4-audit.jsx";
+import { V4Alpha } from "./v4-alpha.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
@@ -34,6 +35,7 @@ const V4_TABS = [
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
   { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "후보 비교 · 명예의 전당" },
   { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · 안전 게이트" },
+  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (PR #108)" },
   { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
@@ -382,6 +384,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
               ) : activeTab === "audit" ? (
                 <V4Audit baseUrl={baseUrl} onNavigate={selectTab} />
+              ) : activeTab === "alpha" ? (
+                <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : (
                 <div className="v4-context">
                   {typeof window.AIContextPanel === "function" ? (

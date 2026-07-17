@@ -34911,6 +34911,85 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Audit });
 
+  // ai_strategy_loop/dashboard/frontend/v4-alpha.jsx
+  var {
+    useState: useState_va2,
+    useEffect: useEffect_va2,
+    useCallback: useCallback_va
+  } = React;
+  function _vaNum(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString();
+  }
+  function _vaFetch(url, timeoutMs) {
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  var _VA_FUNNEL_STAGES = [
+    { key: "discovered", label: "\uBC1C\uACAC" },
+    { key: "fdr_survived", label: "FDR \uC0DD\uC874" },
+    { key: "translated", label: "\uBC88\uC5ED" },
+    { key: "registered", label: "\uB4F1\uC7AC" },
+    { key: "engine_checked", label: "\uC5D4\uC9C4 \uD655\uC778" },
+    { key: "gate_passed", label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
+  ];
+  function V4Alpha({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [status, setStatus] = useState_va2(null);
+    const [funnel, setFunnel] = useState_va2(null);
+    const [rules, setRules] = useState_va2(null);
+    const [error, setError] = useState_va2("");
+    const load = useCallback_va(() => {
+      if (isDemo || !baseUrl) {
+        setStatus(null);
+        setFunnel(null);
+        setRules(null);
+        return;
+      }
+      let done = false;
+      Promise.allSettled([
+        _vaFetch(baseUrl + "/api/alpha/status"),
+        _vaFetch(baseUrl + "/api/alpha/funnel"),
+        _vaFetch(baseUrl + "/api/alpha/rules")
+      ]).then(([s, f, r]) => {
+        if (done) return;
+        setStatus(s.status === "fulfilled" ? s.value : null);
+        setFunnel(f.status === "fulfilled" ? f.value : null);
+        setRules(r.status === "fulfilled" ? r.value : null);
+        const firstErr = [s, f, r].find((x) => x.status === "rejected");
+        setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
+      });
+      return () => {
+        done = true;
+      };
+    }, [baseUrl, isDemo]);
+    useEffect_va2(() => {
+      const cleanup = load();
+      const id2 = setInterval(load, 3e4);
+      return () => {
+        if (typeof cleanup === "function") cleanup();
+        clearInterval(id2);
+      };
+    }, [load]);
+    const prereg = status && status.preregistration || {};
+    const ledger = status && status.ledger || {};
+    const funnelMax = funnel ? Math.max(1, ..._VA_FUNNEL_STAGES.map((s) => Number(funnel[s.key]) || 0)) : 1;
+    const ruleRows = rules && Array.isArray(rules.rules) ? rules.rules : [];
+    const statusAvailable = !!(status && status.available);
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-alpha" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-title" }, "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC9C4\uD589 \uAD00\uCC30"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778 \xB7 n_trials \uC6D0\uC7A5 \xB7 \uBC1C\uACAC\u2192\uAC8C\uC774\uD2B8 \uD37C\uB110 (\uC77D\uAE30 \uC804\uC6A9 \xB7 PR #108 \uC790\uC0B0)"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo && /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, "\uC608\uC2DC \uC18C\uC2A4 \xB7 \uC6B4\uC601 \uC54C\uD30C \uC0B0\uCD9C\uBB3C\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4."), !isDemo && !statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC54C\uD30C \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uB300\uAE30 \xB7 \uC0AC\uC804\uB4F1\uB85D/\uC6D0\uC7A5/\uD37C\uB110 \uD30C\uC77C\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4", error ? " \xB7 " + error : "", ".", /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACBD\uB85C: ", status && status.run_dir || "docs/research/condition_research/research_runs/\u2026")), statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-status", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "stage"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, status.stage || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, prereg.available ? prereg.program || "sealed" : "\uBBF8\uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: prereg.sha256_match === false ? "var(--red)" : "var(--ink-2)" } }, prereg.sha256_match === true ? "SHA \uC77C\uCE58 \u2713" : prereg.sha256_match === false ? "SHA \uBD88\uC77C\uCE58 \u2717" : "SHA \uBBF8\uAC80\uC99D", prereg.sealed_date ? " \xB7 " + prereg.sealed_date : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "n_trials \uC6D0\uC7A5"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, _vaNum(ledger.total)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, _vaNum(ledger.entries), " \uD56D\uBAA9", ledger.malformed_lines ? " \xB7 \uC190\uC0C1 " + ledger.malformed_lines : ""))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-funnel-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-funnel-title" }, "\uBC1C\uACAC \u2192 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD37C\uB110")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !funnel || !funnel.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uD37C\uB110 \uB370\uC774\uD130 \uB300\uAE30 \xB7 mining/translation/registration/engine/gate \uC601\uC218\uC99D\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-funnel", style: { display: "grid", gap: 6 } }, _VA_FUNNEL_STAGES.map((stage) => {
+      const v = Number(funnel[stage.key]) || 0;
+      const pct = Math.round(v / funnelMax * 100);
+      return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "120px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
+    })))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBA54\uD0C0"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
+      const isObj = rule && typeof rule === "object";
+      const rid = isObj ? rule.rule_id || rule.id || rule.name || "#" + (i + 1) : String(rule);
+      const tr = isObj && rule.translation ? rule.translation : null;
+      const trText = tr ? tr.expression || tr.text || tr.rule || JSON.stringify(tr) : "\u2014";
+      const meta = isObj ? Object.entries(rule).filter(([k]) => !["rule_id", "id", "name", "translation"].includes(k)).slice(0, 4).map(([k, v]) => k + "=" + (typeof v === "object" ? "\u2026" : v)).join(" \xB7 ") : "";
+      return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 380, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: "var(--ink-2)" } }, meta));
+    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))));
+  }
+  Object.assign(window, { V4Alpha });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
   var V4_TABS = [
@@ -34921,6 +35000,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
     { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
     { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" },
+    { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (PR #108)" },
     { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
@@ -35242,7 +35322,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
