@@ -54,6 +54,20 @@ _STAGE_LADDER: Final[tuple[tuple[str, str], ...]] = (
     ("rules_mined", "mining_report.json"),
     ("rules_translated", "translation_receipt.json"),
     ("events_analyzed", "event_cells_report.json"),
+    ("registered", "rho_gate_registration_receipt.json"),
+    ("engine_confirmed", "rho_gate_engine_runs.json"),
+    ("rho_gate_verdict", "rho_gate_verdict.json"),
+    ("retrial_finalized", "rho_retrial_verdict.json"),
+)
+
+# 등록/판정 authoritative 영수증(재판정 우선, 없으면 게이트) — §4.1 실제 파일명.
+_REGISTRATION_FILES: Final[tuple[str, ...]] = (
+    "rho_retrial_registration_receipt.json",
+    "rho_gate_registration_receipt.json",
+)
+_VERDICT_FILES: Final[tuple[str, ...]] = (
+    "rho_retrial_verdict.json",
+    "rho_gate_verdict.json",
 )
 
 _RULE_LIST_KEYS: Final[tuple[str, ...]] = ("rules", "leaves", "leaderboard", "candidates")
@@ -104,8 +118,15 @@ def _preregistration_status(run_dir: Path) -> dict[str, Any]:
     if prereg_path.is_file() and sidecar is not None:
         actual = hashlib.sha256(prereg_path.read_bytes()).hexdigest()
         sha_match = actual == sidecar
+    valid_json = isinstance(payload, dict)
+    # §4.3: 파일 존재만으로 sealed 판정 금지 — 정상 JSON + 사이드카 + SHA 일치 모두 요구.
+    sealed = bool(prereg_path.is_file() and valid_json and sha_match is True)
     status: dict[str, Any] = {
+        "present": prereg_path.is_file(),
         "available": prereg_path.is_file(),
+        "valid_json": valid_json,
+        "sidecar_present": sidecar is not None,
+        "sealed": sealed,
         "sealed_date": payload.get("sealed_date") if isinstance(payload, dict) else None,
         "program": payload.get("program") if isinstance(payload, dict) else None,
         "sha256": sidecar,
@@ -170,6 +191,7 @@ def alpha_status() -> dict[str, Any]:
         "ledger": _ledger_status(run_dir),
         "stage": stage,
         "artifacts": artifacts,
+        "verdict": _authoritative_verdict(run_dir),
     }
 
 
@@ -283,9 +305,11 @@ def _count_in(payload: Any, count_keys: tuple[str, ...], list_keys: tuple[str, .
 
 
 def _fdr_survived_count(mining: Any) -> int:
-    explicit = _count_in(mining, ("n_fdr_survived",), ())
-    if explicit:
-        return explicit
+    # §4.4: authoritative n_fdr_survived 는 0 도 유효값 — truthiness 대신 타입 검사.
+    if isinstance(mining, dict):
+        explicit = mining.get("n_fdr_survived")
+        if isinstance(explicit, int) and not isinstance(explicit, bool):
+            return max(explicit, 0)
     rules, _ = _extract_list(mining, _RULE_LIST_KEYS)
     return sum(
         1
@@ -294,22 +318,75 @@ def _fdr_survived_count(mining: Any) -> int:
     )
 
 
+def _registration_count(run_dir: Path) -> tuple[int, str | None]:
+    """등재 수 — 재판정 우선, 없으면 게이트. registration.inserted 리스트 길이."""
+    for name in _REGISTRATION_FILES:
+        payload, _ = _load_json(run_dir / name)
+        if isinstance(payload, dict):
+            reg = payload.get("registration")
+            if isinstance(reg, dict) and isinstance(reg.get("inserted"), list):
+                return len(reg["inserted"]), name
+    return 0, None
+
+
+def _authoritative_verdict(run_dir: Path) -> dict[str, Any]:
+    """권위 최종 판정 — 재판정 verdict 우선(final), 없으면 게이트 verdict.
+
+    §4.1: 제네릭 이름(rho_gate_verdict) 고정 대신 실제 파일을 명시 선택하고,
+    발견/FDR/번역 뒤 단계(등재·엔진·게이트)의 실제 결과를 노출한다.
+    """
+    for name in _VERDICT_FILES:
+        payload, error = _load_json(run_dir / name)
+        if isinstance(payload, dict):
+            cov = payload.get("coverage") if isinstance(payload.get("coverage"), dict) else {}
+            return {
+                "available": True,
+                "source": name,
+                "final": bool(payload.get("final")),
+                "status": payload.get("status"),
+                "rho": payload.get("rho"),
+                "verdict": payload.get("verdict"),
+                "coverage": {
+                    "n_rules_sealed": cov.get("n_rules_sealed"),
+                    "measured_ok": cov.get("measured_ok"),
+                    "censored_timeout": cov.get("censored_timeout"),
+                    "no_trades": cov.get("no_trades"),
+                },
+            }
+        if error:
+            return {"available": False, "source": name, "error": error}
+    return {"available": False}
+
+
 @alpha_router.get("/funnel")
 def alpha_funnel() -> dict[str, Any]:
-    """퍼널 6단계 집계: 발견→FDR 생존→번역→등재→엔진 확인→게이트 통과."""
+    """퍼널 6단계: 발견→FDR 생존→번역→등재→엔진 확인→측정성공. 권위 판정 동봉.
+
+    §4.1 교정: 부재하던 제네릭 이름(registration_receipt/engine_check_receipt) 대신
+    실제 영수증(rho_gate_*/rho_retrial_*)을 읽어 등재·엔진·판정을 표시한다.
+    이전 구현은 실제 판정이 통과("본빌드 진행 권고")임에도 등재·엔진·게이트를 0으로 오표시했다.
+    """
     run_dir = _run_dir()
     mining, _ = _load_json(run_dir / "mining_report.json")
     translation, _ = _load_json(run_dir / "translation_receipt.json")
-    registration, _ = _load_json(run_dir / "registration_receipt.json")
-    engine, _ = _load_json(run_dir / "engine_check_receipt.json")
-    gate, _ = _load_json(run_dir / "rho_gate_verdict.json")
+    registered, reg_source = _registration_count(run_dir)
+    verdict = _authoritative_verdict(run_dir)
+    cov = verdict.get("coverage") if isinstance(verdict.get("coverage"), dict) else {}
+    n_sealed = cov.get("n_rules_sealed")
+    measured_ok = cov.get("measured_ok")
+    engine_checked = n_sealed if isinstance(n_sealed, int) else 0  # 봉인된 규칙 전부 엔진 대상
+    gate_passed = measured_ok if (verdict.get("available") and isinstance(measured_ok, int)) else 0
     discovered = _count_in(mining, ("n_discovered",), _RULE_LIST_KEYS)
     return {
-        "available": any(p is not None for p in (mining, translation, registration, engine, gate)),
+        "available": any(
+            p is not None for p in (mining, translation)
+        ) or registered > 0 or bool(verdict.get("available")),
         "discovered": discovered,
         "fdr_survived": _fdr_survived_count(mining),
         "translated": _count_in(translation, ("n_translated",), _TRANSLATION_LIST_KEYS),
-        "registered": _count_in(registration, ("n_registered",), ("registered", "strategies", "entries")),
-        "engine_checked": _count_in(engine, ("n_engine_checked", "n_checked"), ("engine_checked", "checked", "entries")),
-        "gate_passed": _count_in(gate, ("n_gate_passed", "n_passed"), ("gate_passed", "passed_rules", "passed")),
+        "registered": registered,
+        "registration_source": reg_source,
+        "engine_checked": engine_checked,
+        "gate_passed": gate_passed,
+        "verdict": verdict,
     }
