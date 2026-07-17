@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Optional, TypedDict
@@ -44,6 +45,54 @@ from cli.condition_history_schema import (
     ResearchNode,
     StageNode,
 )
+
+# ---------------------------------------------------------------------------
+# A/B pair/arm 파생 + gate_passed 집계 -- 순수 함수(DB/파일시스템 접근 없음, G002).
+# ---------------------------------------------------------------------------
+
+
+_AB_PAIR_RE = re.compile(r"^(?P<series>.+)_(?P<pair>p\d+)_(?P<arm>legacy|typed)$")
+_AB_ARM_ONLY_RE = re.compile(r"^(?P<series>.+)_(?P<arm>legacy|typed)_(?P<variant>.+)$")
+
+
+def derive_series(run_id: str) -> str:
+    """run_id/campaign 이름에서 A/B 시리즈 접두사를 결정론적으로 파생한다(순수 함수, DB 접근 없음).
+
+    우선순위: 1) 마지막 ``_p<N>_<arm>`` 꼬리 제거, 2) 마지막 ``_<arm>_<variant>``
+    꼬리 제거, 3) 둘 다 없으면 첫 ``_`` 앞 토큰(``_``이 없으면 이름 전체).
+    """
+    match = _AB_PAIR_RE.fullmatch(run_id)
+    if match is not None:
+        return match.group("series")
+    match = _AB_ARM_ONLY_RE.fullmatch(run_id)
+    if match is not None:
+        return match.group("series")
+    return run_id.split("_", 1)[0]
+
+
+def derive_ab_role(run_id: str) -> Optional[dict[str, str]]:
+    """run_id/campaign 이름이 A/B pair·arm 명명 규칙에 맞으면 역할을 파생한다(순수 함수).
+
+    ``<series>_p<N>_<arm>`` 형태면 ``{"pair": "p<N>", "arm": <arm>}``,
+    ``<series>_<arm>_<variant>`` 형태(pair 없음)면 ``{"arm": <arm>}``,
+    둘 다 아니면 ``None``이다.
+    """
+    match = _AB_PAIR_RE.fullmatch(run_id)
+    if match is not None:
+        return {"pair": match.group("pair"), "arm": match.group("arm")}
+    match = _AB_ARM_ONLY_RE.fullmatch(run_id)
+    if match is not None:
+        return {"arm": match.group("arm")}
+    return None
+
+
+def gate_passed_count_from_generations(gen_rows: list[dict]) -> int:
+    """세대 행 목록에서 게이트 통과 세대 수를 합산한다(순수 함수, DB 접근 없음).
+
+    ``generations.gate_passed``는 SQLite INTEGER(0/1)로 저장되므로 진리값으로
+    캐스팅해 합산한다(True/1만 카운트).
+    """
+    return sum(1 for gen in gen_rows if gen.get("gate_passed"))
 
 # ---------------------------------------------------------------------------
 # 공통 유틸 -- 절대경로 제거 + 상태 집계.
@@ -112,12 +161,22 @@ class CampaignResult(TypedDict):
     artifact_refs: Optional[dict[str, Any]]
 
 
-class LoopRunResult(TypedDict):
-    """``LoopRunAdapter.build_research_node``의 반환 봉투."""
-
+class _LoopRunResultRequired(TypedDict):
     available: bool
     reason: Optional[str]
     research: Optional[ResearchNode]
+
+
+class LoopRunResult(_LoopRunResultRequired, total=False):
+    """``LoopRunAdapter.build_research_node``의 반환 봉투.
+
+    ``evaluation_gate_passed``는 evaluation_id -> generations.gate_passed(bool)
+    매핑이다. ``EvaluationNode`` 스키마(동결)는 건드리지 않고 봉투 레벨에서만
+    추가하는 read-only 파생 필드다(G002, additive). run이 불가용
+    (``available=False``)이면 이 키 자체를 생략한다.
+    """
+
+    evaluation_gate_passed: dict[str, bool]
 
 
 # ---------------------------------------------------------------------------
@@ -395,6 +454,7 @@ class LoopRunAdapter:
 
         conditions: list[ConditionNode] = []
         eval_statuses: list[str] = []
+        evaluation_gate_passed: dict[str, bool] = {}
         for gen in gen_rows:
             gen_no = gen.get("gen_no")
             parent_gen = gen.get("parent_gen")
@@ -405,6 +465,8 @@ class LoopRunAdapter:
             evaluation_id = f"eval:{condition_id}"
             status = _evaluation_status_from_generation(gen)
             eval_statuses.append(status)
+            if "gate_passed" in gen and gen["gate_passed"] is not None:
+                evaluation_gate_passed[evaluation_id] = bool(gen["gate_passed"])
 
             def _metric(key: str) -> Optional[float]:
                 value = gen.get(key)
@@ -447,4 +509,9 @@ class LoopRunAdapter:
             "coverage_status": stage_status,
             "stages": [stage],
         }
-        return {"available": True, "reason": None, "research": research}
+        return {
+            "available": True,
+            "reason": None,
+            "research": research,
+            "evaluation_gate_passed": evaluation_gate_passed,
+        }

@@ -18,6 +18,11 @@
   <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
 </head>
 <body>
+  <!-- B-1: 정본(canonical) 대시보드는 /ui — V4는 opt-in 프리뷰라는 것을 항상 눈에 띄게 알린다.
+       가벼운 바 형태로 기존 레이아웃(#root 이하)에는 영향을 주지 않는다. -->
+  <div style="padding:6px 16px;background:#3a2e0c;color:#f0d38a;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12px;text-align:center;">
+    PREVIEW — 정본 대시보드는 <a href="/ui/" style="color:#ffdf8a;text-decoration:underline;">/ui</a> 입니다
+  </div>
   <!-- V4 는 opt-in 프리뷰. V2 운영 대시보드로 돌아가는 링크를 항상 제공한다. -->
   <div style="padding:8px 16px 0;font-family:'IBM Plex Sans',system-ui,sans-serif;">
     <a href="/ui/" style="color:#7ab;font-size:12px;">← V2 운영 대시보드로</a>
@@ -29,7 +34,7 @@
   </div>
 
   <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. DOMContentLoaded 에서 DashboardV4Shell 마운트. -->
-  <script defer src="/ui/bundle/app.js?v=094b250a"></script>
+  <script defer src="/ui/bundle/app.js?v=998fd305"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       ReactDOM.createRoot(document.getElementById("root"))

@@ -31328,7 +31328,7 @@ def signal_sell(pos, bar, ind):
         borderTop: "1px solid var(--line-1)",
         background: active ? "rgba(159,180,255,0.08)" : "transparent",
         cursor: "pointer"
-      }, onClick: () => selectResearch(row.research_id) }, /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" } }, row.label || row.research_id), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, row.source_kind || "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.stages)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.conditions)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.evaluations)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "badge" }, row.condition_tree_status || "-")), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _hctDate(row.updated_at)));
+      }, onClick: () => selectResearch(row.research_id) }, /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" } }, /* @__PURE__ */ React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, row.label || row.research_id), (row.series || row.ab_role || row.gate_passed_count > 0) && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 } }, row.series && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "series" }, row.series), row.ab_role && row.ab_role.pair && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "A/B \uC5ED\uD560(pair\xB7arm)" }, row.ab_role.pair, row.ab_role.arm ? "\xB7" + row.ab_role.arm : ""), row.gate_passed_count > 0 && /* @__PURE__ */ React.createElement("span", { className: "badge ok", title: "gate \uD1B5\uACFC \uC138\uB300\uC218" }, "gate ", row.gate_passed_count))), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, row.source_kind || "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.stages)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.conditions)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.evaluations)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "badge" }, row.condition_tree_status || "-")), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _hctDate(row.updated_at)));
     }))), nextCursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(nextCursor), disabled: indexLoading }, indexLoading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), selectedId && /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), selectedId), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null), disabled: sections.stages && sections.stages.loading }, sections.stages && sections.stages.loading ? "\uB85C\uB529\u2026" : "Stages \uB85C\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, sections.research && sections.research.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.research.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => selectResearch(selectedId) }, "\uC7AC\uC2DC\uB3C4"))), sections.stages && sections.stages.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.stages.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null) }, "\uC7AC\uC2DC\uB3C4"))), stageRows.length === 0 && !(sections.stages && sections.stages.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, sections.stages ? "stage \uC5C6\uC74C" : "Stages \uB85C\uB4DC \uBC84\uD2BC\uC73C\uB85C \uD2B8\uB9AC\uB97C \uD3BC\uCE58\uC138\uC694"), stageRows.map((stage) => {
       const stageOpen = !!expandedStages[stage.stage_id];
       const stageConditions = conditionRows.filter((c) => c.stage_id === stage.stage_id);
@@ -31351,6 +31351,343 @@ def signal_sell(pos, bar, ind):
     )))), /* @__PURE__ */ React.createElement("tbody", null, sortedEvaluations.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hctStatusCell(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "traded_symbol_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "net_profit")) } }, _hctMoney(_hctMetric(row, "net_profit"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "gross_loss")) } }, _hctMoney(_hctMetric(row, "gross_loss"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "losing_trades"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "win_rate"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "mdd"))))))), sections.evaluations && sections.evaluations.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", sections.evaluations.next_cursor), disabled: sections.evaluations.loading }, sections.evaluations.loading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 8, fontSize: 10.5, color: "var(--amber)" } }, "\uD0D0\uC0C9\uC6A9 \uACB0\uACFC \u2014 OOS/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8")))))));
   }
   Object.assign(window, { HistoryConditionTreePanel });
+
+  // ai_strategy_loop/dashboard/frontend/history-viz.jsx
+  var {
+    useState: useState_hv,
+    useEffect: useEffect_hv,
+    useCallback: useCallback_hv
+  } = React;
+  function _hvNum(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString();
+  }
+  function _hvMoney(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    const n = Number(value);
+    const sign = n > 0 ? "+" : "";
+    return sign + Math.round(n).toLocaleString();
+  }
+  function _hvPct(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toFixed(2) + "%";
+  }
+  function _hvNegColor(value) {
+    if (value == null || Number.isNaN(Number(value))) return "var(--ink-2)";
+    return Number(value) < 0 ? "var(--red)" : "var(--ink-0)";
+  }
+  function _hvMetric(row, key) {
+    const m = row && row.metrics || {};
+    return m[key] != null ? m[key] : null;
+  }
+  function _hvMetricAny(row, keys) {
+    const m = row && row.metrics || {};
+    for (const k of keys) {
+      if (m[k] != null) return m[k];
+    }
+    return null;
+  }
+  function _hvFetchJson(url, timeoutMs) {
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 3e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  function _hvFetchAllPages(url, timeoutMs) {
+    const MAX_PAGES = 50;
+    const sep = url.includes("?") ? "&" : "?";
+    const base = url + sep + "limit=100";
+    const step = (cursor, acc, page) => {
+      const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
+      return _hvFetchJson(pageUrl, timeoutMs).then((j) => {
+        const rows = Array.isArray(j && j.rows) ? j.rows : [];
+        const merged = acc.concat(rows);
+        const next = j && j.next_cursor ? j.next_cursor : null;
+        if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+        return merged;
+      });
+    };
+    return step(null, [], 1);
+  }
+  function _hvGatePassed(row) {
+    return row && typeof row.gate_passed === "boolean" ? row.gate_passed : null;
+  }
+  function _hvGateBadge(row) {
+    const passed = _hvGatePassed(row);
+    if (passed == null) return /* @__PURE__ */ React.createElement("span", { className: "badge" }, "\u2014");
+    return /* @__PURE__ */ React.createElement("span", { className: "badge " + (passed ? "ok" : "err") }, passed ? "pass" : "reject");
+  }
+  function _hvSplitAxisLabel(label) {
+    const text = String(label || "").trim();
+    if (!text) return null;
+    for (const sep of ["\xD7", " x ", " X ", "|", "/", "\xB7", " - "]) {
+      if (text.includes(sep)) {
+        const parts = text.split(sep);
+        const a = parts[0] ? parts[0].trim() : "";
+        const b = parts.slice(1).join(sep).trim();
+        if (a && b) return [a, b];
+      }
+    }
+    return null;
+  }
+  function _HvEmpty({ children: children2 }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, children2);
+  }
+  function _HvError({ err, onRetry }) {
+    if (!err) return null;
+    return /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err, onRetry && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onRetry }, "\uC7AC\uC2DC\uB3C4")));
+  }
+  function AbPairCompareView({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [series, setSeries] = useState_hv("");
+    const [pairsAvailable, setPairsAvailable] = useState_hv(null);
+    const [pairs, setPairs] = useState_hv([]);
+    const [pairsLoading, setPairsLoading] = useState_hv(false);
+    const [pairsErr, setPairsErr] = useState_hv("");
+    const [selectedPair, setSelectedPair] = useState_hv("");
+    const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
+    const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+    const loadPairs = useCallback_hv(() => {
+      if (isDemo || !baseUrl || !series.trim()) return;
+      setPairsLoading(true);
+      setPairsErr("");
+      _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), 8e3).then((j) => {
+        const items = Array.isArray(j && j.items) ? j.items : [];
+        setPairsAvailable(!!(j && j.available));
+        setPairs(items);
+        setSelectedPair(items.length ? items[0].pair : "");
+      }).catch((e) => {
+        setPairsErr(String(e));
+        setPairsAvailable(false);
+        setPairs([]);
+        setSelectedPair("");
+      }).finally(() => setPairsLoading(false));
+    }, [baseUrl, isDemo, series]);
+    useEffect_hv(() => {
+      loadPairs();
+    }, []);
+    const current = pairs.find((p) => p.pair === selectedPair) || null;
+    const loadSide = useCallback_hv((researchId, setter) => {
+      if (isDemo || !baseUrl || !researchId) {
+        setter({ loading: false, err: "", rows: [] });
+        return;
+      }
+      setter((prev) => ({ ...prev, loading: true, err: "" }));
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
+      ).then((rows) => setter({ loading: false, err: "", rows })).catch((e) => setter({ loading: false, err: String(e), rows: [] }));
+    }, [baseUrl, isDemo]);
+    useEffect_hv(() => {
+      if (!current) {
+        setLegacyRows({ loading: false, err: "", rows: [] });
+        setTypedRows({ loading: false, err: "", rows: [] });
+        return;
+      }
+      loadSide(current.legacy_research_id, setLegacyRows);
+      loadSide(current.typed_research_id, setTypedRows);
+    }, [current && current.pair]);
+    const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, typeof gatePassedFlag === "boolean" && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), !side.err && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetricAny(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) } }, _hvMoney(_hvMetric(row, "profit")))))))));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "A/B \uC30D\uB300\uBE44\uAD50 (legacy \xB7 typed)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: isDemo || pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC A/B \uC30D\uB300\uBE44\uAD50\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "mono",
+        style: { flex: "1 1 200px", padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)" },
+        placeholder: "series (\uC608: abmain0716f)",
+        value: series,
+        onChange: (e) => setSeries(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter") loadPairs();
+        }
+      }
+    ), pairs.length > 0 && /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "mono",
+        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)" },
+        value: selectedPair,
+        onChange: (e) => setSelectedPair(e.target.value)
+      },
+      pairs.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.pair, value: p.pair }, p.pair))
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\uC870\uD68C")), /* @__PURE__ */ React.createElement(_HvError, { err: pairsErr, onRetry: loadPairs }), !pairsErr && pairsAvailable === false && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC758 A/B \uC30D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uD589\uAE30 \uBCD1\uB82C \uC2AC\uB77C\uC774\uC2A4 \uB300\uAE30 \uC911\uC77C \uC218 \uC788\uC74C)"), !pairsErr && pairsAvailable && pairs.length === 0 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC5D0 \uBC1C\uD589\uB41C A/B \uC30D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4"), current && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, current.legacy_research_id ? renderSide("legacy \xB7 " + current.legacy_research_id, current.legacy_gate_passed, legacyRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 legacy \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(typed\uB9CC \uBC1C\uD589\uB428)"), current.typed_research_id ? renderSide("typed \xB7 " + current.typed_research_id, current.typed_gate_passed, typedRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 typed \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(legacy\uB9CC \uBC1C\uD589\uB428)")))));
+  }
+  function CellHeatmap({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [campaigns, setCampaigns] = useState_hv([]);
+    const [campaignsLoading, setCampaignsLoading] = useState_hv(false);
+    const [campaignsErr, setCampaignsErr] = useState_hv("");
+    const [selected2, setSelected] = useState_hv("");
+    const [rows, setRows] = useState_hv([]);
+    const [rowsLoading, setRowsLoading] = useState_hv(false);
+    const [rowsErr, setRowsErr] = useState_hv("");
+    const [metricMode, setMetricMode] = useState_hv("profit");
+    const loadCampaigns = useCallback_hv(() => {
+      if (isDemo || !baseUrl) return;
+      setCampaignsLoading(true);
+      setCampaignsErr("");
+      _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 3e4).then((j) => {
+        const items = Array.isArray(j && j.items) ? j.items : [];
+        setCampaigns(items);
+        setSelected((prev) => prev || (items.length ? items[0].research_id : ""));
+      }).catch((e) => {
+        setCampaignsErr(String(e));
+        setCampaigns([]);
+      }).finally(() => setCampaignsLoading(false));
+    }, [baseUrl, isDemo]);
+    useEffect_hv(() => {
+      loadCampaigns();
+    }, []);
+    const loadRows = useCallback_hv(() => {
+      if (isDemo || !baseUrl || !selected2) {
+        setRows([]);
+        return;
+      }
+      setRowsLoading(true);
+      setRowsErr("");
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
+      ).then((rows2) => setRows(rows2)).catch((e) => {
+        setRowsErr(String(e));
+        setRows([]);
+      }).finally(() => setRowsLoading(false));
+    }, [baseUrl, isDemo, selected2]);
+    useEffect_hv(() => {
+      loadRows();
+    }, [selected2]);
+    const hasProfit = rows.some((r) => _hvMetricAny(r, ["net_profit", "profit"]) != null);
+    const hasPct = rows.some((r) => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
+    const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
+    const pctIsWinRate = rows.some((r) => (r && r.metrics || {}).win_rate != null);
+    const grid = (() => {
+      const timeLabels = [];
+      const capLabels = [];
+      const cellMap = {};
+      for (const row of rows) {
+        const axis = _hvSplitAxisLabel(row.label);
+        if (!axis) continue;
+        const [t, c] = axis;
+        if (!timeLabels.includes(t)) timeLabels.push(t);
+        if (!capLabels.includes(c)) capLabels.push(c);
+        const key = t + "\xD7" + c;
+        if (!cellMap[key]) cellMap[key] = { count: 0, profitSum: 0, pctSum: 0, pctN: 0 };
+        const cell = cellMap[key];
+        cell.count += 1;
+        const profit = _hvMetricAny(row, ["net_profit", "profit"]);
+        if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
+        const pct = _hvMetricAny(row, ["win_rate", "total_profit_pct"]);
+        if (pct != null && !Number.isNaN(Number(pct))) {
+          cell.pctSum += Number(pct);
+          cell.pctN += 1;
+        }
+      }
+      if (!capLabels.length || !timeLabels.length) return null;
+      return { timeLabels, capLabels, cellMap };
+    })();
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "mono",
+        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
+        value: selected2,
+        onChange: (e) => setSelected(e.target.value),
+        disabled: campaignsLoading || campaigns.length === 0
+      },
+      campaigns.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uCEA0\uD398\uC778 \uC5C6\uC74C"),
+      campaigns.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.research_id, value: c.research_id }, c.label || c.research_id))
+    ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
+      const cell = grid.cellMap[t + "\xD7" + c];
+      const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: c,
+          style: { padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) },
+          title: cell ? `${t} \xD7 ${c} \xB7 ${cell.count}\uAC74` : `${t} \xD7 ${c} \xB7 \uB370\uC774\uD130 \uC5C6\uC74C`
+        },
+        value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(pctIsWinRate ? value * 100 : value) : _hvMoney(value)
+      );
+    })))))))));
+  }
+  function HoldoutFunnel({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [runs, setRuns] = useState_hv([]);
+    const [runsLoading, setRunsLoading] = useState_hv(false);
+    const [runsErr, setRunsErr] = useState_hv("");
+    const [selected2, setSelected] = useState_hv("");
+    const [rows, setRows] = useState_hv([]);
+    const [rowsLoading, setRowsLoading] = useState_hv(false);
+    const [rowsErr, setRowsErr] = useState_hv("");
+    const loadRuns = useCallback_hv(() => {
+      if (isDemo || !baseUrl) return;
+      setRunsLoading(true);
+      setRunsErr("");
+      _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 3e4).then((j) => {
+        const items = Array.isArray(j && j.items) ? j.items : [];
+        setRuns(items);
+        setSelected((prev) => prev || (items.length ? items[0].research_id : ""));
+      }).catch((e) => {
+        setRunsErr(String(e));
+        setRuns([]);
+      }).finally(() => setRunsLoading(false));
+    }, [baseUrl, isDemo]);
+    useEffect_hv(() => {
+      loadRuns();
+    }, []);
+    const loadRows = useCallback_hv(() => {
+      if (isDemo || !baseUrl || !selected2) {
+        setRows([]);
+        return;
+      }
+      setRowsLoading(true);
+      setRowsErr("");
+      _hvFetchAllPages(
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
+      ).then((rows2) => setRows(rows2)).catch((e) => {
+        setRowsErr(String(e));
+        setRows([]);
+      }).finally(() => setRowsLoading(false));
+    }, [baseUrl, isDemo, selected2]);
+    useEffect_hv(() => {
+      loadRows();
+    }, [selected2]);
+    const evaluatedCount = rows.length;
+    const gateSignalSeen = rows.some((r) => r && typeof r.gate_passed === "boolean");
+    const gatePassedCount = rows.filter((r) => r && r.gate_passed === true).length;
+    let holdoutTotal = 0;
+    let holdoutPassed = 0;
+    let holdoutSignalSeen = false;
+    for (const row of rows) {
+      const metrics = row && row.metrics || {};
+      const metricKeys = Object.keys(metrics).filter((k) => k.toLowerCase().includes("holdout"));
+      if (metricKeys.length === 0) continue;
+      holdoutSignalSeen = true;
+      holdoutTotal += 1;
+      const truthy = metricKeys.some((k) => !!metrics[k]);
+      if (truthy) holdoutPassed += 1;
+    }
+    const maxCount = Math.max(evaluatedCount, 1);
+    const barStyle = (count) => ({
+      height: 22,
+      borderRadius: 4,
+      background: "var(--teal)",
+      width: Math.max(4, Math.round(count / maxCount * 100)) + "%",
+      display: "flex",
+      alignItems: "center",
+      paddingLeft: 8,
+      color: "#04241d",
+      fontWeight: 600,
+      fontSize: 11
+    });
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "mono",
+        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
+        value: selected2,
+        onChange: (e) => setSelected(e.target.value),
+        disabled: runsLoading || runs.length === 0
+      },
+      runs.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "run \uC5C6\uC74C"),
+      runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.research_id, value: r.research_id }, r.label || r.research_id))
+    )), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uC2E0\uD638 \uBBF8\uBC1C\uD589(\uD5A5\uD6C4 \uC81C\uACF5)"))))));
+  }
+  Object.assign(window, { AbPairCompareView, CellHeatmap, HoldoutFunnel });
 
   // ai_strategy_loop/dashboard/frontend/evolution-gui-parity-panel.jsx
   var {
@@ -33367,7 +33704,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onRefresh: fetchRunState,
         disabled: isDemoSrc
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "evolution" && activeEvolutionTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { className: "native-process-page", style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }))) : activeTab === "evolution" && activeEvolutionTab === "records" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate: onDashboardNavigate }))) : activeTab === "evolution" && activeEvolutionTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(LabPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "workbench" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ProPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate: onDashboardNavigate })) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_live", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC870\uAC74\uC2DD AI Live Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_gate_engine", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC694\uC57D" }) }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 })), isIdle && /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec, state, onNavigate: onDashboardNavigate }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_researchnav", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC5F0\uAD6C\uC2E4 \uC885\uD569 \xB7 \uD0D0\uC0C9/\uBCC0\uC218/\uAC80\uC99D" }) }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "evolution" && activeEvolutionTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { className: "native-process-page", style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }))) : activeTab === "evolution" && activeEvolutionTab === "records" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate: onDashboardNavigate }))) : activeTab === "evolution" && activeEvolutionTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(LabPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "workbench" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ProPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate: onDashboardNavigate })) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_live", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC870\uAC74\uC2DD AI Live Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_gate_engine", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC694\uC57D" }) }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 })), isIdle && /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec, state, onNavigate: onDashboardNavigate }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_researchnav", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC5F0\uAD6C\uC2E4 \uC885\uD569 \xB7 \uD0D0\uC0C9/\uBCC0\uC218/\uAC80\uC99D" }) }, /* @__PURE__ */ React.createElement(
       ResearchSuiteCards,
       {
         state,

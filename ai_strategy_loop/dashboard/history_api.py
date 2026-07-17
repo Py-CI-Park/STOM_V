@@ -22,6 +22,7 @@ import base64
 import hashlib
 import json
 import re
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, Optional, TypedDict
@@ -31,7 +32,13 @@ from fastapi import APIRouter, HTTPException, Query
 from ai_strategy_loop.controller.state import LoopState
 from ai_strategy_loop.controller.state import LOOP_RUNS_DB as _DEFAULT_LOOP_RUNS_DB
 from ai_strategy_loop.dashboard import research_records
-from ai_strategy_loop.dashboard.history_adapters import CampaignAdapter, LoopRunAdapter, list_companion_campaigns
+from ai_strategy_loop.dashboard.history_adapters import (
+    CampaignAdapter,
+    LoopRunAdapter,
+    derive_ab_role,
+    derive_series,
+    list_companion_campaigns,
+)
 from cli.condition_history_schema import ResearchNode, flat_rows
 
 #: 캠페인 증거 루트 -- 테스트가 tmp 디렉토리로 교체할 수 있게 모듈 전역으로 둔다.
@@ -56,13 +63,26 @@ _MAX_LIMIT = 100
 # ---------------------------------------------------------------------------
 
 
-class HistoryIndexItem(TypedDict):
+class _HistoryIndexItemRequired(TypedDict):
     research_id: str
     source_kind: str
     label: str
     updated_at: str
     counts: dict[str, int]
     condition_tree_status: str
+
+
+class HistoryIndexItem(_HistoryIndexItemRequired, total=False):
+    """``_HistoryIndexItemRequired`` + read-only 파생 옵션 필드(G002).
+
+    ``series``/``ab_role``은 run_id/campaign 이름에서 순수 함수로 파생하고,
+    ``gate_passed_count``는 loop_run 항목에서만 generations를 읽어 채운다
+    (campaign 항목은 생략). 기존 필드는 삭제/이름변경하지 않는다(하위호환).
+    """
+
+    series: str
+    ab_role: dict[str, str]
+    gate_passed_count: int
 
 
 class HistoryIndexResponse(TypedDict):
@@ -147,7 +167,21 @@ def _counts_and_status(research: Optional[ResearchNode]) -> tuple[dict[str, int]
     )
 
 
-def _campaign_index_items() -> tuple[list[HistoryIndexItem], bool]:
+def _apply_ab_derivation(item: HistoryIndexItem, name: str) -> None:
+    """``item``에 ``series``/``ab_role``을 name(run_id/campaign)에서 파생해 채운다(G002, additive)."""
+    item["series"] = derive_series(name)
+    ab_role = derive_ab_role(name)
+    if ab_role is not None:
+        item["ab_role"] = ab_role
+
+
+def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
+    """캠페인 인덱스 항목을 빌드한다.
+
+    ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
+    이름에서 파생한 series가 일치하는 캠페인만 어댑터로 트리를 빌드한다 --
+    비매칭 캠페인은 ``build_research_node``(파일 읽기)를 아예 건너뛴다.
+    """
     listing = research_records.list_research_records(root=EVIDENCE_ROOT)
     adapter = CampaignAdapter(evidence_root=EVIDENCE_ROOT)
     items: list[HistoryIndexItem] = []
@@ -155,22 +189,26 @@ def _campaign_index_items() -> tuple[list[HistoryIndexItem], bool]:
     for campaign in listing["campaigns"]:
         name = campaign["name"]
         seen.add(name)
+        if series_filter is not None and derive_series(name) != series_filter:
+            continue
         result = adapter.build_research_node(name)
         counts, status = _counts_and_status(result["research"])
-        items.append(
-            {
-                "research_id": f"campaign:{name}",
-                "source_kind": "campaign",
-                "label": name,
-                "updated_at": _iso(campaign.get("updated_at")),
-                "counts": counts,
-                "condition_tree_status": status,
-            }
-        )
+        item: HistoryIndexItem = {
+            "research_id": f"campaign:{name}",
+            "source_kind": "campaign",
+            "label": name,
+            "updated_at": _iso(campaign.get("updated_at")),
+            "counts": counts,
+            "condition_tree_status": status,
+        }
+        _apply_ab_derivation(item, name)
+        items.append(item)
     # 발행 companion(<campaign>_condition_history_v1.json)은 summary/JSONL 없이도
     # 존재할 수 있다(예: Stage-1 발행). records 목록에 없으면 여기서 합류시킨다.
     for name in list_companion_campaigns(EVIDENCE_ROOT):
         if name in seen:
+            continue
+        if series_filter is not None and derive_series(name) != series_filter:
             continue
         result = adapter.build_research_node(name)
         counts, status = _counts_and_status(result["research"])
@@ -178,20 +216,49 @@ def _campaign_index_items() -> tuple[list[HistoryIndexItem], bool]:
             mtime = (EVIDENCE_ROOT / f"{name}_condition_history_v1.json").stat().st_mtime
         except OSError:
             mtime = 0.0
-        items.append(
-            {
-                "research_id": f"campaign:{name}",
-                "source_kind": "campaign",
-                "label": name,
-                "updated_at": _iso(mtime),
-                "counts": counts,
-                "condition_tree_status": status,
-            }
-        )
+        item = {
+            "research_id": f"campaign:{name}",
+            "source_kind": "campaign",
+            "label": name,
+            "updated_at": _iso(mtime),
+            "counts": counts,
+            "condition_tree_status": status,
+        }
+        _apply_ab_derivation(item, name)
+        items.append(item)
     return items, True
 
 
-def _loop_run_index_items() -> tuple[list[HistoryIndexItem], bool]:
+def _loop_run_gate_passed_counts(state: LoopState) -> dict[str, int]:
+    """run별 ``generations.gate_passed`` 합계를 단일 GROUP BY 쿼리로 집계한다(G002).
+
+    이전 구현은 run마다 ``get_generations``(개별 SELECT)를 호출해 N+1 쿼리를
+    냈다. 이미 열려 있는 readonly 커넥션(``state._con``)을 재사용해 쿼리 1번
+    (``SELECT run_id, SUM(gate_passed) ... GROUP BY run_id``)으로 모든 run의
+    합계를 얻는다. 집계 자체가 실패해도(예: 컬럼 부재 legacy DB) 옵션 필드이므로
+    빈 dict로 흡수한다(예외 없음).
+    """
+    try:
+        rows = state._con.execute(
+            "SELECT run_id, SUM(gate_passed) AS gate_passed_sum FROM generations GROUP BY run_id"
+        ).fetchall()
+    except sqlite3.Error:
+        return {}
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = row["gate_passed_sum"]
+        if value is not None:
+            counts[row["run_id"]] = int(value)
+    return counts
+
+
+def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
+    """루프런 인덱스 항목을 빌드한다.
+
+    ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
+    이름에서 파생한 series가 일치하는 run만 어댑터로 트리를 빌드한다 --
+    비매칭 run은 ``build_research_node``(세대 SELECT)를 아예 건너뛴다.
+    """
     try:
         state = LoopState(db_path=str(LOOP_RUNS_DB), readonly=True)
     except Exception:  # noqa: BLE001 -- DB 부재/손상은 typed unavailable.
@@ -199,19 +266,21 @@ def _loop_run_index_items() -> tuple[list[HistoryIndexItem], bool]:
     try:
         runs = state.list_runs()
     except Exception:  # noqa: BLE001
-        return [], False
-    finally:
         state.close()
+        return [], False
 
     adapter = LoopRunAdapter(db_path=str(LOOP_RUNS_DB))
     items: list[HistoryIndexItem] = []
-    for run in runs:
-        run_id = run["run_id"]
-        result = adapter.build_research_node(run_id)
-        counts, status = _counts_and_status(result["research"])
-        updated_at = run.get("finished_at") or run.get("started_at")
-        items.append(
-            {
+    try:
+        gate_passed_counts = _loop_run_gate_passed_counts(state)
+        for run in runs:
+            run_id = run["run_id"]
+            if series_filter is not None and derive_series(run_id) != series_filter:
+                continue
+            result = adapter.build_research_node(run_id)
+            counts, status = _counts_and_status(result["research"])
+            updated_at = run.get("finished_at") or run.get("started_at")
+            item: HistoryIndexItem = {
                 "research_id": f"loop_run:{run_id}",
                 "source_kind": "loop_run",
                 "label": run_id,
@@ -219,7 +288,12 @@ def _loop_run_index_items() -> tuple[list[HistoryIndexItem], bool]:
                 "counts": counts,
                 "condition_tree_status": status,
             }
-        )
+            _apply_ab_derivation(item, run_id)
+            if run_id in gate_passed_counts:
+                item["gate_passed_count"] = gate_passed_counts[run_id]
+            items.append(item)
+    finally:
+        state.close()
     return items, True
 
 
@@ -238,12 +312,19 @@ def history_index(
     source_kind: SourceKind = Query("all"),
 ) -> HistoryIndexResponse:
     """캠페인/루프런을 아우르는 히스토리 목록(메타데이터만, 트리 본문 없음)을 반환한다."""
-    campaign_items, campaign_available = _campaign_index_items()
-    loop_run_items, loop_run_available = _loop_run_index_items()
+    # source_kind 필터가 지정되면 반대편 소스의 트리 빌드를 아예 생략한다
+    # (전체 인덱스는 항목당 트리 빌드 비용이 커서, 필터형 소비자는 단락 경로 사용).
+    if source_kind == "campaign":
+        campaign_items, campaign_available = _campaign_index_items()
+        loop_run_items, loop_run_available = [], True
+    elif source_kind == "loop_run":
+        campaign_items, campaign_available = [], True
+        loop_run_items, loop_run_available = _loop_run_index_items()
+    else:
+        campaign_items, campaign_available = _campaign_index_items()
+        loop_run_items, loop_run_available = _loop_run_index_items()
 
     all_items = campaign_items + loop_run_items
-    if source_kind != "all":
-        all_items = [item for item in all_items if item["source_kind"] == source_kind]
     all_items = [item for item in all_items if _matches_query(item, q)]
     all_items.sort(key=lambda item: item["research_id"])
     all_items.sort(key=lambda item: item["updated_at"], reverse=True)
@@ -264,14 +345,96 @@ def history_index(
 
 
 # ---------------------------------------------------------------------------
+# /history/ab-pairs -- 같은 series의 legacy/typed A/B pair 결정론적 매핑(G002).
+# ---------------------------------------------------------------------------
+
+
+class AbPairItem(TypedDict):
+    pair: str
+    legacy_research_id: Optional[str]
+    typed_research_id: Optional[str]
+    legacy_gate_passed: Optional[int]
+    typed_gate_passed: Optional[int]
+
+
+class AbPairsResponse(TypedDict, total=False):
+    available: bool
+    reason: Optional[str]
+    items: list[AbPairItem]
+
+
+def _pair_sort_key(pair: str) -> int:
+    """``p<N>``에서 정수 N을 추출한다(파싱 실패는 사전식 정렬 회피용으로 큰 값)."""
+    digits = pair[1:] if pair[:1] == "p" else pair
+    return int(digits) if digits.isdigit() else 1 << 30
+
+
+@history_router.get("/history/ab-pairs", response_model=None)
+def history_ab_pairs(
+    series: str = Query(...),
+    limit: int = Query(_DEFAULT_LIMIT, ge=1, le=_MAX_LIMIT),
+) -> AbPairsResponse:
+    """같은 series 안의 legacy/typed A/B pair를 결정론적 정렬로 묶어 반환한다.
+
+    시리즈로 선필터링한 최소 비용 경로를 쓴다 -- ``_campaign_index_items``/
+    ``_loop_run_index_items``에 ``series_filter=series``를 넘겨, 이름에서 파생한
+    series가 일치하는 항목만 어댑터로 트리를 빌드한다(비매칭 항목은
+    ``build_research_node`` 자체를 건너뛰므로 전체 인덱스 재구축보다 저렴하다).
+    series에 pair 매칭 항목이 하나도 없으면 ``available=False,
+    reason="unknown_series"``(기존 detail의 관례를 따른다).
+    """
+    campaign_items, _ = _campaign_index_items(series_filter=series)
+    loop_run_items, _ = _loop_run_index_items(series_filter=series)
+
+    pairs: dict[str, AbPairItem] = {}
+    for item in campaign_items + loop_run_items:
+        if item.get("series") != series:
+            continue
+        ab_role = item.get("ab_role")
+        if not ab_role or "pair" not in ab_role:
+            continue
+        pair = ab_role["pair"]
+        arm = ab_role.get("arm")
+        slot = pairs.setdefault(
+            pair,
+            {
+                "pair": pair,
+                "legacy_research_id": None,
+                "typed_research_id": None,
+                "legacy_gate_passed": None,
+                "typed_gate_passed": None,
+            },
+        )
+        if arm == "legacy":
+            slot["legacy_research_id"] = item["research_id"]
+            slot["legacy_gate_passed"] = item.get("gate_passed_count")
+        elif arm == "typed":
+            slot["typed_research_id"] = item["research_id"]
+            slot["typed_gate_passed"] = item.get("gate_passed_count")
+
+    if not pairs:
+        return {"available": False, "reason": "unknown_series", "items": []}
+
+    ordered = sorted(pairs.values(), key=lambda row: _pair_sort_key(row["pair"]))
+    return {"available": True, "reason": None, "items": ordered[:limit]}
+
+
+# ---------------------------------------------------------------------------
 # /history/detail -- research_id 하나에 대한 section별 lazy 트리 조회.
 # ---------------------------------------------------------------------------
 
 
-def _build_research(research_id: str) -> tuple[bool, Optional[str], Optional[ResearchNode]]:
+def _build_research(
+    research_id: str,
+) -> tuple[bool, Optional[str], Optional[ResearchNode], Optional[dict[str, bool]]]:
+    """research_id를 어댑터로 빌드한다.
+
+    4번째 반환값은 evaluation_id -> generations.gate_passed(bool) 매핑이다
+    (loop_run만 채워진다; campaign은 해당 정보가 없으므로 ``None``).
+    """
     match = _RESEARCH_ID_RE.fullmatch(research_id)
     if match is None:
-        return False, "invalid_research_id", None
+        return False, "invalid_research_id", None, None
 
     prefix, inner = match.group(1), match.group(2)
     if prefix == "campaign":
@@ -280,8 +443,9 @@ def _build_research(research_id: str) -> tuple[bool, Optional[str], Optional[Res
         result = LoopRunAdapter(db_path=str(LOOP_RUNS_DB)).build_research_node(inner)
 
     if not result["available"]:
-        return False, result.get("reason", "unavailable"), None
-    return True, None, result["research"]
+        return False, result.get("reason", "unavailable"), None, None
+    gate_passed = result.get("evaluation_gate_passed") if prefix == "loop_run" else None
+    return True, None, result["research"], gate_passed
 
 
 def _stage_rows(research: ResearchNode) -> list[dict]:
@@ -329,7 +493,7 @@ def history_detail(
     limit: int = Query(_DEFAULT_LIMIT, ge=1, le=_MAX_LIMIT),
 ) -> HistoryDetailResponse:
     """research_id 하나를 어댑터로 lazy하게 빌드하고, section별 페이지를 반환한다."""
-    available, reason, research = _build_research(research_id)
+    available, reason, research, gate_passed_by_evaluation = _build_research(research_id)
     if not available or research is None:
         return {
             "available": False,
@@ -365,6 +529,13 @@ def history_detail(
         rows = _condition_rows(research)
     else:
         rows = flat_rows(research)
+        if gate_passed_by_evaluation:
+            # evaluations 행 권위 필드(G002, additive) -- loop_run generations.gate_passed를
+            # 스키마(EvaluationNode) 변경 없이 행 페이로드에만 그대로 노출한다.
+            # campaign 행은 해당 정보가 없으므로 키 자체를 생략한다(위 dict가 비어있음).
+            for row in rows:
+                if row["evaluation_id"] in gate_passed_by_evaluation:
+                    row["gate_passed"] = gate_passed_by_evaluation[row["evaluation_id"]]
 
     ids = [_row_id(section, row) for row in rows]
     sig = _signature({"research_id": research_id, "section": section, "ids": ids})

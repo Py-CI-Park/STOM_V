@@ -80,6 +80,29 @@ def _seed_two_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> Non
         state.close()
 
 
+def _seed_pass_fail_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> None:
+    """게이트 통과 1세대 + 실패 1세대를 심는다(G002 evaluations 행 gate_passed 계약 테스트용)."""
+    state = LoopState(db_path=str(db_path), snapshot_dir=str(snapshot_dir))
+    try:
+        state.start_run(LoopConfig(), run_id=run_id)
+        state.record_generation(
+            run_id, 0,
+            buy_name=f"AILOOP_{run_id}_g0_buy", sell_name=f"AILOOP_{run_id}_g0_sell",
+            status="ok", score=1.0, gate_passed=True,
+            trade_count=40, mdd=15.0, profit=100000.0, total_profit_pct=10.0,
+            daily_avg_trades=1.2,
+        )
+        state.record_generation(
+            run_id, 1,
+            buy_name=f"AILOOP_{run_id}_g1_buy", sell_name=f"AILOOP_{run_id}_g1_sell",
+            status="ok", score=0.2, gate_passed=False,
+            trade_count=3, mdd=25.0, profit=-2000.0, total_profit_pct=-0.2,
+            daily_avg_trades=0.3, parent_gen=0,
+        )
+    finally:
+        state.close()
+
+
 @pytest.fixture()
 def app() -> FastAPI:
     application = FastAPI()
@@ -109,6 +132,51 @@ def loop_run_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> str:
     monkeypatch.setattr(history_api, "LOOP_RUNS_DB", db_path)
     monkeypatch.setattr(history_api, "EVIDENCE_ROOT", tmp_path / "no_such_evidence")
     return "runA"
+
+
+@pytest.fixture()
+def gate_passed_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> str:
+    db_path = tmp_path / "loop_runs.db"
+    _seed_pass_fail_generations(db_path, tmp_path / "snapshots", "runGate")
+    monkeypatch.setattr(history_api, "LOOP_RUNS_DB", db_path)
+    monkeypatch.setattr(history_api, "EVIDENCE_ROOT", tmp_path / "no_such_evidence")
+    return "runGate"
+
+
+@pytest.fixture()
+def ab_pair_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> str:
+    db_path = tmp_path / "loop_runs.db"
+    _seed_ab_pair_series(db_path, tmp_path / "snapshots", "abmain0716f", pair_count=5)
+    monkeypatch.setattr(history_api, "LOOP_RUNS_DB", db_path)
+    monkeypatch.setattr(history_api, "EVIDENCE_ROOT", tmp_path / "no_such_evidence")
+    return "abmain0716f"
+
+
+def _seed_ab_pair_series(db_path: Path, snapshot_dir: Path, series: str, pair_count: int = 5) -> list[str]:
+    """``<series>_p<N>_<legacy|typed>`` 명명 규칙의 run_id들을 tmp sqlite에 심는다(G002).
+
+    각 run에 1세대를 기록한다. legacy arm은 gate_passed=False, typed arm은
+    gate_passed=True로 심어 ab-pairs 응답에서 두 arm의 gate_passed_count가
+    다르게 나오는지 구분할 수 있게 한다.
+    """
+    state = LoopState(db_path=str(db_path), snapshot_dir=str(snapshot_dir))
+    run_ids: list[str] = []
+    try:
+        for n in range(1, pair_count + 1):
+            for arm, gate_passed in (("legacy", False), ("typed", True)):
+                run_id = f"{series}_p{n}_{arm}"
+                run_ids.append(run_id)
+                state.start_run(LoopConfig(), run_id=run_id)
+                state.record_generation(
+                    run_id, 0,
+                    buy_name=f"AILOOP_{run_id}_g0_buy", sell_name=f"AILOOP_{run_id}_g0_sell",
+                    status="ok", score=1.0, gate_passed=gate_passed,
+                    trade_count=10, mdd=5.0, profit=1000.0, total_profit_pct=1.0,
+                    daily_avg_trades=1.0,
+                )
+    finally:
+        state.close()
+    return run_ids
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +239,68 @@ class TestHistoryIndex:
         assert item["research_id"] == f"loop_run:{loop_run_env}"
         assert item["source_kind"] == "loop_run"
         assert item["counts"] == {"stages": 1, "conditions": 2, "evaluations": 2}
+
+    def test_loop_run_item_carries_additive_series_and_gate_passed_count(
+        self, client: TestClient, loop_run_env: str
+    ) -> None:
+        """G002 -- series/gate_passed_count는 기존 필드를 건드리지 않는 추가(additive) 필드다."""
+        resp = client.get("/history/index", params={"source_kind": "loop_run"}).json()
+        item = resp["items"][0]
+        # 기존 필드는 그대로 유지된다(스냅샷 비파괴).
+        assert item["research_id"] == f"loop_run:{loop_run_env}"
+        assert item["counts"] == {"stages": 1, "conditions": 2, "evaluations": 2}
+        # 새 필드: runA는 pair/arm 명명 규칙에 맞지 않아 series는 첫 토큰 폴백, ab_role은 생략.
+        assert item["series"] == "runA"
+        assert "ab_role" not in item
+        # loop_run_env는 gate_passed=True인 세대 2개를 심는다.
+        assert item["gate_passed_count"] == 2
+
+    def test_campaign_item_carries_series_without_gate_passed_count(
+        self, client: TestClient, campaign_env: Path
+    ) -> None:
+        """G002 -- campaign 항목은 series는 파생하되 gate_passed_count는 생략 가능하다."""
+        resp = client.get("/history/index", params={"source_kind": "campaign"}).json()
+        item = resp["items"][0]
+        assert item["research_id"] == "campaign:campaign_alpha"
+        assert item["series"] == "campaign"
+        assert "gate_passed_count" not in item
+
+
+# ---------------------------------------------------------------------------
+# /history/ab-pairs
+# ---------------------------------------------------------------------------
+
+
+class TestHistoryAbPairs:
+    def test_returns_five_pairs_for_abmain0716f(self, client: TestClient, ab_pair_env: str) -> None:
+        resp = client.get("/history/ab-pairs", params={"series": ab_pair_env}).json()
+        assert resp["available"] is True
+        assert len(resp["items"]) == 5
+        assert [row["pair"] for row in resp["items"]] == [f"p{n}" for n in range(1, 6)]
+        for n, row in enumerate(resp["items"], start=1):
+            assert row["legacy_research_id"] == f"loop_run:{ab_pair_env}_p{n}_legacy"
+            assert row["typed_research_id"] == f"loop_run:{ab_pair_env}_p{n}_typed"
+            # 시딩 규칙: legacy는 gate_passed=False, typed는 gate_passed=True.
+            assert row["legacy_gate_passed"] == 0
+            assert row["typed_gate_passed"] == 1
+
+    def test_limit_caps_returned_pairs(self, client: TestClient, ab_pair_env: str) -> None:
+        resp = client.get("/history/ab-pairs", params={"series": ab_pair_env, "limit": 2}).json()
+        assert resp["available"] is True
+        assert len(resp["items"]) == 2
+        assert [row["pair"] for row in resp["items"]] == ["p1", "p2"]
+
+    def test_unknown_series_is_typed_unavailable(self, client: TestClient, ab_pair_env: str) -> None:
+        resp = client.get("/history/ab-pairs", params={"series": "does_not_exist"}).json()
+        assert resp["available"] is False
+        assert resp["reason"] == "unknown_series"
+        assert resp["items"] == []
+
+    def test_no_absolute_paths_leak(self, client: TestClient, ab_pair_env: str) -> None:
+        resp = client.get("/history/ab-pairs", params={"series": ab_pair_env})
+        text = json.dumps(resp.json(), ensure_ascii=False)
+        assert ":\\" not in text
+        assert "C:/" not in text
 
 
 # ---------------------------------------------------------------------------
@@ -311,3 +441,66 @@ class TestHistoryDetail:
         text = json.dumps(resp.json(), ensure_ascii=False)
         assert ":\\" not in text
         assert "C:/" not in text
+# ---------------------------------------------------------------------------
+# /history/detail -- evaluations 행 프런트 소비 키 계약 (G002).
+# ---------------------------------------------------------------------------
+
+
+class TestHistoryDetailEvaluationsRowContract:
+    """evaluations 행이 프런트 소비 키(evaluation_status/metrics/gate_passed)를 보장한다."""
+
+    def test_loop_run_rows_expose_evaluation_status_metrics_and_gate_passed(
+        self, client: TestClient, gate_passed_env: str
+    ) -> None:
+        research_id = f"loop_run:{gate_passed_env}"
+        resp = client.get(
+            "/history/detail",
+            params={"research_id": research_id, "section": "evaluations"},
+        ).json()
+        assert resp["available"] is True
+        rows = resp["rows"]
+        assert len(rows) == 2
+
+        by_gen_no: dict[int, dict] = {}
+        for row in rows:
+            assert isinstance(row.get("evaluation_status"), str) and row["evaluation_status"]
+            assert isinstance(row.get("metrics"), dict)
+            assert "gate_passed" in row
+            label = json.loads(row["condition_label"])
+            by_gen_no[label["gen_no"]] = row
+
+        assert set(by_gen_no) == {0, 1}
+        # 시딩 규칙(_seed_pass_fail_generations): gen0=gate_passed=True, gen1=False.
+        # generations.gate_passed와 정확히 일치해야 한다(권위 필드, additive).
+        assert by_gen_no[0]["gate_passed"] is True
+        assert by_gen_no[1]["gate_passed"] is False
+
+    def test_campaign_rows_omit_gate_passed(self, client: TestClient, campaign_env: Path) -> None:
+        resp = client.get(
+            "/history/detail",
+            params={"research_id": "campaign:campaign_alpha", "section": "evaluations"},
+        ).json()
+        assert resp["available"] is True
+        assert resp["rows"]
+        for row in resp["rows"]:
+            assert isinstance(row.get("evaluation_status"), str) and row["evaluation_status"]
+            assert isinstance(row.get("metrics"), dict)
+            # campaign에는 generations.gate_passed 정보가 없으므로 키 자체를 생략한다.
+            assert "gate_passed" not in row
+
+    def test_gate_passed_field_does_not_break_pagination_signature(
+        self, client: TestClient, gate_passed_env: str
+    ) -> None:
+        """gate_passed는 커서 시그니처(ids 기반)에 영향을 주지 않는 additive 필드다."""
+        research_id = f"loop_run:{gate_passed_env}"
+        first = client.get(
+            "/history/detail",
+            params={"research_id": research_id, "section": "evaluations", "limit": 1},
+        ).json()
+        assert first["next_cursor"] is not None
+        second = client.get(
+            "/history/detail",
+            params={"research_id": research_id, "section": "evaluations", "cursor": first["next_cursor"]},
+        ).json()
+        assert second["available"] is True
+        assert len(second["rows"]) == 1

@@ -29,6 +29,9 @@ from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.dashboard.history_adapters import (  # noqa: E402
     CampaignAdapter,
     LoopRunAdapter,
+    derive_ab_role,
+    derive_series,
+    gate_passed_count_from_generations,
 )
 from cli.condition_history_schema import (  # noqa: E402
     COVERAGE_STATUSES,
@@ -134,6 +137,29 @@ def _seed_two_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> Non
         state.close()
 
 
+def _seed_pass_fail_generations(db_path: Path, snapshot_dir: Path, run_id: str) -> None:
+    """게이트 통과 1세대 + 실패 1세대를 심는다(G002 gate_passed 행 계약 테스트용)."""
+    state = LoopState(db_path=str(db_path), snapshot_dir=str(snapshot_dir))
+    try:
+        state.start_run(LoopConfig(), run_id=run_id)
+        state.record_generation(
+            run_id, 0,
+            buy_name=f"AILOOP_{run_id}_g0_buy", sell_name=f"AILOOP_{run_id}_g0_sell",
+            status="ok", score=1.0, gate_passed=True,
+            trade_count=40, mdd=15.0, profit=100000.0, total_profit_pct=10.0,
+            daily_avg_trades=1.2,
+        )
+        state.record_generation(
+            run_id, 1,
+            buy_name=f"AILOOP_{run_id}_g1_buy", sell_name=f"AILOOP_{run_id}_g1_sell",
+            status="ok", score=0.2, gate_passed=False,
+            trade_count=3, mdd=25.0, profit=-2000.0, total_profit_pct=-0.2,
+            daily_avg_trades=0.3, parent_gen=0,
+        )
+    finally:
+        state.close()
+
+
 class TestLoopRunAdapter:
     def test_build_research_node_maps_lineage_and_metrics(self, tmp_path: Path) -> None:
         db_path = tmp_path / "loop_runs.db"
@@ -179,6 +205,23 @@ class TestLoopRunAdapter:
         assert gen1_eval["metrics"]["total_profit_pct"] == 15.0
         assert gen1_eval["metrics"]["daily_avg_trades"] == 1.0
 
+    def test_build_research_node_exposes_evaluation_gate_passed_map(self, tmp_path: Path) -> None:
+        """G002 -- 봉투 계약: evaluation_gate_passed가 generations.gate_passed와 정확히 일치한다(통과1/실패1)."""
+        db_path = tmp_path / "loop_runs.db"
+        snap_dir = tmp_path / "snapshots"
+        run_id = "runGate"
+        _seed_pass_fail_generations(db_path, snap_dir, run_id)
+
+        adapter = LoopRunAdapter(db_path=str(db_path))
+        result = adapter.build_research_node(run_id)
+
+        assert result["available"] is True
+        gate_map = result["evaluation_gate_passed"]
+        assert gate_map == {
+            f"eval:cond:{run_id}:gen0": True,
+            f"eval:cond:{run_id}:gen1": False,
+        }
+
     def test_build_research_node_missing_db_is_typed_not_exception(self, tmp_path: Path) -> None:
         db_path = tmp_path / "does_not_exist" / "loop_runs.db"
 
@@ -211,3 +254,70 @@ def test_companion_wrong_shape_is_typed_invalid(tmp_path):
     result = CampaignAdapter(evidence_root=tmp_path).build_research_node("weird")
     assert result["available"] is False
     assert result["reason"] == "companion_invalid"
+
+
+class TestDeriveSeries:
+    """G002 -- derive_series 순수 함수(전형/비전형 run_id)."""
+
+    def test_pair_arm_tail_is_stripped(self) -> None:
+        assert derive_series("abmain0716f_p1_legacy") == "abmain0716f"
+        assert derive_series("abmain0716f_p5_typed") == "abmain0716f"
+
+    def test_arm_variant_tail_is_stripped_when_no_pair(self) -> None:
+        assert derive_series("nightly_legacy_smoke") == "nightly"
+        assert derive_series("nightly_typed_v2") == "nightly"
+
+    def test_atypical_run_id_falls_back_to_first_underscore_token(self) -> None:
+        assert derive_series("runA_gen0") == "runA"
+        assert derive_series("solo") == "solo"
+
+    def test_series_can_itself_contain_underscores(self) -> None:
+        assert derive_series("ab_main_0716f_p2_typed") == "ab_main_0716f"
+
+
+class TestDeriveAbRole:
+    """G002 -- derive_ab_role 순수 함수(전형/비전형 run_id)."""
+
+    def test_pair_arm_run_id_yields_pair_and_arm(self) -> None:
+        assert derive_ab_role("abmain0716f_p3_legacy") == {"pair": "p3", "arm": "legacy"}
+        assert derive_ab_role("abmain0716f_p3_typed") == {"pair": "p3", "arm": "typed"}
+
+    def test_arm_only_run_id_yields_arm_without_pair(self) -> None:
+        role = derive_ab_role("nightly_legacy_smoke")
+        assert role == {"arm": "legacy"}
+        assert "pair" not in role
+
+    def test_atypical_run_id_yields_none(self) -> None:
+        assert derive_ab_role("runA_gen0") is None
+        assert derive_ab_role("solo") is None
+
+
+class TestGatePassedCountFromGenerations:
+    """G002 -- gate_passed_count_from_generations 순수 함수."""
+
+    def test_sums_truthy_gate_passed_rows(self) -> None:
+        rows = [
+            {"gen_no": 0, "gate_passed": True},
+            {"gen_no": 1, "gate_passed": False},
+            {"gen_no": 2, "gate_passed": 1},
+            {"gen_no": 3, "gate_passed": 0},
+        ]
+        assert gate_passed_count_from_generations(rows) == 2
+
+    def test_empty_rows_is_zero(self) -> None:
+        assert gate_passed_count_from_generations([]) == 0
+
+    def test_missing_gate_passed_key_counts_as_not_passed(self) -> None:
+        assert gate_passed_count_from_generations([{"gen_no": 0}]) == 0
+
+
+class TestAbFiveSeedSeries:
+    """abmain0716f 시리즈에서 5개 pair(p1..p5)가 파생 가능한지 구조 확인(G002)."""
+
+    def test_five_pairs_derive_to_same_series(self) -> None:
+        run_ids = [f"abmain0716f_p{n}_{arm}" for n in range(1, 6) for arm in ("legacy", "typed")]
+        series_values = {derive_series(run_id) for run_id in run_ids}
+        assert series_values == {"abmain0716f"}
+
+        pairs = {derive_ab_role(run_id)["pair"] for run_id in run_ids}
+        assert pairs == {f"p{n}" for n in range(1, 6)}

@@ -30,6 +30,8 @@ import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
 import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-pages.jsx";
 import { ResearchLabPanel } from "./research-lab.jsx";
@@ -394,6 +396,9 @@ function App() {
           <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />
             <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+            <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
+            <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} />
+            <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} />
             <ResearchIndexPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
           </main>
         </ErrorBoundary>
