@@ -31388,7 +31388,7 @@ def signal_sell(pos, bar, ind):
     return null;
   }
   function _hvFetchJson(url, timeoutMs) {
-    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 3e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
   function _hvFetchAllPages(url, timeoutMs) {
     const MAX_PAGES = 50;
@@ -31521,7 +31521,7 @@ def signal_sell(pos, bar, ind):
       if (isDemo || !baseUrl) return;
       setCampaignsLoading(true);
       setCampaignsErr("");
-      _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 8e3).then((j) => {
+      _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
         setSelected((prev) => prev || (items.length ? items[0].research_id : ""));
@@ -31617,7 +31617,7 @@ def signal_sell(pos, bar, ind):
       if (isDemo || !baseUrl) return;
       setRunsLoading(true);
       setRunsErr("");
-      _hvFetchJson(baseUrl + "/history/index?limit=50", 8e3).then((j) => {
+      _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);
         setSelected((prev) => prev || (items.length ? items[0].research_id : ""));

@@ -48,7 +48,8 @@ function _hvMetricAny(row, keys) {
 }
 
 function _hvFetchJson(url, timeoutMs) {
-  return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8000) })
+  // 전체 인덱스는 서버 측 트리 빌드로 수 초가 걸릴 수 있어 기본 30초로 잡는다.
+  return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 30000) })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
@@ -306,7 +307,7 @@ function CellHeatmap({ baseUrl, wsStatus }) {
     if (isDemo || !baseUrl) return;
     setCampaignsLoading(true);
     setCampaignsErr("");
-    _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 8000)
+    _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 30000)
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
@@ -476,7 +477,7 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
     if (isDemo || !baseUrl) return;
     setRunsLoading(true);
     setRunsErr("");
-    _hvFetchJson(baseUrl + "/history/index?limit=50", 8000)
+    _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 30000)
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);

@@ -312,12 +312,19 @@ def history_index(
     source_kind: SourceKind = Query("all"),
 ) -> HistoryIndexResponse:
     """캠페인/루프런을 아우르는 히스토리 목록(메타데이터만, 트리 본문 없음)을 반환한다."""
-    campaign_items, campaign_available = _campaign_index_items()
-    loop_run_items, loop_run_available = _loop_run_index_items()
+    # source_kind 필터가 지정되면 반대편 소스의 트리 빌드를 아예 생략한다
+    # (전체 인덱스는 항목당 트리 빌드 비용이 커서, 필터형 소비자는 단락 경로 사용).
+    if source_kind == "campaign":
+        campaign_items, campaign_available = _campaign_index_items()
+        loop_run_items, loop_run_available = [], True
+    elif source_kind == "loop_run":
+        campaign_items, campaign_available = [], True
+        loop_run_items, loop_run_available = _loop_run_index_items()
+    else:
+        campaign_items, campaign_available = _campaign_index_items()
+        loop_run_items, loop_run_available = _loop_run_index_items()
 
     all_items = campaign_items + loop_run_items
-    if source_kind != "all":
-        all_items = [item for item in all_items if item["source_kind"] == source_kind]
     all_items = [item for item in all_items if _matches_query(item, q)]
     all_items.sort(key=lambda item: item["research_id"])
     all_items.sort(key=lambda item: item["updated_at"], reverse=True)
