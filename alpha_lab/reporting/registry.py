@@ -92,6 +92,10 @@ STUDIES: Tuple[Study, ...] = (
           "매도식 발화 절 9개를 drop 미러 하니스로 하나씩 제거 재채점(영향 집합 {l3_clause==k} 서로소 분할) — 원본재현 862,932건 전수 비트동일 게이트 후 Δ·CI·FDR·연도부호 판정.",
           "bd5bb3c4", "양성", "posv", "2026-07-16_sell_d1_exit_ablation_preregistration.md",
           ("sell_d1/sell_d1_summary.json",), "sell_d1"),
+    Study("x1", "X1 매수 절-삭제 엔진 A/B", "그물코(매수 조건) 4개를 하나씩 빼고 실제 바다(엔진)에 던져 봤다 — 더 많이 잡되 총어획이 느는 그물은 없었다.",
+          "역생산 절 4종(시총 게이트·회전율·잔량비 2종)을 각각 삭제한 변형 매수식의 엔진 A/B 8런(기준 A=B1 런 재사용, 프로파일 동일) — C1 Δ총수익 양년동방향·C2 거래수 ≤4×·C3 MDD(×1.5 ∧ ≤15%)·C4 무오류 전건 요구.",
+          "cb8a9d6a", "기각", "kill", "2026-07-17_x1_buy_clause_drop_ab_preregistration.md",
+          ("x1/x1_summary.json",), "x1"),
 )
 
 

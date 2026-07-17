@@ -256,10 +256,26 @@ def _ex_sell_d1(_: dict) -> dict:
     ], "note": "9절 전부 음/중립 — 매도식은 '뺄 것 없음', 개선 방향은 추가(B1)뿐"}
 
 
+def _ex_x1(_: dict) -> dict:
+    d = load_json("x1", "x1_summary.json")
+    if not d:
+        return {"_missing": rel_path("x1", "x1_summary.json")}
+    c15 = d.get("per_candidate", {}).get("DROP15", {}).get("cells", {})
+    d22 = (c15.get("2022") or c15.get(2022) or {}).get("dprofit_krw")
+    d23 = (c15.get("2023") or c15.get(2023) or {}).get("dprofit_krw")
+    tempt = (f"DROP15: 2022 {d22:+,.0f}원 / 2023 {d23:+,.0f}원 — 연도 혼재"
+             if d22 is not None and d23 is not None else "—")
+    return {"rows": [
+        ("X1 후보(전 관문 통과)", str(d.get("n_x1_candidates", "?"))),
+        ("최선 유혹(기각 사유의 실물)", tempt),
+        ("식붕괴", str(d.get("formula_collapse") or "없음")),
+    ], "note": "입(X1)·출(매도식 D1) 모두 '뺄 것 없음' — 챔피언은 절 단위 국소 최적(대칭 확정)"}
+
+
 EXTRACTORS: Dict[str, Callable[[dict], dict]] = {
     "strack": _ex_strack, "o1g": _ex_o1g, "d1": _ex_d1, "d5r": _ex_d5r, "b1": _ex_b1,
     "d5d9": _ex_d5d9, "d1pair": _ex_d1pair, "o3": _ex_o3, "o4": _ex_o4,
-    "btrack": _ex_btrack, "bext": _ex_bext, "sell_d1": _ex_sell_d1,
+    "btrack": _ex_btrack, "bext": _ex_bext, "sell_d1": _ex_sell_d1, "x1": _ex_x1,
 }
 
 

@@ -1,0 +1,74 @@
+{
+ "kind": "x1_fresh_a_sensitivity",
+ "purpose": "예비 예산 2런으로 기준 A를 당일 환경 재실행 — 세션 간 드리프트 정량화 + 판정 강건성(§14-F8 예비 예산 사용 근거: DROP29/31 2022 결과가 상호 동일하나 저장 A와 상이 — 드리프트 신호)",
+ "fresh_A": {
+  "2022": {
+   "trade_count": 101,
+   "daily_avg_trades": 0.5,
+   "win_rate": 58.42,
+   "avg_profit_pct": 0.82,
+   "total_profit_pct": 82.72,
+   "total_profit_krw": 4161234,
+   "cagr": 107.15,
+   "mdd_pct": 9.02,
+   "mdd_amount": 0.0,
+   "tpi": 1.35,
+   "seed_capital": 5030295.0,
+   "max_hold_count": 1,
+   "avg_hold_time": 563.42,
+   "day_count": 202
+  },
+  "2023": {
+   "trade_count": 197,
+   "daily_avg_trades": 0.8,
+   "win_rate": 56.85,
+   "avg_profit_pct": 0.56,
+   "total_profit_pct": 55.42,
+   "total_profit_krw": 5543373,
+   "cagr": 56.78,
+   "mdd_pct": 6.48,
+   "mdd_amount": 0.0,
+   "tpi": 1.24,
+   "seed_capital": 10003170.0,
+   "max_hold_count": 2,
+   "avg_hold_time": 427.25,
+   "day_count": 246
+  }
+ },
+ "drift_vs_stored_A": {
+  "2022": {
+   "d_profit_krw": 31117,
+   "d_trades": 0,
+   "d_mdd_pp": -0.17
+  },
+  "2023": {
+   "d_profit_krw": -105986,
+   "d_trades": 0,
+   "d_mdd_pp": -0.5
+  }
+ },
+ "findings": [
+  "엔진은 동일 세션 내 완전 결정적: DROP31(2022·2023)·DROP29(2022)가 A_fresh와 원 단위까지 동일",
+  "세션 간 드리프트 실측: 2022 +31,117원(+0.75%)·2023 −105,986원(−1.88%) — 엔진 A/B Δ가 ±0.15M 이내면 세션 드리프트 잡음 범위로 해석해야 함(B1 ΣΔ+1.54M는 10배 이상 상회 — 영향 없음)",
+  "절 #31은 발견창 전체(2022·2023)에서 무발동 — 제거가 완전 no-op(dead gate). 절 #29는 2022 무발동·2023 +1거래 유입이 −158,098원"
+ ],
+ "redelta_vs_fresh_A_krw": {
+  "DROP5": {
+   "2022": 1015421,
+   "2023": -297140
+  },
+  "DROP15": {
+   "2022": 2217532,
+   "2023": -1168093
+  },
+  "DROP29": {
+   "2022": 0,
+   "2023": -158098
+  },
+  "DROP31": {
+   "2022": 0,
+   "2023": 0
+  }
+ },
+ "conclusion": "봉인 판정(저장 A 기준, X1 후보 0) 불변·강화 — 당일 기준 재산정에서도 전 후보 연도 혼재 또는 0/음(−): DROP5 +1,015,421/−297,140 · DROP15 +2,217,532/−1,168,093 · DROP29 0/−158,098 · DROP31 0/0. kill-1(입·출구 대칭 국소 최적) 확정."
+}
