@@ -1,4 +1,5 @@
 /* Enriched run comparison console. Overrides the lean RunComparePanel from panels.jsx. */
+import { fetchRunsShared } from "./runs-shared.jsx";
 const { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
 
 function rcNum(value, digits = 2) {
@@ -65,8 +66,7 @@ function RunComparePanel({ baseUrl, wsStatus }) {
     if (isDemo || !baseUrl) return;
     setLoading(true);
     setErr("");
-    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3000) })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+    fetchRunsShared(baseUrl, { timeoutMs: 3000 })
       .then(j => {
         const rows = Array.isArray(j.runs) ? j.runs : [];
         setRuns(rows);

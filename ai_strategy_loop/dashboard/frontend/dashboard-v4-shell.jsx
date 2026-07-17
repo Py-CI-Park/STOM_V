@@ -23,6 +23,7 @@ import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Audit } from "./v4-audit.jsx";
 import { V4Alpha } from "./v4-alpha.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
@@ -177,8 +178,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     //   타임아웃될 수 있다(실측: 8791 아카이브 2.6MB 가 10여 요청 뒤 도착). 15s 타임아웃 +
     //   실패 시 4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다.
     const load = () => {
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(15000) })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      fetchRunsShared(baseUrl, { timeoutMs: 15000 })
         .then(j => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];

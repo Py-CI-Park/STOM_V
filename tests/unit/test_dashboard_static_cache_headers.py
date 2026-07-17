@@ -32,12 +32,14 @@ def test_fingerprinted_css_is_immutable_cached() -> None:
     assert "immutable" in r.headers.get("cache-control", "")
 
 
-def test_unfingerprinted_asset_is_not_long_cached() -> None:
-    # 지문 없는 .js 요청은 immutable 캐시를 받지 않는다(내용 주소화 안 됨 → 장기 캐시 위험).
+def test_unfingerprinted_asset_is_no_store() -> None:
+    # §3.4: 지문 없는 .js 요청은 immutable 금지 + no-store 명시(내용 주소화 안 됨 → 장기 캐시 위험).
     client = _client()
     r = client.get("/ui/bundle/app.js")
     assert r.status_code == 200
-    assert "immutable" not in r.headers.get("cache-control", "")
+    cc = r.headers.get("cache-control", "")
+    assert "immutable" not in cc
+    assert "no-store" in cc
 
 
 def test_static_html_direct_fetch_is_no_store() -> None:

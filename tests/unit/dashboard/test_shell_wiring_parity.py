@@ -22,7 +22,7 @@ _TAG = re.compile(r"<([A-Z][A-Za-z0-9]+)[\s/>]")
 
 
 def _tags(path: Path) -> set[str]:
-    return set(_TAG.findall(path.read_text(encoding="utf-8")))
+    return set(_TAG.findall(_strip_comments(path.read_text(encoding="utf-8"))))
 
 
 # legacy 셸에만 존재해도 되는 컴포넌트 = V4 레일/토프바/온보딩이 대체했거나 상위호환.
@@ -47,17 +47,53 @@ _LEGACY_ONLY_WHITELIST = {
 }
 
 
-def _v4_tree_tags() -> set[str]:
-    tags: set[str] = set()
-    for path in sorted(FRONTEND.glob("v4-*.jsx")):
-        tags |= _tags(path)
-    tags |= _tags(FRONTEND / "dashboard-v4-shell.jsx")
-    return tags
+_IMPORT_PATH = re.compile(r'from\s+"(\./[^"]+\.jsx)"')
+
+
+def _reachable_files(entry_name: str) -> set[Path]:
+    """dashboard-v4-shell.jsx 에서 import 로 전이 도달 가능한 .jsx 파일 집합.
+
+    §3.3 강화: 셸에서 import 되지 않는 고아 v4-*.jsx 파일이나 주석 문자열이 'V4에 배선됨'
+    으로 오계산되지 않도록, 실제 import 그래프의 도달 가능 파일만 render 대상으로 본다.
+    """
+    seen: set[Path] = set()
+    stack = [FRONTEND / entry_name]
+    while stack:
+        f = stack.pop()
+        if f in seen or not f.exists():
+            continue
+        seen.add(f)
+        text = f.read_text(encoding="utf-8")
+        for rel in _IMPORT_PATH.findall(text):
+            stack.append(FRONTEND / rel[2:])  # "./x.jsx" → x.jsx
+    return seen
+
+
+def _strip_comments(text: str) -> str:
+    """블록/라인 주석 제거 — 주석 안의 <Tag> 문자열이 '렌더됨'으로 오계산되지 않게 한다."""
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r"//[^\n]*", "", text)
+    return text
+
+
+def _v4_available_components() -> set[str]:
+    """V4 셸에서 import 로 도달 가능한 v4-*.jsx(+셸)에서 실제 렌더되는(<Tag>) 컴포넌트.
+
+    §3.3 강화: (1) import 그래프로 도달 가능한 파일만 → 셸이 import 안 하는 고아 v4-*.jsx 배제,
+    (2) v4-*.jsx·셸만 스캔 → legacy(app.jsx)·공유(dashboard-pages 등) 렌더 트리 오계산 배제,
+    (3) 주석 제거 → 주석 문자열 오계산 배제.
+    """
+    reachable = _reachable_files("dashboard-v4-shell.jsx")
+    rendered: set[str] = set()
+    for f in reachable:
+        if f.name == "dashboard-v4-shell.jsx" or f.name.startswith("v4-"):
+            rendered |= set(_TAG.findall(_strip_comments(f.read_text(encoding="utf-8"))))
+    return rendered
 
 
 def test_v4_shell_mounts_every_legacy_research_panel() -> None:
     legacy = _tags(FRONTEND / "app.jsx")
-    v4 = _v4_tree_tags()
+    v4 = _v4_available_components()
 
     legacy_only = legacy - v4
     unexplained = sorted(legacy_only - set(_LEGACY_ONLY_WHITELIST))
@@ -73,7 +109,7 @@ def test_v4_shell_mounts_every_legacy_research_panel() -> None:
 def test_whitelist_stays_minimal_and_has_no_stale_entries() -> None:
     # 화이트리스트가 실제로 legacy-only 인 항목만 담아 과잉 억제를 막는다(부패 방지).
     legacy = _tags(FRONTEND / "app.jsx")
-    v4 = _v4_tree_tags()
+    v4 = _v4_available_components()
     legacy_only = legacy - v4
     stale = sorted(set(_LEGACY_ONLY_WHITELIST) - legacy_only)
     assert not stale, (

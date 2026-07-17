@@ -9200,6 +9200,36 @@ def signal_sell(pos, bar, ind):
     return /* @__PURE__ */ React.createElement("div", { className: "rp-code-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--teal)" } }, "\uB9E4\uC218 \uC870\uAC74\uC2DD ", code.buy_name ? `\xB7 ${code.buy_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, buy || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: buy })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--blue)" } }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD ", code.sell_name ? `\xB7 ${code.sell_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, sell || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: sell })));
   }
 
+  // ai_strategy_loop/dashboard/frontend/runs-shared.jsx
+  var _RUNS_TTL_MS = 2e4;
+  var _runsCache = /* @__PURE__ */ new Map();
+  function _cloneRuns(j) {
+    if (!j || typeof j !== "object") return j;
+    return { ...j, runs: Array.isArray(j.runs) ? j.runs.slice() : j.runs || [] };
+  }
+  function fetchRunsShared(baseUrl, opts) {
+    const o = opts || {};
+    const key = baseUrl || "";
+    const now2 = Date.now();
+    const entry = _runsCache.get(key);
+    if (!o.force && entry && now2 - entry.ts < _RUNS_TTL_MS) {
+      if (entry.data) return Promise.resolve(_cloneRuns(entry.data));
+      if (entry.promise) return entry.promise.then(_cloneRuns);
+    }
+    const timeoutMs = o.timeoutMs || 15e3;
+    const promise = fetch(key + "/runs", { signal: AbortSignal.timeout(timeoutMs) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      _runsCache.set(key, { ts: Date.now(), promise: null, data: j });
+      return j;
+    }).catch((err) => {
+      const cur = _runsCache.get(key);
+      if (cur && cur.promise === promise) _runsCache.delete(key);
+      throw err;
+    });
+    _runsCache.set(key, { ts: now2, promise, data: entry ? entry.data : null });
+    return promise.then(_cloneRuns);
+  }
+  Object.assign(window, { fetchRunsShared });
+
   // ai_strategy_loop/dashboard/frontend/rp-heatmap.jsx
   function _rpSplitCrossLabel(c) {
     const directTime = c && (c.time || c.time_label || c.time_segment || c._time_segment);
@@ -9555,7 +9585,7 @@ def signal_sell(pos, bar, ind):
         return void 0;
       }
       let cancelled = false;
-      _rpFetchJson(baseUrl + "/runs", 6e3).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -27119,7 +27149,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setLoadingRuns(true);
-      _btFetchJson(baseUrl + "/runs", 6e3).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
     }, [baseUrl, isDemo]);
     useEffect_bt(() => {
       loadRuns();
@@ -30897,7 +30927,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       let cancelled = false;
-      _eaFetchJson(baseUrl + "/runs", 3e3).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 3e3 }).then((j) => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -31052,7 +31082,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setRunListLoading(true);
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => {
         const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
@@ -34776,7 +34806,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       if (isDemo || !baseUrl) return;
       setLoading(true);
       setErr("");
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 3e3 }).then((j) => {
         const rows = Array.isArray(j.runs) ? j.runs : [];
         setRuns(rows);
         setErr(j.error || "");
@@ -35131,7 +35161,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       let cancelled = false;
       let attempt = 0;
       const load = () => {
-        fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(15e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        fetchRunsShared(baseUrl, { timeoutMs: 15e3 }).then((j) => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];
           runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));

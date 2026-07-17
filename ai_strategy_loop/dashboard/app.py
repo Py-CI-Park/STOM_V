@@ -108,6 +108,10 @@ class _FingerprintedStaticFiles(StaticFiles):
                 response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
             elif fingerprinted and (lower.endswith(".js") or lower.endswith(".css")):
                 response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            elif lower.endswith(".js") or lower.endswith(".css") or lower.endswith(".jsx"):
+                # §3.4: 지문(?v=) 없는 JS/CSS/JSX 는 내용 주소화가 안 돼 장기 캐시가 위험하다 →
+                #   no-store 로 명시(주석·문서 계약과 코드를 일치시킨다).
+                response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
         except Exception:  # noqa: BLE001 - 캐시 헤더 부여 실패가 정적 서빙을 막지 않는다.
             pass
         return response

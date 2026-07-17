@@ -1,4 +1,5 @@
 import { _RpRunCompare, _RpHistory } from "./rp-heatmap.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 /* Evolution dashboard research-record index panel. */
 const {
   useState: useState_rrp,
@@ -82,8 +83,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
       return;
     }
     setRunListLoading(true);
-    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(6000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+    fetchRunsShared(baseUrl, { timeoutMs: 6000 })
       .then(j => {
         const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));

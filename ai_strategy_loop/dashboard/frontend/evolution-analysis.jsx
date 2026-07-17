@@ -16,6 +16,7 @@
      전환한다(직접 상태 결합 없음). */
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { LegendDot, Mini } from "./chart.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 const {
   useState: useState_ea, useEffect: useEffect_ea,
   useMemo: useMemo_ea, useRef: useRef_ea, useCallback: useCallback_ea,
@@ -403,7 +404,7 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   useEffect_ea(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
-    _eaFetchJson(baseUrl + "/runs", 3000)
+    fetchRunsShared(baseUrl, { timeoutMs: 3000 })
       .then(j => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];
