@@ -3,7 +3,7 @@ setlocal
 set "STOM_PY313=C:\Python\64\Python31313\python.exe"
 
 rem STOM AI web dashboard launcher.
-rem Defaults match ai_strategy_loop.__main__: http://127.0.0.1:8770/ui/evolution
+rem Default UI: v4 dashboard (http://127.0.0.1:8770/ui/v4). Legacy: /ui/evolution
 rem Optional environment overrides before running this file:
 rem   set STOM_DASHBOARD_HOST=127.0.0.1
 rem   set STOM_DASHBOARD_PORT=8770
@@ -12,7 +12,7 @@ rem   set STOM_DASHBOARD_NO_PAUSE=1
 
 if not defined STOM_DASHBOARD_HOST set "STOM_DASHBOARD_HOST=127.0.0.1"
 if not defined STOM_DASHBOARD_PORT set "STOM_DASHBOARD_PORT=8770"
-set "STOM_DASHBOARD_URL=http://%STOM_DASHBOARD_HOST%:%STOM_DASHBOARD_PORT%/ui/evolution"
+set "STOM_DASHBOARD_URL=http://%STOM_DASHBOARD_HOST%:%STOM_DASHBOARD_PORT%/ui/v4"
 set "STOM_DASHBOARD_HEALTH=http://%STOM_DASHBOARD_HOST%:%STOM_DASHBOARD_PORT%/health"
 
 pushd "%~dp0"
