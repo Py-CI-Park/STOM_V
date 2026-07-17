@@ -252,6 +252,16 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "홀드아웃으로 떼어 둘 윈도우 끝 최근 거래일 수. 홀드아웃 졸업검사가 ON일 때만 적용된다.",
         }, minimum=1, step=1),
         {
+            "name": "analysis_card_v3_enabled", "label": "분석 카드 V3 (카드 지시 채널)", "type": "bool",
+            "default": d.analysis_card_v3_enabled,
+            "help": "ON이면 세대 결과 CSV에서 통계 게이트(표본·CI·FDR/사전등록 축)를 통과한 지시만 담은 AnalysisCardV3를 만들어 다음 세대 프롬프트로 환류한다. OFF면 카드 지시 환류(자유문/typed 모두)가 발화하지 않는다. 연구 프리셋은 ON을 기본 포함한다.",
+        },
+        {
+            "name": "typed_feedback_v2_enabled", "label": "타입 피드백 V2 (엄격 인가)", "type": "bool",
+            "default": d.typed_feedback_v2_enabled,
+            "help": "ON이면 카드 지시를 결의자가 인가한 TRAIN+READY 지시만 매수/매도 분리로 전달한다(오염·역할 위반 차단). OFF면 기존 자유문 카드 지시를 그대로 전달한다. 2026-07-16 실 A/B에서 무해성 확인, 효과 우열은 미판정.",
+        },
+        {
             "name": "research_oos_mode", "label": "Research OOS Mode", "type": "select",
             "choices": ["disabled", "advisory", "promotion_only"], "default": d.research_oos_mode,
             "help": "disabled=OOS 없이 탐색, advisory=참고 표시만, promotion_only=후보 고정 후 최종 검증용.",
