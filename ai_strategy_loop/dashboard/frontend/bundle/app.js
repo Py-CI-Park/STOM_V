@@ -31115,6 +31115,243 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, { ResearchRecordsPanel });
 
+  // ai_strategy_loop/dashboard/frontend/history-condition-tree.jsx
+  var {
+    useState: useState_hct,
+    useEffect: useEffect_hct,
+    useCallback: useCallback_hct
+  } = React;
+  var HCT_SOURCE_KINDS = [
+    { value: "", label: "\uC804\uCCB4" },
+    { value: "campaign", label: "campaign" },
+    { value: "loop_run", label: "loop_run" }
+  ];
+  function _hctDate(ts) {
+    if (!ts) return "-";
+    try {
+      return new Date(Number(ts) * 1e3).toLocaleString();
+    } catch (e) {
+      return "-";
+    }
+  }
+  function _hctNum(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString();
+  }
+  function _hctMoney(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    const n = Number(value);
+    const sign = n > 0 ? "+" : "";
+    return sign + Math.round(n).toLocaleString();
+  }
+  function _hctPct(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toFixed(2) + "%";
+  }
+  function _hctNegColor(value) {
+    if (value == null || Number.isNaN(Number(value))) return "var(--ink-2)";
+    return Number(value) < 0 ? "var(--red)" : "var(--ink-0)";
+  }
+  function _hctPresence(flag) {
+    return flag ? "\u2713" : "\u2014";
+  }
+  function _hctLabelMeta(row) {
+    const label = row && row.label;
+    if (typeof label !== "string" || label[0] !== "{") return null;
+    try {
+      const meta = JSON.parse(label);
+      return meta && typeof meta === "object" ? meta : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function _hctStatusCell(row) {
+    const status = row.status || "";
+    if (status === "no_trades") {
+      return /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-2)" } }, "0 trades");
+    }
+    if (status === "failed" || status === "missing") {
+      return /* @__PURE__ */ React.createElement("span", { className: "badge err", title: row.reason || "" }, status, row.reason ? `: ${row.reason}` : "");
+    }
+    if (status === "timeout") {
+      return /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: row.reason || "" }, status, row.reason ? `: ${row.reason}` : "");
+    }
+    return /* @__PURE__ */ React.createElement("span", { className: "badge ok" }, status || "\u2014");
+  }
+  var HCT_EVAL_COLUMNS = [
+    { key: "status", label: "\uC0C1\uD0DC", numeric: false },
+    { key: "trade_count", label: "\uAC70\uB798\uC218", numeric: true },
+    { key: "traded_symbol_count", label: "\uAC70\uB798\uC885\uBAA9\uC218", numeric: true },
+    { key: "net_profit", label: "\uC21C\uC190\uC775", numeric: true },
+    { key: "gross_loss", label: "\uCD1D\uC190\uC2E4", numeric: true },
+    { key: "losing_trades", label: "\uC190\uC2E4\uAC70\uB798\uC218", numeric: true },
+    { key: "win_rate", label: "\uC2B9\uB960", numeric: true },
+    { key: "mdd", label: "MDD", numeric: true }
+  ];
+  function _hctMetric(row, key) {
+    const m = row.metrics || {};
+    return m[key] != null ? m[key] : row[key];
+  }
+  function _hctSortedEvaluations(rows, sortKey, sortDir) {
+    if (!sortKey) return rows;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return rows.slice().sort((a, b) => {
+      const av = _hctMetric(a, sortKey);
+      const bv = _hctMetric(b, sortKey);
+      const an = av == null ? -Infinity : Number(av);
+      const bn = bv == null ? -Infinity : Number(bv);
+      if (an === bn) return 0;
+      return an < bn ? -dir : dir;
+    });
+  }
+  function _hctFetchSection(baseUrl, researchId, section, cursor) {
+    let url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=" + section;
+    if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
+    return fetch(url, { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [q, setQ] = useState_hct("");
+    const [sourceKind, setSourceKind] = useState_hct("");
+    const [items, setItems] = useState_hct([]);
+    const [nextCursor, setNextCursor] = useState_hct(null);
+    const [total, setTotal] = useState_hct(0);
+    const [indexLoading, setIndexLoading] = useState_hct(false);
+    const [indexErr, setIndexErr] = useState_hct("");
+    const [selectedId, setSelectedId] = useState_hct("");
+    const [sections, setSections] = useState_hct({});
+    const [expandedStages, setExpandedStages] = useState_hct({});
+    const [expandedConditions, setExpandedConditions] = useState_hct({});
+    const [sortKey, setSortKey] = useState_hct("");
+    const [sortDir, setSortDir] = useState_hct("desc");
+    const loadIndex = useCallback_hct((cursor) => {
+      if (isDemo || !baseUrl) return;
+      setIndexLoading(true);
+      setIndexErr("");
+      let url = baseUrl + "/history/index?limit=50";
+      if (q.trim()) url += "&q=" + encodeURIComponent(q.trim());
+      if (sourceKind) url += "&source_kind=" + encodeURIComponent(sourceKind);
+      if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
+      fetch(url, { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const rows = Array.isArray(j && j.items) ? j.items : [];
+        setItems((prev) => cursor ? prev.concat(rows) : rows);
+        setNextCursor(j && j.next_cursor ? j.next_cursor : null);
+        setTotal(j && j.total != null ? j.total : rows.length);
+      }).catch((e) => {
+        setIndexErr(String(e));
+        if (!cursor) setItems([]);
+      }).finally(() => setIndexLoading(false));
+    }, [baseUrl, isDemo, q, sourceKind]);
+    useEffect_hct(() => {
+      loadIndex(null);
+    }, [loadIndex]);
+    const selectResearch = useCallback_hct((researchId) => {
+      setSelectedId(researchId);
+      setExpandedStages({});
+      setExpandedConditions({});
+      if (isDemo || !baseUrl || !researchId) {
+        setSections({});
+        return;
+      }
+      setSections({ research: { loading: true, err: "", node: null } });
+      _hctFetchSection(baseUrl, researchId, "research").then((j) => setSections((prev) => ({ ...prev, research: { loading: false, err: "", node: j } }))).catch((e) => setSections((prev) => ({ ...prev, research: { loading: false, err: String(e), node: null } })));
+    }, [baseUrl, isDemo]);
+    const loadSection = useCallback_hct((section, cursor) => {
+      if (isDemo || !baseUrl || !selectedId) return;
+      setSections((prev) => ({
+        ...prev,
+        [section]: { ...prev[section] || {}, loading: true, err: prev[section] ? prev[section].err : "" }
+      }));
+      _hctFetchSection(baseUrl, selectedId, section, cursor).then((j) => {
+        const rows = Array.isArray(j && j.rows) ? j.rows : [];
+        setSections((prev) => ({
+          ...prev,
+          [section]: {
+            loading: false,
+            err: "",
+            rows: cursor ? (prev[section] && prev[section].rows || []).concat(rows) : rows,
+            next_cursor: j && j.next_cursor ? j.next_cursor : null
+          }
+        }));
+      }).catch((e) => setSections((prev) => ({
+        ...prev,
+        [section]: { loading: false, err: String(e), rows: prev[section] && prev[section].rows || [], next_cursor: null }
+      })));
+    }, [baseUrl, isDemo, selectedId]);
+    const toggleStage = useCallback_hct((stageId) => {
+      setExpandedStages((prev) => ({ ...prev, [stageId]: !prev[stageId] }));
+      if (!sections.conditions) loadSection("conditions", null);
+    }, [sections.conditions, loadSection]);
+    const toggleCondition = useCallback_hct((conditionId) => {
+      setExpandedConditions((prev) => ({ ...prev, [conditionId]: !prev[conditionId] }));
+      if (!sections.evaluations) loadSection("evaluations", null);
+    }, [sections.evaluations, loadSection]);
+    const toggleSort = useCallback_hct((key) => {
+      setSortKey((prevKey) => {
+        if (prevKey === key) {
+          setSortDir((d) => d === "asc" ? "desc" : "asc");
+          return key;
+        }
+        setSortDir("desc");
+        return key;
+      });
+    }, []);
+    const stageRows = sections.stages && sections.stages.rows || [];
+    const conditionRows = sections.conditions && sections.conditions.rows || [];
+    const evaluationRows = sections.evaluations && sections.evaluations.rows || [];
+    const sortedEvaluations = _hctSortedEvaluations(evaluationRows, sortKey, sortDir);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC870\uAC74\uC2DD History (v4.1)"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, total, " records")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC History\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "mono",
+        style: { flex: "1 1 200px", padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)" },
+        placeholder: "\uAC80\uC0C9\uC5B4 (label / research_id)",
+        value: q,
+        onChange: (e) => setQ(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter") loadIndex(null);
+        }
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "mono",
+        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)" },
+        value: sourceKind,
+        onChange: (e) => setSourceKind(e.target.value)
+      },
+      HCT_SOURCE_KINDS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.value, value: o.value }, o.label))
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null), disabled: indexLoading }, indexLoading ? "\uC870\uD68C\uC911\u2026" : "\uAC80\uC0C9")), indexErr && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, indexErr, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null) }, "\uC7AC\uC2DC\uB3C4"))), !indexErr && items.length === 0 && !indexLoading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAE30\uB85D \uC5C6\uC74C"), items.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Label"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Source"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Stages"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Conditions"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Evaluations"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Tree"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, items.map((row) => {
+      const active = row.research_id === selectedId;
+      const counts = row.counts || {};
+      return /* @__PURE__ */ React.createElement("tr", { key: row.research_id, style: {
+        borderTop: "1px solid var(--line-1)",
+        background: active ? "rgba(159,180,255,0.08)" : "transparent",
+        cursor: "pointer"
+      }, onClick: () => selectResearch(row.research_id) }, /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" } }, row.label || row.research_id), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, row.source_kind || "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.stages)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.conditions)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.evaluations)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "badge" }, row.condition_tree_status || "-")), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _hctDate(row.updated_at)));
+    }))), nextCursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(nextCursor), disabled: indexLoading }, indexLoading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), selectedId && /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), selectedId), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null), disabled: sections.stages && sections.stages.loading }, sections.stages && sections.stages.loading ? "\uB85C\uB529\u2026" : "Stages \uB85C\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, sections.research && sections.research.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.research.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => selectResearch(selectedId) }, "\uC7AC\uC2DC\uB3C4"))), sections.stages && sections.stages.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.stages.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null) }, "\uC7AC\uC2DC\uB3C4"))), stageRows.length === 0 && !(sections.stages && sections.stages.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, sections.stages ? "stage \uC5C6\uC74C" : "Stages \uB85C\uB4DC \uBC84\uD2BC\uC73C\uB85C \uD2B8\uB9AC\uB97C \uD3BC\uCE58\uC138\uC694"), stageRows.map((stage) => {
+      const stageOpen = !!expandedStages[stage.stage_id];
+      const stageConditions = conditionRows.filter((c) => c.stage_id === stage.stage_id);
+      return /* @__PURE__ */ React.createElement("div", { key: stage.stage_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }, onClick: () => toggleStage(stage.stage_id) }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stageOpen ? "\u25BC" : "\u25B6"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-0)" } }, stage.label || stage.stage_id), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, stage.stage_id)), stageOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 } }, sections.conditions && sections.conditions.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.conditions.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("conditions", null) }, "\uC7AC\uC2DC\uB3C4"))), stageConditions.length === 0 && !(sections.conditions && sections.conditions.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "condition \uC5C6\uC74C"), stageConditions.map((cond) => {
+        const condOpen = !!expandedConditions[cond.condition_id];
+        const condEvaluations = evaluationRows.filter((e) => e.condition_id === cond.condition_id);
+        const meta = _hctLabelMeta(cond);
+        const parentId = meta && meta.parent_condition_id || cond.parent_condition_id;
+        return /* @__PURE__ */ React.createElement("div", { key: cond.condition_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: "pointer" }, onClick: () => toggleCondition(cond.condition_id) }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, condOpen ? "\u25BC" : "\u25B6"), /* @__PURE__ */ React.createElement("span", { className: "badge", style: { color: cond.side === "sell" ? "var(--red)" : "var(--teal)" } }, cond.side || "-"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, cond.condition_id), parentId && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, "parent=", parentId), meta && meta.code_lookup_status && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "buy/sell \uC774\uB984 \uCC38\uC870\uC758 \uCF54\uB4DC \uC870\uD68C \uC0C1\uD0DC (\uC11C\uBC84 code_lookup_status)" }, "code ", meta.code_lookup_status), meta && "hypotheses_present" in meta && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "\uAC00\uC124(hypotheses_json) \uC874\uC7AC \uC5EC\uBD80" }, "\uAC00\uC124 ", _hctPresence(!!meta.hypotheses_present))), condOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, marginLeft: 18 } }, sections.evaluations && sections.evaluations.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.evaluations.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", null) }, "\uC7AC\uC2DC\uB3C4"))), condEvaluations.length === 0 && !(sections.evaluations && sections.evaluations.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "evaluation \uC5C6\uC74C"), condEvaluations.map((ev) => /* @__PURE__ */ React.createElement("div", { key: ev.evaluation_id, className: "mono", style: { display: "flex", gap: 8, padding: "3px 0", fontSize: 10.5, color: "var(--ink-2)" } }, /* @__PURE__ */ React.createElement("span", null, ev.evaluation_id), _hctStatusCell(ev)))));
+      })));
+    }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Evaluation Rows"), sortedEvaluations.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "evaluation \uB85C\uB4DC \uD6C4 \uD45C\uC2DC\uB429\uB2C8\uB2E4 (\uC870\uAC74 \uB178\uB4DC\uB97C \uD3BC\uCE58\uC138\uC694)") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, HCT_EVAL_COLUMNS.map((col) => /* @__PURE__ */ React.createElement(
+      "th",
+      {
+        key: col.key,
+        style: { textAlign: col.numeric ? "right" : "left", padding: "6px 8px", cursor: col.numeric ? "pointer" : "default" },
+        onClick: () => col.numeric && toggleSort(col.key)
+      },
+      col.label,
+      sortKey === col.key ? sortDir === "asc" ? " \u25B2" : " \u25BC" : ""
+    )))), /* @__PURE__ */ React.createElement("tbody", null, sortedEvaluations.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hctStatusCell(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "traded_symbol_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "net_profit")) } }, _hctMoney(_hctMetric(row, "net_profit"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "gross_loss")) } }, _hctMoney(_hctMetric(row, "gross_loss"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "losing_trades"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "win_rate"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "mdd"))))))), sections.evaluations && sections.evaluations.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", sections.evaluations.next_cursor), disabled: sections.evaluations.loading }, sections.evaluations.loading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 8, fontSize: 10.5, color: "var(--amber)" } }, "\uD0D0\uC0C9\uC6A9 \uACB0\uACFC \u2014 OOS/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8")))))));
+  }
+  Object.assign(window, { HistoryConditionTreePanel });
+
   // ai_strategy_loop/dashboard/frontend/evolution-gui-parity-panel.jsx
   var {
     useState: useState_egpp,
@@ -33130,7 +33367,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onRefresh: fetchRunState,
         disabled: isDemoSrc
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "evolution" && activeEvolutionTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { className: "native-process-page", style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }))) : activeTab === "evolution" && activeEvolutionTab === "records" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate: onDashboardNavigate }))) : activeTab === "evolution" && activeEvolutionTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(LabPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "workbench" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ProPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate: onDashboardNavigate })) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_live", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC870\uAC74\uC2DD AI Live Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_gate_engine", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC694\uC57D" }) }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 })), isIdle && /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec, state, onNavigate: onDashboardNavigate }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_researchnav", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC5F0\uAD6C\uC2E4 \uC885\uD569 \xB7 \uD0D0\uC0C9/\uBCC0\uC218/\uAC80\uC99D" }) }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "evolution" && activeEvolutionTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { className: "native-process-page", style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }))) : activeTab === "evolution" && activeEvolutionTab === "records" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate: onDashboardNavigate }))) : activeTab === "evolution" && activeEvolutionTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(LabPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "workbench" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ProPage, { baseUrl, onNavigate: onDashboardNavigate })) : activeTab === "evolution" && activeEvolutionTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate: onDashboardNavigate })) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_live", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC870\uAC74\uC2DD AI Live Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_gate_engine", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC694\uC57D" }) }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 })), isIdle && /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec, state, onNavigate: onDashboardNavigate }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_researchnav", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC5F0\uAD6C\uC2E4 \uC885\uD569 \xB7 \uD0D0\uC0C9/\uBCC0\uC218/\uAC80\uC99D" }) }, /* @__PURE__ */ React.createElement(
       ResearchSuiteCards,
       {
         state,
