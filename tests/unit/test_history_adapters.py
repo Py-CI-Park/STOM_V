@@ -200,3 +200,14 @@ class TestLoopRunAdapter:
         assert result["available"] is False
         assert result["reason"] == "missing_run"
         assert result["research"] is None
+
+
+def test_companion_wrong_shape_is_typed_invalid(tmp_path):
+    """유효 JSON이지만 ResearchNode 형태가 아닌 companion은 typed companion_invalid."""
+    from ai_strategy_loop.dashboard.history_adapters import CampaignAdapter
+    (tmp_path / "weird_condition_history_v1.json").write_text(
+        '{"projection": {"hello": 1}}', encoding="utf-8"
+    )
+    result = CampaignAdapter(evidence_root=tmp_path).build_research_node("weird")
+    assert result["available"] is False
+    assert result["reason"] == "companion_invalid"
