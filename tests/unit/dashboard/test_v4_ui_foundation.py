@@ -83,3 +83,45 @@ def test_v4_foundation_owns_narrow_layout_focus_and_motion() -> None:
     assert "prefers-reduced-motion: reduce" in css
     assert "overflow-x: hidden" not in css
 
+
+def test_v4_canonical_deep_links_map_to_tabs() -> None:
+    # Given: Node evaluating the promoted shell's pathname->tab mapping (B-track default promotion).
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node unavailable")
+    source = _read("dashboard-v4-shell.jsx")
+    map_start = source.index("const V4_PATH_TAB_MAP")
+    fn_start = source.index("function v4TabFromPathname")
+    fn_end = source.index("\n}\n", fn_start) + 2
+    helper = source[map_start:fn_end]
+    script = """
+const fn = new Function(process.argv[2] + '; return v4TabFromPathname;')();
+console.log(JSON.stringify({
+  evolution: fn('/ui/evolution'),
+  process: fn('/ui/evolution/process'),
+  records: fn('/ui/evolution/records'),
+  lab: fn('/ui/evolution/lab'),
+  workbench: fn('/ui/evolution/workbench'),
+  verdict: fn('/ui/evolution/verdict'),
+  backtest: fn('/ui/backtest'),
+  replay: fn('/ui/chart-replay'),
+  root: fn('/ui/'),
+  unknown: fn('/ui/evolution/nope'),
+}));
+"""
+    result = subprocess.run(
+        [node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "evolution": "research",
+        "process": "research",
+        "records": "history",
+        "lab": "lab",
+        "workbench": "workbench",
+        "verdict": "audit",
+        "backtest": "backtest",
+        "replay": "replay",
+        "root": "",
+        "unknown": "",
+    }

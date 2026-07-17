@@ -38,10 +38,34 @@ const V4_TABS = [
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
+// 정본 딥링크 경로 → V4 탭 매핑(B트랙 승격): /ui/evolution/* 를 V4 뷰로 이어준다.
+//   process 는 V4 전용 뷰가 없어 research(Live)로 흡수(사이클 다이어그램이 해당 맥락 제공).
+const V4_PATH_TAB_MAP = {
+  "backtest": "backtest",
+  "chart-replay": "replay",
+  "records": "history",
+  "lab": "lab",
+  "workbench": "workbench",
+  "verdict": "audit",
+  "process": "research",
+};
+
+function v4TabFromPathname(pathname) {
+  try {
+    const parts = String(pathname || "").split("/").filter(Boolean); // ["ui", "evolution", "records"]
+    if (parts[0] !== "ui") return "";
+    const leaf = parts[1] === "evolution" ? (parts[2] || "") : parts[1];
+    if (parts[1] === "evolution" && !parts[2]) return "research";
+    return V4_PATH_TAB_MAP[leaf] || "";
+  } catch (e) { return ""; }
+}
+
 function v4InitialTab() {
   try {
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t && V4_TAB_KEYS.includes(t)) return t;
+    const fromPath = v4TabFromPathname(window.location.pathname);
+    if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
   } catch (e) {}
   return "research";
 }
@@ -262,9 +286,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           ))}
         </div>
         <div className="v4-rail-spacer"></div>
-        <a className="v4-rail-item" href="/ui/" title="V4 운영 대시보드로">
+        <a className="v4-rail-item" href="/ui/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
-          <span className="v4-ri-label">OPS</span>
+          <span className="v4-ri-label">LEGACY</span>
         </a>
       </aside>
 
@@ -379,4 +403,4 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
 Object.assign(window, { DashboardV4Shell });
 // dual-safe ESM export. KEEP on ONE physical line.
-export { DashboardV4Shell, _nextV4TabKey };
+export { DashboardV4Shell, _nextV4TabKey, v4TabFromPathname };

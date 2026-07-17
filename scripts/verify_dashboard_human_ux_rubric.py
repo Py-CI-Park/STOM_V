@@ -86,7 +86,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S01",
         "condition",
         "Condition review",
-        "/ui/evolution",
+        "/ui/evolution?dashboard_version=legacy",
         "/ui/remodel/condition?demo=reference",
         "Review current generation, candidate quality, provenance, and gated export state.",
         ("조건식 AI", "현재 세대", "BEST", "Human"),
@@ -97,7 +97,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S02",
         "process",
         "Process diagnose",
-        "/ui/evolution/process",
+        "/ui/evolution/process?dashboard_version=legacy",
         "/ui/remodel/process?demo=reference",
         "Diagnose current run state, process nodes, logs, queues, workers, and contracts.",
         ("프로세스", "Generation", "Backtest", "Scoring"),
@@ -108,7 +108,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S03",
         "history",
         "History compare",
-        "/ui/evolution/records",
+        "/ui/evolution/records?dashboard_version=legacy",
         "/ui/remodel/history?demo=reference",
         "Find a run, inspect result details, compare lineage, and confirm provenance.",
         ("히스토리", "Research Records", "ResultDetail", "Compare"),
@@ -119,7 +119,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S04",
         "lab",
         "Lab heatmap",
-        "/ui/evolution/lab",
+        "/ui/evolution/lab?dashboard_version=legacy",
         "/ui/remodel/lab?demo=reference",
         "Read factor heatmap, inspect selected cell meaning, and connect it to holdout proof.",
         ("연구실", "Edge Ratio", "변수 중요도", "검증"),
@@ -130,7 +130,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S05",
         "workbench",
         "Workbench handoff",
-        "/ui/evolution/workbench",
+        "/ui/evolution/workbench?dashboard_version=legacy",
         "/ui/remodel/workbench?demo=reference",
         "Select a candidate, compare evidence, and understand review handoff state.",
         ("분석 워크벤치", "Hall of Fame", "후보", "리뷰"),
@@ -141,7 +141,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S06",
         "audit",
         "Audit decision",
-        "/ui/evolution/verdict",
+        "/ui/evolution/verdict?dashboard_version=legacy",
         "/ui/remodel/audit?demo=reference",
         "Understand decision state, OOS evidence, append-only ledger, and human decision input.",
         ("결정 감사", "Append-Only", "PROMOTE", "OOS"),
@@ -152,7 +152,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S07",
         "backtest",
         "Backtest edit/validate",
-        "/ui/backtest",
+        "/ui/backtest?dashboard_version=legacy",
         "/ui/remodel/backtest?demo=reference",
         "Select strategy/data, inspect or edit buy/sell conditions, validate, then review gated run and results.",
         ("백테스트", "조건식", "매수", "매도"),
@@ -163,7 +163,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         "UX-S08",
         "chart_replay",
         "Replay investigate signal",
-        "/ui/chart-replay",
+        "/ui/chart-replay?dashboard_version=legacy",
         "/ui/remodel/chart-replay?demo=reference",
         "Choose source/date/symbol, preview bars/signals, manually start replay, and inspect the signal log.",
         ("차트 리플레이", "데이터 소스", "재생", "종목"),
@@ -484,7 +484,7 @@ def route_identity_failures(capture: BrowserCapture) -> list[str]:
     if capture.status is None or capture.status >= 400:
         failures.append(f"bad_status:{capture.status}")
     if capture.version == "v2":
-        if header_version != "v4-ops":
+        if header_version != "legacy":
             failures.append(f"unexpected_v2_header:{header_version or 'missing'}")
         if "/ui/bundle/app.js" not in script_blob:
             failures.append("missing_v2_bundle")

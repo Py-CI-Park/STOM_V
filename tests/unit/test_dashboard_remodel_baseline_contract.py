@@ -34,6 +34,21 @@ def test_canonical_dashboard_routes_keep_v4_ops_default_and_explicit_v3_selector
         assert v3.headers["x-stom-dashboard-version"] == "v3-remodel"
 
 
+def test_legacy_selector_serves_legacy_shell_for_one_response() -> None:
+    from ai_strategy_loop.dashboard.app import create_app
+
+    client = authorized_dashboard_client(create_app())
+    for path in ["/ui/", "/ui/evolution", "/ui/backtest"]:
+        legacy = client.get(path, params={"dashboard_version": "legacy"}, follow_redirects=False)
+        assert legacy.status_code == 200, path
+        assert "STOM AI · 조건식 자율 진화 대시보드 (Legacy)" in legacy.text
+        assert legacy.headers["x-stom-dashboard-version"] == "legacy"
+        # 같은 클라이언트의 다음 기본 요청은 다시 V4 정본으로 돌아온다(비영속 셀렉터).
+        default = client.get(path, follow_redirects=False)
+        assert default.headers["x-stom-dashboard-version"] == "v4-ops"
+        assert "STOM AI · V4 조건식 자율 진화 대시보드" in default.text
+
+
 
 def test_ops_default_bundle_exposes_nonpersistent_v3_preview_link() -> None:
     source = _text(FRONTEND / "app.jsx")

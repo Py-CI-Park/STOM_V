@@ -56,11 +56,12 @@ def test_human_ux_rubric_scenarios_cover_v2_v3_routes() -> None:
         "backtest",
         "chart_replay",
     }
-    assert pages["condition"].v2_path == "/ui/evolution"
+    # B트랙 승격(2026-07-17): 기본 경로는 V4 graph-first 정본 — 구 셸 UX 계약은 legacy 셀렉터로 검사한다.
+    assert pages["condition"].v2_path == "/ui/evolution?dashboard_version=legacy"
     assert pages["condition"].v3_path == "/ui/remodel/condition?demo=reference"
-    assert pages["backtest"].v2_path == "/ui/backtest"
+    assert pages["backtest"].v2_path == "/ui/backtest?dashboard_version=legacy"
     assert pages["backtest"].v3_path == "/ui/remodel/backtest?demo=reference"
-    assert pages["chart_replay"].v2_path == "/ui/chart-replay"
+    assert pages["chart_replay"].v2_path == "/ui/chart-replay?dashboard_version=legacy"
     assert pages["chart_replay"].v3_path == "/ui/remodel/chart-replay?demo=reference"
 
 

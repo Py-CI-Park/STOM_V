@@ -71,7 +71,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "01_condition_ai",
         "condition",
-        "/ui/evolution",
+        "/ui/evolution?dashboard_version=legacy",
         "/ui/remodel/condition?demo=reference",
         ("STOM AI", "조건식", "V3 Preview"),
         ("현재 세대 라이브 상태", "세대 테이블", "BEST / WINNER", "Human Approval", "Strategy Inspector"),
@@ -80,7 +80,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "02_process",
         "process",
-        "/ui/evolution/process",
+        "/ui/evolution/process?dashboard_version=legacy",
         "/ui/remodel/process?demo=reference",
         ("프로세스", "백테스트", "V3 Preview"),
         ("프로세스 맵", "Generation", "Backtest", "Scoring", "Autopsy", "Repeat", "라이브 로그"),
@@ -89,7 +89,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "03_history",
         "history",
-        "/ui/evolution/records",
+        "/ui/evolution/records?dashboard_version=legacy",
         "/ui/remodel/history?demo=reference",
         ("히스토리", "Research", "V3 Preview"),
         ("실행/생성 히스토리", "Research Records", "ResultDetail", "Compare", "Lineage"),
@@ -98,7 +98,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "04_lab",
         "lab",
-        "/ui/evolution/lab",
+        "/ui/evolution/lab?dashboard_version=legacy",
         "/ui/remodel/lab?demo=reference",
         ("연구실", "Edge", "V3 Preview"),
         ("Edge Ratio", "변수 중요도", "상관관계", "변수 조합", "검증 요약"),
@@ -107,7 +107,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "05_workbench",
         "workbench",
-        "/ui/evolution/workbench",
+        "/ui/evolution/workbench?dashboard_version=legacy",
         "/ui/remodel/workbench?demo=reference",
         ("분석 워크벤치", "후보", "V3 Preview"),
         ("Hall of Fame 워크벤치", "History Compare", "Backtest Result Review", "후보 상세 분석", "리뷰 큐"),
@@ -116,7 +116,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "06_decision_audit",
         "audit",
-        "/ui/evolution/verdict",
+        "/ui/evolution/verdict?dashboard_version=legacy",
         "/ui/remodel/audit?demo=reference",
         ("결정 감사", "append", "V3 Preview"),
         ("결정 감사", "Append-Only", "PROMOTE", "OOS 성과 차이", "결정 히스토리"),
@@ -125,7 +125,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "07_backtest",
         "backtest",
-        "/ui/backtest",
+        "/ui/backtest?dashboard_version=legacy",
         "/ui/remodel/backtest?demo=reference",
         ("백테스트", "조건식", "V3 Preview"),
         ("REFERENCE mode", "Backtest API Contract Matrix", "실행 파라미터", "최적화", "WFO", "스윕", "조건식 편집", "결과 분석", "독립 HTML 보고서"),
@@ -134,7 +134,7 @@ ROUTES: tuple[CompareRoute, ...] = (
     CompareRoute(
         "08_chart_replay",
         "chart_replay",
-        "/ui/chart-replay",
+        "/ui/chart-replay?dashboard_version=legacy",
         "/ui/remodel/chart-replay?demo=reference",
         ("차트 리플레이", "V3 Preview"),
         ("데이터 소스", "재생 컨트롤", "실시간 리플레이 차트", "/sim/ws 수동 게이트", "전략 신호 로그"),
@@ -283,7 +283,7 @@ def route_matrix_entry(capture: Capture, expected_version: str, expected_asset: 
     violations: list[str] = []
     if capture.status is None or capture.status >= 400:
         violations.append(f"bad_status:{capture.status}")
-    if expected_version == "v2" and header_version != "v4-ops":
+    if expected_version == "v2" and header_version != "legacy":
         violations.append(f"unexpected_version_header:{header_version or 'missing'}")
     if expected_version == "v3-remodel" and header_version != "v3-remodel":
         violations.append(f"unexpected_version_header:{header_version or 'missing'}")
@@ -518,8 +518,8 @@ def capture_selector_matrix(v2_base: str, v3_base: str, timeout_ms: int) -> list
         raise RuntimeError(f"Playwright is required for selector matrix: {exc}") from exc
 
     selector_cases = [
-        {"id": "v2_root_default", "base": v2_base, "path": "/ui/evolution", "expectedStatus": 200, "expectedHeader": "v2", "expectedAsset": "/ui/bundle/app.js", "forbiddenAsset": "/ui/remodel/src/app.js"},
-        {"id": "v2_forced_v2", "base": v2_base, "path": "/ui/evolution?dashboard_version=v2", "expectedStatus": 200, "expectedHeader": "v2", "expectedAsset": "/ui/bundle/app.js", "forbiddenAsset": "/ui/remodel/src/app.js"},
+        {"id": "default_root_v4_ops", "base": v2_base, "path": "/ui/evolution", "expectedStatus": 200, "expectedHeader": "v4-ops", "expectedAsset": "/ui/bundle/app.js", "forbiddenAsset": "/ui/remodel/src/app.js"},
+        {"id": "v2_forced_legacy", "base": v2_base, "path": "/ui/evolution?dashboard_version=legacy", "expectedStatus": 200, "expectedHeader": "legacy", "expectedAsset": "/ui/bundle/app.js", "forbiddenAsset": "/ui/remodel/src/app.js"},
         {"id": "v3_query_preview", "base": v3_base, "path": "/ui/evolution?dashboard_version=v3", "expectedStatus": 200, "expectedHeader": "v3-remodel", "expectedAsset": "/ui/remodel/src/app.js", "forbiddenAsset": "/ui/bundle/app.js"},
         {"id": "v3_hard_remodel", "base": v3_base, "path": "/ui/remodel/condition", "expectedStatus": 200, "expectedHeader": "v3-remodel", "expectedAsset": "/ui/remodel/src/app.js", "forbiddenAsset": "/ui/bundle/app.js"},
         {"id": "unknown_remodel_404", "base": v3_base, "path": "/ui/remodel/not-a-real-dashboard-route", "expectedStatus": 404, "expectedHeader": "", "expectedAsset": "", "forbiddenAsset": "/ui/bundle/app.js"},
@@ -652,7 +652,7 @@ def main(argv: list[str]) -> int:
         "failures": failures,
         "status": "PASS" if not failures else "FAIL",
         "scoreDocumentation": {
-            "v2Identity": "Ops route returns x-stom-dashboard-version=v4-ops, loads /ui/bundle/app.js, and does not load V3 remodel assets.",
+            "v2Identity": "Legacy route (?dashboard_version=legacy) returns x-stom-dashboard-version=legacy, loads /ui/bundle/app.js, and does not load V3 remodel assets. Default routes serve the promoted V4 graph-first shell (v4-ops).",
             "v3Identity": "Explicit V3 route returns x-stom-dashboard-version=v3-remodel, no-store HTML, loads /ui/remodel/src/app.js, and does not load ops bundle.",
             "totalCorrectedScore": "0.18 V2 identity + 0.10 V2 text + 0.22 V3 identity + 0.18 V3 text + 0.14 V3 safety + 0.10 inventory + 0.05 safety/network + 0.03 screenshot; hard failures cap below threshold.",
         },

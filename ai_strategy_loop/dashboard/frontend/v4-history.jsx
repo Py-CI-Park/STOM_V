@@ -1,10 +1,14 @@
 /* v4-history.jsx — V4 "History" 탭: run/gen 아카이브 · Compare · governed 연구 기록.
- *   V2 evolution/records 의 정본(ResearchRecordsPanel + ResearchIndexPage)을 직접 마운트.
- *   V2 규칙 유지: run/gen 재열람·Compare·ResultDetail 은 History 가 단독 소유한다.
+ *   legacy evolution/records 의 정본(ResearchRecordsPanel + ResearchIndexPage)을 직접 마운트.
+ *   규칙 유지: run/gen 재열람·Compare·ResultDetail 은 History 가 단독 소유한다.
+ *   B트랙 승격(2026-07-17): v4.1 조건식 History 트리 + G002 시각화 3종(A/B 쌍대비교·
+ *   셀 히트맵·홀드아웃 퍼널)을 legacy records 탭과 동일 순서로 마운트한다.
  */
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 import { ResearchIndexPage } from "./dashboard-pages.jsx";
+import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
+import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
@@ -48,6 +52,16 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare</h2>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
           <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />
+        </div>
+      </section>
+
+      <section aria-labelledby="v4-history-lineage-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리 · A/B · 셀 히트맵 · 홀드아웃 퍼널</h2>
+        <div data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리와 연구 시각화 영역">
+          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+          <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
+          <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} />
+          <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} />
         </div>
       </section>
 

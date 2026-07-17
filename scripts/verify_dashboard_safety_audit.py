@@ -94,9 +94,9 @@ RUNTIME_FORBIDDEN_PATHS = (
 ALLOWED_WEBSOCKET_PATHS = {"/ws"}
 
 SURFACES = (
-    ("v2_condition", "v2", "/ui/evolution", COMMON_SAFETY_TEXT + ("V3 Preview",)),
-    ("v2_backtest", "v2", "/ui/backtest", COMMON_SAFETY_TEXT + ("백테스트",)),
-    ("v2_chart_replay", "v2", "/ui/chart-replay", COMMON_SAFETY_TEXT + ("차트 리플레이",)),
+    ("v2_condition", "v2", "/ui/evolution?dashboard_version=legacy", COMMON_SAFETY_TEXT + ("V3 Preview",)),
+    ("v2_backtest", "v2", "/ui/backtest?dashboard_version=legacy", COMMON_SAFETY_TEXT + ("백테스트",)),
+    ("v2_chart_replay", "v2", "/ui/chart-replay?dashboard_version=legacy", COMMON_SAFETY_TEXT + ("차트 리플레이",)),
     ("v3_condition", "v3", "/ui/remodel/condition", COMMON_SAFETY_TEXT + ("BEST / WINNER", "승인 전 내보내기 불가")),
     ("v3_audit", "v3", "/ui/remodel/audit", COMMON_SAFETY_TEXT + AUDIT_TEXT),
     ("v3_backtest", "v3", "/ui/remodel/backtest", COMMON_SAFETY_TEXT + ("LIVE READ-ONLY MODE", "/bt/* mutating endpoints are not auto-invoked")),

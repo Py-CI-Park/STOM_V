@@ -75,7 +75,7 @@ def test_phase2_history_owns_result_detail_and_compare() -> None:
     assert "ResearchLabPanel" in app
     assert ") : isIdle ? (" not in app
     assert "조건식 AI 시작 설정 열기" in app
-    assert "STOM AI · V4 조건식 AI 연구 대시보드" in app
+    assert "STOM AI · 조건식 AI 연구 대시보드 (Legacy)" in app
     assert '{ key: "records", label: "히스토리"' in app
 
 def test_app_shell_uses_grouped_nav_and_direct_page_imports() -> None:

@@ -3087,7 +3087,8 @@ def create_app(
             return HTMLResponse("<h1>Dashboard remodel frontend not available</h1>", status_code=503)
 
     def _dashboard_v4_index_response() -> HTMLResponse:
-        # graph-first 프리뷰: frontend/v4.html(window.DashboardV4Shell 마운트). V4 운영 정본과 같은 bundle/app.js 공유.
+        # V4 graph-first 정본(B트랙 승격 2026-07-17): frontend/v4.html(window.DashboardV4Shell 마운트).
+        #   legacy 셸과 같은 bundle/app.js 공유. /ui, /ui/evolution/* 기본 서빙 대상.
         index_path = os.path.join(_FRONTEND_DIR, "v4.html")
         try:
             with open(index_path, encoding="utf-8") as fh:
@@ -3095,7 +3096,7 @@ def create_app(
             response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
-            response.headers["X-STOM-Dashboard-Version"] = "v4-preview"
+            response.headers["X-STOM-Dashboard-Version"] = "v4-ops"
             return response
         except Exception:  # noqa: BLE001
             return HTMLResponse("<h1>Dashboard V4 frontend not available</h1>", status_code=503)
@@ -3103,23 +3104,24 @@ def create_app(
     def _dashboard_version_from_request(request: Request) -> str:
         """Return one-response dashboard version selector; never persist in browser state.
 
-        내부 키는 역사적 이유로 v2(운영 정본)/v3(리모델)/v4(graph-first 프리뷰)를 유지한다.
-        운영 정본 셸은 V4 연구 파이프라인을 운영하므로 응답 헤더는 v4-ops 로 표기한다.
+        내부 키는 역사적 이유로 v2(legacy 셸)/v3(리모델)/v4(graph-first 정본)를 유지한다.
+        B트랙 승격(2026-07-17): 기본값이 v4(graph-first, PR #105 계보)로 전환됐다.
+        legacy 셸은 dashboard_version=legacy(v2/production/ops 별칭)로만 1회 열린다.
         """
         selector = (request.query_params.get("dashboard_version") or "").strip().lower()
         if selector in {"v3", "remodel", "preview"}:
             return "v3"
-        if selector in {"v2", "legacy", "production", "ops", "v4-ops"}:
+        if selector in {"v2", "legacy", "production", "ops"}:
             return "v2"
-        if selector in {"v4", "v4-preview"}:
+        if selector in {"v4", "v4-preview", "v4-ops"}:
             return "v4"
 
         profile = (request.query_params.get("dashboard_profile") or "").strip().lower()
         if profile in {"v3", "remodel", "preview"}:
             return "v3"
-        if profile in {"v4", "v4-preview"}:
-            return "v4"
-        return "v2"
+        if profile in {"v2", "legacy", "production", "ops"}:
+            return "v2"
+        return "v4"
 
     def _dashboard_selected_index_response(request: Request) -> HTMLResponse:
         version = _dashboard_version_from_request(request)
@@ -3128,9 +3130,8 @@ def create_app(
         if version == "v3":
             return _dashboard_remodel_index_response()
         response = _dashboard_index_response()
-        # 정본 셸 리브랜딩(2026-07-17): 셸 라벨 V2 가 V4 파이프라인 운영 실체를 가려
-        #   "아직 v2가 실행된다" 혼동을 만들었다. 운영 정본 헤더는 v4-ops 로 표기한다.
-        response.headers["X-STOM-Dashboard-Version"] = "v4-ops"
+        # legacy 셸(구 V2 계보): 명시 선택으로만 서빙. 헤더로 legacy 임을 표기한다.
+        response.headers["X-STOM-Dashboard-Version"] = "legacy"
         return response
 
     def _redirect_with_query(request: Request, target: str) -> RedirectResponse:
