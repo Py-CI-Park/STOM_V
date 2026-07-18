@@ -27,17 +27,18 @@ import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
-// V4 IA — 좌측 레일 7뷰(승인 프로토타입). 아이콘은 stroke currentColor 인라인 SVG.
+// V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
+//   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
 const V4_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰" },
-  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트" },
-  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색" },
-  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
-  { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "후보 비교 · 명예의 전당" },
-  { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · 안전 게이트" },
-  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (PR #108)" },
-  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능" },
+  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰", group: "primary" },
+  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
+  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
+  { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)", group: "primary" },
+  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)", group: "primary" },
+  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
+  { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · freeze/verdict · export 경계", group: "secondary" },
+  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -299,17 +300,23 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 15 L6 12 L9 13 L13 7 L18 3" stroke="var(--teal)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="18" cy="3" r="1.8" fill="var(--violet)" /></svg>
         </div>
         <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스">
-          {V4_TABS.map(tab => (
-            <button key={tab.key} id={"v4-tab-" + tab.key} role="tab"
-                    aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
-                    tabIndex={activeTab === tab.key ? 0 : -1}
-                    className={"v4-rail-item" + (activeTab === tab.key ? " active" : "")}
-                    onKeyDown={event => onTabKeyDown(event, tab.key)}
-                    onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
-              <V4RailIcon name={tab.key} />
-              <span className="v4-ri-label">{tab.label}</span>
-              <i className="v4-ri-dot"></i>
-            </button>
+          {V4_TABS.map((tab, i) => (
+            <React.Fragment key={tab.key}>
+              {tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && (
+                <div className="v4-rail-div" role="separator" aria-label="보조 도구" title="보조 도구(분석·감사·컨텍스트)"><span>보조</span></div>
+              )}
+              <button id={"v4-tab-" + tab.key} role="tab"
+                      aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
+                      tabIndex={activeTab === tab.key ? 0 : -1}
+                      data-group={tab.group}
+                      className={"v4-rail-item" + (tab.group === "secondary" ? " secondary" : "") + (activeTab === tab.key ? " active" : "")}
+                      onKeyDown={event => onTabKeyDown(event, tab.key)}
+                      onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
+                <V4RailIcon name={tab.key} />
+                <span className="v4-ri-label">{tab.label}</span>
+                <i className="v4-ri-dot"></i>
+              </button>
+            </React.Fragment>
           ))}
         </div>
         <div className="v4-rail-spacer"></div>

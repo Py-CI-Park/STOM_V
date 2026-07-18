@@ -64,6 +64,11 @@
 .v4-rail-item.active { box-shadow: inset 3px 0 0 var(--teal); }
 .v4-rail-item.active .v4-ri-label { color: var(--teal); font-weight: 600; }
 [data-theme="light"] .v4-rail-item.active { box-shadow: inset 3px 0 0 var(--teal); }
+/* UXR-P3 IA: 보조 도구 구획 — primary 6뷰와 시각 분리(사용자 IA 정리) */
+.v4-rail-div { width: 46px; margin: 7px auto 3px; display: flex; align-items: center; justify-content: center; }
+.v4-rail-div span { font-family: var(--mono); font-size: 8px; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; border-top: 1px solid var(--line-1); width: 100%; text-align: center; padding-top: 4px; }
+.v4-rail-item.secondary { opacity: .68; }
+.v4-rail-item.secondary:hover, .v4-rail-item.secondary.active { opacity: 1; }
 .v4-rail-spacer { flex: 1; }
 
 /* ── 워크스페이스 ── */
