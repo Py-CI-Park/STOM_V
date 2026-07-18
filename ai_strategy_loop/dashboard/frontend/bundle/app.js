@@ -35167,6 +35167,41 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Reports });
 
+  // ai_strategy_loop/dashboard/frontend/v4-catalog.jsx
+  var { useState: useState_cat, useEffect: useEffect_cat } = React;
+  function _catVerdictCls(v) {
+    const s = String(v || "");
+    if (/PASS|양성|생존/.test(s)) return "ok";
+    if (/KILL|무가치|기각/.test(s)) return "bad";
+    return "warn";
+  }
+  function V4Catalog({ baseUrl }) {
+    const [summary, setSummary] = useState_cat(null);
+    const [judgments, setJudgments] = useState_cat(null);
+    const [assets, setAssets] = useState_cat(null);
+    const [err, setErr] = useState_cat("");
+    useEffect_cat(() => {
+      if (!baseUrl) return void 0;
+      let cancelled = false;
+      const get3 = (p) => fetch(baseUrl + p, { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+      Promise.all([get3("/research/summary"), get3("/research/judgments"), get3("/research/assets?limit=200")]).then(([s, j, a]) => {
+        if (!cancelled) {
+          setSummary(s);
+          setJudgments(j);
+          setAssets(a);
+        }
+      }).catch((e) => {
+        if (!cancelled) setErr(String(e && e.message ? e.message : e));
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl]);
+    const unavailable = summary && summary.available === false;
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog", "aria-labelledby": "v4-catalog-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-catalog-heading", className: "panel-hd-title" }, "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4) \xB7 \uC77D\uAE30 \uC804\uC6A9"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "research_assets.db SELECT-only \xB7 \uC7AC\uACC4\uC0B0\xB7\uC4F0\uAE30 \uC5C6\uC74C(mode=ro)"), err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), unavailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uCE74\uD0C8\uB85C\uADF8 DB \uC5C6\uC74C \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, summary.hint || "build_research_catalog.py")), summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD310\uC815\uCE74\uB4DC" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD310\uC815\uCE74\uB4DC \xB7 ", judgments.count, "\uAC74"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""))))), assets && assets.available && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC790\uC0B0 \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))));
+  }
+  Object.assign(window, { V4Catalog });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
   var V4_TABS = [
@@ -35178,6 +35213,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30, \uBE44-P4)", group: "primary" },
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D", group: "secondary" },
+    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4)", badge: "P4", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)", group: "secondary" },
     { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
@@ -35253,6 +35289,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (name === "lab") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "11.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "11.5", width: "4", height: "4", rx: "1" }));
     if (name === "workbench") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 14 h7" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "3.5", r: "1.4" }));
     if (name === "reports") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M4 2 h6 l4 4 v10 H4 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M10 2 v4 h4" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 10 h5 M6.5 12.5 h3" }));
+    if (name === "catalog") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("ellipse", { cx: "9", cy: "4", rx: "6", ry: "2.2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 4 V14 C3 15.2 5.7 16 9 16 C12.3 16 15 15.2 15 14 V4" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9 C3 10.2 5.7 11 9 11 C12.3 11 15 10.2 15 9" }));
     if (name === "audit") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 9 L8.3 10.8 L11.5 7" }));
     return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" }));
   }
@@ -35515,7 +35552,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
