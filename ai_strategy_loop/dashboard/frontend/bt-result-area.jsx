@@ -8,7 +8,7 @@
      로 남아 load() 호출 시점에 `ReferenceError: _btFetchJson is not defined` 가 발생한다.
 */
 import {
-  useState_btc, useEffect_btc, useCallback_btc,
+  useState_btc, useRef_btc, useEffect_btc, useCallback_btc,
   _btDateLabel, _btDownloadAnalysisCsv, _useCountUp, _BtArcGauge, _BtSparkline,
 } from "./bt-chart-utils.jsx";
 import { _btFetchJson } from "./bt-tab-utils.jsx";
@@ -36,6 +36,25 @@ const _BT_METRIC_CARDS = [
   { key: "mdd_pct",          label: "MDD",        fmt: (v) => fmtPct(v), risk: true },
   { key: "cagr",             label: "CAGR",       fmt: (v) => fmtPct(v), signed: true },
 ];
+const _BT_SECONDARY_METRICS = [
+  { key: "daily_avg_trades", summaryKey: "avg_trades_per_day", label: "일평균 거래", fmt: (v) => v.toFixed(1) + "회/일" },
+  { key: "seed_capital", label: "필요 자금", fmt: (v) => fmtMoney(v) },
+  { key: "max_hold_count", label: "최대 동시보유", fmt: (v) => fmtInt(v) + "종목" },
+  { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "평균 보유", fmt: (v, timeframe) => v.toFixed(1) + (timeframe === "tick" ? "초" : "분") },
+  { key: "win_count", summaryKey: "win_count", label: "수익 / 손실", pairKey: "loss_count", pairSummaryKey: "loss_count", fmt: (v) => fmtInt(v) + "건" },
+  { key: "avg_profit_pct", summaryKey: "avg_profit_pct", label: "평균 수익률", fmt: (v) => fmtPct(v) },
+  { key: "mdd_amount", summaryKey: "max_drawdown_krw", label: "MDD (원)", fmt: (v) => fmtMoney(v) },
+  { key: "tpi", label: "TPI", fmt: (v) => v.toFixed(2) },
+  { key: "day_count", summaryKey: "trading_days", label: "거래일", fmt: (v) => fmtInt(v) + "일" },
+];
+const _BT_TRADE_DETAIL_COLUMNS = [
+  ["name", "종목명"], ["market_cap", "시가총액"], ["buy_time", "매수시간"],
+  ["sell_time", "매도시간"], ["hold_time", "보유시간"], ["buy_price", "매수가"],
+  ["sell_price", "매도가"], ["buy_amount", "매수금액"], ["sell_amount", "매도금액"],
+  ["profit_pct", "수익률"], ["profit_krw", "수익금"], ["cumulative_profit_krw", "수익금합계"],
+  ["exit_reason", "매도조건"], ["additional_buy_time", "추가매수시간"],
+];
+const _BT_TRADE_DETAIL_LIMIT = 50;
 
 function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
   const [result, setResult] = useState_btc(null);   // /bt/result
@@ -211,6 +230,16 @@ const metricVal = (key) => {
   };
   return map[key];
 };
+const secondaryMetricVal = (key, summaryKey) => {
+  if (typeof metrics[key] === "number" && Number.isFinite(metrics[key])) {
+    return { value: metrics[key] };
+  }
+  if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
+    return { value: summary[summaryKey] };
+  }
+  return { value: null };
+};
+const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
 
 const distribution = analysis.distribution || {};
 const insights = analysis.insights || [];
@@ -278,6 +307,7 @@ return (
           return <_BtMetricCard key={m.key} meta={m} num={num} dailyPnl={dailyPnl} />;
         })}
       </div>
+      <_BtSecondaryMetricStrip metrics={_BT_SECONDARY_METRICS} valueFor={secondaryMetricVal} timeframe={runTimeframe} />
     </div>
 
     {/* A/B 비교 뷰(활성 시 최상단) */}
@@ -299,6 +329,9 @@ return (
 
     {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
     <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+    {result.source_type === "job" && result.mode !== "wfo" && result.mode !== "sweep" && (
+      <BtTradeDetails key={jobId} baseUrl={baseUrl} jobId={jobId} />
+    )}
 
     {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
     <details className="bt-extra-charts" open={false}>
@@ -414,6 +447,104 @@ function _BtFullscreenAnalysis({
   );
 }
 
+function _BtSecondaryMetricStrip({ metrics, valueFor, timeframe }) {
+  return (
+    <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(105px, 1fr))", marginTop: 1 }}>
+      {metrics.map(meta => {
+        const primary = valueFor(meta.key, meta.summaryKey);
+        const paired = meta.pairKey && valueFor(meta.pairKey, meta.pairSummaryKey);
+        const shown = primary.value == null ? "—" : meta.fmt(primary.value, timeframe);
+        const pairShown = paired && (paired.value == null ? "—" : meta.fmt(paired.value, timeframe));
+        return (
+          <div className="summary-cell" key={meta.key} style={{ padding: "7px 10px", minWidth: 0 }}>
+            <span className="summary-lbl">{meta.label}</span>
+            <span className="summary-val mono" style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+              {pairShown ? shown + " / " + pairShown : shown}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+function BtTradeDetails({ baseUrl, jobId }) {
+  const [page, setPage] = useState_btc(null);
+  const [loading, setLoading] = useState_btc(false);
+  const [error, setError] = useState_btc("");
+  const sourceGenerationRef = useRef_btc(0);
+
+  useEffect_btc(() => {
+    sourceGenerationRef.current += 1;
+    setPage(null);
+    setLoading(false);
+    setError("");
+  }, [jobId, baseUrl]);
+
+  const loadPage = useCallback_btc((offset) => {
+    if (!baseUrl || !jobId) return;
+    const generation = sourceGenerationRef.current;
+    setLoading(true);
+    setError("");
+    const url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId)
+      + "&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
+    _btFetchJson(url, 8000)
+      .then((payload) => {
+        if (generation !== sourceGenerationRef.current) return;
+        const details = payload && payload.trade_details;
+        if (!details || !Array.isArray(details.items)) throw new Error("상세 거래를 불러올 수 없습니다");
+        setPage(details);
+      })
+      .catch((fetchError) => {
+        if (generation !== sourceGenerationRef.current) return;
+        setError(String(fetchError));
+      })
+      .finally(() => {
+        if (generation === sourceGenerationRef.current) setLoading(false);
+      });
+  }, [baseUrl, jobId]);
+
+  const onToggle = useCallback_btc((event) => {
+    if (event.currentTarget.open && !page && !loading) loadPage(0);
+  }, [page, loading, loadPage]);
+
+  return (
+    <details className="bt-extra-charts" onToggle={onToggle}>
+      <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
+        ▸ 거래 상세 — 원본 CSV 순서
+      </summary>
+      <div style={{ marginTop: 10, overflowX: "auto" }}>
+        {loading && <div className="research-empty">거래 상세 로딩 중…</div>}
+        {!loading && error && <div className="research-empty" style={{ color: "var(--red)" }}>
+          {error} <button className="btn ghost sm" onClick={() => loadPage((page || {}).offset || 0)}>재시도</button>
+        </div>}
+        {!loading && !error && page && page.items.length === 0 && (
+          <div className="research-empty">{page.status === "missing" ? "상세 거래 CSV를 찾을 수 없습니다." : "표시할 거래가 없습니다."}</div>
+        )}
+        {!loading && !error && page && page.items.length > 0 && (
+          <>
+            <table className="data-table" style={{ minWidth: 1300 }}>
+              <thead><tr>{_BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => <th key={key}>{label}</th>)}</tr></thead>
+              <tbody>{page.items.map((trade, rowIndex) => (
+                <tr key={(trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex}>
+                  {_BT_TRADE_DETAIL_COLUMNS.map(([key]) => <td key={key}>{trade[key] == null ? "—" : String(trade[key])}</td>)}
+                </tr>
+              ))}</tbody>
+            </table>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+              <button className="btn ghost sm" disabled={!page.offset || loading}
+                      onClick={() => loadPage(Math.max(0, page.offset - _BT_TRADE_DETAIL_LIMIT))}>이전</button>
+              <span className="mono" style={{ fontSize: 11 }}>{page.total}건 중 {page.offset + 1}–{page.offset + page.items.length}</span>
+              <button className="btn ghost sm" disabled={!page.has_more || loading}
+                      onClick={() => loadPage(page.next_offset)}>다음</button>
+            </div>
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
 // 메트릭 카드 1개 — 카운트업 숫자 + (승률/MDD 게이지 · 수익금 스파크라인).
 function _BtMetricCard({ meta, num, dailyPnl }) {
   const animated = _useCountUp(num != null ? num : 0, 600);

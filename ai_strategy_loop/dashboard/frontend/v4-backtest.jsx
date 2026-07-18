@@ -25,7 +25,7 @@ function V4Backtest({ baseUrl, wsStatus }) {
         <li>전략 선택</li><li>사전 점검</li><li>실행 또는 취소</li><li>결과 분석</li>
       </ol>
       <p className={"v4-backtest-status " + (connected ? "ready" : "blocked")} role="status" aria-live="polite">
-        {connected ? "실행 준비 · 전략과 기간을 확인하세요" : "연결 확인 필요 · 실행 제어가 비활성화될 수 있습니다"}
+        {connected ? "대시보드 연결됨 · 백테스트 엔진은 실행을 시작할 때 생성됩니다" : "대시보드 연결 확인 필요 · 실행 제어가 비활성화될 수 있습니다"}
       </p>
       <div className="v4-backtest-workspace" role="region" aria-label="백테스트 선택, 실행, 취소 및 결과"
            onClickCapture={_confirmBacktestDanger}>

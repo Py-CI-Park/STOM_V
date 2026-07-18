@@ -88,6 +88,11 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
   const [engines, setEngines] = useState_bt(4);
+  // Official CLI defaults: --start-time 090000, --end-time 152800, --betting 1, --avg-time 60.
+  const [startTime, setStartTime] = useState_bt("090000");
+  const [endTime, setEndTime] = useState_bt("152800");
+  const [betting, setBetting] = useState_bt("1");
+  const [avgTime, setAvgTime] = useState_bt("60");
   // GUI 패리티(F3): 데이터 분류 모드(단일 백테 전용 — optimize/wfo/sweep CLI 는 --divid-mode 미수용).
   //   백엔드 /bt/run 이 이미 divid_mode·one_code 를 파싱(backtest_api.py). 옵션은 cli/subcommands.py 정본.
   const [dividMode, setDividMode] = useState_bt("종목코드별 분류");
@@ -226,6 +231,34 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       setRunErr("기간은 YYYYMMDD 8자리로 입력하세요."); return;
     }
     if (mode === "backtest") {
+      const parseHhmmss = value => {
+        const text = String(value || "").trim();
+        if (!/^\d{6}$/.test(text)) return null;
+        const parsed = Number(text);
+        return Number(text.slice(0, 2)) <= 23 && Number(text.slice(2, 4)) <= 59 && Number(text.slice(4, 6)) <= 59
+          ? parsed : null;
+      };
+      const startTimeValue = parseHhmmss(startTime);
+      const endTimeValue = parseHhmmss(endTime);
+      const bettingValue = String(betting || "").trim();
+      const avgTimeValue = String(avgTime || "").trim();
+      if (startTimeValue == null || endTimeValue == null) {
+        setRunErr("실행 시간은 HHMMSS 6자리로 입력하세요."); return;
+      }
+      if (startTimeValue > endTimeValue) {
+        setRunErr("시작 시간은 종료 시간보다 늦을 수 없습니다."); return;
+      }
+      if (!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(bettingValue) || !(Number(bettingValue) > 0)) {
+        setRunErr("투입금은 0보다 큰 숫자로 입력하세요."); return;
+      }
+      const avgValues = avgTimeValue.split(",").map(value => value.trim());
+      if (!avgValues.length || avgValues.some(value => !/^\d+$/.test(value) || Number(value) <= 0)) {
+        setRunErr("평균 계산 틱은 0보다 큰 정수(여러 값은 쉼표 구분)로 입력하세요."); return;
+      }
+      payload.start_time = startTimeValue;
+      payload.end_time = endTimeValue;
+      payload.betting = bettingValue;
+      payload.avg_time = avgValues.join(",");
       payload.divid_mode = dividMode;
       if (dividMode === "한종목 로딩") {
         const oc = (oneCode || "").trim();
@@ -424,6 +457,30 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
               <input className="input mono" value={oneCode} onChange={e => setOneCode(e.target.value)}
                      placeholder="A005930" spellCheck={false} disabled={isDemo} />
             </div>
+          )}
+          {mode === "backtest" && (
+            <>
+              <div className="field" style={{ minWidth: 92 }}>
+                <label>시작 시간 (HHMMSS)</label>
+                <input className="input mono" value={startTime} onChange={e => setStartTime(e.target.value)}
+                       placeholder="090000" inputMode="numeric" maxLength="6" spellCheck={false} disabled={isDemo} />
+              </div>
+              <div className="field" style={{ minWidth: 92 }}>
+                <label>종료 시간 (HHMMSS)</label>
+                <input className="input mono" value={endTime} onChange={e => setEndTime(e.target.value)}
+                       placeholder="152800" inputMode="numeric" maxLength="6" spellCheck={false} disabled={isDemo} />
+              </div>
+              <div className="field" style={{ minWidth: 76 }}>
+                <label>투입금 (백만원)</label>
+                <input className="input mono" value={betting} onChange={e => setBetting(e.target.value)}
+                       inputMode="decimal" spellCheck={false} disabled={isDemo} />
+              </div>
+              <div className="field" style={{ minWidth: 104 }}>
+                <label>평균 계산 틱</label>
+                <input className="input mono" value={avgTime} onChange={e => setAvgTime(e.target.value)}
+                       placeholder="60" inputMode="numeric" spellCheck={false} disabled={isDemo} />
+              </div>
+            </>
           )}
           {/* 대형 실행 버튼 — 폴드 위 가시성 핵심 */}
           <button className="btn primary" onClick={submit}

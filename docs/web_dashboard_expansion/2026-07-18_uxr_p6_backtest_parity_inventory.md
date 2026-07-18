@@ -33,27 +33,52 @@
 - demo 모드에서 mutation 전면 inert(`if (isDemo) return`).
 - **결론: mutation 경계는 신규 설계 불필요 — 기존 계약 유지.**
 
-## 3. Parity matrix (python GUI ↔ 웹) — 다음 단계 연구
+## 3. 확정 field-level parity matrix (PyQt ↔ 웹)
 
-현 웹 표면은 실행·전략CRUD·equity/분포/지표·GUI parity·portfolio·A/B까지 포함해 광범위하다.
-**진짜 결손 식별은 `ui/`(PyQt 백테스트 화면)·`backtest/`(엔진) 대비 field-level 비교가 선행**돼야 하며, 이는 별도 연구 패스다(추측성 신규 UI 금지).
+대조 기준은 PyQt 일반 백테스트(`ui/set_stg_unified_tap.py`, `ui/ui_button_clicked_editer_unified.py`), 공식 CLI(`cli/config.py`), 기존 웹 `/bt/*` 소유자다. 최적화·GA·BackFinder·WFO·sweep 확장은 V5.3 범위가 아니다.
 
-| 축 | 웹 상태 | GUI 비교 필요 |
-|---|---|---|
-| 실행 스펙(전략·기간·유니버스) | bt-tab-run | 파라미터 완전성 대조 |
-| 진행/취소/job 이력 | bt-tab-run·/bt/jobs | ✓ 존재 |
-| equity·drawdown | bt-equity-charts | 축·기간 해상도 대조 |
-| 분포·거래 통계 | bt-distribution·stat-panels | 지표 항목 대조 |
-| GUI parity 뷰 | bt-gui-parity | **이미 parity 전용 컴포넌트 존재** |
-| portfolio·A/B | bt-tab-analysis | ✓ 존재 |
-| Monte Carlo | bt-result-area | ✓ 존재 |
+| 필드·표면 | PyQt/공식 계약 | 기존 웹 소유자 | 판정 | V5.3 처리 |
+|---|---|---|---|---|
+| 시장군 선택 | PyQt는 주식·코인·선물 화면을 가짐 | 공식 웹 CLI runner는 국내주식 경로 | 해당 없음 | 시장 선택기·브로커 경로를 추가하지 않음 |
+| 일반 백테스트 모드 | 백테스트 버튼 | `POST /bt/run`, `mode=backtest` | 완료 | 기존 경로 유지 |
+| 매수·매도 전략 선택/코드 | PyQt 편집기·DB | `/bt/strategies`, `/bt/strategy*` | 완료 | STRATEGY_WRITE와 수동 저장 유지 |
+| 시작·종료일 | YYYYMMDD | `/bt/run.start/end`, `/bt/data_range` | 완료 | 기존 검증 유지 |
+| 장중 시작·종료시간 | PyQt 매 실행 입력, CLI `--start-time/--end-time` | 기존 run adapter에서 누락 | **결손** | 기존 `/bt/run`→job spec→CLI argv에만 추가 |
+| 종목당 투입금 | PyQt 매 실행 입력, CLI `--betting`(백만원) | 기존 run adapter에서 누락 | **결손** | 양수 검증 후 기존 argv에 추가 |
+| 평균 계산 틱 | PyQt 매 실행 입력, CLI `--avg-time` | 기존 run adapter에서 누락 | **결손** | 양의 정수/쉼표 목록 검증 후 기존 argv에 추가 |
+| tick/min 시간단위 | PyQt 설정에서 유도 | `/bt/run.timeframe` | 완료 | 두 정본 값 유지 |
+| 데이터 분류·한 종목 | 공식 CLI `--divid-mode/--one-code` | `bt-tab-run.jsx`, `/bt/run` | 완료 | `05d8cf0f`에서 보강됨; 재구현하지 않음 |
+| 엔진 수 | PyQt `back_count` | `/bt/run.engines`→CLI `--engines` | 완료 | 1–16 경계 유지 |
+| 상시 엔진 준비/재시작 | PyQt 전용 상주 엔진 | 웹은 실행마다 CLI 엔진 생성 | 해당 없음 | 상주 엔진·준비 endpoint를 만들지 않음 |
+| 실행·취소 | 명시적 사용자 동작 | `/bt/run`, `/bt/job/cancel` | 완료 | demo inert, SAFE_BACKTEST, 취소 확인 유지 |
+| 진행·이력·로그 | PyQt backlog | `/bt/jobs`, `/bt/job`, `/bt/ws_job` | 완료/제한 | 단일 publisher 유지; 연결 상태를 엔진 준비로 과장하지 않음 |
+| 결과 상태·재시도 | 결과/상세 화면 | `/bt/result` | 완료 | loading/error/no-trades를 정상 상태로 유지 |
+| 핵심 6지표 | PyQt 결과 요약 | `BtResultArea` | 완료 | 기존 카드 유지 |
+| 추가 결과 지표 | PyQt 일평균·필요자금·보유·승패·MDD금액·TPI 등 | 서버가 이미 반환하지만 화면 누락 | **결손** | 서버값 우선 compact strip, 결측 `—`, 클라이언트 재계산 금지 |
+| 거래별 상세 | PyQt `columns_bt` 14필드 | CSV는 존재하나 웹 표 없음 | **결손** | 기존 `/bt/result`에만 최대 100행 페이지 envelope와 지연 로드 표 추가 |
+| HTML 보고서 | PyQt 그래프/상세 | `/bt/report` | 완료 | 별도 writer/route 금지 |
+| equity·분포·히트맵·MDD·MAE/MFE·청산 | PyQt PlotShow | 기존 분석 컴포넌트 | 완료 | 기존 서버 분석 재사용 |
+| GUI parity 6그래프 | PyQt 결과 이미지 | `bt-gui-parity.jsx` | 완료 | 기존 결과 재사용 |
+| 지수 비교 | PyQt 외부 지수 선택 가능 | 공식 결과 CSV에 지수 계열 없음 | 해당 없음 | 네트워크/yfinance/합성 데이터 금지 |
+| Monte Carlo·A/B·portfolio | 웹 확장 기능 | 기존 `/bt/analysis/*`, `/bt/compare`, `/bt/portfolio` | 완료 | 범위 확장 없음 |
 
-## 4. 판정
+## 4. 구현 계약과 예산
 
-- P6는 "이식"이 **이미 대부분 완료**된 상태 — 남은 것은 (a) GUI field-level parity 대조로 **미세 결손** 식별, (b) 결손만 보강.
-- 추측성 대규모 재작성은 검토가 명시적으로 경고한 오진단이므로 **하지 않는다.**
-- 다음 실행: `ui/` 백테스트 화면 ↔ 웹 field 대조표 완성 → 확인된 결손 항목만 티켓화 후 보강.
+- 실행 입력 기본값은 공식 CLI와 동일한 `090000`, `152800`, `1`(백만원), `60`이다.
+- 네 입력은 일반 백테스트에서만 기존 `/bt/run`에 포함하며, 같은 조건 재실행에도 보존한다.
+- 결과의 `run_context`는 `start/end/start_time/end_time/timeframe/betting/avg_time/engines/divid_mode/one_code`만 허용한다. DB override나 파일 경로는 노출하지 않는다.
+- 거래 상세는 기존 `/bt/result` 소유자에서만 제공한다. 기본 `detail_limit=0`, 최대 100행, 원본 CSV 순서, 명시적 empty/missing/error 상태를 사용한다.
+- 상세 UI는 접힘 기본·지연 로드·이전/다음·재시도·요청 취소/세대 guard를 갖고, 페이지 이동으로 차트 분석을 다시 계산하지 않는다.
+- 모든 mutation은 명시적 사용자 동작으로만 실행한다. demo inert, capability, exact-Origin/session, body bound, 취소 확인을 약화하지 않는다.
+- `/bt/run-v2`, `/bt/trades`, 별도 report/result store, 상주 엔진, 두 번째 progress publisher를 만들지 않는다.
 
-## 5. 다음(P7 History·Reports)
+## 5. 판정
+
+- **기존 구조:** 유지. 실행·결과·보고·분석 소유권은 이미 올바르다.
+- **확인된 결손:** 실행 입력 4개, 추가 서버 지표 표시, 제한된 거래 상세, 연결/엔진 문구 정직성.
+- **완료 조건:** 위 결손의 focused test, 현재 번들, 실제 브라우저의 수동 실행 경계·결과 상세·반응형 표시 근거가 모두 같은 커밋을 가리켜야 한다.
+- **금지:** 추측성 대규모 이식, 새 실행/결과 경로, 클라이언트 금융 계산, 라이브 브로커·엔진 수명주기 확장.
+
+## 6. 다음(P7 History·Reports)
 
 - History stable identity·join·pagination(§10-10) + Reports 보안 계약(iframe sandbox/CSP/traversal·inline JS 금지, §10-5). P7은 보안 설계가 선행.

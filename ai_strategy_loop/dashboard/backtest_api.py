@@ -19,12 +19,13 @@ import hashlib
 import os
 import re
 import sqlite3
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Annotated, Any, Dict, List, Literal, Optional, Set, TypedDict
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints, model_validator
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard import backtest_report as report
@@ -153,6 +154,7 @@ def _rerun_spec_from_job(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "one_code", "back_db_override", "mode", "param_space", "opt_method", "opt_objective",
         "train_window_days", "test_window_days", "step_days", "sweep_action", "sweep_params",
         "window_days",
+        "start_time", "end_time", "betting", "avg_time",
     }
     return {k: v for k, v in spec.items() if k in allowed and v not in (None, "")}
 
@@ -223,6 +225,34 @@ def _augment_job_listing(payload: Dict[str, Any]) -> Dict[str, Any]:
     out["count"] = len(out["jobs"])
     return out
 
+_DETAIL_RUN_CONTEXT_KEYS = (
+    "start", "end", "start_time", "end_time", "timeframe", "betting", "avg_time",
+    "engines", "divid_mode", "one_code",
+)
+
+
+def _job_run_context(record: Dict[str, Any]) -> Dict[str, Any]:
+    spec = record.get("spec") or {}
+    return {key: spec[key] for key in _DETAIL_RUN_CONTEXT_KEYS if key in spec}
+
+
+def _trade_detail_envelope(
+    trades: List[Dict[str, Any]], offset: int, limit: int, status: str
+) -> Dict[str, Any]:
+    total = len(trades)
+    items = trades[offset:offset + limit]
+    next_offset = offset + len(items)
+    return {
+        "items": items,
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "next_offset": next_offset if next_offset < total else None,
+        "has_more": next_offset < total,
+        "status": status,
+    }
+
+
 def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict[str, Any]:
     out = dict(payload)
     enriched = _augment_job_payload(record)
@@ -231,6 +261,7 @@ def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict
         "openable", "recoverable", "open_actions", "rerun_spec",
     ):
         out[key] = enriched.get(key)
+    out["run_context"] = _job_run_context(record)
     return out
 
 def _run_condition_identity(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -286,6 +317,25 @@ class SweepSpecPayload(_MutationPayload):
     max: int | float
     step: int | float
 
+def _is_hhmmss(value: int) -> bool:
+    if not (0 <= value <= 235_959):
+        return False
+    text = f"{value:06d}"
+    return int(text[:2]) <= 23 and int(text[2:4]) <= 59 and int(text[4:]) <= 59
+
+
+def _is_positive_betting(value: str) -> bool:
+    try:
+        amount = Decimal(value)
+    except InvalidOperation:
+        return False
+    return amount.is_finite() and amount > 0
+
+
+def _is_positive_avg_time(value: str) -> bool:
+    values = [part.strip() for part in value.split(",")]
+    return bool(values) and all(part.isdigit() and int(part) > 0 for part in values)
+
 
 class BacktestRunPayload(_MutationPayload):
     buy: StrategyName
@@ -299,6 +349,10 @@ class BacktestRunPayload(_MutationPayload):
     one_code: ShortText | None = None
     back_db_override: PathText | None = None
     mode: Literal["backtest", "optimize", "wfo", "sweep"] = "backtest"
+    start_time: int = Field(default=90_000, ge=0, le=235_959)
+    end_time: int = Field(default=152_800, ge=0, le=235_959)
+    betting: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)] = "1"
+    avg_time: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)] = "60"
     param_space: PathText | None = None
     opt_method: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)] = "grid"
     opt_objective: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=32)] = "tpi"
@@ -309,6 +363,20 @@ class BacktestRunPayload(_MutationPayload):
     sweep_params: PathText | None = None
     sweep_spec: list[SweepSpecPayload] | None = Field(default=None, max_length=8)
     window_days: int = Field(default=0, ge=0, le=3_650)
+
+    @model_validator(mode="after")
+    def validate_ordinary_run_fields(self) -> "BacktestRunPayload":
+        if self.mode != "backtest":
+            return self
+        if not _is_hhmmss(self.start_time) or not _is_hhmmss(self.end_time):
+            raise ValueError("start_time/end_time must be valid HHMMSS values.")
+        if self.start_time > self.end_time:
+            raise ValueError("start_time must not be later than end_time.")
+        if not _is_positive_betting(self.betting):
+            raise ValueError("betting must be a positive finite number.")
+        if not _is_positive_avg_time(self.avg_time):
+            raise ValueError("avg_time must be a comma-separated list of positive integers.")
+        return self
 
 
 class JobIdPayload(_MutationPayload):
@@ -1208,6 +1276,10 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
         sweep_action=payload.sweep_action,
         sweep_params=sweep_params,
         window_days=payload.window_days,
+        start_time=payload.start_time,
+        end_time=payload.end_time,
+        betting=payload.betting,
+        avg_time=payload.avg_time,
     )
     return get_job_manager().submit(spec)
 
@@ -1259,6 +1331,8 @@ def get_result(
     run_id: str = "",
     gen_no: Optional[int] = None,
     demo: int = 0,
+    detail_limit: Annotated[int, Query(ge=0, le=100)] = 0,
+    detail_offset: Annotated[int, Query(ge=0)] = 0,
 ) -> Dict[str, Any]:
     """완료 잡 또는 진화 세대의 metrics + 분석 전체 묶음. 없음이면 available=False.
 
@@ -1296,17 +1370,42 @@ def get_result(
         }, record)
     # no_trades 는 csv_path 없이 정상 종결 — 빈 분석 구조를 반환한다.
     if status == "no_trades":
-        return _augment_job_result({
+        payload = {
             "available": True,
             "job_id": job_id,
             "status": status,
             "metrics": None,
             "analysis": analysis.full_analysis(None),
             "message": record.get("message", ""),
-        }, record)
-    bundle = analysis.full_analysis(csv_path, t_start, t_end)
+        }
+        if detail_limit:
+            payload["trade_details"] = _trade_detail_envelope([], detail_offset, detail_limit, "no_trades")
+        return _augment_job_result(payload, record)
+    # Detail paging is deliberately restricted to immutable successful ordinary-job CSVs.
+    csv_file = _resolve_artifact_path(csv_path)
+    if detail_limit and (status != "success" or csv_file is None):
+        bundle = analysis.full_analysis(None)
+        detail_status = "missing" if status == "success" else "unavailable"
+        payload = {
+            "available": True,
+            "job_id": job_id,
+            "status": status,
+            "metrics": bundle["summary"] if (t_start is not None or t_end is not None) else record.get("metrics"),
+            "analysis": bundle,
+            "ranged": t_start is not None or t_end is not None,
+            "trade_details": _trade_detail_envelope([], detail_offset, detail_limit, detail_status),
+        }
+        return _augment_job_result(payload, record)
+
+    # A detail request must parse the immutable CSV once and reuse that source order for
+    # both charts and the requested page. Normal chart requests retain existing behavior.
+    trades = analysis.load_trades_csv(csv_file) if detail_limit else None
+    bundle = (
+        analysis.full_analysis_from_trades(analysis.filter_trades(trades or [], t_start, t_end))
+        if detail_limit else analysis.full_analysis(csv_path, t_start, t_end)
+    )
     ranged = t_start is not None or t_end is not None
-    return _augment_job_result({
+    payload = {
         "available": True,
         "job_id": job_id,
         "status": status,
@@ -1314,7 +1413,12 @@ def get_result(
         "metrics": bundle["summary"] if ranged else record.get("metrics"),
         "analysis": bundle,
         "ranged": ranged,
-    }, record)
+    }
+    if detail_limit:
+        payload["trade_details"] = _trade_detail_envelope(
+            trades or [], detail_offset, detail_limit, "ok" if trades else "empty"
+        )
+    return _augment_job_result(payload, record)
 
 
 def _analysis_for_job(

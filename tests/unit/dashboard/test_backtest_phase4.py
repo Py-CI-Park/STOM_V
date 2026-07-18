@@ -30,6 +30,7 @@ from ai_strategy_loop.dashboard.backtest_jobs import (  # noqa: E402
     BacktestJobSpec,
     default_command_builder,
 )
+from ai_strategy_loop.dashboard.backtest_api import BacktestRunPayload, _rerun_spec_from_job  # noqa: E402
 from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
@@ -158,6 +159,38 @@ def test_command_builder_backtest_default():
     assert "optimize" not in cmd
     assert "--buy" in cmd and "--quiet" in cmd
 
+
+def test_ordinary_run_cli_fields_defaults_validation_argv_and_rerun():
+    payload = BacktestRunPayload(
+        buy="테스트매수", sell="테스트매도", start=20250407, end=20250409,
+    )
+    assert (payload.start_time, payload.end_time, payload.betting, payload.avg_time) == (90000, 152800, "1", "60")
+
+    for values in (
+        {"start_time": 126000},
+        {"start_time": 152801, "end_time": 152800},
+        {"betting": "0"},
+        {"avg_time": "0"},
+    ):
+        with pytest.raises(ValueError):
+            BacktestRunPayload(
+                buy="테스트매수", sell="테스트매도", start=20250407, end=20250409, **values,
+            )
+
+    spec = _spec(start_time=90102, end_time=152801, betting="2.5", avg_time="60,120")
+    cmd = default_command_builder(spec)
+    assert cmd[2:] == [
+        "--buy", "테스트매수", "--sell", "테스트매도", "--start", "20250407", "--end", "20250409",
+        "--timeframe", "min", "--divid-mode", "종목코드별 분류",
+        "--start-time", "90102", "--end-time", "152801", "--betting", "2.5", "--avg-time", "60,120",
+        "--engines", "4", "--timeout", "600", "--format", "json", "--quiet",
+    ]
+
+    rerun = _rerun_spec_from_job({"spec": spec.__dict__})
+    assert rerun is not None
+    assert {key: rerun[key] for key in ("start_time", "end_time", "betting", "avg_time")} == {
+        "start_time": 90102, "end_time": 152801, "betting": "2.5", "avg_time": "60,120",
+    }
 
 def test_command_builder_optimize():
     cmd = default_command_builder(_spec(mode="optimize", param_space="_database/ps.json", opt_method="random"))

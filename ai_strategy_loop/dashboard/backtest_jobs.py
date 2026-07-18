@@ -62,6 +62,11 @@ class BacktestJobSpec:
     engines: int = 4
     timeout: int = 600
     divid_mode: str = "종목코드별 분류"
+    # CLI standard 단일 백테스트 시간·투입금·평균 계산 설정(--start-time/--end-time/--betting/--avg-time).
+    start_time: int = 90_000
+    end_time: int = 152_800
+    betting: str = "1"
+    avg_time: str = "60"
     one_code: Optional[str] = None
     # 스모크/서브셋 백테용: 절대 경로를 주면 STOM_CLI_DB_STOCK_BACK_TICK/MIN 으로 주입된다.
     back_db_override: Optional[str] = None
@@ -252,9 +257,15 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
         "--end", str(spec.end),
         "--timeframe", spec.timeframe,
         "--divid-mode", spec.divid_mode,
+        "--start-time", str(spec.start_time),
+        "--end-time", str(spec.end_time),
+        "--betting", spec.betting,
+        "--avg-time", spec.avg_time,
         "--engines", str(spec.engines),
         "--timeout", str(spec.timeout),
         "--format", "json",
+        # stom_backtest.py always prints the final JSON (lines 106-112); keep --quiet
+        # to prevent engine chatter from complicating the manager's terminal JSON parse.
         "--quiet",
     ]
     if spec.one_code:

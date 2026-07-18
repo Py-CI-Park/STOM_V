@@ -25291,6 +25291,34 @@ def signal_sell(pos, bar, ind):
     { key: "mdd_pct", label: "MDD", fmt: (v) => fmtPct(v), risk: true },
     { key: "cagr", label: "CAGR", fmt: (v) => fmtPct(v), signed: true }
   ];
+  var _BT_SECONDARY_METRICS = [
+    { key: "daily_avg_trades", summaryKey: "avg_trades_per_day", label: "\uC77C\uD3C9\uADE0 \uAC70\uB798", fmt: (v) => v.toFixed(1) + "\uD68C/\uC77C" },
+    { key: "seed_capital", label: "\uD544\uC694 \uC790\uAE08", fmt: (v) => fmtMoney(v) },
+    { key: "max_hold_count", label: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720", fmt: (v) => fmtInt(v) + "\uC885\uBAA9" },
+    { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "\uD3C9\uADE0 \uBCF4\uC720", fmt: (v, timeframe) => v.toFixed(1) + (timeframe === "tick" ? "\uCD08" : "\uBD84") },
+    { key: "win_count", summaryKey: "win_count", label: "\uC218\uC775 / \uC190\uC2E4", pairKey: "loss_count", pairSummaryKey: "loss_count", fmt: (v) => fmtInt(v) + "\uAC74" },
+    { key: "avg_profit_pct", summaryKey: "avg_profit_pct", label: "\uD3C9\uADE0 \uC218\uC775\uB960", fmt: (v) => fmtPct(v) },
+    { key: "mdd_amount", summaryKey: "max_drawdown_krw", label: "MDD (\uC6D0)", fmt: (v) => fmtMoney(v) },
+    { key: "tpi", label: "TPI", fmt: (v) => v.toFixed(2) },
+    { key: "day_count", summaryKey: "trading_days", label: "\uAC70\uB798\uC77C", fmt: (v) => fmtInt(v) + "\uC77C" }
+  ];
+  var _BT_TRADE_DETAIL_COLUMNS = [
+    ["name", "\uC885\uBAA9\uBA85"],
+    ["market_cap", "\uC2DC\uAC00\uCD1D\uC561"],
+    ["buy_time", "\uB9E4\uC218\uC2DC\uAC04"],
+    ["sell_time", "\uB9E4\uB3C4\uC2DC\uAC04"],
+    ["hold_time", "\uBCF4\uC720\uC2DC\uAC04"],
+    ["buy_price", "\uB9E4\uC218\uAC00"],
+    ["sell_price", "\uB9E4\uB3C4\uAC00"],
+    ["buy_amount", "\uB9E4\uC218\uAE08\uC561"],
+    ["sell_amount", "\uB9E4\uB3C4\uAE08\uC561"],
+    ["profit_pct", "\uC218\uC775\uB960"],
+    ["profit_krw", "\uC218\uC775\uAE08"],
+    ["cumulative_profit_krw", "\uC218\uC775\uAE08\uD569\uACC4"],
+    ["exit_reason", "\uB9E4\uB3C4\uC870\uAC74"],
+    ["additional_buy_time", "\uCD94\uAC00\uB9E4\uC218\uC2DC\uAC04"]
+  ];
+  var _BT_TRADE_DETAIL_LIMIT = 50;
   function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
     const [result, setResult] = useState_btc(null);
     const [loading, setLoading] = useState_btc(false);
@@ -25441,6 +25469,16 @@ def signal_sell(pos, bar, ind):
       };
       return map[key];
     };
+    const secondaryMetricVal = (key, summaryKey) => {
+      if (typeof metrics[key] === "number" && Number.isFinite(metrics[key])) {
+        return { value: metrics[key] };
+      }
+      if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
+        return { value: summary[summaryKey] };
+      }
+      return { value: null };
+    };
+    const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
     const distribution = analysis.distribution || {};
     const insights = analysis.insights || [];
     const topC = distribution.top_contributors || [];
@@ -25500,7 +25538,7 @@ def signal_sell(pos, bar, ind):
       const v = metricVal(m.key);
       const num = typeof v === "number" ? v : null;
       return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
-    }))), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement(_BtSecondaryMetricStrip, { metrics: _BT_SECONDARY_METRICS, valueFor: secondaryMetricVal, timeframe: runTimeframe })), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
       BtEquityChart,
       {
         equity: analysis.equity,
@@ -25508,7 +25546,7 @@ def signal_sell(pos, bar, ind):
         brushActive: !!range,
         onBrushClear
       }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), result.source_type === "job" && result.mode !== "wfo" && result.mode !== "sweep" && /* @__PURE__ */ React.createElement(BtTradeDetails, { key: jobId, baseUrl, jobId }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
       _BtFullscreenAnalysis,
       {
         analysis,
@@ -25575,6 +25613,65 @@ def signal_sell(pos, bar, ind):
         onBrushClear
       }
     )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
+  }
+  function _BtSecondaryMetricStrip({ metrics, valueFor, timeframe }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(auto-fit, minmax(105px, 1fr))", marginTop: 1 } }, metrics.map((meta) => {
+      const primary = valueFor(meta.key, meta.summaryKey);
+      const paired = meta.pairKey && valueFor(meta.pairKey, meta.pairSummaryKey);
+      const shown = primary.value == null ? "\u2014" : meta.fmt(primary.value, timeframe);
+      const pairShown = paired && (paired.value == null ? "\u2014" : meta.fmt(paired.value, timeframe));
+      return /* @__PURE__ */ React.createElement("div", { className: "summary-cell", key: meta.key, style: { padding: "7px 10px", minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val mono", style: { fontSize: 12, whiteSpace: "nowrap" } }, pairShown ? shown + " / " + pairShown : shown));
+    }));
+  }
+  function BtTradeDetails({ baseUrl, jobId }) {
+    const [page, setPage] = useState_btc(null);
+    const [loading, setLoading] = useState_btc(false);
+    const [error, setError] = useState_btc("");
+    const sourceGenerationRef = useRef_btc(0);
+    useEffect_btc(() => {
+      sourceGenerationRef.current += 1;
+      setPage(null);
+      setLoading(false);
+      setError("");
+    }, [jobId, baseUrl]);
+    const loadPage = useCallback_btc((offset) => {
+      if (!baseUrl || !jobId) return;
+      const generation = sourceGenerationRef.current;
+      setLoading(true);
+      setError("");
+      const url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId) + "&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
+      _btFetchJson(url, 8e3).then((payload) => {
+        if (generation !== sourceGenerationRef.current) return;
+        const details = payload && payload.trade_details;
+        if (!details || !Array.isArray(details.items)) throw new Error("\uC0C1\uC138 \uAC70\uB798\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
+        setPage(details);
+      }).catch((fetchError) => {
+        if (generation !== sourceGenerationRef.current) return;
+        setError(String(fetchError));
+      }).finally(() => {
+        if (generation === sourceGenerationRef.current) setLoading(false);
+      });
+    }, [baseUrl, jobId]);
+    const onToggle = useCallback_btc((event) => {
+      if (event.currentTarget.open && !page && !loading) loadPage(0);
+    }, [page, loading, loadPage]);
+    return /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", onToggle }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10, overflowX: "auto" } }, loading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAC70\uB798 \uC0C1\uC138 \uB85C\uB529 \uC911\u2026"), !loading && error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, error, " ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage((page || {}).offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, page.status === "missing" ? "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."), !loading && !error && page && page.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: { minWidth: 1300 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, _BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => /* @__PURE__ */ React.createElement("th", { key }, label)))), /* @__PURE__ */ React.createElement("tbody", null, page.items.map((trade, rowIndex) => /* @__PURE__ */ React.createElement("tr", { key: (trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex }, _BT_TRADE_DETAIL_COLUMNS.map(([key]) => /* @__PURE__ */ React.createElement("td", { key }, trade[key] == null ? "\u2014" : String(trade[key]))))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 8 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        disabled: !page.offset || loading,
+        onClick: () => loadPage(Math.max(0, page.offset - _BT_TRADE_DETAIL_LIMIT))
+      },
+      "\uC774\uC804"
+    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, page.total, "\uAC74 \uC911 ", page.offset + 1, "\u2013", page.offset + page.items.length), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        disabled: !page.has_more || loading,
+        onClick: () => loadPage(page.next_offset)
+      },
+      "\uB2E4\uC74C"
+    )))));
   }
   function _BtMetricCard({ meta, num, dailyPnl }) {
     const animated = _useCountUp(num != null ? num : 0, 600);
@@ -26064,6 +26161,10 @@ def signal_sell(pos, bar, ind):
     const [end, setEnd] = useState_bt("");
     const [timeframe, setTimeframe] = useState_bt("min");
     const [engines, setEngines] = useState_bt(4);
+    const [startTime, setStartTime] = useState_bt("090000");
+    const [endTime, setEndTime] = useState_bt("152800");
+    const [betting, setBetting] = useState_bt("1");
+    const [avgTime, setAvgTime] = useState_bt("60");
     const [dividMode, setDividMode] = useState_bt("\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958");
     const [oneCode, setOneCode] = useState_bt("");
     const [mode, setMode] = useState_bt("backtest");
@@ -26216,6 +26317,37 @@ def signal_sell(pos, bar, ind):
         return;
       }
       if (mode === "backtest") {
+        const parseHhmmss = (value) => {
+          const text = String(value || "").trim();
+          if (!/^\d{6}$/.test(text)) return null;
+          const parsed = Number(text);
+          return Number(text.slice(0, 2)) <= 23 && Number(text.slice(2, 4)) <= 59 && Number(text.slice(4, 6)) <= 59 ? parsed : null;
+        };
+        const startTimeValue = parseHhmmss(startTime);
+        const endTimeValue = parseHhmmss(endTime);
+        const bettingValue = String(betting || "").trim();
+        const avgTimeValue = String(avgTime || "").trim();
+        if (startTimeValue == null || endTimeValue == null) {
+          setRunErr("\uC2E4\uD589 \uC2DC\uAC04\uC740 HHMMSS 6\uC790\uB9AC\uB85C \uC785\uB825\uD558\uC138\uC694.");
+          return;
+        }
+        if (startTimeValue > endTimeValue) {
+          setRunErr("\uC2DC\uC791 \uC2DC\uAC04\uC740 \uC885\uB8CC \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+          return;
+        }
+        if (!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(bettingValue) || !(Number(bettingValue) > 0)) {
+          setRunErr("\uD22C\uC785\uAE08\uC740 0\uBCF4\uB2E4 \uD070 \uC22B\uC790\uB85C \uC785\uB825\uD558\uC138\uC694.");
+          return;
+        }
+        const avgValues = avgTimeValue.split(",").map((value) => value.trim());
+        if (!avgValues.length || avgValues.some((value) => !/^\d+$/.test(value) || Number(value) <= 0)) {
+          setRunErr("\uD3C9\uADE0 \uACC4\uC0B0 \uD2F1\uC740 0\uBCF4\uB2E4 \uD070 \uC815\uC218(\uC5EC\uB7EC \uAC12\uC740 \uC27C\uD45C \uAD6C\uBD84)\uB85C \uC785\uB825\uD558\uC138\uC694.");
+          return;
+        }
+        payload.start_time = startTimeValue;
+        payload.end_time = endTimeValue;
+        payload.betting = bettingValue;
+        payload.avg_time = avgValues.join(",");
         payload.divid_mode = dividMode;
         if (dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529") {
           const oc = (oneCode || "").trim();
@@ -26405,7 +26537,52 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement(
+    )), mode === "backtest" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uC791 \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: startTime,
+        onChange: (e) => setStartTime(e.target.value),
+        placeholder: "090000",
+        inputMode: "numeric",
+        maxLength: "6",
+        spellCheck: false,
+        disabled: isDemo
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uB8CC \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: endTime,
+        onChange: (e) => setEndTime(e.target.value),
+        placeholder: "152800",
+        inputMode: "numeric",
+        maxLength: "6",
+        spellCheck: false,
+        disabled: isDemo
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", null, "\uD22C\uC785\uAE08 (\uBC31\uB9CC\uC6D0)"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: betting,
+        onChange: (e) => setBetting(e.target.value),
+        inputMode: "decimal",
+        spellCheck: false,
+        disabled: isDemo
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 104 } }, /* @__PURE__ */ React.createElement("label", null, "\uD3C9\uADE0 \uACC4\uC0B0 \uD2F1"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: avgTime,
+        onChange: (e) => setAvgTime(e.target.value),
+        placeholder: "60",
+        inputMode: "numeric",
+        spellCheck: false,
+        disabled: isDemo
+      }
+    ))), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn primary",
@@ -34933,7 +35110,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function V4Backtest({ baseUrl, wsStatus }) {
     const connected = wsStatus === "open" || wsStatus === "connected";
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-backtest", "aria-labelledby": "v4-backtest-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-backtest-heading", className: "panel-hd-title" }, "Backtest \xB7 \uC804\uB7B5 \uAC80\uC99D"), /* @__PURE__ */ React.createElement("ol", { className: "v4-backtest-journey", "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("li", null, "\uC804\uB7B5 \uC120\uD0DD"), /* @__PURE__ */ React.createElement("li", null, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("li", null, "\uC2E4\uD589 \uB610\uB294 \uCDE8\uC18C"), /* @__PURE__ */ React.createElement("li", null, "\uACB0\uACFC \uBD84\uC11D")), /* @__PURE__ */ React.createElement("p", { className: "v4-backtest-status " + (connected ? "ready" : "blocked"), role: "status", "aria-live": "polite" }, connected ? "\uC2E4\uD589 \uC900\uBE44 \xB7 \uC804\uB7B5\uACFC \uAE30\uAC04\uC744 \uD655\uC778\uD558\uC138\uC694" : "\uC5F0\uACB0 \uD655\uC778 \uD544\uC694 \xB7 \uC2E4\uD589 \uC81C\uC5B4\uAC00 \uBE44\uD65C\uC131\uD654\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-backtest", "aria-labelledby": "v4-backtest-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-backtest-heading", className: "panel-hd-title" }, "Backtest \xB7 \uC804\uB7B5 \uAC80\uC99D"), /* @__PURE__ */ React.createElement("ol", { className: "v4-backtest-journey", "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("li", null, "\uC804\uB7B5 \uC120\uD0DD"), /* @__PURE__ */ React.createElement("li", null, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("li", null, "\uC2E4\uD589 \uB610\uB294 \uCDE8\uC18C"), /* @__PURE__ */ React.createElement("li", null, "\uACB0\uACFC \uBD84\uC11D")), /* @__PURE__ */ React.createElement("p", { className: "v4-backtest-status " + (connected ? "ready" : "blocked"), role: "status", "aria-live": "polite" }, connected ? "\uB300\uC2DC\uBCF4\uB4DC \uC5F0\uACB0\uB428 \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC740 \uC2E4\uD589\uC744 \uC2DC\uC791\uD560 \uB54C \uC0DD\uC131\uB429\uB2C8\uB2E4" : "\uB300\uC2DC\uBCF4\uB4DC \uC5F0\uACB0 \uD655\uC778 \uD544\uC694 \xB7 \uC2E4\uD589 \uC81C\uC5B4\uAC00 \uBE44\uD65C\uC131\uD654\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "v4-backtest-workspace",

@@ -160,3 +160,83 @@ def test_demo_result_exposes_phase1_additive_fields(monkeypatch):
     assert result['status_kind'] == 'success'
     assert result['open_actions'] == ['open_result']
     assert result['rerun_spec'] is None
+class _ResultManager:
+    def __init__(self, record):
+        self.record = record
+
+    def get(self, job_id, log_tail=0):
+        return dict(self.record, available=job_id == self.record["job_id"])
+
+
+def test_result_trade_detail_page_preserves_columns_bounds_and_context(monkeypatch, tmp_path: Path):
+    csv_path = tmp_path / "result.csv"
+    csv_path.write_text(
+        "종목명,시가총액,매수시간,매도시간,보유시간,매수가,매도가,매수금액,매도금액,수익률,수익금,수익금합계,매도조건,추가매수시간\n"
+        "알파,1000,202501010900,202501010930,30,10,12,100,120,20,20,20,익절,202501010910\n"
+        "베타,,202501011000,202501011030,,20,18,,,,-10,10,손절,\n",
+        encoding="utf-8",
+    )
+    record = {
+        "job_id": "job_detail",
+        "status": "success",
+        "csv_path": str(csv_path),
+        "metrics": {},
+        "spec": {
+            "start": 20250101, "end": 20250102, "timeframe": "tick", "engines": 2,
+            "betting": "1000000", "secret_path": str(tmp_path), "buy_code": "hidden",
+        },
+    }
+    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(record))
+
+    default = backtest_api.get_result(job_id="job_detail")
+    assert "trade_details" not in default
+    assert set(default["run_context"]) == {"start", "end", "timeframe", "engines", "betting"}
+
+    detail = backtest_api.get_result(job_id="job_detail", detail_limit=100, detail_offset=0)
+    page = detail["trade_details"]
+    assert page["status"] == "ok"
+    assert page["total"] == 2 and page["limit"] == 100
+    assert page["next_offset"] is None and page["has_more"] is False
+    assert list(page["items"][0])[:14] == [
+        "name", "market_cap", "buy_time", "sell_time", "day", "hold_min", "hold_time",
+        "buy_price", "sell_price", "profit_pct", "profit_krw", "cumulative_profit_krw",
+        "additional_buy_time", "buy_amount",
+    ]
+    assert page["items"][0]["name"] == "알파"
+    assert page["items"][0]["market_cap"] == 1000.0
+    assert page["items"][0]["additional_buy_time"] == "202501010910"
+    assert page["items"][1]["hold_time"] is None
+    assert page["items"][1]["buy_amount"] is None
+    assert str(csv_path) not in json.dumps(detail, ensure_ascii=False)
+
+    boundary = backtest_api._trade_detail_envelope(page["items"], offset=1, limit=1, status="ok")
+    assert [item["name"] for item in boundary["items"]] == ["베타"]
+    assert boundary["next_offset"] is None and boundary["has_more"] is False
+
+
+def test_result_trade_detail_empty_missing_and_frontend_lazy_markers(monkeypatch, tmp_path: Path):
+    missing = tmp_path / "missing.csv"
+    record = {
+        "job_id": "job_missing_detail",
+        "status": "success",
+        "csv_path": str(missing),
+        "metrics": {},
+        "spec": {"start": 20250101, "end": 20250102, "timeframe": "min"},
+    }
+    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(record))
+    page = backtest_api.get_result(job_id="job_missing_detail", detail_limit=50)["trade_details"]
+    assert page == {
+        "items": [], "total": 0, "offset": 0, "limit": 50, "next_offset": None,
+        "has_more": False, "status": "missing",
+    }
+
+    no_trades = dict(record, job_id="job_empty_detail", status="no_trades", csv_path=None)
+    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(no_trades))
+    empty = backtest_api.get_result(job_id="job_empty_detail", detail_limit=50)["trade_details"]
+    assert empty["status"] == "no_trades" and empty["items"] == []
+
+    frontend = (Path(PROJECT_ROOT) / "ai_strategy_loop/dashboard/frontend/bt-result-area.jsx").read_text(encoding="utf-8")
+    assert "<details" in frontend and "onToggle={onToggle}" in frontend
+    assert "detail_limit=" in frontend and "_BT_TRADE_DETAIL_LIMIT = 50" in frontend
+    assert "sourceGenerationRef" in frontend and "generation !== sourceGenerationRef.current" in frontend
+    assert "run_context || {}).timeframe" in frontend

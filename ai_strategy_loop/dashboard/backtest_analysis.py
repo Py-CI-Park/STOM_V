@@ -42,6 +42,11 @@ COL_SELL_AMOUNT = "매도금액"
 COL_MFE = "R_MFE"
 COL_MAE = "R_MAE"
 COL_EXIT_REASON = "매도조건"
+COL_MARKET_CAP = "시가총액"
+COL_BUY_PRICE = "매수가"
+COL_SELL_PRICE = "매도가"
+COL_CUMULATIVE_PROFIT_KRW = "수익금합계"
+COL_ADDITIONAL_BUY_TIME = "추가매수시간"
 # 오더플로우(2단계 C) — 진입 시점 호가/체결 스냅샷(per-trade CSV 에 존재).
 COL_OF_STRENGTH = "B_체결강도"      # 체결강도(매수세 우위 지표).
 COL_OF_BUY_REST = "B_매수총잔량"    # 매수 총 잔량(호가).
@@ -122,12 +127,19 @@ def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return None
     return {
         "name": str(row.get(COL_NAME, "") or "").strip(),
+        "market_cap": _opt_float(row.get(COL_MARKET_CAP)),
         "buy_time": str(row.get(COL_BUY_TIME, "") or "").strip(),
         "sell_time": raw_sell,
         "day": day,
+        # Existing analysis fields retain their zero-default semantics.
         "hold_min": _safe_float(row.get(COL_HOLD_MIN)),
+        "hold_time": _opt_float(row.get(COL_HOLD_MIN)),
+        "buy_price": _opt_float(row.get(COL_BUY_PRICE)),
+        "sell_price": _opt_float(row.get(COL_SELL_PRICE)),
         "profit_pct": _safe_float(row.get(COL_PROFIT_PCT)),
         "profit_krw": profit_krw,
+        "cumulative_profit_krw": _opt_float(row.get(COL_CUMULATIVE_PROFIT_KRW)),
+        "additional_buy_time": str(row.get(COL_ADDITIONAL_BUY_TIME, "") or "").strip(),
         # 진입/청산 체결금액(원) — 보유금액 곡선용. 결측이면 None(소비측이 결측 행 제외).
         "buy_amount": _opt_float(row.get(COL_BUY_AMOUNT)),
         "sell_amount": _opt_float(row.get(COL_SELL_AMOUNT)),
@@ -1687,6 +1699,11 @@ def full_analysis(
     (수익곡선 브러시 → 구간 분석). 빈 구간이어도 무예외(빈 분석 구조).
     """
     trades = filter_trades(load_trades_csv(csv_path), t_start, t_end)
+    return full_analysis_from_trades(trades)
+
+
+def full_analysis_from_trades(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """이미 로드된 거래로 분석 묶음을 만든다(요청당 CSV 단일 로드용)."""
     summary = summary_metrics(trades)
     distribution = pnl_distribution(trades)
     heatmap = time_heatmap(trades)
