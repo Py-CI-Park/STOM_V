@@ -40,7 +40,7 @@ const _BT_SECONDARY_METRICS = [
   { key: "daily_avg_trades", summaryKey: "avg_trades_per_day", label: "일평균 거래", fmt: (v) => v.toFixed(1) + "회/일" },
   { key: "seed_capital", label: "필요 자금", fmt: (v) => fmtMoney(v) },
   { key: "max_hold_count", label: "최대 동시보유", fmt: (v) => fmtInt(v) + "종목" },
-  { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "평균 보유", fmt: (v, timeframe) => v.toFixed(1) + (timeframe === "tick" ? "초" : "분") },
+  { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "평균 보유", fmt: (v, unit) => v.toFixed(1) + (unit || "분") },
   { key: "win_count", summaryKey: "win_count", label: "수익 / 손실", pairKey: "loss_count", pairSummaryKey: "loss_count", fmt: (v) => fmtInt(v) + "건" },
   { key: "avg_profit_pct", summaryKey: "avg_profit_pct", label: "평균 수익률", fmt: (v) => fmtPct(v) },
   { key: "mdd_amount", summaryKey: "max_drawdown_krw", label: "MDD (원)", fmt: (v) => fmtMoney(v) },
@@ -60,6 +60,8 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const [result, setResult] = useState_btc(null);   // /bt/result
   const [loading, setLoading] = useState_btc(false);
   const [err, setErr] = useState_btc("");
+  const resultGenerationRef = useRef_btc(0);
+  const resultRequestAbortRef = useRef_btc(null);
   // 브러시 구간 분석 — {t_start,t_end} 또는 null(전체). 진화 세대(evoSource)는 미지원.
   const [range, setRange] = useState_btc(null);
   // 몬테카를로(지연 계산) — {data, loading}.
@@ -86,10 +88,40 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
   const hasSource = !!jobId || isEvo;
   const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+  useEffect_btc(() => {
+    resultGenerationRef.current += 1;
+    if (resultRequestAbortRef.current) {
+      const controller = resultRequestAbortRef.current;
+      resultRequestAbortRef.current = null;
+      controller.abort();
+    }
+    setResult(null);
+    setLoading(false);
+    setErr("");
+    return () => {
+      resultGenerationRef.current += 1;
+      if (resultRequestAbortRef.current) {
+        const controller = resultRequestAbortRef.current;
+        resultRequestAbortRef.current = null;
+        controller.abort();
+      }
+    };
+  }, [baseUrl, isDemo, sourceKey]);
+
 
   const load = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !hasSource) { setResult(null); return; }
-    setLoading(true); setErr("");
+    if (isDemo || !baseUrl || !hasSource) {
+      setResult(null);
+      setLoading(false);
+      return;
+    }
+    if (resultRequestAbortRef.current) resultRequestAbortRef.current.abort();
+    const controller = new AbortController();
+    resultRequestAbortRef.current = controller;
+    const generation = resultGenerationRef.current + 1;
+    resultGenerationRef.current = generation;
+    setLoading(true);
+    setErr("");
     let url;
     if (jobId) {
       url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
@@ -98,10 +130,23 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id)
           + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
     }
-    _btFetchJson(url, 8000)
-      .then(j => { setResult(j); if (!(j && j.available)) setErr("결과를 찾을 수 없습니다"); })
-      .catch(e => { setResult(null); setErr(String(e)); })
-      .finally(() => setLoading(false));
+    _btFetchJson(url, 8000, controller.signal)
+      .then(j => {
+        if (generation !== resultGenerationRef.current) return;
+        setResult(j);
+        if (!(j && j.available)) setErr("결과를 찾을 수 없습니다");
+      })
+      .catch(fetchError => {
+        if (generation !== resultGenerationRef.current || (fetchError && fetchError.name === "AbortError")) return;
+        setResult(null);
+        setErr(String(fetchError));
+      })
+      .finally(() => {
+        if (resultRequestAbortRef.current === controller) {
+          resultRequestAbortRef.current = null;
+          if (generation === resultGenerationRef.current) setLoading(false);
+        }
+      });
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
   // 몬테카를로 재계산(현재 구간 반영). 잡 전용 — 진화 세대는 스킵. 무예외.
@@ -230,16 +275,22 @@ const metricVal = (key) => {
   };
   return map[key];
 };
+const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
 const secondaryMetricVal = (key, summaryKey) => {
   if (typeof metrics[key] === "number" && Number.isFinite(metrics[key])) {
-    return { value: metrics[key] };
+    return {
+      value: metrics[key],
+      unit: key === "avg_hold_time" ? (runTimeframe === "tick" ? "초" : "분") : null,
+    };
   }
   if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
-    return { value: summary[summaryKey] };
+    return {
+      value: summary[summaryKey],
+      unit: key === "avg_hold_time" && summaryKey === "avg_hold_min" ? "분" : null,
+    };
   }
-  return { value: null };
+  return { value: null, unit: null };
 };
-const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
 
 const distribution = analysis.distribution || {};
 const insights = analysis.insights || [];
@@ -307,7 +358,7 @@ return (
           return <_BtMetricCard key={m.key} meta={m} num={num} dailyPnl={dailyPnl} />;
         })}
       </div>
-      <_BtSecondaryMetricStrip metrics={_BT_SECONDARY_METRICS} valueFor={secondaryMetricVal} timeframe={runTimeframe} />
+      <_BtSecondaryMetricStrip metrics={_BT_SECONDARY_METRICS} valueFor={secondaryMetricVal} />
     </div>
 
     {/* A/B 비교 뷰(활성 시 최상단) */}
@@ -447,14 +498,14 @@ function _BtFullscreenAnalysis({
   );
 }
 
-function _BtSecondaryMetricStrip({ metrics, valueFor, timeframe }) {
+function _BtSecondaryMetricStrip({ metrics, valueFor }) {
   return (
     <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(105px, 1fr))", marginTop: 1 }}>
       {metrics.map(meta => {
         const primary = valueFor(meta.key, meta.summaryKey);
         const paired = meta.pairKey && valueFor(meta.pairKey, meta.pairSummaryKey);
-        const shown = primary.value == null ? "—" : meta.fmt(primary.value, timeframe);
-        const pairShown = paired && (paired.value == null ? "—" : meta.fmt(paired.value, timeframe));
+        const shown = primary.value == null ? "—" : meta.fmt(primary.value, primary.unit);
+        const pairShown = paired && (paired.value == null ? "—" : meta.fmt(paired.value, paired.unit));
         return (
           <div className="summary-cell" key={meta.key} style={{ padding: "7px 10px", minWidth: 0 }}>
             <span className="summary-lbl">{meta.label}</span>
@@ -542,12 +593,12 @@ function BtTradeDetails({ baseUrl, jobId }) {
         ▸ 거래 상세 — 원본 CSV 순서
       </summary>
       <div style={{ marginTop: 10, overflowX: "auto" }}>
-        {loading && <div className="research-empty">거래 상세 로딩 중…</div>}
-        {!loading && error && <div className="research-empty" style={{ color: "var(--red)" }}>
+        {loading && <div className="research-empty" role="status" aria-live="polite">거래 상세 로딩 중…</div>}
+        {!loading && error && <div className="research-empty" style={{ color: "var(--red)" }} role="alert">
           {error} <button className="btn ghost sm" onClick={() => loadPage((page || {}).offset || 0)}>재시도</button>
         </div>}
         {!loading && !error && page && page.items.length === 0 && (
-          <div className="research-empty" style={{ color: page.status === "error" ? "var(--red)" : undefined }}>
+          <div className="research-empty" role={page.status === "error" ? "alert" : "status"} aria-live="polite" style={{ color: page.status === "error" ? "var(--red)" : undefined }}>
             {page.status === "error"
               ? (page.diagnostic || "상세 거래 CSV를 읽을 수 없습니다.")
               : page.status === "missing"
@@ -560,8 +611,9 @@ function BtTradeDetails({ baseUrl, jobId }) {
         )}
         {!loading && !error && page && page.items.length > 0 && (
           <>
-            <table className="data-table" style={{ minWidth: 1300 }}>
-              <thead><tr>{_BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => <th key={key}>{label}</th>)}</tr></thead>
+            <table className="data-table" aria-label="거래 상세 목록" style={{ minWidth: 1300 }}>
+              <caption>거래 상세 — 원본 CSV 순서</caption>
+              <thead><tr>{_BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => <th key={key} scope="col">{label}</th>)}</tr></thead>
               <tbody>{page.items.map((trade, rowIndex) => (
                 <tr key={(trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex}>
                   {_BT_TRADE_DETAIL_COLUMNS.map(([key]) => <td key={key}>{trade[key] == null ? "—" : String(trade[key])}</td>)}

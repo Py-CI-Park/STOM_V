@@ -366,3 +366,17 @@ def test_result_detail_only_distinguishes_empty_missing_and_errors(monkeypatch, 
     assert "sourceGenerationRef" in frontend and "generation !== sourceGenerationRef.current" in frontend
     assert "controller.abort()" in frontend and "requestAbortRef.current = null" in frontend
     assert "run_context || {}).timeframe" in frontend
+    primary_loader = frontend.split("const load = useCallback_btc", 1)[1].split("const loadMc", 1)[0]
+    assert "resultRequestAbortRef" in frontend and "resultGenerationRef" in frontend
+    assert "resultRequestAbortRef.current.abort()" in primary_loader
+    assert "_btFetchJson(url, 8000, controller.signal)" in primary_loader
+    assert primary_loader.count("generation !== resultGenerationRef.current") == 2
+    assert "generation === resultGenerationRef.current" in primary_loader
+    assert "unit: key === \"avg_hold_time\" ? (runTimeframe === \"tick\" ? \"초\" : \"분\") : null" in frontend
+    assert "summaryKey === \"avg_hold_min\" ? \"분\" : null" in frontend
+    assert "fmt: (v, unit) => v.toFixed(1) + (unit || \"분\")" in frontend
+    assert 'role="status" aria-live="polite">거래 상세 로딩 중…' in frontend
+    assert 'role="alert"' in frontend
+    assert 'aria-label="거래 상세 목록"' in frontend
+    assert "<caption>거래 상세 — 원본 CSV 순서</caption>" in frontend
+    assert '<th key={key} scope="col">{label}</th>' in frontend

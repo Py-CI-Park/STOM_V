@@ -461,23 +461,23 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           {mode === "backtest" && (
             <>
               <div className="field" style={{ minWidth: 92 }}>
-                <label>시작 시간 (HHMMSS)</label>
-                <input className="input mono" value={startTime} onChange={e => setStartTime(e.target.value)}
+                <label htmlFor="bt-start-time">시작 시간 (HHMMSS)</label>
+                <input id="bt-start-time" className="input mono" value={startTime} onChange={e => setStartTime(e.target.value)}
                        placeholder="090000" inputMode="numeric" maxLength="6" spellCheck={false} disabled={isDemo} />
               </div>
               <div className="field" style={{ minWidth: 92 }}>
-                <label>종료 시간 (HHMMSS)</label>
-                <input className="input mono" value={endTime} onChange={e => setEndTime(e.target.value)}
+                <label htmlFor="bt-end-time">종료 시간 (HHMMSS)</label>
+                <input id="bt-end-time" className="input mono" value={endTime} onChange={e => setEndTime(e.target.value)}
                        placeholder="152800" inputMode="numeric" maxLength="6" spellCheck={false} disabled={isDemo} />
               </div>
               <div className="field" style={{ minWidth: 76 }}>
-                <label>투입금 (백만원)</label>
-                <input className="input mono" value={betting} onChange={e => setBetting(e.target.value)}
+                <label htmlFor="bt-betting">투입금 (백만원)</label>
+                <input id="bt-betting" className="input mono" value={betting} onChange={e => setBetting(e.target.value)}
                        inputMode="decimal" spellCheck={false} disabled={isDemo} />
               </div>
               <div className="field" style={{ minWidth: 104 }}>
-                <label>평균 계산 틱</label>
-                <input className="input mono" value={avgTime} onChange={e => setAvgTime(e.target.value)}
+                <label htmlFor="bt-avg-time">평균 계산 틱</label>
+                <input id="bt-avg-time" className="input mono" value={avgTime} onChange={e => setAvgTime(e.target.value)}
                        placeholder="60" inputMode="numeric" spellCheck={false} disabled={isDemo} />
               </div>
             </>

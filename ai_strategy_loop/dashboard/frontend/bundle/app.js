@@ -25297,7 +25297,7 @@ def signal_sell(pos, bar, ind):
     { key: "daily_avg_trades", summaryKey: "avg_trades_per_day", label: "\uC77C\uD3C9\uADE0 \uAC70\uB798", fmt: (v) => v.toFixed(1) + "\uD68C/\uC77C" },
     { key: "seed_capital", label: "\uD544\uC694 \uC790\uAE08", fmt: (v) => fmtMoney(v) },
     { key: "max_hold_count", label: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720", fmt: (v) => fmtInt(v) + "\uC885\uBAA9" },
-    { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "\uD3C9\uADE0 \uBCF4\uC720", fmt: (v, timeframe) => v.toFixed(1) + (timeframe === "tick" ? "\uCD08" : "\uBD84") },
+    { key: "avg_hold_time", summaryKey: "avg_hold_min", label: "\uD3C9\uADE0 \uBCF4\uC720", fmt: (v, unit) => v.toFixed(1) + (unit || "\uBD84") },
     { key: "win_count", summaryKey: "win_count", label: "\uC218\uC775 / \uC190\uC2E4", pairKey: "loss_count", pairSummaryKey: "loss_count", fmt: (v) => fmtInt(v) + "\uAC74" },
     { key: "avg_profit_pct", summaryKey: "avg_profit_pct", label: "\uD3C9\uADE0 \uC218\uC775\uB960", fmt: (v) => fmtPct(v) },
     { key: "mdd_amount", summaryKey: "max_drawdown_krw", label: "MDD (\uC6D0)", fmt: (v) => fmtMoney(v) },
@@ -25325,6 +25325,8 @@ def signal_sell(pos, bar, ind):
     const [result, setResult] = useState_btc(null);
     const [loading, setLoading] = useState_btc(false);
     const [err, setErr] = useState_btc("");
+    const resultGenerationRef = useRef_btc(0);
+    const resultRequestAbortRef = useRef_btc(null);
     const [range, setRange] = useState_btc(null);
     const [mc, setMc] = useState_btc(null);
     const [mcLoading, setMcLoading] = useState_btc(false);
@@ -25345,11 +25347,36 @@ def signal_sell(pos, bar, ind):
     const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
     const hasSource = !!jobId || isEvo;
     const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+    useEffect_btc(() => {
+      resultGenerationRef.current += 1;
+      if (resultRequestAbortRef.current) {
+        const controller = resultRequestAbortRef.current;
+        resultRequestAbortRef.current = null;
+        controller.abort();
+      }
+      setResult(null);
+      setLoading(false);
+      setErr("");
+      return () => {
+        resultGenerationRef.current += 1;
+        if (resultRequestAbortRef.current) {
+          const controller = resultRequestAbortRef.current;
+          resultRequestAbortRef.current = null;
+          controller.abort();
+        }
+      };
+    }, [baseUrl, isDemo, sourceKey]);
     const load = useCallback_btc(() => {
       if (isDemo || !baseUrl || !hasSource) {
         setResult(null);
+        setLoading(false);
         return;
       }
+      if (resultRequestAbortRef.current) resultRequestAbortRef.current.abort();
+      const controller = new AbortController();
+      resultRequestAbortRef.current = controller;
+      const generation = resultGenerationRef.current + 1;
+      resultGenerationRef.current = generation;
       setLoading(true);
       setErr("");
       let url;
@@ -25361,13 +25388,20 @@ def signal_sell(pos, bar, ind):
       } else {
         url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
       }
-      _btFetchJson(url, 8e3).then((j) => {
+      _btFetchJson(url, 8e3, controller.signal).then((j) => {
+        if (generation !== resultGenerationRef.current) return;
         setResult(j);
         if (!(j && j.available)) setErr("\uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
-      }).catch((e) => {
+      }).catch((fetchError) => {
+        if (generation !== resultGenerationRef.current || fetchError && fetchError.name === "AbortError") return;
         setResult(null);
-        setErr(String(e));
-      }).finally(() => setLoading(false));
+        setErr(String(fetchError));
+      }).finally(() => {
+        if (resultRequestAbortRef.current === controller) {
+          resultRequestAbortRef.current = null;
+          if (generation === resultGenerationRef.current) setLoading(false);
+        }
+      });
     }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
     const loadMc = useCallback_btc(() => {
       if (isDemo || !baseUrl || !jobId) {
@@ -25471,16 +25505,22 @@ def signal_sell(pos, bar, ind):
       };
       return map[key];
     };
+    const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
     const secondaryMetricVal = (key, summaryKey) => {
       if (typeof metrics[key] === "number" && Number.isFinite(metrics[key])) {
-        return { value: metrics[key] };
+        return {
+          value: metrics[key],
+          unit: key === "avg_hold_time" ? runTimeframe === "tick" ? "\uCD08" : "\uBD84" : null
+        };
       }
       if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
-        return { value: summary[summaryKey] };
+        return {
+          value: summary[summaryKey],
+          unit: key === "avg_hold_time" && summaryKey === "avg_hold_min" ? "\uBD84" : null
+        };
       }
-      return { value: null };
+      return { value: null, unit: null };
     };
-    const runTimeframe = ((result.run_context || {}).timeframe || "").toLowerCase();
     const distribution = analysis.distribution || {};
     const insights = analysis.insights || [];
     const topC = distribution.top_contributors || [];
@@ -25540,7 +25580,7 @@ def signal_sell(pos, bar, ind):
       const v = metricVal(m.key);
       const num = typeof v === "number" ? v : null;
       return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
-    })), /* @__PURE__ */ React.createElement(_BtSecondaryMetricStrip, { metrics: _BT_SECONDARY_METRICS, valueFor: secondaryMetricVal, timeframe: runTimeframe })), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement(_BtSecondaryMetricStrip, { metrics: _BT_SECONDARY_METRICS, valueFor: secondaryMetricVal })), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
       BtEquityChart,
       {
         equity: analysis.equity,
@@ -25616,12 +25656,12 @@ def signal_sell(pos, bar, ind):
       }
     )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
   }
-  function _BtSecondaryMetricStrip({ metrics, valueFor, timeframe }) {
+  function _BtSecondaryMetricStrip({ metrics, valueFor }) {
     return /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(auto-fit, minmax(105px, 1fr))", marginTop: 1 } }, metrics.map((meta) => {
       const primary = valueFor(meta.key, meta.summaryKey);
       const paired = meta.pairKey && valueFor(meta.pairKey, meta.pairSummaryKey);
-      const shown = primary.value == null ? "\u2014" : meta.fmt(primary.value, timeframe);
-      const pairShown = paired && (paired.value == null ? "\u2014" : meta.fmt(paired.value, timeframe));
+      const shown = primary.value == null ? "\u2014" : meta.fmt(primary.value, primary.unit);
+      const pairShown = paired && (paired.value == null ? "\u2014" : meta.fmt(paired.value, paired.unit));
       return /* @__PURE__ */ React.createElement("div", { className: "summary-cell", key: meta.key, style: { padding: "7px 10px", minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val mono", style: { fontSize: 12, whiteSpace: "nowrap" } }, pairShown ? shown + " / " + pairShown : shown));
     }));
   }
@@ -25684,7 +25724,7 @@ def signal_sell(pos, bar, ind):
         setLoading(false);
       }
     }, [page, loading, loadPage]);
-    return /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", onToggle }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10, overflowX: "auto" } }, loading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAC70\uB798 \uC0C1\uC138 \uB85C\uB529 \uC911\u2026"), !loading && error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, error, " ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage((page || {}).offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: page.status === "error" ? "var(--red)" : void 0 } }, page.status === "error" ? page.diagnostic || "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "missing" ? "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "unavailable" ? "\uC644\uB8CC\uB41C \uC77C\uBC18 \uBC31\uD14C\uC2A4\uD2B8\uC5D0\uC11C\uB9CC \uAC70\uB798 \uC0C1\uC138\uB97C \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.", page.status === "error" && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage(page.offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: { minWidth: 1300 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, _BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => /* @__PURE__ */ React.createElement("th", { key }, label)))), /* @__PURE__ */ React.createElement("tbody", null, page.items.map((trade, rowIndex) => /* @__PURE__ */ React.createElement("tr", { key: (trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex }, _BT_TRADE_DETAIL_COLUMNS.map(([key]) => /* @__PURE__ */ React.createElement("td", { key }, trade[key] == null ? "\u2014" : String(trade[key]))))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 8 } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", onToggle }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10, overflowX: "auto" } }, loading && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status", "aria-live": "polite" }, "\uAC70\uB798 \uC0C1\uC138 \uB85C\uB529 \uC911\u2026"), !loading && error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" }, role: "alert" }, error, " ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage((page || {}).offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: page.status === "error" ? "alert" : "status", "aria-live": "polite", style: { color: page.status === "error" ? "var(--red)" : void 0 } }, page.status === "error" ? page.diagnostic || "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "missing" ? "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "unavailable" ? "\uC644\uB8CC\uB41C \uC77C\uBC18 \uBC31\uD14C\uC2A4\uD2B8\uC5D0\uC11C\uB9CC \uAC70\uB798 \uC0C1\uC138\uB97C \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.", page.status === "error" && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage(page.offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("table", { className: "data-table", "aria-label": "\uAC70\uB798 \uC0C1\uC138 \uBAA9\uB85D", style: { minWidth: 1300 } }, /* @__PURE__ */ React.createElement("caption", null, "\uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, _BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => /* @__PURE__ */ React.createElement("th", { key, scope: "col" }, label)))), /* @__PURE__ */ React.createElement("tbody", null, page.items.map((trade, rowIndex) => /* @__PURE__ */ React.createElement("tr", { key: (trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex }, _BT_TRADE_DETAIL_COLUMNS.map(([key]) => /* @__PURE__ */ React.createElement("td", { key }, trade[key] == null ? "\u2014" : String(trade[key]))))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 8 } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn ghost sm",
@@ -26566,9 +26606,10 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), mode === "backtest" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uC791 \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
+    )), mode === "backtest" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "bt-start-time" }, "\uC2DC\uC791 \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
       "input",
       {
+        id: "bt-start-time",
         className: "input mono",
         value: startTime,
         onChange: (e) => setStartTime(e.target.value),
@@ -26578,9 +26619,10 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uB8CC \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 92 } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "bt-end-time" }, "\uC885\uB8CC \uC2DC\uAC04 (HHMMSS)"), /* @__PURE__ */ React.createElement(
       "input",
       {
+        id: "bt-end-time",
         className: "input mono",
         value: endTime,
         onChange: (e) => setEndTime(e.target.value),
@@ -26590,9 +26632,10 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", null, "\uD22C\uC785\uAE08 (\uBC31\uB9CC\uC6D0)"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "bt-betting" }, "\uD22C\uC785\uAE08 (\uBC31\uB9CC\uC6D0)"), /* @__PURE__ */ React.createElement(
       "input",
       {
+        id: "bt-betting",
         className: "input mono",
         value: betting,
         onChange: (e) => setBetting(e.target.value),
@@ -26600,9 +26643,10 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 104 } }, /* @__PURE__ */ React.createElement("label", null, "\uD3C9\uADE0 \uACC4\uC0B0 \uD2F1"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 104 } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "bt-avg-time" }, "\uD3C9\uADE0 \uACC4\uC0B0 \uD2F1"), /* @__PURE__ */ React.createElement(
       "input",
       {
+        id: "bt-avg-time",
         className: "input mono",
         value: avgTime,
         onChange: (e) => setAvgTime(e.target.value),

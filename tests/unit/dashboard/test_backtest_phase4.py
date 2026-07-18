@@ -407,3 +407,16 @@ def test_strategy_library_routes_report_db_lookup_failures(client: TestClient, m
     assert one_body["status"] == "error"
     assert one_body["reason"] == "strategy_db_unavailable"
     assert "전략 DB 조회 실패" in one_body["message"]
+def test_ordinary_run_inputs_have_stable_accessible_names():
+    frontend = (
+        Path(PROJECT_ROOT) / "ai_strategy_loop/dashboard/frontend/bt-tab-run.jsx"
+    ).read_text(encoding="utf-8")
+
+    for input_id, label in (
+        ("bt-start-time", "시작 시간 (HHMMSS)"),
+        ("bt-end-time", "종료 시간 (HHMMSS)"),
+        ("bt-betting", "투입금 (백만원)"),
+        ("bt-avg-time", "평균 계산 틱"),
+    ):
+        assert f'<label htmlFor="{input_id}">{label}</label>' in frontend
+        assert f'<input id="{input_id}"' in frontend
