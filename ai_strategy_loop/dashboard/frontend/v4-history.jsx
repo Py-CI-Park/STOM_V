@@ -9,6 +9,8 @@ import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 import { ResearchIndexPage } from "./dashboard-pages.jsx";
 import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
+import { AuditDecisionTrace } from "./v4-audit.jsx";
+import { VerdictPanel } from "./dashboard-pages.jsx";
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
@@ -69,6 +71,17 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
         <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거</h2>
         <div data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역">
           <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} />
+        </div>
+      </section>
+
+      <section aria-labelledby="v4-history-gov-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 · 승급/Export 경계</h2>
+        <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
+          append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
+        </p>
+        <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
+          <AuditDecisionTrace baseUrl={baseUrl} />
+          <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
         </div>
       </section>
     </div>

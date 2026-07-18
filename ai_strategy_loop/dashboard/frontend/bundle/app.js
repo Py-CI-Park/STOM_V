@@ -34764,11 +34764,77 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Replay });
 
+  // ai_strategy_loop/dashboard/frontend/v4-audit.jsx
+  var { useEffect: useEffect_va, useState: useState_va } = React;
+  var V4_SAFETY_TILES = [
+    ["\uC2E4\uAC70\uB798/\uC8FC\uBB38 \uAE30\uB2A5 \uC5C6\uC74C", "No Live Order"],
+    ["\uBE0C\uB85C\uCEE4 \uB85C\uADF8\uC778 \uC5C6\uC74C", "No Broker Login"],
+    ["\uACC4\uC88C/\uC790\uC0B0 \uC5F0\uB3D9 \uC5C6\uC74C", "No Account Trading"],
+    ["\uC5F0\uAD6C \uC804\uC6A9", "Research Only"],
+    ["Human Approval Gate", "\uC2B9\uC778 \uD6C4 Export"],
+    ["Append-Only Audit", "\uBD88\uBCC0 \uAC10\uC0AC \uB85C\uADF8"]
+  ];
+  function auditDecisionMatches(decision, query, verdict) {
+    const selectedVerdict = String(verdict || "all").toLocaleLowerCase();
+    const decisionVerdict = String(decision.verdict || "").toLocaleLowerCase();
+    if (selectedVerdict !== "all" && decisionVerdict !== selectedVerdict) return false;
+    const needle = String(query || "").trim().toLocaleLowerCase();
+    if (!needle) return true;
+    const candidate = decision.candidate || {};
+    return [
+      decision.ts,
+      decision.verdict,
+      decision.note,
+      decision.status,
+      decision.provenance,
+      decision.blocker,
+      candidate.buy_name,
+      candidate.sell_name,
+      candidate.run_id,
+      candidate.gen_no,
+      candidate.status,
+      candidate.source,
+      candidate.blocker
+    ].some((value) => String(value != null ? value : "").toLocaleLowerCase().includes(needle));
+  }
+  function AuditDecisionTrace({ baseUrl }) {
+    const [decisions, setDecisions] = useState_va([]);
+    const [loading, setLoading] = useState_va(true);
+    const [error, setError] = useState_va("");
+    const [query, setQuery] = useState_va("");
+    const [verdict, setVerdict] = useState_va("all");
+    useEffect_va(() => {
+      const base = String(baseUrl || "").replace(/\/+$/, "");
+      setLoading(true);
+      setError("");
+      fetch(base + "/decisions", { signal: AbortSignal.timeout(8e3) }).then((response) => response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))).then((payload) => setDecisions(Array.isArray(payload == null ? void 0 : payload.decisions) ? payload.decisions : [])).catch((reason) => setError(String(reason))).finally(() => setLoading(false));
+    }, [baseUrl]);
+    const visible = decisions.filter((decision) => auditDecisionMatches(decision, query, verdict));
+    return /* @__PURE__ */ React.createElement("section", { className: "panel v4-audit-trace", "aria-labelledby": "v4-audit-trace-title" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-audit-trace-title", className: "panel-hd-title" }, "\uACB0\uC815 \uCD94\uC801"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "append-only \xB7 ", decisions.length, " records")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("fieldset", { className: "v4-audit-filters" }, /* @__PURE__ */ React.createElement("legend", null, "\uACB0\uC815 \uAE30\uB85D \uD544\uD130"), /* @__PURE__ */ React.createElement("label", null, "\uCD94\uC801 \uAC80\uC0C9", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: query,
+        onChange: (event) => setQuery(event.target.value),
+        placeholder: "run, generation, \uC804\uB7B5, \uADFC\uAC70"
+      }
+    )), /* @__PURE__ */ React.createElement("label", null, "\uACB0\uC815 \uC0C1\uD0DC", /* @__PURE__ */ React.createElement("select", { value: verdict, onChange: (event) => setVerdict(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "\uC804\uCCB4"), /* @__PURE__ */ React.createElement("option", { value: "promote" }, "promote"), /* @__PURE__ */ React.createElement("option", { value: "complement" }, "complement"), /* @__PURE__ */ React.createElement("option", { value: "hold" }, "hold"), /* @__PURE__ */ React.createElement("option", { value: "reject" }, "reject")))), loading ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uAC10\uC0AC \uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.") : null, error ? /* @__PURE__ */ React.createElement("p", { role: "alert" }, "\uAC10\uC0AC \uAE30\uB85D \uB85C\uB4DC \uC2E4\uD328: ", error) : null, !loading && !error && decisions.length === 0 ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uC544\uC9C1 append-only \uACB0\uC815 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : null, !loading && !error && decisions.length > 0 && visible.length === 0 ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uD604\uC7AC \uD544\uD130\uC640 \uC77C\uCE58\uD558\uB294 \uACB0\uC815 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : null, !loading && !error && visible.length > 0 ? /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: "0", "aria-label": "\uD544\uD130\uB41C \uACB0\uC815 \uCD94\uC801 \uD45C" }, /* @__PURE__ */ React.createElement("table", { className: "mono" }, /* @__PURE__ */ React.createElement("caption", null, "\uD544\uD130 \uACB0\uACFC ", visible.length, "\uAC74. \uD589\uC744 \uD3BC\uCE58\uBA74 provenance, status, blocker\uB97C \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC2DC\uAC01"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uACB0\uC815"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uB300\uC0C1"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uCD94\uC801 \uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, visible.slice().reverse().map((decision, index2) => {
+      const candidate = decision.candidate || {};
+      const provenance = decision.provenance || candidate.source || "\uC11C\uBC84 \uBBF8\uC81C\uACF5";
+      const status = decision.status || candidate.status || "\uC11C\uBC84 \uBBF8\uC81C\uACF5";
+      const blocker = decision.blocker || candidate.blocker || "\uAE30\uB85D \uC5C6\uC74C";
+      return /* @__PURE__ */ React.createElement("tr", { key: `${decision.ts || "unknown"}-${index2}` }, /* @__PURE__ */ React.createElement("td", null, decision.ts ? new Date(decision.ts * 1e3).toLocaleString("ko-KR") : "\uC2DC\uAC01 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, decision.verdict || "\uACB0\uC815 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, candidate.buy_name || candidate.sell_name || "\uB300\uC0C1 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "decision trace"), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("dt", null, "provenance"), /* @__PURE__ */ React.createElement("dd", null, provenance), /* @__PURE__ */ React.createElement("dt", null, "status"), /* @__PURE__ */ React.createElement("dd", null, status), /* @__PURE__ */ React.createElement("dt", null, "blocker"), /* @__PURE__ */ React.createElement("dd", null, blocker), /* @__PURE__ */ React.createElement("dt", null, "evidence"), /* @__PURE__ */ React.createElement("dd", null, decision.note || "\uADFC\uAC70 \uBA54\uBAA8 \uC5C6\uC74C")))));
+    })))) : null));
+  }
+  function V4Audit({ baseUrl, onNavigate }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-audit" }, /* @__PURE__ */ React.createElement("section", { className: "v4-safety-strip", "data-safety-boundary": "v4-research-only" }, V4_SAFETY_TILES.map(([title, detail]) => /* @__PURE__ */ React.createElement("div", { key: title, className: "v4-safety-tile" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, detail)))), /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }));
+  }
+  Object.assign(window, { V4Audit, AuditDecisionTrace });
+
   // ai_strategy_loop/dashboard/frontend/v4-history.jsx
   function V4History({ baseUrl, wsStatus, onNavigate }) {
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
     const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))));
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
   }
   Object.assign(window, { V4History });
 
@@ -34935,72 +35001,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Workbench });
 
-  // ai_strategy_loop/dashboard/frontend/v4-audit.jsx
-  var { useEffect: useEffect_va, useState: useState_va } = React;
-  var V4_SAFETY_TILES = [
-    ["\uC2E4\uAC70\uB798/\uC8FC\uBB38 \uAE30\uB2A5 \uC5C6\uC74C", "No Live Order"],
-    ["\uBE0C\uB85C\uCEE4 \uB85C\uADF8\uC778 \uC5C6\uC74C", "No Broker Login"],
-    ["\uACC4\uC88C/\uC790\uC0B0 \uC5F0\uB3D9 \uC5C6\uC74C", "No Account Trading"],
-    ["\uC5F0\uAD6C \uC804\uC6A9", "Research Only"],
-    ["Human Approval Gate", "\uC2B9\uC778 \uD6C4 Export"],
-    ["Append-Only Audit", "\uBD88\uBCC0 \uAC10\uC0AC \uB85C\uADF8"]
-  ];
-  function auditDecisionMatches(decision, query, verdict) {
-    const selectedVerdict = String(verdict || "all").toLocaleLowerCase();
-    const decisionVerdict = String(decision.verdict || "").toLocaleLowerCase();
-    if (selectedVerdict !== "all" && decisionVerdict !== selectedVerdict) return false;
-    const needle = String(query || "").trim().toLocaleLowerCase();
-    if (!needle) return true;
-    const candidate = decision.candidate || {};
-    return [
-      decision.ts,
-      decision.verdict,
-      decision.note,
-      decision.status,
-      decision.provenance,
-      decision.blocker,
-      candidate.buy_name,
-      candidate.sell_name,
-      candidate.run_id,
-      candidate.gen_no,
-      candidate.status,
-      candidate.source,
-      candidate.blocker
-    ].some((value) => String(value != null ? value : "").toLocaleLowerCase().includes(needle));
-  }
-  function AuditDecisionTrace({ baseUrl }) {
-    const [decisions, setDecisions] = useState_va([]);
-    const [loading, setLoading] = useState_va(true);
-    const [error, setError] = useState_va("");
-    const [query, setQuery] = useState_va("");
-    const [verdict, setVerdict] = useState_va("all");
-    useEffect_va(() => {
-      const base = String(baseUrl || "").replace(/\/+$/, "");
-      setLoading(true);
-      setError("");
-      fetch(base + "/decisions", { signal: AbortSignal.timeout(8e3) }).then((response) => response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))).then((payload) => setDecisions(Array.isArray(payload == null ? void 0 : payload.decisions) ? payload.decisions : [])).catch((reason) => setError(String(reason))).finally(() => setLoading(false));
-    }, [baseUrl]);
-    const visible = decisions.filter((decision) => auditDecisionMatches(decision, query, verdict));
-    return /* @__PURE__ */ React.createElement("section", { className: "panel v4-audit-trace", "aria-labelledby": "v4-audit-trace-title" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-audit-trace-title", className: "panel-hd-title" }, "\uACB0\uC815 \uCD94\uC801"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "append-only \xB7 ", decisions.length, " records")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("fieldset", { className: "v4-audit-filters" }, /* @__PURE__ */ React.createElement("legend", null, "\uACB0\uC815 \uAE30\uB85D \uD544\uD130"), /* @__PURE__ */ React.createElement("label", null, "\uCD94\uC801 \uAC80\uC0C9", /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        value: query,
-        onChange: (event) => setQuery(event.target.value),
-        placeholder: "run, generation, \uC804\uB7B5, \uADFC\uAC70"
-      }
-    )), /* @__PURE__ */ React.createElement("label", null, "\uACB0\uC815 \uC0C1\uD0DC", /* @__PURE__ */ React.createElement("select", { value: verdict, onChange: (event) => setVerdict(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "\uC804\uCCB4"), /* @__PURE__ */ React.createElement("option", { value: "promote" }, "promote"), /* @__PURE__ */ React.createElement("option", { value: "complement" }, "complement"), /* @__PURE__ */ React.createElement("option", { value: "hold" }, "hold"), /* @__PURE__ */ React.createElement("option", { value: "reject" }, "reject")))), loading ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uAC10\uC0AC \uAE30\uB85D\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.") : null, error ? /* @__PURE__ */ React.createElement("p", { role: "alert" }, "\uAC10\uC0AC \uAE30\uB85D \uB85C\uB4DC \uC2E4\uD328: ", error) : null, !loading && !error && decisions.length === 0 ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uC544\uC9C1 append-only \uACB0\uC815 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : null, !loading && !error && decisions.length > 0 && visible.length === 0 ? /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uD604\uC7AC \uD544\uD130\uC640 \uC77C\uCE58\uD558\uB294 \uACB0\uC815 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : null, !loading && !error && visible.length > 0 ? /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: "0", "aria-label": "\uD544\uD130\uB41C \uACB0\uC815 \uCD94\uC801 \uD45C" }, /* @__PURE__ */ React.createElement("table", { className: "mono" }, /* @__PURE__ */ React.createElement("caption", null, "\uD544\uD130 \uACB0\uACFC ", visible.length, "\uAC74. \uD589\uC744 \uD3BC\uCE58\uBA74 provenance, status, blocker\uB97C \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC2DC\uAC01"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uACB0\uC815"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uB300\uC0C1"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uCD94\uC801 \uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, visible.slice().reverse().map((decision, index2) => {
-      const candidate = decision.candidate || {};
-      const provenance = decision.provenance || candidate.source || "\uC11C\uBC84 \uBBF8\uC81C\uACF5";
-      const status = decision.status || candidate.status || "\uC11C\uBC84 \uBBF8\uC81C\uACF5";
-      const blocker = decision.blocker || candidate.blocker || "\uAE30\uB85D \uC5C6\uC74C";
-      return /* @__PURE__ */ React.createElement("tr", { key: `${decision.ts || "unknown"}-${index2}` }, /* @__PURE__ */ React.createElement("td", null, decision.ts ? new Date(decision.ts * 1e3).toLocaleString("ko-KR") : "\uC2DC\uAC01 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, decision.verdict || "\uACB0\uC815 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, candidate.buy_name || candidate.sell_name || "\uB300\uC0C1 \uBBF8\uC81C\uACF5"), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "decision trace"), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("dt", null, "provenance"), /* @__PURE__ */ React.createElement("dd", null, provenance), /* @__PURE__ */ React.createElement("dt", null, "status"), /* @__PURE__ */ React.createElement("dd", null, status), /* @__PURE__ */ React.createElement("dt", null, "blocker"), /* @__PURE__ */ React.createElement("dd", null, blocker), /* @__PURE__ */ React.createElement("dt", null, "evidence"), /* @__PURE__ */ React.createElement("dd", null, decision.note || "\uADFC\uAC70 \uBA54\uBAA8 \uC5C6\uC74C")))));
-    })))) : null));
-  }
-  function V4Audit({ baseUrl, onNavigate }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-audit" }, /* @__PURE__ */ React.createElement("section", { className: "v4-safety-strip", "data-safety-boundary": "v4-research-only" }, V4_SAFETY_TILES.map(([title, detail]) => /* @__PURE__ */ React.createElement("div", { key: title, className: "v4-safety-tile" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, detail)))), /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }));
-  }
-  Object.assign(window, { V4Audit });
-
   // ai_strategy_loop/dashboard/frontend/v4-alpha.jsx
   var {
     useState: useState_va2,
@@ -35154,7 +35154,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30, \uBE44-P4)", group: "primary" },
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D", group: "secondary" },
-    { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 export \uACBD\uACC4", group: "secondary" },
     { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
@@ -35164,7 +35163,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     "records": "history",
     "lab": "lab",
     "workbench": "workbench",
-    "verdict": "audit",
+    "verdict": "history",
     "process": "research"
   };
   function v4TabFromPathname(pathname) {
@@ -35492,7 +35491,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
