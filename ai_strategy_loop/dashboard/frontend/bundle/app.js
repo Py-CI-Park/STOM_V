@@ -22645,9 +22645,22 @@ def signal_sell(pos, bar, ind):
   var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2, useRef: useRef_eq2 } = React;
   var { useState: useState_rg, useEffect: useEffect_rg, useRef: useRef_rg } = React;
   function hofValidPayload(payload) {
-    if (!payload || typeof payload !== "object" || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
-    const isRow = (row) => row && typeof row === "object" && typeof row.kind === "string";
-    return payload.human.every((row) => isRow(row) && row.kind === "human") && payload.ai.every((row) => isRow(row) && (row.kind === "seed" || row.kind === "ai"));
+    if (!payload || typeof payload !== "object" || Array.isArray(payload) || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
+    const numericFields = [
+      "operating_capital_krw",
+      "total_return_krw",
+      "total_return_pct",
+      "annual_return_pct",
+      "mdd_pct",
+      "payoff",
+      "trades",
+      "daily_avg_trades"
+    ];
+    const isRow = (row) => {
+      if (!row || typeof row !== "object" || Array.isArray(row) || typeof row.label !== "string" || !row.label.trim() || typeof row.annual_unreliable !== "boolean") return false;
+      return numericFields.every((field) => row[field] == null || Number.isFinite(row[field]));
+    };
+    return payload.human.every((row) => isRow(row) && row.kind === "human" && (row.max_holdings == null || Number.isFinite(row.max_holdings))) && payload.ai.every((row) => isRow(row) && (row.kind === "seed" || row.kind === "ai") && typeof row.run_id === "string" && row.run_id.length > 0 && Number.isInteger(row.gen_no) && (row.max_hold_count == null || Number.isFinite(row.max_hold_count)));
   }
   function HallOfFamePanel({ baseUrl, wsStatus }) {
     const [data, setData] = useState_eq2(null);
@@ -32695,8 +32708,12 @@ def signal_sell(pos, bar, ind):
     return "";
   }
   function _rixExactResearchId(record) {
-    const candidate = record && (record.research_id || record.exact_link);
-    return typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate) ? candidate : "";
+    if (!record || typeof record !== "object") return "";
+    const direct = [record.research_id, record.id].find((candidate) => typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate));
+    if (direct) return direct;
+    if (typeof record.exact_link !== "string") return "";
+    const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):.+)$/);
+    return match ? match[1] : "";
   }
   function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedResearchId, onSelectResearch }) {
     const base = _rixBase(baseUrl);
@@ -33110,10 +33127,30 @@ def signal_sell(pos, bar, ind):
   }
   function verdictPayloadMatchesEndpoint(endpoint, payload, base) {
     if (!verdictPayloadMatchesBase(payload, base)) return false;
+    const isObject = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+    const unavailable = payload.status === "unavailable";
+    if (endpoint === "freeze_verdict") {
+      return Array.isArray(payload.lines) && Array.isArray(payload.alerts) && Array.isArray(payload.promote_checklist) && isObject(payload.oos_diff_ci);
+    }
+    if (endpoint === "regime_report") {
+      return unavailable || isObject(payload.breakdowns);
+    }
+    if (endpoint === "revival_registry") {
+      return unavailable || Array.isArray(payload.rejected) && payload.rejected.every(isObject);
+    }
+    if (endpoint === "portfolio_verdict") {
+      if (unavailable) return payload.adopted === false;
+      return typeof payload.adopted === "boolean" && Array.isArray(payload.members) && payload.members.every((member) => isObject(member) && typeof member.name === "string" && Number.isFinite(member.weight)) && (payload.m4 == null || isObject(payload.m4) && Array.isArray(payload.m4.alerts));
+    }
     if (endpoint === "decisions") {
       return Array.isArray(payload.decisions) && payload.decisions.every((row) => verdictPayloadMatchesBase(row, base));
     }
-    return endpoint !== "record_decision" || typeof payload.status === "string";
+    if (endpoint === "record_decision") {
+      if (payload.status === "ok") return isObject(payload.recorded);
+      if (payload.status === "invalid") return Array.isArray(payload.allowed);
+      return payload.status === "error" && (typeof payload.error === "string" || typeof payload.code === "string" && typeof payload.message === "string");
+    }
+    return false;
   }
   function EvidenceWorkspaceHeader({ activeKey }) {
     const owner = pageOwnerContract(activeKey === "workbench" ? "pro" : activeKey);

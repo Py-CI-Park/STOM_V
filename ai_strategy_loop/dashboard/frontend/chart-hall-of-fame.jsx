@@ -24,11 +24,24 @@ const { useState: useState_rg, useEffect: useEffect_rg, useRef: useRef_rg } = Re
    - demo면 미fetch(EquityOverlayChart 패턴). 빈 응답이면 빈 상태.
    ───────────────────────────────────────────────────────────────────────── */
 function hofValidPayload(payload) {
-  if (!payload || typeof payload !== "object"
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)
       || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
-  const isRow = row => row && typeof row === "object" && typeof row.kind === "string";
-  return payload.human.every(row => isRow(row) && row.kind === "human")
-    && payload.ai.every(row => isRow(row) && (row.kind === "seed" || row.kind === "ai"));
+  const numericFields = [
+    "operating_capital_krw", "total_return_krw", "total_return_pct",
+    "annual_return_pct", "mdd_pct", "payoff", "trades", "daily_avg_trades",
+  ];
+  const isRow = row => {
+    if (!row || typeof row !== "object" || Array.isArray(row)
+        || typeof row.label !== "string" || !row.label.trim()
+        || typeof row.annual_unreliable !== "boolean") return false;
+    return numericFields.every(field => row[field] == null || Number.isFinite(row[field]));
+  };
+  return payload.human.every(row => isRow(row) && row.kind === "human"
+      && (row.max_holdings == null || Number.isFinite(row.max_holdings)))
+    && payload.ai.every(row => isRow(row) && (row.kind === "seed" || row.kind === "ai")
+      && typeof row.run_id === "string" && row.run_id.length > 0
+      && Number.isInteger(row.gen_no)
+      && (row.max_hold_count == null || Number.isFinite(row.max_hold_count)));
 }
 function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [data, setData] = useState_eq(null);   // {human:[...], ai:[...]}

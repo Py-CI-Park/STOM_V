@@ -89,8 +89,13 @@ function _rixDetailText(detail) {
 }
 
 function _rixExactResearchId(record) {
-  const candidate = record && (record.research_id || record.exact_link);
-  return typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate) ? candidate : "";
+  if (!record || typeof record !== "object") return "";
+  const direct = [record.research_id, record.id]
+    .find(candidate => typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate));
+  if (direct) return direct;
+  if (typeof record.exact_link !== "string") return "";
+  const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):.+)$/);
+  return match ? match[1] : "";
 }
 
 function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedResearchId, onSelectResearch }) {

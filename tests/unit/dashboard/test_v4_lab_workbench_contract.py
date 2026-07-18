@@ -1,4 +1,6 @@
 from __future__ import annotations
+import json
+import shutil
 
 import subprocess
 from pathlib import Path
@@ -12,6 +14,22 @@ FRONTEND = ROOT / "ai_strategy_loop" / "dashboard" / "frontend"
 
 def _read(name: str) -> str:
     return (FRONTEND / name).read_text(encoding="utf-8")
+
+
+def _run_helper(source: str, name: str, expression: str) -> object:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node unavailable")
+    start = source.index(f"function {name}")
+    end = source.index("\n}\n", start) + 2
+    helper = source[start:end]
+    script = f"const fn = new Function(process.argv[2] + '; return {name};')();\nconsole.log(JSON.stringify({expression}));"
+    result = subprocess.run(
+        [node, "-", helper], capture_output=True, text=True, encoding="utf-8",
+        input=script, timeout=20, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
 
 
 def test_lab_exposes_honest_factor_evidence_regions_and_states() -> None:
@@ -145,7 +163,7 @@ def test_hall_of_fame_has_valid_empty_error_and_base_owned_states() -> None:
     assert "function hofValidPayload(payload)" in source
     assert "Array.isArray(payload.human)" in source
     assert "Array.isArray(payload.ai)" in source
-    assert "payload.human.every(row => isRow(row) && row.kind === \"human\")" in source
+    assert "payload.human.every(row => isRow(row) && row.kind === \"human\"" in source
     assert 'new Error("Malformed /hall_of_fame response")' in source
 
     # A BASE replacement aborts/invalidates prior data; initial loading, genuine empty, errors, and ready are distinct.
@@ -158,6 +176,19 @@ def test_hall_of_fame_has_valid_empty_error_and_base_owned_states() -> None:
     assert ") : sorted.length === 0 ? (" in source
     assert "조회 실패: {err}" in source
     assert "<HofInventoryGate compact />" in source
+
+    expression = """[
+      fn({human:[],ai:[]}),
+      fn({human:[{kind:'human',label:'#1',annual_unreliable:false,total_return_pct:1,max_holdings:2}],ai:[]}),
+      fn({human:[],ai:[{kind:'ai',label:'r/g1',run_id:'r',gen_no:1,annual_unreliable:true,total_return_pct:1,max_hold_count:2}]}),
+      fn({human:[{kind:'human'}],ai:[]}),
+      fn({human:[],ai:[{kind:'ai',label:'x',run_id:'r',gen_no:'1',annual_unreliable:false}]}),
+      fn({human:[],ai:[{kind:'seed',label:'x',run_id:'r',gen_no:0,annual_unreliable:false,mdd_pct:'bad'}]}),
+      fn({human:{},ai:[]})
+    ]"""
+    assert _run_helper(source, "hofValidPayload", expression) == [
+        True, True, True, False, False, False, False,
+    ]
 
 
 def test_reference_gallery_rejects_stale_or_unowned_lists_on_base_or_demo_change() -> None:

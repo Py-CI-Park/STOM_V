@@ -62,11 +62,40 @@ function verdictPayloadMatchesBase(payload, base) {
 
 function verdictPayloadMatchesEndpoint(endpoint, payload, base) {
   if (!verdictPayloadMatchesBase(payload, base)) return false;
+  const isObject = value => !!value && typeof value === "object" && !Array.isArray(value);
+  const unavailable = payload.status === "unavailable";
+  if (endpoint === "freeze_verdict") {
+    return Array.isArray(payload.lines)
+      && Array.isArray(payload.alerts)
+      && Array.isArray(payload.promote_checklist)
+      && isObject(payload.oos_diff_ci);
+  }
+  if (endpoint === "regime_report") {
+    return unavailable || isObject(payload.breakdowns);
+  }
+  if (endpoint === "revival_registry") {
+    return unavailable || (Array.isArray(payload.rejected) && payload.rejected.every(isObject));
+  }
+  if (endpoint === "portfolio_verdict") {
+    if (unavailable) return payload.adopted === false;
+    return typeof payload.adopted === "boolean"
+      && Array.isArray(payload.members)
+      && payload.members.every(member => isObject(member)
+        && typeof member.name === "string" && Number.isFinite(member.weight))
+      && (payload.m4 == null || (isObject(payload.m4) && Array.isArray(payload.m4.alerts)));
+  }
   if (endpoint === "decisions") {
     return Array.isArray(payload.decisions)
       && payload.decisions.every(row => verdictPayloadMatchesBase(row, base));
   }
-  return endpoint !== "record_decision" || typeof payload.status === "string";
+  if (endpoint === "record_decision") {
+    if (payload.status === "ok") return isObject(payload.recorded);
+    if (payload.status === "invalid") return Array.isArray(payload.allowed);
+    return payload.status === "error"
+      && (typeof payload.error === "string"
+        || (typeof payload.code === "string" && typeof payload.message === "string"));
+  }
+  return false;
 }
 
 

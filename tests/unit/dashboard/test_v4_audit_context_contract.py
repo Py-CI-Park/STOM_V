@@ -31,6 +31,31 @@ def _run_helper(source: str, name: str, expression: str) -> object:
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
 
+def _run_helper_block(
+    source: str,
+    first_name: str,
+    last_name: str,
+    return_name: str,
+    expression: str,
+) -> object:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node unavailable")
+    start = source.index(f"function {first_name}")
+    last = source.index(f"function {last_name}", start)
+    end = source.index("\n}\n", last) + 2
+    helper = source[start:end]
+    script = (
+        f"const fn = new Function(process.argv[2] + '; return {return_name};')();\n"
+        f"console.log(JSON.stringify({expression}));"
+    )
+    result = subprocess.run(
+        [node, "-", helper], capture_output=True, text=True, encoding="utf-8",
+        input=script, timeout=20, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
+
 
 def test_audit_exposes_filterable_decision_trace_with_honest_states() -> None:
     # Given: the V4 Audit tab source.
@@ -145,6 +170,54 @@ def test_verdict_payload_base_identity_rejects_malformed_and_foreign_responses()
     # When/Then: explicit ownership must match exactly and malformed responses fail closed.
     assert _run_helper(source, "verdictPayloadMatchesBase", expression) == [
         True, True, False, False, False, False,
+    ]
+
+
+def test_verdict_endpoint_payloads_require_backend_owned_shapes() -> None:
+    source = _read("dashboard-pages.jsx")
+    expression = """[
+      fn('freeze_verdict',{lines:[],alerts:[],promote_checklist:[],oos_diff_ci:{}},'http://one'),
+      fn('freeze_verdict',{status:'ok'},'http://one'),
+      fn('regime_report',{status:'unavailable'},'http://one'),
+      fn('regime_report',{breakdowns:{}},'http://one'),
+      fn('regime_report',{},'http://one'),
+      fn('revival_registry',{rejected:[{label:'x'}]},'http://one'),
+      fn('revival_registry',{rejected:'wrong'},'http://one'),
+      fn('portfolio_verdict',{adopted:false,status:'unavailable'},'http://one'),
+      fn('portfolio_verdict',{adopted:true,members:[{name:'A',weight:0.5}],m4:{alerts:[]}},'http://one'),
+      fn('portfolio_verdict',{adopted:true,members:[{name:'A',weight:'0.5'}],m4:null},'http://one'),
+      fn('record_decision',{status:'ok',recorded:{verdict:'hold'}},'http://one'),
+      fn('record_decision',{status:'ok'},'http://one'),
+      fn('record_decision',{status:'anything'},'http://one'),
+      fn('unknown',{},'http://one')
+    ]"""
+    assert _run_helper_block(
+        source,
+        "verdictPayloadMatchesBase",
+        "verdictPayloadMatchesEndpoint",
+        "verdictPayloadMatchesEndpoint",
+        expression,
+    ) == [
+        True, False, True, True, False, True, False,
+        True, True, False, True, False, False, False,
+    ]
+
+
+def test_research_index_links_only_explicit_governed_history_ids() -> None:
+    source = _read("research-index.jsx")
+    expression = """[
+      fn({research_id:'loop_run:r1'}),
+      fn({id:'campaign:c1',kind:'campaign'}),
+      fn({exact_link:'research-index://loop_run:r2'}),
+      fn({exact_link:'research-index://campaign:c2'}),
+      fn({id:'doc:campaign:c3',kind:'doc'}),
+      fn({exact_link:'research-index://doc:loop_run:r3'}),
+      fn({id:'campaignish:c4'}),
+      fn(null)
+    ]"""
+    assert _run_helper(source, "_rixExactResearchId", expression) == [
+        "loop_run:r1", "campaign:c1", "loop_run:r2", "campaign:c2",
+        "", "", "", "",
     ]
 
 
