@@ -225,12 +225,12 @@
 .v4-situation-board { display: grid; gap: 10px; border: 1px solid var(--line-1); border-radius: 10px; padding: 12px; background: var(--bg-1); }
 .v4-situation-head, .v4-situation-meta { display: flex; align-items: start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .v4-situation-head h2, .v4-situation-head p { margin: 0; }
-.v4-engine-summary { color: var(--ink-2); font-family: var(--mono); font-size: 12px; }
-.v4-effective-summary { display: grid; gap: 2px; max-width: min(100%, 520px); font-size: 12px; color: var(--ink-2); }
+.v4-engine-summary { color: var(--ink-2); font-family: var(--mono); font-size: 14px; }
+.v4-effective-summary { display: grid; gap: 2px; max-width: min(100%, 520px); font-size: 14px; color: var(--ink-2); }
 .v4-effective-summary b { color: var(--ink-0); font-size: 14px; }
-.v4-effective-summary small { color: var(--ink-3); }
+.v4-effective-summary small { color: var(--ink-3); font-size: 14px; }
 .v4-timing-bars { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; }
-.v4-timing-step { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 12px; color: var(--ink-2); }
+.v4-timing-step { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 14px; color: var(--ink-2); }
 .v4-timing-step i { grid-column: 1 / -1; height: 5px; border-radius: 999px; background: var(--line-2); overflow: hidden; }
 .v4-timing-step i::after { content: ""; display: block; width: var(--v4-duration); height: 100%; background: var(--ink-3); border-radius: inherit; }
 .v4-timing-step.active i::after { background: var(--amber); animation: v4-step-pulse 1.2s ease-in-out infinite; }
@@ -239,12 +239,12 @@
 .v4-timing-step.retry i::after { background: var(--violet); }
 @keyframes v4-step-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 .v4-blocker-badges { display: flex; gap: 6px; flex: 1 1 260px; flex-wrap: wrap; }
-.v4-blocker-badges span, .v4-data-state { border: 1px solid rgba(240,179,90,.38); border-radius: 999px; padding: 3px 7px; color: var(--amber); font-size: 11px; }
+.v4-blocker-badges span, .v4-data-state { border: 1px solid rgba(240,179,90,.38); border-radius: 999px; padding: 3px 7px; color: var(--amber); font-size: 14px; }
 .v4-blocker-badges .clear, .v4-data-state.fresh { color: var(--teal); border-color: rgba(76,214,179,.38); }
 .v4-data-state.error { color: var(--red); border-color: rgba(255,107,107,.4); }
 .v4-data-state.stale { color: var(--amber); }
-.v4-log-toggle, .v4-drawer-toggle { border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink-1); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
-.v4-one-line-log { width: 100%; margin: 0; color: var(--ink-2); font-family: var(--mono); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-log-toggle, .v4-drawer-toggle { border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink-1); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 14px; }
+.v4-one-line-log { width: 100%; margin: 0; color: var(--ink-2); font-family: var(--mono); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .v4-one-line-log.expanded { white-space: pre-wrap; overflow: visible; }
 .v4-live-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main control" "drawer drawer"; gap: 12px; align-items: start; }
 .v4-live-main { grid-area: main; display: grid; gap: 14px; min-width: 0; }
@@ -259,14 +259,14 @@
 .v4-process-board { display: grid; gap: 10px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-1); padding: 12px; }
 .v4-process-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .v4-process-tab { min-height: 44px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg-2); color: var(--ink-1); cursor: pointer; font-size: 14px; }
-.v4-process-tab small { display: block; color: var(--ink-3); font-size: 11px; }
+.v4-process-tab small { display: block; color: var(--ink-3); font-size: 14px; }
 .v4-process-tab[aria-selected="true"] { outline: var(--focus-width) solid var(--teal); outline-offset: 1px; }
 .v4-process-tab.failure { color: var(--red); }.v4-process-tab.retry { color: var(--amber); }.v4-process-tab.success { color: var(--teal); }
 .v4-step-panel { min-width: 0; }.v4-backtest-authority dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
-.v4-backtest-authority dt { color: var(--ink-3); font-size: 12px; }.v4-backtest-authority dd { margin: 3px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.v4-backtest-authority dt { color: var(--ink-3); font-size: 14px; }.v4-backtest-authority dd { margin: 3px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .v4-field-source-table { margin-top: 12px; overflow-x: auto; border-top: 1px solid var(--line-2); padding-top: 9px; }
-.v4-field-source-table h3 { margin: 0 0 6px; color: var(--ink-2); font-size: 12px; }
-.v4-field-source-table table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 11px; }
+.v4-field-source-table h3 { margin: 0 0 6px; color: var(--ink-2); font-size: 16px; }
+.v4-field-source-table table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 14px; }
 .v4-field-source-table th, .v4-field-source-table td { padding: 5px 6px; border: 1px solid var(--line-2); vertical-align: top; text-align: left; overflow-wrap: anywhere; }
 .v4-field-source-table thead { color: var(--ink-3); background: var(--bg-2); }
 .v4-field-source-table tbody th { color: var(--ink-2); font-weight: 600; }

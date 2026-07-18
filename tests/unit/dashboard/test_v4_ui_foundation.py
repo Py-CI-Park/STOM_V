@@ -286,7 +286,7 @@ def test_v5_live_backtest_authority_and_responsive_graph_contract() -> None:
         "current_run.generation",
     ):
         assert label in source
-    assert "engine {situation.engine" in source
+    assert "_v4EngineSummary(situation.engineState)" in source
     assert "situation.backtestProgress" in source
     assert "situation.phaseStartedAt" in source
     for state in ("fresh", "stale", "error", "empty"):
@@ -321,7 +321,7 @@ def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
         ".v4-field-source-table {",
         "overflow-x: auto",
         "min-width: 720px",
-        "font-size: 11px",
+        "font-size: 14px",
     ):
         assert marker in css
 
@@ -358,3 +358,30 @@ console.log(JSON.stringify({
         "unproven": ["stale", "unproven"],
         "empty": ["empty", "발행된 분석 증거 없음"],
     }
+
+
+def test_v5_2_engine_and_progress_objects_render_as_scalars() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node is required for frontend helper contract coverage.")
+    source = _read("v4-research.jsx")
+    start = source.index("function _v4ObjectSummary")
+    end = source.index("function v4LiveSituation", start)
+    helper = source[start:end]
+    script = """
+const render = new Function(process.argv[2] + '; return { engine: _v4EngineSummary, progress: _v4ProgressSummary };')();
+console.log(JSON.stringify({
+  engine: render.engine({ status: 'running', phase: 'backtest_start', bt_engine_mode: 'warm', effective_engine_count: 12 }),
+  progress: render.progress({ percent: 60, progress_source: 'generation_level' }),
+  countProgress: render.progress({ phase: 'backtest_start', done_units: 3, total_units: 5 }),
+  empty: render.engine({}),
+}));
+"""
+    result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, encoding="utf-8", timeout=20, check=False)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["engine"] == "status running · phase backtest_start · bt_engine_mode warm · effective_engine_count 12"
+    assert payload["progress"] == "60.0% · generation_level"
+    assert payload["countProgress"] == "phase backtest_start · done_units 3 · total_units 5"
+    assert payload["empty"] == "대기"

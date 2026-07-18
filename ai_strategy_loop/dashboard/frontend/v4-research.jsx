@@ -66,13 +66,35 @@ const V4_LIVE_PHASE_STEP = {
   backtest_start: 1, ga_evaluate_start: 1, backtest_end: 2, score_start: 2, score_done: 2,
   autopsy_start: 3, autopsy_done: 3, generation_done: 4, ga_generation_done: 4, complete: 4,
 };
+function _v4ObjectSummary(value, fields, empty = "empty") {
+  if (value === null || value === undefined || value === "") return empty;
+  if (typeof value !== "object") return String(value);
+  const parts = fields.flatMap(field => {
+    const item = value[field];
+    return item === null || item === undefined || item === "" || typeof item === "object" ? [] : [`${field} ${String(item)}`];
+  });
+  return parts.length ? parts.join(" · ") : empty;
+}
+
+function _v4EngineSummary(value) {
+  return _v4ObjectSummary(value, ["status", "phase", "bt_engine_mode", "bt_timeframe", "effective_engine_count"], "대기");
+}
+
+function _v4ProgressSummary(value) {
+  if (value && typeof value === "object" && Number.isFinite(Number(value.percent))) {
+    const source = value.progress_source || value.source || value.phase;
+    return `${Number(value.percent).toFixed(1)}%${source ? ` · ${String(source)}` : ""}`;
+  }
+  return _v4ObjectSummary(value, ["phase", "done_units", "total_units", "progress_source", "source"], "대기");
+}
 
 function v4LiveSituation(state) {
   const s = state || {};
   const latest = s.latest || {};
   const phase = String(latest.phase || "").toLowerCase();
   const statusValues = [s.status, latest.status].map(value => String(value || "").toLowerCase());
-  const engine = String(latest.engine_state || s.engine_state || "").toLowerCase();
+  const engineState = latest.engine_state ?? s.engine_state ?? null;
+  const engine = String(engineState && typeof engineState === "object" ? (engineState.status || engineState.phase || "") : (engineState || "")).toLowerCase();
   const phaseStartedAt = latest.phase_started_at || null;
   const backtestProgress = latest.backtest_progress ?? s.backtest_progress ?? null;
   const rawStep = Number(latest.current_step);
@@ -97,7 +119,7 @@ function v4LiveSituation(state) {
     else if (index === active && !legacy) stateName = "active";
     return { key, index, state: stateName, seconds: Number((latest.step_timings || {})[key]) };
   });
-  return { active, steps, complete, legacy, reconnecting, stopping, terminalFailure, phase, engine, phaseStartedAt, backtestProgress };
+  return { active, steps, complete, legacy, reconnecting, stopping, terminalFailure, phase, engine, engineState, phaseStartedAt, backtestProgress };
 }
 
 function _v4EvidenceState(state) {
@@ -119,7 +141,7 @@ const V5_2_FIELD_SOURCES = [
   { field: "매수 조건식 · buy_code", paths: "current_run.generation.buy_code_partial / generations[].buy_code / best.buy_code / winner.buy_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
   { field: "매도 조건식 · sell_code", paths: "current_run.generation.sell_code_partial / generations[].sell_code / best.sell_code / winner.sell_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
   { field: "source / run_id / generation", paths: "current_run.generation / run_id / current_gen", unit: "source · run ID · generation", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
-  { field: "engine_state / backtest_progress", paths: "latest.engine_state / engine_state / latest.backtest_progress / backtest_progress", unit: "engine state · progress", status: "latest.phase, latest.status", owner: "Backtest state publisher" },
+  { field: "engine_state / backtest_progress", paths: "latest.engine_state / engine_state / latest.backtest_progress / backtest_progress", unit: "engine status/config · percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
   { field: "analysis evidence", paths: "latest.analysis_evidence / latest.evidence / current_run.analysis_evidence / current_run.evidence", unit: "evidence entries", status: "latest.evidence_status / current_run.evidence_status / evidence_status", owner: "Analysis evidence publisher" },
 ];
 
@@ -151,7 +173,7 @@ function _V4WorkflowStrip({ state, situation }) {
       <div className="v4-situation-head">
         <div><h2 id="v4-research-evidence-heading" className="panel-hd-title">실시간 연구 상황</h2>
           <p className="v4-research-live-summary" role="status" aria-live="polite">run {s.run_id || "legacy"} · gen {s.current_gen ?? "—"} · {situation.legacy ? "legacy snapshot" : (s.status || "idle")}</p>
-          <p className="v4-engine-summary">engine {situation.engine || "대기"} · progress {situation.backtestProgress ?? "대기"} · phase started {situation.phaseStartedAt || "대기"}</p></div>
+          <p className="v4-engine-summary">engine {_v4EngineSummary(situation.engineState)} · progress {_v4ProgressSummary(situation.backtestProgress)} · phase started {situation.phaseStartedAt || "대기"}</p></div>
         <div className="v4-effective-summary"><b>현재 run 유효 게이트/채점</b><span>{typeof gateText === "string" ? gateText : JSON.stringify(gateText)}</span><small>정책 기본값과 별도 · latest.effective_gates / active_config</small></div>
       </div>
       <div className="v4-timing-bars" aria-label="단계별 실제 시간">
@@ -323,10 +345,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   };
 
   const stream = (s.current_run && s.current_run.generation) || {};
-  const activeGeneration = stream.buy_code_partial || stream.sell_code_partial ? {
+  const streamedGeneration = Boolean(stream.buy_code_partial || stream.sell_code_partial);
+  const matchedGeneration = gens.find(g => Number(g.gen_no) === Number(s.current_gen)) || null;
+  const activeGeneration = streamedGeneration ? {
     buy_code: stream.buy_code_partial, sell_code: stream.sell_code_partial,
     buy_name: stream.buy_name, sell_name: stream.sell_name,
-  } : (gens.find(g => Number(g.gen_no) === Number(s.current_gen)) || s.best || s.winner || {});
+  } : (matchedGeneration || s.best || s.winner || {});
+  const activeGenerationSource = streamedGeneration ? "current_run.generation"
+    : matchedGeneration ? "generations" : s.best ? "best" : s.winner ? "winner" : "empty";
   const evidence = _v4EvidenceState(s);
   const evidenceText = Array.isArray(evidence.value) ? evidence.value.join(" · ") : String(evidence.value);
   return (
@@ -363,8 +389,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
               {selectedStep === 0 && <><PhaseTimeline state={s} /><PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} /><ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} /></>}
               {selectedStep === 1 && <><section className="panel v4-backtest-authority"><div className="panel-hd"><div className="panel-hd-title">Backtest · authoritative live fields</div><span className={"v4-data-state " + evidence.label}>{evidence.label}</span></div>
                 <div className="panel-bd"><dl><div><dt>매수 조건식 · buy_code</dt><dd className="mono">{activeGeneration.buy_code || "empty"}</dd></div><div><dt>매도 조건식 · sell_code</dt><dd className="mono">{activeGeneration.sell_code || "empty"}</dd></div>
-                  <div><dt>source / run_id / generation</dt><dd>{stream.buy_code_partial || stream.sell_code_partial ? "current_run.generation" : "generations"} · {runId || "legacy"} · {s.current_gen ?? "—"}</dd></div>
-                  <div><dt>engine_state / backtest_progress</dt><dd>{s.latest?.engine_state || s.engine_state || "empty"} · {s.latest?.backtest_progress ?? s.backtest_progress ?? "empty"}</dd></div>
+                  <div><dt>source / run_id / generation</dt><dd>{activeGenerationSource} · {runId || "legacy"} · {s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "시작 전"}</dd></div>
+                  <div><dt>engine_state / backtest_progress</dt><dd>{_v4EngineSummary(s.latest?.engine_state ?? s.engine_state)} · {_v4ProgressSummary(s.latest?.backtest_progress ?? s.backtest_progress)}</dd></div>
                   <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}</dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
               {selectedStep === 2 && <><ResearchCriteriaBanner state={s} baseUrl={baseUrl} /><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} /></>}
               {selectedStep === 3 && <><AutopsyPanel state={s} wsStatus={wsStatus} /><HypothesisPanel state={s} /><FeedbackPanel state={s} /></>}
