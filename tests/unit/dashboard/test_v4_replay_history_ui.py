@@ -154,3 +154,26 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "String(payload.selection_generation) === selectionGeneration" in viz
     assert "_hvIsAbort(error, controller)" in viz
     assert "setRows([]);" in viz
+    index = _read("research-index.jsx")
+    assert "const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });" in records
+    assert "const generationRef = useRef_rrp({ records: 0, runs: 0, detail: 0 });" in records
+    assert 'const baseIdentity = (isDemo ? "demo:" : "live:") + (baseUrl || "");' in records
+    assert "baseIdentityRef.current !== requestBase" in records
+    assert "Malformed research records response" in records
+    assert "Malformed shared runs response" in records
+    assert "fetchRunsShared(baseUrl, { timeoutMs: 6000, signal: controller.signal })" in records
+    assert "setPayload(null);" in records
+    assert "setRunList([]);" in records
+    assert "localStorage.setItem" not in records
+    assert 'window.location.href = "/ui/backtest";' in records
+
+    assert "const requestsRef = useRef_rix({ index: null, detail: null });" in index
+    assert "const generationRef = useRef_rix({ index: 0, detail: 0 });" in index
+    assert 'const baseIdentity = (isDemo ? "demo:" : "live:") + base;' in index
+    assert "baseIdentityRef.current !== requestBase" in index
+    assert "Malformed research index response" in index
+    assert "Malformed research index detail response" in index
+    assert "setRecords([]);" in index
+    assert "setErrors([]);" in index
+    assert "setSelectedId(\"\");" in index
+    assert "controller.abort()" in index

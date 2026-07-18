@@ -53,27 +53,70 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
   const [runListLoading, setRunListLoading] = useState_rrp(false);
   // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
   const [showAll, setShowAll] = useState_rrp(false);
-  const detailRequestSeq = useRef_rrp(0);
+  const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });
+  const generationRef = useRef_rrp({ records: 0, runs: 0, detail: 0 });
   const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
   const controlledCampaign = typeof selectedResearchId === "string" && selectedResearchId.startsWith("campaign:")
     ? selectedResearchId.slice("campaign:".length) : "";
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const baseIdentity = (isDemo ? "demo:" : "live:") + (baseUrl || "");
+  const baseIdentityRef = useRef_rrp(baseIdentity);
+  baseIdentityRef.current = baseIdentity;
+
+  useEffect_rrp(() => {
+    Object.values(requestsRef.current).forEach(controller => {
+      if (controller) controller.abort();
+    });
+    generationRef.current.records += 1;
+    generationRef.current.runs += 1;
+    generationRef.current.detail += 1;
+    setPayload(null);
+    setSelectedCampaign("");
+    setDetail(null);
+    setLoading(false);
+    setErr("");
+    setRunList([]);
+    setRunListLoading(false);
+    setShowAll(false);
+  }, [baseIdentity]);
 
   const refresh = useCallback_rrp(() => {
     if (isDemo || !baseUrl) return;
+    if (requestsRef.current.records) requestsRef.current.records.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.records;
+    const requestBase = baseIdentity;
+    requestsRef.current.records = controller;
     setLoading(true);
-    fetch(baseUrl + "/research_records", { signal: AbortSignal.timeout(6000) })
+    setErr("");
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    fetch(baseUrl + "/research_records", { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
+        if (!j || typeof j !== "object" || !Array.isArray(j.campaigns) || !Array.isArray(j.errors)
+          || !j.campaigns.every(row => row && typeof row === "object" && typeof row.name === "string")
+          || !j.errors.every(item => item && typeof item === "object")) {
+          throw new Error("Malformed research records response");
+        }
+        if (generation !== generationRef.current.records || controller.signal.aborted
+          || baseIdentityRef.current !== requestBase) return;
         setPayload(j);
         setErr("");
-        const rows = Array.isArray(j && j.campaigns) ? j.campaigns : [];
-        if (!controlled && !selectedCampaign && rows.length) setSelectedCampaign(rows[0].name || "");
+        if (!controlled && !selectedCampaign && j.campaigns.length) setSelectedCampaign(j.campaigns[0].name || "");
       })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, selectedCampaign, controlled]);
+      .catch(e => {
+        if (generation !== generationRef.current.records || controller.signal.aborted
+          || baseIdentityRef.current !== requestBase) return;
+        setPayload(null);
+        setErr(String(e));
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        if (generation === generationRef.current.records && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setLoading(false);
+      });
+  }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled]);
 
   useEffect_rrp(() => {
     refresh();
@@ -83,39 +126,63 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
   }, [refresh, baseUrl, isDemo]);
 
   useEffect_rrp(() => {
-    const requestId = detailRequestSeq.current + 1;
-    detailRequestSeq.current = requestId;
-    const isCurrent = () => detailRequestSeq.current === requestId;
+    if (requestsRef.current.detail) requestsRef.current.detail.abort();
+    const requestId = ++generationRef.current.detail;
     const activeCampaign = controlled ? controlledCampaign : selectedCampaign;
     if (isDemo || !baseUrl || !activeCampaign) {
       setDetail(null);
       return undefined;
     }
     const controller = new AbortController();
+    const requestBase = baseIdentity;
+    requestsRef.current.detail = controller;
     fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(activeCampaign),
           { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => { if (isCurrent()) setDetail(j); })
+      .then(j => {
+        if (!j || typeof j !== "object" || typeof j.available !== "boolean"
+          || (j.available && (!j.campaign || typeof j.campaign !== "object" || j.campaign.name !== activeCampaign))) {
+          throw new Error("Malformed research record detail response");
+        }
+        if (requestId === generationRef.current.detail && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setDetail(j);
+      })
       .catch(e => {
-        if (e.name !== "AbortError" && isCurrent()) setDetail({ available: false, reason: String(e) });
+        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setDetail({ available: false, reason: String(e) });
       });
     return () => controller.abort();
-  }, [baseUrl, isDemo, selectedCampaign, controlled, controlledCampaign]);
+  }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled, controlledCampaign]);
+
   const refreshRuns = useCallback_rrp(() => {
-    if (isDemo || !baseUrl) {
-      setRunList([]);
-      return;
-    }
+    if (isDemo || !baseUrl) return;
+    if (requestsRef.current.runs) requestsRef.current.runs.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.runs;
+    const requestBase = baseIdentity;
+    requestsRef.current.runs = controller;
     setRunListLoading(true);
-    fetchRunsShared(baseUrl, { timeoutMs: 6000 })
+    fetchRunsShared(baseUrl, { timeoutMs: 6000, signal: controller.signal })
       .then(j => {
-        const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
+        if (!j || typeof j !== "object" || !Array.isArray(j.runs)
+          || !j.runs.every(run => run && typeof run === "object")) {
+          throw new Error("Malformed shared runs response");
+        }
+        if (generation !== generationRef.current.runs || controller.signal.aborted
+          || baseIdentityRef.current !== requestBase) return;
+        const runs = j.runs.slice();
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
       })
-      .catch(() => setRunList([]))
-      .finally(() => setRunListLoading(false));
-  }, [baseUrl, isDemo]);
+      .catch(() => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setRunList([]);
+      })
+      .finally(() => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setRunListLoading(false);
+      });
+  }, [baseUrl, baseIdentity, isDemo]);
 
   useEffect_rrp(() => {
     refreshRuns();
@@ -123,7 +190,6 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
 
   const onOpenWorkbench = useCallback_rrp(() => {
     try {
-      localStorage.setItem("stom_active_tab", "backtest");
       window.location.href = "/ui/backtest";
     } catch (e) {}
   }, []);

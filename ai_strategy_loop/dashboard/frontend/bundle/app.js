@@ -22643,7 +22643,7 @@ def signal_sell(pos, bar, ind):
 
   // ai_strategy_loop/dashboard/frontend/chart-hall-of-fame.jsx
   var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2, useRef: useRef_eq2 } = React;
-  var { useState: useState_rg, useEffect: useEffect_rg } = React;
+  var { useState: useState_rg, useEffect: useEffect_rg, useRef: useRef_rg } = React;
   function hofValidPayload(payload) {
     if (!payload || typeof payload !== "object" || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
     const isRow = (row) => row && typeof row === "object" && typeof row.kind === "string";
@@ -22885,38 +22885,63 @@ def signal_sell(pos, bar, ind):
           fontSize: 11
         } }, r.period || "\u2014", typeof r.days === "number" && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", marginLeft: 5 } }, "(", r.days, "\uC77C)"))
       );
-    }))))), galleryOpen && /* @__PURE__ */ React.createElement(ReferenceGallery, { baseUrl, onClose: () => setGalleryOpen(false) }));
+    }))))), galleryOpen && /* @__PURE__ */ React.createElement(ReferenceGallery, { baseUrl, wsStatus, onClose: () => setGalleryOpen(false) }));
   }
-  function ReferenceGallery({ baseUrl, onClose }) {
+  function ReferenceGallery({ baseUrl, wsStatus, onClose }) {
     const [files, setFiles] = useState_rg(null);
+    const [listedBase, setListedBase] = useState_rg("");
     const [err, setErr] = useState_rg(null);
+    const [errorBase, setErrorBase] = useState_rg("");
     const [zoom, setZoom] = useState_rg(null);
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const galleryRequestRef = useRef_rg({ generation: 0, controller: null, baseUrl: "", isDemo: false });
     useEffect_rg(() => {
-      if (!baseUrl) {
+      if (galleryRequestRef.current.controller) galleryRequestRef.current.controller.abort();
+      const controller = new AbortController();
+      const generation = galleryRequestRef.current.generation + 1;
+      const identity4 = baseUrl || "";
+      galleryRequestRef.current = { generation, controller, baseUrl: identity4, isDemo };
+      setFiles(null);
+      setListedBase("");
+      setErr(null);
+      setErrorBase("");
+      setZoom(null);
+      if (isDemo || !identity4) {
         setFiles([]);
-        return;
+        return () => controller.abort();
       }
-      let cancelled = false;
-      fetch(baseUrl + "/reference_screenshots", { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled) {
-          setFiles(j.screenshots || []);
-          setErr(null);
+      const timeoutId = setTimeout(() => controller.abort(), 4e3);
+      fetch(identity4 + "/reference_screenshots", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const current = galleryRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4 || current.isDemo !== isDemo || controller.signal.aborted) return;
+        if (!j || typeof j !== "object" || !Array.isArray(j.screenshots) || !j.screenshots.every((name) => typeof name === "string" && name.length > 0)) {
+          throw new Error("Malformed /reference_screenshots response");
         }
+        setFiles(j.screenshots);
+        setListedBase(identity4);
       }).catch((e) => {
-        if (!cancelled) setErr(String(e));
-      }).finally(() => {
-      });
+        const current = galleryRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4 || current.isDemo !== isDemo || controller.signal.aborted) return;
+        setFiles([]);
+        setListedBase("");
+        setErr(String(e));
+        setErrorBase(identity4);
+      }).finally(() => clearTimeout(timeoutId));
       return () => {
-        cancelled = true;
+        controller.abort();
+        galleryRequestRef.current.generation += 1;
       };
-    }, [baseUrl]);
-    const imgSrc = (name) => baseUrl + "/reference_img/" + encodeURIComponent(name);
+    }, [baseUrl, isDemo]);
+    const displayedFiles = !isDemo && listedBase === (baseUrl || "") ? files : null;
+    const displayedErr = !isDemo && errorBase === (baseUrl || "") ? err : null;
+    const displayedZoom = displayedFiles && zoom && displayedFiles.includes(zoom) ? zoom : null;
+    const imgSrc = (name) => listedBase + "/reference_img/" + encodeURIComponent(name);
     return /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "modal-bd",
         onMouseDown: (e) => {
-          if (e.target === e.currentTarget) zoom ? setZoom(null) : onClose();
+          if (e.target === e.currentTarget) displayedZoom ? setZoom(null) : onClose();
         }
       },
       /* @__PURE__ */ React.createElement(
@@ -22926,30 +22951,30 @@ def signal_sell(pos, bar, ind):
           style: { width: "min(1100px, calc(100vw - 32px))" },
           onMouseDown: (e) => e.stopPropagation()
         },
-        /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\u{1F4F7} \uC778\uAC04 \uACB0\uACFC \uC2A4\uD06C\uB9B0\uC0F7", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "STOM_Good_Results \u2014 \uACB0\uACFC \uD654\uBA74 ", files ? files.length : "\u2026", "\uC7A5 \xB7 \uC2A4\uD06C\uB9B0\uC0F7\u2194\uC804\uB7B5# \uB9E4\uD551 \uBD88\uD655\uC2E4(\uC804\uCCB4 \uBE0C\uB77C\uC6B0\uC9D5)")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } }, zoom && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setZoom(null) }, "\u2190 \uADF8\uB9AC\uB4DC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))),
-        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, overflowY: "auto", padding: 16 } }, err ? /* @__PURE__ */ React.createElement("div", { style: {
+        /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\u{1F4F7} \uC778\uAC04 \uACB0\uACFC \uC2A4\uD06C\uB9B0\uC0F7", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "STOM_Good_Results \u2014 \uACB0\uACFC \uD654\uBA74 ", displayedFiles ? displayedFiles.length : "\u2026", "\uC7A5 \xB7 \uC2A4\uD06C\uB9B0\uC0F7\u2194\uC804\uB7B5# \uB9E4\uD551 \uBD88\uD655\uC2E4(\uC804\uCCB4 \uBE0C\uB77C\uC6B0\uC9D5)")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } }, displayedZoom && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setZoom(null) }, "\u2190 \uADF8\uB9AC\uB4DC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))),
+        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, overflowY: "auto", padding: 16 } }, displayedErr ? /* @__PURE__ */ React.createElement("div", { style: {
           padding: "28px 0",
           textAlign: "center",
           color: "var(--red)",
           fontSize: 12,
           fontFamily: "var(--mono)"
-        } }, "\uC2A4\uD06C\uB9B0\uC0F7 \uBAA9\uB85D \uC870\uD68C \uC2E4\uD328: ", err) : files == null ? /* @__PURE__ */ React.createElement("div", { style: {
+        } }, "\uC2A4\uD06C\uB9B0\uC0F7 \uBAA9\uB85D \uC870\uD68C \uC2E4\uD328: ", displayedErr) : displayedFiles == null ? /* @__PURE__ */ React.createElement("div", { style: {
           padding: "28px 0",
           textAlign: "center",
           color: "var(--ink-3)",
           fontSize: 12,
           fontFamily: "var(--mono)"
-        } }, "\uC2A4\uD06C\uB9B0\uC0F7 \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : files.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
+        } }, "\uC2A4\uD06C\uB9B0\uC0F7 \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : displayedFiles.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
           padding: "28px 0",
           textAlign: "center",
           color: "var(--ink-3)",
           fontSize: 12,
           fontFamily: "var(--mono)"
-        } }, "\uD45C\uC2DC\uD560 \uC2A4\uD06C\uB9B0\uC0F7\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : zoom ? /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(
+        } }, "\uD45C\uC2DC\uD560 \uC2A4\uD06C\uB9B0\uC0F7\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : displayedZoom ? /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(
           "img",
           {
-            src: imgSrc(zoom),
-            alt: zoom,
+            src: imgSrc(displayedZoom),
+            alt: displayedZoom,
             style: {
               maxWidth: "100%",
               maxHeight: "70vh",
@@ -22958,11 +22983,11 @@ def signal_sell(pos, bar, ind):
               borderRadius: 6
             }
           }
-        ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, zoom)) : /* @__PURE__ */ React.createElement("div", { style: {
+        ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, displayedZoom)) : /* @__PURE__ */ React.createElement("div", { style: {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
           gap: 12
-        } }, files.map((name) => /* @__PURE__ */ React.createElement(
+        } }, displayedFiles.map((name) => /* @__PURE__ */ React.createElement(
           "div",
           {
             key: name,
@@ -31616,20 +31641,57 @@ def signal_sell(pos, bar, ind):
     const [runList, setRunList] = useState_rrp([]);
     const [runListLoading, setRunListLoading] = useState_rrp(false);
     const [showAll, setShowAll] = useState_rrp(false);
-    const detailRequestSeq = useRef_rrp(0);
+    const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });
+    const generationRef = useRef_rrp({ records: 0, runs: 0, detail: 0 });
     const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
     const controlledCampaign = typeof selectedResearchId === "string" && selectedResearchId.startsWith("campaign:") ? selectedResearchId.slice("campaign:".length) : "";
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const baseIdentity = (isDemo ? "demo:" : "live:") + (baseUrl || "");
+    const baseIdentityRef = useRef_rrp(baseIdentity);
+    baseIdentityRef.current = baseIdentity;
+    useEffect_rrp(() => {
+      Object.values(requestsRef.current).forEach((controller) => {
+        if (controller) controller.abort();
+      });
+      generationRef.current.records += 1;
+      generationRef.current.runs += 1;
+      generationRef.current.detail += 1;
+      setPayload(null);
+      setSelectedCampaign("");
+      setDetail(null);
+      setLoading(false);
+      setErr("");
+      setRunList([]);
+      setRunListLoading(false);
+      setShowAll(false);
+    }, [baseIdentity]);
     const refresh = useCallback_rrp(() => {
       if (isDemo || !baseUrl) return;
+      if (requestsRef.current.records) requestsRef.current.records.abort();
+      const controller = new AbortController();
+      const generation = ++generationRef.current.records;
+      const requestBase = baseIdentity;
+      requestsRef.current.records = controller;
       setLoading(true);
-      fetch(baseUrl + "/research_records", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      setErr("");
+      const timeoutId = setTimeout(() => controller.abort(), 6e3);
+      fetch(baseUrl + "/research_records", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!j || typeof j !== "object" || !Array.isArray(j.campaigns) || !Array.isArray(j.errors) || !j.campaigns.every((row) => row && typeof row === "object" && typeof row.name === "string") || !j.errors.every((item) => item && typeof item === "object")) {
+          throw new Error("Malformed research records response");
+        }
+        if (generation !== generationRef.current.records || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
         setPayload(j);
         setErr("");
-        const rows2 = Array.isArray(j && j.campaigns) ? j.campaigns : [];
-        if (!controlled && !selectedCampaign && rows2.length) setSelectedCampaign(rows2[0].name || "");
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, selectedCampaign, controlled]);
+        if (!controlled && !selectedCampaign && j.campaigns.length) setSelectedCampaign(j.campaigns[0].name || "");
+      }).catch((e) => {
+        if (generation !== generationRef.current.records || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
+        setPayload(null);
+        setErr(String(e));
+      }).finally(() => {
+        clearTimeout(timeoutId);
+        if (generation === generationRef.current.records && !controller.signal.aborted && baseIdentityRef.current === requestBase) setLoading(false);
+      });
+    }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled]);
     useEffect_rrp(() => {
       refresh();
       if (isDemo || !baseUrl) return void 0;
@@ -31637,43 +31699,56 @@ def signal_sell(pos, bar, ind):
       return () => clearInterval(timer2);
     }, [refresh, baseUrl, isDemo]);
     useEffect_rrp(() => {
-      const requestId = detailRequestSeq.current + 1;
-      detailRequestSeq.current = requestId;
-      const isCurrent = () => detailRequestSeq.current === requestId;
+      if (requestsRef.current.detail) requestsRef.current.detail.abort();
+      const requestId = ++generationRef.current.detail;
       const activeCampaign2 = controlled ? controlledCampaign : selectedCampaign;
       if (isDemo || !baseUrl || !activeCampaign2) {
         setDetail(null);
         return void 0;
       }
       const controller = new AbortController();
+      const requestBase = baseIdentity;
+      requestsRef.current.detail = controller;
       fetch(
         baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(activeCampaign2),
         { signal: controller.signal }
       ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (isCurrent()) setDetail(j);
+        if (!j || typeof j !== "object" || typeof j.available !== "boolean" || j.available && (!j.campaign || typeof j.campaign !== "object" || j.campaign.name !== activeCampaign2)) {
+          throw new Error("Malformed research record detail response");
+        }
+        if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(j);
       }).catch((e) => {
-        if (e.name !== "AbortError" && isCurrent()) setDetail({ available: false, reason: String(e) });
+        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail({ available: false, reason: String(e) });
       });
       return () => controller.abort();
-    }, [baseUrl, isDemo, selectedCampaign, controlled, controlledCampaign]);
+    }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled, controlledCampaign]);
     const refreshRuns = useCallback_rrp(() => {
-      if (isDemo || !baseUrl) {
-        setRunList([]);
-        return;
-      }
+      if (isDemo || !baseUrl) return;
+      if (requestsRef.current.runs) requestsRef.current.runs.abort();
+      const controller = new AbortController();
+      const generation = ++generationRef.current.runs;
+      const requestBase = baseIdentity;
+      requestsRef.current.runs = controller;
       setRunListLoading(true);
-      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => {
-        const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3, signal: controller.signal }).then((j) => {
+        if (!j || typeof j !== "object" || !Array.isArray(j.runs) || !j.runs.every((run) => run && typeof run === "object")) {
+          throw new Error("Malformed shared runs response");
+        }
+        if (generation !== generationRef.current.runs || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
+        const runs = j.runs.slice();
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
-      }).catch(() => setRunList([])).finally(() => setRunListLoading(false));
-    }, [baseUrl, isDemo]);
+      }).catch(() => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted && baseIdentityRef.current === requestBase) setRunList([]);
+      }).finally(() => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted && baseIdentityRef.current === requestBase) setRunListLoading(false);
+      });
+    }, [baseUrl, baseIdentity, isDemo]);
     useEffect_rrp(() => {
       refreshRuns();
     }, [refreshRuns]);
     const onOpenWorkbench = useCallback_rrp(() => {
       try {
-        localStorage.setItem("stom_active_tab", "backtest");
         window.location.href = "/ui/backtest";
       } catch (e) {
       }
@@ -32642,8 +32717,28 @@ def signal_sell(pos, bar, ind):
     const [traceStatus, setTraceStatus] = useState_rix("all");
     const [sortKey, setSortKey] = useState_rix("updated_desc");
     const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
-    const detailRequestSeq = useRef_rix(0);
+    const requestsRef = useRef_rix({ index: null, detail: null });
+    const generationRef = useRef_rix({ index: 0, detail: 0 });
     const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
+    const baseIdentity = (isDemo ? "demo:" : "live:") + base;
+    const baseIdentityRef = useRef_rix(baseIdentity);
+    baseIdentityRef.current = baseIdentity;
+    useEffect_rix(() => {
+      Object.values(requestsRef.current).forEach((controller) => {
+        if (controller) controller.abort();
+      });
+      generationRef.current.index += 1;
+      generationRef.current.detail += 1;
+      setRecords([]);
+      setErrors([]);
+      setCacheInfo(null);
+      setSelectedId("");
+      setDetail(null);
+      setDetailLoading(false);
+      setLoading(false);
+      setElapsed(0);
+      setErr("");
+    }, [baseIdentity]);
     useEffect_rix(() => {
       const timer2 = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
       return () => clearTimeout(timer2);
@@ -32655,21 +32750,35 @@ def signal_sell(pos, bar, ind):
       return () => clearInterval(id2);
     }, [loading]);
     const loadIndex = React.useCallback(() => {
-      if (isDemo || !base) return;
+      if (isDemo || !base) return void 0;
+      if (requestsRef.current.index) requestsRef.current.index.abort();
       const controller = new AbortController();
+      const generation = ++generationRef.current.index;
+      const requestBase = baseIdentity;
+      requestsRef.current.index = controller;
       setLoading(true);
       setErr("");
       fetch(base + "/research_index", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        const rows = Array.isArray(j && j.records) ? j.records : [];
-        setRecords(rows);
-        setErrors(Array.isArray(j && j.errors) ? j.errors : []);
-        setCacheInfo(j && j.cache ? j.cache : null);
-        setSelectedId((prev) => rows.some((row) => row.id === prev) ? prev : "");
+        if (!j || typeof j !== "object" || !Array.isArray(j.records) || !Array.isArray(j.errors) || j.cache != null && typeof j.cache !== "object" || !j.records.every((row) => row && typeof row === "object" && typeof row.id === "string" && Array.isArray(row.tags) && Array.isArray(row.related_ids)) || !j.errors.every((item) => item && typeof item === "object")) {
+          throw new Error("Malformed research index response");
+        }
+        if (generation !== generationRef.current.index || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
+        setRecords(j.records);
+        setErrors(j.errors);
+        setCacheInfo(j.cache || null);
+        setSelectedId((prev) => j.records.some((row) => row.id === prev) ? prev : "");
       }).catch((e) => {
-        if (e.name !== "AbortError") setErr(String(e));
-      }).finally(() => setLoading(false));
+        if (e.name !== "AbortError" && generation === generationRef.current.index && !controller.signal.aborted && baseIdentityRef.current === requestBase) {
+          setRecords([]);
+          setErrors([]);
+          setCacheInfo(null);
+          setErr(String(e));
+        }
+      }).finally(() => {
+        if (generation === generationRef.current.index && !controller.signal.aborted && baseIdentityRef.current === requestBase) setLoading(false);
+      });
       return () => controller.abort();
-    }, [base, isDemo]);
+    }, [base, baseIdentity, isDemo]);
     useEffect_rix(() => {
       const cancel = loadIndex();
       return () => {
@@ -32704,28 +32813,32 @@ def signal_sell(pos, bar, ind):
     }, [query, kind, canonicality, traceStatus, sortKey, initialLimit]);
     const visibleRows = useMemo_rix(() => filtered.slice(0, displayLimit), [filtered, displayLimit]);
     useEffect_rix(() => {
-      const requestId = detailRequestSeq.current + 1;
-      detailRequestSeq.current = requestId;
+      if (requestsRef.current.detail) requestsRef.current.detail.abort();
+      const requestId = ++generationRef.current.detail;
       if (isDemo || !base || !selectedId) {
         setDetail(null);
         setDetailLoading(false);
         return void 0;
       }
       const controller = new AbortController();
-      const isCurrent = () => detailRequestSeq.current === requestId;
+      const requestBase = baseIdentity;
+      requestsRef.current.detail = controller;
       setDetailLoading(true);
       setDetail(null);
       fetch(base + "/research_index/detail?id=" + encodeURIComponent(selectedId), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (isCurrent()) setDetail(j || null);
+        if (!j || typeof j !== "object" || typeof j.available !== "boolean" || j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId)) {
+          throw new Error("Malformed research index detail response");
+        }
+        if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(j);
       }).catch((e) => {
-        if (e.name !== "AbortError" && isCurrent()) {
+        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) {
           setDetail({ available: false, reason: String(e) });
         }
       }).finally(() => {
-        if (isCurrent()) setDetailLoading(false);
+        if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetailLoading(false);
       });
       return () => controller.abort();
-    }, [base, isDemo, selectedId]);
+    }, [base, baseIdentity, isDemo, selectedId]);
     const selectedRow = records.find((row) => row.id === selectedId) || null;
     const detailText = _rixDetailText(detail);
     const sourceCounts = useMemo_rix(() => {
@@ -32966,7 +33079,7 @@ def signal_sell(pos, bar, ind):
   Object.assign(window, { DASHBOARD_PAGE_OWNER_MATRIX, PHASE2_SOURCE_INVENTORY, LARGE_LIST_PERF_TARGETS, pageOwnerContract, listPerfTarget, Phase2InventoryPanel });
 
   // ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx
-  var { useState: useState_dp, useEffect: useEffect_dp } = React;
+  var { useState: useState_dp, useEffect: useEffect_dp, useRef: useRef_dp } = React;
   function _DpLoading({ name }) {
     return /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "error", compact: true, title: `${name} \uB85C\uB4DC \uC2E4\uD328`, detail: "required dashboard component global missing" }, "\uBC88\uB4E4 \uB85C\uB4DC \uC21C\uC11C \uB610\uB294 \uBE4C\uB4DC \uC0B0\uCD9C\uBB3C\uC5D0 \uBB38\uC81C\uAC00 \uC788\uC2B5\uB2C8\uB2E4. \uC774 \uD45C\uBA74\uC740 \uB300\uCCB4 \uB370\uC774\uD130 \uC5C6\uC774 \uC911\uB2E8\uB429\uB2C8\uB2E4.");
   }
@@ -32990,6 +33103,18 @@ def signal_sell(pos, bar, ind):
     portfolio: { label: "V6 \uD3EC\uD2B8\uD3F4\uB9AC\uC624", ico: "\u2605", anchor: "verdict-portfolio", hint: "\uCC44\uD0DD \uCD94\uCC9C \uC870\uD569\uACFC \uAE30\uC900\uC120 \uBE44\uAD50" },
     decide: { label: "\uC6B4\uC6A9 \uACB0\uC815", ico: "\u2696\uFE0F", anchor: "verdict-decide", hint: "append-only \uACB0\uC815 \uAE30\uB85D" }
   };
+  function verdictPayloadMatchesBase(payload, base) {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+    const has = Object.prototype.hasOwnProperty;
+    return (!has.call(payload, "base_url") || payload.base_url === base) && (!has.call(payload, "base") || payload.base === base);
+  }
+  function verdictPayloadMatchesEndpoint(endpoint, payload, base) {
+    if (!verdictPayloadMatchesBase(payload, base)) return false;
+    if (endpoint === "decisions") {
+      return Array.isArray(payload.decisions) && payload.decisions.every((row) => verdictPayloadMatchesBase(row, base));
+    }
+    return endpoint !== "record_decision" || typeof payload.status === "string";
+  }
   function EvidenceWorkspaceHeader({ activeKey }) {
     const owner = pageOwnerContract(activeKey === "workbench" ? "pro" : activeKey);
     return /* @__PURE__ */ React.createElement("div", { className: "evidence-workspace-head evidence-workspace-head-static" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "workspace-kicker mono" }, "EVIDENCE WORKSPACE \xB7 OWNER MATRIX"), /* @__PURE__ */ React.createElement("h2", null, "\uAE30\uB85D \xB7 \uC5F0\uAD6C \xB7 \uBD84\uC11D \xB7 \uACB0\uC815 \uC5ED\uD560 \uB9F5"), /* @__PURE__ */ React.createElement("p", null, "\uD604\uC7AC \uD45C\uBA74: ", /* @__PURE__ */ React.createElement("b", null, owner.owner)), /* @__PURE__ */ React.createElement("div", { className: "workspace-owner-boundary mono" }, /* @__PURE__ */ React.createElement("span", null, "owns: ", owner.owns), /* @__PURE__ */ React.createElement("span", null, "not-owner: ", owner.notOwner))), /* @__PURE__ */ React.createElement(Phase2InventoryPanel, { compact: true }));
@@ -33069,41 +33194,120 @@ def signal_sell(pos, bar, ind):
   }
   function VerdictPanel({ baseUrl, onNavigate }) {
     const base = _dpBase(baseUrl);
-    const [v, setV] = useState_dp(null);
-    const [history, setHistory] = useState_dp([]);
-    const [historyFailed, setHistoryFailed] = useState_dp(false);
+    const currentBaseRef = useRef_dp(base);
+    currentBaseRef.current = base;
+    const verdictRequestRef = useRef_dp({ base: null, generation: 0, controllers: {} });
+    const [verdictState, setVerdictState] = useState_dp({
+      base: null,
+      v: null,
+      history: [],
+      historyFailed: false,
+      saved: null,
+      regime: null,
+      revival: null,
+      portfolio: null,
+      verdictErrors: []
+    });
     const [choice, setChoice] = useState_dp("hold");
     const [note, setNote] = useState_dp("");
-    const [saved, setSaved] = useState_dp(null);
-    const [regime, setRegime] = useState_dp(null);
-    const [revival, setRevival] = useState_dp(null);
-    const [portfolio, setPortfolio] = useState_dp(null);
-    const [verdictErrors, setVerdictErrors] = useState_dp([]);
-    const markVerdictError = (label) => setVerdictErrors((prev) => prev.includes(label) ? prev : [...prev, label]);
-    const loadHistory = () => fetch(base + "/decisions", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((d) => {
-      setHistory(d && d.decisions || []);
-      setHistoryFailed(false);
-    }).catch(() => {
-      markVerdictError("decisions");
-      setHistoryFailed(true);
-    });
+    const ownsVerdictRequest = (identity4, generation, key, controller) => {
+      const active = verdictRequestRef.current;
+      return currentBaseRef.current === identity4 && active.base === identity4 && active.generation === generation && active.controllers[key] === controller && !controller.signal.aborted;
+    };
+    const sourceOwned = verdictState.base === base;
+    const v = sourceOwned ? verdictState.v : null;
+    const history = sourceOwned ? verdictState.history : [];
+    const historyFailed = sourceOwned ? verdictState.historyFailed : false;
+    const saved = sourceOwned ? verdictState.saved : null;
+    const regime = sourceOwned ? verdictState.regime : null;
+    const revival = sourceOwned ? verdictState.revival : null;
+    const portfolio = sourceOwned ? verdictState.portfolio : null;
+    const verdictErrors = sourceOwned ? verdictState.verdictErrors : [];
+    const loadVerdictEndpoint = (identity4, generation, endpoint, stateKey, timeoutMs) => {
+      const request = verdictRequestRef.current;
+      if (request.base !== identity4 || request.generation !== generation) return;
+      if (request.controllers[endpoint]) request.controllers[endpoint].abort();
+      const controller = new AbortController();
+      request.controllers[endpoint] = controller;
+      setVerdictState((previous) => {
+        if (previous.base !== identity4) return previous;
+        const errors = previous.verdictErrors.filter((label) => label !== endpoint);
+        return endpoint === "decisions" ? { ...previous, history: [], historyFailed: false, verdictErrors: errors } : { ...previous, [stateKey]: null, verdictErrors: errors };
+      });
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      fetch(identity4 + "/" + endpoint, { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))).then((payload) => {
+        if (!ownsVerdictRequest(identity4, generation, endpoint, controller)) return;
+        if (!verdictPayloadMatchesEndpoint(endpoint, payload, identity4)) {
+          throw new Error("Malformed /" + endpoint + " response");
+        }
+        setVerdictState((previous) => {
+          if (previous.base !== identity4) return previous;
+          return endpoint === "decisions" ? { ...previous, history: payload.decisions, historyFailed: false } : { ...previous, [stateKey]: payload };
+        });
+      }).catch((error) => {
+        if (!ownsVerdictRequest(identity4, generation, endpoint, controller) || error && error.name === "AbortError") return;
+        setVerdictState((previous) => {
+          if (previous.base !== identity4) return previous;
+          const verdictErrors2 = previous.verdictErrors.includes(endpoint) ? previous.verdictErrors : [...previous.verdictErrors, endpoint];
+          return endpoint === "decisions" ? { ...previous, history: [], historyFailed: true, verdictErrors: verdictErrors2 } : { ...previous, [stateKey]: null, verdictErrors: verdictErrors2 };
+        });
+      }).finally(() => clearTimeout(timeoutId));
+    };
     useEffect_dp(() => {
-      fetch(base + "/freeze_verdict", { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setV(j)).catch(() => markVerdictError("freeze_verdict"));
-      fetch(base + "/regime_report", { signal: AbortSignal.timeout(1e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setRegime(j)).catch(() => markVerdictError("regime_report"));
-      fetch(base + "/revival_registry", { signal: AbortSignal.timeout(1e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setRevival(j)).catch(() => markVerdictError("revival_registry"));
-      fetch(base + "/portfolio_verdict", { signal: AbortSignal.timeout(1e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setPortfolio(j)).catch(() => markVerdictError("portfolio_verdict"));
-      loadHistory();
+      const previous = verdictRequestRef.current;
+      Object.values(previous.controllers).forEach((controller) => controller.abort());
+      const generation = previous.generation + 1;
+      verdictRequestRef.current = { base, generation, controllers: {} };
+      setVerdictState({
+        base,
+        v: null,
+        history: [],
+        historyFailed: false,
+        saved: null,
+        regime: null,
+        revival: null,
+        portfolio: null,
+        verdictErrors: []
+      });
+      loadVerdictEndpoint(base, generation, "freeze_verdict", "v", 12e3);
+      loadVerdictEndpoint(base, generation, "regime_report", "regime", 1e4);
+      loadVerdictEndpoint(base, generation, "revival_registry", "revival", 1e4);
+      loadVerdictEndpoint(base, generation, "portfolio_verdict", "portfolio", 1e4);
+      loadVerdictEndpoint(base, generation, "decisions", "history", 8e3);
+      return () => {
+        const active = verdictRequestRef.current;
+        if (active.base !== base || active.generation !== generation) return;
+        Object.values(active.controllers).forEach((controller) => controller.abort());
+        active.generation += 1;
+      };
     }, [base]);
     const submit = () => {
+      const request = verdictRequestRef.current;
+      const identity4 = base;
+      const generation = request.generation;
+      if (request.base !== identity4) return;
+      if (request.controllers.record_decision) request.controllers.record_decision.abort();
+      const controller = new AbortController();
+      request.controllers.record_decision = controller;
+      setVerdictState((previous) => previous.base === identity4 ? { ...previous, saved: null } : previous);
+      const timeoutId = setTimeout(() => controller.abort(), 12e3);
       fetch(base + "/record_decision", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ verdict: choice, note })
-      }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((d) => {
-        setSaved(d);
+        body: JSON.stringify({ verdict: choice, note }),
+        signal: controller.signal
+      }).then((response) => response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))).then((payload) => {
+        if (!ownsVerdictRequest(identity4, generation, "record_decision", controller)) return;
+        if (!verdictPayloadMatchesEndpoint("record_decision", payload, identity4)) {
+          throw new Error("Malformed /record_decision response");
+        }
+        setVerdictState((previous) => previous.base === identity4 ? { ...previous, saved: payload } : previous);
         setNote("");
-        loadHistory();
-      }).catch((e) => setSaved({ status: "error", error: String(e) }));
+        loadVerdictEndpoint(identity4, generation, "decisions", "history", 8e3);
+      }).catch((error) => {
+        if (!ownsVerdictRequest(identity4, generation, "record_decision", controller) || error && error.name === "AbortError") return;
+        setVerdictState((previous) => previous.base === identity4 ? { ...previous, saved: { status: "error", error: String(error) } } : previous);
+      }).finally(() => clearTimeout(timeoutId));
     };
     const missingVerdictGlobals = ["VdtPromoteChecklist", "VdtAlerts", "VdtSummaryLines"].filter((name) => typeof window[name] !== "function");
     const _vBadge = (() => {

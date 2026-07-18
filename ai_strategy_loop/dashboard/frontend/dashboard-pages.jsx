@@ -22,7 +22,7 @@ import { UiStateBlock } from "./ui-state.jsx";
 import { VisualQualityPanel } from "./visual-quality.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 import { Phase2InventoryPanel, pageOwnerContract } from "./dashboard-inventory.jsx";
-const { useState: useState_dp, useEffect: useEffect_dp } = React;
+const { useState: useState_dp, useEffect: useEffect_dp, useRef: useRef_dp } = React;
 
 // 필수 전역이 누락되면 무한 로딩처럼 숨기지 않고 진단 가능한 오류로 표시한다.
 function _DpLoading({ name }) {
@@ -53,6 +53,21 @@ const VERDICT_SECTION_META = {
   portfolio: { label: "V6 포트폴리오", ico: "★", anchor: "verdict-portfolio", hint: "채택 추천 조합과 기준선 비교" },
   decide: { label: "운용 결정", ico: "⚖️", anchor: "verdict-decide", hint: "append-only 결정 기록" },
 };
+function verdictPayloadMatchesBase(payload, base) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  const has = Object.prototype.hasOwnProperty;
+  return (!has.call(payload, "base_url") || payload.base_url === base)
+    && (!has.call(payload, "base") || payload.base === base);
+}
+
+function verdictPayloadMatchesEndpoint(endpoint, payload, base) {
+  if (!verdictPayloadMatchesBase(payload, base)) return false;
+  if (endpoint === "decisions") {
+    return Array.isArray(payload.decisions)
+      && payload.decisions.every(row => verdictPayloadMatchesBase(row, base));
+  }
+  return endpoint !== "record_decision" || typeof payload.status === "string";
+}
 
 
 function EvidenceWorkspaceHeader({ activeKey }) {
@@ -273,47 +288,132 @@ function ProPage({ baseUrl, onNavigate }) {
 
 function VerdictPanel({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
-  const [v, setV] = useState_dp(null);
-  const [history, setHistory] = useState_dp([]);
-  const [historyFailed, setHistoryFailed] = useState_dp(false);
+  const currentBaseRef = useRef_dp(base);
+  currentBaseRef.current = base;
+  const verdictRequestRef = useRef_dp({ base: null, generation: 0, controllers: {} });
+  const [verdictState, setVerdictState] = useState_dp({
+    base: null, v: null, history: [], historyFailed: false, saved: null,
+    regime: null, revival: null, portfolio: null, verdictErrors: [],
+  });
   const [choice, setChoice] = useState_dp("hold");
   const [note, setNote] = useState_dp("");
-  const [saved, setSaved] = useState_dp(null);
-  const [regime, setRegime] = useState_dp(null);
-  const [revival, setRevival] = useState_dp(null);
-  const [portfolio, setPortfolio] = useState_dp(null);  // 부모 Phase3 — V6 채택 추천 포트폴리오.
-  const [verdictErrors, setVerdictErrors] = useState_dp([]);
-  const markVerdictError = (label) => setVerdictErrors(prev => prev.includes(label) ? prev : [...prev, label]);
+  const ownsVerdictRequest = (identity, generation, key, controller) => {
+    const active = verdictRequestRef.current;
+    return currentBaseRef.current === identity && active.base === identity
+      && active.generation === generation && active.controllers[key] === controller
+      && !controller.signal.aborted;
+  };
+  const sourceOwned = verdictState.base === base;
+  const v = sourceOwned ? verdictState.v : null;
+  const history = sourceOwned ? verdictState.history : [];
+  const historyFailed = sourceOwned ? verdictState.historyFailed : false;
+  const saved = sourceOwned ? verdictState.saved : null;
+  const regime = sourceOwned ? verdictState.regime : null;
+  const revival = sourceOwned ? verdictState.revival : null;
+  const portfolio = sourceOwned ? verdictState.portfolio : null;
+  const verdictErrors = sourceOwned ? verdictState.verdictErrors : [];
   // G006 — 결정 감사는 하위 탭이 아니라 한 페이지에서 읽는 섹션 묶음이다.
   //   검증 결산·레짐·포트폴리오·운용 결정은 같은 감사 문맥의 일부이므로
   //   숨겨진 tab state/localStorage 없이 앵커 섹션과 요약 필터만 제공한다.
 
-  const loadHistory = () =>
-    fetch(base + "/decisions", { signal: AbortSignal.timeout(8000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(d => { setHistory((d && d.decisions) || []); setHistoryFailed(false); })
-      .catch(() => { markVerdictError("decisions"); setHistoryFailed(true); });
+  const loadVerdictEndpoint = (identity, generation, endpoint, stateKey, timeoutMs) => {
+    const request = verdictRequestRef.current;
+    if (request.base !== identity || request.generation !== generation) return;
+    if (request.controllers[endpoint]) request.controllers[endpoint].abort();
+    const controller = new AbortController();
+    request.controllers[endpoint] = controller;
+    setVerdictState(previous => {
+      if (previous.base !== identity) return previous;
+      const errors = previous.verdictErrors.filter(label => label !== endpoint);
+      return endpoint === "decisions"
+        ? { ...previous, history: [], historyFailed: false, verdictErrors: errors }
+        : { ...previous, [stateKey]: null, verdictErrors: errors };
+    });
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    fetch(identity + "/" + endpoint, { signal: controller.signal })
+      .then(response => (response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))))
+      .then(payload => {
+        if (!ownsVerdictRequest(identity, generation, endpoint, controller)) return;
+        if (!verdictPayloadMatchesEndpoint(endpoint, payload, identity)) {
+          throw new Error("Malformed /" + endpoint + " response");
+        }
+        setVerdictState(previous => {
+          if (previous.base !== identity) return previous;
+          return endpoint === "decisions"
+            ? { ...previous, history: payload.decisions, historyFailed: false }
+            : { ...previous, [stateKey]: payload };
+        });
+      })
+      .catch(error => {
+        if (!ownsVerdictRequest(identity, generation, endpoint, controller)
+            || (error && error.name === "AbortError")) return;
+        setVerdictState(previous => {
+          if (previous.base !== identity) return previous;
+          const verdictErrors = previous.verdictErrors.includes(endpoint)
+            ? previous.verdictErrors : [...previous.verdictErrors, endpoint];
+          return endpoint === "decisions"
+            ? { ...previous, history: [], historyFailed: true, verdictErrors }
+            : { ...previous, [stateKey]: null, verdictErrors };
+        });
+      })
+      .finally(() => clearTimeout(timeoutId));
+  };
+
   useEffect_dp(() => {
-    fetch(base + "/freeze_verdict", { signal: AbortSignal.timeout(12000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setV(j)).catch(() => markVerdictError("freeze_verdict"));
-    fetch(base + "/regime_report", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setRegime(j)).catch(() => markVerdictError("regime_report"));
-    fetch(base + "/revival_registry", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setRevival(j)).catch(() => markVerdictError("revival_registry"));
-    fetch(base + "/portfolio_verdict", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setPortfolio(j)).catch(() => markVerdictError("portfolio_verdict"));
-    loadHistory();
+    const previous = verdictRequestRef.current;
+    Object.values(previous.controllers).forEach(controller => controller.abort());
+    const generation = previous.generation + 1;
+    verdictRequestRef.current = { base, generation, controllers: {} };
+    setVerdictState({
+      base, v: null, history: [], historyFailed: false, saved: null,
+      regime: null, revival: null, portfolio: null, verdictErrors: [],
+    });
+    loadVerdictEndpoint(base, generation, "freeze_verdict", "v", 12000);
+    loadVerdictEndpoint(base, generation, "regime_report", "regime", 10000);
+    loadVerdictEndpoint(base, generation, "revival_registry", "revival", 10000);
+    loadVerdictEndpoint(base, generation, "portfolio_verdict", "portfolio", 10000);
+    loadVerdictEndpoint(base, generation, "decisions", "history", 8000);
+    return () => {
+      const active = verdictRequestRef.current;
+      if (active.base !== base || active.generation !== generation) return;
+      Object.values(active.controllers).forEach(controller => controller.abort());
+      active.generation += 1;
+    };
   }, [base]);
 
   const submit = () => {
+    const request = verdictRequestRef.current;
+    const identity = base;
+    const generation = request.generation;
+    if (request.base !== identity) return;
+    if (request.controllers.record_decision) request.controllers.record_decision.abort();
+    const controller = new AbortController();
+    request.controllers.record_decision = controller;
+    setVerdictState(previous => previous.base === identity ? { ...previous, saved: null } : previous);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
     fetch(base + "/record_decision", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ verdict: choice, note }),
+      signal: controller.signal,
     })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(d => { setSaved(d); setNote(""); loadHistory(); })
-      .catch(e => setSaved({ status: "error", error: String(e) }));
+      .then(response => (response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status))))
+      .then(payload => {
+        if (!ownsVerdictRequest(identity, generation, "record_decision", controller)) return;
+        if (!verdictPayloadMatchesEndpoint("record_decision", payload, identity)) {
+          throw new Error("Malformed /record_decision response");
+        }
+        setVerdictState(previous => previous.base === identity ? { ...previous, saved: payload } : previous);
+        setNote("");
+        loadVerdictEndpoint(identity, generation, "decisions", "history", 8000);
+      })
+      .catch(error => {
+        if (!ownsVerdictRequest(identity, generation, "record_decision", controller)
+            || (error && error.name === "AbortError")) return;
+        setVerdictState(previous => previous.base === identity
+          ? { ...previous, saved: { status: "error", error: String(error) } } : previous);
+      })
+      .finally(() => clearTimeout(timeoutId));
   };
   const missingVerdictGlobals = ["VdtPromoteChecklist", "VdtAlerts", "VdtSummaryLines"]
     .filter(name => typeof window[name] !== "function");

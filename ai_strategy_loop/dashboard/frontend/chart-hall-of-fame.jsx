@@ -10,7 +10,7 @@ import { HofInventoryGate } from "./hof-inventory.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
 const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
-const { useState: useState_rg, useEffect: useEffect_rg } = React;
+const { useState: useState_rg, useEffect: useEffect_rg, useRef: useRef_rg } = React;
 
 /* ─────────────────────────────────────────────────────────────────────────
    명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합 패널.
@@ -316,7 +316,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
         )}
       </div>
       {galleryOpen && (
-        <ReferenceGallery baseUrl={baseUrl} onClose={() => setGalleryOpen(false)} />
+        <ReferenceGallery baseUrl={baseUrl} wsStatus={wsStatus} onClose={() => setGalleryOpen(false)} />
       )}
     </div>
   );
@@ -328,38 +328,82 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
    baseUrl+'/reference_img/'+filename(StaticFiles 읽기 전용 마운트)로 직접 가져온다.
    스크린샷↔전략# 매핑은 불확실하므로 개별 행 정확 매핑을 시도하지 않고 전체 갤러리
    브라우징만 제공한다(정직). 모달 패턴은 CodeViewer(modal-bd/modal)를 따른다. */
-function ReferenceGallery({ baseUrl, onClose }) {
+function ReferenceGallery({ baseUrl, wsStatus, onClose }) {
   const [files, setFiles] = useState_rg(null);   // string[] | null
+  const [listedBase, setListedBase] = useState_rg("");
   const [err, setErr] = useState_rg(null);
+  const [errorBase, setErrorBase] = useState_rg("");
   const [zoom, setZoom] = useState_rg(null);     // 확대 중인 파일명 | null
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const galleryRequestRef = useRef_rg({ generation: 0, controller: null, baseUrl: "", isDemo: false });
 
   useEffect_rg(() => {
-    if (!baseUrl) { setFiles([]); return; }
-    let cancelled = false;
-    fetch(baseUrl + "/reference_screenshots", { signal: AbortSignal.timeout(4000) })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { if (!cancelled) { setFiles(j.screenshots || []); setErr(null); } })
-      .catch(e => { if (!cancelled) setErr(String(e)); })
-      .finally(() => {});
-    return () => { cancelled = true; };
-  }, [baseUrl]);
+    if (galleryRequestRef.current.controller) galleryRequestRef.current.controller.abort();
+    const controller = new AbortController();
+    const generation = galleryRequestRef.current.generation + 1;
+    const identity = baseUrl || "";
+    galleryRequestRef.current = { generation, controller, baseUrl: identity, isDemo };
 
-  const imgSrc = (name) => baseUrl + "/reference_img/" + encodeURIComponent(name);
+    setFiles(null);
+    setListedBase("");
+    setErr(null);
+    setErrorBase("");
+    setZoom(null);
+    if (isDemo || !identity) {
+      setFiles([]);
+      return () => controller.abort();
+    }
+
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    fetch(identity + "/reference_screenshots", { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => {
+        const current = galleryRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity
+            || current.isDemo !== isDemo || controller.signal.aborted) return;
+        if (!j || typeof j !== "object" || !Array.isArray(j.screenshots)
+            || !j.screenshots.every(name => typeof name === "string" && name.length > 0)) {
+          throw new Error("Malformed /reference_screenshots response");
+        }
+        setFiles(j.screenshots);
+        setListedBase(identity);
+      })
+      .catch(e => {
+        const current = galleryRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity
+            || current.isDemo !== isDemo || controller.signal.aborted) return;
+        setFiles([]);
+        setListedBase("");
+        setErr(String(e));
+        setErrorBase(identity);
+      })
+      .finally(() => clearTimeout(timeoutId));
+    return () => {
+      controller.abort();
+      galleryRequestRef.current.generation += 1;
+    };
+  }, [baseUrl, isDemo]);
+
+  const displayedFiles = !isDemo && listedBase === (baseUrl || "") ? files : null;
+  const displayedErr = !isDemo && errorBase === (baseUrl || "") ? err : null;
+  const displayedZoom = displayedFiles && zoom && displayedFiles.includes(zoom) ? zoom : null;
+  const imgSrc = (name) => listedBase + "/reference_img/" + encodeURIComponent(name);
 
   return (
     <div className="modal-bd"
-         onMouseDown={(e) => { if (e.target === e.currentTarget) (zoom ? setZoom(null) : onClose()); }}>
+         onMouseDown={(e) => { if (e.target === e.currentTarget) (displayedZoom ? setZoom(null) : onClose()); }}>
       <div className="modal" style={{ width: "min(1100px, calc(100vw - 32px))" }}
            onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-hd">
           <h2>
             📷 인간 결과 스크린샷
             <span className="sub">
-              STOM_Good_Results — 결과 화면 {files ? files.length : "…"}장 · 스크린샷↔전략# 매핑 불확실(전체 브라우징)
+              STOM_Good_Results — 결과 화면 {displayedFiles ? displayedFiles.length : "…"}장 · 스크린샷↔전략# 매핑 불확실(전체 브라우징)
             </span>
           </h2>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {zoom && (
+            {displayedZoom && (
               <button className="btn ghost sm" onClick={() => setZoom(null)}>← 그리드</button>
             )}
             <button className="btn ghost sm" onClick={onClose}>닫기</button>
@@ -367,32 +411,32 @@ function ReferenceGallery({ baseUrl, onClose }) {
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-          {err ? (
+          {displayedErr ? (
             <div style={{ padding: "28px 0", textAlign: "center", color: "var(--red)",
                           fontSize: 12, fontFamily: "var(--mono)" }}>
-              스크린샷 목록 조회 실패: {err}
+              스크린샷 목록 조회 실패: {displayedErr}
             </div>
-          ) : files == null ? (
+          ) : displayedFiles == null ? (
             <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
                           fontSize: 12, fontFamily: "var(--mono)" }}>
               스크린샷 불러오는 중…
             </div>
-          ) : files.length === 0 ? (
+          ) : displayedFiles.length === 0 ? (
             <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
                           fontSize: 12, fontFamily: "var(--mono)" }}>
               표시할 스크린샷이 없습니다.
             </div>
-          ) : zoom ? (
+          ) : displayedZoom ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-              <img src={imgSrc(zoom)} alt={zoom}
+              <img src={imgSrc(displayedZoom)} alt={displayedZoom}
                    style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain",
                             border: "1px solid var(--line-2)", borderRadius: 6 }} />
-              <div style={{ fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>{zoom}</div>
+              <div style={{ fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>{displayedZoom}</div>
             </div>
           ) : (
             <div style={{ display: "grid",
                           gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-              {files.map((name) => (
+              {displayedFiles.map((name) => (
                 <div key={name} onClick={() => setZoom(name)}
                      data-tip="클릭하면 확대"
                      style={{ cursor: "zoom-in", border: "1px solid var(--line-2)",

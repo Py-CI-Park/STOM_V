@@ -160,6 +160,33 @@ def test_hall_of_fame_has_valid_empty_error_and_base_owned_states() -> None:
     assert "<HofInventoryGate compact />" in source
 
 
+def test_reference_gallery_rejects_stale_or_unowned_lists_on_base_or_demo_change() -> None:
+    source = _read("chart-hall-of-fame.jsx")
+
+    # Gallery requests carry both BASE and demo identity, abort prior work, and reject superseded completions.
+    assert "<ReferenceGallery baseUrl={baseUrl} wsStatus={wsStatus}" in source
+    assert "const galleryRequestRef = useRef_rg" in source
+    assert "galleryRequestRef.current.controller.abort()" in source
+    assert "const generation = galleryRequestRef.current.generation + 1;" in source
+    assert "current.generation !== generation || current.baseUrl !== identity" in source
+    assert "current.isDemo !== isDemo || controller.signal.aborted" in source
+    assert "}, [baseUrl, isDemo]);" in source
+
+    # A source identity change clears old display state, including the lightbox, before a replacement can render.
+    assert "setFiles(null);" in source
+    assert "setListedBase(\"\");" in source
+    assert "setErr(null);" in source
+    assert "setErrorBase(\"\");" in source
+    assert "setZoom(null);" in source
+
+    # Only well-formed filename lists become renderable, and URLs stay attached to their listed BASE.
+    assert 'new Error("Malformed /reference_screenshots response")' in source
+    assert 'typeof name === "string" && name.length > 0' in source
+    assert 'const displayedFiles = !isDemo && listedBase === (baseUrl || "") ? files : null;' in source
+    assert 'const imgSrc = (name) => listedBase + "/reference_img/" + encodeURIComponent(name);' in source
+    assert "displayedFiles.map((name) => (" in source
+    assert "imgSrc(displayedZoom)" in source
+
 @pytest.mark.parametrize("name", ["v4-lab.jsx", "v4-workbench.jsx", "v4-reports.jsx"])
 def test_lab_and_workbench_jsx_transform(name: str, tmp_path: Path) -> None:
     # Given: an installed esbuild and one V4 tab wrapper.

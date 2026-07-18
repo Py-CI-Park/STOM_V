@@ -130,3 +130,45 @@ def test_context_request_lifecycle_aborts_and_hides_unowned_content_before_copy(
         "const text = copyableContextPack(pack)",
     ):
         assert marker in source
+def test_verdict_payload_base_identity_rejects_malformed_and_foreign_responses() -> None:
+    # Given: a VerdictPanel response may carry an explicit source BASE.
+    source = _read("dashboard-pages.jsx")
+    expression = """[
+      fn({base_url:'http://one'}, 'http://one'),
+      fn({base:'http://one'}, 'http://one'),
+      fn({base_url:'http://old'}, 'http://one'),
+      fn({base:'http://old'}, 'http://one'),
+      fn([], 'http://one'),
+      fn(null, 'http://one')
+    ]"""
+
+    # When/Then: explicit ownership must match exactly and malformed responses fail closed.
+    assert _run_helper(source, "verdictPayloadMatchesBase", expression) == [
+        True, True, False, False, False, False,
+    ]
+
+
+def test_verdict_panel_aborts_and_generation_guards_all_governance_sources() -> None:
+    # Given: the History governance panel can be rebound to another BASE mid-request.
+    source = _read("dashboard-pages.jsx")
+    start = source.index("function VerdictPanel(")
+    panel = source[start:source.index("Object.assign(window", start)]
+
+    # When/Then: old BASE callbacks cannot publish data, errors, POST feedback, or a ledger reload.
+    for marker in (
+        "const sourceOwned = verdictState.base === base",
+        "currentBaseRef.current === identity",
+        "active.generation === generation",
+        "Object.values(previous.controllers).forEach(controller => controller.abort())",
+        "Object.values(active.controllers).forEach(controller => controller.abort())",
+        'loadVerdictEndpoint(base, generation, "freeze_verdict", "v", 12000)',
+        'loadVerdictEndpoint(base, generation, "regime_report", "regime", 10000)',
+        'loadVerdictEndpoint(base, generation, "revival_registry", "revival", 10000)',
+        'loadVerdictEndpoint(base, generation, "portfolio_verdict", "portfolio", 10000)',
+        'loadVerdictEndpoint(base, generation, "decisions", "history", 8000)',
+        'ownsVerdictRequest(identity, generation, "record_decision", controller)',
+        'loadVerdictEndpoint(identity, generation, "decisions", "history", 8000)',
+        'throw new Error("Malformed /" + endpoint + " response")',
+        'throw new Error("Malformed /record_decision response")',
+    ):
+        assert marker in panel

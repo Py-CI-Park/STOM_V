@@ -113,8 +113,29 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
   const [traceStatus, setTraceStatus] = useState_rix("all");
   const [sortKey, setSortKey] = useState_rix("updated_desc");
   const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
-  const detailRequestSeq = useRef_rix(0);
+  const requestsRef = useRef_rix({ index: null, detail: null });
+  const generationRef = useRef_rix({ index: 0, detail: 0 });
   const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
+  const baseIdentity = (isDemo ? "demo:" : "live:") + base;
+  const baseIdentityRef = useRef_rix(baseIdentity);
+  baseIdentityRef.current = baseIdentity;
+
+  useEffect_rix(() => {
+    Object.values(requestsRef.current).forEach(controller => {
+      if (controller) controller.abort();
+    });
+    generationRef.current.index += 1;
+    generationRef.current.detail += 1;
+    setRecords([]);
+    setErrors([]);
+    setCacheInfo(null);
+    setSelectedId("");
+    setDetail(null);
+    setDetailLoading(false);
+    setLoading(false);
+    setElapsed(0);
+    setErr("");
+  }, [baseIdentity]);
 
   useEffect_rix(() => {
     const timer = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
@@ -131,23 +152,46 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
   }, [loading]);
 
   const loadIndex = React.useCallback(() => {
-    if (isDemo || !base) return;
+    if (isDemo || !base) return undefined;
+    if (requestsRef.current.index) requestsRef.current.index.abort();
     const controller = new AbortController();
+    const generation = ++generationRef.current.index;
+    const requestBase = baseIdentity;
+    requestsRef.current.index = controller;
     setLoading(true);
     setErr("");
     fetch(base + "/research_index", { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
-        const rows = Array.isArray(j && j.records) ? j.records : [];
-        setRecords(rows);
-        setErrors(Array.isArray(j && j.errors) ? j.errors : []);
-        setCacheInfo(j && j.cache ? j.cache : null);
-        setSelectedId(prev => rows.some(row => row.id === prev) ? prev : "");
+        if (!j || typeof j !== "object" || !Array.isArray(j.records) || !Array.isArray(j.errors)
+          || (j.cache != null && typeof j.cache !== "object")
+          || !j.records.every(row => row && typeof row === "object" && typeof row.id === "string"
+            && Array.isArray(row.tags) && Array.isArray(row.related_ids))
+          || !j.errors.every(item => item && typeof item === "object")) {
+          throw new Error("Malformed research index response");
+        }
+        if (generation !== generationRef.current.index || controller.signal.aborted
+          || baseIdentityRef.current !== requestBase) return;
+        setRecords(j.records);
+        setErrors(j.errors);
+        setCacheInfo(j.cache || null);
+        setSelectedId(prev => j.records.some(row => row.id === prev) ? prev : "");
       })
-      .catch(e => { if (e.name !== "AbortError") setErr(String(e)); })
-      .finally(() => setLoading(false));
+      .catch(e => {
+        if (e.name !== "AbortError" && generation === generationRef.current.index && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) {
+          setRecords([]);
+          setErrors([]);
+          setCacheInfo(null);
+          setErr(String(e));
+        }
+      })
+      .finally(() => {
+        if (generation === generationRef.current.index && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setLoading(false);
+      });
     return () => controller.abort();
-  }, [base, isDemo]);
+  }, [base, baseIdentity, isDemo]);
 
   useEffect_rix(() => {
     const cancel = loadIndex();
@@ -187,28 +231,40 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
 
 
   useEffect_rix(() => {
-    const requestId = detailRequestSeq.current + 1;
-    detailRequestSeq.current = requestId;
+    if (requestsRef.current.detail) requestsRef.current.detail.abort();
+    const requestId = ++generationRef.current.detail;
     if (isDemo || !base || !selectedId) {
       setDetail(null);
       setDetailLoading(false);
       return undefined;
     }
     const controller = new AbortController();
-    const isCurrent = () => detailRequestSeq.current === requestId;
+    const requestBase = baseIdentity;
+    requestsRef.current.detail = controller;
     setDetailLoading(true);
     setDetail(null);
     fetch(base + "/research_index/detail?id=" + encodeURIComponent(selectedId), { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { if (isCurrent()) setDetail(j || null); })
+      .then(j => {
+        if (!j || typeof j !== "object" || typeof j.available !== "boolean"
+          || (j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId))) {
+          throw new Error("Malformed research index detail response");
+        }
+        if (requestId === generationRef.current.detail && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setDetail(j);
+      })
       .catch(e => {
-        if (e.name !== "AbortError" && isCurrent()) {
+        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) {
           setDetail({ available: false, reason: String(e) });
         }
       })
-      .finally(() => { if (isCurrent()) setDetailLoading(false); });
+      .finally(() => {
+        if (requestId === generationRef.current.detail && !controller.signal.aborted
+          && baseIdentityRef.current === requestBase) setDetailLoading(false);
+      });
     return () => controller.abort();
-  }, [base, isDemo, selectedId]);
+  }, [base, baseIdentity, isDemo, selectedId]);
 
   const selectedRow = records.find(row => row.id === selectedId) || null;
   const detailText = _rixDetailText(detail);
