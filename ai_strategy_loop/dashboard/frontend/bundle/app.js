@@ -31780,6 +31780,7 @@ def signal_sell(pos, bar, ind):
             cursor: "pointer"
           },
           tabIndex: 0,
+          role: "button",
           "aria-selected": active,
           onClick: () => selectResearch(row.research_id),
           onKeyDown: (e) => {

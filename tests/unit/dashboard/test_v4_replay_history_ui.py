@@ -68,6 +68,7 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "generation !== generationRef.current" in tree
     assert "controller.abort()" in tree
     assert "aria-selected={active}" in tree
+    assert 'role="button"' in tree
     assert 'aria-label="연구 근거 목적지 상태"' in tree
     for state in ("complete", "partial", "missing", "conflict"):
         assert state in tree

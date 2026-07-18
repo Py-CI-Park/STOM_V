@@ -375,6 +375,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                             cursor: "pointer",
                           }}
                           tabIndex={0}
+                          role="button"
                           aria-selected={active}
                           onClick={() => selectResearch(row.research_id)}
                           onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectResearch(row.research_id); } }}
