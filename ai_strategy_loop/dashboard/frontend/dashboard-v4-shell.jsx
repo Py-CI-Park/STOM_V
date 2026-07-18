@@ -21,7 +21,6 @@ import { V4Replay } from "./v4-replay.jsx";
 import { V4History } from "./v4-history.jsx";
 import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
-import { V4Audit } from "./v4-audit.jsx";
 import { V4Alpha } from "./v4-alpha.jsx";
 import { V4Reports } from "./v4-reports.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
@@ -39,7 +38,6 @@ const V4_TABS = [
   { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)", group: "primary" },
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
-  { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · freeze/verdict · export 경계", group: "secondary" },
   { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
@@ -52,7 +50,7 @@ const V4_PATH_TAB_MAP = {
   "records": "history",
   "lab": "lab",
   "workbench": "workbench",
-  "verdict": "audit",
+  "verdict": "history",
   "process": "research",
 };
 
@@ -410,8 +408,6 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
               ) : activeTab === "reports" ? (
                 <V4Reports baseUrl={baseUrl} />
-              ) : activeTab === "audit" ? (
-                <V4Audit baseUrl={baseUrl} onNavigate={selectTab} />
               ) : activeTab === "alpha" ? (
                 <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : (
