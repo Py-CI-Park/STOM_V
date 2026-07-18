@@ -25633,13 +25633,21 @@ def signal_sell(pos, bar, ind):
     const requestAbortRef = useRef_btc(null);
     useEffect_btc(() => {
       sourceGenerationRef.current += 1;
-      if (requestAbortRef.current) requestAbortRef.current.abort();
+      if (requestAbortRef.current) {
+        const controller = requestAbortRef.current;
+        requestAbortRef.current = null;
+        controller.abort();
+      }
       setPage(null);
       setLoading(false);
       setError("");
       return () => {
         sourceGenerationRef.current += 1;
-        if (requestAbortRef.current) requestAbortRef.current.abort();
+        if (requestAbortRef.current) {
+          const controller = requestAbortRef.current;
+          requestAbortRef.current = null;
+          controller.abort();
+        }
       };
     }, [jobId, baseUrl]);
     const loadPage = useCallback_btc((offset) => {
@@ -25660,15 +25668,20 @@ def signal_sell(pos, bar, ind):
         if (generation !== sourceGenerationRef.current || fetchError.name === "AbortError") return;
         setError(String(fetchError));
       }).finally(() => {
-        if (requestAbortRef.current === controller) requestAbortRef.current = null;
-        if (generation === sourceGenerationRef.current) setLoading(false);
+        if (requestAbortRef.current === controller) {
+          requestAbortRef.current = null;
+          if (generation === sourceGenerationRef.current) setLoading(false);
+        }
       });
     }, [baseUrl, jobId]);
     const onToggle = useCallback_btc((event) => {
       if (event.currentTarget.open && !page && !loading) {
         loadPage(0);
       } else if (!event.currentTarget.open && requestAbortRef.current) {
-        requestAbortRef.current.abort();
+        const controller = requestAbortRef.current;
+        requestAbortRef.current = null;
+        controller.abort();
+        setLoading(false);
       }
     }, [page, loading, loadPage]);
     return /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", onToggle }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10, overflowX: "auto" } }, loading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAC70\uB798 \uC0C1\uC138 \uB85C\uB529 \uC911\u2026"), !loading && error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, error, " ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage((page || {}).offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: page.status === "error" ? "var(--red)" : void 0 } }, page.status === "error" ? page.diagnostic || "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "missing" ? "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "unavailable" ? "\uC644\uB8CC\uB41C \uC77C\uBC18 \uBC31\uD14C\uC2A4\uD2B8\uC5D0\uC11C\uB9CC \uAC70\uB798 \uC0C1\uC138\uB97C \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.", page.status === "error" && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage(page.offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: { minWidth: 1300 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, _BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => /* @__PURE__ */ React.createElement("th", { key }, label)))), /* @__PURE__ */ React.createElement("tbody", null, page.items.map((trade, rowIndex) => /* @__PURE__ */ React.createElement("tr", { key: (trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex }, _BT_TRADE_DETAIL_COLUMNS.map(([key]) => /* @__PURE__ */ React.createElement("td", { key }, trade[key] == null ? "\u2014" : String(trade[key]))))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 8 } }, /* @__PURE__ */ React.createElement(

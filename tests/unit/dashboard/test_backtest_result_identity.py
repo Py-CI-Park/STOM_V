@@ -364,5 +364,5 @@ def test_result_detail_only_distinguishes_empty_missing_and_errors(monkeypatch, 
     assert "<details" in frontend and "onToggle={onToggle}" in frontend
     assert "detail_only=true&detail_limit=" in frontend
     assert "sourceGenerationRef" in frontend and "generation !== sourceGenerationRef.current" in frontend
-    assert "requestAbortRef.current.abort()" in frontend
+    assert "controller.abort()" in frontend and "requestAbortRef.current = null" in frontend
     assert "run_context || {}).timeframe" in frontend

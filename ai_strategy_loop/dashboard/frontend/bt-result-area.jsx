@@ -478,13 +478,21 @@ function BtTradeDetails({ baseUrl, jobId }) {
 
   useEffect_btc(() => {
     sourceGenerationRef.current += 1;
-    if (requestAbortRef.current) requestAbortRef.current.abort();
+    if (requestAbortRef.current) {
+      const controller = requestAbortRef.current;
+      requestAbortRef.current = null;
+      controller.abort();
+    }
     setPage(null);
     setLoading(false);
     setError("");
     return () => {
       sourceGenerationRef.current += 1;
-      if (requestAbortRef.current) requestAbortRef.current.abort();
+      if (requestAbortRef.current) {
+        const controller = requestAbortRef.current;
+        requestAbortRef.current = null;
+        controller.abort();
+      }
     };
   }, [jobId, baseUrl]);
 
@@ -510,8 +518,10 @@ function BtTradeDetails({ baseUrl, jobId }) {
         setError(String(fetchError));
       })
       .finally(() => {
-        if (requestAbortRef.current === controller) requestAbortRef.current = null;
-        if (generation === sourceGenerationRef.current) setLoading(false);
+        if (requestAbortRef.current === controller) {
+          requestAbortRef.current = null;
+          if (generation === sourceGenerationRef.current) setLoading(false);
+        }
       });
   }, [baseUrl, jobId]);
 
@@ -519,7 +529,10 @@ function BtTradeDetails({ baseUrl, jobId }) {
     if (event.currentTarget.open && !page && !loading) {
       loadPage(0);
     } else if (!event.currentTarget.open && requestAbortRef.current) {
-      requestAbortRef.current.abort();
+      const controller = requestAbortRef.current;
+      requestAbortRef.current = null;
+      controller.abort();
+      setLoading(false);
     }
   }, [page, loading, loadPage]);
 
