@@ -465,3 +465,15 @@
   .v4-stats { grid-template-columns: repeat(4, 1fr); }
   .v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 520px; }
 }
+
+/* ── UXR-P5 Live 스테퍼 상태 확장: 실패/중단/차단을 은폐하지 않고 명시(§10-9) ── */
+.phase-step.failed .phase-num { background: rgba(255,107,107,0.16); border-color: var(--red); color: var(--red); }
+.phase-step.failed .phase-step-label { color: var(--red); }
+.phase-gen-tag.stopping { color: var(--amber); border-color: rgba(240,179,90,0.4); background: rgba(240,179,90,0.08); }
+.phase-gen-tag.errored { color: var(--red); border-color: rgba(255,107,107,0.44); background: rgba(255,107,107,0.08); }
+.phase-gen-tag.blocked { color: var(--amber); border-color: rgba(240,179,90,0.4); background: rgba(240,179,90,0.08); }
+.phase-gen-tag.complete { color: var(--teal); border-color: rgba(76,214,179,0.4); background: rgba(76,214,179,0.08); }
+.phase-status-banner { margin-top: 8px; padding: 7px 11px; border-radius: var(--radius-sm); font-size: 11.5px; font-family: var(--mono); line-height: 1.4; }
+.phase-status-banner.err  { color: var(--red);   border: 1px solid rgba(255,107,107,0.36); background: rgba(255,107,107,0.07); }
+.phase-status-banner.warn { color: var(--amber); border: 1px solid rgba(240,179,90,0.34);  background: rgba(240,179,90,0.07); }
+.phase-status-banner b { font-weight: 600; }

@@ -90,46 +90,75 @@ function phaseIndex(phase) {
 }
 
 function PhaseTimeline({ state }) {
-  const running = state.status === "running" || state.status === "stopping";
+  const status = state.status;
+  const running = status === "running" || status === "stopping";
+  const stopping = status === "stopping";
+  const errored = status === "error";
+  const blocked = status === "blocked";
   const activeIdx = running ? phaseIndex(state.latest?.phase) : -1;
+  // §10-9: 실패/차단을 은폐하지 않는다 — 마지막으로 알려진 단계를 실패로 표시.
+  const failedIdx = (errored || blocked) ? phaseIndex(state.latest?.phase) : -1;
   const activeGen = running ? state.current_gen + 1 : state.current_gen;
+  const reason = errored
+    ? (state.latest?.error || state.error || "실행 중 오류로 중단됨")
+    : blocked
+      ? (state.latest?.block_reason || state.latest?.message || "게이트/사전조건으로 차단됨")
+      : "";
+  const wrapCls = stopping ? " stopping" : errored ? " errored" : blocked ? " blocked" : "";
 
   return (
-    <div className="phase-timeline">
-      {PHASES.map((p, i) => {
-        const isActive = i === activeIdx;
-        const isDone = activeIdx > i;
-        const isPending = activeIdx < i || activeIdx === -1;
-        return (
-          <React.Fragment key={p.key}>
-            <div className={`phase-step ${isActive ? "active" : isDone ? "done" : "pending"}`}>
-              <div className="phase-num">
-                {isDone ? (
-                  <svg width="11" height="11" viewBox="0 0 16 16">
-                    <path d="M3 8 L7 12 L13 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  i + 1
-                )}
+    <React.Fragment>
+      <div className={"phase-timeline" + wrapCls}>
+        {PHASES.map((p, i) => {
+          const isFailed = failedIdx === i;
+          const isActive = !isFailed && i === activeIdx;
+          const isDone = !isFailed && activeIdx > i;
+          const cls = isFailed ? "failed" : isActive ? "active" : isDone ? "done" : "pending";
+          return (
+            <React.Fragment key={p.key}>
+              <div className={`phase-step ${cls}`}>
+                <div className="phase-num">
+                  {isFailed ? (
+                    <svg width="11" height="11" viewBox="0 0 16 16">
+                      <path d="M4 4 L12 12 M12 4 L4 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    </svg>
+                  ) : isDone ? (
+                    <svg width="11" height="11" viewBox="0 0 16 16">
+                      <path d="M3 8 L7 12 L13 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
+                </div>
+                <div className="phase-step-text">
+                  <div className="phase-step-label">{p.label}</div>
+                  <div className="phase-step-sub">{p.sub}</div>
+                </div>
+                {isActive && <span className="phase-active-pulse"></span>}
               </div>
-              <div className="phase-step-text">
-                <div className="phase-step-label">{p.label}</div>
-                <div className="phase-step-sub">{p.sub}</div>
-              </div>
-              {isActive && <span className="phase-active-pulse"></span>}
-            </div>
-            {i < PHASES.length - 1 && (
-              <div className={`phase-connector ${isDone ? "done" : ""}`}>
-                <div className="phase-connector-fill" style={{ width: isDone ? "100%" : isActive ? "50%" : "0%" }}></div>
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-      <div className="phase-gen-tag">
-        {running ? `세대 ${activeGen} 진행중` : state.status === "complete" ? `${state.current_gen}세대 완료` : "대기중"}
+              {i < PHASES.length - 1 && (
+                <div className={`phase-connector ${isDone ? "done" : ""}`}>
+                  <div className="phase-connector-fill" style={{ width: isDone ? "100%" : isActive ? "50%" : "0%" }}></div>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+        <div className={"phase-gen-tag" + wrapCls + (status === "complete" ? " complete" : "")}>
+          {stopping ? "정지 중…"
+            : errored ? "실패 · 중단됨"
+            : blocked ? "차단됨"
+            : running ? `세대 ${activeGen} 진행중`
+            : status === "complete" ? `${state.current_gen}세대 완료`
+            : "대기중"}
+        </div>
       </div>
-    </div>
+      {reason && (
+        <div className={"phase-status-banner " + (errored ? "err" : "warn")} role="status">
+          <b>{errored ? "오류" : "차단"}</b> · {reason}
+        </div>
+      )}
+    </React.Fragment>
   );
 }
 
