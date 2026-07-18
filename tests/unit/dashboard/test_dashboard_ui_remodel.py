@@ -357,8 +357,10 @@ def test_g004_quick_start_help_texts_are_explicit() -> None:
     assert "버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다." in controls
 def test_phase2_inventory_gate_pins_owner_files_and_thresholds() -> None:
     src = _read("dashboard-inventory.jsx")
-    for key in ('key: "evolution"', 'key: "process"', 'key: "records"', 'key: "pro"', 'key: "verdict"'):
+    for key in ('key: "research"', 'key: "backtest"', 'key: "replay"', 'key: "history"', 'key: "workbench"', 'key: "reports"'):
         assert key in src
+    for alias in ('legacyAliases: ["evolution"]', 'legacyAliases: ["records", "audit", "verdict"]', 'prototypeAliases: ["catalog"]'):
+        assert alias in src
     for owner_file in ("research-index.jsx", "rp-panel.jsx", "chart-hall-of-fame.jsx", "table.jsx"):
         assert owner_file in src
     assert "PHASE2_SOURCE_INVENTORY" in src

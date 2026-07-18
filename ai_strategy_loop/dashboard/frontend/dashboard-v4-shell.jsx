@@ -26,28 +26,29 @@ import { V4Reports } from "./v4-reports.jsx";
 import { V4Catalog } from "./v4-catalog.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
+import { DASHBOARD_PAGE_OWNER_MATRIX } from "./dashboard-inventory.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
-// V5.P0 정본 IA owner: 일반 레일은 이 여섯 목적지만 노출한다.
-// Lab/Context/Alpha/Catalog는 개발자 복구 쿼리에서만 기존 컴포넌트를 마운트한다.
-const V4_NORMAL_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰" },
-  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트" },
-  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색 · 감사 거버넌스" },
-  { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)" },
-  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)" },
-];
+// V5.P0 정본 IA owner: inventory matrix is the one canonical six-destination rail.
+// Lab/Context/Alpha/Catalog remain explicit rollback-only prototype identities.
+const V4_NORMAL_TABS = DASHBOARD_PAGE_OWNER_MATRIX;
 const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
 const V4_LEGACY_EXTRA_TABS = [
-  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
-  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4)", badge: "P4", hint: "research_assets.db 판정카드·자산 · 읽기 전용(SELECT-only)" },
-  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능" },
-  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)" },
+  { key: "lab", label: "Lab", full: "Lab prototype", badge: "LAB", hint: "비정본 prototype · 명시적 rollback 전용" },
+  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 prototype (P4)", badge: "P4", hint: "비권위적·비규범적 prototype · sealed P4 API/views 미완성" },
+  { key: "context", label: "Context", full: "AI Context Pack prototype", badge: "PACK", hint: "비정본 prototype · 명시적 rollback 전용" },
+  { key: "alpha", label: "Alpha", full: "Alpha Lab prototype", badge: "ALPHA", hint: "비정본 prototype · 명시적 rollback 전용" },
 ];
 const V4_TAB_KEYS = V4_NORMAL_TABS.map(t => t.key);
 const V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map(t => t.key);
-const V4_LEGACY_TAB_MIGRATIONS = { audit: "history", verdict: "history" };
+const V4_PROTOTYPE_TAB_KEYS = DASHBOARD_PAGE_OWNER_MATRIX.flatMap(destination => destination.prototypeAliases);
+
+function v4CanonicalDestinationKey(key) {
+  const item = DASHBOARD_PAGE_OWNER_MATRIX.find(destination =>
+    destination.key === key || destination.legacyAliases.includes(key) || destination.internalAliases.includes(key)
+  );
+  return item ? item.key : "";
+}
 function v4LegacyExtrasEnabled(search) {
   try {
     return new URLSearchParams(search === undefined ? window.location.search : search).get(V4_LEGACY_ROLLBACK_QUERY) === "1";
@@ -57,36 +58,49 @@ function v4TabsForSession() {
   return v4LegacyExtrasEnabled() ? V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS) : V4_NORMAL_TABS;
 }
 
-// 정본 딥링크 경로 → V4 탭 매핑(B트랙 승격): /ui/evolution/* 를 V4 뷰로 이어준다.
-//   process 는 V4 전용 뷰가 없어 research(Live)로 흡수(사이클 다이어그램이 해당 맥락 제공).
-const V4_PATH_TAB_MAP = {
-  "backtest": "backtest",
-  "chart-replay": "replay",
-  "records": "history",
-  "lab": "lab",
-  "audit": "history",
-  "workbench": "workbench",
-  "verdict": "history",
-  "process": "research",
-};
-
+// Canonical deep links retain their destination. Prototype identities are never
+// masked as Live: their URL is rewritten to the explicit rollback contract.
 function v4TabFromPathname(pathname) {
   try {
-    const parts = String(pathname || "").split("/").filter(Boolean); // ["ui", "evolution", "records"]
+    const parts = String(pathname || "").split("/").filter(Boolean);
     if (parts[0] !== "ui") return "";
     const leaf = parts[1] === "evolution" ? (parts[2] || "") : parts[1];
     if (parts[1] === "evolution" && !parts[2]) return "research";
-    return V4_PATH_TAB_MAP[leaf] || "";
+    return v4CanonicalDestinationKey(leaf) || (V4_PROTOTYPE_TAB_KEYS.includes(leaf) ? leaf : "");
   } catch (e) { return ""; }
+}
+
+function v4PrototypeIdentity(search, pathname) {
+  try {
+    const requested = new URLSearchParams(search || "").get("tab");
+    const candidate = requested || v4TabFromPathname(pathname);
+    return V4_PROTOTYPE_TAB_KEYS.includes(candidate) ? candidate : "";
+  } catch (e) { return ""; }
+}
+
+function v4CanonicalizeLegacyLocation(location = window.location, history = window.history) {
+  const prototypeTab = v4PrototypeIdentity(location.search, location.pathname);
+  if (!prototypeTab) return "";
+  try {
+    const url = new URL(location.href || (location.pathname + location.search), window.location.origin);
+    url.searchParams.set(V4_LEGACY_ROLLBACK_QUERY, "1");
+    url.searchParams.set("tab", prototypeTab);
+    if (url.pathname + url.search !== location.pathname + location.search) {
+      history.replaceState(null, "", url.pathname + url.search);
+    }
+    return prototypeTab;
+  } catch (e) { return prototypeTab; }
 }
 
 function v4InitialTab(tabKeys = V4_TAB_KEYS) {
   try {
     const requested = new URLSearchParams(window.location.search).get("tab");
-    const t = V4_LEGACY_TAB_MIGRATIONS[requested] || requested;
+    const t = v4CanonicalDestinationKey(requested) || requested;
     if (t && tabKeys.includes(t)) return t;
     const fromPath = v4TabFromPathname(window.location.pathname);
     if (fromPath && tabKeys.includes(fromPath)) return fromPath;
+    const prototypeTab = v4PrototypeIdentity(window.location.search, window.location.pathname);
+    if (prototypeTab) return prototypeTab;
   } catch (e) {}
   return "research";
 }
@@ -163,7 +177,8 @@ function V4BaseControl({ value, onChange, onApply, onReconnect }) {
 }
 
 function DashboardV4Shell({ baseUrl: baseUrlProp }) {
-  // Rollback is explicit and evaluated once per document load; it never changes normal IA.
+  // Known prototype identities are canonicalized to the explicit rollback URL before tabs resolve.
+  v4CanonicalizeLegacyLocation();
   const tabs = v4TabsForSession();
   const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
   const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
@@ -181,7 +196,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
     const onPopState = () => {
-      const nextTab = v4InitialTab(tabKeys);
+      const prototypeTab = v4CanonicalizeLegacyLocation();
+      const nextTab = prototypeTab || v4InitialTab(tabKeys);
       pendingTabFocusRef.current = nextTab;
       setActiveTab(nextTab);
     };

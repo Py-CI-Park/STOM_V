@@ -1,18 +1,16 @@
-/* Dashboard UI phase-2 owner and performance inventory.
+/* Dashboard V5 canonical destination owner inventory.
  *
- * This file is the pre-edit inventory gate from the approved plan.  It is product-visible
- * documentation and a testable source contract; it does not fetch, mutate state, or touch
- * broker/export/protected runtime boundaries.
+ * This product-visible, testable matrix is the single ownership convention for the
+ * V5 shell and the legacy dashboard.  Alias metadata records compatibility only:
+ * aliases never create an additional normal-rail destination.
  */
 const DASHBOARD_PAGE_OWNER_MATRIX = [
-  { key: "evolution", owner: "운영 루프", owns: "실시간 생성·백테스트·채점 루프와 승인 대기 관찰", notOwner: "히스토리·분석 워크벤치·운용 결정 이력", primarySurface: "App/evolution panels", emptyState: "진화 시작 전 안내와 설정 열기" },
-  { key: "process", owner: "조건식 발굴 프로세스", owns: "read-only current_step, step_timings, recent_logs를 네이티브 Process 탭에서 확인", notOwner: "루프 제어·상태 변경·final approval/export·/process_flow 정적 참고 본문", primarySurface: "Native ProcessFlowPanel + timing/log/default gates", emptyState: "노드 미정·로그 대기" },
-  { key: "backtest", owner: "검증 실행", owns: "조건식 백테스트 실행, 최적화, WFO, 결과 조회", notOwner: "진화 루프 최종 승인·운용 결정 기록", primarySurface: "BacktestTab", emptyState: "조건식/이력 없음" },
-  { key: "simulation", owner: "차트 리플레이", owns: "일일 min DB 리플레이와 수동 신호 검토", notOwner: "실거래 주문·전략 DB 쓰기", primarySurface: "SimulationTab", emptyState: "날짜·종목 선택 대기" },
-  { key: "records", owner: "히스토리", owns: "run/gen 결과 아카이브, ResultDetail, Compare, campaign/docs/update_log/registry lineage 검색", notOwner: "위키 큐레이션·분석 편집·결정 기록·Workbench 중복 렌더", primarySurface: "ResearchRecordsPanel + ResearchIndexPage", emptyState: "run/세대 또는 검색 필터 조정" },
-  { key: "lab", owner: "연구실", owns: "탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트", notOwner: "전체 기록 인덱스 정본·Workbench 중복 렌더", primarySurface: "LabPage + ResearchLabPanel + ResearchWikiPanel", emptyState: "run/연구 데이터 대기" },
-  { key: "pro", owner: "분석 워크벤치", owns: "조건 후보 심층 분석과 워크벤치 액션", notOwner: "연구실 분석·append-only 운용 결정·final approval", primarySurface: "ProPage + ResearchProPanel", emptyState: "run 선택 또는 분석 데이터 대기" },
-  { key: "verdict", owner: "결정 이력", owns: "검증 결산, 레짐/포트폴리오 advisory, append-only 결정 기록", notOwner: "전략 내보내기 승인(final_approval)", primarySurface: "VerdictPanel", emptyState: "결정 이력 없음" },
+  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰", owner: "운영 루프", owns: "실시간 생성·백테스트·채점 루프와 승인 대기 관찰", notOwner: "히스토리 거버넌스·후보 비교·운용 결정 이력", primarySurface: "V4ResearchLive", emptyState: "진화 시작 전 안내와 설정 열기", legacyAliases: ["evolution"], internalAliases: ["process"], prototypeAliases: ["lab", "context", "alpha"] },
+  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", owner: "검증 실행", owns: "조건식 백테스트 실행, 최적화, WFO, 결과 조회", notOwner: "진화 루프 최종 승인·운용 결정 기록", primarySurface: "V4Backtest", emptyState: "조건식/이력 없음", legacyAliases: [], internalAliases: [], prototypeAliases: [] },
+  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", owner: "차트 리플레이", owns: "일일 min DB 리플레이와 수동 신호 검토", notOwner: "실거래 주문·전략 DB 쓰기", primarySurface: "V4Replay", emptyState: "날짜·종목 선택 대기", legacyAliases: ["simulation", "chart-replay"], internalAliases: [], prototypeAliases: [] },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색 · 감사 거버넌스", owner: "히스토리·거버넌스", owns: "run/gen 아카이브, ResultDetail, Compare, 연구 기록 검색, audit/verdict append-only 거버넌스", notOwner: "위키 큐레이션·분석 편집·final approval/export", primarySurface: "V4History", emptyState: "run/세대 또는 검색 필터 조정", legacyAliases: ["records", "audit", "verdict"], internalAliases: ["governance"], prototypeAliases: [] },
+  { key: "workbench", label: "성과", full: "성과 · 후보 비교", badge: "HALL", hint: "후보 비교 · 명예의 전당은 후속 소유권 이관 대상", owner: "성과·후보 비교", owns: "후보 심층 분석과 비교; 명예의 전당은 후속 V5.5 이관 전까지 완성된 정본 표면이 아님", notOwner: "히스토리 거버넌스·append-only 결정·final approval", primarySurface: "V4Workbench", emptyState: "run 선택 또는 분석 데이터 대기", legacyAliases: ["pro"], internalAliases: [], prototypeAliases: [] },
+  { key: "reports", label: "Reports", full: "Reports · Wiki", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · Wiki 목적지 기록 · 읽기 전용", owner: "리포트·Wiki", owns: "읽기 전용 리포트 뷰어와 Wiki 목적지 기록", notOwner: "판정 정본·전략 승인·카탈로그를 권위 있는 연구 API로 주장", primarySurface: "V4Reports", emptyState: "리포트 선택 대기", legacyAliases: ["wiki"], internalAliases: [], prototypeAliases: ["catalog"] },
 ];
 
 const PHASE2_SOURCE_INVENTORY = [
@@ -31,7 +29,9 @@ const LARGE_LIST_PERF_TARGETS = [
 ];
 
 function pageOwnerContract(key) {
-  return DASHBOARD_PAGE_OWNER_MATRIX.find(item => item.key === key) || DASHBOARD_PAGE_OWNER_MATRIX[0];
+  return DASHBOARD_PAGE_OWNER_MATRIX.find(item =>
+    item.key === key || [item.legacyAliases, item.internalAliases, item.prototypeAliases].some(keys => keys.includes(key))
+  ) || DASHBOARD_PAGE_OWNER_MATRIX[0];
 }
 
 function listPerfTarget(surface) {
@@ -44,14 +44,14 @@ function Phase2InventoryPanel({ compact = false }) {
     <div className={"phase2-inventory-panel" + (compact ? " compact" : "")}>
       <div className="phase2-inventory-head">
         <div>
-          <div className="phase2-inventory-kicker mono">PHASE 2 INVENTORY GATE</div>
+          <div className="phase2-inventory-kicker mono">V5 CANONICAL DESTINATION INVENTORY</div>
           <b>페이지 역할 · 소스 소유권 · 성능 기준</b>
         </div>
-        <span className="mono">{pageCount} pages · {PHASE2_SOURCE_INVENTORY.length} source groups</span>
+        <span className="mono">{pageCount} canonical destinations · {PHASE2_SOURCE_INVENTORY.length} source groups</span>
       </div>
       <p>
-        UI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지
-        고정한 뒤 안전하게 재배치하는 작업입니다.
+        이 인벤토리는 일반 레일의 여섯 정본 목적지와 호환 별칭만 기록합니다. 별칭은 새 페이지가 아니며,
+        prototype 표면은 명시적 rollback 계약에서만 접근합니다.
       </p>
       {!compact && (
         <div className="phase2-owner-grid">

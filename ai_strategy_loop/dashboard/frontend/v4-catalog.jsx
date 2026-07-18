@@ -1,6 +1,7 @@
-/* v4-catalog.jsx — V4 "카탈로그" 탭(P4): research_assets.db SELECT-only 읽기 전용 뷰.
- *   /research/summary·judgments·assets 소비. 백엔드가 mode=ro 로만 열어 재계산·쓰기 없음.
- *   부재/오류는 error envelope(available=false)로 조용히 안내(빈 화면 오해 방지).
+/* v4-catalog.jsx — explicit rollback-only P4 catalog prototype.
+ *   This surface is non-authoritative and non-normative: sealed P4 API/views are
+ *   incomplete, so displayed summary, judgments, and assets do not establish a
+ *   completed catalog or promotion verdict. It remains SELECT-only when available.
  */
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_cat, useEffect: useEffect_cat } = React;
@@ -33,7 +34,8 @@ function V4Catalog({ baseUrl }) {
 
   return (
     <section className="v4-catalog" aria-labelledby="v4-catalog-heading">
-      <h2 id="v4-catalog-heading" className="panel-hd-title">연구 카탈로그 (P4) · 읽기 전용</h2>
+      <h2 id="v4-catalog-heading" className="panel-hd-title">연구 카탈로그 (P4) · 비정본 프로토타입</h2>
+      <p className="v4-catalog-safe mono" role="note">비권위적·비규범적 prototype · sealed P4 API/views 미완성 · 완료/판정/승격 근거 아님</p>
       <p className="v4-catalog-safe mono" role="note">research_assets.db SELECT-only · 재계산·쓰기 없음(mode=ro)</p>
       {err && <div className="research-empty danger">{err}</div>}
       {unavailable && (

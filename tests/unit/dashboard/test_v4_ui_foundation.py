@@ -32,14 +32,20 @@ def test_v4_shell_declares_linked_roving_tab_contract() -> None:
 
 def test_v4_shell_freezes_normal_ia_and_default_off_rollback() -> None:
     source = _read("dashboard-v4-shell.jsx")
+    inventory = _read("dashboard-inventory.jsx")
 
-    assert "const V4_NORMAL_TABS" in source
+    assert "const DASHBOARD_PAGE_OWNER_MATRIX" in inventory
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
+    assert [key for key in ("research", "backtest", "replay", "history", "workbench", "reports")] == [
+        line.split('key: "', 1)[1].split('"', 1)[0] for line in matrix.splitlines() if 'key: "' in line
+    ]
+    assert 'legacyAliases: ["records", "audit", "verdict"]' in inventory
+    assert 'legacyAliases: ["wiki"]' in inventory
+    assert '후속 V5.5 이관 전까지 완성된 정본 표면이 아님' in inventory
+    assert "const V4_NORMAL_TABS = DASHBOARD_PAGE_OWNER_MATRIX;" in source
     assert "const V4_LEGACY_EXTRA_TABS" in source
     assert 'const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras"' in source
-    normal = source.split("const V4_NORMAL_TABS = [", 1)[1].split("];", 1)[0]
-    assert [key for key in ("research", "backtest", "replay", "history", "workbench", "reports")] == [
-        line.split('key: "', 1)[1].split('"', 1)[0] for line in normal.splitlines() if 'key: "' in line
-    ]
+    assert "v4CanonicalizeLegacyLocation();" in source
     assert 'return v4LegacyExtrasEnabled() ? V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS) : V4_NORMAL_TABS;' in source
     assert "{tabs.map(tab => (" in source
     assert "V4_TABS.map" not in source
@@ -52,12 +58,15 @@ def test_v4_legacy_extra_tabs_are_runtime_default_off_and_explicitly_recoverable
     node = shutil.which("node")
     if node is None:
         pytest.skip("node unavailable")
+    inventory = _read("dashboard-inventory.jsx")
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
     source = _read("dashboard-v4-shell.jsx")
     start = source.index("const V4_NORMAL_TABS")
-    end = source.index("// 정본 딥링크 경로", start)
+    end = source.index("// Canonical deep links", start)
     helper = source[start:end]
     script = """
 global.window = { location: { search: '' } };
+const DASHBOARD_PAGE_OWNER_MATRIX = new Function('return [' + process.argv[3] + '];')();
 const api = new Function(process.argv[2] + '; return { enabled: v4LegacyExtrasEnabled, tabs: v4TabsForSession };')();
 const normal = api.tabs().map(tab => tab.key);
 window.location.search = '?v4_legacy_extras=1';
@@ -65,7 +74,7 @@ const rollback = api.tabs().map(tab => tab.key);
 console.log(JSON.stringify({ normal, rollback, explicitOff: api.enabled('?v4_legacy_extras=0') }));
 """
     result = subprocess.run(
-        [node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False
+        [node, "-", helper, matrix], input=script, capture_output=True, text=True, timeout=20, check=False
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout) == {
@@ -137,18 +146,24 @@ def test_v4_canonical_deep_links_map_to_tabs() -> None:
     node = shutil.which("node")
     if node is None:
         pytest.skip("node unavailable")
+    inventory = _read("dashboard-inventory.jsx")
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
     source = _read("dashboard-v4-shell.jsx")
-    initial_start = source.index("const V4_LEGACY_TAB_MIGRATIONS")
+    initial_start = source.index("const V4_NORMAL_TABS")
     fn_start = source.index("function v4TabFromPathname")
     fn_end = source.index("\n}\n", fn_start) + 2
     helper = source[initial_start:fn_end]
     script = """
+const DASHBOARD_PAGE_OWNER_MATRIX = new Function('return [' + process.argv[3] + '];')();
 const fn = new Function(process.argv[2] + '; return v4TabFromPathname;')();
 console.log(JSON.stringify({
   evolution: fn('/ui/evolution'),
   process: fn('/ui/evolution/process'),
   records: fn('/ui/evolution/records'),
   lab: fn('/ui/evolution/lab'),
+  context: fn('/ui/evolution/context'),
+  alpha: fn('/ui/evolution/alpha'),
+  catalog: fn('/ui/evolution/catalog'),
   workbench: fn('/ui/evolution/workbench'),
   verdict: fn('/ui/evolution/verdict'),
   audit: fn('/ui/audit'),
@@ -159,7 +174,7 @@ console.log(JSON.stringify({
 }));
 """
     result = subprocess.run(
-        [node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False
+        [node, "-", helper, matrix], input=script, capture_output=True, text=True, timeout=20, check=False
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout) == {
@@ -167,6 +182,9 @@ console.log(JSON.stringify({
         "process": "research",
         "records": "history",
         "lab": "lab",
+        "context": "context",
+        "alpha": "alpha",
+        "catalog": "catalog",
         "workbench": "workbench",
         "verdict": "history",
         "audit": "history",
@@ -176,8 +194,10 @@ console.log(JSON.stringify({
         "unknown": "",
     }
 def test_v4_legacy_audit_query_migrates_to_history() -> None:
+    inventory = _read("dashboard-inventory.jsx")
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
     source = _read("dashboard-v4-shell.jsx")
-    start = source.index("const V4_LEGACY_TAB_MIGRATIONS")
+    start = source.index("const V4_NORMAL_TABS")
     end = source.index("\n}\n", source.index("function v4InitialTab")) + 2
     helper = source[start:end]
     node = shutil.which("node")
@@ -185,11 +205,55 @@ def test_v4_legacy_audit_query_migrates_to_history() -> None:
         pytest.skip("node unavailable")
     script = """
 global.window = { location: { search: '?tab=audit', pathname: '/ui/' } };
+const DASHBOARD_PAGE_OWNER_MATRIX = new Function('return [' + process.argv[3] + '];')();
 const fn = new Function(process.argv[2] + '; return v4InitialTab;')();
-console.log(fn(['research', 'backtest', 'replay', 'history', 'workbench', 'reports']));
+const keys = ['research', 'backtest', 'replay', 'history', 'workbench', 'reports'];
+const audit = fn(keys);
+window.location.search = '?tab=verdict';
+console.log(JSON.stringify({ audit, verdict: fn(keys) }));
 """
     result = subprocess.run(
-        [node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False
+        [node, "-", helper, matrix], input=script, capture_output=True, text=True, timeout=20, check=False
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "history"
+    assert json.loads(result.stdout) == {"audit": "history", "verdict": "history"}
+def test_v4_known_prototype_identity_canonicalizes_to_explicit_rollback() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node unavailable")
+    inventory = _read("dashboard-inventory.jsx")
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
+    source = _read("dashboard-v4-shell.jsx")
+    start = source.index("const V4_NORMAL_TABS")
+    end = source.index("function _nextV4TabKey")
+    helper = source[start:end]
+    script = """
+const DASHBOARD_PAGE_OWNER_MATRIX = new Function('return [' + process.argv[3] + '];')();
+global.window = { location: { origin: 'http://localhost' } };
+const api = new Function(process.argv[2] + '; return { canonicalize: v4CanonicalizeLegacyLocation, initial: v4InitialTab };')();
+const calls = [];
+const location = { pathname: '/ui/evolution/catalog', search: '', href: 'http://localhost/ui/evolution/catalog' };
+const history = { replaceState: (_state, _title, url) => { calls.push(url); location.search = url.slice(url.indexOf('?')); } };
+const prototype = api.canonicalize(location, history);
+global.window.location = { search: location.search, pathname: location.pathname };
+console.log(JSON.stringify({ prototype, url: calls[0], initial: api.initial(['research', 'backtest', 'replay', 'history', 'workbench', 'reports']) }));
+"""
+    result = subprocess.run(
+        [node, "-", helper, matrix], input=script, capture_output=True, text=True, timeout=20, check=False
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "prototype": "catalog",
+        "url": "/ui/evolution/catalog?v4_legacy_extras=1&tab=catalog",
+        "initial": "catalog",
+    }
+
+
+def test_v4_catalog_is_explicitly_non_authoritative_prototype() -> None:
+    source = _read("v4-catalog.jsx")
+
+    assert "비정본 프로토타입" in source
+    assert "비권위적·비규범적 prototype" in source
+    assert "sealed P4 API/views 미완성" in source
+    assert "완료/판정/승격 근거 아님" in source
+    assert "SELECT-only" in source
