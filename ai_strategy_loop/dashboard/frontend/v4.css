@@ -218,28 +218,56 @@
 .v4-wf-next .k { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-family: var(--mono); display: block; margin-bottom: 2px; }
 .v4-wf-next b { font-size: 12.5px; color: var(--teal); }
 
-/* ============ Research Live (graph-first) ============ */
-.v4-research { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-/* workflow(PhaseTimeline 정본) + process/authority + 다음 행동 */
-.v4-wfwrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: stretch; }
-@media (max-width: 1180px) { .v4-wfwrap { grid-template-columns: 1fr; } }
-.v4-wfwrap .v4-wf-next {
-  margin-left: 0;
-  border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-1);
-}
-.v4-rlive {
-  display: grid; grid-template-columns: minmax(0, 1fr) 352px;
-  gap: 14px; align-items: start;
-}
-@media (max-width: 1180px) { .v4-rlive { grid-template-columns: 1fr; } }
-.v4-hero-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.v4-side-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-/* graph-first: 주인공 차트 최대, 보조 중간 (차트는 크기 prop 없이 컨테이너로 스케일) */
-.v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 400px; }
-.v4-rlive .chart-wrap { min-height: 250px; }
-.v4-rlive .v4-two .chart-wrap { min-height: 220px; }
-.v4-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 860px) { .v4-two { grid-template-columns: 1fr; } }
+/* ============ V5 Live: compact situation board, graph grid, detail drawer ============ */
+.v4-research { display: flex; flex-direction: column; gap: 14px; min-width: 0; font-size: 14px; }
+.v4-live-page-title { font-size: 22px; line-height: 1.25; margin: 0; }
+.v4-research .panel-hd-title { font-size: 16px; }
+.v4-situation-board { display: grid; gap: 10px; border: 1px solid var(--line-1); border-radius: 10px; padding: 12px; background: var(--bg-1); }
+.v4-situation-head, .v4-situation-meta { display: flex; align-items: start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.v4-situation-head h2, .v4-situation-head p { margin: 0; }
+.v4-engine-summary { color: var(--ink-2); font-family: var(--mono); font-size: 12px; }
+.v4-effective-summary { display: grid; gap: 2px; max-width: min(100%, 520px); font-size: 12px; color: var(--ink-2); }
+.v4-effective-summary b { color: var(--ink-0); font-size: 14px; }
+.v4-effective-summary small { color: var(--ink-3); }
+.v4-timing-bars { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; }
+.v4-timing-step { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 12px; color: var(--ink-2); }
+.v4-timing-step i { grid-column: 1 / -1; height: 5px; border-radius: 999px; background: var(--line-2); overflow: hidden; }
+.v4-timing-step i::after { content: ""; display: block; width: var(--v4-duration); height: 100%; background: var(--ink-3); border-radius: inherit; }
+.v4-timing-step.active i::after { background: var(--amber); animation: v4-step-pulse 1.2s ease-in-out infinite; }
+.v4-timing-step.success i::after { background: var(--teal); }
+.v4-timing-step.failure i::after { background: var(--red); }
+.v4-timing-step.retry i::after { background: var(--violet); }
+@keyframes v4-step-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+.v4-blocker-badges { display: flex; gap: 6px; flex: 1 1 260px; flex-wrap: wrap; }
+.v4-blocker-badges span, .v4-data-state { border: 1px solid rgba(240,179,90,.38); border-radius: 999px; padding: 3px 7px; color: var(--amber); font-size: 11px; }
+.v4-blocker-badges .clear, .v4-data-state.fresh { color: var(--teal); border-color: rgba(76,214,179,.38); }
+.v4-data-state.error { color: var(--red); border-color: rgba(255,107,107,.4); }
+.v4-data-state.stale { color: var(--amber); }
+.v4-log-toggle, .v4-drawer-toggle { border: 1px solid var(--line-2); background: var(--bg-2); color: var(--ink-1); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+.v4-one-line-log { width: 100%; margin: 0; color: var(--ink-2); font-family: var(--mono); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-one-line-log.expanded { white-space: pre-wrap; overflow: visible; }
+.v4-live-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main control" "drawer drawer"; gap: 12px; align-items: start; }
+.v4-live-main { grid-area: main; display: grid; gap: 14px; min-width: 0; }
+.v4-drawer-control { grid-area: control; }
+.v4-live-drawer { grid-area: drawer; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; min-width: 0; }
+.v4-live-drawer[hidden] { display: none !important; }
+.v4-graph-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; min-width: 0; }
+.v4-graph-grid > * { min-width: 0; }
+.v4-graph-fitness { grid-column: span 2; }
+.v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 0; height: min(320px, 28vh); max-height: 320px; }
+.v4-graph-grid .chart-wrap { min-height: 220px; max-height: 320px; }
+.v4-process-board { display: grid; gap: 10px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-1); padding: 12px; }
+.v4-process-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.v4-process-tab { min-height: 44px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--bg-2); color: var(--ink-1); cursor: pointer; font-size: 14px; }
+.v4-process-tab small { display: block; color: var(--ink-3); font-size: 11px; }
+.v4-process-tab[aria-selected="true"] { outline: var(--focus-width) solid var(--teal); outline-offset: 1px; }
+.v4-process-tab.failure { color: var(--red); }.v4-process-tab.retry { color: var(--amber); }.v4-process-tab.success { color: var(--teal); }
+.v4-step-panel { min-width: 0; }.v4-backtest-authority dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.v4-backtest-authority dt { color: var(--ink-3); font-size: 12px; }.v4-backtest-authority dd { margin: 3px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (min-width: 1400px) { .v4-live-layout { grid-template-columns: minmax(0, 1fr) auto minmax(300px, 360px); grid-template-areas: "main control drawer"; } .v4-live-drawer { display: flex; flex-direction: column; } }
+@media (min-width: 2400px) { .v4-graph-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .v4-graph-fitness { grid-column: auto; } }
+@media (max-width: 760px) { .v4-timing-bars, .v4-process-tabs, .v4-backtest-authority dl { grid-template-columns: 1fr 1fr; } .v4-graph-grid { grid-template-columns: minmax(0, 1fr); } .v4-graph-fitness { grid-column: auto; } }
+@media (prefers-reduced-motion: reduce) { .v4-process-tab, .v4-timing-step i::after { transition: none !important; animation: none !important; } }
 .v4-idle-strip {
   border: 1px solid rgba(240,179,90,.28); background: rgba(240,179,90,.06);
   color: var(--ink-2); border-radius: 7px;
@@ -447,24 +475,7 @@
   .v4-stat .v { font-size: 26px; }
 }
 
-/* ── UXR-P4 울트라와이드 레이아웃: 넓은 화면을 밀도로 활용(늘어짐 방지) ── */
-@media (min-width: 2400px) {
-  /* Live 사이드 컬럼 확대 — 사이클/현재세대 정보 가독성 */
-  .v4-rlive { grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; }
-  .v4-two { gap: 18px; }
-  .v4-stage { padding: 16px 28px 44px; }
-  /* 주인공 차트 키워 실시간 관찰성 강화 */
-  .v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 460px; }
-  /* 프로즈(온보딩·안전타일)는 초광폭에서 줄길이 폭주 방지 */
-  .v4-onboarding-bd p, .v4-safety-tile b { max-width: 68ch; }
-}
-@media (min-width: 3200px) {
-  /* 진짜 울트라와이드(3440): 사이드 더 넓게 + 여백 프레이밍 */
-  .v4-rlive { grid-template-columns: minmax(0, 1fr) 480px; gap: 22px; }
-  .v4-stage { padding: 18px 40px 52px; }
-  .v4-stats { grid-template-columns: repeat(4, 1fr); }
-  .v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 520px; }
-}
+/* V5 graph grid owns ultra-wide density; no V4 hero-height override remains. */
 
 /* ── UXR-P5 Live 스테퍼 상태 확장: 실패/중단/차단을 은폐하지 않고 명시(§10-9) ── */
 .phase-step.failed .phase-num { background: rgba(255,107,107,0.16); border-color: var(--red); color: var(--red); }

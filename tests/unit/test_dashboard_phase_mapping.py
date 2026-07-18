@@ -224,3 +224,49 @@ def test_phase_timeline_surfaces_failure_stop_and_block_states():
     assert "phase-status-banner" in body, "사유 배너(phase-status-banner) 없음"
     for label in ("실패 · 중단됨", "차단됨", "정지 중"):
         assert label in body, f"상태 라벨 누락: {label}"
+def test_v5_live_situation_mapping_runtime_covers_terminal_and_reconnect_states():
+    """V5.1 sealed mapping uses phase/current_step/status without publisher-side changes."""
+    import json
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if node is None:
+        return
+    src = _read("v4-research.jsx")
+    start = src.index("const V4_LIVE_STEP_KEYS")
+    end = src.index("function _v4EvidenceState", start)
+    helper = src[start:end]
+    script = """
+const map = new Function(process.argv[2] + '; return v4LiveSituation;')();
+const summary = state => map(state).steps.map(step => step.state);
+console.log(JSON.stringify({
+  idle: summary({ status: 'idle', latest: {} }),
+  running: summary({ status: 'running', latest: { phase: 'backtest_start', step_timings: { generate: 1 } } }),
+  complete: summary({ status: 'complete', latest: { phase: 'complete' } }),
+  completeActive: map({ status: 'complete', latest: { phase: 'generate_start' } }).active,
+  stopping: summary({ status: 'stopping', latest: { phase: 'backtest_start' } }),
+  error: summary({ status: 'error', latest: { phase: 'score_start', error: 'bad' } }),
+  legacy: map({ status: 'running', latest: {} }).legacy,
+  reconnect: summary({ status: 'reconnecting', latest: { current_step: 1 } }),
+}));
+"""
+    result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "idle": ["pending", "pending", "pending", "pending"],
+        "running": ["success", "active", "pending", "pending"],
+        "complete": ["success", "success", "success", "success"],
+        "completeActive": 3,
+        "stopping": ["success", "retry", "pending", "pending"],
+        "error": ["success", "success", "failure", "pending"],
+        "legacy": True,
+        "reconnect": ["success", "retry", "pending", "pending"],
+    }
+
+
+def test_v5_live_mapping_seals_required_existing_fields():
+    src = _read("v4-research.jsx")
+    mapper = src[src.index("function v4LiveSituation"):src.index("function _v4EvidenceState")]
+    for field in ("latest.phase", "current_step", "phase_started_at", "step_timings", "backtest_progress", "engine_state"):
+        assert field in mapper or field in src, f"sealed mapping/board misses {field}"

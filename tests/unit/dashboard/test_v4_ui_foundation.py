@@ -257,3 +257,46 @@ def test_v4_catalog_is_explicitly_non_authoritative_prototype() -> None:
     assert "sealed P4 API/views 미완성" in source
     assert "완료/판정/승격 근거 아님" in source
     assert "SELECT-only" in source
+def test_v5_live_uses_accessible_process_tabs_and_pinned_follow_contract() -> None:
+    source = _read("v4-research.jsx")
+
+    assert 'role="tablist" aria-label="연구 단계"' in source
+    assert 'role="tab"' in source
+    assert 'role="tabpanel"' in source
+    assert 'aria-controls={"v4-live-panel-" + step.key}' in source
+    assert "pinnedStepRef.current = false;" in source
+    assert "if (!pinnedStepRef.current) setSelectedStep(situation.active);" in source
+    assert "identityRef.current !== runGenerationIdentity" in source
+    assert 'event.key === "ArrowRight"' in source
+    assert 'event.key === "Home"' in source
+    assert 'aria-expanded={drawerOpen}' in source
+    assert 'aria-controls="v4-live-drawer"' in source
+
+
+def test_v5_live_backtest_authority_and_responsive_graph_contract() -> None:
+    source = _read("v4-research.jsx")
+    css = _read("v4.css")
+
+    for label in (
+        "매수 조건식 · buy_code",
+        "매도 조건식 · sell_code",
+        "source / run_id / generation",
+        "engine_state / backtest_progress",
+        "analysis evidence ·",
+        "current_run.generation",
+    ):
+        assert label in source
+    assert "engine {situation.engine" in source
+    assert "situation.backtestProgress" in source
+    assert "situation.phaseStartedAt" in source
+    for state in ("fresh", "stale", "error", "empty"):
+        assert f'label: "{state}"' in source
+    assert ".v4-graph-grid" in css
+    assert "grid-template-columns: repeat(3, minmax(0, 1fr))" in css
+    assert "max-height: 320px" in css
+    assert ".v4-live-page-title { font-size: 22px" in css
+    assert ".v4-research .panel-hd-title { font-size: 16px" in css
+    assert ".v4-research { display: flex; flex-direction: column; gap: 14px; min-width: 0; font-size: 14px; }" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "@keyframes v4-step-pulse" in css
+    assert ".v4-live-drawer[hidden] { display: none !important; }" in css
