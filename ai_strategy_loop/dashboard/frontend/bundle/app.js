@@ -8372,6 +8372,8 @@ def signal_sell(pos, bar, ind):
     const reconnectAttempt = useRef_cn1(0);
     const closedByUs = useRef_cn1(false);
     const demoRef = useRef_cn1(null);
+    const lastOpenAt = useRef_cn1(0);
+    const graceTimer = useRef_cn1(null);
     const startDemo = useCallback_cn1((config) => {
       var _a, _b, _c, _d, _e, _f, _g, _h;
       stopDemo();
@@ -8870,6 +8872,11 @@ def signal_sell(pos, bar, ind):
         wsRef.current = ws;
         ws.onopen = () => {
           _recordWsDiag({ kind: "open", recoveredAfter: reconnectAttempt.current });
+          lastOpenAt.current = Date.now();
+          if (graceTimer.current) {
+            clearTimeout(graceTimer.current);
+            graceTimer.current = null;
+          }
           reconnectAttempt.current = 0;
           stopDemo();
           setWsStatus("open");
@@ -8888,7 +8895,21 @@ def signal_sell(pos, bar, ind):
         ws.onclose = (ev) => {
           _recordWsDiag({ kind: "close", code: ev && ev.code, reason: ev && ev.reason || "", byUs: !!closedByUs.current, attempt: reconnectAttempt.current });
           if (closedByUs.current) return;
-          setWsStatus("reconnecting");
+          const openMs = lastOpenAt.current ? Date.now() - lastOpenAt.current : 0;
+          const flapping = !lastOpenAt.current || openMs < 2e3;
+          if (graceTimer.current) {
+            clearTimeout(graceTimer.current);
+            graceTimer.current = null;
+          }
+          if (flapping) {
+            setWsStatus("reconnecting");
+          } else {
+            graceTimer.current = setTimeout(() => {
+              setWsStatus("reconnecting");
+              graceTimer.current = null;
+            }, 1200);
+          }
+          lastOpenAt.current = 0;
           const delay = Math.min(8e3, 500 * Math.pow(1.7, reconnectAttempt.current));
           reconnectAttempt.current += 1;
           setTimeout(() => {
@@ -8906,6 +8927,10 @@ def signal_sell(pos, bar, ind):
       tryConnect();
       return () => {
         closedByUs.current = true;
+        if (graceTimer.current) {
+          clearTimeout(graceTimer.current);
+          graceTimer.current = null;
+        }
         if (wsRef.current) wsRef.current.close();
         stopDemo();
       };
@@ -35117,6 +35142,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     return propBase || DEFAULT_BASE;
   }
+  function v4BundleVersion() {
+    try {
+      const src = Array.from(document.querySelectorAll("script[src]")).map((e) => e.src).find((s) => /\/app\.js\?v=/.test(s));
+      if (src) {
+        const m = src.match(/[?&]v=([0-9A-Za-z._-]+)/);
+        if (m) return m[1];
+      }
+    } catch (e) {
+    }
+    return "";
+  }
   function V4RailIcon({ name }) {
     const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
     if (name === "research") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12 L6 8 L9 10 L15 3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "3", r: "1.3", fill: "currentColor", stroke: "none" }));
@@ -35153,6 +35189,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
     const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
     const pendingTabFocusRef = useRef_v4("");
+    const [buildVer] = useState_v4(() => v4BundleVersion());
     useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
@@ -35309,7 +35346,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx build", title: "\uD604\uC7AC \uB85C\uB4DC\uB41C \uBC88\uB4E4 \uBE4C\uB4DC \uC9C0\uBB38(app.js?v=)" }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,

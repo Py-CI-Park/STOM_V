@@ -35,7 +35,26 @@ SESSION_TTL_MAX_SECONDS: Final = 3600
 SESSION_TTL_DEFAULT_SECONDS: Final = 900
 MAX_MUTATION_BODY_BYTES: Final = 256 * 1024
 MAX_WEBSOCKET_MESSAGE_CHARS: Final = 128 * 1024
-BOOTSTRAP_PATHS: Final = frozenset({"/ui/v4", "/ui/v4/"})
+# 세션 부트스트랩 경로 — 대시보드 셸을 서빙하고 WS(/ws,/sim/ws,/bt/ws_job)를 여는 GET 진입점.
+#   V4 graph-first 승격(2026-07-17)으로 정본 진입이 /ui/·/ui/evolution·/ui/backtest·
+#   /ui/chart-replay 로 이동했으나 부트스트랩이 /ui/v4 에만 고정돼, 정본 경로 진입 시
+#   세션 미발급 → /ws 가 4401 session_required 로 무한 거부되던 회귀를 교정(UXR-P2).
+BOOTSTRAP_PATHS: Final = frozenset({
+    "/ui/",
+    "/ui/v4", "/ui/v4/",
+    "/ui/evolution",
+    "/ui/backtest",
+    "/ui/chart-replay",
+    "/ui/remodel", "/ui/remodel/",
+})
+# 동적 딥링크(하위탭)도 같은 셸을 서빙하므로 접두 매칭으로 포함한다.
+BOOTSTRAP_PATH_PREFIXES: Final = ("/ui/evolution/", "/ui/remodel/")
+
+
+def _is_bootstrap_path(path: str) -> bool:
+    if path in BOOTSTRAP_PATHS:
+        return True
+    return any(path.startswith(prefix) for prefix in BOOTSTRAP_PATH_PREFIXES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,7 +192,7 @@ class DashboardSecurity:
         request: Request,
         response: Response,
     ) -> None:
-        if request.method != "GET" or request.url.path not in BOOTSTRAP_PATHS:
+        if request.method != "GET" or not _is_bootstrap_path(request.url.path):
             return
         if response.status_code >= 400:
             return

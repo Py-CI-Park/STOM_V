@@ -60,6 +60,10 @@
 .v4-rail-item.active .v4-ri-dot { opacity: 1; }
 .v4-ri-label { font-size: 9.5px; letter-spacing: .02em; }
 .v4-ri-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0; margin-top: -2px; }
+/* UXR-P2 탭 강조: 활성 탭에 좌측 액센트 바 + 라벨 색/굵기 강조(사용자 R08) */
+.v4-rail-item.active { box-shadow: inset 3px 0 0 var(--teal); }
+.v4-rail-item.active .v4-ri-label { color: var(--teal); font-weight: 600; }
+[data-theme="light"] .v4-rail-item.active { box-shadow: inset 3px 0 0 var(--teal); }
 .v4-rail-spacer { flex: 1; }
 
 /* ── 워크스페이스 ── */
@@ -84,6 +88,7 @@
 }
 .v4-sfx.demo { color: var(--violet); border-color: rgba(165,148,255,.34); background: rgba(165,148,255,.09); }
 .v4-sfx.gate { color: var(--amber); border-color: rgba(240,179,90,.32); background: rgba(240,179,90,.08); }
+.v4-sfx.build { color: var(--blue); border-color: rgba(90,169,240,.34); background: rgba(90,169,240,.08); }
 .v4-grow { flex: 1 1 20px; }
 .v4-base {
   display: flex; align-items: center; gap: 6px;
@@ -424,4 +429,15 @@
   .v4-root :where(.hof-scroll, .process-defaults-table-wrap, [data-region="scroll"]) {
     max-width: 100%; overflow-x: auto;
   }
+}
+/* ── UXR-P2 울트라와이드(≥2400px) 가독성: 밀도 유지하되 핵심 타이포 확대(사용자 R02·R06·R07) ── */
+@media (min-width: 2400px) {
+  .v4-brand b { font-size: 17px; }
+  .v4-brand span { font-size: 12px; }
+  .v4-ri-label { font-size: 11px; }
+  .v4-sfx { font-size: 11.5px; padding: 4px 11px; }
+  .v4-view-title h2 { font-size: 19px; }
+  .v4-view-title span { font-size: 12.5px; }
+  .v4-runsel-select { font-size: 14px; }
+  .v4-stat .v { font-size: 26px; }
 }
