@@ -213,6 +213,13 @@ def test_result_trade_detail_page_preserves_columns_bounds_and_context(monkeypat
     assert [item["name"] for item in boundary["items"]] == ["베타"]
     assert boundary["next_offset"] is None and boundary["has_more"] is False
 
+    optimize_record = dict(record, spec={**record["spec"], "mode": "optimize"})
+    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(optimize_record))
+    optimize = backtest_api.get_result(job_id="job_detail", detail_limit=50)
+    assert optimize["mode"] == "optimize"
+    assert optimize["trade_details"]["status"] == "unavailable"
+    assert optimize["trade_details"]["items"] == []
+
 
 def test_result_trade_detail_empty_missing_and_frontend_lazy_markers(monkeypatch, tmp_path: Path):
     missing = tmp_path / "missing.csv"

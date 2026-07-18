@@ -329,7 +329,7 @@ return (
 
     {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
     <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
-    {result.source_type === "job" && result.mode !== "wfo" && result.mode !== "sweep" && (
+    {result.source_type === "job" && result.mode === "backtest" && (
       <BtTradeDetails key={jobId} baseUrl={baseUrl} jobId={jobId} />
     )}
 

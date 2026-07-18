@@ -258,7 +258,7 @@ def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict
     enriched = _augment_job_payload(record)
     for key in (
         "evidence_id", "source_type", "condition_identity", "status_kind", "artifact_state",
-        "openable", "recoverable", "open_actions", "rerun_spec",
+        "openable", "recoverable", "open_actions", "rerun_spec", "mode",
     ):
         out[key] = enriched.get(key)
     out["run_context"] = _job_run_context(record)
@@ -1379,13 +1379,14 @@ def get_result(
             "message": record.get("message", ""),
         }
         if detail_limit:
-            payload["trade_details"] = _trade_detail_envelope([], detail_offset, detail_limit, "no_trades")
+            detail_status = "no_trades" if mode == "backtest" else "unavailable"
+            payload["trade_details"] = _trade_detail_envelope([], detail_offset, detail_limit, detail_status)
         return _augment_job_result(payload, record)
     # Detail paging is deliberately restricted to immutable successful ordinary-job CSVs.
     csv_file = _resolve_artifact_path(csv_path)
-    if detail_limit and (status != "success" or csv_file is None):
+    if detail_limit and (mode != "backtest" or status != "success" or csv_file is None):
         bundle = analysis.full_analysis(None)
-        detail_status = "missing" if status == "success" else "unavailable"
+        detail_status = "missing" if mode == "backtest" and status == "success" else "unavailable"
         payload = {
             "available": True,
             "job_id": job_id,
