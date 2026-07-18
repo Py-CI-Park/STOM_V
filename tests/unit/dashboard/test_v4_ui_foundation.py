@@ -119,7 +119,7 @@ console.log(JSON.stringify({
         "records": "history",
         "lab": "lab",
         "workbench": "workbench",
-        "verdict": "audit",
+        "verdict": "history",
         "backtest": "backtest",
         "replay": "replay",
         "root": "",
