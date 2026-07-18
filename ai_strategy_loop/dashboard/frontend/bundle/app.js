@@ -20100,16 +20100,24 @@ def signal_sell(pos, bar, ind):
     return -1;
   }
   function PhaseTimeline({ state }) {
-    var _a;
-    const running = state.status === "running" || state.status === "stopping";
+    var _a, _b, _c, _d, _e;
+    const status = state.status;
+    const running = status === "running" || status === "stopping";
+    const stopping = status === "stopping";
+    const errored = status === "error";
+    const blocked = status === "blocked";
     const activeIdx = running ? phaseIndex((_a = state.latest) == null ? void 0 : _a.phase) : -1;
+    const failedIdx = errored || blocked ? phaseIndex((_b = state.latest) == null ? void 0 : _b.phase) : -1;
     const activeGen = running ? state.current_gen + 1 : state.current_gen;
-    return /* @__PURE__ */ React.createElement("div", { className: "phase-timeline" }, PHASES.map((p, i) => {
-      const isActive = i === activeIdx;
-      const isDone = activeIdx > i;
-      const isPending = activeIdx < i || activeIdx === -1;
-      return /* @__PURE__ */ React.createElement(React.Fragment, { key: p.key }, /* @__PURE__ */ React.createElement("div", { className: `phase-step ${isActive ? "active" : isDone ? "done" : "pending"}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-num" }, isDone ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M3 8 L7 12 L13 4", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })) : i + 1), /* @__PURE__ */ React.createElement("div", { className: "phase-step-text" }, /* @__PURE__ */ React.createElement("div", { className: "phase-step-label" }, p.label), /* @__PURE__ */ React.createElement("div", { className: "phase-step-sub" }, p.sub)), isActive && /* @__PURE__ */ React.createElement("span", { className: "phase-active-pulse" })), i < PHASES.length - 1 && /* @__PURE__ */ React.createElement("div", { className: `phase-connector ${isDone ? "done" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-connector-fill", style: { width: isDone ? "100%" : isActive ? "50%" : "0%" } })));
-    }), /* @__PURE__ */ React.createElement("div", { className: "phase-gen-tag" }, running ? `\uC138\uB300 ${activeGen} \uC9C4\uD589\uC911` : state.status === "complete" ? `${state.current_gen}\uC138\uB300 \uC644\uB8CC` : "\uB300\uAE30\uC911"));
+    const reason = errored ? ((_c = state.latest) == null ? void 0 : _c.error) || state.error || "\uC2E4\uD589 \uC911 \uC624\uB958\uB85C \uC911\uB2E8\uB428" : blocked ? ((_d = state.latest) == null ? void 0 : _d.block_reason) || ((_e = state.latest) == null ? void 0 : _e.message) || "\uAC8C\uC774\uD2B8/\uC0AC\uC804\uC870\uAC74\uC73C\uB85C \uCC28\uB2E8\uB428" : "";
+    const wrapCls = stopping ? " stopping" : errored ? " errored" : blocked ? " blocked" : "";
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "phase-timeline" + wrapCls }, PHASES.map((p, i) => {
+      const isFailed = failedIdx === i;
+      const isActive = !isFailed && i === activeIdx;
+      const isDone = !isFailed && activeIdx > i;
+      const cls = isFailed ? "failed" : isActive ? "active" : isDone ? "done" : "pending";
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: p.key }, /* @__PURE__ */ React.createElement("div", { className: `phase-step ${cls}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-num" }, isFailed ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M4 4 L12 12 M12 4 L4 12", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round" })) : isDone ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M3 8 L7 12 L13 4", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })) : i + 1), /* @__PURE__ */ React.createElement("div", { className: "phase-step-text" }, /* @__PURE__ */ React.createElement("div", { className: "phase-step-label" }, p.label), /* @__PURE__ */ React.createElement("div", { className: "phase-step-sub" }, p.sub)), isActive && /* @__PURE__ */ React.createElement("span", { className: "phase-active-pulse" })), i < PHASES.length - 1 && /* @__PURE__ */ React.createElement("div", { className: `phase-connector ${isDone ? "done" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-connector-fill", style: { width: isDone ? "100%" : isActive ? "50%" : "0%" } })));
+    }), /* @__PURE__ */ React.createElement("div", { className: "phase-gen-tag" + wrapCls + (status === "complete" ? " complete" : "") }, stopping ? "\uC815\uC9C0 \uC911\u2026" : errored ? "\uC2E4\uD328 \xB7 \uC911\uB2E8\uB428" : blocked ? "\uCC28\uB2E8\uB428" : running ? `\uC138\uB300 ${activeGen} \uC9C4\uD589\uC911` : status === "complete" ? `${state.current_gen}\uC138\uB300 \uC644\uB8CC` : "\uB300\uAE30\uC911")), reason && /* @__PURE__ */ React.createElement("div", { className: "phase-status-banner " + (errored ? "err" : "warn"), role: "status" }, /* @__PURE__ */ React.createElement("b", null, errored ? "\uC624\uB958" : "\uCC28\uB2E8"), " \xB7 ", reason));
   }
   function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
     var _a, _b, _c, _d;
