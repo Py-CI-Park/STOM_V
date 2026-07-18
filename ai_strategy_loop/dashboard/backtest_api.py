@@ -23,7 +23,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Annotated, Any, Dict, List, Literal, Optional, Set, TypedDict
 
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints, model_validator
 
@@ -237,12 +237,16 @@ def _job_run_context(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _trade_detail_envelope(
-    trades: List[Dict[str, Any]], offset: int, limit: int, status: str
+    trades: List[Dict[str, Any]],
+    offset: int,
+    limit: int,
+    status: str,
+    diagnostic: Optional[str] = None,
 ) -> Dict[str, Any]:
     total = len(trades)
     items = trades[offset:offset + limit]
     next_offset = offset + len(items)
-    return {
+    envelope = {
         "items": items,
         "total": total,
         "offset": offset,
@@ -251,6 +255,9 @@ def _trade_detail_envelope(
         "has_more": next_offset < total,
         "status": status,
     }
+    if diagnostic:
+        envelope["diagnostic"] = diagnostic
+    return envelope
 
 
 def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict[str, Any]:
@@ -1331,6 +1338,7 @@ def get_result(
     run_id: str = "",
     gen_no: Optional[int] = None,
     demo: int = 0,
+    detail_only: bool = False,
     detail_limit: Annotated[int, Query(ge=0, le=100)] = 0,
     detail_offset: Annotated[int, Query(ge=0)] = 0,
 ) -> Dict[str, Any]:
@@ -1342,6 +1350,18 @@ def get_result(
       - run_id+gen_no: loop_runs.db 세대 결과(잡과 동일 스키마, CSV 부재 시 축약).
     no_trades 잡은 metrics=None, analysis=빈 구조로 정상 반환(에러 아님).
     """
+    if detail_only and (
+        detail_limit <= 0
+        or not job_id
+        or demo
+        or job_id == _DEMO_JOB_ID
+        or run_id
+        or gen_no is not None
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="detail_only requires a backtest job_id and positive detail_limit",
+        )
     # 데모 경로 — 잡/세대 없이 합성 거래로 풀 분석을 만든다(분석 전 키 포함).
     #   sentinel job_id("__demo__") 도 데모로 라우팅한다(프론트 BtResultArea 가 job_id 만
     #   URL 에 싣고 호출하므로, 별도 charts 수정 없이 기본 화면 예시 렌더를 가능케 한다).
@@ -1358,6 +1378,37 @@ def get_result(
     csv_path = record.get("csv_path")
     spec = record.get("spec") or {}
     mode = str(spec.get("mode", "backtest") or "backtest")
+    if detail_only:
+        if mode != "backtest" or status not in ("success", "no_trades"):
+            detail_load = {"status": "unavailable", "trades": []}
+        elif status == "no_trades":
+            detail_load = {"status": "no_trades", "trades": []}
+        else:
+            raw_path = Path(str(csv_path)) if csv_path else None
+            csv_file = str(raw_path if raw_path and raw_path.is_absolute() else REPO_ROOT / raw_path) if raw_path else None
+            detail_load = analysis.load_trades_csv_with_status(csv_file)
+        detail_status = str(detail_load["status"])
+        return {
+            "available": True,
+            "job_id": job_id,
+            "status": status,
+            "evidence_id": f"job:{job_id}",
+            "source_type": "job",
+            "condition_identity": _condition_identity(
+                (record.get("spec") or {}).get("buy") or "",
+                (record.get("spec") or {}).get("sell") or "",
+                buy_code=(record.get("spec") or {}).get("buy_code"),
+                sell_code=(record.get("spec") or {}).get("sell_code"),
+            ),
+            "run_context": _job_run_context(record),
+            "trade_details": _trade_detail_envelope(
+                detail_load["trades"],
+                detail_offset,
+                detail_limit,
+                detail_status,
+                detail_load.get("diagnostic"),
+            ),
+        }
     # wfo/sweep 모드 — csv 단일 분석 대신 구조화 결과(윈도우별/조합별 표)를 반환한다.
     if mode in ("wfo", "sweep"):
         return _augment_job_result({

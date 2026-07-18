@@ -113,6 +113,37 @@ def load_trades_csv(csv_path: Optional[str]) -> List[Dict[str, Any]]:
         return []
     return trades
 
+def load_trades_csv_with_status(csv_path: Optional[str]) -> Dict[str, Any]:
+    """Read one detail CSV and retain its outcome without exposing filesystem details."""
+    if not csv_path:
+        return {"status": "missing", "trades": []}
+    trades: List[Dict[str, Any]] = []
+    row_count = 0
+    try:
+        with open(csv_path, encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            fields = reader.fieldnames or []
+            if COL_SELL_TIME not in fields or COL_PROFIT_KRW not in fields:
+                return {
+                    "status": "error",
+                    "trades": [],
+                    "diagnostic": "required trade columns are missing",
+                }
+            for row in reader:
+                row_count += 1
+                trade = _normalize_row(row)
+                if trade is not None:
+                    trades.append(trade)
+    except FileNotFoundError:
+        return {"status": "missing", "trades": []}
+    except UnicodeError:
+        return {"status": "error", "trades": [], "diagnostic": "CSV text is not decodable"}
+    except (OSError, csv.Error):
+        return {"status": "error", "trades": [], "diagnostic": "CSV could not be read"}
+    if row_count and not trades:
+        return {"status": "error", "trades": [], "diagnostic": "trade rows are malformed"}
+    return {"status": "ok" if trades else "empty", "trades": trades}
+
 
 def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """CSV 한 행을 정규화된 trade dict 로 변환한다. 필수 필드 누락이면 None."""

@@ -6,6 +6,8 @@ import sqlite3
 import sys
 import time
 from pathlib import Path
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
@@ -192,8 +194,35 @@ def test_result_trade_detail_page_preserves_columns_bounds_and_context(monkeypat
     assert "trade_details" not in default
     assert set(default["run_context"]) == {"start", "end", "timeframe", "engines", "betting"}
 
-    detail = backtest_api.get_result(job_id="job_detail", detail_limit=100, detail_offset=0)
+    calls = 0
+    real_loader = backtest_api.analysis.load_trades_csv_with_status
+
+    def load_once(path):
+        nonlocal calls
+        calls += 1
+        return real_loader(path)
+
+    monkeypatch.setattr(backtest_api.analysis, "load_trades_csv_with_status", load_once)
+    monkeypatch.setattr(
+        backtest_api.analysis,
+        "full_analysis",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("detail-only recomputed analysis")),
+    )
+    monkeypatch.setattr(
+        backtest_api.analysis,
+        "full_analysis_from_trades",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("detail-only recomputed analysis")),
+    )
+    detail = backtest_api.get_result(
+        job_id="job_detail", detail_only=True, detail_limit=100, detail_offset=0,
+    )
     page = detail["trade_details"]
+    assert calls == 1
+    assert set(detail) == {
+        "available", "job_id", "status", "evidence_id", "source_type",
+        "condition_identity", "run_context", "trade_details",
+    }
+    assert "analysis" not in detail and "metrics" not in detail
     assert page["status"] == "ok"
     assert page["total"] == 2 and page["limit"] == 100
     assert page["next_offset"] is None and page["has_more"] is False
@@ -215,13 +244,37 @@ def test_result_trade_detail_page_preserves_columns_bounds_and_context(monkeypat
 
     optimize_record = dict(record, spec={**record["spec"], "mode": "optimize"})
     monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(optimize_record))
-    optimize = backtest_api.get_result(job_id="job_detail", detail_limit=50)
-    assert optimize["mode"] == "optimize"
-    assert optimize["trade_details"]["status"] == "unavailable"
-    assert optimize["trade_details"]["items"] == []
+    app = FastAPI()
+    app.include_router(backtest_api.backtest_router)
+    client = TestClient(app)
+    unavailable = client.get("/bt/result", params={
+        "job_id": "job_detail", "detail_only": "true", "detail_limit": 50,
+    })
+    assert unavailable.status_code == 200
+    assert unavailable.json()["trade_details"]["status"] == "unavailable"
+    pending_record = dict(record, status="running")
+    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(pending_record))
+    monkeypatch.setattr(
+        backtest_api.analysis,
+        "load_trades_csv_with_status",
+        lambda path: (_ for _ in ()).throw(AssertionError("running artifact must not be read")),
+    )
+    pending = client.get("/bt/result", params={
+        "job_id": "job_detail", "detail_only": "true", "detail_limit": 50,
+    })
+    assert pending.status_code == 200
+    assert pending.json()["trade_details"]["status"] == "unavailable"
+    zero_limit = client.get("/bt/result", params={
+        "job_id": "job_detail", "detail_only": "true", "detail_limit": 0,
+    })
+    assert zero_limit.status_code == 422
+    over_limit = client.get("/bt/result", params={
+        "job_id": "job_detail", "detail_only": "true", "detail_limit": 101,
+    })
+    assert over_limit.status_code == 422
 
 
-def test_result_trade_detail_empty_missing_and_frontend_lazy_markers(monkeypatch, tmp_path: Path):
+def test_result_detail_only_distinguishes_empty_missing_and_errors(monkeypatch, tmp_path: Path):
     missing = tmp_path / "missing.csv"
     record = {
         "job_id": "job_missing_detail",
@@ -231,19 +284,56 @@ def test_result_trade_detail_empty_missing_and_frontend_lazy_markers(monkeypatch
         "spec": {"start": 20250101, "end": 20250102, "timeframe": "min"},
     }
     monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(record))
-    page = backtest_api.get_result(job_id="job_missing_detail", detail_limit=50)["trade_details"]
-    assert page == {
+    missing_page = backtest_api.get_result(
+        job_id="job_missing_detail", detail_only=True, detail_limit=50,
+    )["trade_details"]
+    assert missing_page == {
         "items": [], "total": 0, "offset": 0, "limit": 50, "next_offset": None,
         "has_more": False, "status": "missing",
     }
 
-    no_trades = dict(record, job_id="job_empty_detail", status="no_trades", csv_path=None)
-    monkeypatch.setattr(backtest_api, "get_job_manager", lambda: _ResultManager(no_trades))
-    empty = backtest_api.get_result(job_id="job_empty_detail", detail_limit=50)["trade_details"]
-    assert empty["status"] == "no_trades" and empty["items"] == []
+    empty_csv = tmp_path / "empty.csv"
+    empty_csv.write_text("매도시간,수익금\n", encoding="utf-8")
+    monkeypatch.setattr(
+        backtest_api,
+        "get_job_manager",
+        lambda: _ResultManager({**record, "job_id": "job_empty_detail", "csv_path": str(empty_csv)}),
+    )
+    empty_page = backtest_api.get_result(
+        job_id="job_empty_detail", detail_only=True, detail_limit=50,
+    )["trade_details"]
+    assert empty_page["status"] == "empty" and empty_page["items"] == []
+
+    malformed_csv = tmp_path / "malformed.csv"
+    malformed_csv.write_text("매도시간,수익률\n20250101100000,1\n", encoding="utf-8")
+    monkeypatch.setattr(
+        backtest_api,
+        "get_job_manager",
+        lambda: _ResultManager({**record, "job_id": "job_bad_detail", "csv_path": str(malformed_csv)}),
+    )
+    error_result = backtest_api.get_result(
+        job_id="job_bad_detail", detail_only=True, detail_limit=50,
+    )
+    error_page = error_result["trade_details"]
+    assert error_page["status"] == "error"
+    assert error_page["diagnostic"] == "required trade columns are missing"
+    assert str(malformed_csv) not in json.dumps(error_result, ensure_ascii=False)
+
+    malformed_rows = tmp_path / "malformed_rows.csv"
+    malformed_rows.write_text("매도시간,수익금\nnot-a-time,10\n", encoding="utf-8")
+    monkeypatch.setattr(
+        backtest_api,
+        "get_job_manager",
+        lambda: _ResultManager({**record, "job_id": "job_bad_rows", "csv_path": str(malformed_rows)}),
+    )
+    malformed_page = backtest_api.get_result(
+        job_id="job_bad_rows", detail_only=True, detail_limit=50,
+    )["trade_details"]
+    assert malformed_page["status"] == "error"
+    assert malformed_page["diagnostic"] == "trade rows are malformed"
 
     frontend = (Path(PROJECT_ROOT) / "ai_strategy_loop/dashboard/frontend/bt-result-area.jsx").read_text(encoding="utf-8")
     assert "<details" in frontend and "onToggle={onToggle}" in frontend
-    assert "detail_limit=" in frontend and "_BT_TRADE_DETAIL_LIMIT = 50" in frontend
+    assert "detail_only=true&detail_limit=" in frontend
     assert "sourceGenerationRef" in frontend and "generation !== sourceGenerationRef.current" in frontend
     assert "run_context || {}).timeframe" in frontend

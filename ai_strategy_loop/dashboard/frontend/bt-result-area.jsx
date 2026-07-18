@@ -488,7 +488,7 @@ function BtTradeDetails({ baseUrl, jobId }) {
     setLoading(true);
     setError("");
     const url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId)
-      + "&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
+      + "&detail_only=true&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
     _btFetchJson(url, 8000)
       .then((payload) => {
         if (generation !== sourceGenerationRef.current) return;
@@ -520,7 +520,16 @@ function BtTradeDetails({ baseUrl, jobId }) {
           {error} <button className="btn ghost sm" onClick={() => loadPage((page || {}).offset || 0)}>재시도</button>
         </div>}
         {!loading && !error && page && page.items.length === 0 && (
-          <div className="research-empty">{page.status === "missing" ? "상세 거래 CSV를 찾을 수 없습니다." : "표시할 거래가 없습니다."}</div>
+          <div className="research-empty" style={{ color: page.status === "error" ? "var(--red)" : undefined }}>
+            {page.status === "error"
+              ? (page.diagnostic || "상세 거래 CSV를 읽을 수 없습니다.")
+              : page.status === "missing"
+                ? "상세 거래 CSV를 찾을 수 없습니다."
+                : page.status === "unavailable"
+                  ? "완료된 일반 백테스트에서만 거래 상세를 볼 수 있습니다."
+                  : "표시할 거래가 없습니다."}
+            {page.status === "error" && <button className="btn ghost sm" onClick={() => loadPage(page.offset || 0)}>재시도</button>}
+          </div>
         )}
         {!loading && !error && page && page.items.length > 0 && (
           <>
