@@ -97,6 +97,17 @@ function v4InitialBase(propBase) {
   return propBase || DEFAULT_BASE;
 }
 
+// 현재 로드된 번들 빌드 지문(app.js?v=…)을 런타임에 파싱 — 사용자가 최신 빌드 여부를 확인.
+//   빌드 스크립트가 content-hash ?v= 를 HTML script src 에 주입하므로 별도 빌드 변경 불필요.
+function v4BundleVersion() {
+  try {
+    const src = Array.from(document.querySelectorAll("script[src]"))
+      .map(e => e.src).find(s => /\/app\.js\?v=/.test(s));
+    if (src) { const m = src.match(/[?&]v=([0-9A-Za-z._-]+)/); if (m) return m[1]; }
+  } catch (e) {}
+  return "";
+}
+
 function V4RailIcon({ name }) {
   const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
   if (name === "research") return (<svg {...p}><path d="M2 12 L6 8 L9 10 L15 3" /><circle cx="15" cy="3" r="1.3" fill="currentColor" stroke="none" /></svg>);
@@ -138,6 +149,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
   const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
   const pendingTabFocusRef = useRef_v4("");
+  const [buildVer] = useState_v4(() => v4BundleVersion());
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -316,6 +328,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           </div>
           <div className="v4-safety" aria-label="안전 경계">
             {isDemo && <span className="v4-sfx demo">DEMO</span>}
+            {buildVer && <span className="v4-sfx build" title="현재 로드된 번들 빌드 지문(app.js?v=)">build {buildVer}</span>}
             <span className="v4-sfx">실거래 없음</span>
             <span className="v4-sfx">브로커 없음</span>
             <span className="v4-sfx gate">HUMAN GATE</span>
