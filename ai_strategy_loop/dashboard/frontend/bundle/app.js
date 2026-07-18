@@ -35084,6 +35084,65 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Alpha });
 
+  // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
+  var { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+  function _fmtReportBytes(n) {
+    if (!Number.isFinite(n)) return "";
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / (1024 * 1024)).toFixed(1) + " MB";
+  }
+  function V4Reports({ baseUrl }) {
+    const [list, setList] = useState_rp7(null);
+    const [err, setErr] = useState_rp7("");
+    const [sel, setSel] = useState_rp7("");
+    useEffect_rp7(() => {
+      if (!baseUrl) {
+        setList([]);
+        return;
+      }
+      let cancelled = false;
+      fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (cancelled) return;
+        const reports = Array.isArray(j && j.reports) ? j.reports : [];
+        setList(reports);
+        setSel((prev) => prev || (reports.length ? reports[0].path : ""));
+      }).catch((e) => {
+        if (!cancelled) {
+          setList([]);
+          setErr(String(e && e.message ? e.message : e));
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl]);
+    const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.map((rp) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: rp.path,
+        className: "v4-reports-item" + (sel === rp.path ? " active" : ""),
+        onClick: () => setSel(rp.path),
+        title: rp.path
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, rp.name),
+      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes))
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement(
+      "iframe",
+      {
+        key: viewUrl,
+        className: "v4-reports-frame",
+        src: viewUrl,
+        sandbox: "",
+        referrerPolicy: "no-referrer",
+        title: "\uB9AC\uD3EC\uD2B8: " + sel,
+        loading: "lazy"
+      }
+    ) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694"))));
+  }
+  Object.assign(window, { V4Reports });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
   var V4_TABS = [
@@ -35092,6 +35151,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", group: "primary" },
     { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9", group: "primary" },
     { key: "workbench", label: "\uC131\uACFC", full: "\uC131\uACFC \xB7 \uBA85\uC608\uC758 \uC804\uB2F9", badge: "HALL", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9(\uC778\uAC04+AI \uBCA4\uCE58\uB9C8\uD06C)", group: "primary" },
+    { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30, \uBE44-P4)", group: "primary" },
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D", group: "secondary" },
     { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 export \uACBD\uACC4", group: "secondary" },
@@ -35169,6 +35229,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (name === "history") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "9", r: "6.5" }), /* @__PURE__ */ React.createElement("path", { d: "M9 5.5 V9 L12 10.5" }));
     if (name === "lab") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "11.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "11.5", width: "4", height: "4", rx: "1" }));
     if (name === "workbench") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 14 h7" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "3.5", r: "1.4" }));
+    if (name === "reports") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M4 2 h6 l4 4 v10 H4 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M10 2 v4 h4" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 10 h5 M6.5 12.5 h3" }));
     if (name === "audit") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 9 L8.3 10.8 L11.5 7" }));
     return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" }));
   }
@@ -35431,7 +35492,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
