@@ -446,3 +446,22 @@
   .v4-runsel-select { font-size: 14px; }
   .v4-stat .v { font-size: 26px; }
 }
+
+/* ── UXR-P4 울트라와이드 레이아웃: 넓은 화면을 밀도로 활용(늘어짐 방지) ── */
+@media (min-width: 2400px) {
+  /* Live 사이드 컬럼 확대 — 사이클/현재세대 정보 가독성 */
+  .v4-rlive { grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; }
+  .v4-two { gap: 18px; }
+  .v4-stage { padding: 16px 28px 44px; }
+  /* 주인공 차트 키워 실시간 관찰성 강화 */
+  .v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 460px; }
+  /* 프로즈(온보딩·안전타일)는 초광폭에서 줄길이 폭주 방지 */
+  .v4-onboarding-bd p, .v4-safety-tile b { max-width: 68ch; }
+}
+@media (min-width: 3200px) {
+  /* 진짜 울트라와이드(3440): 사이드 더 넓게 + 여백 프레이밍 */
+  .v4-rlive { grid-template-columns: minmax(0, 1fr) 480px; gap: 22px; }
+  .v4-stage { padding: 18px 40px 52px; }
+  .v4-stats { grid-template-columns: repeat(4, 1fr); }
+  .v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 520px; }
+}
