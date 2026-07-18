@@ -8079,6 +8079,27 @@ def signal_sell(pos, bar, ind):
   // ai_strategy_loop/dashboard/frontend/conn-backend.jsx
   var { useState: useState_cn1, useEffect: useEffect_cn1, useRef: useRef_cn1, useCallback: useCallback_cn1 } = React;
   var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
+  var _WS_DIAG_MAX = 200;
+  var _wsDiag = [];
+  function _recordWsDiag(entry) {
+    try {
+      const rec = Object.assign({ t: Date.now() }, entry);
+      _wsDiag.push(rec);
+      if (_wsDiag.length > _WS_DIAG_MAX) _wsDiag.splice(0, _wsDiag.length - _WS_DIAG_MAX);
+      if (typeof window !== "undefined") window.__stomWsDiag = _wsDiag;
+    } catch (e) {
+    }
+  }
+  function getWsDiag() {
+    const closes = _wsDiag.filter((e) => e.kind === "close" && !e.byUs);
+    const errors = _wsDiag.filter((e) => e.kind === "error");
+    const codes = {};
+    for (const c of closes) {
+      const k = String(c.code == null ? "?" : c.code);
+      codes[k] = (codes[k] || 0) + 1;
+    }
+    return { total: _wsDiag.length, unexpectedCloses: closes.length, errors: errors.length, codes, entries: _wsDiag.slice() };
+  }
   var DEFAULT_CONFIG_SPEC = [
     // 목표/제약
     {
@@ -8838,6 +8859,7 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
         setHealth({ connected: false, contract_version: null });
         setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
+        _recordWsDiag({ kind: "demo" });
         setWsStatus("demo");
       }
     }, [baseUrl]);
@@ -8847,6 +8869,7 @@ def signal_sell(pos, bar, ind):
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
         ws.onopen = () => {
+          _recordWsDiag({ kind: "open", recoveredAfter: reconnectAttempt.current });
           reconnectAttempt.current = 0;
           stopDemo();
           setWsStatus("open");
@@ -8862,7 +8885,8 @@ def signal_sell(pos, bar, ind):
           } catch (e) {
           }
         };
-        ws.onclose = () => {
+        ws.onclose = (ev) => {
+          _recordWsDiag({ kind: "close", code: ev && ev.code, reason: ev && ev.reason || "", byUs: !!closedByUs.current, attempt: reconnectAttempt.current });
           if (closedByUs.current) return;
           setWsStatus("reconnecting");
           const delay = Math.min(8e3, 500 * Math.pow(1.7, reconnectAttempt.current));
@@ -8872,6 +8896,7 @@ def signal_sell(pos, bar, ind):
           }, delay);
         };
         ws.onerror = () => {
+          _recordWsDiag({ kind: "error", attempt: reconnectAttempt.current });
         };
       } catch (e) {
         setWsStatus("reconnecting");
@@ -8936,7 +8961,8 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, {
     useBackend: useBackend2,
-    DEFAULT_BASE: DEFAULT_BASE2
+    DEFAULT_BASE: DEFAULT_BASE2,
+    getWsDiag
   });
 
   // ai_strategy_loop/dashboard/frontend/connection.jsx
