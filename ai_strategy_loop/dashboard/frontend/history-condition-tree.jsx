@@ -67,7 +67,7 @@ function _hctLabelMeta(row) {
 }
 
 function _hctStatusCell(row) {
-  const status = row.status || "";
+  const status = row.evaluation_status || "";
   if (status === "no_trades") {
     return <span className="mono" style={{ color: "var(--ink-2)" }}>0 trades</span>;
   }
@@ -89,7 +89,7 @@ function _hctStatusCell(row) {
 }
 
 const HCT_EVAL_COLUMNS = [
-  { key: "status", label: "상태", numeric: false },
+  { key: "evaluation_status", label: "상태", numeric: false },
   { key: "trade_count", label: "거래수", numeric: true },
   { key: "traded_symbol_count", label: "거래종목수", numeric: true },
   { key: "net_profit", label: "순손익", numeric: true },
@@ -376,7 +376,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                           }}
                           tabIndex={0}
                           role="button"
-                          aria-selected={active}
+                          aria-pressed={active}
                           onClick={() => selectResearch(row.research_id)}
                           onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectResearch(row.research_id); } }}
                         >

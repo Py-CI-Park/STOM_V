@@ -110,6 +110,29 @@ def test_research_records_lists_campaigns(tmp_path: Path) -> None:
         "reason": "invalid_campaign",
     }
 
+def test_research_records_root_is_a_safe_logical_label(tmp_path: Path) -> None:
+    evidence = (tmp_path / "private-parent" / "campaign-evidence").resolve()
+    _write_campaign(evidence)
+
+    payload = research_records.list_research_records(evidence)
+
+    assert payload["root"] == "research-records"
+    assert not Path(payload["root"]).is_absolute()
+    assert str(evidence) not in payload["root"]
+    assert str(evidence.parent) not in payload["root"]
+    assert payload["count"] == 1
+    assert payload["campaigns"][0]["name"] == "campaign_alpha"
+
+    missing = (tmp_path / "private-parent" / "missing-evidence").resolve()
+    missing_payload = research_records.list_research_records(missing)
+
+    assert missing_payload["root"] == "research-records"
+    assert not Path(missing_payload["root"]).is_absolute()
+    assert str(missing) not in missing_payload["root"]
+    assert str(missing.parent) not in missing_payload["root"]
+    assert missing_payload["count"] == 0
+    assert missing_payload["campaigns"] == []
+
 
 def test_governed_index_has_namespaced_rows_and_safe_detail(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -137,6 +160,9 @@ def test_governed_index_has_namespaced_rows_and_safe_detail(tmp_path: Path) -> N
     assert candidate["trace_status"] == "linked"
     assert candidate["exact_link"] == "research-index://registry:alpha_candidate"
     campaign = next(row for row in payload["records"] if row["id"] == "campaign:campaign_alpha")
+    assert campaign["source_path"] == ".omo/evidence/tmap-walkforward/campaign_alpha_summary.json"
+    assert not Path(campaign["source_path"]).is_absolute()
+    assert str(evidence) not in campaign["source_path"]
     assert campaign["trace_status"] == "unlinked"
     doc = next(row for row in payload["records"] if row["id"] == "doc:docs/research/condition_research/alpha.md")
     assert doc["trace_status"] == "unknown"

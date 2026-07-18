@@ -231,7 +231,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
                 best={_rrpBestLabel(selected)}
               </div>
               <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 }}>
-                root={(payload && payload.root) || "-"}
+                source={(payload && payload.root) || "-"}
               </div>
             </div>
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>

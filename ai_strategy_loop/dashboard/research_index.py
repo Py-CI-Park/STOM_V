@@ -309,17 +309,26 @@ def _campaign_rows(repo_root: Path, evidence_root: Path) -> tuple[list[ResearchI
     errors: list[ResearchIndexError] = [
         {"source_path": item["file"], "reason": item["reason"]} for item in response["errors"]
     ]
-    root = Path(response["root"])
+    root = evidence_root.resolve()
     for campaign in response["campaigns"]:
         artifacts = campaign["artifacts"]
         rel_source = ""
         for key in ("summary", "jsonl", "run_log"):
             value = artifacts.get(key)  # type: ignore[arg-type]
-            if isinstance(value, str) and value:
-                rel_source = _relative(repo_root, root / value)
-                break
+            if isinstance(value, str) and _safe_rel(value):
+                artifact_path = (root / value).resolve()
+                if artifact_path.is_relative_to(root):
+                    try:
+                        rel_source = _relative(repo_root, artifact_path)
+                    except ValueError:
+                        pass
+                if rel_source:
+                    break
         if not rel_source:
-            rel_source = _relative(repo_root, root) if root.exists() else str(root)
+            try:
+                rel_source = _relative(repo_root, root)
+            except ValueError:
+                rel_source = response["root"]
         best = campaign.get("best", {})
         title = str(best.get("label") or campaign["name"])
         rows.append(_row(

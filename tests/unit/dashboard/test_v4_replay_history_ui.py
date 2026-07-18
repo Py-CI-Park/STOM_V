@@ -60,6 +60,7 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
 
 def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> None:
     tree = _read("history-condition-tree.jsx")
+    records = _read("research-records-panel.jsx")
     viz = _read("history-viz.jsx")
 
     assert "function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange })" in tree
@@ -67,8 +68,14 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "new AbortController()" in tree
     assert "generation !== generationRef.current" in tree
     assert "controller.abort()" in tree
-    assert "aria-selected={active}" in tree
+    assert "aria-pressed={active}" in tree
+    assert "aria-selected={active}" not in tree
     assert 'role="button"' in tree
+    assert 'e.key === "Enter" || e.key === " "' in tree
+    assert "row.evaluation_status ||" in tree
+    assert '{ key: "evaluation_status", label: "상태", numeric: false }' in tree
+    assert 'source={(payload && payload.root) || "-"}' in records
+    assert "root={(payload && payload.root)" not in records
     assert 'aria-label="연구 근거 목적지 상태"' in tree
     for state in ("complete", "partial", "missing", "conflict"):
         assert state in tree

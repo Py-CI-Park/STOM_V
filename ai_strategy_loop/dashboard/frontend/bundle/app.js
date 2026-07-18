@@ -31487,7 +31487,7 @@ def signal_sell(pos, bar, ind):
         textAlign: "right",
         color: Number(best.profit || 0) >= 0 ? "var(--teal)" : "var(--red)"
       } }, _rrpMoney(best.profit)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _rrpPct(best.mdd)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, (artifacts.pairs || []).length, " pairs / ", artifacts.summary ? "summary" : "-", " / ", artifacts.run_log ? "log" : "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _rrpDate(row.updated_at)));
-    })))), rows.length > 12 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", null, showAll ? `\uC804\uCCB4 ${rows.length}\uAC1C \uD45C\uC2DC \uC911` : `\uC804\uCCB4 ${rows.length}\uAC1C \uC911 12\uAC1C \uD45C\uC2DC`), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowAll((v) => !v) }, showAll ? "\uCC98\uC74C 12\uAC1C\uB9CC \uBCF4\uAE30" : `\uC804\uCCB4 ${rows.length}\uAC1C \uBCF4\uAE30`)), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 } }, "root=", payload && payload.root || "-")), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
+    })))), rows.length > 12 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", null, showAll ? `\uC804\uCCB4 ${rows.length}\uAC1C \uD45C\uC2DC \uC911` : `\uC804\uCCB4 ${rows.length}\uAC1C \uC911 12\uAC1C \uD45C\uC2DC`), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowAll((v) => !v) }, showAll ? "\uCC98\uC74C 12\uAC1C\uB9CC \uBCF4\uAE30" : `\uC804\uCCB4 ${rows.length}\uAC1C \uBCF4\uAE30`)), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 } }, "source=", payload && payload.root || "-")), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
       display: "grid",
       gridTemplateColumns: "minmax(110px, 1fr) 72px 56px 56px",
       gap: 8,
@@ -31560,7 +31560,7 @@ def signal_sell(pos, bar, ind):
     }
   }
   function _hctStatusCell(row) {
-    const status = row.status || "";
+    const status = row.evaluation_status || "";
     if (status === "no_trades") {
       return /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-2)" } }, "0 trades");
     }
@@ -31573,7 +31573,7 @@ def signal_sell(pos, bar, ind):
     return /* @__PURE__ */ React.createElement("span", { className: "badge ok" }, status || "\u2014");
   }
   var HCT_EVAL_COLUMNS = [
-    { key: "status", label: "\uC0C1\uD0DC", numeric: false },
+    { key: "evaluation_status", label: "\uC0C1\uD0DC", numeric: false },
     { key: "trade_count", label: "\uAC70\uB798\uC218", numeric: true },
     { key: "traded_symbol_count", label: "\uAC70\uB798\uC885\uBAA9\uC218", numeric: true },
     { key: "net_profit", label: "\uC21C\uC190\uC775", numeric: true },
@@ -31781,7 +31781,7 @@ def signal_sell(pos, bar, ind):
           },
           tabIndex: 0,
           role: "button",
-          "aria-selected": active,
+          "aria-pressed": active,
           onClick: () => selectResearch(row.research_id),
           onKeyDown: (e) => {
             if (e.key === "Enter" || e.key === " ") {

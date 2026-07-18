@@ -61,6 +61,9 @@ class ResearchRecordDetailResponse(TypedDict):
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_ROOT = REPO_ROOT / ".omo" / "evidence" / "tmap-walkforward"
 _SAFE_CAMPAIGN = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
+# Compatibility field: expose a logical label, never a filesystem path.
+_RESEARCH_RECORDS_ROOT_LABEL = "research-records"
+
 
 
 def _empty_artifacts() -> CampaignArtifacts:
@@ -97,6 +100,9 @@ def _campaign_from_log(path: Path) -> str:
 
 def _safe_campaign_name(name: str) -> bool:
     return bool(_SAFE_CAMPAIGN.fullmatch(name)) and ".." not in name
+
+def _root_label() -> str:
+    return _RESEARCH_RECORDS_ROOT_LABEL
 
 
 def _read_json(path: Path, errors: list[ResearchRecordError]) -> JsonValue | None:
@@ -197,7 +203,7 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
     campaigns: dict[str, CampaignRecord] = {}
     errors: list[ResearchRecordError] = []
     if not evidence.is_dir():
-        return {"root": str(evidence), "count": 0, "campaigns": [], "errors": []}
+        return {"root": _root_label(), "count": 0, "campaigns": [], "errors": []}
 
     for summary_path in sorted(evidence.glob("*_summary.json")):
         name = summary_path.stem.removesuffix("_summary")
@@ -239,7 +245,7 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
 
     items = list(campaigns.values())
     items.sort(key=lambda row: (row["updated_at"], row["name"]), reverse=True)
-    return {"root": str(evidence), "count": len(items), "campaigns": items, "errors": errors}
+    return {"root": _root_label(), "count": len(items), "campaigns": items, "errors": errors}
 
 
 def research_record_detail(campaign: str, root: Path | None = None) -> ResearchRecordDetailResponse:
