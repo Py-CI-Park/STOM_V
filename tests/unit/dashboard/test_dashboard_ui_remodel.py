@@ -169,7 +169,7 @@ def test_g006_removes_duplicate_inner_tabs_and_pins_readability() -> None:
     assert "verdict-glossary" in pages
     assert "verdict-example" in pages
     assert "verdictErrors" in pages
-    assert "markVerdictError" in pages
+    assert "ownsVerdictRequest" in pages
     assert "missingVerdictGlobals" in pages
     assert "결정 감사 데이터 일부 로드 실패" in pages
     assert "결정 감사 공용 컴포넌트 로드 실패" in pages
@@ -419,7 +419,7 @@ def test_records_lookup_has_sort_and_windowing_controls() -> None:
     assert "updated_desc" in src and "title_asc" in src and "kind_asc" in src
     assert "displayLimit" in src
     assert "더 보기" in src
-    assert "detailRequestSeq" in src
+    assert "generationRef.current.detail" in src and "requestsRef.current.detail" in src
     assert "research-index-pre" in src
 
 
