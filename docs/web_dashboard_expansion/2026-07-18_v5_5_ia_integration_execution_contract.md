@@ -10,12 +10,14 @@
 |---|---|---|---|---|
 | Lab 팩터 히트맵 | Live 백테스트 단계 | `ResearchHeatmapPanel(baseUrl, wsStatus, runId)` · 기존 `GET /edge_ratio` | 같은 값·축·단위·tooltip·loading/empty/error | 신규 endpoint, 클라이언트 재계산 |
 | Lab Edge/변수 분석 | History | `ResearchLabPanel(baseUrl, wsStatus, runId)`의 기존 읽기 전용 탭 | `loop_run:`에서만 정확한 run ID를 사용하고 campaign/선택 없음은 명시적 unavailable | campaign ID 추측, 새 publisher |
-| Workbench 후보 분석·비교 | History | `ResearchProPanel`, `RunComparePanel` | History의 별도 legacy run/gen 비교 영역에 배치; governed identity와 혼합 금지 | 승급·운영 반영 |
+| Workbench 후보 분석·비교 | History | `RunComparePanel` + `ResearchLabPanel`의 Edge/Feature/Correlation/Combos 제한 탭 | History의 별도 legacy run/gen 비교 영역에 배치하고 governed identity와 혼합하지 않는다. 전체 `ResearchProPanel`은 히트맵과 Hall-of-Fame을 다시 중복하므로 마운트하지 않는다. | 승급·운영 반영, 중복 히트맵/Hall-of-Fame |
 | Workbench 명예의 전당 | 성과 | `HallOfFamePanel`, `HofInventoryGate` | 성과 정본은 Hall-of-Fame 전용 | 후보 분석·비교 중복 |
 | Lab Wiki | History + Reports | `ResearchWikiPanel(baseUrl, wsStatus, runId)` · 기존 `/research_docs`, `/research_doc` | 원문 inert 표시, reference-only 경고, Reports iframe CSP/sandbox 불변 | HTML 실행, 문서 쓰기 |
 | Context 탭 | 셸 개발자 drawer | `AIContextPanel(baseUrl, wsStatus, runId, genNo)` | 기본 닫힘, URL/뒤로가기/Escape/포커스 복귀, current run/gen | Live 연구 상세 drawer와 ID/상태 공유 |
 | Audit/Verdict | History | 기존 `AuditDecisionTrace`, `VerdictPanel` | append-only 결정·human gate 그대로 유지 | 감사 삭제·자동 판정 |
 | Alpha/Catalog | 내부 prototype | 기존 rollback 컴포넌트 | 명시적 rollback에서만 복구; V5.7 전 비권위 | 정본 승격 |
+
+> 검토 교정(2026-07-18): 초기 표의 전체 `ResearchProPanel` 재사용 지시는 같은 `/edge_ratio` 히트맵과 Hall-of-Fame을 History에 중복시켜 “성과=Hall-of-Fame-only” 및 단일 소유권과 충돌했다. G012 검토 결과에 따라 비교는 `RunComparePanel`, 읽기 전용 분석은 제한된 `ResearchLabPanel` 탭으로 봉인하며 전체 Pro 패널은 standalone/explicit rollback 호환 표면에만 남긴다.
 
 ## 대상 파일과 경계
 
