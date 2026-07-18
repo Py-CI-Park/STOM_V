@@ -72,6 +72,46 @@ class TestResearchProSource:
         for stage in ("시드 선택", "후보 생성", "격자 탐색", "백테스트 평가",
                       "게이트", "OOS 검증", "동결"):
             assert stage in fmt
+    def test_analysis_requests_fail_closed_on_identity_change(self):
+        analysis = _read_front("analysis.jsx")
+        heatmap = _read_front("rp-heatmap.jsx")
+
+        # Edge and Feature bind data/error/loading to BASE + run (+ axis for Feature)
+        # before rendering, abort the replaced request, and reject malformed payloads.
+        for component in ("EdgeRatioPanel", "FeatureImportancePanel"):
+            start = analysis.index(f"function {component}(")
+            end = analysis.find("\nfunction ", start + 1)
+            source = analysis[start:end if end != -1 else None]
+            assert "new AbortController()" in source
+            assert "request.generation += 1" in source
+            assert "requestRef.current.generation !== generation" in source
+            assert "currentIdentityRef.current !== identity" in source
+            assert "dataState && dataState.identity === identity" in source
+            assert "errState.identity === identity" in source
+            assert "setDataState(null)" in source
+
+        assert "[baseUrl, runId].join" in analysis
+        assert "[baseUrl, runId, axis].join" in analysis
+        assert "_isEdgeRatioResponse(j)" in analysis
+        assert "_isFeatureImportanceResponse(j)" in analysis
+
+        # The Research Pro heatmap has the same BASE/run ownership and only commits
+        # a validated current-generation response.
+        start = heatmap.index("function _RpBigHeatmap(")
+        end = heatmap.index("\nfunction _RpHeatmapGrid(", start)
+        source = heatmap[start:end]
+        for marker in (
+            "new AbortController()",
+            "request.generation += 1",
+            "requestRef.current.generation !== generation",
+            "currentIdentityRef.current !== identity",
+            "dataState && dataState.identity === identity",
+            "errState.identity === identity",
+            "setDataState(null)",
+            "_rpIsEdgeRatioResponse(j)",
+        ):
+            assert marker in source
+        assert "[baseUrl, runId].join" in source
 
     def test_workbench_link_is_loosely_coupled(self):
         # P5.7 분해: 느슨결합 디스패치(_rpOpenWorkbench)는 rp-utils.jsx, 소비처(HoF/Compare/History)는

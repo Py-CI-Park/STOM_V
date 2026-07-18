@@ -43,7 +43,7 @@ function _rrpCampaignResearchId(row) {
   return typeof campaignId === "string" && campaignId ? `campaign:${campaignId}` : "";
 }
 
-function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch }) {
+function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch, showRunCompare = true }) {
   const [payload, setPayload] = useState_rrp(null);
   const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
   const [detail, setDetail] = useState_rrp(null);
@@ -260,7 +260,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
           <div className="panel-hd">
             <div className="panel-hd-title">
               <span className="dot" style={{ background: "var(--violet)" }}></span>
-              히스토리 ResultDetail · Compare
+              히스토리 ResultDetail{showRunCompare ? " · Compare" : ""}
             </div>
             <button className="btn ghost sm" onClick={refreshRuns} disabled={isDemo || runListLoading}>
               {runListLoading ? "run 로딩…" : "run 새로고침"}
@@ -270,14 +270,16 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>
               History가 과거 run/gen 아카이브와 Compare를 소유합니다. Workbench는 깊은 분석으로 연결만 제공합니다.
             </div>
-            <_RpRunCompare
-              baseUrl={baseUrl}
-              isDemo={isDemo}
-              runList={runList}
-              currentRunId={currentRunId}
-              currentGenNo={currentGenNo}
-              onOpenWorkbench={onOpenWorkbench}
-            />
+            {showRunCompare && (
+              <_RpRunCompare
+                baseUrl={baseUrl}
+                isDemo={isDemo}
+                runList={runList}
+                currentRunId={currentRunId}
+                currentGenNo={currentGenNo}
+                onOpenWorkbench={onOpenWorkbench}
+              />
+            )}
             <_RpHistory baseUrl={baseUrl} isDemo={isDemo} runList={runList} onOpenWorkbench={onOpenWorkbench} />
           </div>
         </div>

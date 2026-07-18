@@ -84,7 +84,7 @@ def test_context_exposes_identity_freshness_and_copy_outcomes() -> None:
     assert 'role="alert"' in source
     assert "copyError" in source
     assert "복사 실패" in source
-    assert "setCopyError(String(reason))" in source
+    assert "setView(previous" in source
     assert "source=" in source
     assert "version=" in source
     assert "freshness=" in source
@@ -92,3 +92,41 @@ def test_context_exposes_identity_freshness_and_copy_outcomes() -> None:
     assert "전체 원문 · 생략 없음" in source
     assert ".slice(" not in source
     assert "catch {}" not in source
+
+
+def test_context_response_identity_rejects_stale_base_run_gen_and_malformed_payloads() -> None:
+    # Given: a requested BASE/run/generation identity and responses that may arrive late.
+    source = _read("ai-context.jsx")
+    expression = """[
+      fn({base_url:'http://one',run_id:'run-a',gen_no:7,context_pack:{}},{baseUrl:'http://one',runId:'run-a',genNo:7}),
+      fn({base_url:'http://old',run_id:'run-a',gen_no:7,context_pack:{}},{baseUrl:'http://one',runId:'run-a',genNo:7}),
+      fn({run_id:'run-old',gen_no:7,context_pack:{}},{baseUrl:'http://one',runId:'run-a',genNo:7}),
+      fn({run_id:'run-a',gen_no:6,context_pack:{}},{baseUrl:'http://one',runId:'run-a',genNo:7}),
+      fn({run_id:'run-a',gen_no:7},{baseUrl:'http://one',runId:'run-a',genNo:7}),
+      fn({context_pack:{}},{baseUrl:'http://one',runId:'run-a',genNo:7})
+    ]"""
+
+    # When/Then: supplied identity fields must match exactly; legacy omission is allowed,
+    # but a payload without either a context pack or a server error is rejected.
+    assert _run_helper(source, "contextPackResponseMatchesIdentity", expression) == [
+        True, False, False, False, False, True,
+    ]
+
+
+def test_context_request_lifecycle_aborts_and_hides_unowned_content_before_copy() -> None:
+    # Given: the context panel request lifecycle.
+    source = _read("ai-context.jsx")
+
+    # When/Then: selection changes abort prior work, generation gates callbacks, and
+    # render/copy consume only a view tagged with the current BASE/run/generation.
+    for marker in (
+        "new AbortController()",
+        "request.generation + 1",
+        "request.generation += 1",
+        "controller.abort()",
+        "viewIsOwned = sameContextIdentity(view.identity, currentIdentity)",
+        "contextPackResponseMatchesIdentity(response, identity)",
+        "disabled={!contextPack}",
+        "const text = copyableContextPack(pack)",
+    ):
+        assert marker in source

@@ -47,7 +47,8 @@ def test_phase2_history_owns_result_detail_and_compare() -> None:
     assert "sourceContext" in body_block
     assert "ResultDetailBody" in charts.split("Object.assign(window", 1)[1]
 
-    records_history = records.split("히스토리 ResultDetail · Compare", 1)[1].split("{errors.length > 0", 1)[0]
+    records_history = records.split("히스토리 ResultDetail", 1)[1].split("{errors.length > 0", 1)[0]
+    assert "{showRunCompare && (" in records_history
     assert "<_RpRunCompare" in records_history
     assert "<_RpHistory" in records_history
     assert "History가 과거 run/gen 아카이브와 Compare를 소유합니다" in records_history

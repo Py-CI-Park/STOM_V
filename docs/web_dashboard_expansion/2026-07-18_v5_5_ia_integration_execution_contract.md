@@ -42,7 +42,7 @@
 | `alpha` | `research` 내부 prototype 표식으로 rewrite | legacy Alpha 복구 |
 | `catalog` | `reports` 내부 prototype 표식으로 rewrite | legacy Catalog 복구 |
 | stale `stom_active_tab` / `stom_active_evolution_tab` | URL이 없을 때 한 번만 소비해 정본 목적지로 전환하고 retired 값 제거 | rollback을 영속 활성화하지 않음 |
-| unknown | Live로 fail-closed | Context catch-all 금지 |
+| unknown/malformed | URL과 관련 없는 query를 보존한 명시적 unavailable 화면 | Live/Context로 조용히 위장하지 않음 |
 
 URL/query가 localStorage보다 우선한다. canonical rewrite는 관련 없는 `base`, `run_id`, `dashboard_version` 쿼리를 보존한다. 사용자의 탭 이동은 `pushState`, migration은 `replaceState`, `popstate`는 탭·drawer 상태와 포커스를 복구한다.
 
@@ -52,7 +52,7 @@ URL/query가 localStorage보다 우선한다. canonical rewrite는 관련 없는
 |---|---|---|
 | Dual mount | 동일 `/edge_ratio`, `/feature_importance`, `/variable_correlation`, Wiki 응답 | 원본/정본 값·단위·상태·interaction field parity |
 | Identity | `loop_run:run-1`, `campaign:campaign-1`, 늦은 응답 | loop_run만 분석 run ID로 사용; campaign은 unavailable; 늦은 응답 덮어쓰기 없음 |
-| IA | 정상 URL, retired query/path, malformed/unknown, rollback 0/1 | 정상은 6개, rollback 1만 legacy extras 복구, unknown fail-closed |
+| IA | 정상 URL, retired query/path, malformed/unknown, rollback 0/1 | 정상은 6개, rollback 1만 legacy extras 복구, malformed/unknown은 URL을 보존한 unavailable로 fail-closed |
 | Navigation | 탭→drawer open/close→History→뒤/앞 | URL·활성 패널·drawer·포커스 일치 |
 | Keyboard | ArrowLeft/Right, Home/End, Enter/Space, Escape | roving tab, 44px target, drawer trigger/close/포커스 복귀 |
 | 성과 | HOF payload와 빈/오류 응답 | HOF + inventory만 존재, compare/analysis 없음 |

@@ -9016,7 +9016,7 @@ def signal_sell(pos, bar, ind):
   });
 
   // ai_strategy_loop/dashboard/frontend/ai-context.jsx
-  var { useState: useState_ac, useEffect: useEffect_ac } = React;
+  var { useState: useState_ac, useEffect: useEffect_ac, useRef: useRef_ac } = React;
   function packText(value, fallback = "-") {
     if (value === null || value === void 0 || value === "") return fallback;
     return typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -9025,37 +9025,85 @@ def signal_sell(pos, bar, ind):
     if (!pack || typeof pack !== "object" || !pack.context_pack) return "";
     return JSON.stringify(pack.context_pack, null, 2);
   }
+  function sameContextIdentity(left, right) {
+    return !!left && !!right && left.baseUrl === right.baseUrl && String(left.runId) === String(right.runId) && String(left.genNo) === String(right.genNo);
+  }
+  function contextPackResponseMatchesIdentity(response, identity4) {
+    const has = Object.prototype.hasOwnProperty;
+    return !!response && typeof response === "object" && !Array.isArray(response) && (!has.call(response, "base_url") || response.base_url === identity4.baseUrl) && (!has.call(response, "base") || response.base === identity4.baseUrl) && (!has.call(response, "run_id") || String(response.run_id) === String(identity4.runId)) && (identity4.genNo == null || !has.call(response, "gen_no") || String(response.gen_no) === String(identity4.genNo)) && (typeof response.error === "string" && response.error || !!response.context_pack && typeof response.context_pack === "object" && !Array.isArray(response.context_pack));
+  }
   function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
-    const [pack, setPack] = useState_ac(null);
-    const [loading, setLoading] = useState_ac(false);
-    const [err, setErr] = useState_ac("");
-    const [copied, setCopied] = useState_ac(false);
-    const [copyError, setCopyError] = useState_ac("");
+    const [view, setView] = useState_ac({ identity: null, pack: null, loading: false, err: "", copied: false, copyError: "" });
+    const requestRef = useRef_ac({ controller: null, generation: 0, identity: null });
+    const currentIdentity = { baseUrl, runId, genNo };
+    const identityRef = useRef_ac(currentIdentity);
+    identityRef.current = currentIdentity;
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const viewIsOwned = sameContextIdentity(view.identity, currentIdentity);
+    const pack = viewIsOwned ? view.pack : null;
+    const loading = viewIsOwned && view.loading;
+    const err = viewIsOwned ? view.err : "";
+    const copied = viewIsOwned && view.copied;
+    const copyError = viewIsOwned ? view.copyError : "";
     const loadPack = React.useCallback(() => {
+      const identity4 = { baseUrl, runId, genNo };
+      const request = requestRef.current;
+      if (request.controller) request.controller.abort();
+      const generation = request.generation + 1;
+      request.generation = generation;
+      request.controller = null;
+      request.identity = identity4;
+      setView({ identity: identity4, pack: null, loading: false, err: "", copied: false, copyError: "" });
       if (isDemo || !baseUrl || !runId) return;
-      setLoading(true);
-      setErr("");
-      setCopied(false);
-      setCopyError("");
+      const controller = new AbortController();
+      const timeout2 = setTimeout(() => controller.abort(), 4e3);
+      request.controller = controller;
+      const isCurrent = () => {
+        const active = requestRef.current;
+        return active.controller === controller && active.generation === generation && sameContextIdentity(active.identity, identity4) && !controller.signal.aborted;
+      };
+      setView({ identity: identity4, pack: null, loading: true, err: "", copied: false, copyError: "" });
       const suffix = genNo != null ? "&gen_no=" + encodeURIComponent(genNo) : "";
       fetch(
         baseUrl + "/ai_context_pack?run_id=" + encodeURIComponent(runId) + suffix,
-        { signal: AbortSignal.timeout(4e3) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setPack(j || null)).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+        { signal: controller.signal }
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((response) => {
+        if (!isCurrent()) return;
+        if (!contextPackResponseMatchesIdentity(response, identity4)) {
+          setView({ identity: identity4, pack: null, loading: false, err: "context pack response identity mismatch", copied: false, copyError: "" });
+          return;
+        }
+        setView({ identity: identity4, pack: response, loading: false, err: "", copied: false, copyError: "" });
+      }).catch((reason) => {
+        if (!isCurrent()) return;
+        setView({ identity: identity4, pack: null, loading: false, err: String(reason), copied: false, copyError: "" });
+      }).finally(() => {
+        clearTimeout(timeout2);
+        if (!isCurrent()) return;
+        requestRef.current.controller = null;
+        setView((previous) => sameContextIdentity(previous.identity, identity4) ? { ...previous, loading: false } : previous);
+      });
     }, [baseUrl, isDemo, runId, genNo]);
     useEffect_ac(() => {
       loadPack();
+      return () => {
+        const request = requestRef.current;
+        if (sameContextIdentity(request.identity, currentIdentity)) {
+          if (request.controller) request.controller.abort();
+          request.controller = null;
+          request.generation += 1;
+        }
+      };
     }, [loadPack]);
     const copyPack = async () => {
+      const identity4 = identityRef.current;
+      const text = copyableContextPack(pack);
+      if (!text || !sameContextIdentity(identity4, currentIdentity)) return;
       try {
-        const text = copyableContextPack(pack);
         await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setCopyError("");
+        setView((previous) => sameContextIdentity(previous.identity, identity4) ? { ...previous, copied: true, copyError: "" } : previous);
       } catch (reason) {
-        setCopied(false);
-        setCopyError(String(reason));
+        setView((previous) => sameContextIdentity(previous.identity, identity4) ? { ...previous, copied: false, copyError: String(reason) } : previous);
       }
     };
     const contextPack = pack && pack.context_pack ? pack.context_pack : null;
@@ -9296,27 +9344,71 @@ def signal_sell(pos, bar, ind):
     }
     return ["", ""];
   }
+  function _rpIsEdgeRatioResponse(j) {
+    if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+    if (j.global != null && (typeof j.global !== "object" || Array.isArray(j.global))) return false;
+    if (j.segments != null && (typeof j.segments !== "object" || Array.isArray(j.segments))) return false;
+    return !j.segments || ["cross", "change", "time", "market_cap"].every(
+      (key) => j.segments[key] == null || Array.isArray(j.segments[key])
+    );
+  }
   function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
-    const [data, setData] = useState_rp(null);
-    const [loading, setLoading] = useState_rp(false);
-    const [err, setErr] = useState_rp(null);
+    const [dataState, setDataState] = useState_rp(null);
+    const [loadingState, setLoadingState] = useState_rp({ identity: null, value: false });
+    const [errState, setErrState] = useState_rp({ identity: null, value: null });
+    const requestRef = React.useRef({ controller: null, generation: 0, identity: null });
+    const identity4 = !isDemo && baseUrl && runId ? [baseUrl, runId].join("\0") : null;
+    const currentIdentityRef = React.useRef(identity4);
+    currentIdentityRef.current = identity4;
     const refresh = useCallback_rp(() => {
-      if (isDemo || !baseUrl || !runId) {
-        setData(null);
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+      request.identity = identity4;
+      const generation = request.generation;
+      if (!identity4) {
+        setDataState(null);
+        setErrState({ identity: null, value: null });
+        setLoadingState({ identity: null, value: false });
         return;
       }
-      setLoading(true);
-      _rpFetchJson(
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8e3);
+      request.controller = controller;
+      setDataState(null);
+      setErrState({ identity: identity4, value: null });
+      setLoadingState({ identity: identity4, value: true });
+      fetch(
         baseUrl + "/edge_ratio?run_ids=" + encodeURIComponent(runId) + "&fine_time=true",
-        8e3
-      ).then((j) => {
-        setData(j);
-        setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, runId]);
+        { signal: controller.signal }
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!_rpIsEdgeRatioResponse(j)) throw new Error("\uC751\uB2F5 \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState({ identity: identity4, value: j });
+        setErrState({ identity: identity4, value: null });
+      }).catch((e) => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState(null);
+        setErrState({ identity: identity4, value: String(e) });
+      }).finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity4) {
+          setLoadingState({ identity: identity4, value: false });
+        }
+      });
+    }, [baseUrl, identity4, runId]);
     useEffect_rp(() => {
       refresh();
-    }, [refresh]);
+      return () => {
+        const request = requestRef.current;
+        request.generation += 1;
+        if (request.controller) request.controller.abort();
+      };
+    }, [identity4, refresh]);
+    const data = dataState && dataState.identity === identity4 ? dataState.value : null;
+    const loading = loadingState.identity === identity4 && loadingState.value;
+    const err = errState.identity === identity4 ? errState.value : null;
     const grid = useMemo_rp(() => {
       const cross = data && data.segments && data.segments.cross || [];
       if (!cross.length) return null;
@@ -22550,8 +22642,13 @@ def signal_sell(pos, bar, ind):
   Object.assign(window, { HOF_INVENTORY_FIELDS, HOF_FIELD_GROUPS, HOF_WORKBENCH_ACTIONS, HOF_MERGE_GATE_RULES, HofInventoryGate });
 
   // ai_strategy_loop/dashboard/frontend/chart-hall-of-fame.jsx
-  var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2 } = React;
+  var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2, useRef: useRef_eq2 } = React;
   var { useState: useState_rg, useEffect: useEffect_rg } = React;
+  function hofValidPayload(payload) {
+    if (!payload || typeof payload !== "object" || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
+    const isRow = (row) => row && typeof row === "object" && typeof row.kind === "string";
+    return payload.human.every((row) => isRow(row) && row.kind === "human") && payload.ai.every((row) => isRow(row) && (row.kind === "seed" || row.kind === "ai"));
+  }
   function HallOfFamePanel({ baseUrl, wsStatus }) {
     const [data, setData] = useState_eq2(null);
     const [loading, setLoading] = useState_eq2(false);
@@ -22560,13 +22657,49 @@ def signal_sell(pos, bar, ind):
     const [filter2, setFilter] = useState_eq2("all");
     const [galleryOpen, setGalleryOpen] = useState_eq2(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const hofRequestRef = useRef_eq2({ generation: 0, controller: null, baseUrl: "" });
     const refresh = useCallback_eq2(() => {
-      if (isDemo || !baseUrl) return;
-      setLoading(true);
-      fetch(baseUrl + "/hall_of_fame", { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
+      if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+      const controller = new AbortController();
+      const generation = hofRequestRef.current.generation + 1;
+      const identity4 = baseUrl || "";
+      hofRequestRef.current = { generation, controller, baseUrl: identity4 };
+      if (isDemo || !identity4) {
+        setData(null);
         setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setErr(null);
+      const timeoutId = setTimeout(() => controller.abort(), 4e3);
+      fetch(identity4 + "/hall_of_fame", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const current = hofRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4) return;
+        if (!hofValidPayload(j)) throw new Error("Malformed /hall_of_fame response");
+        setData({ human: j.human, ai: j.ai });
+        setErr(null);
+      }).catch((e) => {
+        const current = hofRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4 || controller.signal.aborted) return;
+        setData(null);
+        setErr(String(e));
+      }).finally(() => {
+        const current = hofRequestRef.current;
+        clearTimeout(timeoutId);
+        if (current.generation === generation && current.baseUrl === identity4) setLoading(false);
+      });
+    }, [baseUrl, isDemo]);
+    useEffect_eq2(() => {
+      if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+      hofRequestRef.current.generation += 1;
+      setData(null);
+      setErr(null);
+      setLoading(false);
+      return () => {
+        if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+        hofRequestRef.current.generation += 1;
+      };
     }, [baseUrl, isDemo]);
     useEffect_eq2(() => {
       refresh();
@@ -22654,13 +22787,25 @@ def signal_sell(pos, bar, ind):
       color: "var(--ink-3)",
       fontSize: 12,
       fontFamily: "var(--mono)"
-    } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
+    } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : loading ? /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "28px 0",
+      textAlign: "center",
+      color: "var(--ink-3)",
+      fontSize: 12,
+      fontFamily: "var(--mono)"
+    } }, "\uBA85\uC608\uC758 \uC804\uB2F9\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
       padding: "28px 0",
       textAlign: "center",
       color: "var(--red)",
       fontSize: 12,
       fontFamily: "var(--mono)"
-    } }, "\uC870\uD68C \uC2E4\uD328: ", err) : sorted.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
+    } }, "\uC870\uD68C \uC2E4\uD328: ", err) : !data ? /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "28px 0",
+      textAlign: "center",
+      color: "var(--ink-3)",
+      fontSize: 12,
+      fontFamily: "var(--mono)"
+    } }, "\uBA85\uC608\uC758 \uC804\uB2F9 \uB370\uC774\uD130 \uC18C\uC2A4\uB97C \uAE30\uB2E4\uB9AC\uB294 \uC911\uC785\uB2C8\uB2E4.") : sorted.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
       padding: "28px 0",
       textAlign: "center",
       color: "var(--ink-3)",
@@ -31462,7 +31607,7 @@ def signal_sell(pos, bar, ind):
     const campaignId = row && (row.id || row.name);
     return typeof campaignId === "string" && campaignId ? `campaign:${campaignId}` : "";
   }
-  function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch }) {
+  function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch, showRunCompare = true }) {
     const [payload, setPayload] = useState_rrp(null);
     const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
     const [detail, setDetail] = useState_rrp(null);
@@ -31573,7 +31718,7 @@ def signal_sell(pos, bar, ind):
       padding: "4px 0",
       borderTop: "1px solid var(--line-1)",
       fontSize: 11
-    } }, /* @__PURE__ */ React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, c.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: Number(c.profit || 0) >= 0 ? "var(--teal)" : "var(--red)" } }, _rrpMoney(c.profit)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, _rrpPct(c.mdd)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, c.trades || 0))))), /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD788\uC2A4\uD1A0\uB9AC ResultDetail \xB7 Compare"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refreshRuns, disabled: isDemo || runListLoading }, runListLoading ? "run \uB85C\uB529\u2026" : "run \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, "History\uAC00 \uACFC\uAC70 run/gen \uC544\uCE74\uC774\uBE0C\uC640 Compare\uB97C \uC18C\uC720\uD569\uB2C8\uB2E4. Workbench\uB294 \uAE4A\uC740 \uBD84\uC11D\uC73C\uB85C \uC5F0\uACB0\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, c.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: Number(c.profit || 0) >= 0 ? "var(--teal)" : "var(--red)" } }, _rrpMoney(c.profit)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, _rrpPct(c.mdd)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, c.trades || 0))))), /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD788\uC2A4\uD1A0\uB9AC ResultDetail", showRunCompare ? " \xB7 Compare" : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refreshRuns, disabled: isDemo || runListLoading }, runListLoading ? "run \uB85C\uB529\u2026" : "run \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, "History\uAC00 \uACFC\uAC70 run/gen \uC544\uCE74\uC774\uBE0C\uC640 Compare\uB97C \uC18C\uC720\uD569\uB2C8\uB2E4. Workbench\uB294 \uAE4A\uC740 \uBD84\uC11D\uC73C\uB85C \uC5F0\uACB0\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4."), showRunCompare && /* @__PURE__ */ React.createElement(
       _RpRunCompare,
       {
         baseUrl,
@@ -33023,7 +33168,8 @@ def signal_sell(pos, bar, ind):
     useState: useState_an,
     useEffect: useEffect_an,
     useCallback: useCallback_an,
-    useMemo: useMemo_an
+    useMemo: useMemo_an,
+    useRef: useRef_an
   } = React;
   function _anNum(x, digits) {
     if (typeof x !== "number" || !isFinite(x)) return "\u2014";
@@ -33073,25 +33219,78 @@ def signal_sell(pos, bar, ind):
     }
     return ["", ""];
   }
+  function _isEdgeRatioResponse(j) {
+    if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+    if (j.global != null && (typeof j.global !== "object" || Array.isArray(j.global))) return false;
+    if (j.segments != null && (typeof j.segments !== "object" || Array.isArray(j.segments))) return false;
+    return !j.segments || ["cross", "change", "time", "market_cap"].every(
+      (key) => j.segments[key] == null || Array.isArray(j.segments[key])
+    );
+  }
+  function _isFeatureImportanceResponse(j) {
+    if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+    if (!Array.isArray(j.global)) return false;
+    if (!j.by_segment || typeof j.by_segment !== "object" || Array.isArray(j.by_segment)) return false;
+    return Object.keys(j.by_segment).every((key) => Array.isArray(j.by_segment[key]));
+  }
   function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
-    const [data, setData] = useState_an(null);
-    const [loading, setLoading] = useState_an(false);
-    const [err, setErr] = useState_an(null);
+    const [dataState, setDataState] = useState_an(null);
+    const [loadingState, setLoadingState] = useState_an({ identity: null, value: false });
+    const [errState, setErrState] = useState_an({ identity: null, value: null });
+    const requestRef = useRef_an({ controller: null, generation: 0, identity: null });
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const identity4 = !isDemo && baseUrl && runId ? [baseUrl, runId].join("\0") : null;
+    const currentIdentityRef = useRef_an(identity4);
+    currentIdentityRef.current = identity4;
     const refresh = useCallback_an(() => {
-      if (isDemo || !baseUrl || !runId) return;
-      setLoading(true);
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+      request.identity = identity4;
+      const generation = request.generation;
+      if (!identity4) {
+        setDataState(null);
+        setErrState({ identity: null, value: null });
+        setLoadingState({ identity: null, value: false });
+        return;
+      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5e3);
+      request.controller = controller;
+      setDataState(null);
+      setErrState({ identity: identity4, value: null });
+      setLoadingState({ identity: identity4, value: true });
       const url = baseUrl + "/edge_ratio?run_ids=" + encodeURIComponent(runId) + "&fine_time=true";
-      fetch(url, { signal: AbortSignal.timeout(5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
-        setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, runId]);
+      fetch(url, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!_isEdgeRatioResponse(j)) throw new Error("\uC751\uB2F5 \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState({ identity: identity4, value: j });
+        setErrState({ identity: identity4, value: null });
+      }).catch((e) => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState(null);
+        setErrState({ identity: identity4, value: String(e) });
+      }).finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity4) {
+          setLoadingState({ identity: identity4, value: false });
+        }
+      });
+    }, [baseUrl, identity4, runId]);
     useEffect_an(() => {
       refresh();
-      const id2 = setInterval(refresh, 3e4);
-      return () => clearInterval(id2);
-    }, [refresh]);
+      const id2 = identity4 ? setInterval(refresh, 3e4) : null;
+      return () => {
+        if (id2) clearInterval(id2);
+        const request = requestRef.current;
+        request.generation += 1;
+        if (request.controller) request.controller.abort();
+      };
+    }, [identity4, refresh]);
+    const data = dataState && dataState.identity === identity4 ? dataState.value : null;
+    const loading = loadingState.identity === identity4 && loadingState.value;
+    const err = errState.identity === identity4 ? errState.value : null;
     const global_ = data && data.global || {};
     const segs = data && data.segments || {};
     const crossSegs = segs.cross || [];
@@ -33266,28 +33465,68 @@ def signal_sell(pos, bar, ind):
     }));
   }
   function FeatureImportancePanel({ baseUrl, wsStatus, runId }) {
-    const [data, setData] = useState_an(null);
-    const [loading, setLoading] = useState_an(false);
-    const [err, setErr] = useState_an(null);
+    const [dataState, setDataState] = useState_an(null);
+    const [loadingState, setLoadingState] = useState_an({ identity: null, value: false });
+    const [errState, setErrState] = useState_an({ identity: null, value: null });
     const [axis, setAxis] = useState_an("time");
     const [selSeg, setSelSeg] = useState_an(null);
     const [topN, setTopN] = useState_an(12);
+    const requestRef = useRef_an({ controller: null, generation: 0, identity: null });
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const identity4 = !isDemo && baseUrl && runId ? [baseUrl, runId, axis].join("\0") : null;
+    const currentIdentityRef = useRef_an(identity4);
+    currentIdentityRef.current = identity4;
     const refresh = useCallback_an(() => {
-      if (isDemo || !baseUrl || !runId) return;
-      setLoading(true);
-      const url = baseUrl + "/feature_importance?run_ids=" + encodeURIComponent(runId) + "&axis=" + encodeURIComponent(axis) + "&fine_time=true";
-      fetch(url, { signal: AbortSignal.timeout(5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
-        setErr(null);
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+      request.identity = identity4;
+      const generation = request.generation;
+      if (!identity4) {
+        setDataState(null);
+        setErrState({ identity: null, value: null });
+        setLoadingState({ identity: null, value: false });
         setSelSeg(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, runId, axis]);
+        return;
+      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5e3);
+      request.controller = controller;
+      setDataState(null);
+      setErrState({ identity: identity4, value: null });
+      setLoadingState({ identity: identity4, value: true });
+      const url = baseUrl + "/feature_importance?run_ids=" + encodeURIComponent(runId) + "&axis=" + encodeURIComponent(axis) + "&fine_time=true";
+      fetch(url, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!_isFeatureImportanceResponse(j)) throw new Error("\uC751\uB2F5 \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState({ identity: identity4, value: j });
+        setErrState({ identity: identity4, value: null });
+        setSelSeg(null);
+      }).catch((e) => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity4) return;
+        setDataState(null);
+        setErrState({ identity: identity4, value: String(e) });
+      }).finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity4) {
+          setLoadingState({ identity: identity4, value: false });
+        }
+      });
+    }, [axis, baseUrl, identity4, runId]);
     useEffect_an(() => {
       refresh();
-      const id2 = setInterval(refresh, 3e4);
-      return () => clearInterval(id2);
-    }, [refresh]);
+      const id2 = identity4 ? setInterval(refresh, 3e4) : null;
+      return () => {
+        if (id2) clearInterval(id2);
+        const request = requestRef.current;
+        request.generation += 1;
+        if (request.controller) request.controller.abort();
+      };
+    }, [identity4, refresh]);
+    const data = dataState && dataState.identity === identity4 ? dataState.value : null;
+    const loading = loadingState.identity === identity4 && loadingState.value;
+    const err = errState.identity === identity4 ? errState.value : null;
     const globalFeats = data && Array.isArray(data.global) ? data.global : [];
     const bySeg = data && data.by_segment ? data.by_segment : {};
     const segKeys = Object.keys(bySeg);
@@ -35655,7 +35894,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { V4Audit, AuditDecisionTrace });
 
   // ai_strategy_loop/dashboard/frontend/run-compare.jsx
-  var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
+  var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc, useRef: useRef_rc } = React;
   function rcNum(value, digits = 2) {
     return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
   }
@@ -35691,6 +35930,16 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const matched = runs.filter((r) => /seed|ai/i.test(String(r.run_id || ""))).slice(0, 6).map((r) => r.run_id);
     return matched.length >= 2 ? matched : runs.slice(0, 2).map((r) => r.run_id);
   }
+  function rcValidRunsPayload(payload) {
+    return !!payload && typeof payload === "object" && Array.isArray(payload.runs) && payload.runs.every((run) => run && typeof run === "object" && typeof run.run_id === "string" && run.run_id.length > 0);
+  }
+  function rcValidCompareRows(payload, selectedIds) {
+    if (!payload || typeof payload !== "object" || !Array.isArray(payload.runs) || !Array.isArray(payload.generation_rows)) return null;
+    const selectedSet = new Set(selectedIds);
+    const ownsSelectedRun = (row) => row && typeof row === "object" && typeof row.run_id === "string" && selectedSet.has(row.run_id);
+    if (!payload.runs.every(ownsSelectedRun) || !payload.generation_rows.every(ownsSelectedRun)) return null;
+    return payload.generation_rows;
+  }
   function RunComparePanel({ baseUrl, wsStatus }) {
     const [runs, setRuns] = useState_rc([]);
     const [selected2, setSelected] = useState_rc([]);
@@ -35699,30 +35948,94 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [err, setErr] = useState_rc("");
     const [loading, setLoading] = useState_rc(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const runsRequestRef = useRef_rc({ generation: 0, controller: null, baseUrl: "" });
+    const compareRequestRef = useRef_rc({ generation: 0, controller: null, baseUrl: "", selectedKey: "" });
     const sortedRuns = useMemo_rc(() => {
       return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
     }, [runs, sortKey]);
     const refresh = React.useCallback(() => {
-      if (isDemo || !baseUrl) return;
+      if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+      const controller = new AbortController();
+      const generation = runsRequestRef.current.generation + 1;
+      const identity4 = baseUrl || "";
+      runsRequestRef.current = { generation, controller, baseUrl: identity4 };
+      if (isDemo || !identity4) {
+        setRuns([]);
+        setSelected([]);
+        setCompareRows([]);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setErr("");
-      fetchRunsShared(baseUrl, { timeoutMs: 3e3 }).then((j) => {
-        const rows = Array.isArray(j.runs) ? j.runs : [];
+      const timeoutId = setTimeout(() => controller.abort(), 3e3);
+      fetch(identity4 + "/runs", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const current = runsRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4) return;
+        if (!rcValidRunsPayload(j)) throw new Error("Malformed /runs response");
+        const rows = j.runs;
         setRuns(rows);
-        setErr(j.error || "");
-        if (!selected2.length) setSelected(rcDefaultCompareIds(rows));
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, selected2.length]);
+        setErr(typeof j.error === "string" ? j.error : "");
+        setSelected((prev) => prev.length ? prev : rcDefaultCompareIds(rows));
+      }).catch((e) => {
+        const current = runsRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4 || controller.signal.aborted) return;
+        setRuns([]);
+        setSelected([]);
+        setCompareRows([]);
+        setErr(String(e));
+      }).finally(() => {
+        clearTimeout(timeoutId);
+        const current = runsRequestRef.current;
+        if (current.generation === generation && current.baseUrl === identity4) setLoading(false);
+      });
+    }, [baseUrl, isDemo]);
+    useEffect_rc(() => {
+      if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+      if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+      runsRequestRef.current.generation += 1;
+      compareRequestRef.current.generation += 1;
+      setRuns([]);
+      setSelected([]);
+      setCompareRows([]);
+      setErr("");
+      setLoading(false);
+      return () => {
+        if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+        if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+        runsRequestRef.current.generation += 1;
+        compareRequestRef.current.generation += 1;
+      };
+    }, [baseUrl, isDemo]);
     useEffect_rc(() => {
       refresh();
     }, [refresh]);
     useEffect_rc(() => {
-      if (isDemo || !baseUrl || !selected2.length) {
+      if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+      const controller = new AbortController();
+      const generation = compareRequestRef.current.generation + 1;
+      const identity4 = baseUrl || "";
+      const selectedIds = selected2.slice();
+      const selectedKey = selectedIds.join("|");
+      compareRequestRef.current = { generation, controller, baseUrl: identity4, selectedKey };
+      if (isDemo || !identity4 || !selectedIds.length) {
         setCompareRows([]);
-        return;
+        return () => controller.abort();
       }
-      const ids = selected2.map(encodeURIComponent).join(",");
-      fetch(baseUrl + "/runs/compare?ids=" + ids, { signal: AbortSignal.timeout(3500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setCompareRows(Array.isArray(j.generation_rows) ? j.generation_rows : [])).catch(() => setCompareRows([]));
+      setCompareRows([]);
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const ids = selectedIds.map(encodeURIComponent).join(",");
+      fetch(identity4 + "/runs/compare?ids=" + ids, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const current = compareRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity4 || current.selectedKey !== selectedKey) return;
+        const rows = rcValidCompareRows(j, selectedIds);
+        if (rows === null) throw new Error("Malformed /runs/compare response");
+        setCompareRows(rows);
+      }).catch(() => {
+        const current = compareRequestRef.current;
+        if (current.generation === generation && current.baseUrl === identity4 && current.selectedKey === selectedKey && !controller.signal.aborted) setCompareRows([]);
+      }).finally(() => clearTimeout(timeoutId));
+      return () => controller.abort();
     }, [baseUrl, isDemo, selected2.join("|")]);
     const toggleSelected = (runId) => {
       setSelected((prev) => prev.includes(runId) ? prev.filter((x) => x !== runId) : [...prev, runId]);
@@ -35751,14 +36064,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const selectResearch = useCallback_v4history((researchId) => {
       setSelectedResearchId(typeof researchId === "string" ? researchId : "");
     }, []);
+    const analysisRunId = typeof selectedResearchId === "string" && /^loop_run:\S+$/.test(selectedResearchId) ? selectedResearchId.slice("loop_run:".length) : "";
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
     const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uB9CC \uC77D\uAE30 \uC804\uC6A9\uC774\uBA70, \uC544\uB798 append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC608\uC678\uC785\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Archive run context: ", runId || "\uC120\uD0DD \uC5C6\uC74C", " \xB7 governed research selection\uACFC \uBCC4\uB3C4\uC774\uBA70 campaign ID\uC5D0\uC11C run ID\uB97C \uCD94\uC815\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uB9CC \uC77D\uAE30 \uC804\uC6A9\uC774\uBA70, \uC544\uB798 append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC608\uC678\uC785\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, selectedResearchId, onSelectResearch: selectResearch, showRunCompare: false }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed analysis run: ", analysisRunId || "unavailable \xB7 loop_run:<nonempty> research selection\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.", " \xB7 campaign \uB610\uB294 \uBBF8\uC120\uD0DD\uC740 \uBD84\uC11D run\uC744 \uC81C\uACF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uC5F0\uAD6C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
       ResearchLabPanel,
       {
         baseUrl,
         wsStatus,
-        runId,
+        runId: analysisRunId,
         enabledTabIds: ["edge", "feature", "correlation", "combos"],
         showOpsStatus: false,
         showWorkbenchLink: false

@@ -1,5 +1,5 @@
 /* Copyable AI state context pack panel */
-const { useState: useState_ac, useEffect: useEffect_ac } = React;
+const { useState: useState_ac, useEffect: useEffect_ac, useRef: useRef_ac } = React;
 
 function packText(value, fallback = "-") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -11,41 +11,105 @@ function copyableContextPack(pack) {
   return JSON.stringify(pack.context_pack, null, 2);
 }
 
+function sameContextIdentity(left, right) {
+  return !!left && !!right && left.baseUrl === right.baseUrl
+    && String(left.runId) === String(right.runId) && String(left.genNo) === String(right.genNo);
+}
+
+function contextPackResponseMatchesIdentity(response, identity) {
+  const has = Object.prototype.hasOwnProperty;
+  return !!response && typeof response === "object" && !Array.isArray(response)
+    && (!has.call(response, "base_url") || response.base_url === identity.baseUrl)
+    && (!has.call(response, "base") || response.base === identity.baseUrl)
+    && (!has.call(response, "run_id") || String(response.run_id) === String(identity.runId))
+    && (identity.genNo == null || !has.call(response, "gen_no") || String(response.gen_no) === String(identity.genNo))
+    && ((typeof response.error === "string" && response.error)
+      || (!!response.context_pack && typeof response.context_pack === "object" && !Array.isArray(response.context_pack)));
+}
+
 function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
-  const [pack, setPack] = useState_ac(null);
-  const [loading, setLoading] = useState_ac(false);
-  const [err, setErr] = useState_ac("");
-  const [copied, setCopied] = useState_ac(false);
-  const [copyError, setCopyError] = useState_ac("");
+  const [view, setView] = useState_ac({ identity: null, pack: null, loading: false, err: "", copied: false, copyError: "" });
+  const requestRef = useRef_ac({ controller: null, generation: 0, identity: null });
+  const currentIdentity = { baseUrl, runId, genNo };
+  const identityRef = useRef_ac(currentIdentity);
+  identityRef.current = currentIdentity;
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const viewIsOwned = sameContextIdentity(view.identity, currentIdentity);
+  const pack = viewIsOwned ? view.pack : null;
+  const loading = viewIsOwned && view.loading;
+  const err = viewIsOwned ? view.err : "";
+  const copied = viewIsOwned && view.copied;
+  const copyError = viewIsOwned ? view.copyError : "";
 
   const loadPack = React.useCallback(() => {
+    const identity = { baseUrl, runId, genNo };
+    const request = requestRef.current;
+    if (request.controller) request.controller.abort();
+    const generation = request.generation + 1;
+    request.generation = generation;
+    request.controller = null;
+    request.identity = identity;
+    setView({ identity, pack: null, loading: false, err: "", copied: false, copyError: "" });
     if (isDemo || !baseUrl || !runId) return;
-    setLoading(true);
-    setErr("");
-    setCopied(false);
-    setCopyError("");
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    request.controller = controller;
+    const isCurrent = () => {
+      const active = requestRef.current;
+      return active.controller === controller && active.generation === generation
+        && sameContextIdentity(active.identity, identity) && !controller.signal.aborted;
+    };
+    setView({ identity, pack: null, loading: true, err: "", copied: false, copyError: "" });
     const suffix = genNo != null ? "&gen_no=" + encodeURIComponent(genNo) : "";
     fetch(baseUrl + "/ai_context_pack?run_id=" + encodeURIComponent(runId) + suffix,
-          { signal: AbortSignal.timeout(4000) })
+          { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => setPack(j || null))
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(response => {
+        if (!isCurrent()) return;
+        if (!contextPackResponseMatchesIdentity(response, identity)) {
+          setView({ identity, pack: null, loading: false, err: "context pack response identity mismatch", copied: false, copyError: "" });
+          return;
+        }
+        setView({ identity, pack: response, loading: false, err: "", copied: false, copyError: "" });
+      })
+      .catch(reason => {
+        if (!isCurrent()) return;
+        setView({ identity, pack: null, loading: false, err: String(reason), copied: false, copyError: "" });
+      })
+      .finally(() => {
+        clearTimeout(timeout);
+        if (!isCurrent()) return;
+        requestRef.current.controller = null;
+        setView(previous => sameContextIdentity(previous.identity, identity)
+          ? { ...previous, loading: false } : previous);
+      });
   }, [baseUrl, isDemo, runId, genNo]);
 
-  useEffect_ac(() => { loadPack(); }, [loadPack]);
+  useEffect_ac(() => {
+    loadPack();
+    return () => {
+      const request = requestRef.current;
+      if (sameContextIdentity(request.identity, currentIdentity)) {
+        if (request.controller) request.controller.abort();
+        request.controller = null;
+        request.generation += 1;
+      }
+    };
+  }, [loadPack]);
 
   const copyPack = async () => {
+    const identity = identityRef.current;
+    const text = copyableContextPack(pack);
+    if (!text || !sameContextIdentity(identity, currentIdentity)) return;
     try {
-      const text = copyableContextPack(pack);
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setCopyError("");
+      setView(previous => sameContextIdentity(previous.identity, identity)
+        ? { ...previous, copied: true, copyError: "" } : previous);
     } catch (reason) {
-      setCopied(false);
-      setCopyError(String(reason));
+      setView(previous => sameContextIdentity(previous.identity, identity)
+        ? { ...previous, copied: false, copyError: String(reason) } : previous);
     }
   };
 

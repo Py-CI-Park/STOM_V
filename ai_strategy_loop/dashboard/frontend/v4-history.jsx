@@ -21,6 +21,8 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
   const selectResearch = useCallback_v4history((researchId) => {
     setSelectedResearchId(typeof researchId === "string" ? researchId : "");
   }, []);
+  const analysisRunId = typeof selectedResearchId === "string" && /^loop_run:\S+$/.test(selectedResearchId)
+    ? selectedResearchId.slice("loop_run:".length) : "";
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
   const freshnessLabel = wsStatus === "open"
     ? "서버 연결됨 · 선택한 아카이브 응답을 표시합니다."
@@ -61,7 +63,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       <section aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare <span className="mono" style={{ fontSize: "10.5px", color: "var(--ink-3)" }}>— legacy run/gen archive selection (governed research selection과 별도)</span></h2>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
-          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
+          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showRunCompare={false} />
         </div>
       </section>
 
@@ -80,13 +82,13 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       <section aria-labelledby="v4-history-analysis-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-analysis-title">엣지 · 변수 분석</h2>
         <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
-          Archive run context: {runId || "선택 없음"} · governed research selection과 별도이며 campaign ID에서 run ID를 추정하지 않습니다.
+          Governed analysis run: {analysisRunId || "unavailable · loop_run:<nonempty> research selection이 필요합니다."} · campaign 또는 미선택은 분석 run을 제공하지 않습니다.
         </p>
-        <div data-region="scroll" tabIndex={0} aria-label="아카이브 run 기반 엣지와 변수 분석 영역">
+        <div data-region="scroll" tabIndex={0} aria-label="거버넌스 연구 run 기반 엣지와 변수 분석 영역">
           <ResearchLabPanel
             baseUrl={baseUrl}
             wsStatus={wsStatus}
-            runId={runId}
+            runId={analysisRunId}
             enabledTabIds={["edge", "feature", "correlation", "combos"]}
             showOpsStatus={false}
             showWorkbenchLink={false}

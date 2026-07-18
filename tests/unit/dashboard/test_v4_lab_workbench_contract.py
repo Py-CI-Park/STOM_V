@@ -117,6 +117,48 @@ def test_lab_retains_independent_analysis_and_wiki_sources_for_rollback() -> Non
     assert 'import { ResearchWikiPanel } from "./research-wiki.jsx";' in source
     assert '<ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in source
 
+def test_run_compare_rejects_malformed_or_unowned_results_and_clears_on_base_change() -> None:
+    source = _read("run-compare.jsx")
+
+    # Valid rows must carry a run identity, while malformed /runs and /runs/compare payloads fail closed.
+    assert "function rcValidRunsPayload(payload)" in source
+    assert 'typeof run.run_id === "string" && run.run_id.length > 0' in source
+    assert "function rcValidCompareRows(payload, selectedIds)" in source
+    assert "selectedSet.has(row.run_id)" in source
+    assert 'new Error("Malformed /runs response")' in source
+    assert 'new Error("Malformed /runs/compare response")' in source
+
+    # Replacing the BASE or selected run set aborts and generation-checks superseded responses.
+    assert "const runsRequestRef = useRef_rc" in source
+    assert "const compareRequestRef = useRef_rc" in source
+    assert "new AbortController()" in source
+    assert "current.generation !== generation || current.baseUrl !== identity" in source
+    assert "current.selectedKey !== selectedKey" in source
+    assert "setSelected([]);" in source and "setCompareRows([]);" in source
+    assert "}, [baseUrl, isDemo]);" in source
+
+
+def test_hall_of_fame_has_valid_empty_error_and_base_owned_states() -> None:
+    source = _read("chart-hall-of-fame.jsx")
+
+    # Only complete global HOF payloads are renderable; malformed payloads become an error, not map crashes.
+    assert "function hofValidPayload(payload)" in source
+    assert "Array.isArray(payload.human)" in source
+    assert "Array.isArray(payload.ai)" in source
+    assert "payload.human.every(row => isRow(row) && row.kind === \"human\")" in source
+    assert 'new Error("Malformed /hall_of_fame response")' in source
+
+    # A BASE replacement aborts/invalidates prior data; initial loading, genuine empty, errors, and ready are distinct.
+    assert "const hofRequestRef = useRef_eq" in source
+    assert "hofRequestRef.current.controller.abort()" in source
+    assert "hofRequestRef.current.generation += 1;" in source
+    assert "current.generation !== generation || current.baseUrl !== identity" in source
+    assert "명예의 전당을 불러오는 중입니다." in source
+    assert ") : !data ? (" in source
+    assert ") : sorted.length === 0 ? (" in source
+    assert "조회 실패: {err}" in source
+    assert "<HofInventoryGate compact />" in source
+
 
 @pytest.mark.parametrize("name", ["v4-lab.jsx", "v4-workbench.jsx", "v4-reports.jsx"])
 def test_lab_and_workbench_jsx_transform(name: str, tmp_path: Path) -> None:

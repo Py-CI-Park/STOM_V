@@ -9,7 +9,7 @@ import { LegendDot } from "./chart-primitives.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
-const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq } = React;
+const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
 const { useState: useState_rg, useEffect: useEffect_rg } = React;
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -23,6 +23,13 @@ const { useState: useState_rg, useEffect: useEffect_rg } = React;
    - 정렬 토글(총수익률/연평균/MDD/payoff) + 필터(전체/인간/시드/AI). 기본=총수익률 ↓.
    - demo면 미fetch(EquityOverlayChart 패턴). 빈 응답이면 빈 상태.
    ───────────────────────────────────────────────────────────────────────── */
+function hofValidPayload(payload) {
+  if (!payload || typeof payload !== "object"
+      || !Array.isArray(payload.human) || !Array.isArray(payload.ai)) return false;
+  const isRow = row => row && typeof row === "object" && typeof row.kind === "string";
+  return payload.human.every(row => isRow(row) && row.kind === "human")
+    && payload.ai.every(row => isRow(row) && (row.kind === "seed" || row.kind === "ai"));
+}
 function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [data, setData] = useState_eq(null);   // {human:[...], ai:[...]}
   const [loading, setLoading] = useState_eq(false);
@@ -32,15 +39,55 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [galleryOpen, setGalleryOpen] = useState_eq(false);      // 📷 인간 결과 스크린샷 모달.
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const hofRequestRef = useRef_eq({ generation: 0, controller: null, baseUrl: "" });
 
   const refresh = useCallback_eq(() => {
-    if (isDemo || !baseUrl) return;
+    if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+    const controller = new AbortController();
+    const generation = hofRequestRef.current.generation + 1;
+    const identity = baseUrl || "";
+    hofRequestRef.current = { generation, controller, baseUrl: identity };
+    if (isDemo || !identity) {
+      setData(null);
+      setErr(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    fetch(baseUrl + "/hall_of_fame", { signal: AbortSignal.timeout(4000) })
+    setErr(null);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    fetch(identity + "/hall_of_fame", { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(j => {
+        const current = hofRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity) return;
+        if (!hofValidPayload(j)) throw new Error("Malformed /hall_of_fame response");
+        setData({ human: j.human, ai: j.ai });
+        setErr(null);
+      })
+      .catch(e => {
+        const current = hofRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity || controller.signal.aborted) return;
+        setData(null);
+        setErr(String(e));
+      })
+      .finally(() => {
+        const current = hofRequestRef.current;
+        clearTimeout(timeoutId);
+        if (current.generation === generation && current.baseUrl === identity) setLoading(false);
+      });
+  }, [baseUrl, isDemo]);
+
+  useEffect_eq(() => {
+    if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+    hofRequestRef.current.generation += 1;
+    setData(null);
+    setErr(null);
+    setLoading(false);
+    return () => {
+      if (hofRequestRef.current.controller) hofRequestRef.current.controller.abort();
+      hofRequestRef.current.generation += 1;
+    };
   }, [baseUrl, isDemo]);
 
   // 최초 + 30초 자동 새로고침.
@@ -154,10 +201,20 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                         fontSize: 12, fontFamily: "var(--mono)" }}>
             데모 모드 — 백엔드 연결 시 명예의 전당이 표시됩니다.
           </div>
+        ) : loading ? (
+          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
+                        fontSize: 12, fontFamily: "var(--mono)" }}>
+            명예의 전당을 불러오는 중입니다.
+          </div>
         ) : err ? (
           <div style={{ padding: "28px 0", textAlign: "center", color: "var(--red)",
                         fontSize: 12, fontFamily: "var(--mono)" }}>
             조회 실패: {err}
+          </div>
+        ) : !data ? (
+          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
+                        fontSize: 12, fontFamily: "var(--mono)" }}>
+            명예의 전당 데이터 소스를 기다리는 중입니다.
           </div>
         ) : sorted.length === 0 ? (
           <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",

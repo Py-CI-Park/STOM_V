@@ -10,6 +10,7 @@ const {
   useEffect: useEffect_an,
   useCallback: useCallback_an,
   useMemo: useMemo_an,
+  useRef: useRef_an,
 } = React;
 
 /* ── 내부 유틸 ─────────────────────────────────────────────────────────── */
@@ -76,6 +77,21 @@ function _splitCrossLabel(c) {
   }
   return ["", ""];
 }
+function _isEdgeRatioResponse(j) {
+  if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+  if (j.global != null && (typeof j.global !== "object" || Array.isArray(j.global))) return false;
+  if (j.segments != null && (typeof j.segments !== "object" || Array.isArray(j.segments))) return false;
+  return !j.segments || ["cross", "change", "time", "market_cap"].every(
+    (key) => j.segments[key] == null || Array.isArray(j.segments[key])
+  );
+}
+
+function _isFeatureImportanceResponse(j) {
+  if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+  if (!Array.isArray(j.global)) return false;
+  if (!j.by_segment || typeof j.by_segment !== "object" || Array.isArray(j.by_segment)) return false;
+  return Object.keys(j.by_segment).every((key) => Array.isArray(j.by_segment[key]));
+}
 
 
 /* ── EdgeRatioPanel ─────────────────────────────────────────────────────── */
@@ -92,29 +108,74 @@ function _splitCrossLabel(c) {
    }
 */
 function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
-  const [data, setData] = useState_an(null);
-  const [loading, setLoading] = useState_an(false);
-  const [err, setErr] = useState_an(null);
+  const [dataState, setDataState] = useState_an(null);
+  const [loadingState, setLoadingState] = useState_an({ identity: null, value: false });
+  const [errState, setErrState] = useState_an({ identity: null, value: null });
+  const requestRef = useRef_an({ controller: null, generation: 0, identity: null });
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const identity = !isDemo && baseUrl && runId ? [baseUrl, runId].join("\u0000") : null;
+  const currentIdentityRef = useRef_an(identity);
+  currentIdentityRef.current = identity;
 
   const refresh = useCallback_an(() => {
-    if (isDemo || !baseUrl || !runId) return;
-    setLoading(true);
+    const request = requestRef.current;
+    request.generation += 1;
+    if (request.controller) request.controller.abort();
+    request.identity = identity;
+    const generation = request.generation;
+
+    if (!identity) {
+      setDataState(null);
+      setErrState({ identity: null, value: null });
+      setLoadingState({ identity: null, value: false });
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    request.controller = controller;
+    setDataState(null);
+    setErrState({ identity, value: null });
+    setLoadingState({ identity, value: true });
     const url = baseUrl + "/edge_ratio?run_ids=" + encodeURIComponent(runId) + "&fine_time=true";
-    fetch(url, { signal: AbortSignal.timeout(5000) })
+    fetch(url, { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, runId]);
+      .then(j => {
+        if (!_isEdgeRatioResponse(j)) throw new Error("응답 형식이 올바르지 않습니다.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState({ identity, value: j });
+        setErrState({ identity, value: null });
+      })
+      .catch(e => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState(null);
+        setErrState({ identity, value: String(e) });
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity) {
+          setLoadingState({ identity, value: false });
+        }
+      });
+  }, [baseUrl, identity, runId]);
 
   useEffect_an(() => {
     refresh();
-    const id = setInterval(refresh, 30000);
-    return () => clearInterval(id);
-  }, [refresh]);
+    const id = identity ? setInterval(refresh, 30000) : null;
+    return () => {
+      if (id) clearInterval(id);
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+    };
+  }, [identity, refresh]);
+
+  const data = dataState && dataState.identity === identity ? dataState.value : null;
+  const loading = loadingState.identity === identity && loadingState.value;
+  const err = errState.identity === identity ? errState.value : null;
 
   const global_ = (data && data.global) || {};
   const segs = (data && data.segments) || {};
@@ -421,33 +482,80 @@ function _SegBarList({ segs }) {
    }
 */
 function FeatureImportancePanel({ baseUrl, wsStatus, runId }) {
-  const [data, setData] = useState_an(null);
-  const [loading, setLoading] = useState_an(false);
-  const [err, setErr] = useState_an(null);
+  const [dataState, setDataState] = useState_an(null);
+  const [loadingState, setLoadingState] = useState_an({ identity: null, value: false });
+  const [errState, setErrState] = useState_an({ identity: null, value: null });
   const [axis, setAxis] = useState_an("time");       // time | market_cap | change
   const [selSeg, setSelSeg] = useState_an(null);      // 선택된 세그먼트 라벨(null=global)
   const [topN, setTopN] = useState_an(12);          // 표시 상위 N
+  const requestRef = useRef_an({ controller: null, generation: 0, identity: null });
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const identity = !isDemo && baseUrl && runId ? [baseUrl, runId, axis].join("\u0000") : null;
+  const currentIdentityRef = useRef_an(identity);
+  currentIdentityRef.current = identity;
 
   const refresh = useCallback_an(() => {
-    if (isDemo || !baseUrl || !runId) return;
-    setLoading(true);
+    const request = requestRef.current;
+    request.generation += 1;
+    if (request.controller) request.controller.abort();
+    request.identity = identity;
+    const generation = request.generation;
+
+    if (!identity) {
+      setDataState(null);
+      setErrState({ identity: null, value: null });
+      setLoadingState({ identity: null, value: false });
+      setSelSeg(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    request.controller = controller;
+    setDataState(null);
+    setErrState({ identity, value: null });
+    setLoadingState({ identity, value: true });
     const url = baseUrl + "/feature_importance?run_ids=" + encodeURIComponent(runId)
       + "&axis=" + encodeURIComponent(axis) + "&fine_time=true";
-    fetch(url, { signal: AbortSignal.timeout(5000) })
+    fetch(url, { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); setSelSeg(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, runId, axis]);
+      .then(j => {
+        if (!_isFeatureImportanceResponse(j)) throw new Error("응답 형식이 올바르지 않습니다.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState({ identity, value: j });
+        setErrState({ identity, value: null });
+        setSelSeg(null);
+      })
+      .catch(e => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState(null);
+        setErrState({ identity, value: String(e) });
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity) {
+          setLoadingState({ identity, value: false });
+        }
+      });
+  }, [axis, baseUrl, identity, runId]);
 
   useEffect_an(() => {
     refresh();
-    const id = setInterval(refresh, 30000);
-    return () => clearInterval(id);
-  }, [refresh]);
+    const id = identity ? setInterval(refresh, 30000) : null;
+    return () => {
+      if (id) clearInterval(id);
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+    };
+  }, [identity, refresh]);
+
+  const data = dataState && dataState.identity === identity ? dataState.value : null;
+  const loading = loadingState.identity === identity && loadingState.value;
+  const err = errState.identity === identity ? errState.value : null;
 
   const globalFeats = (data && Array.isArray(data.global)) ? data.global : [];
   const bySeg = (data && data.by_segment) ? data.by_segment : {};

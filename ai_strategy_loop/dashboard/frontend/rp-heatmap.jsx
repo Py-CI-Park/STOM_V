@@ -26,34 +26,83 @@ function _rpSplitCrossLabel(c) {
   }
   return ["", ""];
 }
+function _rpIsEdgeRatioResponse(j) {
+  if (!j || typeof j !== "object" || Array.isArray(j)) return false;
+  if (j.global != null && (typeof j.global !== "object" || Array.isArray(j.global))) return false;
+  if (j.segments != null && (typeof j.segments !== "object" || Array.isArray(j.segments))) return false;
+  return !j.segments || ["cross", "change", "time", "market_cap"].every(
+    (key) => j.segments[key] == null || Array.isArray(j.segments[key])
+  );
+}
+
 
 /* ── E7: 시간대×시가총액 대형 히트맵 — /edge_ratio segments.cross 재사용, 반응형 큰 셀. ── */
 function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
-  const [data, setData] = useState_rp(null);
-  const [loading, setLoading] = useState_rp(false);
-  const [err, setErr] = useState_rp(null);
+  const [dataState, setDataState] = useState_rp(null);
+  const [loadingState, setLoadingState] = useState_rp({ identity: null, value: false });
+  const [errState, setErrState] = useState_rp({ identity: null, value: null });
+  const requestRef = React.useRef({ controller: null, generation: 0, identity: null });
+  const identity = !isDemo && baseUrl && runId ? [baseUrl, runId].join("\u0000") : null;
+  const currentIdentityRef = React.useRef(identity);
+  currentIdentityRef.current = identity;
 
   const refresh = useCallback_rp(() => {
-    if (isDemo || !baseUrl || !runId) {
-      setData(null);
+    const request = requestRef.current;
+    request.generation += 1;
+    if (request.controller) request.controller.abort();
+    request.identity = identity;
+    const generation = request.generation;
+
+    if (!identity) {
+      setDataState(null);
+      setErrState({ identity: null, value: null });
+      setLoadingState({ identity: null, value: false });
       return;
     }
-    setLoading(true);
-    _rpFetchJson(
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    request.controller = controller;
+    setDataState(null);
+    setErrState({ identity, value: null });
+    setLoadingState({ identity, value: true });
+    fetch(
       baseUrl + "/edge_ratio?run_ids=" + encodeURIComponent(runId) + "&fine_time=true",
-      8000
+      { signal: controller.signal }
     )
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then((j) => {
-        setData(j);
-        setErr(null);
+        if (!_rpIsEdgeRatioResponse(j)) throw new Error("응답 형식이 올바르지 않습니다.");
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState({ identity, value: j });
+        setErrState({ identity, value: null });
       })
-      .catch((e) => setErr(String(e)))
-      .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, runId]);
+      .catch((e) => {
+        if (e && e.name === "AbortError") return;
+        if (requestRef.current.generation !== generation || currentIdentityRef.current !== identity) return;
+        setDataState(null);
+        setErrState({ identity, value: String(e) });
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        if (requestRef.current.generation === generation && currentIdentityRef.current === identity) {
+          setLoadingState({ identity, value: false });
+        }
+      });
+  }, [baseUrl, identity, runId]);
 
   useEffect_rp(() => {
     refresh();
-  }, [refresh]);
+    return () => {
+      const request = requestRef.current;
+      request.generation += 1;
+      if (request.controller) request.controller.abort();
+    };
+  }, [identity, refresh]);
+
+  const data = dataState && dataState.identity === identity ? dataState.value : null;
+  const loading = loadingState.identity === identity && loadingState.value;
+  const err = errState.identity === identity ? errState.value : null;
 
   const grid = useMemo_rp(() => {
     const cross = (data && data.segments && data.segments.cross) || [];

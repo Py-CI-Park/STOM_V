@@ -1,6 +1,5 @@
 /* Enriched run comparison console. Overrides the lean RunComparePanel from panels.jsx. */
-import { fetchRunsShared } from "./runs-shared.jsx";
-const { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
+const { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc, useRef: useRef_rc } = React;
 
 function rcNum(value, digits = 2) {
   return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
@@ -47,6 +46,23 @@ function rcDefaultCompareIds(runs) {
     .map(r => r.run_id);
   return matched.length >= 2 ? matched : runs.slice(0, 2).map(r => r.run_id);
 }
+function rcValidRunsPayload(payload) {
+  return !!payload
+    && typeof payload === "object"
+    && Array.isArray(payload.runs)
+    && payload.runs.every(run => run && typeof run === "object"
+      && typeof run.run_id === "string" && run.run_id.length > 0);
+}
+
+function rcValidCompareRows(payload, selectedIds) {
+  if (!payload || typeof payload !== "object"
+      || !Array.isArray(payload.runs) || !Array.isArray(payload.generation_rows)) return null;
+  const selectedSet = new Set(selectedIds);
+  const ownsSelectedRun = row => row && typeof row === "object"
+    && typeof row.run_id === "string" && selectedSet.has(row.run_id);
+  if (!payload.runs.every(ownsSelectedRun) || !payload.generation_rows.every(ownsSelectedRun)) return null;
+  return payload.generation_rows;
+}
 
 function RunComparePanel({ baseUrl, wsStatus }) {
   const [runs, setRuns] = useState_rc([]);
@@ -57,38 +73,106 @@ function RunComparePanel({ baseUrl, wsStatus }) {
   const [loading, setLoading] = useState_rc(false);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const runsRequestRef = useRef_rc({ generation: 0, controller: null, baseUrl: "" });
+  const compareRequestRef = useRef_rc({ generation: 0, controller: null, baseUrl: "", selectedKey: "" });
 
   const sortedRuns = useMemo_rc(() => {
     return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
   }, [runs, sortKey]);
 
   const refresh = React.useCallback(() => {
-    if (isDemo || !baseUrl) return;
+    if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+    const controller = new AbortController();
+    const generation = runsRequestRef.current.generation + 1;
+    const identity = baseUrl || "";
+    runsRequestRef.current = { generation, controller, baseUrl: identity };
+    if (isDemo || !identity) {
+      setRuns([]);
+      setSelected([]);
+      setCompareRows([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setErr("");
-    fetchRunsShared(baseUrl, { timeoutMs: 3000 })
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    fetch(identity + "/runs", { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
-        const rows = Array.isArray(j.runs) ? j.runs : [];
+        const current = runsRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity) return;
+        if (!rcValidRunsPayload(j)) throw new Error("Malformed /runs response");
+        const rows = j.runs;
         setRuns(rows);
-        setErr(j.error || "");
-        if (!selected.length) setSelected(rcDefaultCompareIds(rows));
+        setErr(typeof j.error === "string" ? j.error : "");
+        setSelected(prev => prev.length ? prev : rcDefaultCompareIds(rows));
       })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, selected.length]);
+      .catch(e => {
+        const current = runsRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity || controller.signal.aborted) return;
+        setRuns([]);
+        setSelected([]);
+        setCompareRows([]);
+        setErr(String(e));
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        const current = runsRequestRef.current;
+        if (current.generation === generation && current.baseUrl === identity) setLoading(false);
+      });
+  }, [baseUrl, isDemo]);
+
+  useEffect_rc(() => {
+    if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+    if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+    runsRequestRef.current.generation += 1;
+    compareRequestRef.current.generation += 1;
+    setRuns([]);
+    setSelected([]);
+    setCompareRows([]);
+    setErr("");
+    setLoading(false);
+    return () => {
+      if (runsRequestRef.current.controller) runsRequestRef.current.controller.abort();
+      if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+      runsRequestRef.current.generation += 1;
+      compareRequestRef.current.generation += 1;
+    };
+  }, [baseUrl, isDemo]);
 
   useEffect_rc(() => { refresh(); }, [refresh]);
 
   useEffect_rc(() => {
-    if (isDemo || !baseUrl || !selected.length) {
+    if (compareRequestRef.current.controller) compareRequestRef.current.controller.abort();
+    const controller = new AbortController();
+    const generation = compareRequestRef.current.generation + 1;
+    const identity = baseUrl || "";
+    const selectedIds = selected.slice();
+    const selectedKey = selectedIds.join("|");
+    compareRequestRef.current = { generation, controller, baseUrl: identity, selectedKey };
+    if (isDemo || !identity || !selectedIds.length) {
       setCompareRows([]);
-      return;
+      return () => controller.abort();
     }
-    const ids = selected.map(encodeURIComponent).join(",");
-    fetch(baseUrl + "/runs/compare?ids=" + ids, { signal: AbortSignal.timeout(3500) })
+    setCompareRows([]);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const ids = selectedIds.map(encodeURIComponent).join(",");
+    fetch(identity + "/runs/compare?ids=" + ids, { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => setCompareRows(Array.isArray(j.generation_rows) ? j.generation_rows : []))
-      .catch(() => setCompareRows([]));
+      .then(j => {
+        const current = compareRequestRef.current;
+        if (current.generation !== generation || current.baseUrl !== identity || current.selectedKey !== selectedKey) return;
+        const rows = rcValidCompareRows(j, selectedIds);
+        if (rows === null) throw new Error("Malformed /runs/compare response");
+        setCompareRows(rows);
+      })
+      .catch(() => {
+        const current = compareRequestRef.current;
+        if (current.generation === generation && current.baseUrl === identity
+            && current.selectedKey === selectedKey && !controller.signal.aborted) setCompareRows([]);
+      })
+      .finally(() => clearTimeout(timeoutId));
+    return () => controller.abort();
   }, [baseUrl, isDemo, selected.join("|")]);
 
   const toggleSelected = (runId) => {

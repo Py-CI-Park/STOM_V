@@ -51,7 +51,7 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "selectedResearchId" in source
     assert "onSelectResearch={selectResearch}" in source
     assert "legacy run/gen archive selection" in source
-    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
+    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showRunCompare={false} />" in source
     assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
     assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showDecisionLedger={false} />" in source
     assert "<VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />" in source
@@ -62,6 +62,7 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
 
 def test_history_keeps_restricted_analysis_and_single_compare_and_decision_owners() -> None:
     history = _read("v4-history.jsx")
+    records = _read("research-records-panel.jsx")
     audit = _read("v4-audit.jsx")
     lab = _read("rl-panel.jsx")
 
@@ -72,9 +73,18 @@ def test_history_keeps_restricted_analysis_and_single_compare_and_decision_owner
     assert 'enabledTabIds={["edge", "feature", "correlation", "combos"]}' in history
     assert "showOpsStatus={false}" in history
     assert "showWorkbenchLink={false}" in history
-    assert "campaign ID에서 run ID를 추정하지 않습니다." in history
+    assert 'const analysisRunId = typeof selectedResearchId === "string" && /^loop_run:\\S+$/.test(selectedResearchId)' in history
+    assert 'selectedResearchId.slice("loop_run:".length) : "";' in history
+    assert 'Governed analysis run: {analysisRunId || "unavailable · loop_run:<nonempty> research selection이 필요합니다."}' in history
+    assert "campaign 또는 미선택은 분석 run을 제공하지 않습니다." in history
+    assert "runId={analysisRunId}" in history
+    assert "Archive run context:" not in history
+    assert "runId={runId}" in history
     assert '<RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />' in history
     assert history.count("RunComparePanel") == 2
+    assert "function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch, showRunCompare = true })" in records
+    assert "{showRunCompare && (" in records
+    assert "<_RpRunCompare" in records
     assert '<ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in history
     assert "/edge_ratio" not in history
     assert "/hall_of_fame" not in history
