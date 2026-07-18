@@ -12,7 +12,12 @@ import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
 
+const { useState: useState_v4history, useCallback: useCallback_v4history } = React;
 function V4History({ baseUrl, wsStatus, onNavigate }) {
+  const [selectedResearchId, setSelectedResearchId] = useState_v4history("");
+  const selectResearch = useCallback_v4history((researchId) => {
+    setSelectedResearchId(typeof researchId === "string" ? researchId : "");
+  }, []);
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
   const freshnessLabel = wsStatus === "open"
     ? "서버 연결됨 · 선택한 아카이브 응답을 표시합니다."
@@ -51,26 +56,29 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       </section>
 
       <section aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
-        <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare</h2>
+        <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare <span className="mono" style={{ fontSize: "10.5px", color: "var(--ink-3)" }}>— legacy run/gen archive selection (governed research selection과 별도)</span></h2>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
-          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />
+          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
         </div>
       </section>
 
       <section aria-labelledby="v4-history-lineage-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리 · A/B · 셀 히트맵 · 홀드아웃 퍼널</h2>
+        <p className="mono" aria-live="polite" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
+          Governed research selection: {selectedResearchId || "선택 없음 · 근거는 unavailable/missing으로 표시됩니다."}
+        </p>
         <div data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리와 연구 시각화 영역">
-          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} />
-          <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
-          <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} />
-          <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} />
+          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectedResearchIdChange={selectResearch} />
+          <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
+          <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
+          <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
         </div>
       </section>
 
       <section aria-labelledby="v4-history-index-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거</h2>
         <div data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역">
-          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} />
+          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
         </div>
       </section>
 
@@ -80,7 +88,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
         </p>
         <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-          <AuditDecisionTrace baseUrl={baseUrl} />
+          <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
           <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
         </div>
       </section>

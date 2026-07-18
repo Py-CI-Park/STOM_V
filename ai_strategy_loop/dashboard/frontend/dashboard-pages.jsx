@@ -208,7 +208,7 @@ function LabPage({ baseUrl, onNavigate }) {
   );
 }
 
-function ResearchIndexPage({ baseUrl, onNavigate }) {
+function ResearchIndexPage({ baseUrl, onNavigate, selectedResearchId, onSelectResearch }) {
   const base = _dpBase(baseUrl);
   const Panel = window.ResearchIndexPanel || ResearchIndexPanel;
   return (
@@ -218,7 +218,7 @@ function ResearchIndexPage({ baseUrl, onNavigate }) {
         <b>STOM 히스토리</b>
         <span className="mono">run/gen result archive · Compare · campaign/docs/update_log/registry lineage</span>
       </div>
-      <Panel baseUrl={base} wsStatus="na" />
+      <Panel baseUrl={base} wsStatus="na" selectedResearchId={selectedResearchId} onSelectResearch={onSelectResearch} />
     </div>
   );
 }

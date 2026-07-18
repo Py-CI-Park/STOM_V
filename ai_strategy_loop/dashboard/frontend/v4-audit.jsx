@@ -5,7 +5,7 @@
 // dual-safe ESM import (esbuild bundle 경로). KEEP on ONE physical line.
 import { VerdictPanel } from "./dashboard-pages.jsx";
 
-const { useEffect: useEffect_va, useState: useState_va } = React;
+const { useEffect: useEffect_va, useState: useState_va, useRef: useRef_va } = React;
 
 // 연구 전용 경계 — 실거래/주문/브로커 없음(app.jsx 안전 타일과 동일 문구).
 const V4_SAFETY_TILES = [
@@ -40,34 +40,57 @@ function auditDecisionMatches(decision, query, verdict) {
     candidate.blocker,
   ].some(value => String(value ?? "").toLocaleLowerCase().includes(needle));
 }
+function auditResearchId(decision) {
+  const candidate = decision && (decision.research_id || (decision.candidate && decision.candidate.research_id));
+  return typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate) ? candidate : "";
+}
 
-function AuditDecisionTrace({ baseUrl }) {
+
+function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
   const [decisions, setDecisions] = useState_va([]);
   const [loading, setLoading] = useState_va(true);
   const [error, setError] = useState_va("");
   const [query, setQuery] = useState_va("");
   const [verdict, setVerdict] = useState_va("all");
+  const requestSeq = useRef_va(0);
+  const displayOnly = typeof onSelectResearch === "function";
 
   useEffect_va(() => {
+    const requestId = requestSeq.current + 1;
+    requestSeq.current = requestId;
+    const isCurrent = () => requestSeq.current === requestId;
     const base = String(baseUrl || "").replace(/\/+$/, "");
+    const controller = new AbortController();
     setLoading(true);
     setError("");
-    fetch(base + "/decisions", { signal: AbortSignal.timeout(8000) })
+    fetch(base + "/decisions", { signal: controller.signal })
       .then(response => response.ok
         ? response.json()
         : Promise.reject(new Error("HTTP " + response.status)))
-      .then(payload => setDecisions(Array.isArray(payload?.decisions) ? payload.decisions : []))
-      .catch(reason => setError(String(reason)))
-      .finally(() => setLoading(false));
+      .then(payload => {
+        if (isCurrent()) setDecisions(Array.isArray(payload?.decisions) ? payload.decisions : []);
+      })
+      .catch(reason => {
+        if (reason.name !== "AbortError" && isCurrent()) setError(String(reason));
+      })
+      .finally(() => { if (isCurrent()) setLoading(false); });
+    return () => controller.abort();
   }, [baseUrl]);
 
-  const visible = decisions.filter(decision => auditDecisionMatches(decision, query, verdict));
+  const selectedResearch = typeof selectedResearchId === "string" && /^(campaign|loop_run):.+$/.test(selectedResearchId)
+    ? selectedResearchId : "";
+  const exactLinked = selectedResearch
+    ? decisions.filter(decision => auditResearchId(decision) === selectedResearch) : decisions;
+  const unlinkedCount = selectedResearch
+    ? decisions.filter(decision => !auditResearchId(decision)).length : 0;
+  const visible = exactLinked.filter(decision => auditDecisionMatches(decision, query, verdict));
 
   return (
-    <section className="panel v4-audit-trace" aria-labelledby="v4-audit-trace-title">
+    <section className="panel v4-audit-trace" aria-labelledby="v4-audit-trace-title"
+             data-selection-mode={displayOnly ? "parent-display-only" : "standalone"}>
       <div className="panel-hd">
         <h2 id="v4-audit-trace-title" className="panel-hd-title">결정 추적</h2>
-        <span className="mono">append-only · {decisions.length} records</span>
+        <span className="mono">append-only · {exactLinked.length} records</span>
       </div>
       <div className="panel-bd">
         <fieldset className="v4-audit-filters">
@@ -88,12 +111,18 @@ function AuditDecisionTrace({ baseUrl }) {
             </select>
           </label>
         </fieldset>
+        {selectedResearch && exactLinked.length === 0 ? (
+          <p role="status">선택한 연구 ID에 대한 exact research_id linkage가 없습니다. 유사 텍스트로 연결하지 않았습니다.</p>
+        ) : null}
+        {selectedResearch && exactLinked.length > 0 && unlinkedCount > 0 ? (
+          <p role="status">현재 표시에는 exact research_id linkage만 포함합니다. {unlinkedCount}개 기록은 linkage가 없어 제외되었습니다.</p>
+        ) : null}
 
         {loading ? <p role="status">감사 기록을 불러오는 중입니다.</p> : null}
         {error ? <p role="alert">감사 기록 로드 실패: {error}</p> : null}
-        {!loading && !error && decisions.length === 0
+        {!loading && !error && exactLinked.length === 0
           ? <p role="status">아직 append-only 결정 기록이 없습니다.</p> : null}
-        {!loading && !error && decisions.length > 0 && visible.length === 0
+        {!loading && !error && exactLinked.length > 0 && visible.length === 0
           ? <p role="status">현재 필터와 일치하는 결정 기록이 없습니다.</p> : null}
         {!loading && !error && visible.length > 0 ? (
           <div data-region="scroll" tabIndex="0" aria-label="필터된 결정 추적 표">
@@ -131,7 +160,7 @@ function AuditDecisionTrace({ baseUrl }) {
   );
 }
 
-function V4Audit({ baseUrl, onNavigate }) {
+function V4Audit({ baseUrl, onNavigate, selectedResearchId, onSelectResearch }) {
   return (
     <div className="v4-audit">
       <section className="v4-safety-strip" data-safety-boundary="v4-research-only">
@@ -142,7 +171,7 @@ function V4Audit({ baseUrl, onNavigate }) {
           </div>
         ))}
       </section>
-      <AuditDecisionTrace baseUrl={baseUrl} />
+      <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={onSelectResearch} />
       <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
     </div>
   );

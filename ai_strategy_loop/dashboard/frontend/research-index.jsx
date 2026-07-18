@@ -88,7 +88,12 @@ function _rixDetailText(detail) {
   return "";
 }
 
-function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
+function _rixExactResearchId(record) {
+  const candidate = record && (record.research_id || record.exact_link);
+  return typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate) ? candidate : "";
+}
+
+function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedResearchId, onSelectResearch }) {
   const base = _rixBase(baseUrl);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -109,6 +114,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
   const [sortKey, setSortKey] = useState_rix("updated_desc");
   const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
   const detailRequestSeq = useRef_rix(0);
+  const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
 
   useEffect_rix(() => {
     const timer = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
@@ -217,6 +223,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
     return out;
   }, [records]);
   const timelineRows = useMemo_rix(() => visibleRows.slice(0, 12), [visibleRows]);
+  const selectRecord = record => {
+    setSelectedId(record.id);
+    const researchId = _rixExactResearchId(record);
+    if (researchId && typeof onSelectResearch === "function") onSelectResearch(researchId);
+  };
 
 
   return (
@@ -226,6 +237,9 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
           <span className="dot" style={{ background: "var(--teal)" }}></span>
           Governed Research Index
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+          {controlled && <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+            parent research {typeof selectedResearchId === "string" ? selectedResearchId : "none"}
+          </span>}
         </div>
         <button className="btn ghost sm" onClick={loadIndex} disabled={isDemo || loading}>
           {loading ? "loading" : "refresh"}
@@ -322,7 +336,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                     type="button"
                     key={`tl-${row.id}`}
                     className={selectedId === row.id ? "active" : ""}
-                    onClick={() => setSelectedId(row.id)}
+                    onClick={() => selectRecord(row)}
                     title={row.exact_link || row.id}
                   >
                     <span className="research-index-timeline-time">{_rixFmtTime(row.updated_at)}</span>
@@ -346,7 +360,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                     type="button"
                     key={row.id}
                     className={selectedId === row.id ? "active" : ""}
-                    onClick={() => setSelectedId(row.id)}
+                    onClick={() => selectRecord(row)}
                     title={row.id}
                   >
                     <span className="research-index-row-title">{row.title || row.id}</span>
@@ -393,7 +407,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                       <div className="research-index-related">
                         <div className="research-index-related-title">Related lineage</div>
                         {selectedRow.related_ids.map(id => (
-                          <button key={id} type="button" onClick={() => setSelectedId(id)}>{id}</button>
+                          <button key={id} type="button" onClick={() => {
+                            const related = records.find(row => row.id === id);
+                            if (related) selectRecord(related);
+                            else setSelectedId(id);
+                          }}>{id}</button>
                         ))}
                       </div>
                     )}

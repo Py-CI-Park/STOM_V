@@ -5,6 +5,7 @@ const {
   useState: useState_rrp,
   useEffect: useEffect_rrp,
   useCallback: useCallback_rrp,
+  useRef: useRef_rrp,
 } = React;
 
 function _rrpMoney(value) {
@@ -33,7 +34,16 @@ function _rrpBestLabel(record) {
   return best.label || best.name || best.strategy_gist || "-";
 }
 
-function ResearchRecordsPanel({ baseUrl, wsStatus }) {
+function _rrpCampaignResearchId(row) {
+  const researchId = row && row.research_id;
+  if (typeof researchId === "string") {
+    return researchId.startsWith("campaign:") ? researchId : "";
+  }
+  const campaignId = row && (row.id || row.name);
+  return typeof campaignId === "string" && campaignId ? `campaign:${campaignId}` : "";
+}
+
+function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch }) {
   const [payload, setPayload] = useState_rrp(null);
   const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
   const [detail, setDetail] = useState_rrp(null);
@@ -43,6 +53,10 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
   const [runListLoading, setRunListLoading] = useState_rrp(false);
   // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
   const [showAll, setShowAll] = useState_rrp(false);
+  const detailRequestSeq = useRef_rrp(0);
+  const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
+  const controlledCampaign = typeof selectedResearchId === "string" && selectedResearchId.startsWith("campaign:")
+    ? selectedResearchId.slice("campaign:".length) : "";
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -55,11 +69,11 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
         setPayload(j);
         setErr("");
         const rows = Array.isArray(j && j.campaigns) ? j.campaigns : [];
-        if (!selectedCampaign && rows.length) setSelectedCampaign(rows[0].name || "");
+        if (!controlled && !selectedCampaign && rows.length) setSelectedCampaign(rows[0].name || "");
       })
       .catch(e => setErr(String(e)))
       .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, selectedCampaign]);
+  }, [baseUrl, isDemo, selectedCampaign, controlled]);
 
   useEffect_rrp(() => {
     refresh();
@@ -69,16 +83,24 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
   }, [refresh, baseUrl, isDemo]);
 
   useEffect_rrp(() => {
-    if (isDemo || !baseUrl || !selectedCampaign) {
+    const requestId = detailRequestSeq.current + 1;
+    detailRequestSeq.current = requestId;
+    const isCurrent = () => detailRequestSeq.current === requestId;
+    const activeCampaign = controlled ? controlledCampaign : selectedCampaign;
+    if (isDemo || !baseUrl || !activeCampaign) {
       setDetail(null);
-      return;
+      return undefined;
     }
-    fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
-          { signal: AbortSignal.timeout(6000) })
+    const controller = new AbortController();
+    fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(activeCampaign),
+          { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => setDetail(j))
-      .catch(e => setDetail({ available: false, reason: String(e) }));
-  }, [baseUrl, isDemo, selectedCampaign]);
+      .then(j => { if (isCurrent()) setDetail(j); })
+      .catch(e => {
+        if (e.name !== "AbortError" && isCurrent()) setDetail({ available: false, reason: String(e) });
+      });
+    return () => controller.abort();
+  }, [baseUrl, isDemo, selectedCampaign, controlled, controlledCampaign]);
   const refreshRuns = useCallback_rrp(() => {
     if (isDemo || !baseUrl) {
       setRunList([]);
@@ -107,12 +129,20 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
   }, []);
 
   const rows = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
-  const selected = (detail && detail.available && detail.campaign)
-    ? detail.campaign : rows.find(r => r.name === selectedCampaign);
+  const activeCampaign = controlled ? controlledCampaign : selectedCampaign;
+  const selected = (detail && detail.available && detail.campaign && detail.campaign.name === activeCampaign)
+    ? detail.campaign : rows.find(r => r.name === activeCampaign);
   const candidates = (selected && Array.isArray(selected.candidates)) ? selected.candidates.slice(0, 5) : [];
   const errors = (payload && Array.isArray(payload.errors)) ? payload.errors : [];
-  const currentRunId = runList.length ? runList[0].run_id : "";
+  const selectedRunId = typeof selectedResearchId === "string" && selectedResearchId.startsWith("loop_run:")
+    ? selectedResearchId.slice("loop_run:".length) : "";
+  const currentRunId = selectedRunId || (runList.length ? runList[0].run_id : "");
   const currentGenNo = 0;
+  const selectCampaign = row => {
+    setSelectedCampaign(row.name || "");
+    const researchId = _rrpCampaignResearchId(row);
+    if (researchId && typeof onSelectResearch === "function") onSelectResearch(researchId);
+  };
 
   return (
     <div className="panel">
@@ -151,14 +181,14 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                 {(showAll ? rows : rows.slice(0, 12)).map(row => {
                   const best = row.best || {};
                   const artifacts = row.artifacts || {};
-                  const active = row.name === selectedCampaign;
+                  const active = row.name === activeCampaign;
                   return (
                     <tr key={row.name} style={{
                       borderTop: "1px solid var(--line-1)",
                       background: active ? "rgba(56, 189, 248, 0.08)" : "transparent",
                     }}>
                       <td style={{ padding: "7px 8px", minWidth: 180 }}>
-                        <button className="btn ghost sm" onClick={() => setSelectedCampaign(row.name)}
+                        <button className="btn ghost sm" onClick={() => selectCampaign(row)}
                                 style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                           {row.name}
                         </button>

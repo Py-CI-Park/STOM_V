@@ -417,6 +417,100 @@ class TestHistoryDetail:
         assert resp["node"]["counts"] == {"stages": 1, "conditions": 2, "evaluations": 2}
         assert resp["rows"] is None
         assert resp["next_cursor"] is None
+    def test_campaign_research_identity_contract_is_grounded_and_redacted(
+        self, client: TestClient, campaign_env: Path
+    ) -> None:
+        body = client.get(
+            "/history/detail",
+            params={
+                "research_id": "campaign:campaign_alpha",
+                "section": "research",
+                "selection_generation": "37",
+            },
+        ).json()
+        identity = body["node"]["identity"]
+        assert body["selection_generation"] == "37"
+        assert identity["source"] == {
+            "kind": "campaign",
+            "id": "campaign_alpha",
+            "join_key": "campaign:campaign_alpha",
+        }
+        assert identity["source_precedence"] == [
+            "condition_history_v1_companion",
+            "research_records",
+        ]
+        assert identity["provenance_owner"] == "research_records"
+        assert identity["state"] == "partial"
+        assert identity["destinations"]["conditions"]["state"] == "complete"
+        assert identity["destinations"]["evaluations"]["state"] == "complete"
+        for destination in ("autopsy", "holdout", "docs", "commits", "governance"):
+            assert identity["destinations"][destination]["state"] == "missing"
+            assert identity["destinations"][destination]["join_key"] == "campaign:campaign_alpha"
+        assert identity["byte_identical"]["allowlist"] == [
+            "research_id",
+            "label",
+            "coverage_status",
+        ]
+        assert identity["byte_identical"]["values"] == {
+            field: body["node"][field]
+            for field in identity["byte_identical"]["allowlist"]
+        }
+        assert identity["redaction"] == {
+            "paths": "omitted",
+            "secrets": "omitted",
+            "artifact_references": "filenames_only",
+        }
+        assert str(campaign_env) not in json.dumps(body, ensure_ascii=False)
+
+    def test_loop_run_research_identity_contract_uses_exact_run_id(
+        self, client: TestClient, loop_run_env: str
+    ) -> None:
+        body = client.get(
+            "/history/detail",
+            params={"research_id": f"loop_run:{loop_run_env}", "section": "research"},
+        ).json()
+        identity = body["node"]["identity"]
+        assert identity["source"] == {
+            "kind": "loop_run",
+            "id": loop_run_env,
+            "join_key": f"loop_run:{loop_run_env}",
+        }
+        assert identity["source_precedence"] == ["loop_state"]
+        assert identity["provenance_owner"] == "loop_state"
+        assert identity["state"] == "partial"
+        assert identity["destinations"]["conditions"]["state"] == "complete"
+        assert identity["destinations"]["evaluations"]["state"] == "complete"
+
+    def test_companion_identity_mismatch_is_explicit_conflict(
+        self, client: TestClient, campaign_env: Path
+    ) -> None:
+        companion = {
+            "research_id": "campaign:other",
+            "label": "other",
+            "coverage_status": "success",
+            "stages": [
+                {
+                    "stage_id": "stage:other",
+                    "research_id": "campaign:other",
+                    "label": "candidates",
+                    "coverage_status": "success",
+                    "conditions": [],
+                }
+            ],
+        }
+        (campaign_env / "campaign_alpha_condition_history_v1.json").write_text(
+            json.dumps(companion),
+            encoding="utf-8",
+        )
+        body = client.get(
+            "/history/detail",
+            params={"research_id": "campaign:campaign_alpha", "section": "research"},
+        ).json()
+        identity = body["node"]["identity"]
+        assert identity["provenance_owner"] == "condition_history_v1_companion"
+        assert identity["state"] == "conflict"
+        assert identity["destinations"]["conditions"]["state"] == "conflict"
+        assert identity["destinations"]["evaluations"]["state"] == "conflict"
 
     def test_stages_and_conditions_sections(self, client: TestClient, loop_run_env: str) -> None:
         research_id = f"loop_run:{loop_run_env}"

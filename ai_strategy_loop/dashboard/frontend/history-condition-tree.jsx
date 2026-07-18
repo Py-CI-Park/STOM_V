@@ -6,6 +6,7 @@ const {
   useState: useState_hct,
   useEffect: useEffect_hct,
   useCallback: useCallback_hct,
+  useRef: useRef_hct,
 } = React;
 
 const HCT_SOURCE_KINDS = [
@@ -116,16 +117,53 @@ function _hctSortedEvaluations(rows, sortKey, sortDir) {
   });
 }
 
-function _hctFetchSection(baseUrl, researchId, section, cursor) {
-  let url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=" + section;
+function _hctFetchSection(baseUrl, researchId, section, cursor, selectionGeneration, signal) {
+  let url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=" + section
+    + "&selection_generation=" + encodeURIComponent(String(selectionGeneration));
   if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
-  return fetch(url, { signal: AbortSignal.timeout(8000) })
+  return fetch(url, { signal })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
+function _hctDestinationState(value) {
+  return ["complete", "partial", "missing", "conflict"].includes(value) ? value : "missing";
+}
+
+function _hctCompactValue(value) {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.length + " entries";
+  if (value && typeof value === "object") return Object.keys(value).join(", ") || "present";
+  return "missing";
+}
+
+function _hctResearchWorkspace(node, selectedId) {
+  const research = node && typeof node === "object" ? node : {};
+  const identity = research.identity && typeof research.identity === "object" ? research.identity : {};
+  const destinations = identity.destinations && typeof identity.destinations === "object" ? identity.destinations : {};
+  const names = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
+  return (
+    <section aria-label="선택 연구 상세 근거" style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 }}>
+      <div className="stat-label">Governed research detail · {_hctCompactValue(research.research_id || selectedId)}</div>
+      <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", margin: "5px 0" }}>
+        source owner: {_hctCompactValue(identity.provenance_owner)} · redaction: {_hctCompactValue(identity.redaction)} · byte-identical: {_hctCompactValue(identity.byte_identical)}
+      </div>
+      <div role="list" aria-label="연구 근거 목적지 상태" style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+        {names.map(name => {
+          const value = destinations[name];
+          const state = _hctDestinationState(value && value.state);
+          return <span key={name} role="listitem" className={"badge " + (state === "complete" ? "ok" : state === "conflict" ? "err" : "warn")}>{name}: {state}</span>;
+        })}
+      </div>
+    </section>
+  );
+}
+
+function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const selectedId = selectedResearchId || "";
+  const requestsRef = useRef_hct({ index: null, detail: null });
+  const generationRef = useRef_hct({ index: 0, detail: 0 });
 
   const [q, setQ] = useState_hct("");
   const [sourceKind, setSourceKind] = useState_hct("");
@@ -134,79 +172,111 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
   const [total, setTotal] = useState_hct(0);
   const [indexLoading, setIndexLoading] = useState_hct(false);
   const [indexErr, setIndexErr] = useState_hct("");
-
-  const [selectedId, setSelectedId] = useState_hct("");
   const [sections, setSections] = useState_hct({});
   const [expandedStages, setExpandedStages] = useState_hct({});
   const [expandedConditions, setExpandedConditions] = useState_hct({});
-
   const [sortKey, setSortKey] = useState_hct("");
   const [sortDir, setSortDir] = useState_hct("desc");
 
   const loadIndex = useCallback_hct((cursor) => {
     if (isDemo || !baseUrl) return;
+    if (requestsRef.current.index) requestsRef.current.index.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.index;
+    requestsRef.current.index = controller;
     setIndexLoading(true);
     setIndexErr("");
-    let url = baseUrl + "/history/index?limit=50";
+    let url = baseUrl + "/history/index?limit=50&selection_generation=" + encodeURIComponent(String(generation));
     if (q.trim()) url += "&q=" + encodeURIComponent(q.trim());
     if (sourceKind) url += "&source_kind=" + encodeURIComponent(sourceKind);
     if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
-    fetch(url, { signal: AbortSignal.timeout(8000) })
+    fetch(url, { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
-        const rows = Array.isArray(j && j.items) ? j.items : [];
+        if (generation !== generationRef.current.index || controller.signal.aborted
+          || !j || String(j.selection_generation) !== String(generation)) return;
+        const rows = Array.isArray(j.items) ? j.items : [];
         setItems(prev => (cursor ? prev.concat(rows) : rows));
-        setNextCursor(j && j.next_cursor ? j.next_cursor : null);
-        setTotal(j && j.total != null ? j.total : rows.length);
+        setNextCursor(j.next_cursor ? j.next_cursor : null);
+        setTotal(j.total != null ? j.total : rows.length);
       })
       .catch(e => {
+        if (generation !== generationRef.current.index || controller.signal.aborted) return;
         setIndexErr(String(e));
         if (!cursor) setItems([]);
       })
-      .finally(() => setIndexLoading(false));
+      .finally(() => {
+        if (generation === generationRef.current.index && !controller.signal.aborted) setIndexLoading(false);
+      });
   }, [baseUrl, isDemo, q, sourceKind]);
 
   useEffect_hct(() => {
     loadIndex(null);
   }, [loadIndex]);
 
-  const selectResearch = useCallback_hct((researchId) => {
-    setSelectedId(researchId);
+  useEffect_hct(() => {
+    if (requestsRef.current.detail) requestsRef.current.detail.abort();
+    const generation = ++generationRef.current.detail;
     setExpandedStages({});
     setExpandedConditions({});
-    if (isDemo || !baseUrl || !researchId) {
+    if (isDemo || !baseUrl || !selectedId) {
       setSections({});
-      return;
+      return undefined;
     }
+    const controller = new AbortController();
+    requestsRef.current.detail = controller;
     setSections({ research: { loading: true, err: "", node: null } });
-    _hctFetchSection(baseUrl, researchId, "research")
-      .then(j => setSections(prev => ({ ...prev, research: { loading: false, err: "", node: j } })))
-      .catch(e => setSections(prev => ({ ...prev, research: { loading: false, err: String(e), node: null } })));
-  }, [baseUrl, isDemo]);
+    _hctFetchSection(baseUrl, selectedId, "research", null, generation, controller.signal)
+      .then(payload => {
+        if (generation !== generationRef.current.detail || controller.signal.aborted
+          || !payload || payload.research_id !== selectedId || payload.section !== "research"
+          || String(payload.selection_generation) !== String(generation)) return;
+        setSections({ research: { loading: false, err: "", node: payload.node || null } });
+      })
+      .catch(e => {
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        setSections({ research: { loading: false, err: String(e), node: null } });
+      });
+    return () => controller.abort();
+  }, [baseUrl, isDemo, selectedId]);
+
+  useEffect_hct(() => () => {
+    if (requestsRef.current.index) requestsRef.current.index.abort();
+    if (requestsRef.current.detail) requestsRef.current.detail.abort();
+  }, []);
+
+  const selectResearch = useCallback_hct((researchId) => {
+    if (researchId && researchId !== selectedId && onSelectedResearchIdChange) onSelectedResearchIdChange(researchId);
+  }, [onSelectedResearchIdChange, selectedId]);
 
   const loadSection = useCallback_hct((section, cursor) => {
     if (isDemo || !baseUrl || !selectedId) return;
+    if (requestsRef.current.detail) requestsRef.current.detail.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.detail;
+    requestsRef.current.detail = controller;
     setSections(prev => ({
       ...prev,
       [section]: { ...(prev[section] || {}), loading: true, err: prev[section] ? prev[section].err : "" },
     }));
-    _hctFetchSection(baseUrl, selectedId, section, cursor)
-      .then(j => {
-        const rows = Array.isArray(j && j.rows) ? j.rows : [];
+    _hctFetchSection(baseUrl, selectedId, section, cursor, generation, controller.signal)
+      .then(payload => {
+        if (generation !== generationRef.current.detail || controller.signal.aborted
+          || !payload || payload.research_id !== selectedId || payload.section !== section
+          || String(payload.selection_generation) !== String(generation)) return;
+        const rows = Array.isArray(payload.rows) ? payload.rows : [];
         setSections(prev => ({
           ...prev,
           [section]: {
-            loading: false,
-            err: "",
-            rows: cursor ? (prev[section] && prev[section].rows || []).concat(rows) : rows,
-            next_cursor: j && j.next_cursor ? j.next_cursor : null,
+            loading: false, err: "", rows: cursor ? (prev[section] && prev[section].rows || []).concat(rows) : rows,
+            next_cursor: payload.next_cursor ? payload.next_cursor : null,
           },
         }));
       })
-      .catch(e => setSections(prev => ({
-        ...prev,
-        [section]: { loading: false, err: String(e), rows: (prev[section] && prev[section].rows) || [], next_cursor: null },
-      })));
+      .catch(e => {
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        setSections(prev => ({ ...prev, [section]: { loading: false, err: String(e), rows: (prev[section] && prev[section].rows) || [], next_cursor: null } }));
+      });
   }, [baseUrl, isDemo, selectedId]);
 
   const toggleStage = useCallback_hct((stageId) => {
@@ -297,11 +367,18 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
                       const active = row.research_id === selectedId;
                       const counts = row.counts || {};
                       return (
-                        <tr key={row.research_id} style={{
-                          borderTop: "1px solid var(--line-1)",
-                          background: active ? "rgba(159,180,255,0.08)" : "transparent",
-                          cursor: "pointer",
-                        }} onClick={() => selectResearch(row.research_id)}>
+                        <tr
+                          key={row.research_id}
+                          style={{
+                            borderTop: "1px solid var(--line-1)",
+                            background: active ? "rgba(159,180,255,0.08)" : "transparent",
+                            cursor: "pointer",
+                          }}
+                          tabIndex={0}
+                          aria-selected={active}
+                          onClick={() => selectResearch(row.research_id)}
+                          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectResearch(row.research_id); } }}
+                        >
                           <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                             <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</div>
                             {(row.series || row.ab_role || (row.gate_passed_count > 0)) && (
@@ -353,6 +430,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
                   </button>
                 </div>
                 <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {sections.research && !sections.research.loading && _hctResearchWorkspace(sections.research.node, selectedId)}
                   {sections.research && sections.research.err && (
                     <div className="research-empty danger">
                       {sections.research.err}

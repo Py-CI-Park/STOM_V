@@ -8,6 +8,7 @@ const {
   useState: useState_hv,
   useEffect: useEffect_hv,
   useCallback: useCallback_hv,
+  useRef: useRef_hv,
 } = React;
 
 function _hvNum(value) {
@@ -47,29 +48,31 @@ function _hvMetricAny(row, keys) {
   return null;
 }
 
-function _hvFetchJson(url, timeoutMs) {
-  // 전체 인덱스는 서버 측 트리 빌드로 수 초가 걸릴 수 있어 기본 30초로 잡는다.
-  return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 30000) })
+function _hvFetchJson(url, signal) {
+  return fetch(url, { signal })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-// cursor 기반 전체 수집: /history/detail을 limit=100으로 요청하고 next_cursor를 따라가며
-// 안전 상한(50페이지)까지 모든 행을 모은다. 서버가 next_cursor를 더는 주지 않으면 중단한다.
-function _hvFetchAllPages(url, timeoutMs) {
+function _hvFetchAllPages(url, signal, validatePage) {
   const MAX_PAGES = 50;
   const sep = url.includes("?") ? "&" : "?";
   const base = url + sep + "limit=100";
   const step = (cursor, acc, page) => {
     const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
-    return _hvFetchJson(pageUrl, timeoutMs).then(j => {
-      const rows = Array.isArray(j && j.rows) ? j.rows : [];
+    return _hvFetchJson(pageUrl, signal).then(payload => {
+      if (!validatePage(payload)) throw new Error("History detail response identity mismatch");
+      const rows = Array.isArray(payload.rows) ? payload.rows : [];
       const merged = acc.concat(rows);
-      const next = j && j.next_cursor ? j.next_cursor : null;
+      const next = payload.next_cursor ? payload.next_cursor : null;
       if (next && page < MAX_PAGES) return step(next, merged, page + 1);
       return merged;
     });
   };
   return step(null, [], 1);
+}
+
+function _hvIsAbort(error, controller) {
+  return !!(controller && controller.signal.aborted) || (error && error.name === "AbortError");
 }
 
 // 서버가 loop_run 평가 행에는 gate_passed(bool)를 additive로 내려준다(campaign 행은 원천 데이터가
@@ -116,7 +119,7 @@ function _HvError({ err, onRetry }) {
 }
 
 /* ── B-3: AbPairCompareView — series의 legacy/typed 발행기 쌍을 세대별로 나란히 비교. ── */
-function AbPairCompareView({ baseUrl, wsStatus }) {
+function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -129,45 +132,86 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
 
   const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
   const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+  const requestsRef = useRef_hv({ pairs: null, legacy: null, typed: null });
+  const generationRef = useRef_hv({ pairs: 0, legacy: 0, typed: 0 });
 
   const loadPairs = useCallback_hv(() => {
-    if (isDemo || !baseUrl || !series.trim()) return;
+    if (isDemo || !baseUrl || !series.trim() || !selectedResearchId) return;
+    if (requestsRef.current.pairs) requestsRef.current.pairs.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.pairs;
+    requestsRef.current.pairs = controller;
     setPairsLoading(true);
     setPairsErr("");
-    _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), 8000)
-      .then(j => {
-        const items = Array.isArray(j && j.items) ? j.items : [];
-        setPairsAvailable(!!(j && j.available));
-        setPairs(items);
-        setSelectedPair(items.length ? items[0].pair : "");
+    _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), controller.signal)
+      .then(payload => {
+        if (generation !== generationRef.current.pairs || controller.signal.aborted) return;
+        const items = Array.isArray(payload && payload.items) ? payload.items : [];
+        setPairsAvailable(!!(payload && payload.available));
+        setPairs(items.filter(item => item && (
+          item.legacy_research_id === selectedResearchId || item.typed_research_id === selectedResearchId
+        )));
+        setSelectedPair("");
       })
-      .catch(e => {
-        setPairsErr(String(e));
+      .catch(error => {
+        if (generation !== generationRef.current.pairs || _hvIsAbort(error, controller)) return;
+        setPairsErr(String(error));
         setPairsAvailable(false);
         setPairs([]);
         setSelectedPair("");
       })
-      .finally(() => setPairsLoading(false));
-  }, [baseUrl, isDemo, series]);
+      .finally(() => {
+        if (generation === generationRef.current.pairs && !controller.signal.aborted) setPairsLoading(false);
+      });
+  }, [baseUrl, isDemo, series, selectedResearchId]);
 
   useEffect_hv(() => {
-    loadPairs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    Object.keys(requestsRef.current).forEach(key => {
+      if (requestsRef.current[key]) requestsRef.current[key].abort();
+      generationRef.current[key] += 1;
+    });
+    setPairs([]);
+    setSelectedPair("");
+    setLegacyRows({ loading: false, err: "", rows: [] });
+    setTypedRows({ loading: false, err: "", rows: [] });
+  }, [baseUrl, isDemo, selectedResearchId]);
+
+  useEffect_hv(() => () => {
+    Object.keys(requestsRef.current).forEach(key => {
+      if (requestsRef.current[key]) requestsRef.current[key].abort();
+    });
   }, []);
 
-  const current = pairs.find(p => p.pair === selectedPair) || null;
+  const current = pairs.find(p => p.pair === selectedPair && (
+    p.legacy_research_id === selectedResearchId || p.typed_research_id === selectedResearchId
+  )) || null;
 
-  const loadSide = useCallback_hv((researchId, setter) => {
+  const loadSide = useCallback_hv((sideName, researchId, setter) => {
     if (isDemo || !baseUrl || !researchId) {
       setter({ loading: false, err: "", rows: [] });
       return;
     }
+    if (requestsRef.current[sideName]) requestsRef.current[sideName].abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current[sideName];
+    const selectionGeneration = sideName + "-" + generation;
+    requestsRef.current[sideName] = controller;
     setter(prev => ({ ...prev, loading: true, err: "" }));
-    _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
-    )
-      .then(rows => setter({ loading: false, err: "", rows }))
-      .catch(e => setter({ loading: false, err: String(e), rows: [] }));
+    const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId)
+      + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
+    _hvFetchAllPages(url, controller.signal, payload => (
+      payload && payload.research_id === researchId && payload.section === "evaluations"
+      && String(payload.selection_generation) === selectionGeneration
+    ))
+      .then(rows => {
+        if (generation === generationRef.current[sideName] && !controller.signal.aborted) {
+          setter({ loading: false, err: "", rows });
+        }
+      })
+      .catch(error => {
+        if (generation !== generationRef.current[sideName] || _hvIsAbort(error, controller)) return;
+        setter({ loading: false, err: String(error), rows: [] });
+      });
   }, [baseUrl, isDemo]);
 
   useEffect_hv(() => {
@@ -176,10 +220,9 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
       setTypedRows({ loading: false, err: "", rows: [] });
       return;
     }
-    loadSide(current.legacy_research_id, setLegacyRows);
-    loadSide(current.typed_research_id, setTypedRows);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current && current.pair]);
+    loadSide("legacy", current.legacy_research_id, setLegacyRows);
+    loadSide("typed", current.typed_research_id, setTypedRows);
+  }, [current, loadSide]);
 
   const renderSide = (title, gatePassedFlag, side) => (
     <div style={{ flex: "1 1 260px", minWidth: 260 }}>
@@ -289,58 +332,96 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
 }
 
 /* ── B-3: CellHeatmap — campaign evaluations의 시간창×시총 셀 히트맵. ── */
-function CellHeatmap({ baseUrl, wsStatus }) {
+function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   const [campaigns, setCampaigns] = useState_hv([]);
   const [campaignsLoading, setCampaignsLoading] = useState_hv(false);
   const [campaignsErr, setCampaignsErr] = useState_hv("");
-  const [selected, setSelected] = useState_hv("");
+  const selected = selectedResearchId || "";
 
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
   const [metricMode, setMetricMode] = useState_hv("profit");
+  const requestsRef = useRef_hv({ campaigns: null, rows: null });
+  const generationRef = useRef_hv({ campaigns: 0, rows: 0 });
 
   const loadCampaigns = useCallback_hv(() => {
     if (isDemo || !baseUrl) return;
+    if (requestsRef.current.campaigns) requestsRef.current.campaigns.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.campaigns;
+    const selectionGeneration = "campaigns-" + generation;
+    requestsRef.current.campaigns = controller;
     setCampaignsLoading(true);
     setCampaignsErr("");
-    _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 30000)
-      .then(j => {
-        const items = Array.isArray(j && j.items) ? j.items : [];
-        setCampaigns(items);
-        setSelected(prev => prev || (items.length ? items[0].research_id : ""));
+    _hvFetchJson(
+      baseUrl + "/history/index?limit=50&source_kind=campaign&selection_generation=" + encodeURIComponent(selectionGeneration),
+      controller.signal
+    )
+      .then(payload => {
+        if (generation !== generationRef.current.campaigns || controller.signal.aborted
+          || !payload || String(payload.selection_generation) !== selectionGeneration) return;
+        setCampaigns(Array.isArray(payload.items) ? payload.items : []);
       })
-      .catch(e => { setCampaignsErr(String(e)); setCampaigns([]); })
-      .finally(() => setCampaignsLoading(false));
-  }, [baseUrl, isDemo]);
+      .catch(error => {
+        if (generation !== generationRef.current.campaigns || _hvIsAbort(error, controller)) return;
+        setCampaignsErr(String(error));
+        setCampaigns([]);
+      })
+      .finally(() => {
+        if (generation === generationRef.current.campaigns && !controller.signal.aborted) setCampaignsLoading(false);
+      });
+  }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadCampaigns();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadCampaigns]);
+
+  useEffect_hv(() => () => {
+    Object.keys(requestsRef.current).forEach(key => {
+      if (requestsRef.current[key]) requestsRef.current[key].abort();
+    });
   }, []);
 
   const loadRows = useCallback_hv(() => {
+    if (requestsRef.current.rows) requestsRef.current.rows.abort();
+    const generation = ++generationRef.current.rows;
     if (isDemo || !baseUrl || !selected) {
       setRows([]);
+      setRowsLoading(false);
       return;
     }
+    const controller = new AbortController();
+    const selectionGeneration = "campaign-rows-" + generation;
+    requestsRef.current.rows = controller;
     setRowsLoading(true);
     setRowsErr("");
-    _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
-    )
-      .then(rows => setRows(rows))
-      .catch(e => { setRowsErr(String(e)); setRows([]); })
-      .finally(() => setRowsLoading(false));
+    setRows([]);
+    const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected)
+      + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
+    _hvFetchAllPages(url, controller.signal, payload => (
+      payload && payload.research_id === selected && payload.section === "evaluations"
+      && String(payload.selection_generation) === selectionGeneration
+    ))
+      .then(nextRows => {
+        if (generation === generationRef.current.rows && !controller.signal.aborted) setRows(nextRows);
+      })
+      .catch(error => {
+        if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
+        setRowsErr(String(error));
+        setRows([]);
+      })
+      .finally(() => {
+        if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
+      });
   }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [loadRows]);
 
   // 캠페인 companion 셀 메트릭 키는 net_profit/win_rate(stage1 분해 계약),
   // loop_run 행은 profit/total_profit_pct — 후보 키로 둘 다 지원한다.
@@ -388,25 +469,14 @@ function CellHeatmap({ baseUrl, wsStatus }) {
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 히트맵이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <select
-                className="mono"
-                style={{ padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 }}
-                value={selected}
-                onChange={e => setSelected(e.target.value)}
-                disabled={campaignsLoading || campaigns.length === 0}
-              >
-                {campaigns.length === 0 && <option value="">캠페인 없음</option>}
-                {campaigns.map(c => (
-                  <option key={c.research_id} value={c.research_id}>{c.label || c.research_id}</option>
-                ))}
-              </select>
-              {hasProfit && hasPct && (
-                <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "profit" ? "total_profit_pct" : "profit"))}>
-                  값: {effectiveMode === "profit" ? "손익" : (pctIsWinRate ? "승률" : "수익률%")}
-                </button>
-              )}
+            <div className="mono" aria-live="polite" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+              {selected ? "선택 연구: " + selected : "선택 연구 없음 · 히트맵 근거 missing"}
             </div>
+            {hasProfit && hasPct && (
+              <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "profit" ? "total_profit_pct" : "profit"))}>
+                값: {effectiveMode === "profit" ? "손익" : (pctIsWinRate ? "승률" : "수익률%")}
+              </button>
+            )}
             <_HvError err={campaignsErr} onRetry={loadCampaigns} />
             <_HvError err={rowsErr} onRetry={loadRows} />
             {!campaignsErr && campaigns.length === 0 && !campaignsLoading && (
@@ -460,57 +530,95 @@ function CellHeatmap({ baseUrl, wsStatus }) {
 }
 
 /* ── B-3: HoldoutFunnel — run 선택 후 평가수 → gate 통과수 → 홀드아웃 3단 퍼널. ── */
-function HoldoutFunnel({ baseUrl, wsStatus }) {
+function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   const [runs, setRuns] = useState_hv([]);
   const [runsLoading, setRunsLoading] = useState_hv(false);
   const [runsErr, setRunsErr] = useState_hv("");
-  const [selected, setSelected] = useState_hv("");
+  const selected = selectedResearchId || "";
 
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
+  const requestsRef = useRef_hv({ runs: null, rows: null });
+  const generationRef = useRef_hv({ runs: 0, rows: 0 });
 
   const loadRuns = useCallback_hv(() => {
     if (isDemo || !baseUrl) return;
+    if (requestsRef.current.runs) requestsRef.current.runs.abort();
+    const controller = new AbortController();
+    const generation = ++generationRef.current.runs;
+    const selectionGeneration = "runs-" + generation;
+    requestsRef.current.runs = controller;
     setRunsLoading(true);
     setRunsErr("");
-    _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 30000)
-      .then(j => {
-        const items = Array.isArray(j && j.items) ? j.items : [];
-        setRuns(items);
-        setSelected(prev => prev || (items.length ? items[0].research_id : ""));
+    _hvFetchJson(
+      baseUrl + "/history/index?limit=50&source_kind=loop_run&selection_generation=" + encodeURIComponent(selectionGeneration),
+      controller.signal
+    )
+      .then(payload => {
+        if (generation !== generationRef.current.runs || controller.signal.aborted
+          || !payload || String(payload.selection_generation) !== selectionGeneration) return;
+        setRuns(Array.isArray(payload.items) ? payload.items : []);
       })
-      .catch(e => { setRunsErr(String(e)); setRuns([]); })
-      .finally(() => setRunsLoading(false));
-  }, [baseUrl, isDemo]);
+      .catch(error => {
+        if (generation !== generationRef.current.runs || _hvIsAbort(error, controller)) return;
+        setRunsErr(String(error));
+        setRuns([]);
+      })
+      .finally(() => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted) setRunsLoading(false);
+      });
+  }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadRuns();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRuns]);
+
+  useEffect_hv(() => () => {
+    Object.keys(requestsRef.current).forEach(key => {
+      if (requestsRef.current[key]) requestsRef.current[key].abort();
+    });
   }, []);
 
   const loadRows = useCallback_hv(() => {
+    if (requestsRef.current.rows) requestsRef.current.rows.abort();
+    const generation = ++generationRef.current.rows;
     if (isDemo || !baseUrl || !selected) {
       setRows([]);
+      setRowsLoading(false);
       return;
     }
+    const controller = new AbortController();
+    const selectionGeneration = "run-rows-" + generation;
+    requestsRef.current.rows = controller;
     setRowsLoading(true);
     setRowsErr("");
-    _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
-    )
-      .then(rows => setRows(rows))
-      .catch(e => { setRowsErr(String(e)); setRows([]); })
-      .finally(() => setRowsLoading(false));
+    setRows([]);
+    const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected)
+      + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
+    _hvFetchAllPages(url, controller.signal, payload => (
+      payload && payload.research_id === selected && payload.section === "evaluations"
+      && String(payload.selection_generation) === selectionGeneration
+    ))
+      .then(nextRows => {
+        if (generation === generationRef.current.rows && !controller.signal.aborted) setRows(nextRows);
+      })
+      .catch(error => {
+        if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
+        setRowsErr(String(error));
+        setRows([]);
+      })
+      .finally(() => {
+        if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
+      });
   }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [loadRows]);
 
   const evaluatedCount = rows.length;
   // gate_passed는 loop_run 평가 행에만 additive로 존재한다(campaign 행은 필드 자체가 없음).
@@ -561,19 +669,8 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 홀드아웃 퍼널이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <select
-                className="mono"
-                style={{ padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 }}
-                value={selected}
-                onChange={e => setSelected(e.target.value)}
-                disabled={runsLoading || runs.length === 0}
-              >
-                {runs.length === 0 && <option value="">run 없음</option>}
-                {runs.map(r => (
-                  <option key={r.research_id} value={r.research_id}>{r.label || r.research_id}</option>
-                ))}
-              </select>
+            <div className="mono" aria-live="polite" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+              {selected ? "선택 연구: " + selected : "선택 연구 없음 · 홀드아웃 근거 missing"}
             </div>
             <_HvError err={runsErr} onRetry={loadRuns} />
             <_HvError err={rowsErr} onRetry={loadRows} />

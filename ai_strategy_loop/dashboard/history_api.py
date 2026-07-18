@@ -25,6 +25,7 @@ import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from copy import deepcopy
 from typing import Any, Literal, Optional, TypedDict
 
 from fastapi import APIRouter, HTTPException, Query
@@ -89,6 +90,7 @@ class HistoryIndexResponse(TypedDict):
     items: list[HistoryIndexItem]
     next_cursor: Optional[str]
     total: int
+    selection_generation: Optional[str]
     coverage: dict[str, Any]
 
 
@@ -100,6 +102,119 @@ class HistoryDetailResponse(TypedDict, total=False):
     rows: Optional[list[dict]]
     node: Optional[dict]
     next_cursor: Optional[str]
+    selection_generation: Optional[str]
+_RESEARCH_DESTINATIONS = (
+    "conditions",
+    "evaluations",
+    "autopsy",
+    "holdout",
+    "ab",
+    "docs",
+    "commits",
+    "governance",
+)
+_BYTE_IDENTICAL_RESEARCH_FIELDS = ("research_id", "label", "coverage_status")
+
+
+def _research_source_metadata(research_id: str) -> dict[str, Any]:
+    """선택된 identity의 단일 권위 source와 노출 가능한 provenance만 반환한다."""
+    prefix, source_id = research_id.split(":", 1)
+    if prefix == "campaign":
+        companion_available = (EVIDENCE_ROOT / f"{source_id}_condition_history_v1.json").is_file()
+        provenance_owner = (
+            "condition_history_v1_companion" if companion_available else "research_records"
+        )
+        return {
+            "source": {"kind": "campaign", "id": source_id, "join_key": research_id},
+            "source_precedence": ["condition_history_v1_companion", "research_records"],
+            "provenance_owner": provenance_owner,
+            "source_availability": {provenance_owner: True},
+        }
+    return {
+        "source": {"kind": "loop_run", "id": source_id, "join_key": research_id},
+        "source_precedence": ["loop_state"],
+        "provenance_owner": "loop_state",
+        "source_availability": {"loop_state": True},
+    }
+
+
+def _research_destination_states(
+    research_id: str, research: ResearchNode
+) -> tuple[str, dict[str, str]]:
+    """실제 트리와 선택 identity만으로 V5.4 destination 상태를 판정한다."""
+    condition_count = sum(len(stage["conditions"]) for stage in research["stages"])
+    evaluation_rows = flat_rows(research)
+    evaluation_count = len(evaluation_rows)
+    identity_conflict = research["research_id"] != research_id
+
+    if identity_conflict:
+        states = {
+            "conditions": "conflict",
+            "evaluations": "conflict",
+            "autopsy": "missing",
+            "holdout": "missing",
+            "ab": "missing",
+            "docs": "missing",
+            "commits": "missing",
+            "governance": "missing",
+        }
+        return "conflict", states
+
+    conditions_state = "complete" if condition_count else "missing"
+    if not evaluation_count:
+        evaluations_state = "missing"
+    elif any(row["evaluation_status"] in {"missing", "unavailable"} for row in evaluation_rows):
+        evaluations_state = "partial"
+    else:
+        evaluations_state = "complete"
+
+    ab_state = "partial" if derive_ab_role(research_id.split(":", 1)[1]) is not None else "missing"
+    states = {
+        "conditions": conditions_state,
+        "evaluations": evaluations_state,
+        "autopsy": "missing",
+        "holdout": "missing",
+        "ab": ab_state,
+        "docs": "missing",
+        "commits": "missing",
+        "governance": "missing",
+    }
+    present = set(states.values())
+    if present == {"missing"}:
+        return "missing", states
+    return "partial", states
+
+
+def _research_identity_contract(research_id: str, research: ResearchNode) -> dict[str, Any]:
+    """research section에만 붙는 additive identity/provenance contract를 만든다."""
+    source_metadata = _research_source_metadata(research_id)
+    overall_state, states = _research_destination_states(research_id, research)
+    owner = source_metadata["provenance_owner"]
+    join_key = source_metadata["source"]["join_key"]
+    destinations = {
+        destination: {
+            "state": states[destination],
+            "owner": owner,
+            "join_key": join_key,
+        }
+        for destination in _RESEARCH_DESTINATIONS
+    }
+    return {
+        **source_metadata,
+        "redaction": {
+            "paths": "omitted",
+            "secrets": "omitted",
+            "artifact_references": "filenames_only",
+        },
+        "byte_identical": {
+            "allowlist": list(_BYTE_IDENTICAL_RESEARCH_FIELDS),
+            "values": deepcopy(
+                {field: research[field] for field in _BYTE_IDENTICAL_RESEARCH_FIELDS}
+            ),
+        },
+        "state": overall_state,
+        "destinations": destinations,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -310,6 +425,7 @@ def history_index(
     limit: int = Query(_DEFAULT_LIMIT, ge=1, le=_MAX_LIMIT),
     q: str = Query(""),
     source_kind: SourceKind = Query("all"),
+    selection_generation: Optional[str] = Query(None, max_length=120),
 ) -> HistoryIndexResponse:
     """캠페인/루프런을 아우르는 히스토리 목록(메타데이터만, 트리 본문 없음)을 반환한다."""
     # source_kind 필터가 지정되면 반대편 소스의 트리 빌드를 아예 생략한다
@@ -330,13 +446,29 @@ def history_index(
     all_items.sort(key=lambda item: item["updated_at"], reverse=True)
 
     ids = [item["research_id"] for item in all_items]
-    sig = _signature({"q": q, "source_kind": source_kind, "ids": ids})
+    index_revision = [
+        {
+            "research_id": item["research_id"],
+            "item": item,
+            "source": _research_source_metadata(item["research_id"]),
+        }
+        for item in all_items
+    ]
+    sig = _signature(
+        {
+            "q": q,
+            "source_kind": source_kind,
+            "ids": ids,
+            "revision": _signature(index_revision),
+        }
+    )
     page, next_cursor = _paginate(all_items, cursor, limit, sig)
 
     return {
         "items": page,
         "next_cursor": next_cursor,
         "total": len(all_items),
+        "selection_generation": selection_generation,
         "coverage": {
             "campaign": {"available": campaign_available, "total": len(campaign_items)},
             "loop_run": {"available": loop_run_available, "total": len(loop_run_items)},
@@ -491,6 +623,7 @@ def history_detail(
     section: Section = Query(...),
     cursor: Optional[str] = Query(None),
     limit: int = Query(_DEFAULT_LIMIT, ge=1, le=_MAX_LIMIT),
+    selection_generation: Optional[str] = Query(None, max_length=120),
 ) -> HistoryDetailResponse:
     """research_id 하나를 어댑터로 lazy하게 빌드하고, section별 페이지를 반환한다."""
     available, reason, research, gate_passed_by_evaluation = _build_research(research_id)
@@ -500,6 +633,7 @@ def history_detail(
             "reason": reason,
             "research_id": research_id,
             "section": section,
+            "selection_generation": selection_generation,
             "rows": None,
             "node": None,
             "next_cursor": None,
@@ -507,17 +641,20 @@ def history_detail(
 
     if section == "research":
         counts, status = _counts_and_status(research)
+        identity = _research_identity_contract(research_id, research)
         node = {
             "research_id": research["research_id"],
             "label": research["label"],
             "coverage_status": status,
             "counts": counts,
+            "identity": identity,
         }
         return {
             "available": True,
             "reason": None,
             "research_id": research_id,
             "section": section,
+            "selection_generation": selection_generation,
             "rows": None,
             "node": node,
             "next_cursor": None,
@@ -538,7 +675,19 @@ def history_detail(
                     row["gate_passed"] = gate_passed_by_evaluation[row["evaluation_id"]]
 
     ids = [_row_id(section, row) for row in rows]
-    sig = _signature({"research_id": research_id, "section": section, "ids": ids})
+    sig = _signature(
+        {
+            "research_id": research_id,
+            "section": section,
+            "ids": ids,
+            "revision": _signature(
+                {
+                    "rows": rows,
+                    "source": _research_source_metadata(research_id),
+                }
+            ),
+        }
+    )
     page, next_cursor = _paginate(rows, cursor, limit, sig)
 
     return {
@@ -546,6 +695,7 @@ def history_detail(
         "reason": None,
         "research_id": research_id,
         "section": section,
+        "selection_generation": selection_generation,
         "rows": page,
         "node": None,
         "next_cursor": next_cursor,
