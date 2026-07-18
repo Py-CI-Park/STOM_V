@@ -90,7 +90,7 @@
 | R51 | **Alpha랩은 위 연구(P4 카탈로그)대로 추후 함께 고려**해 반영 | ✅ | §7 |
 | R52 | **Context 가독성 나쁨·존재 이유 불명** → 재검토 | ✅ | §5.1 |
 
-> **누락 점검**: R01/R50(audit) 및 R09/R32(연결 깜빡임)은 중복 요청으로 통합 기록. 그 외 24개 요청 모두 개별 ID 부여. 실현성 전 항목 ✅(가능).
+> **누락 점검**: R01/R50(audit) 및 R09/R32(연결 깜빡임)은 중복 요청으로 통합 기록. 그 외 29개 고유 요청 모두 개별 ID 부여. 실현성 전 항목 ✅(가능). (검토 §4 반영: 31행 → 중복 2쌍 통합 후 29 고유)
 
 ---
 
@@ -128,13 +128,13 @@
 | History | **강화**(연구 리스트→상세, 데이터 아키텍처) | R30·R31 |
 | Lab | **해체·이전** → 백테스트 분석 결과는 Live 분석 스텝으로, Edge/변수 분석은 History 상세로 | R40·R41 |
 | Bench | **명예의 전당 전용**으로 축소 + **탭명 변경**(예: "성과·전당" / "Hall of Fame") | R42·R43 |
-| Audit | **제거**(안전 strip은 상단바에 compact 유지) | R01·R50 |
+| Audit | **탭 제거하되 거버넌스는 이전**(§10-1) — 결정 원장·freeze/verdict·export 경계를 History/Reports Governance 섹션으로 이전, 삭제 아님 | R01·R50 |
 | Context | **제거 또는 개발자 메뉴로 격하**(연구용 아님) | R52 |
 | Alpha | **P4 카탈로그로 승격**(추후, §7) | R51 |
 
 → **확정 최종 탭: Live · Backtest · Replay · History · 성과(전당) · Reports** · [Alpha/P4 추후]. (Audit·Context·Lab 제거, **Backtest 독립 유지·강화**)
 
-- **Audit 왜 있었나(답변)**: 승급 결정을 append-only로 기록하는 안전 거버넌스 화면. 실거래·Export가 없는 현 연구 단계에선 결정 이벤트가 발생하지 않아 **사실상 빈 원장**. 안전 문구(실거래/브로커 없음)만 상단바에 남기고 탭은 제거해도 안전성 훼손 없음.
+- **Audit 왜 있었나(정정·검토 반영)**: `final_approval→export_winner` human-approval/export 경계 + `/decisions` append-only 결정 원장 + `/record_decision` 기록이 **실재하는 거버넌스**다. "빈 원장"은 오진단 — **탭 내비게이션은 없애되 결정/freeze/verdict/export 기능은 새 위치(History/Reports Governance 또는 전역 drawer)로 완전 이전**하고 candidate/evidence 바인딩·capability·export 경계 동일 유지를 보안·파리티 테스트로 증명해야 한다(§10-1).
 - **Context 왜 있었나(답변)**: LLM에 넣은 컨텍스트를 복사·검증하는 디버그 도구. 연구·브레인스토밍 흐름과 무관 → 개발자 토글로 격하.
 
 ### 5.2 울트라와이드(3440×1440) 레이아웃 (R06·R07·R20)
@@ -216,27 +216,88 @@
 
 ---
 
-## 8. 단계별 구현 로드맵 (사장님 결정 D3 확정: 추천 순서 P1→P7)
+## 8. 단계별 구현 로드맵 (UXR 네임스페이스 — 기존 PROG_P* 문서군과 충돌 회피)
+
+> 검토 §3.3·§3.7 반영: 잘못된 연구 수치·신뢰성 결함을 먼저 닫는 **UXR-P0**를 신설하고, 기존
+> `PROG_P1~P7` 문서군과 구분되도록 **UXR-P0~P8** 네임스페이스를 쓴다.
 
 | 단계 | 범위 | 요청 매핑 | 리스크 |
 |---|---|---|---|
-| **P1 안정화** | 연결 재연결 디바운스, 타이포·버전 배지, 탭 강조 | R03·R04·R08·R09·R32 | 낮음 |
-| **P2 IA 정리** | Audit 제거(안전 strip 상단 유지)·Context 격하·Lab 해체·Bench→전당+개명 | R01·R40·R41·R42·R43·R50·R52 | 중(회귀·가드) |
-| **P3 울트라와이드 레이아웃** | 브레이크포인트·그래프 폭 정책·밀도 프리셋 | R02·R06·R07·R20 | 중 |
-| **P4 Live 프로세스 스테퍼** | 시스템 상태바·스테퍼·단계 자동전환·텍스트→시각화·정보 접기 | R10·R21~R27 | 높음(핵심) |
-| **P5 Backtest 강화(D2)** | 대시보드에서 백테스트 실행(python GUI 백테 기능 이식·/bt 잡) + **결과 강력 시각화**(수익곡선·분포·거래·조건식 표시) | R25·R28 | 중~높음 |
-| **P6 History 아키텍처** | 리스트→상세 마스터디테일·Lab 분석 흡수 | R30·R31 | 중 |
-| **P7 Reports·Wiki** | 리포팅 일반화·보고서/문서 양식·Wiki 인덱스 | R05·R11·R12 | 중 |
-| **P8 (후속) 알파랩 P4** | 카탈로그 DB·4엔드포인트·5뷰 | R51 | 별도 프로젝트(UX 재편 후) |
+| **UXR-P0 정확성·안전(先)** | 재검토 BLOCK 교정: Alpha 성능게이트 분리·soft-error·/runs timeout·stale·파리티 주석·캐시 지문 | (검토 §5) | **완료(`736ed1a4`)** |
+| **UXR-P1 관측·계약 동결** | WS disconnect 계측, 현 탭/route/field inventory, Backtest parity matrix, baseline 스크린샷 | R09 선행 | 낮음 |
+| **UXR-P2 안정화·타이포** | 연결 debounce, 타이포·버전 배지, 탭 강조 | R03·R04·R08·R09·R32 | 낮음 |
+| **UXR-P3 IA migration** | Audit 거버넌스 이전·Context 격하·Lab field-level 이전·Bench 개명 + redirect/dual-mount/rollback(§10-7) | R01·R40~R43·R50·R52 | 중 |
+| **UXR-P4 울트라와이드·반응형** | 브레이크포인트·그래프 폭·밀도, overflow·접근성 게이트 | R02·R06·R07·R20 | 중 |
+| **UXR-P5 Live 스테퍼** | 현 계약(`current_step`·`step_timings`·`backtest_progress`·`engine_state`) 기반 상태기계(§10-9)·follow-live·텍스트→시각화 | R10·R21~R27 | 높음(핵심) |
+| **UXR-P6 Backtest gap 보강** | **이식 아님** — 현 웹 구현(`/bt/run`·bt-tab-run·bt-result-area·Monte Carlo) inventory → GUI parity matrix → **결손만** 보강 + 수동 mutation 게이트(§10-4) | R25·R28 | 중 |
+| **UXR-P7 History·Reports/Wiki** | History stable identity·join·pagination(§10-10) + Reports 보안 계약(§10-5) | R05·R11·R12·R30·R31 | 중~높 |
+| **UXR-P8 알파랩 P4** | 봉인 `/research/*` 계약·5뷰(§10-11) | R51 | 별도(UX 재편 후) |
 
-**검증 게이트(각 단계)**: dashboard+history 회귀 통과 · 셸 배선 가드 · 3해상도(1080p/1440p/3440×1440) 실브라우저 스크린샷 · 안전 계약(no live/order)·`performance_proved=false` 유지 · 단일 발행기/읽기전용 조회 불변.
+**검증 게이트(각 단계)**: dashboard+history 회귀 · 셸 배선 가드 · 3해상도(1080/1440/3440) 실브라우저 스크린샷 · 안전 계약(no live/order)·`performance_proved=false`·단일 발행기/읽기전용 조회 불변 + **단계별 acceptance(§10-8)**.
 
 ---
 
-## 9. 확정된 결정 (사장님 승인 반영)
-1. **D1 탭 최종 구성 — 동의**: Audit 제거·Context 격하·Lab 해체·Bench=성과(전당) 전용+개명. **확정 6탭: Live · Backtest · Replay · History · 성과(전당) · Reports** (+Alpha/P4 추후).
-2. **D2 Backtest 독립 유지·강화**: python GUI로 하던 백테스트를 **대시보드에서 실행** + **결과 강력 시각화**. → 로드맵 P5로 편성.
-3. **D3 구현 우선순위 — 추천 순서 채택**: **P1 안정화(저위험·즉시 체감) → P2 IA 정리 → P3 울트라와이드 → P4 Live 스테퍼(핵심) → P5 Backtest 강화 → P6 History → P7 Reports·Wiki**.
-4. **D4 알파랩 P4 — UX 개선 후**: P1~P7(UX 재편) 완료 후 P8로 착수.
+## 9. 확정된 결정 (사장님 승인 반영) + 재검토 반영
+1. **D1 탭 최종 구성 — 동의**: 확정 6탭 Live·Backtest·Replay·History·성과(전당)·Reports (+Alpha/P4 추후). 단 Audit **거버넌스 이전**(삭제 아님, §10-1).
+2. **D2 Backtest 독립 유지** — 단 "이식"이 아니라 **현 웹 구현 gap-only 보강**으로 정정(§10-2, UXR-P6).
+3. **D3 우선순위** — 검토 반영해 **UXR-P0(정확성·안전) 완료 → UXR-P1 관측·동결 → P2 안정화 → P3 IA → P4 울트라와이드 → P5 Live 스테퍼 → P6 Backtest → P7 History·Reports → P8 P4**.
+4. **D4 알파랩 P4 — UX 재편 후 UXR-P8**.
 
-> 다음 실행 단계: **P1(안정화)** 착수 — 연결 재연결 디바운스·타이포/버전 배지·탭 강조. 각 단계 승인 게이트로 진행.
+> 다음 실행 단계: **UXR-P0는 완료(`736ed1a4`)**. 이후 **UXR-P1(관측·계약 동결)** — WS 끊김 계측·현 탭/route/field inventory·Backtest parity matrix·baseline 스크린샷. UX 구현(P2~) 착수 전 **본 개정 계획 승인 요청**.
+
+---
+
+## 10. 재검토 필수수정 반영 (검토 §6 11건 — 실행 계약 보강)
+
+> 검토 보고서 `2026-07-18_ae23c847_ux_redesign_master_plan_review.md` §6의 11개 필수수정을 계약으로 봉인한다. 각 단계 착수 전 세부 실행문서로 전개한다.
+
+### 10-1. Audit 거버넌스 이전 계약 (삭제 아님)
+- 이전 대상: `AuditDecisionTrace`(`/decisions`)·`VerdictPanel`(freeze/regime/portfolio/verdict)·`final_approval→export_winner` 경계·`/record_decision`.
+- 새 위치: History 또는 Reports의 **Governance 섹션**(또는 전역 drawer). 탭 내비게이션만 제거.
+- 증명: candidate/evidence 바인딩·capability check·export governance 동일 유지 + 보안·파리티 테스트 통과 후에만 기존 내비 retire.
+
+### 10-2. Backtest는 "이식"이 아니라 "gap-only 보강" (UXR-P6)
+- 현 자산 inventory: `POST /bt/run`·`bt-tab-run.jsx`·`bt-result-area.jsx`(메트릭·차트·Monte Carlo)·`bt-tab-analysis.jsx`(overlay·A/B·portfolio)·`/bt/report`.
+- 산출물: **python GUI ↔ 웹 field-level parity matrix** → 실제 결손만 구현. `/bt/report`는 Reports 허브에 기존 job taxonomy 유지한 채 연결(병렬 신규 금지).
+
+### 10-3. UXR-P0(정확성·안전) 선행 — **완료**
+- Alpha 성능게이트 분리(10/10/8/2/0)·soft-error·/runs timeout·stale·파리티 주석·캐시 지문 → `736ed1a4`.
+
+### 10-4. 읽기전용 vs Backtest mutation 경계
+- 읽기전용 SELECT-only는 **P4 `/research/*` 한정**. 일반 대시보드는 수동 mutation 보유.
+- `POST /bt/run`·`/bt/job/cancel`·`/bt/job/meta`·`/bt/strategy`·`/bt/strategy/delete` 각각에 **수동 action·확인 절차·허용 저장소·자동호출 금지·demo/reference inert·CSRF/origin/auth 경계** 명시.
+
+### 10-5. Reports/Wiki 보안·서빙 계약
+- 허용 report root + path traversal 차단, iframe `sandbox`+CSP(스크립트 차단), 생성 HTML escape/sanitization·신뢰등급, 외부 URL·`file://`·절대경로 차단.
+- index schema(stable ID·provenance/hash·missing/stale), 검색 API 범위·pagination·encoding·대형문서 제한.
+- ⚠ `alpha_lab/reporting/build_html.py` 산출물은 **inline JS 포함** → same-origin iframe 금지(sandbox 또는 inert 렌더). "읽기 전용 화면" 설명만으로 안전하지 않음.
+
+### 10-6. 단계 번호·순서 정본화
+- **UXR-P0~P8** 단일 네임스페이스 고정(§8). §7 자기참조·P7/P8 혼용 제거.
+
+### 10-7. IA 제거·이전의 route/state/migration 계약
+- `/ui/audit`·`/ui/lab`·`/ui/context`·localStorage tab key redirect/fallback, deep-link·뒤로가기 호환.
+- 컴포넌트별 새 owner + field-level parity 표, `test_shell_wiring_parity.py` whitelist 변경 기준, 번들 재생성·manifest hash.
+- **삭제를 목적지보다 앞세우지 않는다** — 새 owner dual-mount + parity 통과 후에만 기존 내비 retire. feature flag rollback.
+
+### 10-8. 단계별 acceptance 템플릿(각 UXR-P* 착수 시 채움)
+대상/비대상 파일 · API/props/route 계약 · before/after 스크린샷(뷰포트별 overflow 허용치) · 측정 기준(연결 깜빡임 false-offline 허용치 등) · 자동 탭 전환이 수동 선택 안 덮는 규칙 · keyboard/focus/reduced-motion/a11y · build 명령·focused test 목록 · rollback 조건·feature flag.
+
+### 10-9. Live 스테퍼 상태기계 계약
+- raw phase(`latest.phase`·`current_step`·`phase_started_at`·`step_timings`·`backtest_progress`·`engine_state`) → 표시 상태(pending/active/success/failure/skipped/retry) 매핑표.
+- idle/complete/stopping/legacy snapshot 처리, blocker·로그·시간 원천 필드, reconnect/replay 동작.
+- **follow-live vs user-pinned 분리** — 사용자가 다른 단계 보는 동안 강제 이동 금지. backend 단일 발행기 불변.
+
+### 10-10. History 데이터 계약
+- stable research/run/series ID·join key·source precedence·provenance·pagination·redaction·partial/missing/conflict 상태.
+- `/history/index`·`/history/detail` 응답 schema·byte-identical 필드·presentation-only 변환 + complete/partial/missing/conflict fixture. P7 전 봉인.
+
+### 10-11. P8(알파랩 P4) 계약 승계
+- normative input: `2026-07-12_dashboard_data_contract.md`(mode=ro·무집계·단일 DB·schema/mtime·오류 envelope·원문 딱지·acceptance) + `2026-07-12_dashboard_view_specs.md`.
+- 5뷰 = 판정카드·함정지도·절실험실·출구은행 + **B1 live scorecard**(data-vessel/U-4 선행·별도 승인). `alpha_router`↔`research_router` 소유권·경로 충돌 재조사, 카탈로그 경로를 파일 서빙 URL로 바꾸지 않음.
+
+### 10-보완(검토 §4)
+- 연결 debounce 전 **disconnect 빈도·원인·ping/pong 증거 수집**(장애 은폐 방지).
+- `performance_proved=false`를 **모든 연구 카드·보고서·export 근처**에 source-field 기반 표기.
+- Wiki는 **원문 불변** — 별도 sidecar/index DB 또는 generated manifest(원문 frontmatter 수정 금지).
+- 기간 추정은 작업분해 근거 확보 전까지 참고치로만.
