@@ -70,6 +70,27 @@
 .v4-rail-item.secondary { opacity: .68; }
 .v4-rail-item.secondary:hover, .v4-rail-item.secondary.active { opacity: 1; }
 .v4-rail-spacer { flex: 1; }
+.v4-context-trigger { min-height: var(--target-touch); white-space: nowrap; }
+.v4-context-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; justify-content: flex-end;
+  background: rgba(0, 0, 0, .46);
+}
+.v4-context-drawer {
+  width: min(620px, 100vw); height: 100%;
+  overflow: auto; padding: 16px;
+  background: var(--bg-1); border-left: 1px solid var(--line-2);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, .28);
+}
+.v4-context-drawer:focus { outline: var(--focus-width) solid var(--teal); outline-offset: -4px; }
+.v4-context-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.v4-context-drawer-head h2 { margin: 0; font-size: 16px; }
+@media (max-width: 640px) {
+  .v4-context-drawer { width: 100vw; border-left: 0; }
+}
 
 /* ── 워크스페이스 ── */
 .v4-workspace { display: flex; flex-direction: column; min-width: 0; }

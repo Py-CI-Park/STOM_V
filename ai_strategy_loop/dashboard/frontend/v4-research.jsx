@@ -17,6 +17,7 @@ import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./ca
 import { PhaseDetailPanel, ProcessFlowPanel } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
 import { V4LoopCycle } from "./v4-loop-cycle.jsx";
+import { ResearchHeatmapPanel } from "./research-pro.jsx";
 const { useEffect: useEffect_v4r, useRef: useRef_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -459,7 +460,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 <div className="panel-bd"><dl><div><dt>매수 조건식 · buy_code</dt><dd className="mono">{activeGeneration.buy_code || "empty"}</dd></div><div><dt>매도 조건식 · sell_code</dt><dd className="mono">{activeGeneration.sell_code || "empty"}</dd></div>
                   <div><dt>source / run_id / generation</dt><dd>{activeGenerationSource} · {runId || "legacy"} · {s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "시작 전"}</dd></div>
                   <div><dt>engine_state / backtest_progress</dt><dd>{_v4EngineSummary(s.latest?.engine_state ?? s.engine_state)} · {_v4ProgressSummary(s.latest?.backtest_progress ?? s.backtest_progress)}</dd></div>
-                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}<small className="v4-evidence-source">source · {evidence.source}</small></dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
+                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}<small className="v4-evidence-source">source · {evidence.source}</small></dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /><section className="v4-backtest-heatmap" aria-label="탐색 히트맵"><p className="v4-data-caveat">출처: 선택한 run의 <code>/edge_ratio</code> 탐색 결과입니다. 이는 백테스트 권위 필드가 아닌 참고용 탐색 지표이며, OOS 검증 결과가 아닙니다. 평가용 CellHeatmap과 동일하지 않습니다.</p><ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} /></section></>}
               {selectedStep === 2 && <><ResearchCriteriaBanner state={s} baseUrl={baseUrl} /><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} /></>}
               {selectedStep === 3 && <><AutopsyPanel state={s} wsStatus={wsStatus} /><HypothesisPanel state={s} /><FeedbackPanel state={s} /></>}
             </div>

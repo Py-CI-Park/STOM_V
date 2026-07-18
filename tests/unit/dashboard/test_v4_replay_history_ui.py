@@ -58,6 +58,24 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "style={{" in source
 
 
+def test_history_owns_v5_5_analysis_compare_and_wiki_without_identity_guessing() -> None:
+    history = _read("v4-history.jsx")
+    lab = _read("rl-panel.jsx")
+
+    assert "function V4History({ baseUrl, wsStatus, runId, onNavigate })" in history
+    assert 'import { ResearchLabPanel } from "./rl-panel.jsx";' in history
+    assert 'enabledTabIds={["edge", "feature", "correlation", "combos"]}' in history
+    assert "showOpsStatus={false}" in history
+    assert "showWorkbenchLink={false}" in history
+    assert "campaign ID에서 run ID를 추정하지 않습니다." in history
+    assert '<ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in history
+    assert '<RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />' in history
+    assert '<ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in history
+    assert "enabledTabIds" in lab
+    assert "showOpsStatus = true" in lab
+    assert "showWorkbenchLink = true" in lab
+    assert "if (!showOpsStatus || !baseUrl) return undefined;" in lab
+
 def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> None:
     tree = _read("history-condition-tree.jsx")
     records = _read("research-records-panel.jsx")

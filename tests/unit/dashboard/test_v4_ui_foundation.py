@@ -41,7 +41,8 @@ def test_v4_shell_freezes_normal_ia_and_default_off_rollback() -> None:
     ]
     assert 'legacyAliases: ["records", "audit", "verdict"]' in inventory
     assert 'legacyAliases: ["wiki"]' in inventory
-    assert '후속 V5.5 이관 전까지 완성된 정본 표면이 아님' in inventory
+    assert 'owner: "성과·Hall-of-Fame"' in inventory
+    assert 'notOwner: "후보 분석·비교·히스토리 거버넌스·append-only 결정·final approval"' in inventory
     assert "const V4_NORMAL_TABS = DASHBOARD_PAGE_OWNER_MATRIX;" in source
     assert "const V4_LEGACY_EXTRA_TABS" in source
     assert 'const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras"' in source
@@ -62,7 +63,7 @@ def test_v4_legacy_extra_tabs_are_runtime_default_off_and_explicitly_recoverable
     matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
     source = _read("dashboard-v4-shell.jsx")
     start = source.index("const V4_NORMAL_TABS")
-    end = source.index("// Canonical deep links", start)
+    end = source.index("function v4TabFromPathname", start)
     helper = source[start:end]
     script = """
 global.window = { location: { search: '' } };
@@ -87,6 +88,42 @@ console.log(JSON.stringify({ normal, rollback, explicitOff: api.enabled('?v4_leg
     }
 
 
+
+def test_v5_5_shell_migrates_retired_surfaces_and_owns_context_drawer() -> None:
+    source = _read("dashboard-v4-shell.jsx")
+    css = _read("v4.css")
+
+    for marker in (
+        'const V4_CONTEXT_DRAWER_QUERY = "v4_context"',
+        'const V4_PROTOTYPE_QUERY = "prototype"',
+        'import { AIContextPanel } from "./ai-context.jsx";',
+        'localStorage.removeItem("stom_active_tab")',
+        'localStorage.removeItem("stom_active_evolution_tab")',
+        'aria-haspopup="dialog"',
+        'aria-controls="v4-context-drawer"',
+        'role="dialog"',
+        'aria-modal="true"',
+        'event.key === "Escape"',
+        'event.key !== "Tab"',
+        "contextTriggerRef.current?.focus()",
+        'setContextOpen(new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1")',
+        '<V4History baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />',
+    ):
+        assert marker in source
+    assert ".v4-context-drawer" in css
+    assert "min-height: var(--target-touch)" in css
+    assert 'url.searchParams.set(V4_LEGACY_ROLLBACK_QUERY, "1")' not in source
+
+
+def test_v5_5_live_dual_mounts_existing_edge_heatmap_only_in_backtest_step() -> None:
+    source = _read("v4-research.jsx")
+
+    assert 'import { ResearchHeatmapPanel } from "./research-pro.jsx";' in source
+    assert '<ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in source
+    assert "selectedStep === 1" in source
+    assert "이는 백테스트 권위 필드가 아닌 참고용 탐색 지표" in source
+    assert "OOS 검증 결과가 아닙니다." in source
+    assert "평가용 CellHeatmap과 동일하지 않습니다." in source
 
 def test_v4_tab_keyboard_runtime_wraps_and_supports_home_end() -> None:
     # Given: Node evaluating the shell's dependency-free navigation helper.
@@ -217,7 +254,7 @@ console.log(JSON.stringify({ audit, verdict: fn(keys) }));
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout) == {"audit": "history", "verdict": "history"}
-def test_v4_known_prototype_identity_canonicalizes_to_explicit_rollback() -> None:
+def test_v4_known_prototype_identity_migrates_without_enabling_rollback() -> None:
     node = shutil.which("node")
     if node is None:
         pytest.skip("node unavailable")
@@ -243,10 +280,42 @@ console.log(JSON.stringify({ prototype, url: calls[0], initial: api.initial(['re
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout) == {
-        "prototype": "catalog",
-        "url": "/ui/evolution/catalog?v4_legacy_extras=1&tab=catalog",
-        "initial": "catalog",
+        "prototype": "reports",
+        "url": "/ui/evolution/catalog?tab=reports&prototype=catalog",
+        "initial": "reports",
     }
+
+
+def test_v4_explicit_rollback_preserves_prototype_identity() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node unavailable")
+    inventory = _read("dashboard-inventory.jsx")
+    matrix = inventory.split("const DASHBOARD_PAGE_OWNER_MATRIX = [", 1)[1].split("];", 1)[0]
+    source = _read("dashboard-v4-shell.jsx")
+    start = source.index("const V4_NORMAL_TABS")
+    end = source.index("function _nextV4TabKey")
+    helper = source[start:end]
+    script = """
+const DASHBOARD_PAGE_OWNER_MATRIX = new Function('return [' + process.argv[3] + '];')();
+const api = new Function(process.argv[2] + '; return { canonicalize: v4CanonicalizeLegacyLocation, initial: v4InitialTab };')();
+const location = {
+  pathname: '/ui/evolution/catalog',
+  search: '?v4_legacy_extras=1',
+  href: 'http://localhost/ui/evolution/catalog?v4_legacy_extras=1',
+};
+const calls = [];
+const history = { replaceState: (_state, _title, url) => calls.push(url) };
+global.window = { location: { ...location, origin: 'http://localhost' } };
+const prototype = api.canonicalize(location, history);
+const initial = api.initial(['research', 'backtest', 'replay', 'history', 'workbench', 'reports', 'lab', 'catalog', 'context', 'alpha']);
+console.log(JSON.stringify({ prototype, initial, calls }));
+"""
+    result = subprocess.run(
+        [node, "-", helper, matrix], input=script, capture_output=True, text=True, timeout=20, check=False
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"prototype": "catalog", "initial": "catalog", "calls": []}
 
 
 def test_v4_catalog_is_explicitly_non_authoritative_prototype() -> None:

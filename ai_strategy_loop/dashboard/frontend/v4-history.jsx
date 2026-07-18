@@ -11,9 +11,13 @@ import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
+import { ResearchLabPanel } from "./rl-panel.jsx";
+import { ResearchProPanel } from "./research-pro.jsx";
+import { RunComparePanel } from "./run-compare.jsx";
+import { ResearchWikiPanel } from "./research-wiki.jsx";
 
 const { useState: useState_v4history, useCallback: useCallback_v4history } = React;
-function V4History({ baseUrl, wsStatus, onNavigate }) {
+function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
   const [selectedResearchId, setSelectedResearchId] = useState_v4history("");
   const selectResearch = useCallback_v4history((researchId) => {
     setSelectedResearchId(typeof researchId === "string" ? researchId : "");
@@ -72,6 +76,37 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
           <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
           <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
+        </div>
+      </section>
+      <section aria-labelledby="v4-history-analysis-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-analysis-title">엣지 · 변수 분석</h2>
+        <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
+          Archive run context: {runId || "선택 없음"} · governed research selection과 별도이며 campaign ID에서 run ID를 추정하지 않습니다.
+        </p>
+        <div data-region="scroll" tabIndex={0} aria-label="아카이브 run 기반 엣지와 변수 분석 영역">
+          <ResearchLabPanel
+            baseUrl={baseUrl}
+            wsStatus={wsStatus}
+            runId={runId}
+            enabledTabIds={["edge", "feature", "correlation", "combos"]}
+            showOpsStatus={false}
+            showWorkbenchLink={false}
+          />
+        </div>
+      </section>
+
+      <section aria-labelledby="v4-history-candidate-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-candidate-title">후보 분석 · Compare</h2>
+        <div data-region="scroll" tabIndex={0} aria-label="아카이브 run 기반 후보 분석과 비교 영역">
+          <ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+          <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+        </div>
+      </section>
+
+      <section aria-labelledby="v4-history-wiki-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-wiki-title">연구 Wiki</h2>
+        <div data-region="scroll" tabIndex={0} aria-label="연구 위키 기록 영역">
+          <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
         </div>
       </section>
 

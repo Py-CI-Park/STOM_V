@@ -105,13 +105,17 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
   );
 }
 
-function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
+function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTabIds, showOpsStatus = true, showWorkbenchLink = true }) {
   const [tab, setTab] = useState_rl("edge");
+  const visibleTabs = Array.isArray(enabledTabIds)
+    ? RESEARCH_TABS.filter(item => enabledTabIds.includes(item.id))
+    : RESEARCH_TABS;
+  const activeTab = visibleTabs.some(item => item.id === tab) ? tab : (visibleTabs[0] || RESEARCH_TABS[0]).id;
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
   const [opsError, setOpsError] = useState_rl(null);
 
   useEffect_rl(() => {
-    if (!baseUrl) return undefined;
+    if (!showOpsStatus || !baseUrl) return undefined;
     const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
@@ -127,7 +131,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
     pull();
     const timer = setInterval(pull, 10000);
     return () => clearInterval(timer);
-  }, [baseUrl]);
+  }, [baseUrl, showOpsStatus]);
   const [method, setMethod] = useState_rl("spearman");
   const [axis, setAxis] = useState_rl("time");
   const [data, setData] = useState_rl(null);
@@ -136,7 +140,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
-  const needsCorrelation = tab === "correlation" || tab === "combos";
+  const needsCorrelation = activeTab === "correlation" || activeTab === "combos";
 
   const refreshCorrelation = useCallback_rl(() => {
     if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
@@ -170,11 +174,11 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   }, [data]);
 
   let body = null;
-  if (tab === "edge") {
+  if (activeTab === "edge") {
     body = <EdgeRatioPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />;
-  } else if (tab === "validation") {
+  } else if (activeTab === "validation") {
     body = <_ValidationPanel baseUrl={baseUrl} runId={runId} isDemo={isDemo} />;
-  } else if (tab === "feature") {
+  } else if (activeTab === "feature") {
     body = (
       <div>
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
@@ -189,7 +193,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
     body = <div className="research-lab-panel"><_ResearchEmptyState message={"응답을 받지 못했습니다: " + err} /></div>;
   } else if (loading && !data) {
     body = <div className="research-lab-panel"><_ResearchEmptyState message="상관 분석을 불러오는 중…" /></div>;
-  } else if (tab === "correlation") {
+  } else if (activeTab === "correlation") {
     body = (
       <div className="research-lab-panel">
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
@@ -234,65 +238,70 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   return (
     <div className="research-lab-shell">
       <div className="research-section-filter" aria-label="연구실 섹션 필터">
-        {RESEARCH_TABS.map(item => (
+        {visibleTabs.map(item => (
           <button key={item.id}
                   type="button"
-                  className={"research-filter-chip" + (tab === item.id ? " active" : "")}
-                  aria-pressed={tab === item.id}
+                  className={"research-filter-chip" + (activeTab === item.id ? " active" : "")}
+                  aria-pressed={activeTab === item.id}
                   onClick={() => setTab(item.id)}>
             {item.label}
           </button>
         ))}
-        {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
-        <button type="button" className="research-filter-action"
-                title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
-                onClick={openWorkbench}>
-          🔬 상세 워크벤치
-        </button>
+        {showWorkbenchLink && (
+          <button type="button" className="research-filter-action"
+                  title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
+                  onClick={openWorkbench}>
+            🔬 상세 워크벤치
+          </button>
+        )}
       </div>
-      {/* E1 — 평문 대신 라벨+값+툴팁 상태 배지 바. */}
-      <div className="research-statusbar mono">
-        <span className="research-badge" title="현재 리서치랩 모드 — 실행 중 run이 있으면 '운영', 없으면 '연구(분석)'.">
-          <b>모드</b> {labMode}
-        </span>
-        <span className="research-badge" title="이 패널이 보여주는 대상 — 분석 중인 run/세대 결과의 건수.">
-          <b>대상</b> 실행 {activeOps.length}건 · 최근완료 {recentOps.length}건
-        </span>
-        {activeOps.length
-          ? activeOps.map(a => (
-              <span key={a.run_id} className="research-badge"
-                    title={`run ${a.run_id} · ${a.gens}세대 · 마지막 ${a.last_label || "—"} · ${a.health === "active" ? "정상 진행" : "10분+ 무진행(정체 의심)"}`}>
-                <b>{a.health === "active" ? "🔄 진행" : "⚠️ 정체"}</b> {a.run_id} · {a.gens}세대
-              </span>
-            ))
-          : opsError ? (
-            <span className="research-badge research-badge-error" title="운영 상태 endpoint 로드 실패 — 실행 없음으로 표시하지 않습니다.">
-              <b>상태</b> 로드 실패
+      {showOpsStatus && (
+        <>
+          {/* E1 — 평문 대신 라벨+값+툴팁 상태 배지 바. */}
+          <div className="research-statusbar mono">
+            <span className="research-badge" title="현재 리서치랩 모드 — 실행 중 run이 있으면 '운영', 없으면 '연구(분석)'.">
+              <b>모드</b> {labMode}
             </span>
-          ) : (
-            <span className="research-badge" title="현재 실행 중인 진화 작업이 없습니다(분석 전용).">
-              <b>상태</b> 실행 중 작업 없음
+            <span className="research-badge" title="이 패널이 보여주는 대상 — 분석 중인 run/세대 결과의 건수.">
+              <b>대상</b> 실행 {activeOps.length}건 · 최근완료 {recentOps.length}건
             </span>
+            {activeOps.length
+              ? activeOps.map(a => (
+                  <span key={a.run_id} className="research-badge"
+                        title={`run ${a.run_id} · ${a.gens}세대 · 마지막 ${a.last_label || "—"} · ${a.health === "active" ? "정상 진행" : "10분+ 무진행(정체 의심)"}`}>
+                    <b>{a.health === "active" ? "🔄 진행" : "⚠️ 정체"}</b> {a.run_id} · {a.gens}세대
+                  </span>
+                ))
+              : opsError ? (
+                <span className="research-badge research-badge-error" title="운영 상태 endpoint 로드 실패 — 실행 없음으로 표시하지 않습니다.">
+                  <b>상태</b> 로드 실패
+                </span>
+              ) : (
+                <span className="research-badge" title="현재 실행 중인 진화 작업이 없습니다(분석 전용).">
+                  <b>상태</b> 실행 중 작업 없음
+                </span>
+              )}
+          </div>
+          {opsError && (
+            <div className="research-lab-panel research-lab-error">
+              <_ResearchEmptyState message={"운영 상태를 불러오지 못했습니다: " + opsError} />
+            </div>
           )}
-      </div>
-      {opsError && (
-        <div className="research-lab-panel research-lab-error">
-          <_ResearchEmptyState message={"운영 상태를 불러오지 못했습니다: " + opsError} />
-        </div>
+        </>
       )}
       {body}
       <div className="lab-glossary" aria-label="연구실 용어 설명">
         <span><b>엣지</b> 조건이 실제로 유리한 구간</span>
         <span><b>변수 중요도</b> 성과 차이를 크게 만든 입력 변수</span>
         <span><b>상관관계</b> 변수와 결과가 같이 움직인 정도</span>
-        <span><b>검증</b> 후보를 다른 기간·조건으로 다시 확인하는 단계</span>
+        {visibleTabs.some(item => item.id === "validation") && <span><b>검증</b> 후보를 다른 기간·조건으로 다시 확인하는 단계</span>}
       </div>
       <details className="lab-example">
         <summary>예시 보기: 연구실에서 결과를 해석하는 순서</summary>
         <ol>
           <li>엣지에서 시간·시총·회전율별 승률/기대값을 봅니다.</li>
           <li>변수 중요도와 상관관계로 왜 좋아졌는지 확인합니다.</li>
-          <li>검증 섹션에서 다른 기간에서도 유지되는지 확인합니다.</li>
+          <li>{visibleTabs.some(item => item.id === "validation") ? "검증 섹션에서 다른 기간에서도 유지되는지 확인합니다." : "변수 조합에서 함께 작동하는 후보를 확인합니다."}</li>
         </ol>
       </details>
     </div>

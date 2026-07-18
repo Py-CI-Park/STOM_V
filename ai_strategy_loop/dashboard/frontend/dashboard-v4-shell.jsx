@@ -27,6 +27,7 @@ import { V4Catalog } from "./v4-catalog.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 import { DASHBOARD_PAGE_OWNER_MATRIX } from "./dashboard-inventory.jsx";
+import { AIContextPanel } from "./ai-context.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
 // V5.P0 정본 IA owner: inventory matrix is the one canonical six-destination rail.
@@ -41,7 +42,9 @@ const V4_LEGACY_EXTRA_TABS = [
 ];
 const V4_TAB_KEYS = V4_NORMAL_TABS.map(t => t.key);
 const V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map(t => t.key);
-const V4_PROTOTYPE_TAB_KEYS = DASHBOARD_PAGE_OWNER_MATRIX.flatMap(destination => destination.prototypeAliases);
+const V4_PROTOTYPE_TAB_KEYS = ["lab", "context", "alpha", "catalog"];
+const V4_CONTEXT_DRAWER_QUERY = "v4_context";
+const V4_PROTOTYPE_QUERY = "prototype";
 
 function v4CanonicalDestinationKey(key) {
   const item = DASHBOARD_PAGE_OWNER_MATRIX.find(destination =>
@@ -57,50 +60,72 @@ function v4LegacyExtrasEnabled(search) {
 function v4TabsForSession() {
   return v4LegacyExtrasEnabled() ? V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS) : V4_NORMAL_TABS;
 }
-
-// Canonical deep links retain their destination. Prototype identities are never
-// masked as Live: their URL is rewritten to the explicit rollback contract.
 function v4TabFromPathname(pathname) {
   try {
     const parts = String(pathname || "").split("/").filter(Boolean);
     if (parts[0] !== "ui") return "";
-    const leaf = parts[1] === "evolution" ? (parts[2] || "") : parts[1];
+    const leaf = parts[1] === "evolution" ? (parts[2] || "") : (parts[1] || "");
     if (parts[1] === "evolution" && !parts[2]) return "research";
-    return v4CanonicalDestinationKey(leaf) || (V4_PROTOTYPE_TAB_KEYS.includes(leaf) ? leaf : "");
+    if (V4_PROTOTYPE_TAB_KEYS.includes(leaf)) return leaf;
+    return v4CanonicalDestinationKey(leaf);
   } catch (e) { return ""; }
 }
-
-function v4PrototypeIdentity(search, pathname) {
+function v4RequestedDestination(location = window.location) {
   try {
-    const requested = new URLSearchParams(search || "").get("tab");
-    const candidate = requested || v4TabFromPathname(pathname);
-    return V4_PROTOTYPE_TAB_KEYS.includes(candidate) ? candidate : "";
+    const requested = new URLSearchParams(location.search || "").get("tab");
+    return requested || v4TabFromPathname(location.pathname);
   } catch (e) { return ""; }
 }
-
 function v4CanonicalizeLegacyLocation(location = window.location, history = window.history) {
-  const prototypeTab = v4PrototypeIdentity(location.search, location.pathname);
-  if (!prototypeTab) return "";
   try {
+    const requested = v4RequestedDestination(location);
+    const rollback = v4LegacyExtrasEnabled(location.search);
+    if (!requested) return "";
+    if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested)) return requested;
+
+    const canonical = v4CanonicalDestinationKey(requested);
+    const isContext = requested === "context";
+    const owner = canonical || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    const fallbackOwner = owner || "research";
     const url = new URL(location.href || (location.pathname + location.search), window.location.origin);
-    url.searchParams.set(V4_LEGACY_ROLLBACK_QUERY, "1");
-    url.searchParams.set("tab", prototypeTab);
+    if (isContext) {
+      const pathOwner = v4CanonicalDestinationKey(v4TabFromPathname(location.pathname));
+      url.searchParams.set("tab", pathOwner || "research");
+      url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
+    } else {
+      url.searchParams.set("tab", fallbackOwner);
+      if (requested === "alpha" || requested === "catalog") url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
+    }
     if (url.pathname + url.search !== location.pathname + location.search) {
       history.replaceState(null, "", url.pathname + url.search);
     }
-    return prototypeTab;
-  } catch (e) { return prototypeTab; }
+    return fallbackOwner;
+  } catch (e) { return ""; }
 }
-
+function v4StoredDestination() {
+  try {
+    const primary = localStorage.getItem("stom_active_tab");
+    const evolution = localStorage.getItem("stom_active_evolution_tab");
+    const requested = evolution && primary === "evolution" ? evolution : primary;
+    const canonical = v4CanonicalDestinationKey(requested) ||
+      (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    localStorage.removeItem("stom_active_tab");
+    localStorage.removeItem("stom_active_evolution_tab");
+    return canonical;
+  } catch (e) { return ""; }
+}
 function v4InitialTab(tabKeys = V4_TAB_KEYS) {
   try {
-    const requested = new URLSearchParams(window.location.search).get("tab");
-    const t = v4CanonicalDestinationKey(requested) || requested;
-    if (t && tabKeys.includes(t)) return t;
-    const fromPath = v4TabFromPathname(window.location.pathname);
-    if (fromPath && tabKeys.includes(fromPath)) return fromPath;
-    const prototypeTab = v4PrototypeIdentity(window.location.search, window.location.pathname);
-    if (prototypeTab) return prototypeTab;
+    const requested = v4RequestedDestination();
+    const rollback = v4LegacyExtrasEnabled();
+    if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested) && tabKeys.includes(requested)) return requested;
+    const canonical = v4CanonicalDestinationKey(requested) ||
+      (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    if (canonical && tabKeys.includes(canonical)) return canonical;
+    if (!requested) {
+      const stored = v4StoredDestination();
+      if (stored && tabKeys.includes(stored)) return stored;
+    }
   } catch (e) {}
   return "research";
 }
@@ -177,16 +202,33 @@ function V4BaseControl({ value, onChange, onApply, onReconnect }) {
 }
 
 function DashboardV4Shell({ baseUrl: baseUrlProp }) {
-  // Known prototype identities are canonicalized to the explicit rollback URL before tabs resolve.
+  // Retired aliases rewrite to their V5.5 owner; only the explicit query restores extras.
   v4CanonicalizeLegacyLocation();
   const tabs = v4TabsForSession();
   const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
+  const initialTabRef = useRef_v4("");
+  if (!initialTabRef.current) {
+    const hadDestination = !!v4RequestedDestination();
+    initialTabRef.current = v4InitialTab(tabKeys);
+    if (!hadDestination && initialTabRef.current !== "research") {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", initialTabRef.current);
+        window.history.replaceState(null, "", url.pathname + url.search);
+      } catch (e) {}
+    }
+  }
   const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
   const [pendingBase, setPendingBase] = useState_v4(baseUrl);
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
-  const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab(tabKeys));
-  const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab(tabKeys) === "replay");
+  const [activeTab, setActiveTab] = useState_v4(initialTabRef.current);
+  const [replayVisited, setReplayVisited] = useState_v4(() => initialTabRef.current === "replay");
+  const [contextOpen, setContextOpen] = useState_v4(() => {
+    try { return new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"; } catch (e) { return false; }
+  });
   const pendingTabFocusRef = useRef_v4("");
+  const contextTriggerRef = useRef_v4(null);
+  const contextDrawerRef = useRef_v4(null);
   const [buildVer] = useState_v4(() => v4BundleVersion());
 
   useEffect_v4(() => {
@@ -196,10 +238,10 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
     const onPopState = () => {
-      const prototypeTab = v4CanonicalizeLegacyLocation();
-      const nextTab = prototypeTab || v4InitialTab(tabKeys);
+      const nextTab = v4CanonicalizeLegacyLocation() || v4InitialTab(tabKeys);
       pendingTabFocusRef.current = nextTab;
       setActiveTab(nextTab);
+      try { setContextOpen(new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"); } catch (e) { setContextOpen(false); }
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -209,6 +251,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     document.getElementById("v4-tab-" + pendingTabFocusRef.current)?.focus();
     pendingTabFocusRef.current = "";
   }, [activeTab]);
+  useEffect_v4(() => {
+    if (!contextOpen) return;
+    const first = contextDrawerRef.current?.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    first?.focus();
+  }, [contextOpen]);
 
   const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
   const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -322,13 +369,40 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const targetScoreRaw = (configSpec.find(f => f.name === "target_score")?.default);
   const targetScore = (targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === undefined) ? 1.0 : Number(targetScoreRaw);
 
+  const setContextDrawer = (open, returnFocus = false) => {
+    setContextOpen(open);
+    try {
+      const url = new URL(window.location.href);
+      if (open) url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
+      else url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
+      window.history.pushState(null, "", url.pathname + url.search);
+    } catch (e) {}
+    if (!open && returnFocus) setTimeout(() => contextTriggerRef.current?.focus(), 0);
+  };
+  const onContextKeyDown = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setContextDrawer(false, true);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const drawer = contextDrawerRef.current;
+    const focusable = drawer ? Array.from(drawer.querySelectorAll("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")) : [];
+    if (!focusable.length) { event.preventDefault(); drawer?.focus(); return; }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
   const selectTab = (key, retainFocus = true) => {
     if (!tabKeys.includes(key)) return;
     if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
+    setContextOpen(false);
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", key);
+      url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
       window.history.pushState(null, "", url.pathname + url.search);
     } catch (e) {}
   };
@@ -388,6 +462,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                          onApply={() => setBaseUrl(pendingBase)} onReconnect={reconnect} />
           <ConnBadge health={health} wsStatus={wsStatus} />
           <StatusBadge status={state.status} />
+          <button ref={contextTriggerRef} className="btn ghost sm v4-context-trigger"
+                  type="button" aria-haspopup="dialog" aria-expanded={contextOpen}
+                  aria-controls="v4-context-drawer" onClick={() => setContextDrawer(!contextOpen, contextOpen)}>
+            AI Context
+          </button>
           <V4ThemeToggle theme={theme} onChange={setTheme} />
         </header>
         <div className="v4-controlbar">
@@ -442,7 +521,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               ) : activeTab === "backtest" ? (
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : activeTab === "history" ? (
-                <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
+                <V4History baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "lab" ? (
                 <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (
@@ -455,14 +534,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Catalog baseUrl={baseUrl} />
               ) : (
                 <div className="v4-context">
-                  {typeof window.AIContextPanel === "function" ? (
-                    <window.AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
-                  ) : (
-                    <div className="v4-placeholder">
-                      <h2>AI Context Pack</h2>
-                      <p className="mono">AIContextPanel 미로드 — 번들 재빌드 필요</p>
-                    </div>
-                  )}
+                  <AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
                 </div>
                 )}
               </ErrorBoundary>
@@ -470,6 +542,20 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           )}
         </main>
       </div>
+      {contextOpen && (
+        <div className="v4-context-backdrop">
+          <section id="v4-context-drawer" ref={contextDrawerRef} className="v4-context-drawer"
+                   role="dialog" aria-modal="true" aria-labelledby="v4-context-drawer-title"
+                   tabIndex="-1" onKeyDown={onContextKeyDown}>
+            <div className="v4-context-drawer-head">
+              <h2 id="v4-context-drawer-title">AI Context developer drawer</h2>
+              <button className="btn ghost sm" type="button" onClick={() => setContextDrawer(false, true)}
+                      aria-label="AI Context drawer 닫기">닫기</button>
+            </div>
+            <AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
+          </section>
+        </div>
+      )}
 
       {/* ===== 모달(중앙 호스팅) ===== */}
       <SettingsModal

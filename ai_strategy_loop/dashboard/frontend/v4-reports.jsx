@@ -5,6 +5,8 @@
  */
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+// dual-safe ESM import (esbuild bundle path). KEEP each on ONE physical line.
+import { ResearchWikiPanel } from "./research-wiki.jsx";
 
 function _fmtReportBytes(n) {
   if (!Number.isFinite(n)) return "";
@@ -68,6 +70,10 @@ function V4Reports({ baseUrl }) {
           )}
         </div>
       </div>
+      <section className="v4-reports-wiki v4-cjk-safe" aria-labelledby="v4-reports-wiki-heading">
+        <h2 id="v4-reports-wiki-heading" className="panel-hd-title">Research Wiki · 읽기 전용 참고 문서</h2>
+        <ResearchWikiPanel baseUrl={baseUrl} wsStatus="na" />
+      </section>
     </section>
   );
 }
