@@ -323,7 +323,11 @@ def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
     ):
         assert marker in source
     assert "/strategy_code?run=${encodeURIComponent(runId)}&gen=${strategyGen}" in source
-    assert 'payload && payload.code_status === "ok" ? "fresh"' in source
+    assert "_v4BindStrategyCodePayload(payload, runId, strategyGen)" in source
+    assert 'wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial)' in source
+    assert "strategyCodeRecord.runId === runId" in source
+    assert "Number(strategyCodeRecord.gen) === Number(strategyGen)" in source
+    assert 'strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code · identity_mismatch"' in source
     assert "setInterval" not in source[source.index("function V4ResearchLive"):source.index("const matchedGeneration")]
     for marker in (
         ".v4-field-source-table {",
@@ -376,6 +380,35 @@ console.log(JSON.stringify({
     }
 
 
+def test_v5_2_strategy_code_binding_rejects_cross_identity_payloads() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node is required for frontend helper contract coverage.")
+    source = _read("v4-research.jsx")
+    start = source.index("function _v4BindStrategyCodePayload")
+    end = source.index("function _V5_2FieldSourceTable", start)
+    helper = source[start:end]
+    script = """
+const bind = new Function(process.argv[2] + '; return _v4BindStrategyCodePayload;')();
+const summarize = value => [value.status, value.payload && value.payload.buy_code];
+console.log(JSON.stringify({
+  match: summarize(bind({ run_id: 'run-a', gen_no: 4, code_status: 'ok', buy_code: 'MATCH' }, 'run-a', 4)),
+  wrongRun: summarize(bind({ run_id: 'run-b', gen_no: 4, code_status: 'ok', buy_code: 'WRONG' }, 'run-a', 4)),
+  wrongGen: summarize(bind({ run_id: 'run-a', gen: 3, code_status: 'ok', buy_code: 'OLD' }, 'run-a', 4)),
+  empty: summarize(bind(null, 'run-a', 4)),
+}));
+"""
+    result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, encoding="utf-8", timeout=20, check=False)
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "match": ["fresh", "MATCH"],
+        "wrongRun": ["identity_mismatch", None],
+        "wrongGen": ["identity_mismatch", None],
+        "empty": ["empty", None],
+    }
+
+
 def test_v5_2_engine_and_progress_objects_render_as_scalars() -> None:
     node = shutil.which("node")
     if node is None:
@@ -413,5 +446,11 @@ def test_v5_live_state_typography_floor_is_fourteen_pixels() -> None:
         ".v4-onboarding-steps span { font-size: 14px;",
         ".phase-status-banner { margin-top: 8px; padding: 7px 11px; border-radius: var(--radius-sm); font-size: 14px;",
         ".v4-evidence-source { display: block; margin-top: 4px; color: var(--ink-3); font-size: 14px;",
+        ".v4-research :where(p, span, div, b, small, label, button, a, th, td, dt, dd, pre, code):not(:has(*)) { font-size: max(14px, 1em) !important; }",
+        ".v4-research svg text { font-size: 14px !important; }",
+        ".v4-research .panel-hd-title { font-size: 16px !important; }",
+        ".v4-research .v4-live-page-title { font-size: 22px !important; }",
+        ".v4-log-toggle, .v4-drawer-toggle { min-height: 44px;",
+        ".v4-graph-grid .chart-wrap, .v4-graph-grid .v4-canvas-wrap { min-height: 0; height: 300px; max-height: 300px; }",
     ):
         assert rule in css

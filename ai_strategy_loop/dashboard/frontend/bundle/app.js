@@ -34720,6 +34720,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { field: "engine_state / backtest_progress", paths: "latest.engine_state / latest.backtest_progress", unit: "engine status/config \xB7 percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
     { field: "analysis evidence", paths: "generations[].graded_score/profit/mdd (production) / latest.analysis_evidence + latest.evidence_status (optional extension)", unit: "score \xB7 KRW \xB7 percent / evidence entries", status: "latest.status / selected source evidence_status", owner: "LoopState snapshot publisher / optional analysis extension" }
   ];
+  function _v4BindStrategyCodePayload(payload, requestedRunId, requestedGen) {
+    var _a;
+    if (!payload || typeof payload !== "object") return { status: "empty", payload: null };
+    const responseRunId = String(payload.run_id || "");
+    const responseGen = Number((_a = payload.gen_no) != null ? _a : payload.gen);
+    if (responseRunId !== String(requestedRunId || "") || responseGen !== Number(requestedGen)) {
+      return { status: "identity_mismatch", payload: null };
+    }
+    const codeStatus = String(payload.code_status || "empty");
+    return { status: codeStatus === "ok" ? "fresh" : codeStatus, payload };
+  }
   function _V5_2FieldSourceTable() {
     return /* @__PURE__ */ React.createElement("section", { className: "v4-field-source-table", "aria-labelledby": "v5-2-field-source-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "v5-2-field-source-heading" }, "V5.2 sealed field-source table"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "displayed field"), /* @__PURE__ */ React.createElement("th", null, "authoritative state path(s)"), /* @__PURE__ */ React.createElement("th", null, "unit"), /* @__PURE__ */ React.createElement("th", null, "freshness / status path"), /* @__PURE__ */ React.createElement("th", null, "owner"))), /* @__PURE__ */ React.createElement("tbody", null, V5_2_FIELD_SOURCES.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.field }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, row.field), /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.paths), /* @__PURE__ */ React.createElement("td", null, row.unit), /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.status), /* @__PURE__ */ React.createElement("td", null, row.owner))))));
   }
@@ -34767,13 +34778,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [approvalBinding, setApprovalBinding] = useState_v4r(null);
     const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("\uB3D9\uACB0 \uC2B9\uC778 \uADFC\uAC70\uB97C \uD655\uC778\uD558\uB294 \uC911\uC785\uB2C8\uB2E4.");
     const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
-    const [strategyCodePayload, setStrategyCodePayload] = useState_v4r(null);
+    const [strategyCodeRecord, setStrategyCodeRecord] = useState_v4r(null);
     const [strategyCodeStatus, setStrategyCodeStatus] = useState_v4r("idle");
     const s = state || {};
     const runId = s.run_id || "";
     const gens = Array.isArray(s.generations) ? s.generations : [];
     const stream = s.current_run && s.current_run.generation || {};
-    const streamedGeneration = Boolean(stream.buy_code_partial || stream.sell_code_partial);
+    const streamedGeneration = wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial);
     const strategyGen = s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : null;
     const hasData = gens.length > 0;
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
@@ -34793,7 +34804,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       } else if (!pinnedStepRef.current) setSelectedStep(situation.active);
     }, [runGenerationIdentity, situation.active]);
     useEffect_v4r(() => {
-      setStrategyCodePayload(null);
+      setStrategyCodeRecord(null);
       if (streamedGeneration) {
         setStrategyCodeStatus("streaming_partial");
         return;
@@ -34807,8 +34818,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const endpoint = `${String(baseUrl).replace(/\/$/, "")}/strategy_code?run=${encodeURIComponent(runId)}&gen=${strategyGen}`;
       fetch(endpoint, { signal: AbortSignal.timeout(2500) }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`strategy_code HTTP ${response.status}`))).then((payload) => {
         if (!active) return;
-        setStrategyCodePayload(payload || null);
-        setStrategyCodeStatus(payload && payload.code_status === "ok" ? "fresh" : String(payload && payload.code_status || "empty"));
+        const bound = _v4BindStrategyCodePayload(payload, runId, strategyGen);
+        setStrategyCodeRecord(bound.payload ? { payload: bound.payload, runId, gen: strategyGen } : null);
+        setStrategyCodeStatus(bound.status);
       }).catch((error) => {
         if (!active) return;
         setStrategyCodeStatus(`error \xB7 ${String(error && error.message || error)}`);
@@ -34876,14 +34888,16 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalOpen(false);
     };
     const matchedGeneration = gens.find((g) => Number(g.gen_no) === Number(s.current_gen)) || null;
-    const hasFetchedCode = Boolean(strategyCodePayload && (strategyCodePayload.buy_code || strategyCodePayload.sell_code));
+    const hasFetchedCode = Boolean(
+      strategyCodeRecord && strategyCodeRecord.runId === runId && Number(strategyCodeRecord.gen) === Number(strategyGen) && strategyCodeRecord.payload && (strategyCodeRecord.payload.buy_code || strategyCodeRecord.payload.sell_code)
+    );
     const activeGeneration = streamedGeneration ? {
       buy_code: stream.buy_code_partial,
       sell_code: stream.sell_code_partial,
       buy_name: stream.buy_name,
       sell_name: stream.sell_name
-    } : hasFetchedCode ? strategyCodePayload : matchedGeneration || s.best || s.winner || {};
-    const activeGenerationSource = streamedGeneration ? "current_run.generation \xB7 demo streaming" : hasFetchedCode ? `GET /strategy_code \xB7 ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code \xB7 loading" : strategyCodeStatus.startsWith("error") ? strategyCodeStatus : matchedGeneration ? "generations metrics \xB7 code unavailable" : s.best ? "best metrics \xB7 code unavailable" : s.winner ? "winner metrics \xB7 code unavailable" : "empty";
+    } : hasFetchedCode ? strategyCodeRecord.payload : matchedGeneration || s.best || s.winner || {};
+    const activeGenerationSource = streamedGeneration ? "current_run.generation \xB7 demo streaming" : hasFetchedCode ? `GET /strategy_code \xB7 ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code \xB7 loading" : strategyCodeStatus.startsWith("error") ? strategyCodeStatus : strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code \xB7 identity_mismatch" : matchedGeneration ? "generations metrics \xB7 code unavailable" : s.best ? "best metrics \xB7 code unavailable" : s.winner ? "winner metrics \xB7 code unavailable" : "empty";
     const evidence = _v4EvidenceState(s);
     const evidenceText = Array.isArray(evidence.value) ? evidence.value.join(" \xB7 ") : String(evidence.value);
     return /* @__PURE__ */ React.createElement("section", { className: "v4-research", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "v4-live-page-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_V4WorkflowStrip, { state: s, situation }), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
@@ -34906,7 +34920,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement("small", null, step.state)
     ))), /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "v4-live-panel-" + V4_LIVE_STEP_KEYS[selectedStep], "aria-labelledby": "v4-live-tab-" + V4_LIVE_STEP_KEYS[selectedStep], className: "v4-step-panel" }, selectedStep === 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), selectedStep === 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "panel v4-backtest-authority" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "Backtest \xB7 authoritative live fields"), /* @__PURE__ */ React.createElement("span", { className: "v4-data-state " + evidence.label }, evidence.label)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD \xB7 buy_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.buy_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \xB7 sell_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.sell_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "source / run_id / generation"), /* @__PURE__ */ React.createElement("dd", null, activeGenerationSource, " \xB7 ", runId || "legacy", " \xB7 ", s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "\uC2DC\uC791 \uC804")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "engine_state / backtest_progress"), /* @__PURE__ */ React.createElement("dd", null, _v4EngineSummary((_c = (_b = s.latest) == null ? void 0 : _b.engine_state) != null ? _c : s.engine_state), " \xB7 ", _v4ProgressSummary((_e = (_d = s.latest) == null ? void 0 : _d.backtest_progress) != null ? _e : s.backtest_progress))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "analysis evidence \xB7 ", evidence.label), /* @__PURE__ */ React.createElement("dd", null, evidenceText, /* @__PURE__ */ React.createElement("small", { className: "v4-evidence-source" }, "source \xB7 ", evidence.source)))), /* @__PURE__ */ React.createElement(_V5_2FieldSourceTable, null))), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), selectedStep === 2 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), selectedStep === 3 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s }))))), /* @__PURE__ */ React.createElement("div", { className: "v4-drawer-control" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-drawer-toggle", "aria-expanded": drawerOpen, "aria-controls": "v4-live-drawer", onClick: () => setDrawerOpen((open) => !open) }, "\uC0C1\uC138 \uD328\uB110 ", drawerOpen ? "\uC811\uAE30" : "\uD3BC\uCE58\uAE30")), /* @__PURE__ */ React.createElement("aside", { id: "v4-live-drawer", className: "v4-live-drawer", hidden: !drawerOpen, "aria-label": "\uC5F0\uAD6C \uC0C1\uC138 drawer" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(MergedBestWinnerCard, { best: s.best, winner: s.winner, onApprove: requestApproval, onViewCode: viewCode }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \uC0C1\uC138" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "\uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(GenerationsTable, { state: s, mddCap, minDailyTrades, onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g), onSelectDetail: (genNo) => setSelectedDetailGen(genNo) }), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus })))), /* @__PURE__ */ React.createElement(ApprovalDialog, { winner: approvalOpen ? s.winner : null, onClose: () => setApprovalOpen(false), onConfirm: onApprove }));
   }
-  Object.assign(window, { V4ResearchLive, V4_LIVE_PHASE_STEP, v4LiveSituation, _v4EvidenceState });
+  Object.assign(window, { V4ResearchLive, V4_LIVE_PHASE_STEP, v4LiveSituation, _v4EvidenceState, _v4BindStrategyCodePayload });
 
   // ai_strategy_loop/dashboard/frontend/v4-backtest.jsx
   function _confirmBacktestDanger(event) {

@@ -160,6 +160,17 @@ const V5_2_FIELD_SOURCES = [
   { field: "analysis evidence", paths: "generations[].graded_score/profit/mdd (production) / latest.analysis_evidence + latest.evidence_status (optional extension)", unit: "score · KRW · percent / evidence entries", status: "latest.status / selected source evidence_status", owner: "LoopState snapshot publisher / optional analysis extension" },
 ];
 
+function _v4BindStrategyCodePayload(payload, requestedRunId, requestedGen) {
+  if (!payload || typeof payload !== "object") return { status: "empty", payload: null };
+  const responseRunId = String(payload.run_id || "");
+  const responseGen = Number(payload.gen_no ?? payload.gen);
+  if (responseRunId !== String(requestedRunId || "") || responseGen !== Number(requestedGen)) {
+    return { status: "identity_mismatch", payload: null };
+  }
+  const codeStatus = String(payload.code_status || "empty");
+  return { status: codeStatus === "ok" ? "fresh" : codeStatus, payload };
+}
+
 function _V5_2FieldSourceTable() {
   return (
     <section className="v4-field-source-table" aria-labelledby="v5-2-field-source-heading">
@@ -276,13 +287,13 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
-  const [strategyCodePayload, setStrategyCodePayload] = useState_v4r(null);
+  const [strategyCodeRecord, setStrategyCodeRecord] = useState_v4r(null);
   const [strategyCodeStatus, setStrategyCodeStatus] = useState_v4r("idle");
   const s = state || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
   const stream = (s.current_run && s.current_run.generation) || {};
-  const streamedGeneration = Boolean(stream.buy_code_partial || stream.sell_code_partial);
+  const streamedGeneration = wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial);
   const strategyGen = s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0
     ? Number(s.current_gen) : null;
   const hasData = gens.length > 0;
@@ -302,7 +313,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     } else if (!pinnedStepRef.current) setSelectedStep(situation.active);
   }, [runGenerationIdentity, situation.active]);
   useEffect_v4r(() => {
-    setStrategyCodePayload(null);
+    setStrategyCodeRecord(null);
     if (streamedGeneration) {
       setStrategyCodeStatus("streaming_partial");
       return;
@@ -318,8 +329,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`strategy_code HTTP ${response.status}`)))
       .then(payload => {
         if (!active) return;
-        setStrategyCodePayload(payload || null);
-        setStrategyCodeStatus(payload && payload.code_status === "ok" ? "fresh" : String(payload && payload.code_status || "empty"));
+        const bound = _v4BindStrategyCodePayload(payload, runId, strategyGen);
+        setStrategyCodeRecord(bound.payload ? { payload: bound.payload, runId, gen: strategyGen } : null);
+        setStrategyCodeStatus(bound.status);
       })
       .catch(error => {
         if (!active) return;
@@ -392,14 +404,21 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   };
 
   const matchedGeneration = gens.find(g => Number(g.gen_no) === Number(s.current_gen)) || null;
-  const hasFetchedCode = Boolean(strategyCodePayload && (strategyCodePayload.buy_code || strategyCodePayload.sell_code));
+  const hasFetchedCode = Boolean(
+    strategyCodeRecord
+    && strategyCodeRecord.runId === runId
+    && Number(strategyCodeRecord.gen) === Number(strategyGen)
+    && strategyCodeRecord.payload
+    && (strategyCodeRecord.payload.buy_code || strategyCodeRecord.payload.sell_code)
+  );
   const activeGeneration = streamedGeneration ? {
     buy_code: stream.buy_code_partial, sell_code: stream.sell_code_partial,
     buy_name: stream.buy_name, sell_name: stream.sell_name,
-  } : hasFetchedCode ? strategyCodePayload : (matchedGeneration || s.best || s.winner || {});
+  } : hasFetchedCode ? strategyCodeRecord.payload : (matchedGeneration || s.best || s.winner || {});
   const activeGenerationSource = streamedGeneration ? "current_run.generation · demo streaming"
     : hasFetchedCode ? `GET /strategy_code · ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code · loading"
       : strategyCodeStatus.startsWith("error") ? strategyCodeStatus
+      : strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code · identity_mismatch"
         : matchedGeneration ? "generations metrics · code unavailable"
           : s.best ? "best metrics · code unavailable" : s.winner ? "winner metrics · code unavailable" : "empty";
   const evidence = _v4EvidenceState(s);
@@ -462,6 +481,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   );
 }
 
-Object.assign(window, { V4ResearchLive, V4_LIVE_PHASE_STEP, v4LiveSituation, _v4EvidenceState });
+Object.assign(window, { V4ResearchLive, V4_LIVE_PHASE_STEP, v4LiveSituation, _v4EvidenceState, _v4BindStrategyCodePayload });
 // dual-safe ESM export. KEEP on ONE physical line.
 export { V4ResearchLive };
