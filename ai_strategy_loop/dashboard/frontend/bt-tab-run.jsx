@@ -88,6 +88,10 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
   const [engines, setEngines] = useState_bt(4);
+  // GUI 패리티(F3): 데이터 분류 모드(단일 백테 전용 — optimize/wfo/sweep CLI 는 --divid-mode 미수용).
+  //   백엔드 /bt/run 이 이미 divid_mode·one_code 를 파싱(backtest_api.py). 옵션은 cli/subcommands.py 정본.
+  const [dividMode, setDividMode] = useState_bt("종목코드별 분류");
+  const [oneCode, setOneCode] = useState_bt("");
   const [mode, setMode] = useState_bt("backtest");      // backtest | optimize | wfo | sweep.
   const [paramSpace, setParamSpace] = useState_bt("");  // optimize/wfo 탐색공간 JSON 경로.
   // wfo(전진분석) 입력.
@@ -220,6 +224,14 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     if (!payload.buy || !payload.sell) { setRunErr("매수/매도 조건식을 선택하세요."); return; }
     if (!/^\d{8}$/.test(String(start)) || !/^\d{8}$/.test(String(end))) {
       setRunErr("기간은 YYYYMMDD 8자리로 입력하세요."); return;
+    }
+    if (mode === "backtest") {
+      payload.divid_mode = dividMode;
+      if (dividMode === "한종목 로딩") {
+        const oc = (oneCode || "").trim();
+        if (!oc) { setRunErr("'한종목 로딩'은 종목코드가 필요합니다(예: A005930)."); return; }
+        payload.one_code = oc;
+      }
     }
     if (mode === "optimize") {
       const ps = (paramSpace || "").trim();
@@ -396,6 +408,23 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             <input className="input" type="number" min="1" max="16" value={engines}
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
           </div>
+          {mode === "backtest" && (
+            <div className="field" style={{ minWidth: 130 }}>
+              <label>데이터 분류</label>
+              <select className="select" value={dividMode} onChange={e => setDividMode(e.target.value)} disabled={isDemo}>
+                <option value="종목코드별 분류">종목코드별 분류</option>
+                <option value="일자별 분류">일자별 분류</option>
+                <option value="한종목 로딩">한종목 로딩</option>
+              </select>
+            </div>
+          )}
+          {mode === "backtest" && dividMode === "한종목 로딩" && (
+            <div className="field" style={{ minWidth: 110 }}>
+              <label>종목코드</label>
+              <input className="input mono" value={oneCode} onChange={e => setOneCode(e.target.value)}
+                     placeholder="A005930" spellCheck={false} disabled={isDemo} />
+            </div>
+          )}
           {/* 대형 실행 버튼 — 폴드 위 가시성 핵심 */}
           <button className="btn primary" onClick={submit}
                   disabled={isDemo || tracking}

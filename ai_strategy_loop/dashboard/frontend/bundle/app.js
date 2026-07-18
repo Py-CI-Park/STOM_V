@@ -26064,6 +26064,8 @@ def signal_sell(pos, bar, ind):
     const [end, setEnd] = useState_bt("");
     const [timeframe, setTimeframe] = useState_bt("min");
     const [engines, setEngines] = useState_bt(4);
+    const [dividMode, setDividMode] = useState_bt("\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958");
+    const [oneCode, setOneCode] = useState_bt("");
     const [mode, setMode] = useState_bt("backtest");
     const [paramSpace, setParamSpace] = useState_bt("");
     const [trainWindow, setTrainWindow] = useState_bt("");
@@ -26212,6 +26214,17 @@ def signal_sell(pos, bar, ind):
       if (!/^\d{8}$/.test(String(start2)) || !/^\d{8}$/.test(String(end))) {
         setRunErr("\uAE30\uAC04\uC740 YYYYMMDD 8\uC790\uB9AC\uB85C \uC785\uB825\uD558\uC138\uC694.");
         return;
+      }
+      if (mode === "backtest") {
+        payload.divid_mode = dividMode;
+        if (dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529") {
+          const oc = (oneCode || "").trim();
+          if (!oc) {
+            setRunErr("'\uD55C\uC885\uBAA9 \uB85C\uB529'\uC740 \uC885\uBAA9\uCF54\uB4DC\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4(\uC608: A005930).");
+            return;
+          }
+          payload.one_code = oc;
+        }
       }
       if (mode === "optimize") {
         const ps = (paramSpace || "").trim();
@@ -26380,6 +26393,16 @@ def signal_sell(pos, bar, ind):
         max: "16",
         value: engines,
         onChange: (e) => setEngines(e.target.value),
+        disabled: isDemo
+      }
+    )), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: oneCode,
+        onChange: (e) => setOneCode(e.target.value),
+        placeholder: "A005930",
+        spellCheck: false,
         disabled: isDemo
       }
     )), /* @__PURE__ */ React.createElement(
