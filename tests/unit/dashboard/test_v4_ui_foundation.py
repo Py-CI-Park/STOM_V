@@ -300,6 +300,8 @@ def test_v5_live_backtest_authority_and_responsive_graph_contract() -> None:
     assert "@media (prefers-reduced-motion: reduce)" in css
     assert "@keyframes v4-step-pulse" in css
     assert ".v4-live-drawer[hidden] { display: none !important; }" in css
+    assert 'className={"v4-live-layout" + (drawerOpen ? " drawer-open" : "")}' in source
+    assert ".v4-live-layout.drawer-open" in css
 def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
     source = _read("v4-research.jsx")
     css = _read("v4.css")
@@ -309,14 +311,20 @@ def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
         "V5_2_FIELD_SOURCES",
         "authoritative state path(s)",
         "freshness / status path",
-        "current_run.generation.buy_code_partial",
-        "current_run.generation.sell_code_partial",
+        "GET /strategy_code → buy_code",
+        "GET /strategy_code → sell_code",
+        "demo streaming only",
         "latest.engine_state",
         "latest.backtest_progress",
+        "generations[].graded_score/profit/mdd",
         "latest.evidence_status",
         "owner",
+        "source · {evidence.source}",
     ):
         assert marker in source
+    assert "/strategy_code?run=${encodeURIComponent(runId)}&gen=${strategyGen}" in source
+    assert 'payload && payload.code_status === "ok" ? "fresh"' in source
+    assert "setInterval" not in source[source.index("function V4ResearchLive"):source.index("const matchedGeneration")]
     for marker in (
         ".v4-field-source-table {",
         "overflow-x: auto",
@@ -346,6 +354,10 @@ console.log(JSON.stringify({
   explicitFresh: state({ latest: { evidence: 'confirmed', evidence_status: 'fresh' } }),
   unproven: state({ latest: { evidence: 'unproven' } }),
   empty: state({ latest: { evidence_status: 'fresh' } }),
+  mixedHigherUnproven: state({ latest: { evidence: 'high' }, current_run: { evidence: 'low', evidence_status: 'fresh' } }),
+  mixedLowerError: state({ latest: { evidence: 'high' }, current_run: { evidence: 'low', evidence_status: 'error', evidence_error: 'low failed' } }),
+  mixedHigherFresh: state({ latest: { evidence: 'high', evidence_status: 'fresh' }, current_run: { evidence: 'low', evidence_status: 'stale' } }),
+  metricFallback: state({ current_gen: 2, generations: [{ gen_no: 2, graded_score: 0.7, profit: 1200, mdd: 3.5 }] }),
 }));
 """
     result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, encoding="utf-8", timeout=20, check=False)
@@ -357,6 +369,10 @@ console.log(JSON.stringify({
         "explicitFresh": ["fresh", "confirmed"],
         "unproven": ["stale", "unproven"],
         "empty": ["empty", "발행된 분석 증거 없음"],
+        "mixedHigherUnproven": ["stale", "high"],
+        "mixedLowerError": ["stale", "high"],
+        "mixedHigherFresh": ["fresh", "high"],
+        "metricFallback": ["stale", ["graded_score 0.7", "profit 1200", "mdd 3.5"]],
     }
 
 
@@ -385,3 +401,17 @@ console.log(JSON.stringify({
     assert payload["progress"] == "60.0% · generation_level"
     assert payload["countProgress"] == "phase backtest_start · done_units 3 · total_units 5"
     assert payload["empty"] == "대기"
+
+
+def test_v5_live_state_typography_floor_is_fourteen_pixels() -> None:
+    css = _read("v4.css")
+
+    for rule in (
+        "padding: 8px 12px; font-size: 14px; font-family: var(--mono);",
+        ".v4-onboarding-bd p { color: var(--ink-1); font-size: 14px;",
+        ".v4-onboarding-steps b { display: block; font-size: 14px;",
+        ".v4-onboarding-steps span { font-size: 14px;",
+        ".phase-status-banner { margin-top: 8px; padding: 7px 11px; border-radius: var(--radius-sm); font-size: 14px;",
+        ".v4-evidence-source { display: block; margin-top: 4px; color: var(--ink-3); font-size: 14px;",
+    ):
+        assert rule in css

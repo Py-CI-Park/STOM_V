@@ -126,23 +126,38 @@ function _v4EvidenceState(state) {
   const s = state || {};
   const latest = s.latest || {};
   const current = s.current_run || {};
-  const evidence = latest.analysis_evidence || latest.evidence || current.analysis_evidence || current.evidence;
-  const evidenceStatus = [latest.evidence_status, current.evidence_status, s.evidence_status]
-    .map(value => String(value || "").toLowerCase());
-  const errorDetail = latest.evidence_error || current.evidence_error || s.evidence_error || latest.error || s.error || "분석 증거 발행 오류";
-  if (s.error || latest.error || evidenceStatus.includes("error")) return { label: "error", value: errorDetail };
-  if (latest.stale === true || current.stale === true || s.stale === true || evidenceStatus.includes("stale")) return { label: "stale", value: evidence || "발행된 분석 증거 없음" };
-  if (!evidence || (Array.isArray(evidence) && !evidence.length)) return { label: "empty", value: "발행된 분석 증거 없음" };
-  if (evidenceStatus.includes("fresh")) return { label: "fresh", value: evidence };
-  return { label: "stale", value: evidence };
+  if (s.error || latest.error) return { label: "error", value: latest.error || s.error, source: "loop status" };
+  const candidates = [
+    { source: "latest", value: latest.analysis_evidence || latest.evidence, status: latest.evidence_status, stale: latest.stale, error: latest.evidence_error },
+    { source: "current_run", value: current.analysis_evidence || current.evidence, status: current.evidence_status, stale: current.stale, error: current.evidence_error },
+    { source: "root", value: s.analysis_evidence || s.evidence, status: s.evidence_status, stale: s.stale, error: s.evidence_error },
+  ];
+  const selected = candidates.find(candidate => candidate.value && (!Array.isArray(candidate.value) || candidate.value.length));
+  if (selected) {
+    const status = String(selected.status || "").toLowerCase();
+    if (selected.error || status === "error") return { label: "error", value: selected.error || "분석 증거 발행 오류", source: selected.source };
+    if (selected.stale === true || status === "stale") return { label: "stale", value: selected.value, source: selected.source };
+    if (status === "fresh") return { label: "fresh", value: selected.value, source: selected.source };
+    return { label: "stale", value: selected.value, source: selected.source };
+  }
+  const generation = (Array.isArray(s.generations) ? s.generations : [])
+    .find(item => Number(item.gen_no) === Number(s.current_gen));
+  const metrics = generation ? [
+    generation.graded_score != null ? `graded_score ${generation.graded_score}` : "",
+    generation.profit != null ? `profit ${generation.profit}` : "",
+    generation.mdd != null ? `mdd ${generation.mdd}` : "",
+  ].filter(Boolean) : [];
+  return metrics.length
+    ? { label: "stale", value: metrics, source: "generations metrics · freshness 미발행" }
+    : { label: "empty", value: "발행된 분석 증거 없음", source: "unavailable" };
 }
 
 const V5_2_FIELD_SOURCES = [
-  { field: "매수 조건식 · buy_code", paths: "current_run.generation.buy_code_partial / generations[].buy_code / best.buy_code / winner.buy_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
-  { field: "매도 조건식 · sell_code", paths: "current_run.generation.sell_code_partial / generations[].sell_code / best.sell_code / winner.sell_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
-  { field: "source / run_id / generation", paths: "current_run.generation / run_id / current_gen", unit: "source · run ID · generation", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
-  { field: "engine_state / backtest_progress", paths: "latest.engine_state / engine_state / latest.backtest_progress / backtest_progress", unit: "engine status/config · percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
-  { field: "analysis evidence", paths: "latest.analysis_evidence / latest.evidence / current_run.analysis_evidence / current_run.evidence", unit: "evidence entries", status: "latest.evidence_status / current_run.evidence_status / evidence_status", owner: "Analysis evidence publisher" },
+  { field: "매수 조건식 · buy_code", paths: "GET /strategy_code → buy_code (production) / current_run.generation.buy_code_partial (demo streaming only)", unit: "STOM 조건식", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
+  { field: "매도 조건식 · sell_code", paths: "GET /strategy_code → sell_code (production) / current_run.generation.sell_code_partial (demo streaming only)", unit: "STOM 조건식", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
+  { field: "source / run_id / generation", paths: "GET /strategy_code / run_id / current_gen", unit: "source · run ID · generation", status: "/strategy_code.code_status / latest.status", owner: "Strategy code read API / LoopState snapshot publisher" },
+  { field: "engine_state / backtest_progress", paths: "latest.engine_state / latest.backtest_progress", unit: "engine status/config · percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
+  { field: "analysis evidence", paths: "generations[].graded_score/profit/mdd (production) / latest.analysis_evidence + latest.evidence_status (optional extension)", unit: "score · KRW · percent / evidence entries", status: "latest.status / selected source evidence_status", owner: "LoopState snapshot publisher / optional analysis extension" },
 ];
 
 function _V5_2FieldSourceTable() {
@@ -261,9 +276,15 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
+  const [strategyCodePayload, setStrategyCodePayload] = useState_v4r(null);
+  const [strategyCodeStatus, setStrategyCodeStatus] = useState_v4r("idle");
   const s = state || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
+  const stream = (s.current_run && s.current_run.generation) || {};
+  const streamedGeneration = Boolean(stream.buy_code_partial || stream.sell_code_partial);
+  const strategyGen = s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0
+    ? Number(s.current_gen) : null;
   const hasData = gens.length > 0;
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
@@ -280,6 +301,32 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       setSelectedStep(situation.active);
     } else if (!pinnedStepRef.current) setSelectedStep(situation.active);
   }, [runGenerationIdentity, situation.active]);
+  useEffect_v4r(() => {
+    setStrategyCodePayload(null);
+    if (streamedGeneration) {
+      setStrategyCodeStatus("streaming_partial");
+      return;
+    }
+    if (!baseUrl || !runId || strategyGen === null) {
+      setStrategyCodeStatus("unavailable");
+      return;
+    }
+    let active = true;
+    setStrategyCodeStatus("loading");
+    const endpoint = `${String(baseUrl).replace(/\/$/, "")}/strategy_code?run=${encodeURIComponent(runId)}&gen=${strategyGen}`;
+    fetch(endpoint, { signal: AbortSignal.timeout(2500) })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`strategy_code HTTP ${response.status}`)))
+      .then(payload => {
+        if (!active) return;
+        setStrategyCodePayload(payload || null);
+        setStrategyCodeStatus(payload && payload.code_status === "ok" ? "fresh" : String(payload && payload.code_status || "empty"));
+      })
+      .catch(error => {
+        if (!active) return;
+        setStrategyCodeStatus(`error · ${String(error && error.message || error)}`);
+      });
+    return () => { active = false; };
+  }, [baseUrl, runId, strategyGen, streamedGeneration]);
   const selectStep = (index, pinned = true) => {
     pinnedStepRef.current = pinned;
     setSelectedStep(index);
@@ -344,15 +391,17 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     setApprovalOpen(false);
   };
 
-  const stream = (s.current_run && s.current_run.generation) || {};
-  const streamedGeneration = Boolean(stream.buy_code_partial || stream.sell_code_partial);
   const matchedGeneration = gens.find(g => Number(g.gen_no) === Number(s.current_gen)) || null;
+  const hasFetchedCode = Boolean(strategyCodePayload && (strategyCodePayload.buy_code || strategyCodePayload.sell_code));
   const activeGeneration = streamedGeneration ? {
     buy_code: stream.buy_code_partial, sell_code: stream.sell_code_partial,
     buy_name: stream.buy_name, sell_name: stream.sell_name,
-  } : (matchedGeneration || s.best || s.winner || {});
-  const activeGenerationSource = streamedGeneration ? "current_run.generation"
-    : matchedGeneration ? "generations" : s.best ? "best" : s.winner ? "winner" : "empty";
+  } : hasFetchedCode ? strategyCodePayload : (matchedGeneration || s.best || s.winner || {});
+  const activeGenerationSource = streamedGeneration ? "current_run.generation · demo streaming"
+    : hasFetchedCode ? `GET /strategy_code · ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code · loading"
+      : strategyCodeStatus.startsWith("error") ? strategyCodeStatus
+        : matchedGeneration ? "generations metrics · code unavailable"
+          : s.best ? "best metrics · code unavailable" : s.winner ? "winner metrics · code unavailable" : "empty";
   const evidence = _v4EvidenceState(s);
   const evidenceText = Array.isArray(evidence.value) ? evidence.value.join(" · ") : String(evidence.value);
   return (
@@ -362,7 +411,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <_V4WorkflowStrip state={s} situation={situation} />
       {!hasData && (s.status === "idle" || !s.status) && <_V4Onboarding onOpenSettings={typeof onOpenSettings === "function" ? onOpenSettings : () => {}} />}
       {!hasData && s.status && s.status !== "idle" && <div className={"v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending")} role={s.status === "error" || s.status === "failed" ? "alert" : "status"}>연구 {s.status} · 세대 데이터 대기</div>}
-      <div className="v4-live-layout">
+      <div className={"v4-live-layout" + (drawerOpen ? " drawer-open" : "")}>
         <main className="v4-live-main">
           <div className="v4-graph-grid" aria-label="핵심 분석 그래프">
             <div className="panel v4-graph-card v4-graph-fitness">
@@ -391,7 +440,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 <div className="panel-bd"><dl><div><dt>매수 조건식 · buy_code</dt><dd className="mono">{activeGeneration.buy_code || "empty"}</dd></div><div><dt>매도 조건식 · sell_code</dt><dd className="mono">{activeGeneration.sell_code || "empty"}</dd></div>
                   <div><dt>source / run_id / generation</dt><dd>{activeGenerationSource} · {runId || "legacy"} · {s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "시작 전"}</dd></div>
                   <div><dt>engine_state / backtest_progress</dt><dd>{_v4EngineSummary(s.latest?.engine_state ?? s.engine_state)} · {_v4ProgressSummary(s.latest?.backtest_progress ?? s.backtest_progress)}</dd></div>
-                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}</dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
+                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}<small className="v4-evidence-source">source · {evidence.source}</small></dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
               {selectedStep === 2 && <><ResearchCriteriaBanner state={s} baseUrl={baseUrl} /><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} /></>}
               {selectedStep === 3 && <><AutopsyPanel state={s} wsStatus={wsStatus} /><HypothesisPanel state={s} /><FeedbackPanel state={s} /></>}
             </div>
