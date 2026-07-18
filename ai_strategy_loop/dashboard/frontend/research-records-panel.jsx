@@ -41,6 +41,8 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
   const [err, setErr] = useState_rrp("");
   const [runList, setRunList] = useState_rrp([]);
   const [runListLoading, setRunListLoading] = useState_rrp(false);
+  // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
+  const [showAll, setShowAll] = useState_rrp(false);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -146,7 +148,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                 </tr>
               </thead>
               <tbody>
-                {rows.slice(0, 12).map(row => {
+                {(showAll ? rows : rows.slice(0, 12)).map(row => {
                   const best = row.best || {};
                   const artifacts = row.artifacts || {};
                   const active = row.name === selectedCampaign;
@@ -180,6 +182,14 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+        {rows.length > 12 && (
+          <div className="mono" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" }}>
+            <span>{showAll ? `전체 ${rows.length}개 표시 중` : `전체 ${rows.length}개 중 12개 표시`}</span>
+            <button className="btn ghost sm" onClick={() => setShowAll(v => !v)}>
+              {showAll ? "처음 12개만 보기" : `전체 ${rows.length}개 보기`}
+            </button>
           </div>
         )}
         {selected && (
