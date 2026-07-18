@@ -474,22 +474,31 @@ function BtTradeDetails({ baseUrl, jobId }) {
   const [loading, setLoading] = useState_btc(false);
   const [error, setError] = useState_btc("");
   const sourceGenerationRef = useRef_btc(0);
+  const requestAbortRef = useRef_btc(null);
 
   useEffect_btc(() => {
     sourceGenerationRef.current += 1;
+    if (requestAbortRef.current) requestAbortRef.current.abort();
     setPage(null);
     setLoading(false);
     setError("");
+    return () => {
+      sourceGenerationRef.current += 1;
+      if (requestAbortRef.current) requestAbortRef.current.abort();
+    };
   }, [jobId, baseUrl]);
 
   const loadPage = useCallback_btc((offset) => {
     if (!baseUrl || !jobId) return;
+    if (requestAbortRef.current) requestAbortRef.current.abort();
+    const controller = new AbortController();
+    requestAbortRef.current = controller;
     const generation = sourceGenerationRef.current;
     setLoading(true);
     setError("");
     const url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId)
       + "&detail_only=true&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
-    _btFetchJson(url, 8000)
+    _btFetchJson(url, 8000, controller.signal)
       .then((payload) => {
         if (generation !== sourceGenerationRef.current) return;
         const details = payload && payload.trade_details;
@@ -497,16 +506,21 @@ function BtTradeDetails({ baseUrl, jobId }) {
         setPage(details);
       })
       .catch((fetchError) => {
-        if (generation !== sourceGenerationRef.current) return;
+        if (generation !== sourceGenerationRef.current || fetchError.name === "AbortError") return;
         setError(String(fetchError));
       })
       .finally(() => {
+        if (requestAbortRef.current === controller) requestAbortRef.current = null;
         if (generation === sourceGenerationRef.current) setLoading(false);
       });
   }, [baseUrl, jobId]);
 
   const onToggle = useCallback_btc((event) => {
-    if (event.currentTarget.open && !page && !loading) loadPage(0);
+    if (event.currentTarget.open && !page && !loading) {
+      loadPage(0);
+    } else if (!event.currentTarget.open && requestAbortRef.current) {
+      requestAbortRef.current.abort();
+    }
   }, [page, loading, loadPage]);
 
   return (

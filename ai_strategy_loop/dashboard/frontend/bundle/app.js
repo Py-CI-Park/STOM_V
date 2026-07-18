@@ -25199,8 +25199,10 @@ def signal_sell(pos, bar, ind):
     useRef: useRef_bt,
     useMemo: useMemo_bt
   } = React;
-  function _btFetchJson(url, timeoutMs) {
-    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  function _btFetchJson(url, timeoutMs, requestSignal) {
+    const timeoutSignal = AbortSignal.timeout(timeoutMs || 5e3);
+    const signal = requestSignal && typeof AbortSignal.any === "function" ? AbortSignal.any([requestSignal, timeoutSignal]) : requestSignal || timeoutSignal;
+    return fetch(url, { signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
   function _btPostJson(url, body, timeoutMs) {
     return fetch(url, {
@@ -25628,32 +25630,46 @@ def signal_sell(pos, bar, ind):
     const [loading, setLoading] = useState_btc(false);
     const [error, setError] = useState_btc("");
     const sourceGenerationRef = useRef_btc(0);
+    const requestAbortRef = useRef_btc(null);
     useEffect_btc(() => {
       sourceGenerationRef.current += 1;
+      if (requestAbortRef.current) requestAbortRef.current.abort();
       setPage(null);
       setLoading(false);
       setError("");
+      return () => {
+        sourceGenerationRef.current += 1;
+        if (requestAbortRef.current) requestAbortRef.current.abort();
+      };
     }, [jobId, baseUrl]);
     const loadPage = useCallback_btc((offset) => {
       if (!baseUrl || !jobId) return;
+      if (requestAbortRef.current) requestAbortRef.current.abort();
+      const controller = new AbortController();
+      requestAbortRef.current = controller;
       const generation = sourceGenerationRef.current;
       setLoading(true);
       setError("");
       const url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId) + "&detail_only=true&detail_limit=" + _BT_TRADE_DETAIL_LIMIT + "&detail_offset=" + offset;
-      _btFetchJson(url, 8e3).then((payload) => {
+      _btFetchJson(url, 8e3, controller.signal).then((payload) => {
         if (generation !== sourceGenerationRef.current) return;
         const details = payload && payload.trade_details;
         if (!details || !Array.isArray(details.items)) throw new Error("\uC0C1\uC138 \uAC70\uB798\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
         setPage(details);
       }).catch((fetchError) => {
-        if (generation !== sourceGenerationRef.current) return;
+        if (generation !== sourceGenerationRef.current || fetchError.name === "AbortError") return;
         setError(String(fetchError));
       }).finally(() => {
+        if (requestAbortRef.current === controller) requestAbortRef.current = null;
         if (generation === sourceGenerationRef.current) setLoading(false);
       });
     }, [baseUrl, jobId]);
     const onToggle = useCallback_btc((event) => {
-      if (event.currentTarget.open && !page && !loading) loadPage(0);
+      if (event.currentTarget.open && !page && !loading) {
+        loadPage(0);
+      } else if (!event.currentTarget.open && requestAbortRef.current) {
+        requestAbortRef.current.abort();
+      }
     }, [page, loading, loadPage]);
     return /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", onToggle }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uAC70\uB798 \uC0C1\uC138 \u2014 \uC6D0\uBCF8 CSV \uC21C\uC11C"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10, overflowX: "auto" } }, loading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAC70\uB798 \uC0C1\uC138 \uB85C\uB529 \uC911\u2026"), !loading && error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, error, " ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage((page || {}).offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: page.status === "error" ? "var(--red)" : void 0 } }, page.status === "error" ? page.diagnostic || "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "missing" ? "\uC0C1\uC138 \uAC70\uB798 CSV\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." : page.status === "unavailable" ? "\uC644\uB8CC\uB41C \uC77C\uBC18 \uBC31\uD14C\uC2A4\uD2B8\uC5D0\uC11C\uB9CC \uAC70\uB798 \uC0C1\uC138\uB97C \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.", page.status === "error" && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadPage(page.offset || 0) }, "\uC7AC\uC2DC\uB3C4")), !loading && !error && page && page.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: { minWidth: 1300 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, _BT_TRADE_DETAIL_COLUMNS.map(([key, label]) => /* @__PURE__ */ React.createElement("th", { key }, label)))), /* @__PURE__ */ React.createElement("tbody", null, page.items.map((trade, rowIndex) => /* @__PURE__ */ React.createElement("tr", { key: (trade.buy_time || "") + ":" + (trade.sell_time || "") + ":" + rowIndex }, _BT_TRADE_DETAIL_COLUMNS.map(([key]) => /* @__PURE__ */ React.createElement("td", { key }, trade[key] == null ? "\u2014" : String(trade[key]))))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 8 } }, /* @__PURE__ */ React.createElement(
       "button",

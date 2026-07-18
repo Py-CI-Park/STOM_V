@@ -118,7 +118,7 @@ def load_trades_csv_with_status(csv_path: Optional[str]) -> Dict[str, Any]:
     if not csv_path:
         return {"status": "missing", "trades": []}
     trades: List[Dict[str, Any]] = []
-    row_count = 0
+    rejected_rows = 0
     try:
         with open(csv_path, encoding="utf-8-sig", newline="") as fh:
             reader = csv.DictReader(fh)
@@ -130,17 +130,21 @@ def load_trades_csv_with_status(csv_path: Optional[str]) -> Dict[str, Any]:
                     "diagnostic": "required trade columns are missing",
                 }
             for row in reader:
-                row_count += 1
                 trade = _normalize_row(row)
-                if trade is not None:
-                    trades.append(trade)
+                if trade is None or any(
+                    isinstance(value, float) and not math.isfinite(value)
+                    for value in trade.values()
+                ):
+                    rejected_rows += 1
+                    continue
+                trades.append(trade)
     except FileNotFoundError:
         return {"status": "missing", "trades": []}
     except UnicodeError:
         return {"status": "error", "trades": [], "diagnostic": "CSV text is not decodable"}
     except (OSError, csv.Error):
         return {"status": "error", "trades": [], "diagnostic": "CSV could not be read"}
-    if row_count and not trades:
+    if rejected_rows:
         return {"status": "error", "trades": [], "diagnostic": "trade rows are malformed"}
     return {"status": "ok" if trades else "empty", "trades": trades}
 

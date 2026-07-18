@@ -332,8 +332,37 @@ def test_result_detail_only_distinguishes_empty_missing_and_errors(monkeypatch, 
     assert malformed_page["status"] == "error"
     assert malformed_page["diagnostic"] == "trade rows are malformed"
 
+    mixed_rows = tmp_path / "mixed_rows.csv"
+    mixed_rows.write_text(
+        "매도시간,수익금\n20250101100000,10\nnot-a-time,5\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        backtest_api,
+        "get_job_manager",
+        lambda: _ResultManager({**record, "job_id": "job_mixed_rows", "csv_path": str(mixed_rows)}),
+    )
+    mixed_page = backtest_api.get_result(
+        job_id="job_mixed_rows", detail_only=True, detail_limit=50,
+    )["trade_details"]
+    assert mixed_page["status"] == "error"
+    assert mixed_page["items"] == []
+
+    nonfinite = tmp_path / "nonfinite.csv"
+    nonfinite.write_text("매도시간,수익금\n20250101100000,NaN\n", encoding="utf-8")
+    monkeypatch.setattr(
+        backtest_api,
+        "get_job_manager",
+        lambda: _ResultManager({**record, "job_id": "job_nonfinite", "csv_path": str(nonfinite)}),
+    )
+    nonfinite_page = backtest_api.get_result(
+        job_id="job_nonfinite", detail_only=True, detail_limit=50,
+    )["trade_details"]
+    assert nonfinite_page["status"] == "error"
+
     frontend = (Path(PROJECT_ROOT) / "ai_strategy_loop/dashboard/frontend/bt-result-area.jsx").read_text(encoding="utf-8")
     assert "<details" in frontend and "onToggle={onToggle}" in frontend
     assert "detail_only=true&detail_limit=" in frontend
     assert "sourceGenerationRef" in frontend and "generation !== sourceGenerationRef.current" in frontend
+    assert "requestAbortRef.current.abort()" in frontend
     assert "run_context || {}).timeframe" in frontend
