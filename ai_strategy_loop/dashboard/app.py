@@ -3318,7 +3318,8 @@ def create_app(
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
     def ui_evolution(request: Request, subtab: str = "overview") -> Any:
-        if subtab == "history":
+        # Audit governance moved into History; retain direct links and their query state.
+        if subtab in {"history", "audit"}:
             return _redirect_with_query(request, "/ui/evolution/records")
         allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
         if subtab not in allowed:
@@ -3360,6 +3361,10 @@ def create_app(
     @app.get("/ui/verdict")
     def ui_verdict_alias(request: Request) -> RedirectResponse:
         return _redirect_with_query(request, "/ui/evolution/verdict")
+    @app.get("/ui/audit")
+    def ui_audit_alias(request: Request) -> RedirectResponse:
+        # V5.P0 migration: History owns audit governance; query state must survive redirects.
+        return _redirect_with_query(request, "/ui/evolution/records")
 
     @app.get("/health")
     def health() -> Dict[str, Any]:

@@ -1,12 +1,12 @@
-/* dashboard-v4-shell.jsx — V4 대시보드 셸 (프로토타입 IA: 좌측 레일 + graph-first)
+/* dashboard-v4-shell.jsx — V4 대시보드 셸 (정본 IA: 좌측 레일 + graph-first)
  *
  *   승인된 리디자인 프로토타입(design-system/v4-redesign-prototype.html)을 구현한다.
  *   frontend/v4.html 이 window.DashboardV4Shell 로 이름-마운트(lab/pro/verdict 패턴),
  *   같은 컴파일 번들(bundle/app.js)·단일 React 공유. V2 기본 경로는 불변(opt-in).
  *
- *   구조: 좌측 슬림 레일(7뷰) + 상단바(브랜드·안전 strip·연결/상태·BASE·테마·run 제어)
+ *   구조: 좌측 슬림 레일(정본 6뷰) + 상단바(브랜드·안전 strip·연결/상태·BASE·테마·run 제어)
  *   + 뷰 스테이지. run 제어(설정/시작/정지·RUN 셀렉터)는 app.jsx:76-119/201-233 패턴 재사용.
- *   BASE 는 ?base= 쿼리 1회 오버라이드(wt-dev 백엔드 실데이터 연동/스크린샷 자동화용)
+ *   BASE 는 ?base= 쿼리 1회 오버라이드(wt-dev 실데이터 연동/스크린샷 자동화용)
  *   → localStorage(cross-origin 캐시는 same-origin 으로 마이그레이션) → DEFAULT_BASE.
  */
 // dual-safe ESM import. KEEP each on ONE physical line.
@@ -28,21 +28,34 @@ import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
-// V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
-//   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
-const V4_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰", group: "primary" },
-  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
-  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
-  { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)", group: "primary" },
-  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
-  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)", group: "primary" },
-  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
-  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4)", badge: "P4", hint: "research_assets.db 판정카드·자산 · 읽기 전용(SELECT-only)", group: "secondary" },
-  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능", group: "secondary" },
+// V5.P0 정본 IA owner: 일반 레일은 이 여섯 목적지만 노출한다.
+// Lab/Context/Alpha/Catalog는 개발자 복구 쿼리에서만 기존 컴포넌트를 마운트한다.
+const V4_NORMAL_TABS = [
+  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰" },
+  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트" },
+  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락" },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색 · 감사 거버넌스" },
+  { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)" },
+  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)" },
 ];
-const V4_TAB_KEYS = V4_TABS.map(t => t.key);
+const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
+const V4_LEGACY_EXTRA_TABS = [
+  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
+  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4)", badge: "P4", hint: "research_assets.db 판정카드·자산 · 읽기 전용(SELECT-only)" },
+  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능" },
+  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)" },
+];
+const V4_TAB_KEYS = V4_NORMAL_TABS.map(t => t.key);
+const V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map(t => t.key);
+const V4_LEGACY_TAB_MIGRATIONS = { audit: "history", verdict: "history" };
+function v4LegacyExtrasEnabled(search) {
+  try {
+    return new URLSearchParams(search === undefined ? window.location.search : search).get(V4_LEGACY_ROLLBACK_QUERY) === "1";
+  } catch (e) { return false; }
+}
+function v4TabsForSession() {
+  return v4LegacyExtrasEnabled() ? V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS) : V4_NORMAL_TABS;
+}
 
 // 정본 딥링크 경로 → V4 탭 매핑(B트랙 승격): /ui/evolution/* 를 V4 뷰로 이어준다.
 //   process 는 V4 전용 뷰가 없어 research(Live)로 흡수(사이클 다이어그램이 해당 맥락 제공).
@@ -51,6 +64,7 @@ const V4_PATH_TAB_MAP = {
   "chart-replay": "replay",
   "records": "history",
   "lab": "lab",
+  "audit": "history",
   "workbench": "workbench",
   "verdict": "history",
   "process": "research",
@@ -66,12 +80,13 @@ function v4TabFromPathname(pathname) {
   } catch (e) { return ""; }
 }
 
-function v4InitialTab() {
+function v4InitialTab(tabKeys = V4_TAB_KEYS) {
   try {
-    const t = new URLSearchParams(window.location.search).get("tab");
-    if (t && V4_TAB_KEYS.includes(t)) return t;
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    const t = V4_LEGACY_TAB_MIGRATIONS[requested] || requested;
+    if (t && tabKeys.includes(t)) return t;
     const fromPath = v4TabFromPathname(window.location.pathname);
-    if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
+    if (fromPath && tabKeys.includes(fromPath)) return fromPath;
   } catch (e) {}
   return "research";
 }
@@ -148,11 +163,14 @@ function V4BaseControl({ value, onChange, onApply, onReconnect }) {
 }
 
 function DashboardV4Shell({ baseUrl: baseUrlProp }) {
+  // Rollback is explicit and evaluated once per document load; it never changes normal IA.
+  const tabs = v4TabsForSession();
+  const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
   const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
   const [pendingBase, setPendingBase] = useState_v4(baseUrl);
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
-  const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
-  const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
+  const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab(tabKeys));
+  const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab(tabKeys) === "replay");
   const pendingTabFocusRef = useRef_v4("");
   const [buildVer] = useState_v4(() => v4BundleVersion());
 
@@ -161,6 +179,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
+  useEffect_v4(() => {
+    const onPopState = () => {
+      const nextTab = v4InitialTab(tabKeys);
+      pendingTabFocusRef.current = nextTab;
+      setActiveTab(nextTab);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [tabKeys]);
   useEffect_v4(() => {
     if (!pendingTabFocusRef.current) return;
     document.getElementById("v4-tab-" + pendingTabFocusRef.current)?.focus();
@@ -280,21 +307,22 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const targetScore = (targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === undefined) ? 1.0 : Number(targetScoreRaw);
 
   const selectTab = (key, retainFocus = true) => {
+    if (!tabKeys.includes(key)) return;
     if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", key);
-      window.history.replaceState(null, "", url.pathname + url.search);
+      window.history.pushState(null, "", url.pathname + url.search);
     } catch (e) {}
   };
   const onTabKeyDown = (event, key) => {
-    const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key);
+    const next = _nextV4TabKey(tabKeys, key, event.key);
     if (next === key && !["Home", "End"].includes(event.key)) return;
     event.preventDefault();
     selectTab(next);
   };
-  const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
+  const active = tabs.find(t => t.key === activeTab) || tabs[0];
 
   return (
     <div className="v4-root" data-v4-tab={activeTab}>
@@ -304,23 +332,17 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 15 L6 12 L9 13 L13 7 L18 3" stroke="var(--teal)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="18" cy="3" r="1.8" fill="var(--violet)" /></svg>
         </div>
         <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스">
-          {V4_TABS.map((tab, i) => (
-            <React.Fragment key={tab.key}>
-              {tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && (
-                <div className="v4-rail-div" role="separator" aria-label="보조 도구" title="보조 도구(분석·감사·컨텍스트)"><span>보조</span></div>
-              )}
-              <button id={"v4-tab-" + tab.key} role="tab"
-                      aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
-                      tabIndex={activeTab === tab.key ? 0 : -1}
-                      data-group={tab.group}
-                      className={"v4-rail-item" + (tab.group === "secondary" ? " secondary" : "") + (activeTab === tab.key ? " active" : "")}
-                      onKeyDown={event => onTabKeyDown(event, tab.key)}
-                      onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
-                <V4RailIcon name={tab.key} />
-                <span className="v4-ri-label">{tab.label}</span>
-                <i className="v4-ri-dot"></i>
-              </button>
-            </React.Fragment>
+          {tabs.map(tab => (
+            <button key={tab.key} id={"v4-tab-" + tab.key} role="tab"
+                    aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
+                    tabIndex={activeTab === tab.key ? 0 : -1}
+                    className={"v4-rail-item" + (activeTab === tab.key ? " active" : "")}
+                    onKeyDown={event => onTabKeyDown(event, tab.key)}
+                    onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
+              <V4RailIcon name={tab.key} />
+              <span className="v4-ri-label">{tab.label}</span>
+              <i className="v4-ri-dot"></i>
+            </button>
           ))}
         </div>
         <div className="v4-rail-spacer"></div>
@@ -388,7 +410,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
             <div id="v4-panel-replay" role="tabpanel" aria-labelledby="v4-tab-replay"
                  hidden aria-hidden="true" inert="" />
           )}
-          {V4_TABS.filter(tab => tab.key !== activeTab && tab.key !== "replay").map(tab => (
+          {tabs.filter(tab => tab.key !== activeTab && tab.key !== "replay").map(tab => (
             <div key={tab.key} id={"v4-panel-" + tab.key} role="tabpanel"
                  aria-labelledby={"v4-tab-" + tab.key} hidden aria-hidden="true" inert="" />
           ))}

@@ -36,6 +36,7 @@ UI_DEEP_LINKS = {
     "/ui/evolution/lab": 200,
     "/ui/evolution/workbench": 200,
     "/ui/evolution/verdict": 200,
+    "/ui/audit": 200,
     "/ui/backtest": 200,
     "/ui/chart-replay": 200,
 }
@@ -48,6 +49,7 @@ UI_LEGACY_ALIASES = {
     "/ui/lab": "/ui/evolution/lab",
     "/ui/pro": "/ui/evolution/workbench",
     "/ui/verdict": "/ui/evolution/verdict",
+    "/ui/audit": "/ui/evolution/records",
     "/ui/simulation": "/ui/chart-replay",
 }
 
@@ -150,7 +152,7 @@ def test_dashboard_ui_deep_links_preserve_v4_ops_default_and_explicit_v3_selecto
 
 
 def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, tmp_path: Path) -> None:
-    """Given old route keys, Then they canonicalize to Evolution nested subtab URLs."""
+    """Given old route keys, Then they canonicalize to their V5.P0 owner routes."""
     client = _client(monkeypatch, tmp_path)
 
     for route, target in UI_LEGACY_ALIASES.items():
@@ -161,6 +163,13 @@ def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, 
         selected = client.get(f"{route}?dashboard_version=v3", follow_redirects=False)
         assert selected.status_code in {307, 308}
         assert selected.headers["location"] == f"{target}?dashboard_version=v3"
+    audit = client.get("/ui/audit?tab=audit&run_id=run-7", follow_redirects=False)
+    assert audit.status_code == 307
+    assert audit.headers["location"] == "/ui/evolution/records?tab=audit&run_id=run-7"
+
+    evolution_audit = client.get("/ui/evolution/audit?tab=audit", follow_redirects=False)
+    assert evolution_audit.status_code == 307
+    assert evolution_audit.headers["location"] == "/ui/evolution/records?tab=audit"
 
 
 def test_dashboard_ui_v4_no_slash_redirect_preserves_query(monkeypatch, tmp_path: Path) -> None:

@@ -35204,24 +35204,40 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_TABS = [
-    { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2E4\uC2DC\uAC04 \uAD00\uCC30", group: "primary" },
-    { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8", group: "primary" },
-    { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", group: "primary" },
-    { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9", group: "primary" },
-    { key: "workbench", label: "\uC131\uACFC", full: "\uC131\uACFC \xB7 \uBA85\uC608\uC758 \uC804\uB2F9", badge: "HALL", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9(\uC778\uAC04+AI \uBCA4\uCE58\uB9C8\uD06C)", group: "primary" },
-    { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
-    { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30, \uBE44-P4)", group: "primary" },
-    { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D", group: "secondary" },
-    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4)", badge: "P4", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)", group: "secondary" },
-    { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5", group: "secondary" }
+  var V4_NORMAL_TABS = [
+    { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2E4\uC2DC\uAC04 \uAD00\uCC30" },
+    { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8" },
+    { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D" },
+    { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9 \xB7 \uAC10\uC0AC \uAC70\uBC84\uB10C\uC2A4" },
+    { key: "workbench", label: "\uC131\uACFC", full: "\uC131\uACFC \xB7 \uBA85\uC608\uC758 \uC804\uB2F9", badge: "HALL", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9(\uC778\uAC04+AI \uBCA4\uCE58\uB9C8\uD06C)" },
+    { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)" }
   ];
-  var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
+  var V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
+  var V4_LEGACY_EXTRA_TABS = [
+    { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
+    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4)", badge: "P4", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)" },
+    { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5" },
+    { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30, \uBE44-P4)" }
+  ];
+  var V4_TAB_KEYS = V4_NORMAL_TABS.map((t) => t.key);
+  var V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map((t) => t.key);
+  var V4_LEGACY_TAB_MIGRATIONS = { audit: "history", verdict: "history" };
+  function v4LegacyExtrasEnabled(search) {
+    try {
+      return new URLSearchParams(search === void 0 ? window.location.search : search).get(V4_LEGACY_ROLLBACK_QUERY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+  function v4TabsForSession() {
+    return v4LegacyExtrasEnabled() ? V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS) : V4_NORMAL_TABS;
+  }
   var V4_PATH_TAB_MAP = {
     "backtest": "backtest",
     "chart-replay": "replay",
     "records": "history",
     "lab": "lab",
+    "audit": "history",
     "workbench": "workbench",
     "verdict": "history",
     "process": "research"
@@ -35237,12 +35253,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return "";
     }
   }
-  function v4InitialTab() {
+  function v4InitialTab(tabKeys = V4_TAB_KEYS) {
     try {
-      const t = new URLSearchParams(window.location.search).get("tab");
-      if (t && V4_TAB_KEYS.includes(t)) return t;
+      const requested = new URLSearchParams(window.location.search).get("tab");
+      const t = V4_LEGACY_TAB_MIGRATIONS[requested] || requested;
+      if (t && tabKeys.includes(t)) return t;
       const fromPath = v4TabFromPathname(window.location.pathname);
-      if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
+      if (fromPath && tabKeys.includes(fromPath)) return fromPath;
     } catch (e) {
     }
     return "research";
@@ -35312,11 +35329,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     var _a, _b, _c, _d, _e, _f, _g;
+    const tabs = v4TabsForSession();
+    const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
     const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
     const [pendingBase, setPendingBase] = useState_v4(baseUrl);
     const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
-    const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
-    const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
+    const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab(tabKeys));
+    const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab(tabKeys) === "replay");
     const pendingTabFocusRef = useRef_v4("");
     const [buildVer] = useState_v4(() => v4BundleVersion());
     useEffect_v4(() => {
@@ -35326,6 +35345,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
     }, [activeTab]);
+    useEffect_v4(() => {
+      const onPopState = () => {
+        const nextTab = v4InitialTab(tabKeys);
+        pendingTabFocusRef.current = nextTab;
+        setActiveTab(nextTab);
+      };
+      window.addEventListener("popstate", onPopState);
+      return () => window.removeEventListener("popstate", onPopState);
+    }, [tabKeys]);
     useEffect_v4(() => {
       var _a2;
       if (!pendingTabFocusRef.current) return;
@@ -35442,32 +35470,33 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const targetScoreRaw = (_e = configSpec.find((f) => f.name === "target_score")) == null ? void 0 : _e.default;
     const targetScore = targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === void 0 ? 1 : Number(targetScoreRaw);
     const selectTab = (key, retainFocus = true) => {
+      if (!tabKeys.includes(key)) return;
       if (retainFocus) pendingTabFocusRef.current = key;
       setActiveTab(key);
       try {
         const url = new URL(window.location.href);
         url.searchParams.set("tab", key);
-        window.history.replaceState(null, "", url.pathname + url.search);
+        window.history.pushState(null, "", url.pathname + url.search);
       } catch (e) {
       }
     };
     const onTabKeyDown = (event, key) => {
-      const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key);
+      const next = _nextV4TabKey(tabKeys, key, event.key);
       if (next === key && !["Home", "End"].includes(event.key)) return;
       event.preventDefault();
       selectTab(next);
     };
-    const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, V4_TABS.map((tab, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: tab.key }, tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && /* @__PURE__ */ React.createElement("div", { className: "v4-rail-div", role: "separator", "aria-label": "\uBCF4\uC870 \uB3C4\uAD6C", title: "\uBCF4\uC870 \uB3C4\uAD6C(\uBD84\uC11D\xB7\uAC10\uC0AC\xB7\uCEE8\uD14D\uC2A4\uD2B8)" }, /* @__PURE__ */ React.createElement("span", null, "\uBCF4\uC870")), /* @__PURE__ */ React.createElement(
+    const active = tabs.find((t) => t.key === activeTab) || tabs[0];
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, tabs.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        key: tab.key,
         id: "v4-tab-" + tab.key,
         role: "tab",
         "aria-controls": "v4-panel-" + tab.key,
         "aria-selected": activeTab === tab.key,
         tabIndex: activeTab === tab.key ? 0 : -1,
-        "data-group": tab.group,
-        className: "v4-rail-item" + (tab.group === "secondary" ? " secondary" : "") + (activeTab === tab.key ? " active" : ""),
+        className: "v4-rail-item" + (activeTab === tab.key ? " active" : ""),
         onKeyDown: (event) => onTabKeyDown(event, tab.key),
         onClick: () => selectTab(tab.key),
         title: tab.full + " \u2014 " + tab.hint
@@ -35475,7 +35504,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx build", title: "\uD604\uC7AC \uB85C\uB4DC\uB41C \uBC88\uB4E4 \uBE4C\uB4DC \uC9C0\uBB38(app.js?v=)" }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx build", title: "\uD604\uC7AC \uB85C\uB4DC\uB41C \uBC88\uB4E4 \uBE4C\uB4DC \uC9C0\uBB38(app.js?v=)" }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,
@@ -35520,7 +35549,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-hidden": "true",
         inert: ""
       }
-    ), V4_TABS.filter((tab) => tab.key !== activeTab && tab.key !== "replay").map((tab) => /* @__PURE__ */ React.createElement(
+    ), tabs.filter((tab) => tab.key !== activeTab && tab.key !== "replay").map((tab) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: tab.key,
