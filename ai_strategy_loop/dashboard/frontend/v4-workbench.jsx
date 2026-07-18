@@ -1,23 +1,27 @@
 /* v4-workbench.jsx — V4 Workbench: Hall-of-Fame performance evidence. */
 // dual-safe ESM import (esbuild bundle path). KEEP each on ONE physical line.
 import { HallOfFamePanel } from "./chart.jsx";
-import { HofInventoryGate } from "./hof-inventory.jsx";
 
-function V4Workbench({ baseUrl, wsStatus, runId }) {
-  const surfaceState = wsStatus === "connecting"
+function V4Workbench({ baseUrl, wsStatus }) {
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const connecting = wsStatus === "connecting" || wsStatus === "reconnecting";
+  const surfaceState = connecting
     ? "loading"
-    : (wsStatus === "error" || wsStatus === "closed" || (!baseUrl && runId))
-      ? "error"
-      : runId
-        ? "ready"
-        : "empty";
-  const statusText = surfaceState === "loading"
-    ? "명예의 전당 데이터를 연결하고 있습니다."
-    : surfaceState === "error"
-      ? "명예의 전당 데이터를 확인할 수 없습니다. 성과 판단을 보류하세요."
-      : surfaceState === "ready"
-        ? `Run ${runId}의 장기 성과 기준을 확인합니다.`
-        : "선택된 Run이 없습니다. 명예의 전당의 장기 성과 기준만 표시됩니다.";
+    : isDemo
+      ? "demo"
+      : (wsStatus === "error" || wsStatus === "closed" || !baseUrl)
+        ? "error"
+        : "ready";
+  const statusText = wsStatus === "reconnecting"
+    ? "명예의 전당 연결이 끊겨 재연결 중입니다. 표시된 성과 근거를 최신으로 간주하지 마세요."
+    : surfaceState === "loading"
+      ? "전역 명예의 전당 데이터를 연결하고 있습니다."
+      : surfaceState === "demo"
+        ? "데모 데이터입니다. 운영 성과 근거와 분리된 전역 명예의 전당만 표시합니다."
+        : surfaceState === "error"
+          ? "전역 명예의 전당 데이터를 확인할 수 없습니다. 성과 판단을 보류하세요."
+          : "전역 명예의 전당의 장기 성과 기준을 확인합니다.";
 
   return (
     <section
@@ -51,7 +55,6 @@ function V4Workbench({ baseUrl, wsStatus, runId }) {
       <section className="v4-workbench-region v4-cjk-safe" aria-labelledby="v4-workbench-hof-title">
         <h3 id="v4-workbench-hof-title" className="stom-section-label">장기 비교 기준과 명예의 전당</h3>
         <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
-        <HofInventoryGate compact />
       </section>
     </section>
   );

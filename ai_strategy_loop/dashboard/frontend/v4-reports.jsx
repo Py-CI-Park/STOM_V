@@ -4,7 +4,7 @@
  *   → inline JS 를 포함한 리포트(alpha_lab reporting 산출물 등)도 실행되지 않는다.
  */
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
-const { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+const { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
 // dual-safe ESM import (esbuild bundle path). KEEP each on ONE physical line.
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 
@@ -14,28 +14,70 @@ function _fmtReportBytes(n) {
   if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
   return (n / (1024 * 1024)).toFixed(1) + " MB";
 }
+function isReport(row) {
+  return Boolean(row && typeof row === "object" && typeof row.path === "string" && row.path &&
+    typeof row.name === "string" && Number.isFinite(row.bytes));
+}
+
 
 function V4Reports({ baseUrl }) {
   const [list, setList] = useState_rp7(null); // null=loading, []=empty
   const [err, setErr] = useState_rp7("");
   const [sel, setSel] = useState_rp7("");
+  const [listedBase, setListedBase] = useState_rp7("");
+  const generationRef = useRef_rp7(0);
+  const selectionRef = useRef_rp7("");
+  const baseRef = useRef_rp7(baseUrl);
+  baseRef.current = baseUrl;
 
   useEffect_rp7(() => {
-    if (!baseUrl) { setList([]); return; }
-    let cancelled = false;
-    fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6000) })
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
+    const priorSelection = selectionRef.current;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    setList(baseUrl ? null : []);
+    setListedBase("");
+    setErr("");
+    setSel("");
+    selectionRef.current = "";
+
+    if (!baseUrl) {
+      clearTimeout(timeout);
+      return () => controller.abort();
+    }
+
+    fetch(baseUrl + "/reports", { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
-        if (cancelled) return;
-        const reports = Array.isArray(j && j.reports) ? j.reports : [];
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        const reports = Array.isArray(j && j.reports) ? j.reports.filter(isReport) : [];
+        const retained = reports.some(rp => rp.path === priorSelection) ? priorSelection : "";
+        const nextSelection = retained || (reports.length ? reports[0].path : "");
         setList(reports);
-        setSel(prev => prev || (reports.length ? reports[0].path : ""));
+        setListedBase(baseUrl);
+        setSel(nextSelection);
+        selectionRef.current = nextSelection;
       })
-      .catch(e => { if (!cancelled) { setList([]); setErr(String(e && e.message ? e.message : e)); } });
-    return () => { cancelled = true; };
+      .catch(e => {
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        setList([]);
+        setErr(String(e && e.message ? e.message : e));
+      })
+      .finally(() => clearTimeout(timeout));
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
   }, [baseUrl]);
 
-  const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
+  const selectReport = path => {
+    setSel(path);
+    selectionRef.current = path;
+  };
+  const ownsSelection = Boolean(baseUrl && listedBase === baseUrl && Array.isArray(list) && list.some(rp => rp.path === sel));
+  const viewUrl = ownsSelection ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
 
   return (
     <section className="v4-reports" aria-labelledby="v4-reports-heading">
@@ -55,7 +97,7 @@ function V4Reports({ baseUrl }) {
           {list !== null && list.map(rp => (
             <button key={rp.path}
                     className={"v4-reports-item" + (sel === rp.path ? " active" : "")}
-                    onClick={() => setSel(rp.path)} title={rp.path}>
+                    onClick={() => selectReport(rp.path)} title={rp.path}>
               <span className="v4-reports-name">{rp.name}</span>
               <span className="v4-reports-meta mono">{_fmtReportBytes(rp.bytes)}</span>
             </button>

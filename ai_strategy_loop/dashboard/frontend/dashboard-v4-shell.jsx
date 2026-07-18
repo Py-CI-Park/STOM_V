@@ -45,6 +45,8 @@ const V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map(t => 
 const V4_PROTOTYPE_TAB_KEYS = ["lab", "context", "alpha", "catalog"];
 const V4_CONTEXT_DRAWER_QUERY = "v4_context";
 const V4_PROTOTYPE_QUERY = "prototype";
+let v4LegacyDestinationBootstrapped = false;
+let v4LegacyStoredDestination = "";
 
 function v4CanonicalDestinationKey(key) {
   const item = DASHBOARD_PAGE_OWNER_MATRIX.find(destination =>
@@ -67,7 +69,7 @@ function v4TabFromPathname(pathname) {
     const leaf = parts[1] === "evolution" ? (parts[2] || "") : (parts[1] || "");
     if (parts[1] === "evolution" && !parts[2]) return "research";
     if (V4_PROTOTYPE_TAB_KEYS.includes(leaf)) return leaf;
-    return v4CanonicalDestinationKey(leaf);
+    return v4CanonicalDestinationKey(leaf) || leaf;
   } catch (e) { return ""; }
 }
 function v4RequestedDestination(location = window.location) {
@@ -86,35 +88,55 @@ function v4CanonicalizeLegacyLocation(location = window.location, history = wind
     const canonical = v4CanonicalDestinationKey(requested);
     const isContext = requested === "context";
     const owner = canonical || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
-    const fallbackOwner = owner || "research";
+    if (!owner) return "";
     const url = new URL(location.href || (location.pathname + location.search), window.location.origin);
     if (isContext) {
       const pathOwner = v4CanonicalDestinationKey(v4TabFromPathname(location.pathname));
       url.searchParams.set("tab", pathOwner || "research");
       url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
     } else {
-      url.searchParams.set("tab", fallbackOwner);
+      url.searchParams.set("tab", owner);
       if (requested === "alpha" || requested === "catalog") url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
     }
     if (url.pathname + url.search !== location.pathname + location.search) {
       history.replaceState(null, "", url.pathname + url.search);
     }
-    return fallbackOwner;
+    return owner;
   } catch (e) { return ""; }
+}
+function v4UnavailableDestination(location = window.location) {
+  const requested = v4RequestedDestination(location);
+  if (!requested) return "";
+  if (v4LegacyExtrasEnabled(location.search) && V4_PROTOTYPE_TAB_KEYS.includes(requested)) return "";
+  if (v4CanonicalDestinationKey(requested)) return "";
+  return ["lab", "context", "alpha", "catalog"].includes(requested) ? "" : requested;
+}
+function v4Storage() {
+  try { return window.localStorage; } catch (e) { return null; }
 }
 function v4StoredDestination() {
+  if (v4LegacyDestinationBootstrapped) return v4LegacyStoredDestination;
+  v4LegacyDestinationBootstrapped = true;
+  const storage = v4Storage();
+  if (!storage) return "";
+  let primary = "";
+  let evolution = "";
   try {
-    const primary = localStorage.getItem("stom_active_tab");
-    const evolution = localStorage.getItem("stom_active_evolution_tab");
-    const requested = evolution && primary === "evolution" ? evolution : primary;
-    const canonical = v4CanonicalDestinationKey(requested) ||
-      (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
-    localStorage.removeItem("stom_active_tab");
-    localStorage.removeItem("stom_active_evolution_tab");
-    return canonical;
-  } catch (e) { return ""; }
+    primary = storage.getItem("stom_active_tab");
+    evolution = storage.getItem("stom_active_evolution_tab");
+  } catch (e) {
+  } finally {
+    try {
+      storage.removeItem("stom_active_tab");
+      storage.removeItem("stom_active_evolution_tab");
+    } catch (e) {}
+  }
+  const requested = evolution && primary === "evolution" ? evolution : primary;
+  v4LegacyStoredDestination = v4CanonicalDestinationKey(requested) ||
+    (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+  return v4LegacyStoredDestination;
 }
-function v4InitialTab(tabKeys = V4_TAB_KEYS) {
+function v4InitialTab(tabKeys = V4_TAB_KEYS, storedDestination = "") {
   try {
     const requested = v4RequestedDestination();
     const rollback = v4LegacyExtrasEnabled();
@@ -122,10 +144,7 @@ function v4InitialTab(tabKeys = V4_TAB_KEYS) {
     const canonical = v4CanonicalDestinationKey(requested) ||
       (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
     if (canonical && tabKeys.includes(canonical)) return canonical;
-    if (!requested) {
-      const stored = v4StoredDestination();
-      if (stored && tabKeys.includes(stored)) return stored;
-    }
+    if (!requested && storedDestination && tabKeys.includes(storedDestination)) return storedDestination;
   } catch (e) {}
   return "research";
 }
@@ -147,11 +166,18 @@ function v4InitialBase(propBase) {
     if (q && /^https?:\/\//.test(q)) return new URL(q).origin;
   } catch (e) {}
   try {
-    const cached = localStorage.getItem("stom_base_url");
+    const storage = v4Storage();
+    const cached = storage && storage.getItem("stom_base_url");
     const here = (window.location && window.location.origin) || "";
     if (cached && here.startsWith("http") && new URL(cached).origin === here) return cached;
   } catch (e) {}
   return propBase || DEFAULT_BASE;
+}
+function v4InitialTheme() {
+  try {
+    const storage = v4Storage();
+    return (storage && storage.getItem("stom_theme")) || "dark";
+  } catch (e) { return "dark"; }
 }
 
 // 현재 로드된 번들 빌드 지문(app.js?v=…)을 런타임에 파싱 — 사용자가 최신 빌드 여부를 확인.
@@ -202,14 +228,15 @@ function V4BaseControl({ value, onChange, onApply, onReconnect }) {
 }
 
 function DashboardV4Shell({ baseUrl: baseUrlProp }) {
-  // Retired aliases rewrite to their V5.5 owner; only the explicit query restores extras.
-  v4CanonicalizeLegacyLocation();
   const tabs = v4TabsForSession();
   const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
+  const storedDestinationRef = useRef_v4(null);
+  if (storedDestinationRef.current === null) storedDestinationRef.current = v4StoredDestination();
   const initialTabRef = useRef_v4("");
   if (!initialTabRef.current) {
     const hadDestination = !!v4RequestedDestination();
-    initialTabRef.current = v4InitialTab(tabKeys);
+    v4CanonicalizeLegacyLocation();
+    initialTabRef.current = v4InitialTab(tabKeys, storedDestinationRef.current);
     if (!hadDestination && initialTabRef.current !== "research") {
       try {
         const url = new URL(window.location.href);
@@ -220,8 +247,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   }
   const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
   const [pendingBase, setPendingBase] = useState_v4(baseUrl);
-  const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
+  const [theme, setTheme] = useState_v4(v4InitialTheme);
   const [activeTab, setActiveTab] = useState_v4(initialTabRef.current);
+  const [unavailableDestination, setUnavailableDestination] = useState_v4(() => v4UnavailableDestination());
   const [replayVisited, setReplayVisited] = useState_v4(() => initialTabRef.current === "replay");
   const [contextOpen, setContextOpen] = useState_v4(() => {
     try { return new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"; } catch (e) { return false; }
@@ -229,19 +257,28 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const pendingTabFocusRef = useRef_v4("");
   const contextTriggerRef = useRef_v4(null);
   const contextDrawerRef = useRef_v4(null);
+  const contextOpenRef = useRef_v4(contextOpen);
   const [buildVer] = useState_v4(() => v4BundleVersion());
+  useEffect_v4(() => { contextOpenRef.current = contextOpen; }, [contextOpen]);
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("stom_theme", theme);
+    try { v4Storage()?.setItem("stom_theme", theme); } catch (e) {}
   }, [theme]);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
     const onPopState = () => {
       const nextTab = v4CanonicalizeLegacyLocation() || v4InitialTab(tabKeys);
+      const nextContextOpen = (() => {
+        try { return new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"; } catch (e) { return false; }
+      })();
+      const restoreContextTrigger = contextOpenRef.current && !nextContextOpen;
       pendingTabFocusRef.current = nextTab;
       setActiveTab(nextTab);
-      try { setContextOpen(new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"); } catch (e) { setContextOpen(false); }
+      setUnavailableDestination(v4UnavailableDestination());
+      contextOpenRef.current = nextContextOpen;
+      setContextOpen(nextContextOpen);
+      if (restoreContextTrigger) setTimeout(() => contextTriggerRef.current?.focus(), 0);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -265,7 +302,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [runList, setRunList] = useState_v4([]);
   const [fetchedRunState, setFetchedRunState] = useState_v4(null);
   const [archiveLoadError, setArchiveLoadError] = useState_v4("");
+  const [runsLoadError, setRunsLoadError] = useState_v4("");
+  const [runsLoaded, setRunsLoaded] = useState_v4(false);
   const archiveRequestRef = useRef_v4(0);
+  const runsRequestRef = useRef_v4(0);
+  const backendIdentityRef = useRef_v4(0);
 
   // 성능(2026-07-17): /runs 는 527런 3MB 대형 페이로드. 과거엔 deps 에 liveState.run_id/status 가
   //   있어 WS 상태 하이드레이션마다 3MB 를 3회 재요청(9MB/로드)했다. 아카이브는 런 '종료' 시에만
@@ -279,7 +320,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   }, [liveState.status]);
   const loadedRunsEpochRef = useRef_v4(-1);
   useEffect_v4(() => {
-    if (isDemo || !baseUrl) { setRunList([]); return; }
+    if (isDemo || !baseUrl) {
+      runsRequestRef.current += 1;
+      setRunList([]);
+      setRunsLoadError("");
+      setRunsLoaded(false);
+      return;
+    }
+    const requestId = ++runsRequestRef.current;
+    const backendIdentity = backendIdentityRef.current;
     let cancelled = false;
     let attempt = 0;
     // §1c: 런 종료 전이(runsEpoch 증가)에서는 공용 캐시를 강제 무효화해 새 아카이브를 즉시 반영한다.
@@ -290,15 +339,20 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     const load = () => {
       fetchRunsShared(baseUrl, { force })
         .then(j => {
-          if (cancelled) return;
-          const runs = Array.isArray(j && j.runs) ? j.runs : [];
+          if (cancelled || requestId !== runsRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
+          if (!j || typeof j !== "object" || !Array.isArray(j.runs) || j.runs.some(run => !run || typeof run !== "object")) {
+            throw new Error("Malformed /runs response: expected an object with a runs array");
+          }
+          const runs = j.runs.slice();
           runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
           setRunList(runs);
+          setRunsLoadError("");
+          setRunsLoaded(true);
         })
-        .catch(() => {
-          if (cancelled) return;
+        .catch(e => {
+          if (cancelled || requestId !== runsRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
           if (attempt < 4) { attempt += 1; setTimeout(() => { if (!cancelled) load(); }, 4000); }
-          else setRunList([]);
+          else setRunsLoadError(String(e && e.message ? e.message : e));
         });
     };
     load();
@@ -310,14 +364,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
       setFetchedRunState(null); setArchiveLoadError(""); return;
     }
     const requestId = ++archiveRequestRef.current;
+    const backendIdentity = backendIdentityRef.current;
     fetch(baseUrl + "/run_state?run_id=" + encodeURIComponent(selectedRun), { signal: AbortSignal.timeout(4000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
-        if (requestId !== archiveRequestRef.current) return;
+        if (requestId !== archiveRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
         setFetchedRunState(j); setArchiveLoadError("");
       })
       .catch(e => {
-        if (requestId !== archiveRequestRef.current) return;
+        if (requestId !== archiveRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
         setFetchedRunState(null);
         setArchiveLoadError(String(e && e.message ? e.message : e));
       });
@@ -362,6 +417,23 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     const g = (state.generations || []).find(x => x.gen_no === genNo);
     if (g) setCodeViewGen(g);
   }, [state.generations]);
+  const applyBase = () => {
+    backendIdentityRef.current += 1;
+    archiveRequestRef.current += 1;
+    runsRequestRef.current += 1;
+    loadedRunsEpochRef.current = -1;
+    setSelectedRun("");
+    setFetchedRunState(null);
+    setArchiveLoadError("");
+    setRunList([]);
+    setRunsLoadError("");
+    setRunsLoaded(false);
+    setBaseUrl(pendingBase);
+  };
+  const retryRunList = () => {
+    setRunsLoadError("");
+    setRunsEpoch((epoch) => epoch + 1);
+  };
 
   // config 파생값(app.jsx:241-244 패턴): 차트 gate 라인·세대표 하이라이트 기준
   const mddCap = Number((configSpec.find(f => f.name === "mdd_cap")?.default) ?? 40);
@@ -370,13 +442,30 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const targetScore = (targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === undefined) ? 1.0 : Number(targetScoreRaw);
 
   const setContextDrawer = (open, returnFocus = false) => {
-    setContextOpen(open);
+    if (open === contextOpenRef.current) return;
     try {
       const url = new URL(window.location.href);
-      if (open) url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
-      else url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
-      window.history.pushState(null, "", url.pathname + url.search);
-    } catch (e) {}
+      if (open) {
+        url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
+        window.history.pushState({ ...(window.history.state || {}), v4ContextDrawer: true }, "", url.pathname + url.search);
+        contextOpenRef.current = true;
+        setContextOpen(true);
+        return;
+      }
+      url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
+      contextOpenRef.current = false;
+      setContextOpen(false);
+      if (window.history.state && window.history.state.v4ContextDrawer === true) {
+        window.history.back();
+      } else {
+        const nextState = { ...(window.history.state || {}) };
+        delete nextState.v4ContextDrawer;
+        window.history.replaceState(nextState, "", url.pathname + url.search);
+      }
+    } catch (e) {
+      contextOpenRef.current = false;
+      setContextOpen(false);
+    }
     if (!open && returnFocus) setTimeout(() => contextTriggerRef.current?.focus(), 0);
   };
   const onContextKeyDown = (event) => {
@@ -396,8 +485,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   };
   const selectTab = (key, retainFocus = true) => {
     if (!tabKeys.includes(key)) return;
+    if (key === activeTab && !contextOpenRef.current) return;
+    if (key === activeTab && contextOpenRef.current) {
+      setContextDrawer(false, retainFocus);
+      return;
+    }
     if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
+    setUnavailableDestination("");
+    contextOpenRef.current = false;
     setContextOpen(false);
     try {
       const url = new URL(window.location.href);
@@ -412,7 +508,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     event.preventDefault();
     selectTab(next);
   };
-  const active = tabs.find(t => t.key === activeTab) || tabs[0];
+  const active = unavailableDestination
+    ? { full: "요청 대상 사용할 수 없음", hint: `명시적 route "${unavailableDestination}" 보존` }
+    : (tabs.find(t => t.key === activeTab) || tabs[0]);
 
   return (
     <div className="v4-root" data-v4-tab={activeTab}>
@@ -459,12 +557,12 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           </div>
           <div className="v4-grow"></div>
           <V4BaseControl value={pendingBase} onChange={setPendingBase}
-                         onApply={() => setBaseUrl(pendingBase)} onReconnect={reconnect} />
+                         onApply={applyBase} onReconnect={reconnect} />
           <ConnBadge health={health} wsStatus={wsStatus} />
           <StatusBadge status={state.status} />
           <button ref={contextTriggerRef} className="btn ghost sm v4-context-trigger"
                   type="button" aria-haspopup="dialog" aria-expanded={contextOpen}
-                  aria-controls="v4-context-drawer" onClick={() => setContextDrawer(!contextOpen, contextOpen)}>
+                  aria-controls="v4-context-drawer" onClick={() => setContextDrawer(!contextOpenRef.current, contextOpenRef.current)}>
             AI Context
           </button>
           <V4ThemeToggle theme={theme} onChange={setTheme} />
@@ -488,6 +586,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
             <div className="research-empty" role="alert">
               아카이브 run 로드 실패 · {selectedRun} · {display.error}
             </div>
+          )}
+          {runsLoadError && (
+            <div className="research-empty" role="alert">
+              아카이브 목록을 새로 고치지 못했습니다 · {runsLoadError} · {runList.length ? `마지막 확인 ${runList.length}건을 표시합니다.` : "확인된 아카이브 행이 없습니다."}
+              <button className="btn ghost sm" type="button" onClick={retryRunList}>다시 시도</button>
+            </div>
+          )}
+          {runsLoaded && !runsLoadError && runList.length === 0 && (
+            <div className="research-empty" role="status">아카이브 run이 없습니다.</div>
           )}
           {/* Replay keep-alive: 첫 방문 후 hidden 유지(언마운트 금지 — WS·재생 위치 보존) */}
           {replayVisited && (
@@ -513,7 +620,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
             <div id={"v4-panel-" + activeTab} role="tabpanel"
                  aria-labelledby={"v4-tab-" + activeTab}>
               <ErrorBoundary>
-                {activeTab === "research" ? (
+                {unavailableDestination ? (
+                  <div className="research-empty" role="alert">
+                    요청한 대상 "{unavailableDestination}"은(는) 사용할 수 없습니다. URL을 변경하지 않았으며, 왼쪽 탐색에서 지원되는 대상을 선택하세요.
+                  </div>
+                ) : activeTab === "research" ? (
                 <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send}
                                 lastReply={lastReply} onViewCode={onViewCodeByGen}
                                 onOpenSettings={() => setSettingsOpen(true)}

@@ -12,7 +12,6 @@ import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
 import { ResearchLabPanel } from "./rl-panel.jsx";
-import { ResearchProPanel } from "./research-pro.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 
@@ -37,7 +36,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
         <header className="panel-hd">
           <div>
             <div className="stom-section-label" id="v4-history-journey-title">History 작업 흐름</div>
-            <div className="mono">과거 run/gen을 선택하고 근거를 비교하는 읽기 전용 여정</div>
+            <div className="mono">아카이브/Compare 탐색만 읽기 전용이며, 아래 append-only 결정 기록은 예외입니다.</div>
           </div>
         </header>
         <div className="panel-bd">
@@ -96,9 +95,8 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       </section>
 
       <section aria-labelledby="v4-history-candidate-title" aria-busy={historyLoading}>
-        <h2 className="stom-section-label" id="v4-history-candidate-title">후보 분석 · Compare</h2>
+        <h2 className="stom-section-label" id="v4-history-candidate-title">후보 Compare</h2>
         <div data-region="scroll" tabIndex={0} aria-label="아카이브 run 기반 후보 분석과 비교 영역">
-          <ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
           <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
         </div>
       </section>
@@ -120,10 +118,10 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       <section aria-labelledby="v4-history-gov-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 · 승급/Export 경계</h2>
         <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
-          append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
+          읽기 전용 범위는 아카이브/Compare 탐색뿐입니다. <b>Append-only 결정 기록은 쓰기 예외</b>이며, 아래 승급/Export 거버넌스 제어 전에 명시합니다.
         </p>
         <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-          <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
+          <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showDecisionLedger={false} />
           <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
         </div>
       </section>

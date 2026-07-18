@@ -200,7 +200,7 @@ def test_g006_removes_duplicate_inner_tabs_and_pins_readability() -> None:
     assert "연구실 데이터 일부 로드 실패" in pages
     assert "opsError" in lab
     assert "운영 상태를 불러오지 못했습니다" in lab
-    assert "setOpsStrip(null); setOpsError" in lab
+    assert "setOpsStrip(null);" in lab and "setOpsError(String(e));" in lab
     assert 'const labMode = opsError ? "상태 오류"' in lab
     assert "실행 없음으로 표시하지 않습니다" in lab
 

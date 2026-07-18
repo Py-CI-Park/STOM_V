@@ -33,15 +33,19 @@ def test_lab_exposes_honest_factor_evidence_regions_and_states() -> None:
     assert '표본 외 구간' in source
 
 
-def test_workbench_is_hall_of_fame_only_and_keeps_promotion_blocked() -> None:
-    # Given: canonical 성과 is the Hall-of-Fame-only destination.
+def test_workbench_is_global_hall_of_fame_only_and_keeps_promotion_blocked() -> None:
+    # Given: canonical 성과 is the global Hall-of-Fame-only destination.
     source = _read("v4-workbench.jsx")
 
-    # When/Then: candidate analysis and comparison are owned by other destinations.
+    # When/Then: it delegates the inventory gate to HallOfFamePanel and has no run-bound readiness.
     assert 'className="v4-workbench v4-cjk-safe"' in source
     assert 'import { HallOfFamePanel } from "./chart.jsx";' in source
     assert '<HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />' in source
-    assert '<HofInventoryGate compact />' in source
+    assert "HofInventoryGate" not in source
+    assert "runId" not in source
+    assert 'wsStatus === "reconnecting"' in source
+    assert 'surfaceState === "demo"' in source
+    assert "전역 명예의 전당" in source
     assert "ResearchProPanel" not in source
     assert "RunComparePanel" not in source
     assert "workbench-candidate-compare" not in source
@@ -49,10 +53,43 @@ def test_workbench_is_hall_of_fame_only_and_keeps_promotion_blocked() -> None:
     assert 'aria-busy={surfaceState === "loading"}' in source
     assert 'role="alert"' in source
     assert 'data-state={surfaceState}' in source
-    assert "선택된 Run이 없습니다." in source
     assert '승격·최종 승인·운영 반영은 이 탭에서 실행되지 않습니다.' in source
     assert "서버 검증" in source and "차단" in source
 
+
+def test_research_lab_owns_correlation_identity_and_cleans_up_ops_work() -> None:
+    # Given: correlation/combination analysis is scoped to its source identity.
+    source = _read("rl-panel.jsx")
+
+    # Then: each request is abortable, generation-checked, and bound to base URL, run, and method.
+    assert "const correlationRequestRef = useRef_rl" in source
+    assert "const identity = { baseUrl, runId, method };" in source
+    assert "_sameCorrelationIdentity(current.identity, identity)" in source
+    assert "_sourceIdentity: identity" in source
+    assert "_requestGeneration: generation" in source
+    assert "new AbortController()" in source
+    assert "request.generation += 1;" in source
+    assert "setData(null);" in source and "setErr(null);" in source
+    assert "fetch(url, { signal: controller.signal })" in source
+
+    # And: polling aborts on replacement/unmount and restores the title it changed.
+    assert "if (opsRequestRef.current) opsRequestRef.current.abort();" in source
+    assert "clearInterval(timer);" in source
+    assert "document.title = titleBeforeOps;" in source
+
+    # And: an explicit empty allowlist has no hidden Edge fallback.
+    assert "(visibleTabs[0] || RESEARCH_TABS[0]).id" not in source
+    assert "표시하도록 허용된 연구실 섹션이 없습니다." in source
+
+    # And: History retains its explicit no-ops-status ownership.
+    assert "showOpsStatus={false}" in _read("v4-history.jsx")
+
+    # And: the standalone handoff names canonical History/성과 ownership without legacy-tab writes.
+    assert "History는 계보·비교 근거를, 성과는 전역 명예의 전당 기준을 각각 소유합니다." in source
+    assert 'window.location.href = "/ui/evolution/workbench";' in source
+    assert "stom_active_tab" not in source
+    assert "stom_active_evolution_tab" not in source
+    assert "히트맵·명예의전당·비교·히스토리" not in source
 
 def test_reports_adds_read_only_wiki_without_relaxing_report_viewer_security() -> None:
     # Given: Reports remains the secure report viewer while gaining a read-only Wiki sibling.

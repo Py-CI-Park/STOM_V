@@ -591,7 +591,7 @@ V4_RUNNING_STATE.page_data = {
 const V4_DASHBOARD_PAGES = [
   { page: "v4shell", global: "DashboardV4Shell" }, // Research Live (default tab), idle
   { page: "v4shell-running", global: "DashboardV4Shell", state: V4_RUNNING_STATE,
-    needles: ["research-observability-grid", "research allowed"] }, // Research Live + observability grid
+    needles: ["v4-live-layout", "v4-graph-grid"] }, // Research Live + dense graph workspace
   { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // BacktestTab
   { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // SimulationTab (keep-alive shell)
   { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // ResearchHeatmap + ResearchLab

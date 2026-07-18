@@ -53,24 +53,41 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "legacy run/gen archive selection" in source
     assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
     assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
-    assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
+    assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showDecisionLedger={false} />" in source
     assert "<VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />" in source
     assert "style={{" in source
+    assert "아카이브/Compare 탐색만 읽기 전용" in source
+    assert "Append-only 결정 기록은 쓰기 예외" in source
 
 
-def test_history_owns_v5_5_analysis_compare_and_wiki_without_identity_guessing() -> None:
+def test_history_keeps_restricted_analysis_and_single_compare_and_decision_owners() -> None:
     history = _read("v4-history.jsx")
+    audit = _read("v4-audit.jsx")
     lab = _read("rl-panel.jsx")
 
     assert "function V4History({ baseUrl, wsStatus, runId, onNavigate })" in history
     assert 'import { ResearchLabPanel } from "./rl-panel.jsx";' in history
+    assert 'import { ResearchProPanel } from "./research-pro.jsx";' not in history
+    assert "ResearchProPanel" not in history
     assert 'enabledTabIds={["edge", "feature", "correlation", "combos"]}' in history
     assert "showOpsStatus={false}" in history
     assert "showWorkbenchLink={false}" in history
     assert "campaign ID에서 run ID를 추정하지 않습니다." in history
-    assert '<ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in history
     assert '<RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />' in history
+    assert history.count("RunComparePanel") == 2
     assert '<ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />' in history
+    assert "/edge_ratio" not in history
+    assert "/hall_of_fame" not in history
+    assert "/decisions" not in history
+    assert "function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch, showDecisionLedger = true })" in audit
+    assert "if (!showDecisionLedger) return undefined;" in audit
+    assert "if (!showDecisionLedger) return null;" in audit
+    assert "}, [baseUrl, showDecisionLedger]);" in audit
+    assert audit.count('fetch(base + "/decisions"') == 1
+    assert audit.index("if (!showDecisionLedger) return undefined;") < audit.index('fetch(base + "/decisions"')
+    assert audit.index("if (!showDecisionLedger) return null;") < audit.index('<section className="panel v4-audit-trace"')
+    assert "disableDecisions" not in audit
+    assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={onSelectResearch} />" in audit
     assert "enabledTabIds" in lab
     assert "showOpsStatus = true" in lab
     assert "showWorkbenchLink = true" in lab

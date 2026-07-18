@@ -97,8 +97,8 @@ def test_v5_5_shell_migrates_retired_surfaces_and_owns_context_drawer() -> None:
         'const V4_CONTEXT_DRAWER_QUERY = "v4_context"',
         'const V4_PROTOTYPE_QUERY = "prototype"',
         'import { AIContextPanel } from "./ai-context.jsx";',
-        'localStorage.removeItem("stom_active_tab")',
-        'localStorage.removeItem("stom_active_evolution_tab")',
+        'storage.removeItem("stom_active_tab")',
+        'storage.removeItem("stom_active_evolution_tab")',
         'aria-haspopup="dialog"',
         'aria-controls="v4-context-drawer"',
         'role="dialog"',
@@ -106,7 +106,7 @@ def test_v5_5_shell_migrates_retired_surfaces_and_owns_context_drawer() -> None:
         'event.key === "Escape"',
         'event.key !== "Tab"',
         "contextTriggerRef.current?.focus()",
-        'setContextOpen(new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1")',
+        'new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1"',
         '<V4History baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />',
     ):
         assert marker in source
@@ -228,7 +228,7 @@ console.log(JSON.stringify({
         "backtest": "backtest",
         "replay": "replay",
         "root": "",
-        "unknown": "",
+        "unknown": "nope",
     }
 def test_v4_legacy_audit_query_migrates_to_history() -> None:
     inventory = _read("dashboard-inventory.jsx")
@@ -352,7 +352,7 @@ def test_v5_live_backtest_authority_and_responsive_graph_contract() -> None:
         "source / run_id / generation",
         "engine_state / backtest_progress",
         "analysis evidence ·",
-        "current_run.generation",
+        "GET /strategy_code",
     ):
         assert label in source
     assert "_v4EngineSummary(situation.engineState)" in source
@@ -382,7 +382,7 @@ def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
         "freshness / status path",
         "GET /strategy_code → buy_code",
         "GET /strategy_code → sell_code",
-        "demo streaming only",
+        "exact code_status=ok",
         "latest.engine_state",
         "latest.backtest_progress",
         "generations[].graded_score/profit/mdd",
@@ -393,11 +393,11 @@ def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
         assert marker in source
     assert "/strategy_code?run=${encodeURIComponent(runId)}&gen=${strategyGen}" in source
     assert "_v4BindStrategyCodePayload(payload, runId, strategyGen)" in source
-    assert 'wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial)' in source
+    assert "stream.buy_code_partial" not in source and "stream.sell_code_partial" not in source
     assert "strategyCodeRecord.runId === runId" in source
     assert "Number(strategyCodeRecord.gen) === Number(strategyGen)" in source
     assert 'strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code · identity_mismatch"' in source
-    assert "setInterval" not in source[source.index("function V4ResearchLive"):source.index("const matchedGeneration")]
+    assert "setInterval" not in source[source.index("function V4ResearchLive"):source.index("const hasFetchedCode")]
     for marker in (
         ".v4-field-source-table {",
         "overflow-x: auto",
@@ -461,9 +461,11 @@ def test_v5_2_strategy_code_binding_rejects_cross_identity_payloads() -> None:
 const bind = new Function(process.argv[2] + '; return _v4BindStrategyCodePayload;')();
 const summarize = value => [value.status, value.payload && value.payload.buy_code];
 console.log(JSON.stringify({
-  match: summarize(bind({ run_id: 'run-a', gen_no: 4, code_status: 'ok', buy_code: 'MATCH' }, 'run-a', 4)),
-  wrongRun: summarize(bind({ run_id: 'run-b', gen_no: 4, code_status: 'ok', buy_code: 'WRONG' }, 'run-a', 4)),
-  wrongGen: summarize(bind({ run_id: 'run-a', gen: 3, code_status: 'ok', buy_code: 'OLD' }, 'run-a', 4)),
+  match: summarize(bind({ run_id: 'run-a', gen_no: 4, code_status: 'ok', buy_code: 'MATCH', sell_code: '' }, 'run-a', 4)),
+  wrongRun: summarize(bind({ run_id: 'run-b', gen_no: 4, code_status: 'ok', buy_code: 'WRONG', sell_code: '' }, 'run-a', 4)),
+  wrongGen: summarize(bind({ run_id: 'run-a', gen: 3, code_status: 'ok', buy_code: 'OLD', sell_code: '' }, 'run-a', 4)),
+  unknownStatus: summarize(bind({ run_id: 'run-a', gen_no: 4, code_status: 'future', buy_code: 'UNTRUSTED', sell_code: '' }, 'run-a', 4)),
+  malformed: summarize(bind({ run_id: 'run-a', gen_no: 4, code_status: 'ok', buy_code: 'ONLY' }, 'run-a', 4)),
   empty: summarize(bind(null, 'run-a', 4)),
 }));
 """
@@ -474,6 +476,8 @@ console.log(JSON.stringify({
         "match": ["fresh", "MATCH"],
         "wrongRun": ["identity_mismatch", None],
         "wrongGen": ["identity_mismatch", None],
+        "unknownStatus": ["future", None],
+        "malformed": ["malformed_code", None],
         "empty": ["empty", None],
     }
 

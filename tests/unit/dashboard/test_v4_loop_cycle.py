@@ -52,18 +52,19 @@ def test_v4_loop_cycle_reuses_five_step_phase_mapping_convention() -> None:
     assert "_loopCycleFallbackStep" in source
 
 
-def test_v4_research_places_loop_cycle_in_observability_rail() -> None:
+def test_v4_research_places_loop_cycle_in_on_demand_detail_drawer() -> None:
     # Given: the V4 Research Live tab source.
     source = _read(FRONTEND / "v4-research.jsx")
 
-    # When/Then: it imports the loop-cycle component and renders it inside the
-    # observability rail (aside), alongside CurrentGenPanel.
+    # When/Then: expensive detail consumers share the on-demand drawer mount,
+    # so closing the drawer also stops their polling/effects.
     assert 'import { V4LoopCycle } from "./v4-loop-cycle.jsx";' in source
-    aside_start = source.index('<aside className="v4-side-col">')
-    aside_end = source.index("</aside>", aside_start)
-    aside_body = source[aside_start:aside_end]
-    assert "<CurrentGenPanel state={s} />" in aside_body
-    assert "<V4LoopCycle state={s} />" in aside_body
+    drawer_start = source.index('<aside id="v4-live-drawer"')
+    drawer_end = source.index("</aside>", drawer_start)
+    drawer_body = source[drawer_start:drawer_end]
+    assert "{drawerOpen &&" in drawer_body
+    assert "<CurrentGenPanel state={s} />" in drawer_body
+    assert "<V4LoopCycle state={s} />" in drawer_body
 
 
 def test_v4_css_declares_loop_cycle_pulse_animation_with_reduced_motion_guard() -> None:

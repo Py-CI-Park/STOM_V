@@ -154,22 +154,28 @@ function _v4EvidenceState(state) {
 }
 
 const V5_2_FIELD_SOURCES = [
-  { field: "매수 조건식 · buy_code", paths: "GET /strategy_code → buy_code (production) / current_run.generation.buy_code_partial (demo streaming only)", unit: "STOM 조건식", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
-  { field: "매도 조건식 · sell_code", paths: "GET /strategy_code → sell_code (production) / current_run.generation.sell_code_partial (demo streaming only)", unit: "STOM 조건식", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
+  { field: "매수 조건식 · buy_code", paths: "GET /strategy_code → buy_code (exact code_status=ok, matching run_id/gen_no)", unit: "STOM 조건식", status: "/strategy_code.code_status", owner: "Strategy code read API" },
+  { field: "매도 조건식 · sell_code", paths: "GET /strategy_code → sell_code (exact code_status=ok, matching run_id/gen_no)", unit: "STOM 조건식", status: "/strategy_code.code_status", owner: "Strategy code read API" },
   { field: "source / run_id / generation", paths: "GET /strategy_code / run_id / current_gen", unit: "source · run ID · generation", status: "/strategy_code.code_status / latest.status", owner: "Strategy code read API / LoopState snapshot publisher" },
   { field: "engine_state / backtest_progress", paths: "latest.engine_state / latest.backtest_progress", unit: "engine status/config · percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
   { field: "analysis evidence", paths: "generations[].graded_score/profit/mdd (production) / latest.analysis_evidence + latest.evidence_status (optional extension)", unit: "score · KRW · percent / evidence entries", status: "latest.status / selected source evidence_status", owner: "LoopState snapshot publisher / optional analysis extension" },
 ];
 
 function _v4BindStrategyCodePayload(payload, requestedRunId, requestedGen) {
-  if (!payload || typeof payload !== "object") return { status: "empty", payload: null };
-  const responseRunId = String(payload.run_id || "");
-  const responseGen = Number(payload.gen_no ?? payload.gen);
-  if (responseRunId !== String(requestedRunId || "") || responseGen !== Number(requestedGen)) {
+  if (payload == null) return { status: "empty", payload: null };
+  if (typeof payload !== "object" || Array.isArray(payload)) return { status: "malformed_payload", payload: null };
+  const responseGen = payload.gen_no ?? payload.gen;
+  if (payload.run_id !== requestedRunId || responseGen !== requestedGen) {
     return { status: "identity_mismatch", payload: null };
   }
-  const codeStatus = String(payload.code_status || "empty");
-  return { status: codeStatus === "ok" ? "fresh" : codeStatus, payload };
+  if (payload.code_status !== "ok") {
+    return { status: typeof payload.code_status === "string" ? payload.code_status : "unknown_code_status", payload: null };
+  }
+  if (typeof payload.buy_code !== "string" || typeof payload.sell_code !== "string"
+      || (!payload.buy_code.trim() && !payload.sell_code.trim())) {
+    return { status: "malformed_code", payload: null };
+  }
+  return { status: "fresh", payload };
 }
 
 function _V5_2FieldSourceTable() {
@@ -293,8 +299,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const s = state || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
-  const stream = (s.current_run && s.current_run.generation) || {};
-  const streamedGeneration = wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial);
   const strategyGen = s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0
     ? Number(s.current_gen) : null;
   const hasData = gens.length > 0;
@@ -315,10 +319,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   }, [runGenerationIdentity, situation.active]);
   useEffect_v4r(() => {
     setStrategyCodeRecord(null);
-    if (streamedGeneration) {
-      setStrategyCodeStatus("streaming_partial");
-      return;
-    }
     if (!baseUrl || !runId || strategyGen === null) {
       setStrategyCodeStatus("unavailable");
       return;
@@ -339,7 +339,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         setStrategyCodeStatus(`error · ${String(error && error.message || error)}`);
       });
     return () => { active = false; };
-  }, [baseUrl, runId, strategyGen, streamedGeneration]);
+  }, [baseUrl, runId, strategyGen]);
   const selectStep = (index, pinned = true) => {
     pinnedStepRef.current = pinned;
     setSelectedStep(index);
@@ -404,24 +404,22 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     setApprovalOpen(false);
   };
 
-  const matchedGeneration = gens.find(g => Number(g.gen_no) === Number(s.current_gen)) || null;
   const hasFetchedCode = Boolean(
     strategyCodeRecord
     && strategyCodeRecord.runId === runId
     && Number(strategyCodeRecord.gen) === Number(strategyGen)
     && strategyCodeRecord.payload
-    && (strategyCodeRecord.payload.buy_code || strategyCodeRecord.payload.sell_code)
+    && strategyCodeStatus === "fresh"
+    && typeof strategyCodeRecord.payload.buy_code === "string"
+    && typeof strategyCodeRecord.payload.sell_code === "string"
+    && (strategyCodeRecord.payload.buy_code.trim() || strategyCodeRecord.payload.sell_code.trim())
   );
-  const activeGeneration = streamedGeneration ? {
-    buy_code: stream.buy_code_partial, sell_code: stream.sell_code_partial,
-    buy_name: stream.buy_name, sell_name: stream.sell_name,
-  } : hasFetchedCode ? strategyCodeRecord.payload : (matchedGeneration || s.best || s.winner || {});
-  const activeGenerationSource = streamedGeneration ? "current_run.generation · demo streaming"
-    : hasFetchedCode ? `GET /strategy_code · ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code · loading"
-      : strategyCodeStatus.startsWith("error") ? strategyCodeStatus
+  const activeGeneration = hasFetchedCode ? strategyCodeRecord.payload : { buy_code: "", sell_code: "" };
+  const activeGenerationSource = hasFetchedCode ? `GET /strategy_code · ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code · loading"
+    : strategyCodeStatus.startsWith("error") ? strategyCodeStatus
       : strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code · identity_mismatch"
-        : matchedGeneration ? "generations metrics · code unavailable"
-          : s.best ? "best metrics · code unavailable" : s.winner ? "winner metrics · code unavailable" : "empty";
+        : strategyCodeStatus === "unavailable" ? "GET /strategy_code · unavailable"
+          : `GET /strategy_code · ${strategyCodeStatus} · code unavailable`;
   const evidence = _v4EvidenceState(s);
   const evidenceText = Array.isArray(evidence.value) ? evidence.value.join(" · ") : String(evidence.value);
   return (
@@ -468,13 +466,13 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         </main>
         <div className="v4-drawer-control"><button type="button" className="v4-drawer-toggle" aria-expanded={drawerOpen} aria-controls="v4-live-drawer" onClick={() => setDrawerOpen(open => !open)}>상세 패널 {drawerOpen ? "접기" : "펼치기"}</button></div>
         <aside id="v4-live-drawer" className="v4-live-drawer" hidden={!drawerOpen} aria-label="연구 상세 drawer">
-          <CurrentGenPanel state={s} /><V4LoopCycle state={s} />
+          {drawerOpen && <><CurrentGenPanel state={s} /><V4LoopCycle state={s} />
           {merged ? <MergedBestWinnerCard best={s.best} winner={s.winner} onApprove={requestApproval} onViewCode={viewCode} /> : <><BestCard best={s.best} onViewCode={viewCode} /><WinnerCard winner={s.winner} onApprove={requestApproval} onViewCode={viewCode} /></>}
           {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
           <_V4Fold storageKey="stom_v4_process" label="프로세스 상세"><ProcessFlowPanel state={s} /></_V4Fold>
           <_V4Fold storageKey="stom_v4_strategy" label="세대 이력"><GenerationsTable state={s} mddCap={mddCap} minDailyTrades={minDailyTrades} onViewCode={g => viewCode(g && g.gen_no != null ? g.gen_no : g)} onSelectDetail={genNo => setSelectedDetailGen(genNo)} /><BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} /><EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} /></_V4Fold>
           <_V4Fold storageKey="stom_v4_analysis" label="진화 분석"><LineagePanel state={s} wsStatus={wsStatus} /><MetaPanel state={s} wsStatus={wsStatus} /><HoldoutPanel state={s} wsStatus={wsStatus} /></_V4Fold>
-          <_V4Fold storageKey="stom_v4_config" label="설정 · 게이트 · 비용" defaultOpen={false}><ResearchGlossaryPanel /><ActiveConfigPanel state={s} /><CostPanel state={s} cap={50000} /><ConditionDiscoveryPanel state={s} wsStatus={wsStatus} /><PopulationPanel state={s} wsStatus={wsStatus} /></_V4Fold>
+          <_V4Fold storageKey="stom_v4_config" label="설정 · 게이트 · 비용" defaultOpen={false}><ResearchGlossaryPanel /><ActiveConfigPanel state={s} /><CostPanel state={s} cap={50000} /><ConditionDiscoveryPanel state={s} wsStatus={wsStatus} /><PopulationPanel state={s} wsStatus={wsStatus} /></_V4Fold></>}
         </aside>
       </div>
       <ApprovalDialog winner={approvalOpen ? s.winner : null} onClose={() => setApprovalOpen(false)} onConfirm={onApprove} />

@@ -46,7 +46,7 @@ function auditResearchId(decision) {
 }
 
 
-function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
+function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch, showDecisionLedger = true }) {
   const [decisions, setDecisions] = useState_va([]);
   const [loading, setLoading] = useState_va(true);
   const [error, setError] = useState_va("");
@@ -56,6 +56,7 @@ function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
   const displayOnly = typeof onSelectResearch === "function";
 
   useEffect_va(() => {
+    if (!showDecisionLedger) return undefined;
     const requestId = requestSeq.current + 1;
     requestSeq.current = requestId;
     const isCurrent = () => requestSeq.current === requestId;
@@ -75,7 +76,7 @@ function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
       })
       .finally(() => { if (isCurrent()) setLoading(false); });
     return () => controller.abort();
-  }, [baseUrl]);
+  }, [baseUrl, showDecisionLedger]);
 
   const selectedResearch = typeof selectedResearchId === "string" && /^(campaign|loop_run):.+$/.test(selectedResearchId)
     ? selectedResearchId : "";
@@ -85,6 +86,7 @@ function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
     ? decisions.filter(decision => !auditResearchId(decision)).length : 0;
   const visible = exactLinked.filter(decision => auditDecisionMatches(decision, query, verdict));
 
+  if (!showDecisionLedger) return null;
   return (
     <section className="panel v4-audit-trace" aria-labelledby="v4-audit-trace-title"
              data-selection-mode={displayOnly ? "parent-display-only" : "standalone"}>

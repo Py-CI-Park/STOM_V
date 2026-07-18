@@ -9730,7 +9730,7 @@ def signal_sell(pos, bar, ind):
   Object.assign(window, { ResearchProPanel, ResearchHeatmapPanel });
 
   // ai_strategy_loop/dashboard/frontend/research-wiki.jsx
-  var { useState: useState_rw, useEffect: useEffect_rw, useMemo: useMemo_rw } = React;
+  var { useState: useState_rw, useEffect: useEffect_rw, useMemo: useMemo_rw, useRef: useRef_rw, useCallback: useCallback_rw } = React;
   var RESEARCH_WIKI_CATEGORIES = [
     { key: "wiki", label: "Methods" },
     { key: "good_results", label: "Good Results" },
@@ -9742,12 +9742,28 @@ def signal_sell(pos, bar, ind):
     const found = RESEARCH_WIKI_CATEGORIES.find((c) => c.key === category);
     return found ? found.label : category || "Docs";
   }
+  function isWikiRow(row) {
+    return Boolean(row && typeof row === "object" && typeof row.id === "string" && row.id && typeof row.title === "string" && typeof row.category === "string" && Number.isFinite(row.size));
+  }
+  function isSelectedWikiDoc(value, selectedId) {
+    return Boolean(value && typeof value === "object" && value.id === selectedId && (value.available === false || value.available === true && typeof value.title === "string" && typeof value.category === "string" && typeof value.markdown === "string"));
+  }
   function ResearchWikiPanel({ baseUrl, wsStatus }) {
     const [docs, setDocs] = useState_rw([]);
     const [selectedId, setSelectedId] = useState_rw("");
     const [doc, setDoc] = useState_rw(null);
-    const [loading, setLoading] = useState_rw(false);
-    const [err, setErr] = useState_rw("");
+    const [listLoading, setListLoading] = useState_rw(false);
+    const [listErr, setListErr] = useState_rw("");
+    const [detailLoading, setDetailLoading] = useState_rw(false);
+    const [detailErr, setDetailErr] = useState_rw("");
+    const [listedBase, setListedBase] = useState_rw("");
+    const listGenerationRef = useRef_rw(0);
+    const detailGenerationRef = useRef_rw(0);
+    const listControllerRef = useRef_rw(null);
+    const detailControllerRef = useRef_rw(null);
+    const selectedIdRef = useRef_rw("");
+    const baseRef = useRef_rw(baseUrl);
+    baseRef.current = baseUrl;
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const grouped = useMemo_rw(() => {
       const out = {};
@@ -9758,45 +9774,108 @@ def signal_sell(pos, bar, ind):
       }
       return out;
     }, [docs]);
-    const loadDocs = React.useCallback(() => {
-      if (isDemo || !baseUrl) return;
-      setLoading(true);
-      setErr("");
-      fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(3500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        const rows = Array.isArray(j.docs) ? j.docs : [];
+    const loadDocs = useCallback_rw(() => {
+      const generation = listGenerationRef.current + 1;
+      listGenerationRef.current = generation;
+      const priorSelection = selectedIdRef.current;
+      if (listControllerRef.current) listControllerRef.current.abort();
+      if (detailControllerRef.current) detailControllerRef.current.abort();
+      detailGenerationRef.current += 1;
+      const controller = new AbortController();
+      listControllerRef.current = controller;
+      const timeout2 = setTimeout(() => controller.abort(), 3500);
+      setDocs([]);
+      setListedBase("");
+      setSelectedId("");
+      selectedIdRef.current = "";
+      setDoc(null);
+      setListErr("");
+      setDetailErr("");
+      setDetailLoading(false);
+      if (isDemo || !baseUrl) {
+        setListLoading(false);
+        clearTimeout(timeout2);
+        return () => controller.abort();
+      }
+      setListLoading(true);
+      fetch(baseUrl + "/research_docs", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (controller.signal.aborted || generation !== listGenerationRef.current || baseUrl !== baseRef.current) return;
+        const rows = Array.isArray(j && j.docs) ? j.docs.filter(isWikiRow) : [];
+        const retained = rows.some((row) => row.id === priorSelection) ? priorSelection : "";
+        const preferred = rows.find((row) => row.category === "wiki") || rows[0];
+        const nextSelectedId = retained || (preferred ? preferred.id : "");
         setDocs(rows);
-        if (!selectedId && rows.length) {
-          const preferred = rows.find((r) => r.category === "wiki") || rows[0];
-          setSelectedId(preferred.id);
-        }
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, selectedId]);
+        setListedBase(baseUrl);
+        setSelectedId(nextSelectedId);
+        selectedIdRef.current = nextSelectedId;
+      }).catch((e) => {
+        if (controller.signal.aborted || generation !== listGenerationRef.current || baseUrl !== baseRef.current) return;
+        setDocs([]);
+        setListErr(String(e && e.message ? e.message : e));
+      }).finally(() => {
+        clearTimeout(timeout2);
+        if (!controller.signal.aborted && generation === listGenerationRef.current && baseUrl === baseRef.current) setListLoading(false);
+      });
+      return () => {
+        controller.abort();
+        clearTimeout(timeout2);
+      };
+    }, [baseUrl, isDemo]);
     useEffect_rw(() => {
       loadDocs();
+      return () => {
+        if (listControllerRef.current) listControllerRef.current.abort();
+      };
     }, [loadDocs]);
     useEffect_rw(() => {
-      if (isDemo || !baseUrl || !selectedId) {
-        setDoc(null);
-        return;
+      const generation = detailGenerationRef.current + 1;
+      detailGenerationRef.current = generation;
+      if (detailControllerRef.current) detailControllerRef.current.abort();
+      const controller = new AbortController();
+      detailControllerRef.current = controller;
+      const timeout2 = setTimeout(() => controller.abort(), 3500);
+      const owned = listedBase === baseUrl && docs.some((row) => row.id === selectedId);
+      setDoc(null);
+      setDetailErr("");
+      if (isDemo || !baseUrl || !selectedId || !owned) {
+        setDetailLoading(false);
+        clearTimeout(timeout2);
+        return () => controller.abort();
       }
-      setLoading(true);
-      setErr("");
-      fetch(
-        baseUrl + "/research_doc?id=" + encodeURIComponent(selectedId),
-        { signal: AbortSignal.timeout(3500) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setDoc(j || null)).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, selectedId]);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel research-wiki" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "Research Wiki", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadDocs, disabled: isDemo || loading }, loading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-note" }, "Good Results screenshots are reference only, not live proof. Markdown is displayed as plain text."), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Backend connection required for wiki documents.") : err ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "wiki query failed: ", err) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-list" }, RESEARCH_WIKI_CATEGORIES.map((cat) => /* @__PURE__ */ React.createElement("div", { key: cat.key, className: "research-wiki-category" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-category-title" }, cat.label), (grouped[cat.key] || []).slice(0, 12).map((row) => /* @__PURE__ */ React.createElement(
+      setDetailLoading(true);
+      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(selectedId), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (controller.signal.aborted || generation !== detailGenerationRef.current || baseUrl !== baseRef.current || selectedId !== selectedIdRef.current) return;
+        setDoc(isSelectedWikiDoc(j, selectedId) ? j : null);
+      }).catch((e) => {
+        if (controller.signal.aborted || generation !== detailGenerationRef.current || baseUrl !== baseRef.current || selectedId !== selectedIdRef.current) return;
+        setDetailErr(String(e && e.message ? e.message : e));
+      }).finally(() => {
+        clearTimeout(timeout2);
+        if (!controller.signal.aborted && generation === detailGenerationRef.current && baseUrl === baseRef.current && selectedId === selectedIdRef.current) setDetailLoading(false);
+      });
+      return () => {
+        controller.abort();
+        clearTimeout(timeout2);
+      };
+    }, [baseUrl, docs, isDemo, listedBase, selectedId]);
+    const ownsDetail = Boolean(listedBase === baseUrl && isSelectedWikiDoc(doc, selectedId));
+    const selectDocument = (id2) => {
+      setSelectedId(id2);
+      selectedIdRef.current = id2;
+      setDoc(null);
+      setDetailErr("");
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel research-wiki" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "Research Wiki", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadDocs, disabled: isDemo || listLoading }, listLoading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-note" }, "Good Results screenshots are reference only, not live proof. Markdown is displayed as plain text."), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Backend connection required for wiki documents.") : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-list" }, listErr && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "wiki query failed: ", listErr), !listErr && listLoading && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-muted" }, "loading documents\u2026"), RESEARCH_WIKI_CATEGORIES.map((cat) => /* @__PURE__ */ React.createElement("div", { key: cat.key, className: "research-wiki-category" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-category-title" }, cat.label), (grouped[cat.key] || []).slice(0, 12).map((row) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: row.id,
         className: selectedId === row.id ? "active" : "",
-        onClick: () => setSelectedId(row.id),
+        onClick: () => selectDocument(row.id),
         title: row.id
       },
       /* @__PURE__ */ React.createElement("span", null, row.title || row.id),
       /* @__PURE__ */ React.createElement("small", null, row.size || 0, " bytes")
-    )), !(grouped[cat.key] || []).length && /* @__PURE__ */ React.createElement("small", { className: "research-wiki-muted" }, "no docs")))), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc" }, doc && doc.available ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc-head" }, /* @__PURE__ */ React.createElement("strong", null, doc.title || selectedId), /* @__PURE__ */ React.createElement("span", null, wikiLabel(doc.category), " / ", doc.id)), /* @__PURE__ */ React.createElement("pre", { className: "research-wiki-markdown" }, doc.markdown || "")) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, selectedId ? "Document unavailable or not allowed." : "Select a research document.")))));
+    )), !(grouped[cat.key] || []).length && !listLoading && /* @__PURE__ */ React.createElement("small", { className: "research-wiki-muted" }, "no docs")))), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc" }, detailLoading ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Loading document\u2026") : detailErr ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "document query failed: ", detailErr) : ownsDetail && doc.available ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc-head" }, /* @__PURE__ */ React.createElement("strong", null, doc.title || selectedId), /* @__PURE__ */ React.createElement("span", null, wikiLabel(doc.category), " / ", doc.id)), /* @__PURE__ */ React.createElement("pre", { className: "research-wiki-markdown" }, doc.markdown || "")) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, selectedId ? "Document unavailable or not allowed." : "Select a research document.")))));
   }
   Object.assign(window, { ResearchWikiPanel });
 
@@ -33849,7 +33928,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useState: useState_rl2,
     useEffect: useEffect_rl2,
     useCallback: useCallback_rl2,
-    useMemo: useMemo_rl
+    useMemo: useMemo_rl,
+    useRef: useRef_rl
   } = React;
   var RESEARCH_TABS = [
     { id: "edge", label: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio" },
@@ -33858,61 +33938,145 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { id: "combos", label: "\uBCC0\uC218 \uC870\uD569" },
     { id: "validation", label: "\uAC80\uC99D" }
   ];
+  function _sameCorrelationIdentity(left, right) {
+    return Boolean(left && right) && left.baseUrl === right.baseUrl && left.runId === right.runId && left.method === right.method;
+  }
   function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTabIds, showOpsStatus = true, showWorkbenchLink = true }) {
     const [tab, setTab] = useState_rl2("edge");
     const visibleTabs = Array.isArray(enabledTabIds) ? RESEARCH_TABS.filter((item) => enabledTabIds.includes(item.id)) : RESEARCH_TABS;
-    const activeTab = visibleTabs.some((item) => item.id === tab) ? tab : (visibleTabs[0] || RESEARCH_TABS[0]).id;
+    const activeTab = visibleTabs.some((item) => item.id === tab) ? tab : visibleTabs[0] ? visibleTabs[0].id : null;
     const [opsStrip, setOpsStrip] = useState_rl2(null);
     const [opsError, setOpsError] = useState_rl2(null);
+    const opsRequestRef = useRef_rl(null);
     useEffect_rl2(() => {
       if (!showOpsStatus || !baseUrl) return void 0;
-      const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setOpsStrip(j);
-        setOpsError(null);
-        try {
-          const stalled = (j && j.active || []).some((a) => a.health !== "active");
-          const base = document.title.replace(/^⚠️ /, "");
-          document.title = (stalled ? "\u26A0\uFE0F " : "") + base;
-        } catch (e) {
-        }
-      }).catch((e) => {
-        setOpsStrip(null);
-        setOpsError(String(e));
-      });
+      let active = true;
+      const titleBeforeOps = document.title;
+      const pull = () => {
+        if (opsRequestRef.current) opsRequestRef.current.abort();
+        const controller = new AbortController();
+        opsRequestRef.current = controller;
+        const timeout2 = setTimeout(() => controller.abort(), 8e3);
+        fetch(baseUrl + "/ops_status", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+          if (!active || controller.signal.aborted || opsRequestRef.current !== controller) return;
+          setOpsStrip(j);
+          setOpsError(null);
+          try {
+            const stalled = (j && j.active || []).some((a) => a.health !== "active");
+            document.title = (stalled ? "\u26A0\uFE0F " : "") + titleBeforeOps.replace(/^⚠️ /, "");
+          } catch (e) {
+          }
+        }).catch((e) => {
+          if (!active || controller.signal.aborted || opsRequestRef.current !== controller) return;
+          setOpsStrip(null);
+          setOpsError(String(e));
+        }).finally(() => {
+          clearTimeout(timeout2);
+          if (opsRequestRef.current === controller) opsRequestRef.current = null;
+        });
+      };
       pull();
       const timer2 = setInterval(pull, 1e4);
-      return () => clearInterval(timer2);
+      return () => {
+        active = false;
+        clearInterval(timer2);
+        if (opsRequestRef.current) {
+          opsRequestRef.current.abort();
+          opsRequestRef.current = null;
+        }
+        try {
+          document.title = titleBeforeOps;
+        } catch (e) {
+        }
+      };
     }, [baseUrl, showOpsStatus]);
     const [method, setMethod] = useState_rl2("spearman");
     const [axis, setAxis] = useState_rl2("time");
     const [data, setData] = useState_rl2(null);
     const [loading, setLoading] = useState_rl2(false);
     const [err, setErr] = useState_rl2(null);
+    const correlationRequestRef = useRef_rl({ controller: null, generation: 0, identity: null });
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const needsCorrelation = activeTab === "correlation" || activeTab === "combos";
+    useEffect_rl2(() => {
+      const nextIdentity = { baseUrl, runId, method };
+      const request = correlationRequestRef.current;
+      if (_sameCorrelationIdentity(request.identity, nextIdentity)) return;
+      if (request.controller) request.controller.abort();
+      request.controller = null;
+      request.generation += 1;
+      request.identity = nextIdentity;
+      setData(null);
+      setErr(null);
+      setLoading(false);
+    }, [baseUrl, method, runId]);
     const refreshCorrelation = useCallback_rl2(() => {
-      if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
+      const request = correlationRequestRef.current;
+      const identity4 = { baseUrl, runId, method };
+      if (request.controller) request.controller.abort();
+      const generation = request.generation + 1;
+      request.generation = generation;
+      request.identity = identity4;
+      request.controller = null;
+      if (!needsCorrelation || isDemo || !baseUrl || !runId) {
+        setLoading(false);
+        return;
+      }
+      const controller = new AbortController();
+      const timeout2 = setTimeout(() => controller.abort(), 5e3);
+      request.controller = controller;
+      const isOwned = () => {
+        const current = correlationRequestRef.current;
+        return current.controller === controller && current.generation === generation && _sameCorrelationIdentity(current.identity, identity4);
+      };
+      const isCurrent = () => isOwned() && !controller.signal.aborted;
       setLoading(true);
+      setErr(null);
       const url = baseUrl + "/variable_correlation?run_id=" + encodeURIComponent(runId) + "&method=" + encodeURIComponent(method);
-      fetch(url, { signal: AbortSignal.timeout(5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
+      fetch(url, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!isCurrent()) return;
+        if (Array.isArray(j && j.runs) && (j.runs.length !== 1 || String(j.runs[0]) !== String(identity4.runId))) {
+          setData(null);
+          setErr("\uC751\uB2F5 run \uCEE8\uD14D\uC2A4\uD2B8\uAC00 \uC694\uCCAD\uD55C run\uACFC \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
+          return;
+        }
+        setData({ ...j, _sourceIdentity: identity4, _requestGeneration: generation });
         setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+      }).catch((e) => {
+        if (!isOwned()) return;
+        setData(null);
+        setErr(controller.signal.aborted ? "\uC0C1\uAD00 \uBD84\uC11D \uC694\uCCAD \uC2DC\uAC04\uC774 \uCD08\uACFC\uB418\uC5C8\uC2B5\uB2C8\uB2E4." : String(e));
+      }).finally(() => {
+        clearTimeout(timeout2);
+        if (!isOwned()) return;
+        correlationRequestRef.current.controller = null;
+        setLoading(false);
+      });
     }, [baseUrl, isDemo, method, needsCorrelation, runId]);
     useEffect_rl2(() => {
       refreshCorrelation();
+      return () => {
+        const request = correlationRequestRef.current;
+        if (request.controller) request.controller.abort();
+        request.controller = null;
+        request.generation += 1;
+      };
     }, [refreshCorrelation]);
-    const matrixRows = data && Array.isArray(data.feature_matrix) ? data.feature_matrix : [];
-    const outcomeRows = data && Array.isArray(data.outcome_correlations) ? data.outcome_correlations : [];
-    const rangeRows = data && Array.isArray(data.range_summaries) ? data.range_summaries : [];
-    const segmentSummary = data && data.segment_summaries || {};
-    const recencyResearch = data && data.recency_research || null;
+    const currentCorrelationIdentity = { baseUrl, runId, method };
+    const ownedData = data && _sameCorrelationIdentity(data._sourceIdentity, currentCorrelationIdentity) ? data : null;
+    const matrixRows = ownedData && Array.isArray(ownedData.feature_matrix) ? ownedData.feature_matrix : [];
+    const outcomeRows = ownedData && Array.isArray(ownedData.outcome_correlations) ? ownedData.outcome_correlations : [];
+    const rangeRows = ownedData && Array.isArray(ownedData.range_summaries) ? ownedData.range_summaries : [];
+    const segmentSummary = ownedData && ownedData.segment_summaries || {};
+    const recencyResearch = ownedData && ownedData.recency_research || null;
     const pairRows = useMemo_rl(() => {
-      const raw = data && Array.isArray(data.interaction_candidates) && data.interaction_candidates.length ? data.interaction_candidates : data && Array.isArray(data.top_pairs) && data.top_pairs.length ? data.top_pairs : [];
+      const raw = ownedData && Array.isArray(ownedData.interaction_candidates) && ownedData.interaction_candidates.length ? ownedData.interaction_candidates : ownedData && Array.isArray(ownedData.top_pairs) && ownedData.top_pairs.length ? ownedData.top_pairs : [];
       return [...raw].sort((a, b) => (b.research_score || b.abs_correlation || Math.abs(b.correlation || 0)) - (a.research_score || a.abs_correlation || Math.abs(a.correlation || 0)));
-    }, [data]);
+    }, [ownedData]);
     let body = null;
-    if (activeTab === "edge") {
+    if (!activeTab) {
+      body = /* @__PURE__ */ React.createElement("div", { className: "research-lab-panel" }, /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uD45C\uC2DC\uD558\uB3C4\uB85D \uD5C8\uC6A9\uB41C \uC5F0\uAD6C\uC2E4 \uC139\uC158\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }));
+    } else if (activeTab === "edge") {
       body = /* @__PURE__ */ React.createElement(EdgeRatioPanel, { baseUrl, wsStatus, runId });
     } else if (activeTab === "validation") {
       body = /* @__PURE__ */ React.createElement(_ValidationPanel, { baseUrl, runId, isDemo });
@@ -33925,8 +34089,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           axis,
           setAxis,
           loading,
-          pooledTrades: data && data.pooled_trades,
-          featureCount: data && data.feature_count,
+          pooledTrades: ownedData && ownedData.pooled_trades,
+          featureCount: ownedData && ownedData.feature_count,
           runId
         }
       ), /* @__PURE__ */ React.createElement(FeatureImportancePanel, { baseUrl, wsStatus, runId }));
@@ -33934,7 +34098,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       body = /* @__PURE__ */ React.createElement("div", { className: "research-lab-panel" }, /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uC0C1\uAD00 \uBD84\uC11D\uC744 \uD45C\uC2DC\uD560 run \uCEE8\uD14D\uC2A4\uD2B8\uAC00 \uBD80\uC871\uD569\uB2C8\uB2E4." }));
     } else if (err) {
       body = /* @__PURE__ */ React.createElement("div", { className: "research-lab-panel" }, /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uC751\uB2F5\uC744 \uBC1B\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: " + err }));
-    } else if (loading && !data) {
+    } else if (loading && !ownedData) {
       body = /* @__PURE__ */ React.createElement("div", { className: "research-lab-panel" }, /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uC0C1\uAD00 \uBD84\uC11D\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\u2026" }));
     } else if (activeTab === "correlation") {
       body = /* @__PURE__ */ React.createElement("div", { className: "research-lab-panel" }, /* @__PURE__ */ React.createElement(
@@ -33945,8 +34109,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           axis,
           setAxis,
           loading,
-          pooledTrades: data && data.pooled_trades,
-          featureCount: data && data.feature_count,
+          pooledTrades: ownedData && ownedData.pooled_trades,
+          featureCount: ownedData && ownedData.feature_count,
           runId
         }
       ), /* @__PURE__ */ React.createElement(_CorrelationHeatmap, { rows: matrixRows.length ? matrixRows : outcomeRows }), /* @__PURE__ */ React.createElement(_RangeSummaryList, { rows: rangeRows }), /* @__PURE__ */ React.createElement(_SegmentSummaryList, { summary: segmentSummary, axis }), /* @__PURE__ */ React.createElement(_RecencyResearchBadge, { recency: recencyResearch }));
@@ -33959,8 +34123,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           axis,
           setAxis,
           loading,
-          pooledTrades: data && data.pooled_trades,
-          featureCount: data && data.feature_count,
+          pooledTrades: ownedData && ownedData.pooled_trades,
+          featureCount: ownedData && ownedData.feature_count,
           runId
         }
       ), pairRows.length ? /* @__PURE__ */ React.createElement(_CombinationList, { rows: pairRows }) : /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uBA85\uC2DC\uC801 \uBCC0\uC218 \uC870\uD569 \uD6C4\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. interaction_candidates \uB610\uB294 top_pairs \uC751\uB2F5\uC774 \uD544\uC694\uD569\uB2C8\uB2E4." }));
@@ -33973,13 +34137,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onOpenWorkbench();
         return;
       }
-      try {
-        window.localStorage.setItem("stom_active_tab", "evolution");
-        window.localStorage.setItem("stom_active_evolution_tab", "workbench");
-        window.location.href = "/ui/evolution/workbench";
-      } catch (e) {
-        if (window.location) window.location.href = "/ui/evolution/workbench";
-      }
+      if (window.location) window.location.href = "/ui/evolution/workbench";
     }, [onOpenWorkbench]);
     return /* @__PURE__ */ React.createElement("div", { className: "research-lab-shell" }, /* @__PURE__ */ React.createElement("div", { className: "research-section-filter", "aria-label": "\uC5F0\uAD6C\uC2E4 \uC139\uC158 \uD544\uD130" }, visibleTabs.map((item) => /* @__PURE__ */ React.createElement(
       "button",
@@ -33996,10 +34154,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       {
         type: "button",
         className: "research-filter-action",
-        title: "\uC9C4\uD654 \uD648 \uD558\uC704 \uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58\uB85C \uC804\uD658\uD574 \uD788\uD2B8\uB9F5\xB7\uBA85\uC608\uC758\uC804\uB2F9\xB7\uBE44\uAD50\xB7\uD788\uC2A4\uD1A0\uB9AC\uB97C \uBD05\uB2C8\uB2E4.",
+        title: "History\uB294 \uACC4\uBCF4\xB7\uBE44\uAD50 \uADFC\uAC70\uB97C, \uC131\uACFC\uB294 \uC804\uC5ED \uBA85\uC608\uC758 \uC804\uB2F9 \uAE30\uC900\uC744 \uAC01\uAC01 \uC18C\uC720\uD569\uB2C8\uB2E4.",
         onClick: openWorkbench
       },
-      "\u{1F52C} \uC0C1\uC138 \uC6CC\uD06C\uBCA4\uCE58"
+      "\uC131\uACFC \xB7 \uBA85\uC608\uC758 \uC804\uB2F9"
     )), showOpsStatus && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-statusbar mono" }, /* @__PURE__ */ React.createElement("span", { className: "research-badge", title: "\uD604\uC7AC \uB9AC\uC11C\uCE58\uB7A9 \uBAA8\uB4DC \u2014 \uC2E4\uD589 \uC911 run\uC774 \uC788\uC73C\uBA74 '\uC6B4\uC601', \uC5C6\uC73C\uBA74 '\uC5F0\uAD6C(\uBD84\uC11D)'." }, /* @__PURE__ */ React.createElement("b", null, "\uBAA8\uB4DC"), " ", labMode), /* @__PURE__ */ React.createElement("span", { className: "research-badge", title: "\uC774 \uD328\uB110\uC774 \uBCF4\uC5EC\uC8FC\uB294 \uB300\uC0C1 \u2014 \uBD84\uC11D \uC911\uC778 run/\uC138\uB300 \uACB0\uACFC\uC758 \uAC74\uC218." }, /* @__PURE__ */ React.createElement("b", null, "\uB300\uC0C1"), " \uC2E4\uD589 ", activeOps.length, "\uAC74 \xB7 \uCD5C\uADFC\uC644\uB8CC ", recentOps.length, "\uAC74"), activeOps.length ? activeOps.map((a) => /* @__PURE__ */ React.createElement(
       "span",
       {
@@ -35157,22 +35315,27 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return metrics.length ? { label: "stale", value: metrics, source: "generations metrics \xB7 freshness \uBBF8\uBC1C\uD589" } : { label: "empty", value: "\uBC1C\uD589\uB41C \uBD84\uC11D \uC99D\uAC70 \uC5C6\uC74C", source: "unavailable" };
   }
   var V5_2_FIELD_SOURCES = [
-    { field: "\uB9E4\uC218 \uC870\uAC74\uC2DD \xB7 buy_code", paths: "GET /strategy_code \u2192 buy_code (production) / current_run.generation.buy_code_partial (demo streaming only)", unit: "STOM \uC870\uAC74\uC2DD", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
-    { field: "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \xB7 sell_code", paths: "GET /strategy_code \u2192 sell_code (production) / current_run.generation.sell_code_partial (demo streaming only)", unit: "STOM \uC870\uAC74\uC2DD", status: "/strategy_code.code_status / latest.phase", owner: "Strategy code read API / LoopState snapshot publisher" },
+    { field: "\uB9E4\uC218 \uC870\uAC74\uC2DD \xB7 buy_code", paths: "GET /strategy_code \u2192 buy_code (exact code_status=ok, matching run_id/gen_no)", unit: "STOM \uC870\uAC74\uC2DD", status: "/strategy_code.code_status", owner: "Strategy code read API" },
+    { field: "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \xB7 sell_code", paths: "GET /strategy_code \u2192 sell_code (exact code_status=ok, matching run_id/gen_no)", unit: "STOM \uC870\uAC74\uC2DD", status: "/strategy_code.code_status", owner: "Strategy code read API" },
     { field: "source / run_id / generation", paths: "GET /strategy_code / run_id / current_gen", unit: "source \xB7 run ID \xB7 generation", status: "/strategy_code.code_status / latest.status", owner: "Strategy code read API / LoopState snapshot publisher" },
     { field: "engine_state / backtest_progress", paths: "latest.engine_state / latest.backtest_progress", unit: "engine status/config \xB7 percent/count progress", status: "latest.engine_state.status / latest.backtest_progress.phase / latest.status", owner: "Backtest state publisher" },
     { field: "analysis evidence", paths: "generations[].graded_score/profit/mdd (production) / latest.analysis_evidence + latest.evidence_status (optional extension)", unit: "score \xB7 KRW \xB7 percent / evidence entries", status: "latest.status / selected source evidence_status", owner: "LoopState snapshot publisher / optional analysis extension" }
   ];
   function _v4BindStrategyCodePayload(payload, requestedRunId, requestedGen) {
     var _a;
-    if (!payload || typeof payload !== "object") return { status: "empty", payload: null };
-    const responseRunId = String(payload.run_id || "");
-    const responseGen = Number((_a = payload.gen_no) != null ? _a : payload.gen);
-    if (responseRunId !== String(requestedRunId || "") || responseGen !== Number(requestedGen)) {
+    if (payload == null) return { status: "empty", payload: null };
+    if (typeof payload !== "object" || Array.isArray(payload)) return { status: "malformed_payload", payload: null };
+    const responseGen = (_a = payload.gen_no) != null ? _a : payload.gen;
+    if (payload.run_id !== requestedRunId || responseGen !== requestedGen) {
       return { status: "identity_mismatch", payload: null };
     }
-    const codeStatus = String(payload.code_status || "empty");
-    return { status: codeStatus === "ok" ? "fresh" : codeStatus, payload };
+    if (payload.code_status !== "ok") {
+      return { status: typeof payload.code_status === "string" ? payload.code_status : "unknown_code_status", payload: null };
+    }
+    if (typeof payload.buy_code !== "string" || typeof payload.sell_code !== "string" || !payload.buy_code.trim() && !payload.sell_code.trim()) {
+      return { status: "malformed_code", payload: null };
+    }
+    return { status: "fresh", payload };
   }
   function _V5_2FieldSourceTable() {
     return /* @__PURE__ */ React.createElement("section", { className: "v4-field-source-table", "aria-labelledby": "v5-2-field-source-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "v5-2-field-source-heading" }, "V5.2 sealed field-source table"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "displayed field"), /* @__PURE__ */ React.createElement("th", null, "authoritative state path(s)"), /* @__PURE__ */ React.createElement("th", null, "unit"), /* @__PURE__ */ React.createElement("th", null, "freshness / status path"), /* @__PURE__ */ React.createElement("th", null, "owner"))), /* @__PURE__ */ React.createElement("tbody", null, V5_2_FIELD_SOURCES.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.field }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, row.field), /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.paths), /* @__PURE__ */ React.createElement("td", null, row.unit), /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.status), /* @__PURE__ */ React.createElement("td", null, row.owner))))));
@@ -35226,8 +35389,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const s = state || {};
     const runId = s.run_id || "";
     const gens = Array.isArray(s.generations) ? s.generations : [];
-    const stream = s.current_run && s.current_run.generation || {};
-    const streamedGeneration = wsStatus === "demo" && Boolean(stream.buy_code_partial || stream.sell_code_partial);
     const strategyGen = s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : null;
     const hasData = gens.length > 0;
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
@@ -35248,10 +35409,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }, [runGenerationIdentity, situation.active]);
     useEffect_v4r(() => {
       setStrategyCodeRecord(null);
-      if (streamedGeneration) {
-        setStrategyCodeStatus("streaming_partial");
-        return;
-      }
       if (!baseUrl || !runId || strategyGen === null) {
         setStrategyCodeStatus("unavailable");
         return;
@@ -35271,7 +35428,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => {
         active = false;
       };
-    }, [baseUrl, runId, strategyGen, streamedGeneration]);
+    }, [baseUrl, runId, strategyGen]);
     const selectStep = (index2, pinned = true) => {
       pinnedStepRef.current = pinned;
       setSelectedStep(index2);
@@ -35330,17 +35487,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    const matchedGeneration = gens.find((g) => Number(g.gen_no) === Number(s.current_gen)) || null;
     const hasFetchedCode = Boolean(
-      strategyCodeRecord && strategyCodeRecord.runId === runId && Number(strategyCodeRecord.gen) === Number(strategyGen) && strategyCodeRecord.payload && (strategyCodeRecord.payload.buy_code || strategyCodeRecord.payload.sell_code)
+      strategyCodeRecord && strategyCodeRecord.runId === runId && Number(strategyCodeRecord.gen) === Number(strategyGen) && strategyCodeRecord.payload && strategyCodeStatus === "fresh" && typeof strategyCodeRecord.payload.buy_code === "string" && typeof strategyCodeRecord.payload.sell_code === "string" && (strategyCodeRecord.payload.buy_code.trim() || strategyCodeRecord.payload.sell_code.trim())
     );
-    const activeGeneration = streamedGeneration ? {
-      buy_code: stream.buy_code_partial,
-      sell_code: stream.sell_code_partial,
-      buy_name: stream.buy_name,
-      sell_name: stream.sell_name
-    } : hasFetchedCode ? strategyCodeRecord.payload : matchedGeneration || s.best || s.winner || {};
-    const activeGenerationSource = streamedGeneration ? "current_run.generation \xB7 demo streaming" : hasFetchedCode ? `GET /strategy_code \xB7 ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code \xB7 loading" : strategyCodeStatus.startsWith("error") ? strategyCodeStatus : strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code \xB7 identity_mismatch" : matchedGeneration ? "generations metrics \xB7 code unavailable" : s.best ? "best metrics \xB7 code unavailable" : s.winner ? "winner metrics \xB7 code unavailable" : "empty";
+    const activeGeneration = hasFetchedCode ? strategyCodeRecord.payload : { buy_code: "", sell_code: "" };
+    const activeGenerationSource = hasFetchedCode ? `GET /strategy_code \xB7 ${strategyCodeStatus}` : strategyCodeStatus === "loading" ? "GET /strategy_code \xB7 loading" : strategyCodeStatus.startsWith("error") ? strategyCodeStatus : strategyCodeStatus === "identity_mismatch" ? "GET /strategy_code \xB7 identity_mismatch" : strategyCodeStatus === "unavailable" ? "GET /strategy_code \xB7 unavailable" : `GET /strategy_code \xB7 ${strategyCodeStatus} \xB7 code unavailable`;
     const evidence = _v4EvidenceState(s);
     const evidenceText = Array.isArray(evidence.value) ? evidence.value.join(" \xB7 ") : String(evidence.value);
     return /* @__PURE__ */ React.createElement("section", { className: "v4-research", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "v4-live-page-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_V4WorkflowStrip, { state: s, situation }), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
@@ -35361,7 +35512,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       V4_LIVE_STEP_LABELS[step.index],
       " ",
       /* @__PURE__ */ React.createElement("small", null, step.state)
-    ))), /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "v4-live-panel-" + V4_LIVE_STEP_KEYS[selectedStep], "aria-labelledby": "v4-live-tab-" + V4_LIVE_STEP_KEYS[selectedStep], className: "v4-step-panel" }, selectedStep === 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), selectedStep === 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "panel v4-backtest-authority" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "Backtest \xB7 authoritative live fields"), /* @__PURE__ */ React.createElement("span", { className: "v4-data-state " + evidence.label }, evidence.label)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD \xB7 buy_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.buy_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \xB7 sell_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.sell_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "source / run_id / generation"), /* @__PURE__ */ React.createElement("dd", null, activeGenerationSource, " \xB7 ", runId || "legacy", " \xB7 ", s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "\uC2DC\uC791 \uC804")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "engine_state / backtest_progress"), /* @__PURE__ */ React.createElement("dd", null, _v4EngineSummary((_c = (_b = s.latest) == null ? void 0 : _b.engine_state) != null ? _c : s.engine_state), " \xB7 ", _v4ProgressSummary((_e = (_d = s.latest) == null ? void 0 : _d.backtest_progress) != null ? _e : s.backtest_progress))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "analysis evidence \xB7 ", evidence.label), /* @__PURE__ */ React.createElement("dd", null, evidenceText, /* @__PURE__ */ React.createElement("small", { className: "v4-evidence-source" }, "source \xB7 ", evidence.source)))), /* @__PURE__ */ React.createElement(_V5_2FieldSourceTable, null))), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("section", { className: "v4-backtest-heatmap", "aria-label": "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5" }, /* @__PURE__ */ React.createElement("p", { className: "v4-data-caveat" }, "\uCD9C\uCC98: \uC120\uD0DD\uD55C run\uC758 ", /* @__PURE__ */ React.createElement("code", null, "/edge_ratio"), " \uD0D0\uC0C9 \uACB0\uACFC\uC785\uB2C8\uB2E4. \uC774\uB294 \uBC31\uD14C\uC2A4\uD2B8 \uAD8C\uC704 \uD544\uB4DC\uAC00 \uC544\uB2CC \uCC38\uACE0\uC6A9 \uD0D0\uC0C9 \uC9C0\uD45C\uC774\uBA70, OOS \uAC80\uC99D \uACB0\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uD3C9\uAC00\uC6A9 CellHeatmap\uACFC \uB3D9\uC77C\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }))), selectedStep === 2 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), selectedStep === 3 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s }))))), /* @__PURE__ */ React.createElement("div", { className: "v4-drawer-control" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-drawer-toggle", "aria-expanded": drawerOpen, "aria-controls": "v4-live-drawer", onClick: () => setDrawerOpen((open) => !open) }, "\uC0C1\uC138 \uD328\uB110 ", drawerOpen ? "\uC811\uAE30" : "\uD3BC\uCE58\uAE30")), /* @__PURE__ */ React.createElement("aside", { id: "v4-live-drawer", className: "v4-live-drawer", hidden: !drawerOpen, "aria-label": "\uC5F0\uAD6C \uC0C1\uC138 drawer" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(MergedBestWinnerCard, { best: s.best, winner: s.winner, onApprove: requestApproval, onViewCode: viewCode }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \uC0C1\uC138" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "\uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(GenerationsTable, { state: s, mddCap, minDailyTrades, onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g), onSelectDetail: (genNo) => setSelectedDetailGen(genNo) }), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus })))), /* @__PURE__ */ React.createElement(ApprovalDialog, { winner: approvalOpen ? s.winner : null, onClose: () => setApprovalOpen(false), onConfirm: onApprove }));
+    ))), /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "v4-live-panel-" + V4_LIVE_STEP_KEYS[selectedStep], "aria-labelledby": "v4-live-tab-" + V4_LIVE_STEP_KEYS[selectedStep], className: "v4-step-panel" }, selectedStep === 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), selectedStep === 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "panel v4-backtest-authority" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "Backtest \xB7 authoritative live fields"), /* @__PURE__ */ React.createElement("span", { className: "v4-data-state " + evidence.label }, evidence.label)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD \xB7 buy_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.buy_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \xB7 sell_code"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, activeGeneration.sell_code || "empty")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "source / run_id / generation"), /* @__PURE__ */ React.createElement("dd", null, activeGenerationSource, " \xB7 ", runId || "legacy", " \xB7 ", s.current_gen != null && Number(s.current_gen) >= 0 ? s.current_gen : "\uC2DC\uC791 \uC804")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "engine_state / backtest_progress"), /* @__PURE__ */ React.createElement("dd", null, _v4EngineSummary((_c = (_b = s.latest) == null ? void 0 : _b.engine_state) != null ? _c : s.engine_state), " \xB7 ", _v4ProgressSummary((_e = (_d = s.latest) == null ? void 0 : _d.backtest_progress) != null ? _e : s.backtest_progress))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "analysis evidence \xB7 ", evidence.label), /* @__PURE__ */ React.createElement("dd", null, evidenceText, /* @__PURE__ */ React.createElement("small", { className: "v4-evidence-source" }, "source \xB7 ", evidence.source)))), /* @__PURE__ */ React.createElement(_V5_2FieldSourceTable, null))), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("section", { className: "v4-backtest-heatmap", "aria-label": "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5" }, /* @__PURE__ */ React.createElement("p", { className: "v4-data-caveat" }, "\uCD9C\uCC98: \uC120\uD0DD\uD55C run\uC758 ", /* @__PURE__ */ React.createElement("code", null, "/edge_ratio"), " \uD0D0\uC0C9 \uACB0\uACFC\uC785\uB2C8\uB2E4. \uC774\uB294 \uBC31\uD14C\uC2A4\uD2B8 \uAD8C\uC704 \uD544\uB4DC\uAC00 \uC544\uB2CC \uCC38\uACE0\uC6A9 \uD0D0\uC0C9 \uC9C0\uD45C\uC774\uBA70, OOS \uAC80\uC99D \uACB0\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uD3C9\uAC00\uC6A9 CellHeatmap\uACFC \uB3D9\uC77C\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }))), selectedStep === 2 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), selectedStep === 3 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s }))))), /* @__PURE__ */ React.createElement("div", { className: "v4-drawer-control" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-drawer-toggle", "aria-expanded": drawerOpen, "aria-controls": "v4-live-drawer", onClick: () => setDrawerOpen((open) => !open) }, "\uC0C1\uC138 \uD328\uB110 ", drawerOpen ? "\uC811\uAE30" : "\uD3BC\uCE58\uAE30")), /* @__PURE__ */ React.createElement("aside", { id: "v4-live-drawer", className: "v4-live-drawer", hidden: !drawerOpen, "aria-label": "\uC5F0\uAD6C \uC0C1\uC138 drawer" }, drawerOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(MergedBestWinnerCard, { best: s.best, winner: s.winner, onApprove: requestApproval, onViewCode: viewCode }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \uC0C1\uC138" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "\uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(GenerationsTable, { state: s, mddCap, minDailyTrades, onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g), onSelectDetail: (genNo) => setSelectedDetailGen(genNo) }), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }))))), /* @__PURE__ */ React.createElement(ApprovalDialog, { winner: approvalOpen ? s.winner : null, onClose: () => setApprovalOpen(false), onConfirm: onApprove }));
   }
   Object.assign(window, { V4ResearchLive, V4_LIVE_PHASE_STEP, v4LiveSituation, _v4EvidenceState, _v4BindStrategyCodePayload });
 
@@ -35443,7 +35594,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const candidate = decision && (decision.research_id || decision.candidate && decision.candidate.research_id);
     return typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate) ? candidate : "";
   }
-  function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch }) {
+  function AuditDecisionTrace({ baseUrl, selectedResearchId, onSelectResearch, showDecisionLedger = true }) {
     const [decisions, setDecisions] = useState_va([]);
     const [loading, setLoading] = useState_va(true);
     const [error, setError] = useState_va("");
@@ -35452,6 +35603,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const requestSeq = useRef_va(0);
     const displayOnly = typeof onSelectResearch === "function";
     useEffect_va(() => {
+      if (!showDecisionLedger) return void 0;
       const requestId = requestSeq.current + 1;
       requestSeq.current = requestId;
       const isCurrent = () => requestSeq.current === requestId;
@@ -35467,11 +35619,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         if (isCurrent()) setLoading(false);
       });
       return () => controller.abort();
-    }, [baseUrl]);
+    }, [baseUrl, showDecisionLedger]);
     const selectedResearch = typeof selectedResearchId === "string" && /^(campaign|loop_run):.+$/.test(selectedResearchId) ? selectedResearchId : "";
     const exactLinked = selectedResearch ? decisions.filter((decision) => auditResearchId(decision) === selectedResearch) : decisions;
     const unlinkedCount = selectedResearch ? decisions.filter((decision) => !auditResearchId(decision)).length : 0;
     const visible = exactLinked.filter((decision) => auditDecisionMatches(decision, query, verdict));
+    if (!showDecisionLedger) return null;
     return /* @__PURE__ */ React.createElement(
       "section",
       {
@@ -35600,7 +35753,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }, []);
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
     const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Archive run context: ", runId || "\uC120\uD0DD \uC5C6\uC74C", " \xB7 governed research selection\uACFC \uBCC4\uB3C4\uC774\uBA70 campaign ID\uC5D0\uC11C run ID\uB97C \uCD94\uC815\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uB9CC \uC77D\uAE30 \uC804\uC6A9\uC774\uBA70, \uC544\uB798 append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC608\uC678\uC785\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Archive run context: ", runId || "\uC120\uD0DD \uC5C6\uC74C", " \xB7 governed research selection\uACFC \uBCC4\uB3C4\uC774\uBA70 campaign ID\uC5D0\uC11C run ID\uB97C \uCD94\uC815\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
       ResearchLabPanel,
       {
         baseUrl,
@@ -35610,7 +35763,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         showOpsStatus: false,
         showWorkbenchLink: false
       }
-    ))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-candidate-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-candidate-title" }, "\uD6C4\uBCF4 \uBD84\uC11D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uD6C4\uBCF4 \uBD84\uC11D\uACFC \uBE44\uAD50 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-wiki-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-wiki-title" }, "\uC5F0\uAD6C Wiki"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC704\uD0A4 \uAE30\uB85D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl, selectedResearchId, onSelectResearch: selectResearch }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
+    ))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-candidate-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-candidate-title" }, "\uD6C4\uBCF4 Compare"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uD6C4\uBCF4 \uBD84\uC11D\uACFC \uBE44\uAD50 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-wiki-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-wiki-title" }, "\uC5F0\uAD6C Wiki"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC704\uD0A4 \uAE30\uB85D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "\uC77D\uAE30 \uC804\uC6A9 \uBC94\uC704\uB294 \uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uBFD0\uC785\uB2C8\uB2E4. ", /* @__PURE__ */ React.createElement("b", null, "Append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC4F0\uAE30 \uC608\uC678"), "\uC774\uBA70, \uC544\uB798 \uC2B9\uAE09/Export \uAC70\uBC84\uB10C\uC2A4 \uC81C\uC5B4 \uC804\uC5D0 \uBA85\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl, selectedResearchId, onSelectResearch: selectResearch, showDecisionLedger: false }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
   }
   Object.assign(window, { V4History });
 
@@ -35657,9 +35810,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { V4Lab });
 
   // ai_strategy_loop/dashboard/frontend/v4-workbench.jsx
-  function V4Workbench({ baseUrl, wsStatus, runId }) {
-    const surfaceState = wsStatus === "connecting" ? "loading" : wsStatus === "error" || wsStatus === "closed" || !baseUrl && runId ? "error" : runId ? "ready" : "empty";
-    const statusText = surfaceState === "loading" ? "\uBA85\uC608\uC758 \uC804\uB2F9 \uB370\uC774\uD130\uB97C \uC5F0\uACB0\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : surfaceState === "error" ? "\uBA85\uC608\uC758 \uC804\uB2F9 \uB370\uC774\uD130\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC131\uACFC \uD310\uB2E8\uC744 \uBCF4\uB958\uD558\uC138\uC694." : surfaceState === "ready" ? `Run ${runId}\uC758 \uC7A5\uAE30 \uC131\uACFC \uAE30\uC900\uC744 \uD655\uC778\uD569\uB2C8\uB2E4.` : "\uC120\uD0DD\uB41C Run\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBA85\uC608\uC758 \uC804\uB2F9\uC758 \uC7A5\uAE30 \uC131\uACFC \uAE30\uC900\uB9CC \uD45C\uC2DC\uB429\uB2C8\uB2E4.";
+  function V4Workbench({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const connecting = wsStatus === "connecting" || wsStatus === "reconnecting";
+    const surfaceState = connecting ? "loading" : isDemo ? "demo" : wsStatus === "error" || wsStatus === "closed" || !baseUrl ? "error" : "ready";
+    const statusText = wsStatus === "reconnecting" ? "\uBA85\uC608\uC758 \uC804\uB2F9 \uC5F0\uACB0\uC774 \uB04A\uACA8 \uC7AC\uC5F0\uACB0 \uC911\uC785\uB2C8\uB2E4. \uD45C\uC2DC\uB41C \uC131\uACFC \uADFC\uAC70\uB97C \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uB9C8\uC138\uC694." : surfaceState === "loading" ? "\uC804\uC5ED \uBA85\uC608\uC758 \uC804\uB2F9 \uB370\uC774\uD130\uB97C \uC5F0\uACB0\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : surfaceState === "demo" ? "\uB370\uBAA8 \uB370\uC774\uD130\uC785\uB2C8\uB2E4. \uC6B4\uC601 \uC131\uACFC \uADFC\uAC70\uC640 \uBD84\uB9AC\uB41C \uC804\uC5ED \uBA85\uC608\uC758 \uC804\uB2F9\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4." : surfaceState === "error" ? "\uC804\uC5ED \uBA85\uC608\uC758 \uC804\uB2F9 \uB370\uC774\uD130\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC131\uACFC \uD310\uB2E8\uC744 \uBCF4\uB958\uD558\uC138\uC694." : "\uC804\uC5ED \uBA85\uC608\uC758 \uC804\uB2F9\uC758 \uC7A5\uAE30 \uC131\uACFC \uAE30\uC900\uC744 \uD655\uC778\uD569\uB2C8\uB2E4.";
     return /* @__PURE__ */ React.createElement(
       "section",
       {
@@ -35669,7 +35824,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "data-state": surfaceState
       },
       /* @__PURE__ */ React.createElement("header", { className: "panel v4-tab-intro" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-workbench-title", className: "panel-hd-title" }, "\uC131\uACFC \xB7 \uC7A5\uAE30 \uC131\uACFC \uAE30\uC900\uACFC \uBA85\uC608\uC758 \uC804\uB2F9")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4-surface-status", role: "status", "aria-live": "polite" }, statusText), surfaceState === "error" && /* @__PURE__ */ React.createElement("p", { className: "research-empty danger", role: "alert" }, "\uC5F0\uACB0 \uC624\uB958 \uB54C\uBB38\uC5D0 \uC131\uACFC \uADFC\uAC70\uAC00 \uBD88\uC644\uC804\uD569\uB2C8\uB2E4. \uC131\uACFC \uD310\uB2E8\uC744 \uBCF4\uB958\uD558\uC138\uC694."), /* @__PURE__ */ React.createElement("p", { id: "v4-workbench-caveat", className: "v4-data-caveat" }, "\uC218\uC775\uB960\xB7\uC810\uC218\uB294 \uC7A5\uAE30 \uC131\uACFC \uAE30\uC900\uC77C \uBFD0 \uBBF8\uB798 \uC131\uACFC\uB97C \uBCF4\uC7A5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uAE30\uAC04, \uD45C\uBCF8 \uC218, MDD, \uCCB4\uACB0 \uBE44\uC6A9\uACFC \uD45C\uBCF8 \uC678 \uAC80\uC99D\uC744 \uD568\uAED8 \uD655\uC778\uD558\uC138\uC694."), /* @__PURE__ */ React.createElement("aside", { className: "v4-decision-blocker", "aria-label": "\uC2B9\uACA9 \uACB0\uC815 \uCC28\uB2E8 \uC870\uAC74" }, "\uC2B9\uACA9\xB7\uCD5C\uC885 \uC2B9\uC778\xB7\uC6B4\uC601 \uBC18\uC601\uC740 \uC774 \uD0ED\uC5D0\uC11C \uC2E4\uD589\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC11C\uBC84 \uAC80\uC99D, hard gate, \uCF54\uB4DC\xB7\uADFC\uAC70 \uD574\uC2DC\uC640 \uC0AC\uB78C\uC758 \uCD5C\uC885 \uC2B9\uC778\uC774 \uC5C6\uC73C\uBA74 \uACB0\uC815\uC740 \uCC28\uB2E8\uB429\uB2C8\uB2E4."))),
-      /* @__PURE__ */ React.createElement("section", { className: "v4-workbench-region v4-cjk-safe", "aria-labelledby": "v4-workbench-hof-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-hof-title", className: "stom-section-label" }, "\uC7A5\uAE30 \uBE44\uAD50 \uAE30\uC900\uACFC \uBA85\uC608\uC758 \uC804\uB2F9"), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HofInventoryGate, { compact: true }))
+      /* @__PURE__ */ React.createElement("section", { className: "v4-workbench-region v4-cjk-safe", "aria-labelledby": "v4-workbench-hof-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-hof-title", className: "stom-section-label" }, "\uC7A5\uAE30 \uBE44\uAD50 \uAE30\uC900\uACFC \uBA85\uC608\uC758 \uC804\uB2F9"), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }))
     );
   }
   Object.assign(window, { V4Workbench });
@@ -35758,45 +35913,71 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { V4Alpha });
 
   // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
-  var { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+  var { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
   function _fmtReportBytes(n) {
     if (!Number.isFinite(n)) return "";
     if (n < 1024) return n + " B";
     if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
     return (n / (1024 * 1024)).toFixed(1) + " MB";
   }
+  function isReport(row) {
+    return Boolean(row && typeof row === "object" && typeof row.path === "string" && row.path && typeof row.name === "string" && Number.isFinite(row.bytes));
+  }
   function V4Reports({ baseUrl }) {
     const [list, setList] = useState_rp7(null);
     const [err, setErr] = useState_rp7("");
     const [sel, setSel] = useState_rp7("");
+    const [listedBase, setListedBase] = useState_rp7("");
+    const generationRef = useRef_rp7(0);
+    const selectionRef = useRef_rp7("");
+    const baseRef = useRef_rp7(baseUrl);
+    baseRef.current = baseUrl;
     useEffect_rp7(() => {
+      const generation = generationRef.current + 1;
+      generationRef.current = generation;
+      const priorSelection = selectionRef.current;
+      const controller = new AbortController();
+      const timeout2 = setTimeout(() => controller.abort(), 6e3);
+      setList(baseUrl ? null : []);
+      setListedBase("");
+      setErr("");
+      setSel("");
+      selectionRef.current = "";
       if (!baseUrl) {
-        setList([]);
-        return;
+        clearTimeout(timeout2);
+        return () => controller.abort();
       }
-      let cancelled = false;
-      fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (cancelled) return;
-        const reports = Array.isArray(j && j.reports) ? j.reports : [];
+      fetch(baseUrl + "/reports", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        const reports = Array.isArray(j && j.reports) ? j.reports.filter(isReport) : [];
+        const retained = reports.some((rp) => rp.path === priorSelection) ? priorSelection : "";
+        const nextSelection = retained || (reports.length ? reports[0].path : "");
         setList(reports);
-        setSel((prev) => prev || (reports.length ? reports[0].path : ""));
+        setListedBase(baseUrl);
+        setSel(nextSelection);
+        selectionRef.current = nextSelection;
       }).catch((e) => {
-        if (!cancelled) {
-          setList([]);
-          setErr(String(e && e.message ? e.message : e));
-        }
-      });
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        setList([]);
+        setErr(String(e && e.message ? e.message : e));
+      }).finally(() => clearTimeout(timeout2));
       return () => {
-        cancelled = true;
+        controller.abort();
+        clearTimeout(timeout2);
       };
     }, [baseUrl]);
-    const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
+    const selectReport = (path) => {
+      setSel(path);
+      selectionRef.current = path;
+    };
+    const ownsSelection = Boolean(baseUrl && listedBase === baseUrl && Array.isArray(list) && list.some((rp) => rp.path === sel));
+    const viewUrl = ownsSelection ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
     return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.map((rp) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: rp.path,
         className: "v4-reports-item" + (sel === rp.path ? " active" : ""),
-        onClick: () => setSel(rp.path),
+        onClick: () => selectReport(rp.path),
         title: rp.path
       },
       /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, rp.name),
@@ -35866,6 +36047,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   var V4_PROTOTYPE_TAB_KEYS = ["lab", "context", "alpha", "catalog"];
   var V4_CONTEXT_DRAWER_QUERY = "v4_context";
   var V4_PROTOTYPE_QUERY = "prototype";
+  var v4LegacyDestinationBootstrapped = false;
+  var v4LegacyStoredDestination = "";
   function v4CanonicalDestinationKey(key) {
     const item = DASHBOARD_PAGE_OWNER_MATRIX.find(
       (destination) => destination.key === key || destination.legacyAliases.includes(key) || destination.internalAliases.includes(key)
@@ -35889,7 +36072,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const leaf = parts[1] === "evolution" ? parts[2] || "" : parts[1] || "";
       if (parts[1] === "evolution" && !parts[2]) return "research";
       if (V4_PROTOTYPE_TAB_KEYS.includes(leaf)) return leaf;
-      return v4CanonicalDestinationKey(leaf);
+      return v4CanonicalDestinationKey(leaf) || leaf;
     } catch (e) {
       return "";
     }
@@ -35911,48 +36094,68 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const canonical = v4CanonicalDestinationKey(requested);
       const isContext = requested === "context";
       const owner = canonical || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
-      const fallbackOwner = owner || "research";
+      if (!owner) return "";
       const url = new URL(location2.href || location2.pathname + location2.search, window.location.origin);
       if (isContext) {
         const pathOwner = v4CanonicalDestinationKey(v4TabFromPathname(location2.pathname));
         url.searchParams.set("tab", pathOwner || "research");
         url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
       } else {
-        url.searchParams.set("tab", fallbackOwner);
+        url.searchParams.set("tab", owner);
         if (requested === "alpha" || requested === "catalog") url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
       }
       if (url.pathname + url.search !== location2.pathname + location2.search) {
         history.replaceState(null, "", url.pathname + url.search);
       }
-      return fallbackOwner;
+      return owner;
     } catch (e) {
       return "";
+    }
+  }
+  function v4UnavailableDestination(location2 = window.location) {
+    const requested = v4RequestedDestination(location2);
+    if (!requested) return "";
+    if (v4LegacyExtrasEnabled(location2.search) && V4_PROTOTYPE_TAB_KEYS.includes(requested)) return "";
+    if (v4CanonicalDestinationKey(requested)) return "";
+    return ["lab", "context", "alpha", "catalog"].includes(requested) ? "" : requested;
+  }
+  function v4Storage() {
+    try {
+      return window.localStorage;
+    } catch (e) {
+      return null;
     }
   }
   function v4StoredDestination() {
+    if (v4LegacyDestinationBootstrapped) return v4LegacyStoredDestination;
+    v4LegacyDestinationBootstrapped = true;
+    const storage = v4Storage();
+    if (!storage) return "";
+    let primary = "";
+    let evolution = "";
     try {
-      const primary = localStorage.getItem("stom_active_tab");
-      const evolution = localStorage.getItem("stom_active_evolution_tab");
-      const requested = evolution && primary === "evolution" ? evolution : primary;
-      const canonical = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
-      localStorage.removeItem("stom_active_tab");
-      localStorage.removeItem("stom_active_evolution_tab");
-      return canonical;
+      primary = storage.getItem("stom_active_tab");
+      evolution = storage.getItem("stom_active_evolution_tab");
     } catch (e) {
-      return "";
+    } finally {
+      try {
+        storage.removeItem("stom_active_tab");
+        storage.removeItem("stom_active_evolution_tab");
+      } catch (e) {
+      }
     }
+    const requested = evolution && primary === "evolution" ? evolution : primary;
+    v4LegacyStoredDestination = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    return v4LegacyStoredDestination;
   }
-  function v4InitialTab(tabKeys = V4_TAB_KEYS) {
+  function v4InitialTab(tabKeys = V4_TAB_KEYS, storedDestination = "") {
     try {
       const requested = v4RequestedDestination();
       const rollback = v4LegacyExtrasEnabled();
       if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested) && tabKeys.includes(requested)) return requested;
       const canonical = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
       if (canonical && tabKeys.includes(canonical)) return canonical;
-      if (!requested) {
-        const stored = v4StoredDestination();
-        if (stored && tabKeys.includes(stored)) return stored;
-      }
+      if (!requested && storedDestination && tabKeys.includes(storedDestination)) return storedDestination;
     } catch (e) {
     }
     return "research";
@@ -35972,12 +36175,21 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     } catch (e) {
     }
     try {
-      const cached = localStorage.getItem("stom_base_url");
+      const storage = v4Storage();
+      const cached = storage && storage.getItem("stom_base_url");
       const here = window.location && window.location.origin || "";
       if (cached && here.startsWith("http") && new URL(cached).origin === here) return cached;
     } catch (e) {
     }
     return propBase || DEFAULT_BASE;
+  }
+  function v4InitialTheme() {
+    try {
+      const storage = v4Storage();
+      return storage && storage.getItem("stom_theme") || "dark";
+    } catch (e) {
+      return "dark";
+    }
   }
   function v4BundleVersion() {
     try {
@@ -36022,13 +36234,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     var _a, _b, _c, _d, _e, _f, _g;
-    v4CanonicalizeLegacyLocation();
     const tabs = v4TabsForSession();
     const tabKeys = tabs === V4_NORMAL_TABS ? V4_TAB_KEYS : V4_LEGACY_TAB_KEYS;
+    const storedDestinationRef = useRef_v4(null);
+    if (storedDestinationRef.current === null) storedDestinationRef.current = v4StoredDestination();
     const initialTabRef = useRef_v4("");
     if (!initialTabRef.current) {
       const hadDestination = !!v4RequestedDestination();
-      initialTabRef.current = v4InitialTab(tabKeys);
+      v4CanonicalizeLegacyLocation();
+      initialTabRef.current = v4InitialTab(tabKeys, storedDestinationRef.current);
       if (!hadDestination && initialTabRef.current !== "research") {
         try {
           const url = new URL(window.location.href);
@@ -36040,8 +36254,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
     const [pendingBase, setPendingBase] = useState_v4(baseUrl);
-    const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
+    const [theme, setTheme] = useState_v4(v4InitialTheme);
     const [activeTab, setActiveTab] = useState_v4(initialTabRef.current);
+    const [unavailableDestination, setUnavailableDestination] = useState_v4(() => v4UnavailableDestination());
     const [replayVisited, setReplayVisited] = useState_v4(() => initialTabRef.current === "replay");
     const [contextOpen, setContextOpen] = useState_v4(() => {
       try {
@@ -36053,10 +36268,18 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const pendingTabFocusRef = useRef_v4("");
     const contextTriggerRef = useRef_v4(null);
     const contextDrawerRef = useRef_v4(null);
+    const contextOpenRef = useRef_v4(contextOpen);
     const [buildVer] = useState_v4(() => v4BundleVersion());
     useEffect_v4(() => {
+      contextOpenRef.current = contextOpen;
+    }, [contextOpen]);
+    useEffect_v4(() => {
+      var _a2;
       document.documentElement.setAttribute("data-theme", theme);
-      localStorage.setItem("stom_theme", theme);
+      try {
+        (_a2 = v4Storage()) == null ? void 0 : _a2.setItem("stom_theme", theme);
+      } catch (e) {
+      }
     }, [theme]);
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
@@ -36064,13 +36287,23 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useEffect_v4(() => {
       const onPopState = () => {
         const nextTab = v4CanonicalizeLegacyLocation() || v4InitialTab(tabKeys);
+        const nextContextOpen = (() => {
+          try {
+            return new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1";
+          } catch (e) {
+            return false;
+          }
+        })();
+        const restoreContextTrigger = contextOpenRef.current && !nextContextOpen;
         pendingTabFocusRef.current = nextTab;
         setActiveTab(nextTab);
-        try {
-          setContextOpen(new URLSearchParams(window.location.search).get(V4_CONTEXT_DRAWER_QUERY) === "1");
-        } catch (e) {
-          setContextOpen(false);
-        }
+        setUnavailableDestination(v4UnavailableDestination());
+        contextOpenRef.current = nextContextOpen;
+        setContextOpen(nextContextOpen);
+        if (restoreContextTrigger) setTimeout(() => {
+          var _a2;
+          return (_a2 = contextTriggerRef.current) == null ? void 0 : _a2.focus();
+        }, 0);
       };
       window.addEventListener("popstate", onPopState);
       return () => window.removeEventListener("popstate", onPopState);
@@ -36093,7 +36326,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [runList, setRunList] = useState_v4([]);
     const [fetchedRunState, setFetchedRunState] = useState_v4(null);
     const [archiveLoadError, setArchiveLoadError] = useState_v4("");
+    const [runsLoadError, setRunsLoadError] = useState_v4("");
+    const [runsLoaded, setRunsLoaded] = useState_v4(false);
     const archiveRequestRef = useRef_v4(0);
+    const runsRequestRef = useRef_v4(0);
+    const backendIdentityRef = useRef_v4(0);
     const prevRunsActiveRef = useRef_v4(false);
     const [runsEpoch, setRunsEpoch] = useState_v4(0);
     useEffect_v4(() => {
@@ -36104,27 +36341,37 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const loadedRunsEpochRef = useRef_v4(-1);
     useEffect_v4(() => {
       if (isDemo || !baseUrl) {
+        runsRequestRef.current += 1;
         setRunList([]);
+        setRunsLoadError("");
+        setRunsLoaded(false);
         return;
       }
+      const requestId = ++runsRequestRef.current;
+      const backendIdentity = backendIdentityRef.current;
       let cancelled = false;
       let attempt = 0;
       const force = loadedRunsEpochRef.current !== -1 && runsEpoch !== loadedRunsEpochRef.current;
       loadedRunsEpochRef.current = runsEpoch;
       const load = () => {
         fetchRunsShared(baseUrl, { force }).then((j) => {
-          if (cancelled) return;
-          const runs = Array.isArray(j && j.runs) ? j.runs : [];
+          if (cancelled || requestId !== runsRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
+          if (!j || typeof j !== "object" || !Array.isArray(j.runs) || j.runs.some((run) => !run || typeof run !== "object")) {
+            throw new Error("Malformed /runs response: expected an object with a runs array");
+          }
+          const runs = j.runs.slice();
           runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
           setRunList(runs);
-        }).catch(() => {
-          if (cancelled) return;
+          setRunsLoadError("");
+          setRunsLoaded(true);
+        }).catch((e) => {
+          if (cancelled || requestId !== runsRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
           if (attempt < 4) {
             attempt += 1;
             setTimeout(() => {
               if (!cancelled) load();
             }, 4e3);
-          } else setRunList([]);
+          } else setRunsLoadError(String(e && e.message ? e.message : e));
         });
       };
       load();
@@ -36139,12 +36386,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         return;
       }
       const requestId = ++archiveRequestRef.current;
+      const backendIdentity = backendIdentityRef.current;
       fetch(baseUrl + "/run_state?run_id=" + encodeURIComponent(selectedRun), { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (requestId !== archiveRequestRef.current) return;
+        if (requestId !== archiveRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
         setFetchedRunState(j);
         setArchiveLoadError("");
       }).catch((e) => {
-        if (requestId !== archiveRequestRef.current) return;
+        if (requestId !== archiveRequestRef.current || backendIdentity !== backendIdentityRef.current) return;
         setFetchedRunState(null);
         setArchiveLoadError(String(e && e.message ? e.message : e));
       });
@@ -36192,18 +36440,51 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const g = (state.generations || []).find((x) => x.gen_no === genNo);
       if (g) setCodeViewGen(g);
     }, [state.generations]);
+    const applyBase = () => {
+      backendIdentityRef.current += 1;
+      archiveRequestRef.current += 1;
+      runsRequestRef.current += 1;
+      loadedRunsEpochRef.current = -1;
+      setSelectedRun("");
+      setFetchedRunState(null);
+      setArchiveLoadError("");
+      setRunList([]);
+      setRunsLoadError("");
+      setRunsLoaded(false);
+      setBaseUrl(pendingBase);
+    };
+    const retryRunList = () => {
+      setRunsLoadError("");
+      setRunsEpoch((epoch) => epoch + 1);
+    };
     const mddCap = Number((_b = (_a = configSpec.find((f) => f.name === "mdd_cap")) == null ? void 0 : _a.default) != null ? _b : 40);
     const minDailyTrades = Number((_d = (_c = configSpec.find((f) => f.name === "min_daily_trades")) == null ? void 0 : _c.default) != null ? _d : 0.5);
     const targetScoreRaw = (_e = configSpec.find((f) => f.name === "target_score")) == null ? void 0 : _e.default;
     const targetScore = targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === void 0 ? 1 : Number(targetScoreRaw);
     const setContextDrawer = (open, returnFocus = false) => {
-      setContextOpen(open);
+      if (open === contextOpenRef.current) return;
       try {
         const url = new URL(window.location.href);
-        if (open) url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
-        else url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
-        window.history.pushState(null, "", url.pathname + url.search);
+        if (open) {
+          url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
+          window.history.pushState({ ...window.history.state || {}, v4ContextDrawer: true }, "", url.pathname + url.search);
+          contextOpenRef.current = true;
+          setContextOpen(true);
+          return;
+        }
+        url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
+        contextOpenRef.current = false;
+        setContextOpen(false);
+        if (window.history.state && window.history.state.v4ContextDrawer === true) {
+          window.history.back();
+        } else {
+          const nextState = { ...window.history.state || {} };
+          delete nextState.v4ContextDrawer;
+          window.history.replaceState(nextState, "", url.pathname + url.search);
+        }
       } catch (e) {
+        contextOpenRef.current = false;
+        setContextOpen(false);
       }
       if (!open && returnFocus) setTimeout(() => {
         var _a2;
@@ -36236,8 +36517,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     };
     const selectTab = (key, retainFocus = true) => {
       if (!tabKeys.includes(key)) return;
+      if (key === activeTab && !contextOpenRef.current) return;
+      if (key === activeTab && contextOpenRef.current) {
+        setContextDrawer(false, retainFocus);
+        return;
+      }
       if (retainFocus) pendingTabFocusRef.current = key;
       setActiveTab(key);
+      setUnavailableDestination("");
+      contextOpenRef.current = false;
       setContextOpen(false);
       try {
         const url = new URL(window.location.href);
@@ -36253,7 +36541,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       event.preventDefault();
       selectTab(next);
     };
-    const active = tabs.find((t) => t.key === activeTab) || tabs[0];
+    const active = unavailableDestination ? { full: "\uC694\uCCAD \uB300\uC0C1 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC74C", hint: `\uBA85\uC2DC\uC801 route "${unavailableDestination}" \uBCF4\uC874` } : tabs.find((t) => t.key === activeTab) || tabs[0];
     return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, tabs.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -36276,7 +36564,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       {
         value: pendingBase,
         onChange: setPendingBase,
-        onApply: () => setBaseUrl(pendingBase),
+        onApply: applyBase,
         onReconnect: reconnect
       }
     ), /* @__PURE__ */ React.createElement(ConnBadge, { health, wsStatus }), /* @__PURE__ */ React.createElement(StatusBadge, { status: state.status }), /* @__PURE__ */ React.createElement(
@@ -36288,7 +36576,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-haspopup": "dialog",
         "aria-expanded": contextOpen,
         "aria-controls": "v4-context-drawer",
-        onClick: () => setContextDrawer(!contextOpen, contextOpen)
+        onClick: () => setContextDrawer(!contextOpenRef.current, contextOpenRef.current)
       },
       "AI Context"
     ), /* @__PURE__ */ React.createElement(V4ThemeToggle, { theme, onChange: setTheme })), /* @__PURE__ */ React.createElement("div", { className: "v4-controlbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-view-title" }, /* @__PURE__ */ React.createElement("h2", null, active.full), /* @__PURE__ */ React.createElement("span", { className: "mono" }, active.hint, " \xB7 run=", selectedRun ? "archive" : "LIVE", runId ? " \xB7 " + runId : "")), /* @__PURE__ */ React.createElement(
@@ -36306,7 +36594,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onStop,
         onGoLive: () => selectTab("research")
       }
-    )), /* @__PURE__ */ React.createElement("main", { className: "v4-stage" }, display.mode === "archive" && display.error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "alert" }, "\uC544\uCE74\uC774\uBE0C run \uB85C\uB4DC \uC2E4\uD328 \xB7 ", selectedRun, " \xB7 ", display.error), replayVisited && /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("main", { className: "v4-stage" }, display.mode === "archive" && display.error && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "alert" }, "\uC544\uCE74\uC774\uBE0C run \uB85C\uB4DC \uC2E4\uD328 \xB7 ", selectedRun, " \xB7 ", display.error), runsLoadError && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "alert" }, "\uC544\uCE74\uC774\uBE0C \uBAA9\uB85D\uC744 \uC0C8\uB85C \uACE0\uCE58\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4 \xB7 ", runsLoadError, " \xB7 ", runList.length ? `\uB9C8\uC9C0\uB9C9 \uD655\uC778 ${runList.length}\uAC74\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4.` : "\uD655\uC778\uB41C \uC544\uCE74\uC774\uBE0C \uD589\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", type: "button", onClick: retryRunList }, "\uB2E4\uC2DC \uC2DC\uB3C4")), runsLoaded && !runsLoadError && runList.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC544\uCE74\uC774\uBE0C run\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."), replayVisited && /* @__PURE__ */ React.createElement(
       "div",
       {
         id: "v4-panel-replay",
@@ -36346,7 +36634,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         role: "tabpanel",
         "aria-labelledby": "v4-tab-" + activeTab
       },
-      /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(ErrorBoundary, null, unavailableDestination ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "alert" }, '\uC694\uCCAD\uD55C \uB300\uC0C1 "', unavailableDestination, '"\uC740(\uB294) \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. URL\uC744 \uBCC0\uACBD\uD558\uC9C0 \uC54A\uC558\uC73C\uBA70, \uC67C\uCABD \uD0D0\uC0C9\uC5D0\uC11C \uC9C0\uC6D0\uB418\uB294 \uB300\uC0C1\uC744 \uC120\uD0DD\uD558\uC138\uC694.') : activeTab === "research" ? /* @__PURE__ */ React.createElement(
         V4ResearchLive,
         {
           baseUrl,

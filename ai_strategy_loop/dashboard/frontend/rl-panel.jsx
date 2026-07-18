@@ -16,6 +16,7 @@ const {
   useEffect: useEffect_rl,
   useCallback: useCallback_rl,
   useMemo: useMemo_rl,
+  useRef: useRef_rl,
 } = React;
 
 const RESEARCH_TABS = [
@@ -25,6 +26,12 @@ const RESEARCH_TABS = [
   { id: "combos", label: "변수 조합" },
   { id: "validation", label: "검증" },
 ];
+function _sameCorrelationIdentity(left, right) {
+  return Boolean(left && right)
+    && left.baseUrl === right.baseUrl
+    && left.runId === right.runId
+    && left.method === right.method;
+}
 function _rlPipelineState() {
   const raw = Array.isArray(window.STOM_PIPELINE) && window.STOM_PIPELINE.length ? window.STOM_PIPELINE : null;
   if (!raw) {
@@ -110,71 +117,159 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
   const visibleTabs = Array.isArray(enabledTabIds)
     ? RESEARCH_TABS.filter(item => enabledTabIds.includes(item.id))
     : RESEARCH_TABS;
-  const activeTab = visibleTabs.some(item => item.id === tab) ? tab : (visibleTabs[0] || RESEARCH_TABS[0]).id;
+  const activeTab = visibleTabs.some(item => item.id === tab) ? tab : (visibleTabs[0] ? visibleTabs[0].id : null);
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
   const [opsError, setOpsError] = useState_rl(null);
+  const opsRequestRef = useRef_rl(null);
 
   useEffect_rl(() => {
     if (!showOpsStatus || !baseUrl) return undefined;
-    const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => {
-        setOpsStrip(j);
-        setOpsError(null);
-        try {  /* F7 — 정체 의심 시 브라우저 탭 제목 경고(자리 비움 감지용). */
-          const stalled = ((j && j.active) || []).some(a => a.health !== "active");
-          const base = document.title.replace(/^⚠️ /, "");
-          document.title = (stalled ? "⚠️ " : "") + base;
-        } catch (e) { /* 제목 갱신 실패는 무시. */ }
-      })
-      .catch((e) => { setOpsStrip(null); setOpsError(String(e)); });
+    let active = true;
+    const titleBeforeOps = document.title;
+    const pull = () => {
+      if (opsRequestRef.current) opsRequestRef.current.abort();
+      const controller = new AbortController();
+      opsRequestRef.current = controller;
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      fetch(baseUrl + "/ops_status", { signal: controller.signal })
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+        .then(j => {
+          if (!active || controller.signal.aborted || opsRequestRef.current !== controller) return;
+          setOpsStrip(j);
+          setOpsError(null);
+          try {  /* F7 — 정체 의심 시 브라우저 탭 제목 경고(자리 비움 감지용). */
+            const stalled = ((j && j.active) || []).some(a => a.health !== "active");
+            document.title = (stalled ? "⚠️ " : "") + titleBeforeOps.replace(/^⚠️ /, "");
+          } catch (e) { /* 제목 갱신 실패는 무시. */ }
+        })
+        .catch((e) => {
+          if (!active || controller.signal.aborted || opsRequestRef.current !== controller) return;
+          setOpsStrip(null);
+          setOpsError(String(e));
+        })
+        .finally(() => {
+          clearTimeout(timeout);
+          if (opsRequestRef.current === controller) opsRequestRef.current = null;
+        });
+    };
     pull();
     const timer = setInterval(pull, 10000);
-    return () => clearInterval(timer);
+    return () => {
+      active = false;
+      clearInterval(timer);
+      if (opsRequestRef.current) {
+        opsRequestRef.current.abort();
+        opsRequestRef.current = null;
+      }
+      try { document.title = titleBeforeOps; } catch (e) { /* 제목 복구 실패는 무시. */ }
+    };
   }, [baseUrl, showOpsStatus]);
   const [method, setMethod] = useState_rl("spearman");
   const [axis, setAxis] = useState_rl("time");
   const [data, setData] = useState_rl(null);
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
+  const correlationRequestRef = useRef_rl({ controller: null, generation: 0, identity: null });
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
   const needsCorrelation = activeTab === "correlation" || activeTab === "combos";
 
+  useEffect_rl(() => {
+    const nextIdentity = { baseUrl, runId, method };
+    const request = correlationRequestRef.current;
+    if (_sameCorrelationIdentity(request.identity, nextIdentity)) return;
+    if (request.controller) request.controller.abort();
+    request.controller = null;
+    request.generation += 1;
+    request.identity = nextIdentity;
+    setData(null);
+    setErr(null);
+    setLoading(false);
+  }, [baseUrl, method, runId]);
+
   const refreshCorrelation = useCallback_rl(() => {
-    if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
+    const request = correlationRequestRef.current;
+    const identity = { baseUrl, runId, method };
+    if (request.controller) request.controller.abort();
+    const generation = request.generation + 1;
+    request.generation = generation;
+    request.identity = identity;
+    request.controller = null;
+    if (!needsCorrelation || isDemo || !baseUrl || !runId) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    request.controller = controller;
+    const isOwned = () => {
+      const current = correlationRequestRef.current;
+      return current.controller === controller
+        && current.generation === generation
+        && _sameCorrelationIdentity(current.identity, identity);
+    };
+    const isCurrent = () => isOwned() && !controller.signal.aborted;
     setLoading(true);
+    setErr(null);
     const url = baseUrl + "/variable_correlation?run_id=" + encodeURIComponent(runId)
       + "&method=" + encodeURIComponent(method);
-    fetch(url, { signal: AbortSignal.timeout(5000) })
+    fetch(url, { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(j => {
+        if (!isCurrent()) return;
+        if (Array.isArray(j && j.runs) && (j.runs.length !== 1 || String(j.runs[0]) !== String(identity.runId))) {
+          setData(null);
+          setErr("응답 run 컨텍스트가 요청한 run과 일치하지 않습니다.");
+          return;
+        }
+        setData({ ...j, _sourceIdentity: identity, _requestGeneration: generation });
+        setErr(null);
+      })
+      .catch(e => {
+        if (!isOwned()) return;
+        setData(null);
+        setErr(controller.signal.aborted ? "상관 분석 요청 시간이 초과되었습니다." : String(e));
+      })
+      .finally(() => {
+        clearTimeout(timeout);
+        if (!isOwned()) return;
+        correlationRequestRef.current.controller = null;
+        setLoading(false);
+      });
   }, [baseUrl, isDemo, method, needsCorrelation, runId]);
 
   useEffect_rl(() => {
     refreshCorrelation();
+    return () => {
+      const request = correlationRequestRef.current;
+      if (request.controller) request.controller.abort();
+      request.controller = null;
+      request.generation += 1;
+    };
   }, [refreshCorrelation]);
 
-  const matrixRows = (data && Array.isArray(data.feature_matrix)) ? data.feature_matrix : [];
-  const outcomeRows = (data && Array.isArray(data.outcome_correlations)) ? data.outcome_correlations : [];
-  const rangeRows = (data && Array.isArray(data.range_summaries)) ? data.range_summaries : [];
-  const segmentSummary = (data && data.segment_summaries) || {};
-  const recencyResearch = (data && data.recency_research) || null;
+  const currentCorrelationIdentity = { baseUrl, runId, method };
+  const ownedData = data && _sameCorrelationIdentity(data._sourceIdentity, currentCorrelationIdentity) ? data : null;
+  const matrixRows = (ownedData && Array.isArray(ownedData.feature_matrix)) ? ownedData.feature_matrix : [];
+  const outcomeRows = (ownedData && Array.isArray(ownedData.outcome_correlations)) ? ownedData.outcome_correlations : [];
+  const rangeRows = (ownedData && Array.isArray(ownedData.range_summaries)) ? ownedData.range_summaries : [];
+  const segmentSummary = (ownedData && ownedData.segment_summaries) || {};
+  const recencyResearch = (ownedData && ownedData.recency_research) || null;
   const pairRows = useMemo_rl(() => {
-    const raw = (data && Array.isArray(data.interaction_candidates) && data.interaction_candidates.length)
-      ? data.interaction_candidates
-      : ((data && Array.isArray(data.top_pairs) && data.top_pairs.length) ? data.top_pairs : []);
+    const raw = (ownedData && Array.isArray(ownedData.interaction_candidates) && ownedData.interaction_candidates.length)
+      ? ownedData.interaction_candidates
+      : ((ownedData && Array.isArray(ownedData.top_pairs) && ownedData.top_pairs.length) ? ownedData.top_pairs : []);
     return [...raw].sort((a, b) => (
       (b.research_score || b.abs_correlation || Math.abs(b.correlation || 0))
       - (a.research_score || a.abs_correlation || Math.abs(a.correlation || 0))
     ));
-  }, [data]);
+  }, [ownedData]);
 
   let body = null;
-  if (activeTab === "edge") {
+  if (!activeTab) {
+    body = <div className="research-lab-panel"><_ResearchEmptyState message="표시하도록 허용된 연구실 섹션이 없습니다." /></div>;
+  } else if (activeTab === "edge") {
     body = <EdgeRatioPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />;
   } else if (activeTab === "validation") {
     body = <_ValidationPanel baseUrl={baseUrl} runId={runId} isDemo={isDemo} />;
@@ -182,8 +277,8 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
     body = (
       <div>
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
-                              loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} runId={runId} />
+                              loading={loading} pooledTrades={ownedData && ownedData.pooled_trades}
+                              featureCount={ownedData && ownedData.feature_count} runId={runId} />
         <FeatureImportancePanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
       </div>
     );
@@ -191,14 +286,14 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
     body = <div className="research-lab-panel"><_ResearchEmptyState message="상관 분석을 표시할 run 컨텍스트가 부족합니다." /></div>;
   } else if (err) {
     body = <div className="research-lab-panel"><_ResearchEmptyState message={"응답을 받지 못했습니다: " + err} /></div>;
-  } else if (loading && !data) {
+  } else if (loading && !ownedData) {
     body = <div className="research-lab-panel"><_ResearchEmptyState message="상관 분석을 불러오는 중…" /></div>;
   } else if (activeTab === "correlation") {
     body = (
       <div className="research-lab-panel">
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
-                              loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} runId={runId} />
+                              loading={loading} pooledTrades={ownedData && ownedData.pooled_trades}
+                              featureCount={ownedData && ownedData.feature_count} runId={runId} />
         <_CorrelationHeatmap rows={matrixRows.length ? matrixRows : outcomeRows} />
         <_RangeSummaryList rows={rangeRows} />
         <_SegmentSummaryList summary={segmentSummary} axis={axis} />
@@ -209,8 +304,8 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
     body = (
       <div className="research-lab-panel">
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
-                              loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} runId={runId} />
+                              loading={loading} pooledTrades={ownedData && ownedData.pooled_trades}
+                              featureCount={ownedData && ownedData.feature_count} runId={runId} />
         {pairRows.length
           ? <_CombinationList rows={pairRows} />
           : <_ResearchEmptyState message="명시적 변수 조합 후보가 없습니다. interaction_candidates 또는 top_pairs 응답이 필요합니다." />}
@@ -227,13 +322,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
       onOpenWorkbench();
       return;
     }
-    try {
-      window.localStorage.setItem("stom_active_tab", "evolution");
-      window.localStorage.setItem("stom_active_evolution_tab", "workbench");
-      window.location.href = "/ui/evolution/workbench";
-    } catch (e) {
-      if (window.location) window.location.href = "/ui/evolution/workbench";
-    }
+    if (window.location) window.location.href = "/ui/evolution/workbench";
   }, [onOpenWorkbench]);
   return (
     <div className="research-lab-shell">
@@ -249,9 +338,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench, enabledTa
         ))}
         {showWorkbenchLink && (
           <button type="button" className="research-filter-action"
-                  title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
+                  title="History는 계보·비교 근거를, 성과는 전역 명예의 전당 기준을 각각 소유합니다."
                   onClick={openWorkbench}>
-            🔬 상세 워크벤치
+            성과 · 명예의 전당
           </button>
         )}
       </div>

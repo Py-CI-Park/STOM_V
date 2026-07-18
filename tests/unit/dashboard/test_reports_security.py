@@ -13,6 +13,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+ROOT = Path(__file__).resolve().parents[3]
+FRONTEND = ROOT / "ai_strategy_loop" / "dashboard" / "frontend"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -85,3 +87,33 @@ def test_safe_report_path_unit_boundary() -> None:
     assert app_module._safe_report_path("") is None
     assert app_module._safe_report_path("nope.html") is None
     assert app_module._safe_report_path("a\x00b.html") is None
+def test_report_and_wiki_sources_cancel_stale_base_requests() -> None:
+    reports = (FRONTEND / "v4-reports.jsx").read_text(encoding="utf-8")
+    wiki = (FRONTEND / "research-wiki.jsx").read_text(encoding="utf-8")
+
+    assert "new AbortController()" in reports
+    assert "generation !== generationRef.current" in reports
+    assert "baseUrl !== baseRef.current" in reports
+    assert 'setList(baseUrl ? null : []);' in reports
+    assert 'setSel("");' in reports
+    assert "j.reports.filter(isReport)" in reports
+    assert "const ownsSelection = Boolean(baseUrl && listedBase === baseUrl" in reports
+    assert 'sandbox=""' in reports
+    assert 'referrerPolicy="no-referrer"' in reports
+
+    assert "const [listLoading, setListLoading]" in wiki
+    assert "const [detailLoading, setDetailLoading]" in wiki
+    assert "const [listErr, setListErr]" in wiki
+    assert "const [detailErr, setDetailErr]" in wiki
+    assert "new AbortController()" in wiki
+    assert "generation !== listGenerationRef.current" in wiki
+    assert "generation !== detailGenerationRef.current" in wiki
+    assert "baseUrl !== baseRef.current" in wiki
+    assert "selectedId !== selectedIdRef.current" in wiki
+    assert "baseUrl === baseRef.current" in wiki
+    assert "const owned = listedBase === baseUrl" in wiki
+    assert "}, [baseUrl, isDemo]);" in wiki
+    assert "isSelectedWikiDoc(j, selectedId) ? j : null" in wiki
+    assert "j.docs.filter(isWikiRow)" in wiki
+    assert '<pre className="research-wiki-markdown">' in wiki
+    assert "innerHTML" not in wiki
