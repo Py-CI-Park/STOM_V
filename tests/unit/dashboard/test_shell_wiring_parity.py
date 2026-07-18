@@ -55,6 +55,7 @@ def _reachable_files(entry_name: str) -> set[Path]:
 
     §3.3 강화: 셸에서 import 되지 않는 고아 v4-*.jsx 파일이나 주석 문자열이 'V4에 배선됨'
     으로 오계산되지 않도록, 실제 import 그래프의 도달 가능 파일만 render 대상으로 본다.
+    §1d(검토): import 탐색 전에도 주석을 제거해 주석 처리된 import 가 도달 파일로 계산되지 않게 한다.
     """
     seen: set[Path] = set()
     stack = [FRONTEND / entry_name]
@@ -63,7 +64,7 @@ def _reachable_files(entry_name: str) -> set[Path]:
         if f in seen or not f.exists():
             continue
         seen.add(f)
-        text = f.read_text(encoding="utf-8")
+        text = _strip_comments(f.read_text(encoding="utf-8"))
         for rel in _IMPORT_PATH.findall(text):
             stack.append(FRONTEND / rel[2:])  # "./x.jsx" → x.jsx
     return seen

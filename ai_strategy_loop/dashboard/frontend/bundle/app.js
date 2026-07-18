@@ -9202,6 +9202,7 @@ def signal_sell(pos, bar, ind):
 
   // ai_strategy_loop/dashboard/frontend/runs-shared.jsx
   var _RUNS_TTL_MS = 2e4;
+  var _RUNS_TRANSPORT_TIMEOUT_MS = 15e3;
   var _runsCache = /* @__PURE__ */ new Map();
   function _cloneRuns(j) {
     if (!j || typeof j !== "object") return j;
@@ -9210,14 +9211,14 @@ def signal_sell(pos, bar, ind):
   function fetchRunsShared(baseUrl, opts) {
     const o = opts || {};
     const key = baseUrl || "";
+    if (o.force) _runsCache.delete(key);
     const now2 = Date.now();
     const entry = _runsCache.get(key);
-    if (!o.force && entry && now2 - entry.ts < _RUNS_TTL_MS) {
-      if (entry.data) return Promise.resolve(_cloneRuns(entry.data));
+    if (entry) {
       if (entry.promise) return entry.promise.then(_cloneRuns);
+      if (entry.data && now2 - entry.ts < _RUNS_TTL_MS) return Promise.resolve(_cloneRuns(entry.data));
     }
-    const timeoutMs = o.timeoutMs || 15e3;
-    const promise = fetch(key + "/runs", { signal: AbortSignal.timeout(timeoutMs) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+    const promise = fetch(key + "/runs", { signal: AbortSignal.timeout(_RUNS_TRANSPORT_TIMEOUT_MS) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
       _runsCache.set(key, { ts: Date.now(), promise: null, data: j });
       return j;
     }).catch((err) => {
@@ -34961,7 +34962,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "translated", label: "\uBC88\uC5ED" },
     { key: "registered", label: "\uB4F1\uC7AC" },
     { key: "engine_checked", label: "\uC5D4\uC9C4 \uB300\uC0C1" },
-    { key: "gate_passed", label: "\uCE21\uC815\uC131\uACF5(\uAC8C\uC774\uD2B8)" }
+    { key: "gate_passed", label: "\uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
   ];
   function V4Alpha({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
@@ -35011,7 +35012,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const v = Number(funnel[stage.key]) || 0;
       const pct = Math.round(v / funnelMax * 100);
       return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "132px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
-    }), verdict.coverage && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, "\uBD09\uC778 ", _vaNum(verdict.coverage.n_rules_sealed), " \xB7 \uCE21\uC815\uC131\uACF5 ", _vaNum(verdict.coverage.measured_ok), " \xB7 \uAC80\uC5F4 ", _vaNum(verdict.coverage.censored_timeout))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED\uC2DD (expr)"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uAC80\uC99D"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
+    }), verdict.coverage && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, "\uBD09\uC778 ", _vaNum(verdict.coverage.n_rules_sealed), " \xB7 \uCE21\uC815 \uC644\uB8CC ", _vaNum(verdict.coverage.measured_ok), " \xB7 \uAC80\uC5F4 ", _vaNum(verdict.coverage.censored_timeout), " \xB7 \uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC ", _vaNum(verdict.performance_gate_passed), " \u2014 \uC9D1\uD569 rho \uAC8C\uC774\uD2B8(" + (verdict.verdict || "\u2014") + ")\uC640 \uAC1C\uBCC4 \uC131\uB2A5\uAC8C\uC774\uD2B8\uB294 \uBCC4\uAC1C")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED\uC2DD (expr)"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uAC80\uC99D"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
       const isObj = rule && typeof rule === "object";
       const rid = isObj ? rule.rule_id || rule.id || rule.name || "#" + (i + 1) : String(rule);
       const tr = isObj && rule.translation ? rule.translation : null;
@@ -35153,6 +35154,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       if (prevRunsActiveRef.current && !active2) setRunsEpoch((e) => e + 1);
       prevRunsActiveRef.current = active2;
     }, [liveState.status]);
+    const loadedRunsEpochRef = useRef_v4(-1);
     useEffect_v4(() => {
       if (isDemo || !baseUrl) {
         setRunList([]);
@@ -35160,8 +35162,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
       let cancelled = false;
       let attempt = 0;
+      const force = loadedRunsEpochRef.current !== -1 && runsEpoch !== loadedRunsEpochRef.current;
+      loadedRunsEpochRef.current = runsEpoch;
       const load = () => {
-        fetchRunsShared(baseUrl, { timeoutMs: 15e3 }).then((j) => {
+        fetchRunsShared(baseUrl, { force }).then((j) => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];
           runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));

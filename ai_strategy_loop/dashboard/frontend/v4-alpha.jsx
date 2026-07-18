@@ -28,7 +28,7 @@ const _VA_FUNNEL_STAGES = [
   { key: "translated", label: "번역" },
   { key: "registered", label: "등재" },
   { key: "engine_checked", label: "엔진 대상" },
-  { key: "gate_passed", label: "측정성공(게이트)" },
+  { key: "gate_passed", label: "성능게이트 통과" },
 ];
 
 function V4Alpha({ baseUrl, wsStatus }) {
@@ -159,7 +159,9 @@ function V4Alpha({ baseUrl, wsStatus }) {
               })}
               {verdict.coverage && (
                 <p className="mono" style={{ color: "var(--ink-2)" }}>
-                  봉인 {_vaNum(verdict.coverage.n_rules_sealed)} · 측정성공 {_vaNum(verdict.coverage.measured_ok)} · 검열 {_vaNum(verdict.coverage.censored_timeout)}
+                  봉인 {_vaNum(verdict.coverage.n_rules_sealed)} · 측정 완료 {_vaNum(verdict.coverage.measured_ok)} · 검열 {_vaNum(verdict.coverage.censored_timeout)}
+                  {" · 성능게이트 통과 "}{_vaNum(verdict.performance_gate_passed)}
+                  {" — 집합 rho 게이트(" + (verdict.verdict || "\u2014") + ")와 개별 성능게이트는 별개"}
                 </p>
               )}
             </div>

@@ -32,6 +32,15 @@ def test_fingerprinted_css_is_immutable_cached() -> None:
     assert "immutable" in r.headers.get("cache-control", "")
 
 
+def test_substring_v_param_is_not_treated_as_fingerprint() -> None:
+    # §1e(검토): rev=·prev= 등 'v=' 부분매칭이 immutable 로 오인되면 안 된다(정확 파싱).
+    client = _client()
+    for bad in ({"rev": "abc123"}, {"prev": "x"}, {"v": ""}, {"v": "1"}):
+        r = client.get("/ui/bundle/app.js", params=bad)
+        assert r.status_code == 200
+        assert "immutable" not in r.headers.get("cache-control", ""), bad
+
+
 def test_unfingerprinted_asset_is_no_store() -> None:
     # §3.4: 지문 없는 .js 요청은 immutable 금지 + no-store 명시(내용 주소화 안 됨 → 장기 캐시 위험).
     client = _client()

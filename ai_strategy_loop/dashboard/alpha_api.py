@@ -115,9 +115,16 @@ def _preregistration_status(run_dir: Path) -> dict[str, Any]:
     payload, error = _load_json(prereg_path)
     sidecar = _sidecar_sha(run_dir)
     sha_match: bool | None = None
+    read_error: str | None = None
     if prereg_path.is_file() and sidecar is not None:
-        actual = hashlib.sha256(prereg_path.read_bytes()).hexdigest()
-        sha_match = actual == sidecar
+        # §1b(검토): 직접 read_bytes 를 soft-error 로 감싼다 — 권한/레이스 오류가 HTTP 500 으로
+        #   전파되지 않게 하고, present-but-unreadable 을 sha_match=None + 오류로 노출한다.
+        try:
+            actual = hashlib.sha256(prereg_path.read_bytes()).hexdigest()
+            sha_match = actual == sidecar
+        except OSError as exc:
+            read_error = f"{_PREREG_FILE}: {exc}"
+            logger.warning("alpha_api: prereg read 실패: %s", exc)
     valid_json = isinstance(payload, dict)
     # §4.3: 파일 존재만으로 sealed 판정 금지 — 정상 JSON + 사이드카 + SHA 일치 모두 요구.
     sealed = bool(prereg_path.is_file() and valid_json and sha_match is True)
@@ -134,6 +141,8 @@ def _preregistration_status(run_dir: Path) -> dict[str, Any]:
     }
     if error:
         status["error"] = error
+    elif read_error:
+        status["error"] = read_error
     return status
 
 
@@ -143,8 +152,18 @@ def _ledger_status(run_dir: Path) -> dict[str, Any]:
     totals: dict[str, int] = {program: 0 for program in _LEDGER_PROGRAMS}
     entries = 0
     malformed = 0
+
     if path.is_file():
-        for raw in path.read_text(encoding="utf-8").splitlines():
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError as exc:
+            # §1b: 원장 직접 읽기 오류를 soft-error 로 노출(HTTP 500 금지·측정 0 위장 금지).
+            logger.warning("alpha_api: ledger read 실패: %s", exc)
+            return {
+                "available": True, "totals": totals, "total": 0, "entries": 0,
+                "malformed_lines": 0, "error": f"{_LEDGER_FILE}: {exc}",
+            }
+        for raw in lines:
             line = raw.strip()
             if not line:
                 continue
@@ -339,6 +358,12 @@ def _authoritative_verdict(run_dir: Path) -> dict[str, Any]:
         payload, error = _load_json(run_dir / name)
         if isinstance(payload, dict):
             cov = payload.get("coverage") if isinstance(payload.get("coverage"), dict) else {}
+            per_rule = payload.get("per_rule") if isinstance(payload.get("per_rule"), list) else []
+            # §4(검토): measured_ok(측정 완료) 와 gate_passed(성능게이트 통과)는 다른 의미다.
+            #   per_rule[].gate_passed(True) 만 실제 성능게이트 통과다(현 데이터는 전부 MDD 초과 → 0).
+            gate_passed_n = sum(
+                1 for r in per_rule if isinstance(r, dict) and r.get("gate_passed") is True
+            )
             return {
                 "available": True,
                 "source": name,
@@ -346,6 +371,8 @@ def _authoritative_verdict(run_dir: Path) -> dict[str, Any]:
                 "status": payload.get("status"),
                 "rho": payload.get("rho"),
                 "verdict": payload.get("verdict"),
+                "n_per_rule": len(per_rule),
+                "performance_gate_passed": gate_passed_n,
                 "coverage": {
                     "n_rules_sealed": cov.get("n_rules_sealed"),
                     "measured_ok": cov.get("measured_ok"),
@@ -354,17 +381,18 @@ def _authoritative_verdict(run_dir: Path) -> dict[str, Any]:
                 },
             }
         if error:
+            # §1b: present-but-broken 영수증은 0/이전값으로 축소하지 않고 오류로 노출한다.
             return {"available": False, "source": name, "error": error}
     return {"available": False}
 
 
 @alpha_router.get("/funnel")
 def alpha_funnel() -> dict[str, Any]:
-    """퍼널 6단계: 발견→FDR 생존→번역→등재→엔진 확인→측정성공. 권위 판정 동봉.
+    """퍼널 6단계: 발견→FDR 생존→번역→등재→엔진 대상→성능게이트 통과. 판정·검열 동봉.
 
-    §4.1 교정: 부재하던 제네릭 이름(registration_receipt/engine_check_receipt) 대신
-    실제 영수증(rho_gate_*/rho_retrial_*)을 읽어 등재·엔진·판정을 표시한다.
-    이전 구현은 실제 판정이 통과("본빌드 진행 권고")임에도 등재·엔진·게이트를 0으로 오표시했다.
+    §4(검토) 교정: gate_passed 는 measured_ok(측정 완료)가 아니라 per_rule[].gate_passed(True)
+    로 집계한 **실제 성능게이트 통과 수**다(현 데이터는 전부 MDD>cap 로 0). measured_ok·censored
+    는 별도 필드로 노출해 의미 혼합을 없앤다. 판정 카드의 rho(집합 상관 게이트)와도 구분한다.
     """
     run_dir = _run_dir()
     mining, _ = _load_json(run_dir / "mining_report.json")
@@ -374,8 +402,10 @@ def alpha_funnel() -> dict[str, Any]:
     cov = verdict.get("coverage") if isinstance(verdict.get("coverage"), dict) else {}
     n_sealed = cov.get("n_rules_sealed")
     measured_ok = cov.get("measured_ok")
-    engine_checked = n_sealed if isinstance(n_sealed, int) else 0  # 봉인된 규칙 전부 엔진 대상
-    gate_passed = measured_ok if (verdict.get("available") and isinstance(measured_ok, int)) else 0
+    censored = cov.get("censored_timeout")
+    engine_checked = n_sealed if isinstance(n_sealed, int) else 0   # 봉인=엔진 대상 수
+    perf_gate = verdict.get("performance_gate_passed")
+    gate_passed = perf_gate if isinstance(perf_gate, int) else 0    # 개별 성능게이트 통과(실측 0)
     discovered = _count_in(mining, ("n_discovered",), _RULE_LIST_KEYS)
     return {
         "available": any(
@@ -387,6 +417,8 @@ def alpha_funnel() -> dict[str, Any]:
         "registered": registered,
         "registration_source": reg_source,
         "engine_checked": engine_checked,
+        "measured_ok": measured_ok if isinstance(measured_ok, int) else None,
+        "censored": censored if isinstance(censored, int) else None,
         "gate_passed": gate_passed,
         "verdict": verdict,
     }

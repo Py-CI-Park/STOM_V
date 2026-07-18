@@ -272,6 +272,12 @@ def test_alpha_funnel_counts_registration_and_verdict(monkeypatch, tmp_path: Pat
         {
             "final": True, "status": "finalized", "rho": 0.6687, "verdict": "본빌드 진행 권고",
             "coverage": {"n_rules_sealed": 10, "measured_ok": 8, "censored_timeout": 2, "no_trades": 0},
+            # §4(검토): per_rule[].gate_passed 만 성능게이트 통과. 측정완료(8)와 구분(전부 MDD 초과 → 0).
+            "per_rule": [
+                {"name": f"R{i}", "gate_passed": False, "gate_reason": "mdd>cap"} for i in range(8)
+            ] + [
+                {"name": "R8", "gate_passed": None}, {"name": "R9", "gate_passed": None},
+            ],
         },
     )
     client = _client(monkeypatch, tmp_path)
@@ -283,12 +289,15 @@ def test_alpha_funnel_counts_registration_and_verdict(monkeypatch, tmp_path: Pat
     assert body["fdr_survived"] == 40
     assert body["translated"] == 30
     assert body["registered"] == 2
-    assert body["engine_checked"] == 10
-    assert body["gate_passed"] == 8
+    assert body["engine_checked"] == 10       # 봉인=엔진 대상
+    assert body["measured_ok"] == 8           # 측정 완료(별도 필드)
+    assert body["censored"] == 2
+    assert body["gate_passed"] == 0           # §4 교정: 성능게이트 통과(per_rule)는 0
     verdict = body["verdict"]
     assert verdict["available"] is True and verdict["final"] is True
     assert verdict["source"] == "rho_retrial_verdict.json"
     assert verdict["verdict"] == "본빌드 진행 권고"
+    assert verdict["performance_gate_passed"] == 0
 
 
 def test_alpha_funnel_prefers_retrial_registration(monkeypatch, tmp_path: Path) -> None:

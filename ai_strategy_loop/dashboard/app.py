@@ -36,6 +36,8 @@ import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
+import re  # noqa: E402
+from urllib.parse import parse_qs  # noqa: E402
 from collections.abc import Callable  # noqa: E402
 from typing import Any, Dict, List, Optional, assert_never  # noqa: E402
 
@@ -97,13 +99,29 @@ _DASHBOARD_FAVICON_SVG = (
 #   장기 캐시가 가능하다. Starlette StaticFiles 기본값은 Cache-Control 을 안 붙여, 2.3MB
 #   정적 자산(app.js 2MB 포함)이 매 로드 재검증/재다운로드되던 '크롬 느림'의 주원인이었다.
 #   지문 없는 요청과 .html 은 no-store 로 남겨 셸 HTML(핸들러가 직접 no-store 서빙)과 정합.
+# 지문 형식: 빌드가 발행하는 v 값(8자리 hex 해시 또는 date+alnum, 예: 998fd305 / 20260624u002).
+#   6자 이상 영숫자·._- 조합만 지문으로 인정한다(빈 값·짧은 값·다른 파라미터 부분매칭 배제).
+_FINGERPRINT_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._-]{5,}$")
+
+
+def _is_fingerprint_query(query: bytes) -> bool:
+    try:
+        params = parse_qs(query.decode("latin-1"))
+    except Exception:  # noqa: BLE001
+        return False
+    values = params.get("v") or []
+    return bool(values and values[0] and _FINGERPRINT_RE.match(values[0]))
+
+
 class _FingerprintedStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope: Any) -> Response:  # type: ignore[override]
         response = await super().get_response(path, scope)
         try:
             lower = path.lower()
             query = scope.get("query_string", b"") or b""
-            fingerprinted = b"v=" in query
+            # §1e(검토): b"v=" in query 는 rev=·prev= 등 부분매칭까지 immutable 로 만든다.
+            #   query 를 정확히 파싱해 비어있지 않은 지문 형식의 v 파라미터만 지문으로 인정한다.
+            fingerprinted = _is_fingerprint_query(query)
             if lower.endswith(".html"):
                 response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
             elif fingerprinted and (lower.endswith(".js") or lower.endswith(".css")):

@@ -170,15 +170,18 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     if (prevRunsActiveRef.current && !active) setRunsEpoch((e) => e + 1);
     prevRunsActiveRef.current = active;
   }, [liveState.status]);
+  const loadedRunsEpochRef = useRef_v4(-1);
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
     let attempt = 0;
-    // 대형 아카이브(/runs 가 수 MB)는 페이지 초기 로드의 동시 fetch 큐 맨 뒤로 밀려
-    //   타임아웃될 수 있다(실측: 8791 아카이브 2.6MB 가 10여 요청 뒤 도착). 15s 타임아웃 +
-    //   실패 시 4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다.
+    // §1c: 런 종료 전이(runsEpoch 증가)에서는 공용 캐시를 강제 무효화해 새 아카이브를 즉시 반영한다.
+    const force = loadedRunsEpochRef.current !== -1 && runsEpoch !== loadedRunsEpochRef.current;
+    loadedRunsEpochRef.current = runsEpoch;
+    // 대형 아카이브(/runs 가 수 MB)는 초기 로드 동시 fetch 큐에 밀려 지연될 수 있어 실패 시
+    //   4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다. transport timeout 은 공용 모듈이 고정.
     const load = () => {
-      fetchRunsShared(baseUrl, { timeoutMs: 15000 })
+      fetchRunsShared(baseUrl, { force })
         .then(j => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];
