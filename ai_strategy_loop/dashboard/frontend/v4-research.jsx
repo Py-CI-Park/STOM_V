@@ -71,7 +71,7 @@ function v4LiveSituation(state) {
   const s = state || {};
   const latest = s.latest || {};
   const phase = String(latest.phase || "").toLowerCase();
-  const status = String(s.status || latest.status || "").toLowerCase();
+  const statusValues = [s.status, latest.status].map(value => String(value || "").toLowerCase());
   const engine = String(latest.engine_state || s.engine_state || "").toLowerCase();
   const phaseStartedAt = latest.phase_started_at || null;
   const backtestProgress = latest.backtest_progress ?? s.backtest_progress ?? null;
@@ -80,20 +80,19 @@ function v4LiveSituation(state) {
     ? V4_LIVE_PHASE_STEP[phase]
     : (Number.isFinite(rawStep) ? rawStep : -1);
   const mappedActive = Math.min(3, Math.max(0, mapped));
-  const terminalFailure = ["error", "failed", "blocked"].includes(status)
+  const terminalFailure = statusValues.some(value => ["error", "failed", "blocked"].includes(value))
     || ["error", "failed"].includes(engine);
-  const stopping = status === "stopping" || phase === "stopping";
-  const reconnecting = ["reconnect", "reconnecting", "disconnected"].includes(status);
-  const complete = status === "complete" || phase === "complete" || mapped >= 4;
+  const stopping = !terminalFailure && (statusValues.some(value => value === "stopping") || phase === "stopping");
+  const reconnecting = !terminalFailure && !stopping && statusValues.some(value => ["reconnect", "reconnecting", "disconnected"].includes(value));
+  const exceptionalState = terminalFailure ? "failure" : ((stopping || reconnecting) ? "retry" : "");
+  const complete = !exceptionalState && (statusValues.includes("complete") || phase === "complete" || mapped >= 4);
   const active = complete ? 3 : mappedActive;
   const legacy = !phase && !Number.isFinite(rawStep);
   const steps = V4_LIVE_STEP_KEYS.map((key, index) => {
     let stateName = "pending";
-    if (Array.isArray(latest.skipped_steps) && latest.skipped_steps.includes(key)) stateName = "skipped";
+    if (exceptionalState && index === active) stateName = exceptionalState;
+    else if (Array.isArray(latest.skipped_steps) && latest.skipped_steps.includes(key)) stateName = "skipped";
     else if (complete) stateName = "success";
-    else if (terminalFailure && index === active) stateName = "failure";
-    else if (stopping && index === active) stateName = "retry";
-    else if (reconnecting && index === active) stateName = "retry";
     else if (index < active) stateName = "success";
     else if (index === active && !legacy) stateName = "active";
     return { key, index, state: stateName, seconds: Number((latest.step_timings || {})[key]) };
@@ -102,13 +101,38 @@ function v4LiveSituation(state) {
 }
 
 function _v4EvidenceState(state) {
-  const latest = (state && state.latest) || {};
-  const current = (state && state.current_run) || {};
+  const s = state || {};
+  const latest = s.latest || {};
+  const current = s.current_run || {};
   const evidence = latest.analysis_evidence || latest.evidence || current.analysis_evidence || current.evidence;
-  if (state && (state.error || latest.error)) return { label: "error", value: latest.error || state.error };
+  const evidenceStatus = [latest.evidence_status, current.evidence_status, s.evidence_status]
+    .map(value => String(value || "").toLowerCase());
+  const errorDetail = latest.evidence_error || current.evidence_error || s.evidence_error || latest.error || s.error || "분석 증거 발행 오류";
+  if (s.error || latest.error || evidenceStatus.includes("error")) return { label: "error", value: errorDetail };
+  if (latest.stale === true || current.stale === true || s.stale === true || evidenceStatus.includes("stale")) return { label: "stale", value: evidence || "발행된 분석 증거 없음" };
   if (!evidence || (Array.isArray(evidence) && !evidence.length)) return { label: "empty", value: "발행된 분석 증거 없음" };
-  if (latest.stale === true || current.stale === true || latest.evidence_status === "stale") return { label: "stale", value: evidence };
-  return { label: "fresh", value: evidence };
+  if (evidenceStatus.includes("fresh")) return { label: "fresh", value: evidence };
+  return { label: "stale", value: evidence };
+}
+
+const V5_2_FIELD_SOURCES = [
+  { field: "매수 조건식 · buy_code", paths: "current_run.generation.buy_code_partial / generations[].buy_code / best.buy_code / winner.buy_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
+  { field: "매도 조건식 · sell_code", paths: "current_run.generation.sell_code_partial / generations[].sell_code / best.sell_code / winner.sell_code", unit: "STOM 조건식", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
+  { field: "source / run_id / generation", paths: "current_run.generation / run_id / current_gen", unit: "source · run ID · generation", status: "latest.phase, latest.status", owner: "LoopState snapshot publisher" },
+  { field: "engine_state / backtest_progress", paths: "latest.engine_state / engine_state / latest.backtest_progress / backtest_progress", unit: "engine state · progress", status: "latest.phase, latest.status", owner: "Backtest state publisher" },
+  { field: "analysis evidence", paths: "latest.analysis_evidence / latest.evidence / current_run.analysis_evidence / current_run.evidence", unit: "evidence entries", status: "latest.evidence_status / current_run.evidence_status / evidence_status", owner: "Analysis evidence publisher" },
+];
+
+function _V5_2FieldSourceTable() {
+  return (
+    <section className="v4-field-source-table" aria-labelledby="v5-2-field-source-heading">
+      <h3 id="v5-2-field-source-heading">V5.2 sealed field-source table</h3>
+      <table>
+        <thead><tr><th>displayed field</th><th>authoritative state path(s)</th><th>unit</th><th>freshness / status path</th><th>owner</th></tr></thead>
+        <tbody>{V5_2_FIELD_SOURCES.map(row => <tr key={row.field}><th scope="row">{row.field}</th><td className="mono">{row.paths}</td><td>{row.unit}</td><td className="mono">{row.status}</td><td>{row.owner}</td></tr>)}</tbody>
+      </table>
+    </section>
+  );
 }
 
 function _V4WorkflowStrip({ state, situation }) {
@@ -341,7 +365,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 <div className="panel-bd"><dl><div><dt>매수 조건식 · buy_code</dt><dd className="mono">{activeGeneration.buy_code || "empty"}</dd></div><div><dt>매도 조건식 · sell_code</dt><dd className="mono">{activeGeneration.sell_code || "empty"}</dd></div>
                   <div><dt>source / run_id / generation</dt><dd>{stream.buy_code_partial || stream.sell_code_partial ? "current_run.generation" : "generations"} · {runId || "legacy"} · {s.current_gen ?? "—"}</dd></div>
                   <div><dt>engine_state / backtest_progress</dt><dd>{s.latest?.engine_state || s.engine_state || "empty"} · {s.latest?.backtest_progress ?? s.backtest_progress ?? "empty"}</dd></div>
-                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}</dd></div></dl></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
+                  <div><dt>analysis evidence · {evidence.label}</dt><dd>{evidenceText}</dd></div></dl><_V5_2FieldSourceTable /></div></section><EnginePanel state={s} wsStatus={wsStatus} /></>}
               {selectedStep === 2 && <><ResearchCriteriaBanner state={s} baseUrl={baseUrl} /><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} /></>}
               {selectedStep === 3 && <><AutopsyPanel state={s} wsStatus={wsStatus} /><HypothesisPanel state={s} /><FeedbackPanel state={s} /></>}
             </div>

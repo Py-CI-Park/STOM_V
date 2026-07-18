@@ -249,6 +249,10 @@ console.log(JSON.stringify({
   error: summary({ status: 'error', latest: { phase: 'score_start', error: 'bad' } }),
   legacy: map({ status: 'running', latest: {} }).legacy,
   reconnect: summary({ status: 'reconnecting', latest: { current_step: 1 } }),
+  completeWithError: summary({ status: 'error', latest: { phase: 'complete' } }),
+  completeWithStopping: summary({ status: 'stopping', latest: { phase: 'complete' } }),
+  completedStepWithReconnect: summary({ status: 'reconnecting', latest: { current_step: 4 } }),
+  latestFailureOverridesStateComplete: summary({ status: 'complete', latest: { status: 'failed', phase: 'complete' } }),
 }));
 """
     result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, timeout=20, check=False)
@@ -262,6 +266,10 @@ console.log(JSON.stringify({
         "error": ["success", "success", "failure", "pending"],
         "legacy": True,
         "reconnect": ["success", "retry", "pending", "pending"],
+        "completeWithError": ["success", "success", "success", "failure"],
+        "completeWithStopping": ["success", "success", "success", "retry"],
+        "completedStepWithReconnect": ["success", "success", "success", "retry"],
+        "latestFailureOverridesStateComplete": ["success", "success", "success", "failure"],
     }
 
 

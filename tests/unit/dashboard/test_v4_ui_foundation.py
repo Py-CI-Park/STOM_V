@@ -300,3 +300,61 @@ def test_v5_live_backtest_authority_and_responsive_graph_contract() -> None:
     assert "@media (prefers-reduced-motion: reduce)" in css
     assert "@keyframes v4-step-pulse" in css
     assert ".v4-live-drawer[hidden] { display: none !important; }" in css
+def test_v5_2_backtest_field_source_table_seals_existing_paths() -> None:
+    source = _read("v4-research.jsx")
+    css = _read("v4.css")
+
+    for marker in (
+        "V5.2 sealed field-source table",
+        "V5_2_FIELD_SOURCES",
+        "authoritative state path(s)",
+        "freshness / status path",
+        "current_run.generation.buy_code_partial",
+        "current_run.generation.sell_code_partial",
+        "latest.engine_state",
+        "latest.backtest_progress",
+        "latest.evidence_status",
+        "owner",
+    ):
+        assert marker in source
+    for marker in (
+        ".v4-field-source-table {",
+        "overflow-x: auto",
+        "min-width: 720px",
+        "font-size: 11px",
+    ):
+        assert marker in css
+
+
+def test_v5_2_evidence_freshness_is_explicit_and_fail_closed() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node is required for frontend helper contract coverage.")
+    source = _read("v4-research.jsx")
+    start = source.index("function _v4EvidenceState")
+    end = source.index("const V5_2_FIELD_SOURCES", start)
+    helper = source[start:end]
+    script = """
+const map = new Function(process.argv[2] + '; return _v4EvidenceState;')();
+const state = input => {
+  const result = map(input);
+  return [result.label, result.value];
+};
+console.log(JSON.stringify({
+  explicitError: state({ latest: { evidence: 'partial', evidence_status: 'error', evidence_error: 'publisher failed' } }),
+  explicitStale: state({ latest: { evidence: 'old evidence', evidence_status: 'stale' } }),
+  explicitFresh: state({ latest: { evidence: 'confirmed', evidence_status: 'fresh' } }),
+  unproven: state({ latest: { evidence: 'unproven' } }),
+  empty: state({ latest: { evidence_status: 'fresh' } }),
+}));
+"""
+    result = subprocess.run([node, "-", helper], input=script, capture_output=True, text=True, encoding="utf-8", timeout=20, check=False)
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "explicitError": ["error", "publisher failed"],
+        "explicitStale": ["stale", "old evidence"],
+        "explicitFresh": ["fresh", "confirmed"],
+        "unproven": ["stale", "unproven"],
+        "empty": ["empty", "발행된 분석 증거 없음"],
+    }
