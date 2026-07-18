@@ -23,6 +23,7 @@ import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Audit } from "./v4-audit.jsx";
 import { V4Alpha } from "./v4-alpha.jsx";
+import { V4Reports } from "./v4-reports.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
@@ -35,6 +36,7 @@ const V4_TABS = [
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
   { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
   { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)", group: "primary" },
+  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰, 비-P4)", group: "primary" },
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
   { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · freeze/verdict · export 경계", group: "secondary" },
@@ -117,6 +119,7 @@ function V4RailIcon({ name }) {
   if (name === "history") return (<svg {...p}><circle cx="9" cy="9" r="6.5" /><path d="M9 5.5 V9 L12 10.5" /></svg>);
   if (name === "lab") return (<svg {...p}><rect x="2.5" y="2.5" width="4" height="4" rx="1" /><rect x="11.5" y="2.5" width="4" height="4" rx="1" /><rect x="2.5" y="11.5" width="4" height="4" rx="1" /><rect x="11.5" y="11.5" width="4" height="4" rx="1" /></svg>);
   if (name === "workbench") return (<svg {...p}><path d="M3 6 h12" /><path d="M3 10 h12" /><path d="M3 14 h7" /><circle cx="13" cy="3.5" r="1.4" /></svg>);
+  if (name === "reports") return (<svg {...p}><path d="M4 2 h6 l4 4 v10 H4 Z" /><path d="M10 2 v4 h4" /><path d="M6.5 10 h5 M6.5 12.5 h3" /></svg>);
   if (name === "audit") return (<svg {...p}><path d="M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" /><path d="M6.5 9 L8.3 10.8 L11.5 7" /></svg>);
   return (<svg {...p}><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>);
 }
@@ -405,6 +408,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+              ) : activeTab === "reports" ? (
+                <V4Reports baseUrl={baseUrl} />
               ) : activeTab === "audit" ? (
                 <V4Audit baseUrl={baseUrl} onNavigate={selectTab} />
               ) : activeTab === "alpha" ? (

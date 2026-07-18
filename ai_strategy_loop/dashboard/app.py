@@ -87,6 +87,35 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+
+# UXR-P7 Reports 허브 — 리포트 HTML 을 읽기 전용·스크립트 차단으로 안전 서빙한다.
+#   허용 루트는 저장소 docs/ 하위 *.html 로 한정(alpha_lab reporting 산출물·process_flow 등).
+#   보안(§10-5): (1) 경로 탈출(traversal) 차단 — 루트 하위 실제 파일만; (2) CSP default-src 'none'
+#   로 스크립트 전면 차단(리포트에 inline JS 가 있어도 실행 불가); (3) 프론트는 sandbox iframe.
+_REPORTS_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..", "docs")
+_REPORTS_CSP = (
+    "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; "
+    "font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+)
+
+
+def _reports_root_abs() -> str:
+    return os.path.realpath(_REPORTS_ROOT)
+
+
+def _safe_report_path(rel: str) -> Optional[str]:
+    """rel 을 리포트 루트 하위의 실제 .html 파일로 안전 해석. traversal/비-html/부재는 None."""
+    if not rel or "\x00" in rel:
+        return None
+    root = _reports_root_abs()
+    candidate = os.path.realpath(os.path.join(root, rel))
+    # 루트 경계 탈출 차단(realpath 후 접두 검사; 구분자 경계 포함).
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return None
+    if not candidate.lower().endswith(".html") or not os.path.isfile(candidate):
+        return None
+    return candidate
+
 _DASHBOARD_FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
     "<circle cx='32' cy='32' r='28' fill='#081624'/>"
@@ -3360,6 +3389,44 @@ def create_app(
                 "<h1>프로세스 흐름 생성 전</h1><p>아직 생성되지 않았습니다. "
                 "<code>python -m ai_strategy_loop.scripts.build_process_flow_html</code> 실행 후 새로고침.</p>",
                 status_code=200)
+
+    @app.get("/reports")
+    def reports() -> Dict[str, Any]:
+        """docs/ 하위 *.html 리포트 목록(읽기 전용·무예외). 루트 하위만 walk — traversal 무관."""
+        root = _reports_root_abs()
+        items: list = []
+        for base, _dirs, files in os.walk(root):
+            for fn in files:
+                if not fn.lower().endswith(".html"):
+                    continue
+                full = os.path.join(base, fn)
+                try:
+                    st = os.stat(full)
+                    rel = os.path.relpath(full, root).replace(os.sep, "/")
+                    items.append({"path": rel, "name": fn, "bytes": st.st_size, "mtime": int(st.st_mtime)})
+                except OSError:
+                    continue
+        items.sort(key=lambda x: x["path"])
+        return {"root": "docs", "count": len(items), "reports": items}
+
+    @app.get("/reports/view")
+    def reports_view(path: str = "") -> Response:
+        """리포트 HTML 을 스크립트 차단 CSP + nosniff 로 서빙(sandbox iframe 소비 전제).
+           inline JS 가 있어도 CSP default-src 'none' 로 실행 불가(§10-5). traversal/비-html 은 404."""
+        target = _safe_report_path(path)
+        if target is None:
+            return Response("report not found", status_code=404, media_type="text/plain; charset=utf-8")
+        try:
+            with open(target, "r", encoding="utf-8", errors="replace") as _fh:
+                html = _fh.read()
+        except OSError:
+            return Response("report unreadable", status_code=404, media_type="text/plain; charset=utf-8")
+        return HTMLResponse(html, headers={
+            "Content-Security-Policy": _REPORTS_CSP,
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "Cache-Control": "no-store",
+        })
 
     @app.get("/status")
     def status() -> Dict[str, Any]:
