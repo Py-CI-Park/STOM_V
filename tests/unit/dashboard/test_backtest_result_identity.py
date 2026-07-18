@@ -372,8 +372,7 @@ def test_result_detail_only_distinguishes_empty_missing_and_errors(monkeypatch, 
     assert "_btFetchJson(url, 8000, controller.signal)" in primary_loader
     assert primary_loader.count("generation !== resultGenerationRef.current") == 2
     assert "generation === resultGenerationRef.current" in primary_loader
-    assert "unit: key === \"avg_hold_time\" ? (runTimeframe === \"tick\" ? \"초\" : \"분\") : null" in frontend
-    assert "summaryKey === \"avg_hold_min\" ? \"분\" : null" in frontend
+    assert frontend.count('unit: key === "avg_hold_time" ? (runTimeframe === "tick" ? "초" : "분") : null') == 2
     assert "fmt: (v, unit) => v.toFixed(1) + (unit || \"분\")" in frontend
     assert 'role="status" aria-live="polite">거래 상세 로딩 중…' in frontend
     assert 'role="alert"' in frontend

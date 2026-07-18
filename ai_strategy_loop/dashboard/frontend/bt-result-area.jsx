@@ -286,7 +286,7 @@ const secondaryMetricVal = (key, summaryKey) => {
   if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
     return {
       value: summary[summaryKey],
-      unit: key === "avg_hold_time" && summaryKey === "avg_hold_min" ? "분" : null,
+      unit: key === "avg_hold_time" ? (runTimeframe === "tick" ? "초" : "분") : null,
     };
   }
   return { value: null, unit: null };

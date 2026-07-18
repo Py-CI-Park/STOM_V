@@ -25516,7 +25516,7 @@ def signal_sell(pos, bar, ind):
       if (summaryKey && typeof summary[summaryKey] === "number" && Number.isFinite(summary[summaryKey])) {
         return {
           value: summary[summaryKey],
-          unit: key === "avg_hold_time" && summaryKey === "avg_hold_min" ? "\uBD84" : null
+          unit: key === "avg_hold_time" ? runTimeframe === "tick" ? "\uCD08" : "\uBD84" : null
         };
       }
       return { value: null, unit: null };
