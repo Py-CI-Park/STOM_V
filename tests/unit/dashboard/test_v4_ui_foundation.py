@@ -103,6 +103,8 @@ console.log(JSON.stringify({
   lab: fn('/ui/evolution/lab'),
   workbench: fn('/ui/evolution/workbench'),
   verdict: fn('/ui/evolution/verdict'),
+  audit: fn('/ui/evolution/audit'),
+  audit_top: fn('/ui/audit'),
   backtest: fn('/ui/backtest'),
   replay: fn('/ui/chart-replay'),
   root: fn('/ui/'),
@@ -120,8 +122,34 @@ console.log(JSON.stringify({
         "lab": "lab",
         "workbench": "workbench",
         "verdict": "history",
+        "audit": "history",
+        "audit_top": "history",
         "backtest": "backtest",
         "replay": "replay",
         "root": "",
         "unknown": "",
     }
+
+def test_v5p0_primary_owner_map_is_exactly_six() -> None:
+    # V5.P0: 최상위 owner 는 Live·Backtest·Replay·History·성과·Reports 6개로 고정한다.
+    import re
+    source = _read("dashboard-v4-shell.jsx")
+    primary = re.findall(r'key:\s*"([^"]+)"[^\n]*?group:\s*"primary"', source)
+    assert primary == ["research", "backtest", "replay", "history", "workbench", "reports"], primary
+    # audit 는 더 이상 최상위/보조 탭이 아니다(거버넌스는 History 로 이전).
+    assert 'key: "audit"' not in source
+
+
+def test_v5p0_retired_tab_deeplinks_sealed_to_owner() -> None:
+    # V5.P0: audit·verdict 은퇴 탭의 legacy 딥링크(?tab=·/ui/*)가 History 로 봉인됐는지.
+    source = _read("dashboard-v4-shell.jsx")
+    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history" }' in source
+    assert "V4_LEGACY_TAB_ALIAS[t]" in source
+    assert '"audit": "history"' in source  # V4_PATH_TAB_MAP path→tab
+
+
+def test_v5p0_catalog_marked_non_authoritative_prototype() -> None:
+    # V5.P0: 현 Catalog 는 비정본 prototype 으로 명시·격하 표기한다.
+    source = _read("dashboard-v4-shell.jsx")
+    catalog_line = next(l for l in source.splitlines() if 'key: "catalog"' in l)
+    assert "비정본" in catalog_line and "prototype" in catalog_line
