@@ -35133,16 +35133,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         }
       },
       "\uC0C9\uC778\uC5D0\uC11C \uAD00\uB828 \uAE30\uB85D"
-    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uC544\uB798 \uBAA8\uB4E0 \uC139\uC158\uC740 \uC774 \uC120\uD0DD \uC5F0\uAD6C\uC758 \uB9E5\uB77D\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-edge-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-edge-title" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (Lab \uD1B5\uD569, W2)"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
-      ResearchLabPanel,
-      {
-        baseUrl,
-        wsStatus,
-        onOpenWorkbench: () => {
-          if (typeof onNavigate === "function") onNavigate("workbench");
-        }
-      }
-    ))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
+    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uC544\uB798 \uBAA8\uB4E0 \uC139\uC158\uC740 \uC774 \uC120\uD0DD \uC5F0\uAD6C\uC758 \uB9E5\uB77D\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", "aria-labelledby": "v4-history-gov-title" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 (\uAE30\uBCF8 \uC811\uD798 \xB7 export \uC2B9\uC778 \uACBD\uACC4\uB294 \uBD88\uBCC0)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate })))));
   }
   Object.assign(window, { V4History });
 
@@ -35163,96 +35154,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     );
   }
   Object.assign(window, { V4Workbench });
-
-  // ai_strategy_loop/dashboard/frontend/v4-alpha.jsx
-  var {
-    useState: useState_va2,
-    useEffect: useEffect_va2,
-    useCallback: useCallback_va,
-    useRef: useRef_va
-  } = React;
-  function _vaNum(value) {
-    if (value == null || Number.isNaN(Number(value))) return "\u2014";
-    return Number(value).toLocaleString();
-  }
-  function _vaFetch(url, timeoutMs) {
-    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
-  }
-  var _VA_FUNNEL_STAGES = [
-    { key: "discovered", label: "\uBC1C\uACAC" },
-    { key: "fdr_survived", label: "FDR \uC0DD\uC874" },
-    { key: "translated", label: "\uBC88\uC5ED" },
-    { key: "registered", label: "\uB4F1\uC7AC" },
-    { key: "engine_checked", label: "\uC5D4\uC9C4 \uB300\uC0C1" },
-    { key: "gate_passed", label: "\uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
-  ];
-  function V4Alpha({ baseUrl, wsStatus }) {
-    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const [status, setStatus] = useState_va2(null);
-    const [funnel, setFunnel] = useState_va2(null);
-    const [rules, setRules] = useState_va2(null);
-    const [chron, setChron] = useState_va2(null);
-    const [error, setError] = useState_va2("");
-    const reqGenRef = useRef_va(0);
-    const load = useCallback_va(() => {
-      if (isDemo || !baseUrl) {
-        setStatus(null);
-        setFunnel(null);
-        setRules(null);
-        return;
-      }
-      const gen = ++reqGenRef.current;
-      Promise.allSettled([
-        _vaFetch(baseUrl + "/api/alpha/status"),
-        _vaFetch(baseUrl + "/api/alpha/funnel"),
-        _vaFetch(baseUrl + "/api/alpha/rules"),
-        _vaFetch(baseUrl + "/research/judgments")
-      ]).then(([s, f, r, jj]) => {
-        if (gen !== reqGenRef.current) return;
-        setStatus(s.status === "fulfilled" ? s.value : null);
-        setFunnel(f.status === "fulfilled" ? f.value : null);
-        setRules(r.status === "fulfilled" ? r.value : null);
-        setChron(jj.status === "fulfilled" ? jj.value : null);
-        const firstErr = [s, f, r].find((x) => x.status === "rejected");
-        setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
-      });
-    }, [baseUrl, isDemo]);
-    useEffect_va2(() => {
-      load();
-      const id2 = setInterval(load, 3e4);
-      return () => {
-        reqGenRef.current++;
-        clearInterval(id2);
-      };
-    }, [load]);
-    const prereg = status && status.preregistration || {};
-    const ledger = status && status.ledger || {};
-    const verdict = funnel && funnel.verdict || status && status.verdict || {};
-    const funnelMax = funnel ? Math.max(1, ..._VA_FUNNEL_STAGES.map((s) => Number(funnel[s.key]) || 0)) : 1;
-    const ruleRows = rules && Array.isArray(rules.rules) ? rules.rules : [];
-    const statusAvailable = !!(status && status.available);
-    const sealedLabel = prereg.sealed ? prereg.program || "sealed" : prereg.present ? "\uBD09\uC778 \uBBF8\uC644(\uD30C\uC77C \uC874\uC7AC\uD558\uB098 \uBBF8\uBD09\uC778)" : "\uBBF8\uC874\uC7AC";
-    const shaLabel = prereg.sha256_match === true ? "SHA \uC77C\uCE58 \u2713" : prereg.sha256_match === false ? "SHA \uBD88\uC77C\uCE58 \u2717" : "SHA \uBBF8\uAC80\uC99D";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-alpha" }, /* @__PURE__ */ React.createElement("div", { style: { padding: "6px 16px", background: "#3a2e0c", color: "#f0d38a", fontSize: 12, borderRadius: 6, marginBottom: 10 } }, "\uC784\uC2DC \uAD00\uCC30 \uD654\uBA74(\uBE44-P4) \xB7 \uC815\uBCF8 \uB370\uC774\uD130 \uACC4\uC57D\uC740 ", /* @__PURE__ */ React.createElement("b", null, "P4 research_assets.db + /research/*"), " \uC785\uB2C8\uB2E4. \uC774 \uD0ED\uC740 \uBD09\uC778\uB41C P4 \uAD6C\uD604\uC774 \uC544\uB2C8\uBA70 \uC601\uC218\uC99D\uC744 \uC9C1\uC811 \uC77D\uC5B4 \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-title" }, "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC9C4\uD589 \uAD00\uCC30"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778 \xB7 n_trials \uC6D0\uC7A5 \xB7 \uCD5C\uC885 \uD310\uC815 (\uC77D\uAE30 \uC804\uC6A9 \xB7 PR #108 \uC790\uC0B0)"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo && /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, "\uC608\uC2DC \uC18C\uC2A4 \xB7 \uC6B4\uC601 \uC54C\uD30C \uC0B0\uCD9C\uBB3C\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4."), !isDemo && !statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC54C\uD30C \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uB300\uAE30 \xB7 \uC0AC\uC804\uB4F1\uB85D/\uC6D0\uC7A5/\uD310\uC815 \uD30C\uC77C\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4", error ? " \xB7 " + error : "", ".", /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACBD\uB85C: ", status && status.run_dir || "docs/research/condition_research/research_runs/\u2026")), statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-status", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uCD5C\uC885 \uD310\uC815"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: verdict.available ? "var(--teal, #4cd6b3)" : "var(--ink-2)" } }, verdict.available ? verdict.verdict || "\u2014" : "\uD310\uC815 \uB300\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, verdict.rho != null ? "rho=" + Number(verdict.rho).toFixed(4) : "", verdict.final ? " \xB7 final" : "", verdict.source ? " \xB7 " + verdict.source.replace(".json", "") : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: prereg.sealed ? "var(--ink-0)" : "var(--red)" } }, sealedLabel), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: prereg.sha256_match === false ? "var(--red)" : "var(--ink-2)" } }, shaLabel, prereg.sealed_date ? " \xB7 " + prereg.sealed_date : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "n_trials \uC6D0\uC7A5"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, _vaNum(ledger.total)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, _vaNum(ledger.entries), " \uD56D\uBAA9", ledger.malformed_lines ? " \xB7 \uC190\uC0C1 " + ledger.malformed_lines : "", " \xB7 stage ", status && status.stage || "\u2014"))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-funnel-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-funnel-title" }, "\uBC1C\uACAC \u2192 \uCE21\uC815\uC131\uACF5 \uD37C\uB110")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !funnel || !funnel.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uD37C\uB110 \uB370\uC774\uD130 \uB300\uAE30 \xB7 mining/translation/registration/verdict \uC601\uC218\uC99D\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-funnel", style: { display: "grid", gap: 6 } }, _VA_FUNNEL_STAGES.map((stage) => {
-      const v = Number(funnel[stage.key]) || 0;
-      const pct = Math.round(v / funnelMax * 100);
-      return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "132px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
-    }), verdict.coverage && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, "\uBD09\uC778 ", _vaNum(verdict.coverage.n_rules_sealed), " \xB7 \uCE21\uC815 \uC644\uB8CC ", _vaNum(verdict.coverage.measured_ok), " \xB7 \uAC80\uC5F4 ", _vaNum(verdict.coverage.censored_timeout), " \xB7 \uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC ", _vaNum(verdict.performance_gate_passed), " \u2014 \uC9D1\uD569 rho \uAC8C\uC774\uD2B8(" + (verdict.verdict || "\u2014") + ")\uC640 \uAC1C\uBCC4 \uC131\uB2A5\uAC8C\uC774\uD2B8\uB294 \uBCC4\uAC1C")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED\uC2DD (expr)"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uAC80\uC99D"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
-      const isObj = rule && typeof rule === "object";
-      const rid = isObj ? rule.rule_id || rule.id || rule.name || "#" + (i + 1) : String(rule);
-      const tr = isObj && rule.translation ? rule.translation : null;
-      const trText = tr ? tr.expr || tr.buy_statement || tr.rule || "\u2014" : "\u2014";
-      const validated = tr && tr.validated;
-      const reasons = tr && Array.isArray(tr.reasons) ? tr.reasons.join(", ") : "";
-      const validLabel = tr == null ? "\u2014" : validated === true ? "valid \u2713" : validated === false ? "invalid" + (reasons ? " \xB7 " + reasons : "") : "?";
-      return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 420, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: validated === false ? "var(--red)" : "var(--ink-2)" } }, validLabel));
-    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-chron-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-chron-title" }, "\uC5F0\uAD6C \uC5F0\uD601 \xB7 \uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 (P4 SELECT-only)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !(chron && chron.available) && /* @__PURE__ */ React.createElement("p", { className: "research-empty mono" }, "\uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 \uC5C6\uC74C \xB7 research_assets.db \uBE4C\uB4DC \uD544\uC694(scripts/build_research_catalog.py)"), chron && chron.available && /* @__PURE__ */ React.createElement("div", { className: "v6-alpha-chron" }, chron.judgments.map((j) => {
-      const v = String(j.verdict || "");
-      const cls = /pass|양성|생존/i.test(v) ? "ok" : /kill|무가치|기각|실패/i.test(v) ? "warn" : "off";
-      return /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v6-alpha-chron-row" }, /* @__PURE__ */ React.createElement("b", { className: "v6-alpha-chron-series" }, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + cls }, v.slice(0, 28)), /* @__PURE__ */ React.createElement("span", { className: "mono v6-alpha-chron-meta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""));
-    })))));
-  }
-  Object.assign(window, { V4Alpha });
 
   // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
   var { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
@@ -35360,6 +35261,96 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Reports });
 
+  // ai_strategy_loop/dashboard/frontend/v4-alpha.jsx
+  var {
+    useState: useState_va2,
+    useEffect: useEffect_va2,
+    useCallback: useCallback_va,
+    useRef: useRef_va
+  } = React;
+  function _vaNum(value) {
+    if (value == null || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString();
+  }
+  function _vaFetch(url, timeoutMs) {
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  var _VA_FUNNEL_STAGES = [
+    { key: "discovered", label: "\uBC1C\uACAC" },
+    { key: "fdr_survived", label: "FDR \uC0DD\uC874" },
+    { key: "translated", label: "\uBC88\uC5ED" },
+    { key: "registered", label: "\uB4F1\uC7AC" },
+    { key: "engine_checked", label: "\uC5D4\uC9C4 \uB300\uC0C1" },
+    { key: "gate_passed", label: "\uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
+  ];
+  function V4Alpha({ baseUrl, wsStatus }) {
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [status, setStatus] = useState_va2(null);
+    const [funnel, setFunnel] = useState_va2(null);
+    const [rules, setRules] = useState_va2(null);
+    const [chron, setChron] = useState_va2(null);
+    const [error, setError] = useState_va2("");
+    const reqGenRef = useRef_va(0);
+    const load = useCallback_va(() => {
+      if (isDemo || !baseUrl) {
+        setStatus(null);
+        setFunnel(null);
+        setRules(null);
+        return;
+      }
+      const gen = ++reqGenRef.current;
+      Promise.allSettled([
+        _vaFetch(baseUrl + "/api/alpha/status"),
+        _vaFetch(baseUrl + "/api/alpha/funnel"),
+        _vaFetch(baseUrl + "/api/alpha/rules"),
+        _vaFetch(baseUrl + "/research/judgments")
+      ]).then(([s, f, r, jj]) => {
+        if (gen !== reqGenRef.current) return;
+        setStatus(s.status === "fulfilled" ? s.value : null);
+        setFunnel(f.status === "fulfilled" ? f.value : null);
+        setRules(r.status === "fulfilled" ? r.value : null);
+        setChron(jj.status === "fulfilled" ? jj.value : null);
+        const firstErr = [s, f, r].find((x) => x.status === "rejected");
+        setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
+      });
+    }, [baseUrl, isDemo]);
+    useEffect_va2(() => {
+      load();
+      const id2 = setInterval(load, 3e4);
+      return () => {
+        reqGenRef.current++;
+        clearInterval(id2);
+      };
+    }, [load]);
+    const prereg = status && status.preregistration || {};
+    const ledger = status && status.ledger || {};
+    const verdict = funnel && funnel.verdict || status && status.verdict || {};
+    const funnelMax = funnel ? Math.max(1, ..._VA_FUNNEL_STAGES.map((s) => Number(funnel[s.key]) || 0)) : 1;
+    const ruleRows = rules && Array.isArray(rules.rules) ? rules.rules : [];
+    const statusAvailable = !!(status && status.available);
+    const sealedLabel = prereg.sealed ? prereg.program || "sealed" : prereg.present ? "\uBD09\uC778 \uBBF8\uC644(\uD30C\uC77C \uC874\uC7AC\uD558\uB098 \uBBF8\uBD09\uC778)" : "\uBBF8\uC874\uC7AC";
+    const shaLabel = prereg.sha256_match === true ? "SHA \uC77C\uCE58 \u2713" : prereg.sha256_match === false ? "SHA \uBD88\uC77C\uCE58 \u2717" : "SHA \uBBF8\uAC80\uC99D";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-alpha" }, /* @__PURE__ */ React.createElement("div", { style: { padding: "6px 16px", background: "#3a2e0c", color: "#f0d38a", fontSize: 12, borderRadius: 6, marginBottom: 10 } }, "\uC784\uC2DC \uAD00\uCC30 \uD654\uBA74(\uBE44-P4) \xB7 \uC815\uBCF8 \uB370\uC774\uD130 \uACC4\uC57D\uC740 ", /* @__PURE__ */ React.createElement("b", null, "P4 research_assets.db + /research/*"), " \uC785\uB2C8\uB2E4. \uC774 \uD0ED\uC740 \uBD09\uC778\uB41C P4 \uAD6C\uD604\uC774 \uC544\uB2C8\uBA70 \uC601\uC218\uC99D\uC744 \uC9C1\uC811 \uC77D\uC5B4 \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-title" }, "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC9C4\uD589 \uAD00\uCC30"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778 \xB7 n_trials \uC6D0\uC7A5 \xB7 \uCD5C\uC885 \uD310\uC815 (\uC77D\uAE30 \uC804\uC6A9 \xB7 PR #108 \uC790\uC0B0)"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo && /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, "\uC608\uC2DC \uC18C\uC2A4 \xB7 \uC6B4\uC601 \uC54C\uD30C \uC0B0\uCD9C\uBB3C\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4."), !isDemo && !statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC54C\uD30C \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uB300\uAE30 \xB7 \uC0AC\uC804\uB4F1\uB85D/\uC6D0\uC7A5/\uD310\uC815 \uD30C\uC77C\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4", error ? " \xB7 " + error : "", ".", /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACBD\uB85C: ", status && status.run_dir || "docs/research/condition_research/research_runs/\u2026")), statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-status", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uCD5C\uC885 \uD310\uC815"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: verdict.available ? "var(--teal, #4cd6b3)" : "var(--ink-2)" } }, verdict.available ? verdict.verdict || "\u2014" : "\uD310\uC815 \uB300\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, verdict.rho != null ? "rho=" + Number(verdict.rho).toFixed(4) : "", verdict.final ? " \xB7 final" : "", verdict.source ? " \xB7 " + verdict.source.replace(".json", "") : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: prereg.sealed ? "var(--ink-0)" : "var(--red)" } }, sealedLabel), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: prereg.sha256_match === false ? "var(--red)" : "var(--ink-2)" } }, shaLabel, prereg.sealed_date ? " \xB7 " + prereg.sealed_date : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "n_trials \uC6D0\uC7A5"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, _vaNum(ledger.total)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, _vaNum(ledger.entries), " \uD56D\uBAA9", ledger.malformed_lines ? " \xB7 \uC190\uC0C1 " + ledger.malformed_lines : "", " \xB7 stage ", status && status.stage || "\u2014"))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-funnel-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-funnel-title" }, "\uBC1C\uACAC \u2192 \uCE21\uC815\uC131\uACF5 \uD37C\uB110")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !funnel || !funnel.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uD37C\uB110 \uB370\uC774\uD130 \uB300\uAE30 \xB7 mining/translation/registration/verdict \uC601\uC218\uC99D\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-funnel", style: { display: "grid", gap: 6 } }, _VA_FUNNEL_STAGES.map((stage) => {
+      const v = Number(funnel[stage.key]) || 0;
+      const pct = Math.round(v / funnelMax * 100);
+      return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "132px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
+    }), verdict.coverage && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, "\uBD09\uC778 ", _vaNum(verdict.coverage.n_rules_sealed), " \xB7 \uCE21\uC815 \uC644\uB8CC ", _vaNum(verdict.coverage.measured_ok), " \xB7 \uAC80\uC5F4 ", _vaNum(verdict.coverage.censored_timeout), " \xB7 \uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC ", _vaNum(verdict.performance_gate_passed), " \u2014 \uC9D1\uD569 rho \uAC8C\uC774\uD2B8(" + (verdict.verdict || "\u2014") + ")\uC640 \uAC1C\uBCC4 \uC131\uB2A5\uAC8C\uC774\uD2B8\uB294 \uBCC4\uAC1C")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED\uC2DD (expr)"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uAC80\uC99D"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
+      const isObj = rule && typeof rule === "object";
+      const rid = isObj ? rule.rule_id || rule.id || rule.name || "#" + (i + 1) : String(rule);
+      const tr = isObj && rule.translation ? rule.translation : null;
+      const trText = tr ? tr.expr || tr.buy_statement || tr.rule || "\u2014" : "\u2014";
+      const validated = tr && tr.validated;
+      const reasons = tr && Array.isArray(tr.reasons) ? tr.reasons.join(", ") : "";
+      const validLabel = tr == null ? "\u2014" : validated === true ? "valid \u2713" : validated === false ? "invalid" + (reasons ? " \xB7 " + reasons : "") : "?";
+      return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 420, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: validated === false ? "var(--red)" : "var(--ink-2)" } }, validLabel));
+    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-chron-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-chron-title" }, "\uC5F0\uAD6C \uC5F0\uD601 \xB7 \uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 (P4 SELECT-only)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !(chron && chron.available) && /* @__PURE__ */ React.createElement("p", { className: "research-empty mono" }, "\uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 \uC5C6\uC74C \xB7 research_assets.db \uBE4C\uB4DC \uD544\uC694(scripts/build_research_catalog.py)"), chron && chron.available && /* @__PURE__ */ React.createElement("div", { className: "v6-alpha-chron" }, chron.judgments.map((j) => {
+      const v = String(j.verdict || "");
+      const cls = /pass|양성|생존/i.test(v) ? "ok" : /kill|무가치|기각|실패/i.test(v) ? "warn" : "off";
+      return /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v6-alpha-chron-row" }, /* @__PURE__ */ React.createElement("b", { className: "v6-alpha-chron-series" }, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + cls }, v.slice(0, 28)), /* @__PURE__ */ React.createElement("span", { className: "mono v6-alpha-chron-meta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""));
+    })))));
+  }
+  Object.assign(window, { V4Alpha });
+
   // ai_strategy_loop/dashboard/frontend/v4-catalog.jsx
   var { useState: useState_cat, useEffect: useEffect_cat } = React;
   function _catVerdictCls(v) {
@@ -35373,6 +35364,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "trapmap", label: "\uD568\uC815\uC9C0\uB3C4", desc: "\uC2E4\uD328/\uAE30\uAC01 \uD310\uC815 \uD328\uD134 \uC9C0\uB3C4" },
     { key: "clauselab", label: "\uC808\uC2E4\uD5D8\uC2E4", desc: "\uC870\uAC74 \uC808(clause) \uC2E4\uD5D8 \uCE74\uD0C8\uB85C\uADF8" },
     { key: "exitbank", label: "\uCD9C\uAD6C\uC740\uD589", desc: "\uD45C\uBCF8\xB7\uC140\xB7\uCD9C\uAD6C \uD504\uB85C\uD30C\uC77C \uC740\uD589" },
+    { key: "alpha", label: "\uC9C4\uD589 \uAD00\uCC30", desc: "\uC54C\uD30C\uB7A9 \uC9C4\uD589 \uAD00\uCC30(\uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110, \uBE44-P4 \uC601\uC218\uC99D)" },
     { key: "scorecard", label: "B1 scorecard", desc: "\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C(\uC6B4\uC6A9 \uAC1C\uC2DC \uC120\uD589)" }
   ];
   function _CatSkeleton({ title, reason }) {
@@ -35381,7 +35373,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   function _catRows(rows) {
     return rows.slice(0, 200).map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, Object.values(c).slice(0, 6).map((val, k) => /* @__PURE__ */ React.createElement("td", { key: k }, String(val)))));
   }
-  function V4Catalog({ baseUrl }) {
+  function V4Catalog({ baseUrl, wsStatus }) {
     const [summary, setSummary] = useState_cat(null);
     const [judgments, setJudgments] = useState_cat(null);
     const [assets, setAssets] = useState_cat(null);
@@ -35429,7 +35421,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: v.desc
       },
       v.label
-    ))), view === "chronicle" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC5F0\uD601\uC2E4" }, summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : "")))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC5F0\uD601\uC2E4", reason: NO_DATA }), assets && assets.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))), view === "trapmap" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD568\uC815\uC9C0\uB3C4" }, traps.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4-cat-traplist mono" }, traps.map((j) => /* @__PURE__ */ React.createElement("li", { key: j.series }, /* @__PURE__ */ React.createElement("b", null, j.series), " \u2014 ", j.verdict, j.note ? " \xB7 " + j.note : ""))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uD568\uC815\uC9C0\uB3C4", reason: NO_DATA })), view === "clauselab" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC808\uC2E4\uD5D8\uC2E4" }, clauses && clauses.available && clauses.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC808(clause) ", clauses.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(clauses.clauses)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC808\uC2E4\uD5D8\uC2E4", reason: NO_DATA })), view === "exitbank" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uCD9C\uAD6C\uC740\uD589" }, cells && cells.available && cells.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uD45C\uBCF8\xB7\uC140 ", cells.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(cells.cells)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uCD9C\uAD6C\uC740\uD589", reason: NO_DATA })), view === "scorecard" && /* @__PURE__ */ React.createElement("section", { "aria-label": "B1 scorecard" }, /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "B1 scorecard (\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C)", reason: NO_DATA })));
+    ))), view === "chronicle" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC5F0\uD601\uC2E4" }, summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : "")))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC5F0\uD601\uC2E4", reason: NO_DATA }), assets && assets.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))), view === "trapmap" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD568\uC815\uC9C0\uB3C4" }, traps.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4-cat-traplist mono" }, traps.map((j) => /* @__PURE__ */ React.createElement("li", { key: j.series }, /* @__PURE__ */ React.createElement("b", null, j.series), " \u2014 ", j.verdict, j.note ? " \xB7 " + j.note : ""))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uD568\uC815\uC9C0\uB3C4", reason: NO_DATA })), view === "clauselab" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC808\uC2E4\uD5D8\uC2E4" }, clauses && clauses.available && clauses.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC808(clause) ", clauses.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(clauses.clauses)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC808\uC2E4\uD5D8\uC2E4", reason: NO_DATA })), view === "exitbank" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uCD9C\uAD6C\uC740\uD589" }, cells && cells.available && cells.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uD45C\uBCF8\xB7\uC140 ", cells.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(cells.cells)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uCD9C\uAD6C\uC740\uD589", reason: NO_DATA })), view === "alpha" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC9C4\uD589 \uAD00\uCC30 (\uAD6C Alpha Lab)" }, /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus })), view === "scorecard" && /* @__PURE__ */ React.createElement("section", { "aria-label": "B1 scorecard" }, /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "B1 scorecard (\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C)", reason: NO_DATA })));
   }
   Object.assign(window, { V4Catalog });
 
@@ -35442,8 +35434,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8", group: "primary" },
     { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", group: "primary" },
-    { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30\xB7\uBE44-P4, \uBCF4\uC870)", group: "secondary" },
-    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4 \xB7 \uBE44\uC815\uBCF8 prototype)", badge: "P4\xB7\uC2DC\uC81C", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uBE44\uC815\uBCF8 preview \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)", group: "secondary" }
+    { key: "catalog", label: "\uC5F0\uAD6C \uC790\uC0B0", full: "\uC5F0\uAD6C \uC790\uC0B0 (P4 \uBE44\uC815\uBCF8 preview prototype + \uC9C4\uD589 \uAD00\uCC30)", badge: "\uC790\uC0B0", hint: "\uC5F0\uD601\uC2E4\xB7\uD568\uC815\uC9C0\uB3C4\xB7\uC808\uC2E4\uD5D8\uC2E4\xB7\uCD9C\uAD6C\uC740\uD589\xB7\uC9C4\uD589 \uAD00\uCC30(\uAD6C Alpha)\xB7B1 \u2014 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uBE44\uC815\uBCF8 preview", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
   var V4_PATH_TAB_MAP = {
@@ -35456,7 +35447,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     "audit": "history",
     "process": "research"
   };
-  var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research" };
+  var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
   function v4TabFromPathname(pathname) {
     try {
       const parts = String(pathname || "").split("/").filter(Boolean);
@@ -35786,7 +35777,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {

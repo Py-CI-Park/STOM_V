@@ -4,6 +4,7 @@
  */
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_cat, useEffect: useEffect_cat } = React;
+import { V4Alpha } from "./v4-alpha.jsx";
 
 function _catVerdictCls(v) {
   const s = String(v || "");
@@ -17,6 +18,7 @@ const _CAT_VIEWS = [
   { key: "trapmap", label: "함정지도", desc: "실패/기각 판정 패턴 지도" },
   { key: "clauselab", label: "절실험실", desc: "조건 절(clause) 실험 카탈로그" },
   { key: "exitbank", label: "출구은행", desc: "표본·셀·출구 프로파일 은행" },
+  { key: "alpha", label: "진행 관찰", desc: "알파랩 진행 관찰(사전등록·원장·퍼널, 비-P4 영수증)" },
   { key: "scorecard", label: "B1 scorecard", desc: "표본 외 성적표(운용 개시 선행)" },
 ];
 
@@ -35,7 +37,7 @@ function _catRows(rows) {
   ));
 }
 
-function V4Catalog({ baseUrl }) {
+function V4Catalog({ baseUrl, wsStatus }) {
   const [summary, setSummary] = useState_cat(null);
   const [judgments, setJudgments] = useState_cat(null);
   const [assets, setAssets] = useState_cat(null);
@@ -139,6 +141,12 @@ function V4Catalog({ baseUrl }) {
               <table className="mono v4-catalog-table"><tbody>{_catRows(cells.cells)}</tbody></table>
             </div>
           ) : <_CatSkeleton title="출구은행" reason={NO_DATA} />}
+        </section>
+      )}
+
+      {view === "alpha" && (
+        <section aria-label="진행 관찰 (구 Alpha Lab)">
+          <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
         </section>
       )}
 

@@ -11,7 +11,6 @@ import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
-import { ResearchLabPanel } from "./research-lab.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 const { useState: useState_v4h, useEffect: useEffect_v4h } = React;
 
@@ -97,13 +96,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} />
         </div>
       </section>
-      <section aria-labelledby="v4-history-edge-title" aria-busy={historyLoading}>
-        <h2 className="stom-section-label" id="v4-history-edge-title">엣지·상관·안정성 검증 (Lab 통합, W2)</h2>
-        <div data-region="scroll" tabIndex={0} aria-label="엣지·상관·안정성 분석 영역">
-          <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus}
-                            onOpenWorkbench={() => { if (typeof onNavigate === "function") onNavigate("workbench"); }} />
-        </div>
-      </section>
+      {/* v5.3.1: 엣지 섹션 제거 — 채점·부검 스테이지(Live)가 정위치. 중복 mount 해소. */}
 
       <section aria-labelledby="v4-history-index-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거</h2>
@@ -112,16 +105,21 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
         </div>
       </section>
 
-      <section aria-labelledby="v4-history-gov-title" aria-busy={historyLoading}>
-        <h2 className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 · 승급/Export 경계</h2>
-        <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
-          append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
-        </p>
-        <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-          <AuditDecisionTrace baseUrl={baseUrl} />
-          <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
+      {/* v5.3.1(U3 추천 채택): 거버넌스 UI 는 기본닫힘 fold 로 격하 — export human 승인 계약은 백엔드 불변. */}
+      <details className="evo-group" aria-labelledby="v4-history-gov-title">
+        <summary className="evo-group-summary">
+          <div className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 (기본 접힘 · export 승인 경계는 불변)</div>
+        </summary>
+        <div className="evo-group-body">
+          <p className="mono" style={{ color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" }}>
+            append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
+          </p>
+          <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
+            <AuditDecisionTrace baseUrl={baseUrl} />
+            <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
+          </div>
         </div>
-      </section>
+      </details>
     </div>
   );
 }

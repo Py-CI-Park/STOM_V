@@ -143,9 +143,9 @@ def test_v6_primary_owner_map_order() -> None:
 
 
 def test_v5p0_retired_tab_deeplinks_sealed_to_owner() -> None:
-    # V5.P0/V6.1: audit·verdict·lab 은퇴 탭의 legacy 딥링크(?tab=·/ui/*) 봉인.
+    # v5.3.1: audit·verdict·lab·alpha 은퇴 탭의 legacy 딥링크(?tab=·/ui/*) 봉인.
     source = _read("dashboard-v4-shell.jsx")
-    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research" }' in source
+    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" }' in source
     assert "V4_LEGACY_TAB_ALIAS[t]" in source
     assert '"audit": "history"' in source  # V4_PATH_TAB_MAP path→tab
 
