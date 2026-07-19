@@ -166,6 +166,32 @@ function _V4Onboarding({ onOpenSettings }) {
   );
 }
 
+function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
+  const s = state || {};
+  const prog = (s.latest || {}).backtest_progress || {};
+  const running = s.status === "running" || s.status === "stopping";
+  const pct = typeof prog.percent === "number" ? Math.max(0, Math.min(100, prog.percent)) : null;
+  const curGen = typeof prog.current_gen === "number" ? prog.current_gen : (s.current_gen || 0);
+  const maxGens = prog.max_generations || s.max_generations || 0;
+  const engineLabel = running ? "실행 중" : (s.status === "done" ? "완료" : s.status === "error" ? "오류" : "대기");
+  const fmt = (v, d = 2) => (v == null || v === "" ? "—" : Number(v).toFixed(d));
+  return (
+    <div className="v4-enggate-bar" aria-label="엔진·게이트 상황판">
+      <div className="v4-eg-group">
+        <span className="v4-eg-lbl">엔진</span>
+        <span className={"v4-eg-chip " + (running ? "run" : "idle")}>{engineLabel}</span>
+        {pct != null && <span className="v4-eg-v">{pct.toFixed(0)}%</span>}
+        <span className="v4-eg-v mono">gen {curGen >= 0 ? curGen : "—"}{maxGens ? "/" + maxGens : ""}</span>
+      </div>
+      <div className="v4-eg-group">
+        <span className="v4-eg-lbl">게이트 · 현재 run 유효값</span>
+        <span className="v4-eg-v mono" title="목표 적합도 점수">score ≥ {fmt(targetScore)}</span>
+        <span className="v4-eg-v mono" title="MDD 상한">MDD ≤ {fmt(mddCap)}</span>
+        <span className="v4-eg-v mono" title="최소 일거래 수">trades ≥ {minDailyTrades != null ? minDailyTrades : "—"}</span>
+      </div>
+    </div>
+  );
+}
 function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, onOpenSettings, targetScore, mddCap, minDailyTrades }) {
   const [approvalOpen, setApprovalOpen] = useState_v4r(false);
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
@@ -232,6 +258,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
       <_V4WorkflowStrip state={s} pinnedIdx={pinnedIdx} onStepClick={onStepPin} />
+      <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
       {pinnedIdx != null && (
         <button className="btn ghost sm v5-pin-reset" onClick={() => setPinnedIdx(null)}>
           단계 고정 해제 · 라이브 따라가기

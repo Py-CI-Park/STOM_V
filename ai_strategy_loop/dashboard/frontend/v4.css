@@ -581,3 +581,12 @@
 .v4-cat-viewtab.active { color: var(--teal); border-color: rgba(76,214,179,.45); background: rgba(76,214,179,.08); }
 .v4-cat-skeleton { display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-3); }
 .v4-cat-traplist { display: flex; flex-direction: column; gap: 6px; padding-left: 16px; }
+
+/* L5·L8: 엔진·게이트 상단 상황판(현재 run 유효값, 정책 기본값과 구분) */
+.v4-enggate-bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 8px 12px; margin: 8px 0; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; }
+.v4-eg-group { display: flex; align-items: center; gap: 8px; }
+.v4-eg-lbl { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.v4-eg-chip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.v4-eg-chip.run { color: #0c1014; background: var(--teal); }
+.v4-eg-chip.idle { color: var(--ink-2); background: var(--line); }
+.v4-eg-v { font-size: 12.5px; color: var(--ink-1); }
