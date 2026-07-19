@@ -40,7 +40,7 @@ function _v4ApprovalBindingProblem(binding, state) {
 }
 
 // 접이식 섹션(app.jsx _EvoSection 패턴 — styles.css .evo-group 재사용, V4 전용 storage key)
-function _V4Fold({ storageKey, label, children, defaultOpen = false }) {
+function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen = false }) {
   const [open, setOpen] = useState_v4r(() => {
     try { const v = window.localStorage.getItem(storageKey); return v === null ? defaultOpen : v === "1"; }
     catch (e) { return defaultOpen; }
@@ -50,9 +50,10 @@ function _V4Fold({ storageKey, label, children, defaultOpen = false }) {
     setOpen(o);
     try { window.localStorage.setItem(storageKey, o ? "1" : "0"); } catch (e2) {}
   };
+  const effOpen = forceOpen || open;
   return (
-    <details className="evo-group" open={open} onToggle={onToggle}>
-      <summary className="evo-group-summary" aria-expanded={open}>
+    <details className="evo-group" open={effOpen} onToggle={onToggle}>
+      <summary className="evo-group-summary" aria-expanded={effOpen}>
         <div className="stom-section-label">{label}</div>
       </summary>
       <div className="evo-group-body">{children}</div>
@@ -61,7 +62,7 @@ function _V4Fold({ storageKey, label, children, defaultOpen = false }) {
 }
 
 // workflow + authority 스트립: PhaseTimeline(정본) + process/authority 칩 + 다음 행동
-function _V4WorkflowStrip({ state }) {
+function _V4WorkflowStrip({ state, pinnedIdx = null, onStepClick = null }) {
   const discovery = (state.page_data && state.page_data.condition_discovery) || {};
   const observability = discovery.research_observability || {};
   const ma = observability.mode_authority || {};
@@ -85,7 +86,7 @@ function _V4WorkflowStrip({ state }) {
   return (
     <section className="v4-wfwrap v4-research-evidence" aria-labelledby="v4-research-evidence-heading">
       <h2 id="v4-research-evidence-heading" className="panel-hd-title">실시간 연구 근거</h2>
-      <PhaseTimeline state={state} />
+      <PhaseTimeline state={state} pinnedIdx={pinnedIdx} onStepClick={onStepClick} />
       <div className="v4-wf-next">
         <div><span className="k">process</span><b className="mono" style={{ color: "var(--ink-0)" }}>{procLabel}</b></div>
         <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
@@ -169,6 +170,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
+  // V5.1: 단계 상세 고정(pin) — 클릭 시 해당 단계 뷰 고정, 재클릭/리셋 시 라이브 자동전환 복귀.
+  const [pinnedIdx, setPinnedIdx] = useState_v4r(null);
+  const onStepPin = (i) => setPinnedIdx(prev => (prev === i ? null : i));
   const s = state || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
@@ -226,7 +230,12 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     <section className="v4-research" aria-labelledby="v4-research-heading">
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
-      <_V4WorkflowStrip state={s} />
+      <_V4WorkflowStrip state={s} pinnedIdx={pinnedIdx} onStepClick={onStepPin} />
+      {pinnedIdx != null && (
+        <button className="btn ghost sm v5-pin-reset" onClick={() => setPinnedIdx(null)}>
+          단계 고정 해제 · 라이브 따라가기
+        </button>
+      )}
       {!hasData && (s.status === "idle" || !s.status) && (
         <_V4Onboarding onOpenSettings={typeof onOpenSettings === "function" ? onOpenSettings : () => {}} />
       )}
@@ -269,8 +278,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           </div>
           <EnginePanel state={s} wsStatus={wsStatus} />
 
-          <_V4Fold storageKey="stom_v4_live_detail" label="Live 상세 · 단계 스트리밍">
-            <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} />
+          <_V4Fold storageKey="stom_v4_live_detail" label={"Live 상세 · 단계 스트리밍" + (pinnedIdx != null ? " · 단계 고정됨" : "")} forceOpen={pinnedIdx != null}>
+            <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} pinnedIdx={pinnedIdx} />
             <ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} />
           </_V4Fold>
           <_V4Fold storageKey="stom_v4_process" label="프로세스 · process selector (research vs review 권한)">

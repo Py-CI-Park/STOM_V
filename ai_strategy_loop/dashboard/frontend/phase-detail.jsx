@@ -89,7 +89,7 @@ function phaseIndex(phase) {
   return -1;
 }
 
-function PhaseTimeline({ state }) {
+function PhaseTimeline({ state, pinnedIdx = null, onStepClick = null }) {
   const status = state.status;
   const running = status === "running" || status === "stopping";
   const stopping = status === "stopping";
@@ -116,7 +116,10 @@ function PhaseTimeline({ state }) {
           const cls = isFailed ? "failed" : isActive ? "active" : isDone ? "done" : "pending";
           return (
             <React.Fragment key={p.key}>
-              <div className={`phase-step ${cls}`}>
+              <div className={`phase-step ${cls}${pinnedIdx === i ? " pinned" : ""}${onStepClick ? " clickable" : ""}`}
+                   {...(onStepClick ? { role: "button", tabIndex: 0, "aria-pressed": pinnedIdx === i,
+                        onClick: () => onStepClick(i),
+                        onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onStepClick(i); } } } : {})}>
                 <div className="phase-num">
                   {isFailed ? (
                     <svg width="11" height="11" viewBox="0 0 16 16">
@@ -163,7 +166,7 @@ function PhaseTimeline({ state }) {
 }
 
 // ===================== PHASE DETAIL PANEL =====================
-function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
+function PhaseDetailPanel({ state, wsStatus, onViewLatestCode, pinnedIdx = null }) {
   const phase = state.latest?.phase;
   const running = state.status === "running" || state.status === "stopping";
 
@@ -175,16 +178,20 @@ function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
   const livePending = typeof window.livePanelPending === "function"
     ? window.livePanelPending(wsStatus, state) : false;
 
+  // V5.1: 효과 단계 = 사용자 pin 우선, 없으면 라이브 phase 인덱스(데모 한국어·라이브 영어 겸용).
+  const pinned = pinnedIdx != null && pinnedIdx >= 0;
+  const effIdx = pinned ? pinnedIdx : phaseIndex(phase);
+
   let body;
   if (livePending) {
     body = <LivePending />;
-  } else if (phase === "생성중") {
+  } else if (effIdx === 0) {
     body = <GenerationView state={state} onViewLatestCode={onViewLatestCode} />;
-  } else if (phase === "백테스트중") {
+  } else if (effIdx === 1) {
     body = <BacktestingView state={state} />;
-  } else if (phase === "채점중") {
+  } else if (effIdx === 2) {
     body = <ScoringView state={state} />;
-  } else if (phase === "부검 작성") {
+  } else if (effIdx === 3) {
     body = <AutopsyView state={state} />;
   } else if (!running && (state.current_run?.equity?.length || 0) > 0) {
     // Between gens or complete — show last backtest snapshot
@@ -192,13 +199,14 @@ function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
   } else {
     body = <IdlePhaseView />;
   }
+  const effLabel = (effIdx >= 0 && PHASES[effIdx]) ? PHASES[effIdx].label : (phase || "—");
 
   return (
     <div className="panel phase-detail">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: running ? "var(--amber)" : "var(--ink-3)" }}></span>
-          페이즈 상세 — {phase || "—"}
+          페이즈 상세 — {effLabel}{pinned ? " · 고정" : ""}
           {isDemo && <DemoBadge />}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
