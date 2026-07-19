@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-07-19T03:48:06Z",
+  "count": 1,
+  "limits": {
+    "max_reports": 1000,
+    "max_bytes_each": 2097152
+  },
+  "reports": [
+    {
+      "research_id": "v5_reporting_demo",
+      "step_id": "stage1",
+      "path": "v5_reporting_demo__stage1.html",
+      "sha256": "d0724ec5bc445d69a4b58f07d3eb76c30f240bc3cb0e935ef5350d45e986920a",
+      "bytes": 2222,
+      "generated_at": "2026-07-19T03:48:06Z",
+      "trust": "derived",
+      "provenance": "docs/web_dashboard_expansion/2026-07-18_v5_series_dashboard_overhaul_master_plan.md"
+    }
+  ]
+}
