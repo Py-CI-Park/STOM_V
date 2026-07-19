@@ -31160,7 +31160,7 @@ def signal_sell(pos, bar, ind):
     const best = record && record.best || {};
     return best.label || best.name || best.strategy_gist || "-";
   }
-  function ResearchRecordsPanel({ baseUrl, wsStatus }) {
+  function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
     const [payload, setPayload] = useState_rrp(null);
     const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
     const [detail, setDetail] = useState_rrp(null);
@@ -31199,7 +31199,10 @@ def signal_sell(pos, bar, ind):
         baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
         { signal: AbortSignal.timeout(6e3) }
       ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled && reqId === detailReqRef.current) setDetail(Object.assign({ __campaign: forCampaign }, j));
+        if (!cancelled && reqId === detailReqRef.current) {
+          setDetail(Object.assign({ __campaign: forCampaign }, j));
+          if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, j && j.campaign || null);
+        }
       }).catch((e) => {
         if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign });
       });
@@ -31246,7 +31249,10 @@ def signal_sell(pos, bar, ind):
         "button",
         {
           className: "btn ghost sm",
-          onClick: () => setSelectedCampaign(row.name),
+          onClick: () => {
+            setSelectedCampaign(row.name);
+            if (typeof onSelectCampaign === "function") onSelectCampaign(row.name, null);
+          },
           style: { maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }
         },
         row.name
@@ -35074,10 +35080,52 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { RunComparePanel });
 
   // ai_strategy_loop/dashboard/frontend/v4-history.jsx
+  var { useState: useState_v4h, useEffect: useEffect_v4h } = React;
   function V4History({ baseUrl, wsStatus, onNavigate }) {
+    var _a;
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
-    const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-edge-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-edge-title" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (Lab \uD1B5\uD569, W2)"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
+    const [selResearch, setSelResearch] = useState_v4h(null);
+    const onSelectCampaign = (name, meta) => setSelResearch((prev) => prev && prev.name === name && !meta ? prev : { name, meta: meta || (prev && prev.name === name ? prev.meta : null) });
+    const [stableWs, setStableWs] = useState_v4h(wsStatus);
+    useEffect_v4h(() => {
+      if (wsStatus !== "reconnecting") {
+        setStableWs(wsStatus);
+        return void 0;
+      }
+      const t = setTimeout(() => setStableWs("reconnecting"), 2e3);
+      return () => clearTimeout(t);
+    }, [wsStatus]);
+    const freshnessLabel = stableWs === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : stableWs === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : stableWs === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), selResearch && /* @__PURE__ */ React.createElement("div", { className: "v6-selres", role: "note", "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uCEE8\uD14D\uC2A4\uD2B8" }, /* @__PURE__ */ React.createElement("span", { className: "v6-selres-id mono", title: "stable research ID" }, "campaign:", selResearch.name), selResearch.meta && /* @__PURE__ */ React.createElement("span", { className: "v6-selres-meta mono" }, "\uC218\uC815 ", (() => {
+      const u = selResearch.meta.updated_at;
+      if (u == null) return "\u2014";
+      const n = Number(u);
+      return Number.isFinite(n) && n > 1e9 ? new Date(n * 1e3).toISOString().slice(0, 10) : String(u).slice(0, 10);
+    })(), " \xB7 \uD6C4\uBCF4 ", (_a = selResearch.meta.candidate_count) != null ? _a : "\u2014", selResearch.meta.best && (selResearch.meta.best.label || selResearch.meta.best.name) ? " \xB7 best " + (selResearch.meta.best.label || selResearch.meta.best.name) : ""), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        title: "stable ID \uBCF5\uC0AC",
+        onClick: () => {
+          try {
+            navigator.clipboard.writeText("campaign:" + selResearch.name);
+          } catch (e) {
+          }
+        }
+      },
+      "ID \uBCF5\uC0AC"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        title: "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778\uC73C\uB85C \uC774\uB3D9",
+        onClick: () => {
+          const el = document.getElementById("v4-history-index-title");
+          el && el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      },
+      "\uC0C9\uC778\uC5D0\uC11C \uAD00\uB828 \uAE30\uB85D"
+    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uC544\uB798 \uBAA8\uB4E0 \uC139\uC158\uC740 \uC774 \uC120\uD0DD \uC5F0\uAD6C\uC758 \uB9E5\uB77D\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-edge-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-edge-title" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (Lab \uD1B5\uD569, W2)"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
       ResearchLabPanel,
       {
         baseUrl,
