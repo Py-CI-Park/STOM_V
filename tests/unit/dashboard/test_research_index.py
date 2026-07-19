@@ -56,6 +56,7 @@ def _nested_paths() -> dict[str, object]:
                 "uri": "https://example.test/C:/private/evidence/keep.json",
                 "index_uri": "research-index://doc:docs/research/detail.md",
                 "relative": "docs/research/detail.md",
+                "route": "/reports/view",
             },
         },
     }
@@ -145,6 +146,7 @@ def test_research_index_detail_recursively_redacts_public_absolute_paths(monkeyp
             assert embedded["uri"] == "https://example.test/C:/private/evidence/keep.json"
             assert embedded["index_uri"] == "research-index://doc:docs/research/detail.md"
             assert embedded["relative"] == "docs/research/detail.md"
+            assert embedded["route"] == "/reports/view"
 
 
 def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tmp_path: Path) -> None:
@@ -160,6 +162,7 @@ def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tm
                     "source:/private/evidence/network.json": r"\\server\share\network-value.json",
                     "/private/a/shared.json": "first",
                     "C:/private/b/shared.json": "second",
+                    "route": "/research_docs",
                 },
             },
         ],
@@ -176,6 +179,7 @@ def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tm
         "source:/private/evidence/network.json": r"\\server\share\network-value.json",
         "/private/a/shared.json": "first",
         "C:/private/b/shared.json": "second",
+        "route": "/research_docs",
     }
 
     monkeypatch.setattr(research_api.research_index, "list_research_index", lambda: raw_response)
@@ -188,6 +192,41 @@ def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tm
         "source:network.json": "network-value.json",
         "shared.json": "first",
         "shared.json#2": "second",
+        "route": "/research_docs",
     }
     assert research_index._redact_embedded_absolute_paths("/") == "[absolute-path]"
     assert research_index._redact_embedded_absolute_paths("C:/") == "[absolute-path]"
+    assert research_index._redact_embedded_absolute_paths("/reports/view") == "/reports/view"
+    assert research_index._redact_embedded_absolute_paths("/ui/") == "/ui/"
+
+
+def test_research_doc_route_sanitizes_markdown_without_changing_source(monkeypatch, tmp_path: Path) -> None:
+    document = tmp_path / "report.md"
+    raw_markdown = (
+        "# Report\n"
+        "source:C:/private/evidence/report.json\n"
+        "unix:/private/evidence/report.json\n"
+        "route:/research_docs\n"
+        "public:https://example.test/C:/private/evidence/keep.json\n"
+    )
+    document.write_text(raw_markdown, encoding="utf-8")
+    summary = {
+        "id": "condition_research:report.md",
+        "title": "Report",
+        "category": "condition_research",
+        "updated_at": "2026-07-19T00:00:00Z",
+    }
+    monkeypatch.setattr(research_api, "_doc_index", lambda: {summary["id"]: (document, summary)})
+
+    response = research_api.research_doc(summary["id"])
+
+    assert response["available"] is True
+    assert response["markdown"] == (
+        "# Report\n"
+        "source:report.json\n"
+        "unix:report.json\n"
+        "route:/research_docs\n"
+        "public:https://example.test/C:/private/evidence/keep.json\n"
+    )
+    assert response["size"] == len(raw_markdown)
+    assert document.read_text(encoding="utf-8") == raw_markdown
