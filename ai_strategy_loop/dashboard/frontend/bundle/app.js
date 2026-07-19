@@ -32854,7 +32854,7 @@ def signal_sell(pos, bar, ind):
   function _rixFmtTime(value) {
     if (!value) return "\u2014";
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
+    if (Number.isNaN(d.getTime())) return "\u2014";
     return d.toLocaleString("ko-KR", { hour12: false });
   }
   function ResearchBadge({ type, value }) {

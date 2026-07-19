@@ -65,7 +65,7 @@ function _rixShortPath(path) {
 function _rixFmtTime(value) {
   if (!value) return "—";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
+  if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleString("ko-KR", { hour12: false });
 }
 

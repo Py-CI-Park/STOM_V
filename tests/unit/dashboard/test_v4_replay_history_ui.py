@@ -276,3 +276,6 @@ def test_history_evaluation_sort_headers_are_keyboard_accessible_and_dates_are_s
     # Invalid dates render the explicit fallback rather than leaking "Invalid Date".
     assert 'return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "-";' in tree
     assert 'new Date(Number(ts) * 1000).toLocaleString()' not in tree
+    research_index = _read("research-index.jsx")
+    assert 'if (Number.isNaN(d.getTime())) return "—";' in research_index
+    assert "if (Number.isNaN(d.getTime())) return value;" not in research_index
