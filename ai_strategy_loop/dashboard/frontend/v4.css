@@ -663,3 +663,9 @@
 .bt-verdict-band.warn .bt-verdict-word { color: var(--amber); }
 .bt-verdict-band.bad .bt-verdict-word { color: #ff6363; }
 .bt-verdict-note { margin-left: auto; font-size: 11px; color: var(--ink-3); }
+
+/* V6.6(S7) Alpha 연구 연혁 · 판정 카탈로그 */
+.v6-alpha-chron { display: flex; flex-direction: column; gap: 6px; }
+.v6-alpha-chron-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); }
+.v6-alpha-chron-series { font-size: 13px; color: var(--ink-1); min-width: 180px; }
+.v6-alpha-chron-meta { font-size: 11px; color: var(--ink-3); margin-left: auto; }
