@@ -5,6 +5,7 @@ const {
   useState: useState_rrp,
   useEffect: useEffect_rrp,
   useCallback: useCallback_rrp,
+  useRef: useRef_rrp,
 } = React;
 
 function _rrpMoney(value) {
@@ -68,16 +69,22 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
     return () => clearInterval(timer);
   }, [refresh, baseUrl, isDemo]);
 
+  const detailReqRef = useRef_rrp(0);
   useEffect_rrp(() => {
     if (isDemo || !baseUrl || !selectedCampaign) {
       setDetail(null);
       return;
     }
+    // V5.4(§10-10): 세대 가드 — 늦게 도착한 이전 선택 응답이 새 선택을 덮어쓰지 않게 한다.
+    const reqId = ++detailReqRef.current;
+    const forCampaign = selectedCampaign;
+    let cancelled = false;
     fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
           { signal: AbortSignal.timeout(6000) })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => setDetail(j))
-      .catch(e => setDetail({ available: false, reason: String(e) }));
+      .then(j => { if (!cancelled && reqId === detailReqRef.current) setDetail(Object.assign({ __campaign: forCampaign }, j)); })
+      .catch(e => { if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign }); });
+    return () => { cancelled = true; };
   }, [baseUrl, isDemo, selectedCampaign]);
   const refreshRuns = useCallback_rrp(() => {
     if (isDemo || !baseUrl) {
