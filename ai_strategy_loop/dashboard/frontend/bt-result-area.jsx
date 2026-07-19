@@ -221,7 +221,7 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+  <div className="bt-result-flow" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
     {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
     {(() => {
       const spec = result.spec || {};
@@ -339,8 +339,13 @@ return (
     <BtOrderflowPanel orderflow={orderflow} />
     <BtStatTestPanel stats={stats} />
 
-    {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
-    <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+    {/* B3 — GUI 패리티(v5.3.7 검수: 6,969px 세로 점유 → 기본닫힘 fold 격하, 내용 불변) */}
+    <details className="evo-group bt-flow-full" open={false}>
+      <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사(클릭 펼침)</div></summary>
+      <div className="evo-group-body">
+        <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+      </div>
+    </details>
 
     {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
     <details className="bt-extra-charts" open={false}>

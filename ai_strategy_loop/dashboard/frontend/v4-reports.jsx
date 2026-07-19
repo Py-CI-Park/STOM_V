@@ -62,9 +62,11 @@ function V4Reports({ baseUrl }) {
 
   const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
   // V6.4(S5): 스텝 자동 리포트(generated_reports/)와 일반 문서를 구분 + 결과 보고서 예시 바로가기.
-  const stepReports = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
+  // v5.3.7: run 종합 보고서를 스텝 그룹 최상단에 고정 + 배지 구분.
+  const stepReportsRaw = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
+  const stepReports = [...stepReportsRaw].sort((a, b) => (/run_report_/.test(b.path) ? 1 : 0) - (/run_report_/.test(a.path) ? 1 : 0));
   const otherReports = (list || []).filter(rp => !String(rp.path).startsWith("generated_reports/"));
-  const exampleReport = stepReports.find(rp => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
+  const exampleReport = stepReports.find(rp => /run_report_/.test(rp.path)) || stepReports.find(rp => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
   const wikiFiltered = (wiki || []).filter(d => {
     const q = wikiQuery.trim().toLowerCase();
     if (!q) return true;
@@ -72,7 +74,7 @@ function V4Reports({ baseUrl }) {
   });
   const renderReportItem = (rp) => (
     <button key={rp.path} className={"v4-reports-item" + (sel === rp.path ? " active" : "")} onClick={() => setSel(rp.path)} title={rp.path}>
-      <span className="v4-reports-name">{rp.name}</span>
+      <span className="v4-reports-name">{/run_report_/.test(rp.path) && <span className="v4-chip ok" style={{ marginRight: 6 }}>run 종합</span>}{rp.name}</span>
       <span className="v4-reports-meta mono">{_fmtReportBytes(rp.bytes)}</span>
     </button>
   );
