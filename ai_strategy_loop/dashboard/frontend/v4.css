@@ -678,3 +678,28 @@
 .v6-onboarding-compact .v4-onboarding-bd { grid-template-columns: 1fr; display: block; }
 .v6-onboarding-compact h2 { font-size: 18px; margin: 0 0 8px; }
 .v6-onboarding-compact p { max-width: 900px; }
+
+/* ===== v5.3.2 Live 재편: 수평 파이프라인 벨트(N3) · 상황판 통합(N4) · 엔진 XL(N5) ===== */
+.v6-belt { display: flex; align-items: stretch; gap: 4px; flex-wrap: wrap; padding: 8px 10px; margin: 4px 0 10px; background: var(--bg-1); border: 1px solid var(--line); border-radius: 12px; }
+.v6-belt-node { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 86px; padding: 7px 10px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); cursor: pointer; }
+.v6-belt-node .v6-belt-badge { font-size: 10px; font-weight: 700; color: var(--ink-3); }
+.v6-belt-node.ai .v6-belt-badge { color: var(--violet); }
+.v6-belt-node .v6-belt-label { font-size: 12.5px; color: var(--ink-1); white-space: nowrap; }
+.v6-belt-node.sel { border-color: rgba(76,214,179,.55); background: rgba(76,214,179,.08); }
+.v6-belt-node.live { border-color: rgba(165,148,255,.6); animation: v6BeltPulse 1.2s ease-in-out infinite; }
+@keyframes v6BeltPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(165,148,255,.45); } 50% { box-shadow: 0 0 10px 2px rgba(165,148,255,.25); } }
+@media (prefers-reduced-motion: reduce) { .v6-belt-node.live { animation: none; } }
+.v6-belt-arrow { align-self: center; color: var(--ink-3); font-size: 13px; }
+.v6-belt-arrow.lit { color: var(--violet); }
+/* 상황판 3열: 프로세스/게이트 | 현재세대(통합) | KPI */
+.v6-board-top--belt { grid-template-columns: minmax(320px, 1fr) minmax(320px, 420px) 340px; }
+.v6-board-curgen { min-width: 0; }
+.v6-board-curgen .panel { margin: 0; }
+.v6-board-curgen .panel-bd { max-height: 190px; overflow: auto; }
+@media (max-width: 2000px) { .v6-board-top--belt { grid-template-columns: 1fr 1fr; } .v6-board-kpi { grid-column: 1 / -1; } }
+/* 백테스트엔진 가독성(N5): 대형 게이지·큰 요약 글자·로그 축소 */
+.v6-engine-xl .engine-summary-strip { font-size: 15px; }
+.v6-engine-xl .stom-gauge { height: 14px; border-radius: 7px; }
+.v6-engine-xl .stom-gauge-label { font-size: 13px; }
+.v6-engine-xl .engine-cell { font-size: 13px; }
+.v6-engine-xl .engine-log-strip { display: none; }
