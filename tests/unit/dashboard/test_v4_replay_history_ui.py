@@ -131,6 +131,11 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "String(payload.selection_generation) !== String(generation)" in tree
     assert 'typeof payload.available !== "boolean"' in tree
     assert "_hctResearchEnvelope" in tree
+    assert "_hctDestinationEnvelope" in tree
+    assert "typeof value.owner !== \"string\"" in tree
+    assert "typeof value.owner_status !== \"string\"" in tree
+    assert "typeof value.join_key !== \"string\"" in tree
+    assert "typeof value.join_status !== \"string\"" in tree
     assert "identity.provenance_owner" in tree
     assert "identity.redaction" in tree
     assert "identity.byte_identical.values" in tree

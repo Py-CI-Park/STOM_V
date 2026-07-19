@@ -148,6 +148,17 @@ function _hctCoverageSource(value) {
   return value;
 }
 
+function _hctDestinationEnvelope(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+      || !["complete", "partial", "missing", "conflict", "unavailable"].includes(value.state)
+      || (value.owner != null && (typeof value.owner !== "string" || !value.owner))
+      || (value.owner_status != null && typeof value.owner_status !== "string")
+      || (value.join_key != null && (typeof value.join_key !== "string" || !value.join_key))
+      || (value.join_status != null && typeof value.join_status !== "string")
+      || (value.reason != null && typeof value.reason !== "string")) return null;
+  return value;
+}
+
 function _hctIndexEnvelope(payload, generation) {
   if (!payload || typeof payload !== "object"
     || String(payload.selection_generation) !== String(generation)
@@ -175,7 +186,7 @@ function _hctResearchEnvelope(payload, selectedId, generation) {
   const byteIdentical = identity && identity.byte_identical;
   const requiredDestinations = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
   const validDestinations = destinations && requiredDestinations.every(name => (
-    destinations[name] && ["complete", "partial", "missing", "conflict", "unavailable"].includes(destinations[name].state)
+    _hctDestinationEnvelope(destinations[name])
   ));
   if (!node || typeof node !== "object" || node.research_id !== selectedId
       || !identity || typeof identity !== "object"

@@ -31992,6 +31992,10 @@ def signal_sell(pos, bar, ind):
     if (!value || typeof value !== "object" || Array.isArray(value) || typeof value.available !== "boolean" || !Number.isInteger(value.total) || value.total < 0 || value.reason != null && typeof value.reason !== "string" || value.available === false && !value.reason) return null;
     return value;
   }
+  function _hctDestinationEnvelope(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value) || !["complete", "partial", "missing", "conflict", "unavailable"].includes(value.state) || value.owner != null && (typeof value.owner !== "string" || !value.owner) || value.owner_status != null && typeof value.owner_status !== "string" || value.join_key != null && (typeof value.join_key !== "string" || !value.join_key) || value.join_status != null && typeof value.join_status !== "string" || value.reason != null && typeof value.reason !== "string") return null;
+    return value;
+  }
   function _hctIndexEnvelope(payload, generation) {
     if (!payload || typeof payload !== "object" || String(payload.selection_generation) !== String(generation) || !Array.isArray(payload.items) || !Number.isInteger(payload.total) || payload.total < 0 || payload.next_cursor != null && typeof payload.next_cursor !== "string" || !payload.coverage || typeof payload.coverage !== "object" || Array.isArray(payload.coverage) || !_hctCoverageSource(payload.coverage.campaign) || !_hctCoverageSource(payload.coverage.loop_run)) return null;
     return payload;
@@ -32006,7 +32010,7 @@ def signal_sell(pos, bar, ind):
     const destinations = identity4 && identity4.destinations;
     const byteIdentical = identity4 && identity4.byte_identical;
     const requiredDestinations = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
-    const validDestinations = destinations && requiredDestinations.every((name) => destinations[name] && ["complete", "partial", "missing", "conflict", "unavailable"].includes(destinations[name].state));
+    const validDestinations = destinations && requiredDestinations.every((name) => _hctDestinationEnvelope(destinations[name]));
     if (!node || typeof node !== "object" || node.research_id !== selectedId || !identity4 || typeof identity4 !== "object" || !validDestinations || !byteIdentical || typeof byteIdentical !== "object" || !byteIdentical.values || typeof byteIdentical.values !== "object" || Array.isArray(byteIdentical.values)) {
       return _hctUnavailable("malformed_history_research_envelope");
     }
