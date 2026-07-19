@@ -59,7 +59,8 @@ function V4Catalog({ baseUrl }) {
 
   const unavailable = summary && summary.available === false;
   const NO_DATA = "데이터 없음 · 운용 개시·U-4·data-vessel 선행 증거가 없어 골격만 표시(performance_proved=false).";
-  const traps = (judgments && judgments.available ? judgments.judgments : []).filter(j => /fail|reject|경고|기각/i.test(String(j.verdict)));
+  // 함정지도: 실패/기각/무가치 판정 = 재시도 금지 함정 목록(실측 verdict 어휘: KILL·무가치·기각).
+  const traps = (judgments && judgments.available ? judgments.judgments : []).filter(j => /kill|무가치|기각|실패|fail|reject/i.test(String(j.verdict)));
 
   return (
     <section className="v4-catalog v4-cjk-safe" aria-labelledby="v4-catalog-heading">
