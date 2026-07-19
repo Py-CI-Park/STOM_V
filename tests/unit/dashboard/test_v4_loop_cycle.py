@@ -52,18 +52,19 @@ def test_v4_loop_cycle_reuses_five_step_phase_mapping_convention() -> None:
     assert "_loopCycleFallbackStep" in source
 
 
-def test_v4_research_places_loop_cycle_in_status_board() -> None:
-    # Given: the V6.0 V4 Research Live tab source (stage-driven redesign).
+def test_v4_research_places_pipeline_belt_in_status_board() -> None:
+    # v5.3.2: 원형 사이클(V4LoopCycle)+PhaseTimeline 은 수평 파이프라인 벨트로 흡수(N3).
+    # 불변: Live 상황판이 루프 파이프라인을 렌더하고, 현재세대(CurrentGenPanel)는 상황판 통합(N4).
     source = _read(FRONTEND / "v4-research.jsx")
-
-    # When/Then: it imports the loop-cycle component and renders it inside the
-    # unified status board (v6-board-cycle), while CurrentGenPanel lives in the
-    # generate stage panel. Invariant preserved: both are wired in Live.
-    assert 'import { V4LoopCycle } from "./v4-loop-cycle.jsx";' in source
-    board_start = source.index('className="v6-board-cycle"')
-    board_end = source.index("</div>", board_start)
-    assert "<V4LoopCycle state={s} />" in source[board_start:board_end]
-    assert "<CurrentGenPanel state={s} />" in source
+    assert "function _V6PipelineBelt(" in source
+    board_start = source.index("function _V6StatusBoard(")
+    board_end = source.index("function V4ResearchLive(")
+    board_body = source[board_start:board_end]
+    assert "<_V6PipelineBelt" in board_body
+    assert "<CurrentGenPanel state={s} />" in board_body
+    # 벨트 8노드가 4스테이지 매핑을 가진다(클릭 pin).
+    assert '{ key: "loop", label: "환류 ↩", ai: false, stage: 3 }' in source
+    assert "STAGE_FROM_PHASE = [0, 1, 2, 2]" in source
 
 
 def test_v4_css_declares_loop_cycle_pulse_animation_with_reduced_motion_guard() -> None:
@@ -84,15 +85,13 @@ def test_v4_loop_cycle_bundle_is_rebuilt_and_carries_markers() -> None:
     app_js = _read(BUNDLE / "app.js")
     manifest = json.loads(_read(BUNDLE / "manifest.json"))
 
-    # When/Then: the bundle graph resolved the new module (source markers reachable) and
-    # the manifest's content-hash version reflects the change (differs from HEAD's).
-    assert "function V4LoopCycle(" in app_js
-    assert "v4-loop-node--active" in app_js
-    assert "v4-loop-badge--ai" in app_js
-    # Korean labels are \uXXXX-escaped by the esbuild minifier, so assert on the
-    # ascii-safe node keys instead (unique per node, stable across minification).
-    for key in ["seed", "prompt", "generate", "gate", "backtest", "score", "autopsy", "feedback"]:
-        assert f'"{key}"' in app_js, f"missing loop node key in bundle: {key}"
+    # When/Then(v5.3.2): 원형 사이클은 수평 파이프라인 벨트로 대체 — 번들은 벨트 마커를 담고,
+    # V4LoopCycle 은 미사용으로 tree-shake 되는 것이 올바른 상태다.
+    assert "_V6PipelineBelt" in app_js or "v6-belt-node" in app_js
+    assert "v6-belt-badge" in app_js
+    # ascii-safe 벨트 노드 키(한글 라벨은 \uXXXX escape 되므로 키로 단언).
+    for key in ["seed", "prompt", "gen", "gate", "bt", "score", "autopsy", "loop"]:
+        assert f'"{key}"' in app_js, f"missing belt node key in bundle: {key}"
 
     app_v = manifest["bundles"]["app.js"]["v"]
     assert isinstance(app_v, str) and app_v

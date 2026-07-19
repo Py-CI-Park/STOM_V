@@ -34513,144 +34513,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4HeroChart });
 
-  // ai_strategy_loop/dashboard/frontend/v4-loop-cycle.jsx
-  var LOOP_NODES = [
-    { key: "seed", label: "\uC2DC\uB4DC", tip: "\uD0D0\uC0C9 \uC2DC\uC791\uC810 \u2014 \uC2DC\uB4DC \uACA9\uC790\uC5D0\uC11C \uB2E4\uC74C \uC138\uB300 \uC870\uAC74\uC2DD \uD6C4\uBCF4\uC758 \uCD9C\uBC1C \uD30C\uB77C\uBBF8\uD130\uB97C \uACE0\uB978\uB2E4.", step: 0, ai: false },
-    { key: "prompt", label: "\uD504\uB86C\uD504\uD2B8 \uC870\uB9BD", tip: "\uC2DC\uB4DC\uC640 \uC774\uC804 \uC138\uB300 \uBD80\uAC80 \uD53C\uB4DC\uBC31\uC744 \uC870\uD569\uD574 LLM \uD504\uB86C\uD504\uD2B8\uB97C \uAD6C\uC131\uD55C\uB2E4.", step: 0, ai: false },
-    { key: "generate", label: "AI \uC0DD\uC131", tip: "LLM\uC774 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uC0DD\uC131\uD55C\uB2E4.", step: 0, ai: true },
-    { key: "gate", label: "\uAC8C\uC774\uD2B8", tip: "\uC0DD\uC131\uB41C \uCF54\uB4DC\uAC00 \uAD6C\uBB38\xB7\uAE08\uC9C0 \uBCC0\uC218 \uB4F1 \uD544\uD130 \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD558\uB294\uC9C0 \uAC80\uC0AC\uD55C\uB2E4.", step: 0, ai: false },
-    { key: "backtest", label: "\uACF5\uC2DD \uBC31\uD14C", tip: "\uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uCF54\uB4DC\uB97C \uACF5\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC73C\uB85C \uACFC\uAC70 \uB370\uC774\uD130\uC5D0 \uC2E4\uD589\uD55C\uB2E4.", step: 1, ai: false },
-    { key: "score", label: "\uCC44\uC810", tip: "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC5D0\uC11C MDD\xB7\uC218\uC775\xB7\uBE48\uB3C4 \uB4F1\uC73C\uB85C graded fitness \uC810\uC218\uB97C \uC0B0\uCD9C\uD55C\uB2E4.", step: 2, ai: false },
-    { key: "autopsy", label: "\uBD80\uAC80", tip: "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \uB4F1 \uC2E4\uD328 \uC6D0\uC778\uC744 \uBD80\uAC80 \uB9AC\uD3EC\uD2B8\uB85C \uC815\uB9AC\uD55C\uB2E4.", step: 3, ai: false },
-    { key: "feedback", label: "\uD658\uB958", tip: "\uBD80\uAC80 \uC778\uC0AC\uC774\uD2B8\uB97C \uB2E4\uC74C \uC138\uB300 \uD504\uB86C\uD504\uD2B8\uC5D0 \uB418\uBA39\uC784\uD574 \uB8E8\uD504\uB97C \uBC18\uBCF5\uD55C\uB2E4.", step: 4, ai: true }
-  ];
-  var LOOP_STEP_NAMES = ["\uC0DD\uC131", "\uBC31\uD14C", "\uCC44\uC810", "\uBD80\uAC80", "\uBC18\uBCF5"];
-  var _LOOP_CYCLE_PHASE_STEP = {
-    generate_start: 0,
-    generate_done: 0,
-    warm_prepare_start: 0,
-    warm_prepare_done: 0,
-    loop_start: 0,
-    ga_init: 0,
-    backtest_start: 1,
-    backtest_end: 1,
-    ga_evaluate_start: 1,
-    score_start: 2,
-    score_done: 2,
-    autopsy_start: 3,
-    autopsy_done: 3,
-    generation_done: 4,
-    ga_generation_done: 4,
-    complete: -1,
-    stopping: -1
-  };
-  function _loopCycleFallbackStep(rawStep, phase) {
-    let value = Number(rawStep);
-    if (!Number.isInteger(value)) {
-      value = Object.prototype.hasOwnProperty.call(_LOOP_CYCLE_PHASE_STEP, phase) ? _LOOP_CYCLE_PHASE_STEP[phase] : -1;
-    }
-    if (!Number.isInteger(value) || value < 0) return -1;
-    return Math.min(LOOP_STEP_NAMES.length - 1, value);
-  }
-  function _loopCycleCurrentStep(state) {
-    const s = state || {};
-    const latest = s.latest || {};
-    const rawStep = latest.current_step != null ? latest.current_step : s.live_phase_step;
-    const phase = latest.phase || s.phase || "";
-    if (typeof window.normalizeFlowStepIndex === "function") {
-      return window.normalizeFlowStepIndex(rawStep, phase);
-    }
-    return _loopCycleFallbackStep(rawStep, phase);
-  }
-  function _loopCycleNodePos(i, total) {
-    const angle = (-90 + i * 360 / total) * (Math.PI / 180);
-    const radius = 38;
-    return { x: 50 + radius * Math.cos(angle), y: 50 + radius * Math.sin(angle) };
-  }
-  function _loopCycleEdge(i, total, nodeRadius) {
-    const a = _loopCycleNodePos(i, total);
-    const b = _loopCycleNodePos((i + 1) % total, total);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const ux = dx / dist, uy = dy / dist;
-    return {
-      x1: a.x + ux * nodeRadius,
-      y1: a.y + uy * nodeRadius,
-      x2: b.x - ux * nodeRadius,
-      y2: b.y - uy * nodeRadius
-    };
-  }
-  function V4LoopCycle({ state }) {
-    const s = state || {};
-    const running = s.status === "running" || s.status === "stopping";
-    const isComplete = s.status === "complete";
-    const currentStep = running ? _loopCycleCurrentStep(s) : -1;
-    const currentStepName = currentStep >= 0 ? LOOP_STEP_NAMES[currentStep] : null;
-    const total = LOOP_NODES.length;
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-loop-cycle-panel panel", "aria-labelledby": "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title", id: "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074"), isComplete && /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok", "data-tip": "\uC774\uBC88 run\uC758 \uC138\uB300 \uB8E8\uD504\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4" }, "\uC644\uB8CC \xB7 run \uC885\uB8CC"), !isComplete && currentStepName && /* @__PURE__ */ React.createElement("span", { className: "v4-chip win", "data-tip": "\uD604\uC7AC \uD65C\uC131 \uB2E8\uACC4" }, "\uC9C4\uD589 \uC911 \xB7 ", currentStepName)), /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        className: "v4-loop-cycle" + (isComplete ? " v4-loop-cycle--complete" : ""),
-        role: "img",
-        "aria-label": "\uC870\uAC74\uC2DD AI \uB8E8\uD504 \uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074 \uB2E4\uC774\uC5B4\uADF8\uB7A8 \xB7 \uC2DC\uB4DC \u2192 \uD504\uB86C\uD504\uD2B8 \uC870\uB9BD \u2192 AI \uC0DD\uC131 \u2192 \uAC8C\uC774\uD2B8 \u2192 \uACF5\uC2DD \uBC31\uD14C \u2192 \uCC44\uC810 \u2192 \uBD80\uAC80 \u2192 \uD658\uB958 \uC21C\uD658. \uD604\uC7AC \uB2E8\uACC4 " + (currentStepName || "\uB300\uAE30")
-      },
-      /* @__PURE__ */ React.createElement("svg", { className: "v4-loop-cycle-svg", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid meet", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
-        "marker",
-        {
-          id: "v4-loop-arrowhead",
-          viewBox: "0 0 10 10",
-          refX: "8",
-          refY: "5",
-          markerWidth: "6",
-          markerHeight: "6",
-          orient: "auto-start-reverse"
-        },
-        /* @__PURE__ */ React.createElement("path", { d: "M0,0 L10,5 L0,10 Z", className: "v4-loop-arrowhead-fill" })
-      )), LOOP_NODES.map((_, i) => {
-        const isWrap = i === total - 1;
-        const lit = currentStep >= 0 && (isWrap ? currentStep === LOOP_STEP_NAMES.length - 1 : LOOP_NODES[(i + 1) % total].step <= currentStep);
-        const { x1, y1, x2, y2 } = _loopCycleEdge(i, total, 9);
-        return /* @__PURE__ */ React.createElement(
-          "line",
-          {
-            key: "edge-" + LOOP_NODES[i].key,
-            x1,
-            y1,
-            x2,
-            y2,
-            className: "v4-loop-edge" + (lit ? " v4-loop-edge--lit" : "") + (isWrap ? " v4-loop-edge--wrap" : ""),
-            markerEnd: "url(#v4-loop-arrowhead)"
-          }
-        );
-      })),
-      LOOP_NODES.map((node, i) => {
-        const pos = _loopCycleNodePos(i, total);
-        const active = running && !isComplete && node.step === currentStep;
-        return /* @__PURE__ */ React.createElement(
-          "div",
-          {
-            key: node.key,
-            className: "v4-loop-node" + (active ? " v4-loop-node--active" : "") + (isComplete ? " v4-loop-node--dim" : ""),
-            style: { left: pos.x + "%", top: pos.y + "%" },
-            "data-tip": node.tip,
-            "aria-label": node.label + " \u2014 " + node.tip + (active ? " (\uD604\uC7AC \uB2E8\uACC4)" : ""),
-            tabIndex: 0
-          },
-          /* @__PURE__ */ React.createElement(
-            "span",
-            {
-              className: "v4-loop-badge " + (node.ai ? "v4-loop-badge--ai" : "v4-loop-badge--code"),
-              title: node.ai ? "AI \uAC1C\uC785 \uC9C0\uC810" : "\uACB0\uC815\uB860\uC801 \uCF54\uB4DC"
-            },
-            node.ai ? "AI" : "\u2699"
-          ),
-          /* @__PURE__ */ React.createElement("span", { className: "v4-loop-node-label" }, node.label)
-        );
-      })
-    ));
-  }
-  Object.assign(window, { V4LoopCycle });
-
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -34688,7 +34550,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: effOpen, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": effOpen }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
   }
   function _V4Onboarding({ onOpenSettings }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "panel v4-onboarding v6-onboarding-compact" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4-onboarding-bd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, "\uC870\uAC74\uC2DD AI \uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("p", null, "AI\uAC00 \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5\uC744 \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBD80\uAC80\uD558\uBA70 \uC870\uAC74\uC2DD\uC744 \uC9C4\uD654\uC2DC\uD0B5\uB2C8\uB2E4. \uACFC\uC815\uC740 \uC704 \uC0AC\uC774\uD074 \uB2E4\uC774\uC5B4\uADF8\uB7A8\uACFC \uC544\uB798 \uB2E8\uACC4 \uD0ED(\uC0DD\uC131\u2192\uBC31\uD14C\uC2A4\uD2B8\u2192\uCC44\uC810\u2192\uBD80\uAC80\u2192\uBC18\uBCF5)\uC774 \uC2E4\uC2DC\uAC04 \uC548\uB0B4\uD569\uB2C8\uB2E4. \uC6B0\uC2B9 \uD6C4\uBCF4\uC758 \uC6B4\uC601 export \uB294 \uC5F0\uAD6C \uD655\uC778\uACFC \uBD84\uB9AC\uB41C human \uC2B9\uC778 \uC808\uCC28\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"))));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel v4-onboarding v6-onboarding-compact" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4-onboarding-bd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, "\uC870\uAC74\uC2DD AI \uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("p", null, "AI\uAC00 \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5\uC744 \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBD80\uAC80\uD558\uBA70 \uC870\uAC74\uC2DD\uC744 \uC9C4\uD654\uC2DC\uD0B5\uB2C8\uB2E4. \uACFC\uC815\uC740 \uC704 \uD30C\uC774\uD504\uB77C\uC778 \uBCA8\uD2B8\uC640 \uC544\uB798 \uB2E8\uACC4 \uD0ED(\uC0DD\uC131\u2192\uBC31\uD14C\uC2A4\uD2B8\u2192\uCC44\uC810\xB7\uBD80\uAC80\u2192\uBC18\uBCF5)\uC774 \uC2E4\uC2DC\uAC04 \uC548\uB0B4\uD569\uB2C8\uB2E4. \uC6B0\uC2B9 \uD6C4\uBCF4\uC758 \uC6B4\uC601 export \uB294 \uC5F0\uAD6C \uD655\uC778\uACFC \uBD84\uB9AC\uB41C human \uC2B9\uC778 \uC808\uCC28\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"))));
   }
   function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
     const s = state || {};
@@ -34716,12 +34578,41 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   var V6_STAGES = [
     { key: "generate", label: "\uC0DD\uC131", sub: "\uC870\uAC74\uC2DD \uC0DD\uC131" },
-    { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8", sub: "\uC5D4\uC9C4 \uAC80\uC99D" },
-    { key: "score", label: "\uCC44\uC810", sub: "\uAC8C\uC774\uD2B8\xB7\uC810\uC218" },
-    { key: "autopsy", label: "\uBD80\uAC80", sub: "\uC2E4\uD328 \uBD84\uC11D" },
+    { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8", sub: "\uC5D4\uC9C4 \uAC80\uC99D\xB7\uACB0\uACFC" },
+    { key: "score", label: "\uCC44\uC810\xB7\uBD80\uAC80", sub: "\uAC8C\uC774\uD2B8\xB7\uBD84\uC11D\xB7\uC2E4\uD328" },
     { key: "iterate", label: "\uBC18\uBCF5\xB7\uC131\uACFC", sub: "\uC138\uB300 \uC694\uC57D" }
   ];
-  function _V6StatusBoard({ state, pinnedIdx = null, onStepClick = null, targetScore, mddCap, minDailyTrades }) {
+  var STAGE_FROM_PHASE = [0, 1, 2, 2];
+  var _BELT_NODES = [
+    { key: "seed", label: "\uC2DC\uB4DC", ai: false, stage: 0 },
+    { key: "prompt", label: "\uD504\uB86C\uD504\uD2B8", ai: false, stage: 0 },
+    { key: "gen", label: "AI \uC0DD\uC131", ai: true, stage: 0 },
+    { key: "gate", label: "\uAC8C\uC774\uD2B8", ai: false, stage: 1 },
+    { key: "bt", label: "\uACF5\uC2DD \uBC31\uD14C", ai: false, stage: 1 },
+    { key: "score", label: "\uCC44\uC810", ai: false, stage: 2 },
+    { key: "autopsy", label: "\uBD80\uAC80", ai: true, stage: 2 },
+    { key: "loop", label: "\uD658\uB958 \u21A9", ai: false, stage: 3 }
+  ];
+  function _V6PipelineBelt({ liveStage, activeStage, onStagePin }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v6-belt", role: "group", "aria-label": "\uBC18\uBCF5 \uC138\uB300 \uD30C\uC774\uD504\uB77C\uC778(\uD074\uB9AD \uC2DC \uD574\uB2F9 \uB2E8\uACC4 \uACE0\uC815)" }, _BELT_NODES.map((n, i) => {
+      const live = liveStage === n.stage;
+      const sel = activeStage === n.stage;
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: n.key }, i > 0 && /* @__PURE__ */ React.createElement("span", { className: "v6-belt-arrow" + (live ? " lit" : ""), "aria-hidden": "true" }, "\u2192"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "v6-belt-node" + (live ? " live" : "") + (sel ? " sel" : "") + (n.ai ? " ai" : ""),
+          title: (n.ai ? "AI \uAC1C\uC785 \xB7 " : "\uCF54\uB4DC \xB7 ") + V6_STAGES[n.stage].label + " \uB2E8\uACC4\uB85C \uC774\uB3D9",
+          onClick: () => {
+            if (typeof onStagePin === "function") onStagePin(n.stage);
+          }
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "v6-belt-badge" }, n.ai ? "AI" : "\u2699"),
+        /* @__PURE__ */ React.createElement("span", { className: "v6-belt-label" }, n.label)
+      ));
+    }));
+  }
+  function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades }) {
     const s = state || {};
     const latest = s.latest || {};
     const discovery = s.page_data && s.page_data.condition_discovery || {};
@@ -34740,7 +34631,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
     const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
     const errorText = s.error || latest.error || "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uC0C1\uD669\uD310"), /* @__PURE__ */ React.createElement("div", { className: "v6-board-top" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-timeline" }, /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s, pinnedIdx, onStepClick }), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-cycle" }, /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
+    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uC0C1\uD669\uD310"), /* @__PURE__ */ React.createElement(_V6PipelineBelt, { liveStage, activeStage, onStagePin }), /* @__PURE__ */ React.createElement("div", { className: "v6-board-top v6-board-top--belt" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-timeline" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-curgen" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
   }
   function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, onOpenSettings, targetScore, mddCap, minDailyTrades }) {
     var _a;
@@ -34758,8 +34649,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const viewCode = typeof onViewCode === "function" ? onViewCode : () => {
     };
     const running = s.status === "running" || s.status === "stopping";
-    const liveIdx = running ? phaseIndex(latest.phase) : -1;
-    const activeStage = stagePin != null ? stagePin : liveIdx >= 0 ? liveIdx : hasData ? 4 : 0;
+    const phaseIdx = running ? phaseIndex(latest.phase) : -1;
+    const liveStage = s.status === "done" ? 3 : phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1;
+    const activeStage = stagePin != null ? stagePin : liveStage >= 0 ? liveStage : hasData ? 3 : 0;
     const onStagePin = (i) => setStagePin((prev) => prev === i ? null : i);
     const onStageKey = (e) => {
       const n = V6_STAGES.length;
@@ -34824,8 +34716,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       _V6StatusBoard,
       {
         state: s,
-        pinnedIdx: stagePin != null && stagePin < 4 ? stagePin : null,
-        onStepClick: onStagePin,
+        liveStage,
+        activeStage,
+        onStagePin,
         targetScore,
         mddCap,
         minDailyTrades
@@ -34841,13 +34734,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-selected": activeStage === i,
         "aria-controls": "v6-stage-panel",
         tabIndex: activeStage === i ? 0 : -1,
-        className: "v6-stage-tab" + (activeStage === i ? " active" : "") + (liveIdx === i ? " live" : ""),
+        className: "v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : ""),
         onClick: () => onStagePin(i),
-        title: st.sub + (liveIdx === i ? " \xB7 \uC9C4\uD589 \uC911" : "")
+        title: st.sub + (liveStage === i ? " \xB7 \uC9C4\uD589 \uC911" : "")
       },
       /* @__PURE__ */ React.createElement("b", null, i + 1, ". ", st.label),
       /* @__PURE__ */ React.createElement("span", null, st.sub),
-      liveIdx === i && /* @__PURE__ */ React.createElement("i", { className: "v6-live-dot", "aria-label": "\uC9C4\uD589 \uC911" })
+      liveStage === i && /* @__PURE__ */ React.createElement("i", { className: "v6-live-dot", "aria-label": "\uC9C4\uD589 \uC911" })
     )), stagePin != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setStagePin(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30")), /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -34857,8 +34750,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-labelledby": "v6-stage-tab-" + V6_STAGES[activeStage].key,
         "aria-live": "polite"
       },
-      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
-      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uD329\uD130\xB7\uC5E3\uC9C0 \uD788\uD2B8\uB9F5 (Lab \uD1B5\uD569)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD329\uD130\xB7\uC5E3\uC9C0 \uD788\uD2B8\uB9F5 (Lab \uD1B5\uD569)"), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }))),
+      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
+      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 }), /* @__PURE__ */ React.createElement("div", { className: "v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })),
       activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null)), /* @__PURE__ */ React.createElement(
         GenerationsTable,
         {
@@ -34868,9 +34761,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
           onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
         }
-      ), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 (Lab \uD1B5\uD569)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (Lab \uD1B5\uD569)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId }))),
-      activeStage === 3 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })),
-      activeStage === 4 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, merged ? /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 (\uBD84\uC11D)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 \uD329\uD130/\uC5E3\uC9C0 (\uBD84\uC11D)"), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 (\uBD84\uC11D)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (\uBD84\uC11D)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })),
+      activeStage === 3 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, merged ? /* @__PURE__ */ React.createElement(
         MergedBestWinnerCard,
         {
           best: s.best,
@@ -34878,7 +34770,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onApprove: requestApproval,
           onViewCode: viewCode
         }
-      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s }))
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId }))
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {

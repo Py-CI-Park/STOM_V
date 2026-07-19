@@ -1,11 +1,11 @@
-/* v4-research.jsx — V6.0 "Research Live" 스테이지 구동 단일 포커스 뷰
+/* v4-research.jsx — v5.3.2 "Research Live" 스테이지 구동 단일 포커스 뷰 (4스테이지)
  *
- *   구조(위→아래): 통합 상황판(사이클 애니메이션·타임라인·KPI·게이트·단계시간 미니바·
- *   차단 배지·로그 1줄+펼침) → 핵심 그래프 밴드(Fitness·Equity·Profit·Quality 동시 노출,
- *   3440에서 4열) → 프로세스 스테이지 탭(생성→백테스트→채점→부검→반복·성과, 라이브
- *   자동전환·사용자 pin) → 현재 스테이지 단일 포커스 패널(그 단계 시각화만 크게).
- *   Lab(팩터/엣지 히트맵·엣지/상관/안정성)은 백테스트·채점 스테이지 자리에 통합(W1).
- *   전부 기존 컴포넌트 재배치 + 스테이지 셸. 데이터/액션은 셸에서 props.
+ *   구조(위→아래): 통합 상황판[수평 파이프라인 벨트(구 원형 사이클+타임라인 흡수, N3)
+ *   + 현재세대 패널 통합(N4) + KPI + 게이트 + 단계시간 미니바·차단 배지·로그]
+ *   → 핵심 그래프 밴드(hasData 시, 3440 4열) → 스테이지 탭 4개(N6: 채점+부검 통합)
+ *   → 현재 스테이지 단일 포커스 패널.
+ *   배치 계약(N6): 백테 결과(파리티)는 백테스트 스테이지, 탐색 히트맵·엣지 분석은
+ *   채점·부검 스테이지. ProcessFlowPanel 은 벨트·스테이지 탭과 3중 중복이라 제거(N7).
  */
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
@@ -17,9 +17,8 @@ import { ResearchGlossaryPanel } from "./glossary.jsx";
 import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
-import { PhaseTimeline, PhaseDetailPanel, ProcessFlowPanel, phaseIndex } from "./phase-detail.jsx";
+import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
-import { V4LoopCycle } from "./v4-loop-cycle.jsx";
 import { ResearchHeatmapPanel } from "./research-pro.jsx";
 import { ResearchLabPanel } from "./research-lab.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
@@ -65,8 +64,7 @@ function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen =
   );
 }
 
-// 온보딩(V6.7 전수검사: 6스텝 목록 제거 — 사이클 다이어그램·스테이지 탭이 같은 루프를
-//   이미 안내하므로 중복. 컴팩트 CTA 카드로 축소) — idle + 세대 없음일 때만 노출.
+// 온보딩(전수검사: 스테이지 탭·벨트가 루프를 안내하므로 컴팩트 CTA) — idle + 세대 없음일 때만.
 function _V4Onboarding({ onOpenSettings }) {
   return (
     <div className="panel v4-onboarding v6-onboarding-compact">
@@ -75,7 +73,7 @@ function _V4Onboarding({ onOpenSettings }) {
           <h2>조건식 AI 루프를 시작할 준비가 되었습니다</h2>
           <p>
             AI가 매수/매도 전략을 자동 생성·백테스트·채점·부검하며 조건식을 진화시킵니다.
-            과정은 위 사이클 다이어그램과 아래 단계 탭(생성→백테스트→채점→부검→반복)이 실시간 안내합니다.
+            과정은 위 파이프라인 벨트와 아래 단계 탭(생성→백테스트→채점·부검→반복)이 실시간 안내합니다.
             우승 후보의 운영 export 는 연구 확인과 분리된 human 승인 절차입니다.
           </p>
           <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 시작 설정 열기</button>
@@ -144,18 +142,53 @@ function _V4Stats({ state }) {
   );
 }
 
-// V6.0 스테이지 정의 — PHASES(생성0·백테1·채점2·부검3) + 반복·성과(4, 수동/기본 요약).
+// v5.3.2 스테이지 정의 — 4탭(N6: 채점+부검 통합). phaseIndex(0생성·1백테·2채점·3부검)
+//   → 스테이지 [0,1,2,2]. run 완료(done)는 반복·성과(3).
 const V6_STAGES = [
   { key: "generate", label: "생성", sub: "조건식 생성" },
-  { key: "backtest", label: "백테스트", sub: "엔진 검증" },
-  { key: "score", label: "채점", sub: "게이트·점수" },
-  { key: "autopsy", label: "부검", sub: "실패 분석" },
+  { key: "backtest", label: "백테스트", sub: "엔진 검증·결과" },
+  { key: "score", label: "채점·부검", sub: "게이트·분석·실패" },
   { key: "iterate", label: "반복·성과", sub: "세대 요약" },
 ];
+const STAGE_FROM_PHASE = [0, 1, 2, 2];
 
-// V6.0 통합 상황판 — 사이클 애니메이션(V4LoopCycle)·타임라인·KPI·게이트·단계시간
-//   미니바·차단 배지·로그 1줄+펼침. 글자블록(L2)을 시각 요소로 대체.
-function _V6StatusBoard({ state, pinnedIdx = null, onStepClick = null, targetScore, mddCap, minDailyTrades }) {
+// v5.3.2 수평 파이프라인 벨트(N3) — 구 원형 사이클(V4LoopCycle)+PhaseTimeline 을 흡수한
+//   8노드 가로 벨트. 활성 노드 pulse, 클릭 시 해당 스테이지 pin. 환류(↩)는 다음 세대로.
+const _BELT_NODES = [
+  { key: "seed", label: "시드", ai: false, stage: 0 },
+  { key: "prompt", label: "프롬프트", ai: false, stage: 0 },
+  { key: "gen", label: "AI 생성", ai: true, stage: 0 },
+  { key: "gate", label: "게이트", ai: false, stage: 1 },
+  { key: "bt", label: "공식 백테", ai: false, stage: 1 },
+  { key: "score", label: "채점", ai: false, stage: 2 },
+  { key: "autopsy", label: "부검", ai: true, stage: 2 },
+  { key: "loop", label: "환류 ↩", ai: false, stage: 3 },
+];
+function _V6PipelineBelt({ liveStage, activeStage, onStagePin }) {
+  return (
+    <div className="v6-belt" role="group" aria-label="반복 세대 파이프라인(클릭 시 해당 단계 고정)">
+      {_BELT_NODES.map((n, i) => {
+        const live = liveStage === n.stage;
+        const sel = activeStage === n.stage;
+        return (
+          <React.Fragment key={n.key}>
+            {i > 0 && <span className={"v6-belt-arrow" + (live ? " lit" : "")} aria-hidden="true">→</span>}
+            <button type="button"
+                    className={"v6-belt-node" + (live ? " live" : "") + (sel ? " sel" : "") + (n.ai ? " ai" : "")}
+                    title={(n.ai ? "AI 개입 · " : "코드 · ") + V6_STAGES[n.stage].label + " 단계로 이동"}
+                    onClick={() => { if (typeof onStagePin === "function") onStagePin(n.stage); }}>
+              <span className="v6-belt-badge">{n.ai ? "AI" : "⚙"}</span>
+              <span className="v6-belt-label">{n.label}</span>
+            </button>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// v5.3.2 통합 상황판 — 벨트 + [프로세스/게이트 | 현재세대(N4 통합) | KPI] + 미니바/배지/로그.
+function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades }) {
   const s = state || {};
   const latest = s.latest || {};
   const discovery = (s.page_data && s.page_data.condition_discovery) || {};
@@ -178,9 +211,9 @@ function _V6StatusBoard({ state, pinnedIdx = null, onStepClick = null, targetSco
   return (
     <section className="v6-board" aria-labelledby="v6-board-heading">
       <h2 id="v6-board-heading" className="panel-hd-title">실시간 연구 상황판</h2>
-      <div className="v6-board-top">
+      <_V6PipelineBelt liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin} />
+      <div className="v6-board-top v6-board-top--belt">
         <div className="v6-board-timeline">
-          <PhaseTimeline state={s} pinnedIdx={pinnedIdx} onStepClick={onStepClick} />
           <div className="v4-wf-next">
             <div><span className="k">process</span><b className="mono" style={{ color: "var(--ink-0)" }}>{procLabel}</b></div>
             <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
@@ -188,8 +221,8 @@ function _V6StatusBoard({ state, pinnedIdx = null, onStepClick = null, targetSco
           </div>
           <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
         </div>
-        <div className="v6-board-cycle">
-          <V4LoopCycle state={s} />
+        <div className="v6-board-curgen">
+          <CurrentGenPanel state={s} />
         </div>
         <div className="v6-board-kpi">
           <_V4Stats state={s} />
@@ -225,7 +258,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
-  // V6.0: 스테이지 pin — 탭/타임라인 클릭 시 해당 스테이지 고정, 해제 시 라이브 자동전환.
+  // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
   const s = state || {};
   const latest = s.latest || {};
@@ -235,9 +268,10 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
   const running = s.status === "running" || s.status === "stopping";
-  const liveIdx = running ? phaseIndex(latest.phase) : -1;
-  // 활성 스테이지: pin > 라이브 단계 > (데이터 있으면 반복·성과 요약, 없으면 생성).
-  const activeStage = stagePin != null ? stagePin : (liveIdx >= 0 ? liveIdx : (hasData ? 4 : 0));
+  const phaseIdx = running ? phaseIndex(latest.phase) : -1;
+  const liveStage = s.status === "done" ? 3 : (phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1);
+  // 활성 스테이지: pin > 라이브 단계 > (데이터 있으면 반복·성과, 없으면 생성).
+  const activeStage = stagePin != null ? stagePin : (liveStage >= 0 ? liveStage : (hasData ? 3 : 0));
   const onStagePin = (i) => setStagePin(prev => (prev === i ? null : i));
   const onStageKey = (e) => {
     const n = V6_STAGES.length;
@@ -298,9 +332,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
 
-      {/* ===== V6 통합 상황판 ===== */}
-      <_V6StatusBoard state={s} pinnedIdx={stagePin != null && stagePin < 4 ? stagePin : null}
-                      onStepClick={onStagePin}
+      {/* ===== 통합 상황판(벨트 + 현재세대 + KPI + 게이트) ===== */}
+      <_V6StatusBoard state={s} liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin}
                       targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
 
       {!hasData && (s.status === "idle" || !s.status) && (
@@ -314,8 +347,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         </div>
       )}
 
-      {/* ===== 핵심 그래프 밴드 — 여러 과정 동시 노출(3440: 4열).
-           V6.7 전수검사: 데이터 없는 idle 에선 빈 차트 4개가 자리만 차지 → hasData 시에만 렌더. ===== */}
+      {/* ===== 핵심 그래프 밴드 — hasData 시에만(빈 차트 금지) ===== */}
       {hasData && (
       <div className="v6-graphs">
         <div className="panel">
@@ -342,18 +374,18 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       </div>
       )}
 
-      {/* ===== 프로세스 스테이지 탭 — 라이브 자동전환·pin ===== */}
+      {/* ===== 스테이지 탭(4) — 라이브 자동전환·pin ===== */}
       <div className="v6-stage-tabs" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
         {V6_STAGES.map((st, i) => (
           <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
                   aria-selected={activeStage === i} aria-controls="v6-stage-panel"
                   tabIndex={activeStage === i ? 0 : -1}
-                  className={"v6-stage-tab" + (activeStage === i ? " active" : "") + (liveIdx === i ? " live" : "")}
+                  className={"v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : "")}
                   onClick={() => onStagePin(i)}
-                  title={st.sub + (liveIdx === i ? " · 진행 중" : "")}>
+                  title={st.sub + (liveStage === i ? " · 진행 중" : "")}>
             <b>{i + 1}. {st.label}</b>
             <span>{st.sub}</span>
-            {liveIdx === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
+            {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
           </button>
         ))}
         {stagePin != null && (
@@ -368,7 +400,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
            aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
         {activeStage === 0 && (
           <div className="v6-stage-grid">
-            <CurrentGenPanel state={s} />
             <HypothesisPanel state={s} />
             <ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} />
             <ConditionDiscoveryPanel state={s} wsStatus={wsStatus} />
@@ -377,12 +408,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         {activeStage === 1 && (
           <div className="v6-stage-grid">
             <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} pinnedIdx={1} />
-            <EnginePanel state={s} wsStatus={wsStatus} />
+            <div className="v6-engine-xl">
+              <EnginePanel state={s} wsStatus={wsStatus} />
+            </div>
             <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
-            <section className="v6-stage-lab" aria-label="팩터·엣지 히트맵 (Lab 통합)">
-              <h3 className="stom-section-label">팩터·엣지 히트맵 (Lab 통합)</h3>
-              <ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-            </section>
+            <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
           </div>
         )}
         {activeStage === 2 && (
@@ -396,15 +426,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <GenerationsTable state={s} mddCap={mddCap} minDailyTrades={minDailyTrades}
                               onViewCode={(g) => viewCode(g && g.gen_no != null ? g.gen_no : g)}
                               onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
-            <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
-            <section className="v6-stage-lab" aria-label="엣지·상관·안정성 (Lab 통합)">
-              <h3 className="stom-section-label">엣지·상관·안정성 검증 (Lab 통합)</h3>
+            <section className="v6-stage-lab" aria-label="탐색 히트맵 (분석)">
+              <h3 className="stom-section-label">탐색 히트맵 · 팩터/엣지 (분석)</h3>
+              <ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            </section>
+            <section className="v6-stage-lab" aria-label="엣지·상관·안정성 (분석)">
+              <h3 className="stom-section-label">엣지·상관·안정성 검증 (분석)</h3>
               <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
             </section>
-          </div>
-        )}
-        {activeStage === 3 && (
-          <div className="v6-stage-grid">
             <AutopsyPanel state={s} wsStatus={wsStatus} />
             <LineagePanel state={s} wsStatus={wsStatus} />
             <MetaPanel state={s} wsStatus={wsStatus} />
@@ -412,7 +441,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <FeedbackPanel state={s} />
           </div>
         )}
-        {activeStage === 4 && (
+        {activeStage === 3 && (
           <div className="v6-stage-grid">
             {merged ? (
               <MergedBestWinnerCard best={s.best} winner={s.winner}
@@ -426,7 +455,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
             <PopulationPanel state={s} wsStatus={wsStatus} />
             <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-            <ProcessFlowPanel state={s} />
           </div>
         )}
       </div>

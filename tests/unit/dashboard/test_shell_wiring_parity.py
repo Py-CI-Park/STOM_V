@@ -44,6 +44,8 @@ _LEGACY_ONLY_WHITELIST = {
     "FitnessChart": "V4HeroChart(대형 canvas)가 상위호환 대체",
     "LabPage": "V4Lab 이 하부 패널(Heatmap/Lab/Wiki)을 직접 마운트",
     "ProPage": "V4Workbench 가 하부 패널(Pro/RunCompare/HoF)을 직접 마운트",
+    "PhaseTimeline": "v5.3.2 수평 파이프라인 벨트(_V6PipelineBelt)+스테이지 탭이 대체",
+    "ProcessFlowPanel": "v5.3.2 벨트·스테이지 탭과 3중 중복 — docs/process_flow.html 로 대체(N7)",
 }
 
 
