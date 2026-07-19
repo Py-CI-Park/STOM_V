@@ -98,3 +98,55 @@ def test_output_restriction_and_atomic_failure_leave_no_partial_files(tmp_path: 
 
     assert not out_dir.exists()
     assert not any(allowed.parent.iterdir())
+
+
+def test_atomic_writer_preserves_unmanaged_reports_and_replaces_prior_managed_files(tmp_path: Path) -> None:
+    out_dir = tmp_path / "reports"
+    unmanaged = out_dir / "legacy" / "keep.html"
+    prior_managed = out_dir / "research" / "old.html"
+    unmanaged.parent.mkdir(parents=True)
+    prior_managed.parent.mkdir(parents=True)
+    unmanaged.write_text("keep", encoding="utf-8")
+    prior_managed.write_text("old", encoding="utf-8")
+    (out_dir / writer._MANIFEST_NAME).write_text(
+        """
+        {
+          "schema": "stom-research-report-manifest-v1",
+          "reports": [{"path": "research/old.html"}]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    files = {
+        "research_lab_report.html": "<html>new hub</html>",
+        "research/new.html": "<html>new detail</html>",
+    }
+    manifest = {
+        "schema": "stom-research-report-manifest-v1",
+        "reports": [{"path": path} for path in files],
+    }
+    writer.write_reports_atomic(out_dir, files, manifest)
+
+    assert unmanaged.read_text(encoding="utf-8") == "keep"
+    assert not prior_managed.exists()
+    assert (out_dir / "research_lab_report.html").read_text(encoding="utf-8") == "<html>new hub</html>"
+    assert (out_dir / "research" / "new.html").read_text(encoding="utf-8") == "<html>new detail</html>"
+
+
+def test_atomic_writer_rejects_unreadable_existing_manifest_without_mutation(tmp_path: Path) -> None:
+    out_dir = tmp_path / "reports"
+    out_dir.mkdir(parents=True)
+    existing = out_dir / "legacy.html"
+    existing.write_text("keep", encoding="utf-8")
+    (out_dir / writer._MANIFEST_NAME).write_text("{broken", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="manifest is unreadable"):
+        writer.write_reports_atomic(
+            out_dir,
+            {"research_lab_report.html": "<html>new</html>"},
+            {"schema": "stom-research-report-manifest-v1", "reports": []},
+        )
+
+    assert existing.read_text(encoding="utf-8") == "keep"
+    assert not (out_dir / "research_lab_report.html").exists()

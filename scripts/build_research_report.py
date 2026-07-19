@@ -176,6 +176,45 @@ def _write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
 
+def _existing_managed_paths(out_dir: Path) -> set[str]:
+    manifest_path = out_dir / _MANIFEST_NAME
+    if not manifest_path.exists():
+        return set()
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("existing report manifest is unreadable") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != _SCHEMA:
+        raise ValueError("existing report manifest schema is invalid")
+    rows = payload.get("reports")
+    if not isinstance(rows, list):
+        raise ValueError("existing report manifest reports must be a list")
+    managed: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get("path"), str):
+            raise ValueError("existing report manifest contains an invalid path")
+        rel = row["path"]
+        _validate_report_paths({rel: ""})
+        managed.add(rel)
+    return managed
+
+
+def _copy_unmanaged_reports(out_dir: Path, staging: Path, managed: set[str]) -> None:
+    if not out_dir.exists():
+        return
+    for source in out_dir.rglob("*"):
+        if source.is_symlink():
+            raise ValueError(f"report output contains a symlink: {source.name}")
+        if not source.is_file():
+            continue
+        rel = source.relative_to(out_dir).as_posix()
+        if rel == _MANIFEST_NAME or rel in managed:
+            continue
+        target = staging / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
 
 def write_reports_atomic(out_dir: Path, files: Mapping[str, str], manifest: Mapping[str, object]) -> None:
     _validate_report_paths(files)
@@ -186,6 +225,8 @@ def write_reports_atomic(out_dir: Path, files: Mapping[str, str], manifest: Mapp
     backup: Optional[Path] = None
     try:
         assert staging is not None
+        managed = _existing_managed_paths(out_dir)
+        _copy_unmanaged_reports(out_dir, staging, managed)
         for rel, html_text in files.items():
             _write_text(staging / rel, html_text)
         manifest_text = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
