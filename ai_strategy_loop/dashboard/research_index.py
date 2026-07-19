@@ -110,6 +110,18 @@ EVIDENCE_ROOT_REL: Final[str] = ".omo/evidence"
 EVIDENCE_ARTIFACT_SUFFIXES: Final[tuple[str, ...]] = (".json", ".jsonl", ".md", ".txt")
 _SAFE_NAMESPACE = re.compile(r"^(campaign|doc|update_log|registry|hof|loop_run|decision|evidence):(.{1,240})$")
 _CACHE: dict[str, tuple[tuple[tuple[str, int, int], ...], ResearchIndexResponse]] = {}
+_PUBLIC_URI = re.compile(r"(?:https?|research-index)://[^\s<>()\[\]{}\"'`]+", re.IGNORECASE)
+_ABSOLUTE_PATH_START = re.compile(
+    r"""(?:
+        \\\\[?]\\(?:UNC\\[^\\/\s]+[\\/][^\\/\s]+|[A-Za-z]:[\\/]) |
+        \\\\(?![?.]\\)[^\\/\s]+[\\/][^\\/\s]+ |
+        (?<![A-Za-z0-9])[A-Za-z]:[\\/] |
+        (?<![A-Za-z0-9/\\])/(?!/)
+    )""",
+    re.VERBOSE,
+)
+_PATH_TRAILING_PUNCTUATION: Final[str] = ".,;:!?)]}>`"
+
 
 
 def _repo_path(repo_root: Path, rel_path: str) -> Path:
@@ -702,46 +714,65 @@ def list_research_index(repo_root: Path | None = None, evidence_root: Path | Non
     _CACHE[cache_key] = (signature, response)
     return response
 
-def _redact_markdown_absolute_paths(markdown: str) -> str:
-    """Apply the shared absolute-path redactor to path tokens in markdown text."""
+def _absolute_path_basename(path: str) -> str:
+    normalized = path.replace("\\", "/").rstrip("/")
+    basename = normalized.rsplit("/", 1)[-1]
+    return basename if basename and not re.fullmatch(r"[A-Za-z]:", basename) else "[absolute-path]"
+
+
+def _redact_embedded_absolute_paths(value: str) -> str:
+    """Replace absolute filesystem paths embedded in public text with basenames."""
+    uri_spans = [match.span() for match in _PUBLIC_URI.finditer(value)]
     chunks: list[str] = []
     cursor = 0
-    token_boundaries = " \t\r\n([{\"'`="
-    trailing_punctuation = ".,;:!?)]}>`"
-    while cursor < len(markdown):
-        path_start = next(
-            (
-                index
-                for index in range(cursor, len(markdown))
-                if (index == 0 or markdown[index - 1] in token_boundaries)
-                and research_records._ABSOLUTE_PATH.match(markdown[index:])
-            ),
-            None,
-        )
-        if path_start is None:
-            chunks.append(markdown[cursor:])
-            break
-        chunks.append(markdown[cursor:path_start])
-        token_end = path_start
-        while token_end < len(markdown) and not markdown[token_end].isspace():
+    for match in _ABSOLUTE_PATH_START.finditer(value):
+        start = match.start()
+        if start < cursor or any(uri_start <= start < uri_end for uri_start, uri_end in uri_spans):
+            continue
+        token_end = start
+        while token_end < len(value) and not value[token_end].isspace() and value[token_end] not in "\"'":
             token_end += 1
         path_end = token_end
-        while path_end > path_start and markdown[path_end - 1] in trailing_punctuation:
+        while path_end > start and value[path_end - 1] in _PATH_TRAILING_PUNCTUATION:
             path_end -= 1
-        redacted = research_records._redact_absolute_paths(markdown[path_start:path_end])
-        chunks.append(redacted if isinstance(redacted, str) else markdown[path_start:path_end])
-        chunks.append(markdown[path_end:token_end])
+        if path_end == start:
+            continue
+        chunks.extend((value[cursor:start], _absolute_path_basename(value[start:path_end]), value[path_end:token_end]))
         cursor = token_end
+    if cursor == 0:
+        return value
+    chunks.append(value[cursor:])
     return "".join(chunks)
 
 
+def _sanitize_public_payload(value: JsonValue) -> JsonValue:
+    """Return a recursively sanitized public copy without changing source data."""
+    if isinstance(value, str):
+        return _redact_embedded_absolute_paths(value)
+    if isinstance(value, list):
+        return [_sanitize_public_payload(item) for item in value]
+    if isinstance(value, dict):
+        sanitized: dict[str, JsonValue] = {}
+        for key, item in value.items():
+            base_key = _redact_embedded_absolute_paths(key)
+            sanitized_key = base_key
+            duplicate = 2
+            while sanitized_key in sanitized:
+                sanitized_key = f"{base_key}#{duplicate}"
+                duplicate += 1
+            sanitized[sanitized_key] = _sanitize_public_payload(item)
+        return sanitized
+    return value
+
+
+def serialize_research_index_response(response: ResearchIndexResponse) -> ResearchIndexResponse:
+    """Return a sanitized copy suitable for the public index route."""
+    return cast(ResearchIndexResponse, _sanitize_public_payload(response))
+
+
 def _serialize_detail_response(response: ResearchIndexDetailResponse) -> ResearchIndexDetailResponse:
-    """Redact absolute paths from all detail payloads without mutating their sources."""
-    serialized = cast(ResearchIndexDetailResponse, research_records._redact_absolute_paths(response))
-    markdown = serialized.get("markdown")
-    if isinstance(markdown, str):
-        serialized["markdown"] = _redact_markdown_absolute_paths(markdown)
-    return serialized
+    """Apply the same public boundary to every detail namespace."""
+    return cast(ResearchIndexDetailResponse, _sanitize_public_payload(response))
 
 
 
