@@ -12,6 +12,7 @@ import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
 import { ResearchLabPanel } from "./research-lab.jsx";
+import { RunComparePanel } from "./run-compare.jsx";
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
@@ -55,6 +56,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare</h2>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
           <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />
+          <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
         </div>
       </section>
 

@@ -119,7 +119,7 @@ console.log(JSON.stringify({
         "evolution": "research",
         "process": "research",
         "records": "history",
-        "lab": "lab",
+        "lab": "research",
         "workbench": "workbench",
         "verdict": "history",
         "audit": "history",
@@ -130,20 +130,22 @@ console.log(JSON.stringify({
         "unknown": "",
     }
 
-def test_v5p0_primary_owner_map_is_exactly_six() -> None:
-    # V5.P0: 최상위 owner 는 Live·Backtest·Replay·History·성과·Reports 6개로 고정한다.
+def test_v6_primary_owner_map_order() -> None:
+    # V6.1(R1): 최상위 owner 순서 — Live·History·성과·Reports·Backtest·Replay.
+    #   Backtest·Replay 는 Reports 뒤(사장님 지시). lab 은 Live 스테이지로 은퇴.
     import re
     source = _read("dashboard-v4-shell.jsx")
     primary = re.findall(r'key:\s*"([^"]+)"[^\n]*?group:\s*"primary"', source)
-    assert primary == ["research", "backtest", "replay", "history", "workbench", "reports"], primary
-    # audit 는 더 이상 최상위/보조 탭이 아니다(거버넌스는 History 로 이전).
+    assert primary == ["research", "history", "workbench", "reports", "backtest", "replay"], primary
+    # audit·lab 는 더 이상 탭이 아니다(거버넌스→History, Lab→Live 스테이지).
     assert 'key: "audit"' not in source
+    assert 'key: "lab"' not in source
 
 
 def test_v5p0_retired_tab_deeplinks_sealed_to_owner() -> None:
-    # V5.P0: audit·verdict 은퇴 탭의 legacy 딥링크(?tab=·/ui/*)가 History 로 봉인됐는지.
+    # V5.P0/V6.1: audit·verdict·lab 은퇴 탭의 legacy 딥링크(?tab=·/ui/*) 봉인.
     source = _read("dashboard-v4-shell.jsx")
-    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history" }' in source
+    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research" }' in source
     assert "V4_LEGACY_TAB_ALIAS[t]" in source
     assert '"audit": "history"' in source  # V4_PATH_TAB_MAP path→tab
 

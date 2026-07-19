@@ -19,7 +19,6 @@ import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
 import { V4History } from "./v4-history.jsx";
-import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Alpha } from "./v4-alpha.jsx";
 import { V4Reports } from "./v4-reports.jsx";
@@ -30,17 +29,16 @@ const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback
 
 // V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
 //   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
+// V6.1(R1): 연구 흐름 순서 — Live → History → 성과 → Reports → Backtest → Replay.
 const V4_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰", group: "primary" },
+  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 스테이지 구동 실시간 관찰", group: "primary" },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
+  { key: "workbench", label: "성과", full: "명예의 전당 · 인간+AI 성과", badge: "HALL", hint: "명예의 전당 전용 — 인간 벤치마크와 AI 연구 성과 비교", group: "primary" },
+  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
-  { key: "workbench", label: "성과", full: "성과 · 명예의 전당", badge: "HALL", hint: "후보 비교 · 명예의 전당(인간+AI 벤치마크)", group: "primary" },
-  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰·비-P4, 보조)", group: "secondary" },
-  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
   { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4 · 비정본 prototype)", badge: "P4·시제", hint: "research_assets.db 판정카드·자산 · 비정본 preview · 읽기 전용(SELECT-only)", group: "secondary" },
-
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -50,7 +48,7 @@ const V4_PATH_TAB_MAP = {
   "backtest": "backtest",
   "chart-replay": "replay",
   "records": "history",
-  "lab": "lab",
+  "lab": "research",
   "workbench": "workbench",
   "verdict": "history",
   "audit": "history",
@@ -58,7 +56,8 @@ const V4_PATH_TAB_MAP = {
 };
 
 // V5.P0: 은퇴한 탭(audit·verdict)의 legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
-const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history" };
+// V5.P0/V6.1: 은퇴한 탭(audit·verdict·lab)의 legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
+const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research" };
 
 function v4TabFromPathname(pathname) {
   try {
@@ -416,8 +415,6 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : activeTab === "history" ? (
                 <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
-              ) : activeTab === "lab" ? (
-                <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
               ) : activeTab === "reports" ? (

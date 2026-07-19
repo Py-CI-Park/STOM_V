@@ -1,7 +1,7 @@
-/* v4-workbench.jsx — V4 Workbench: candidate analysis, comparison, and evidence. */
+/* v4-workbench.jsx — V6.1 "성과": 명예의 전당 전용(인간 벤치마크 + AI 연구 성과).
+ *   W2·W3: 후보 정밀분석(ResearchPro)·RunCompare 는 중복 제거 — 분석은 Live 스테이지,
+ *   비교는 History 로 이동. 이 탭은 장기 비교 기준(HoF)만 소유한다. */
 // dual-safe ESM import (esbuild bundle path). KEEP each on ONE physical line.
-import { ResearchProPanel } from "./research-pro.jsx";
-import { RunComparePanel } from "./run-compare.jsx";
 import { HallOfFamePanel } from "./chart.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 
@@ -30,7 +30,7 @@ function V4Workbench({ baseUrl, wsStatus, runId }) {
     >
       <header className="panel v4-tab-intro">
         <div className="panel-hd">
-          <h2 id="v4-workbench-title" className="panel-hd-title">Workbench · 후보 비교와 의사결정 근거</h2>
+          <h2 id="v4-workbench-title" className="panel-hd-title">명예의 전당 · 인간+AI 성과</h2>
         </div>
         <div className="panel-bd">
           <p className="v4-surface-status" role="status" aria-live="polite">{statusText}</p>
@@ -50,21 +50,6 @@ function V4Workbench({ baseUrl, wsStatus, runId }) {
         </div>
       </header>
 
-      <section className="v4-workbench-region v4-cjk-safe" aria-labelledby="v4-workbench-analysis-title">
-        <h3 id="v4-workbench-analysis-title" className="stom-section-label">후보 정밀 분석</h3>
-        <ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-      </section>
-
-      <section
-        className="v4-workbench-region v4-data-region v4-local-scroll v4-cjk-safe"
-        aria-labelledby="v4-workbench-compare-title"
-        aria-describedby="v4-workbench-caveat"
-        data-v4-scroll-owner="workbench-candidate-compare"
-        tabIndex={0}
-      >
-        <h3 id="v4-workbench-compare-title" className="stom-section-label">후보 선택과 비교</h3>
-        <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
-      </section>
 
       <section className="v4-workbench-region v4-cjk-safe" aria-labelledby="v4-workbench-hof-title">
         <h3 id="v4-workbench-hof-title" className="stom-section-label">장기 비교 기준과 명예의 전당</h3>
