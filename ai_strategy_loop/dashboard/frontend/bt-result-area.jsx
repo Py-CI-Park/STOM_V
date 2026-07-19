@@ -222,6 +222,20 @@ const stats = analysis.stats || [];
 
 return (
   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
+    {(() => {
+      const spec = result.spec || {};
+      const buy = spec.buy || result.buy || "—";
+      const sell = spec.sell || result.sell || "—";
+      const period = (spec.start && spec.end) ? `${spec.start}~${spec.end}` : (result.period || "—");
+      return (
+        <div className="bt-condition-band" aria-label="테스트 조건식과 기간">
+          <div><span className="k">매수 조건식</span><b className="mono">{buy}</b></div>
+          <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
+          <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
+        </div>
+      );
+    })()}
     {/* 구간 분석 상태 배너 */}
     {range && (
       <div className="bt-range-bar">
