@@ -36,7 +36,7 @@ const V4_NORMAL_TABS = DASHBOARD_PAGE_OWNER_MATRIX;
 const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
 const V4_LEGACY_EXTRA_TABS = [
   { key: "lab", label: "Lab", full: "Lab prototype", badge: "LAB", hint: "비정본 prototype · 명시적 rollback 전용" },
-  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 prototype (P4)", badge: "P4", hint: "비권위적·비규범적 prototype · sealed P4 API/views 미완성" },
+  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 prototype (P4)", badge: "P4", hint: "비정본 prototype · Reports 소유 sealed rdc-1 조회 전용" },
   { key: "context", label: "Context", full: "AI Context Pack prototype", badge: "PACK", hint: "비정본 prototype · 명시적 rollback 전용" },
   { key: "alpha", label: "Alpha", full: "Alpha Lab prototype", badge: "ALPHA", hint: "비정본 prototype · 명시적 rollback 전용" },
 ];

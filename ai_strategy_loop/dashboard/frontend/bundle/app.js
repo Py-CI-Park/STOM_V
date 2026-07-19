@@ -37150,7 +37150,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   var V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
   var V4_LEGACY_EXTRA_TABS = [
     { key: "lab", label: "Lab", full: "Lab prototype", badge: "LAB", hint: "\uBE44\uC815\uBCF8 prototype \xB7 \uBA85\uC2DC\uC801 rollback \uC804\uC6A9" },
-    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 prototype (P4)", badge: "P4", hint: "\uBE44\uAD8C\uC704\uC801\xB7\uBE44\uADDC\uBC94\uC801 prototype \xB7 sealed P4 API/views \uBBF8\uC644\uC131" },
+    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 prototype (P4)", badge: "P4", hint: "\uBE44\uC815\uBCF8 prototype \xB7 Reports \uC18C\uC720 sealed rdc-1 \uC870\uD68C \uC804\uC6A9" },
     { key: "context", label: "Context", full: "AI Context Pack prototype", badge: "PACK", hint: "\uBE44\uC815\uBCF8 prototype \xB7 \uBA85\uC2DC\uC801 rollback \uC804\uC6A9" },
     { key: "alpha", label: "Alpha", full: "Alpha Lab prototype", badge: "ALPHA", hint: "\uBE44\uC815\uBCF8 prototype \xB7 \uBA85\uC2DC\uC801 rollback \uC804\uC6A9" }
   ];
