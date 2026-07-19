@@ -11,6 +11,7 @@ import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { VerdictPanel } from "./dashboard-pages.jsx";
+import { ResearchLabPanel } from "./research-lab.jsx";
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
@@ -64,6 +65,13 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
           <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} />
           <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} />
+        </div>
+      </section>
+      <section aria-labelledby="v4-history-edge-title" aria-busy={historyLoading}>
+        <h2 className="stom-section-label" id="v4-history-edge-title">엣지·상관·안정성 검증 (Lab 통합, W2)</h2>
+        <div data-region="scroll" tabIndex={0} aria-label="엣지·상관·안정성 분석 영역">
+          <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus}
+                            onOpenWorkbench={() => { if (typeof onNavigate === "function") onNavigate("workbench"); }} />
         </div>
       </section>
 

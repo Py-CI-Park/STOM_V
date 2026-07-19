@@ -40,7 +40,7 @@ const V4_TABS = [
   { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰·비-P4, 보조)", group: "secondary" },
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
   { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4 · 비정본 prototype)", badge: "P4·시제", hint: "research_assets.db 판정카드·자산 · 비정본 preview · 읽기 전용(SELECT-only)", group: "secondary" },
-  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능", group: "secondary" },
+
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -259,6 +259,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [settingsOpen, setSettingsOpen] = useState_v4(false);
   const [gptAuthProbe, setGptAuthProbe] = useState_v4(null);
   const [codeViewGen, setCodeViewGen] = useState_v4(null);
+  const [contextDrawerOpen, setContextDrawerOpen] = useState_v4(false);
 
   const onStart = useCallback_v4((config) => { send({ action: "start", config }); setSettingsOpen(false); }, [send]);
   const onStop = useCallback_v4(() => { send({ action: "stop" }); }, [send]);
@@ -329,6 +330,10 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           ))}
         </div>
         <div className="v4-rail-spacer"></div>
+        <button type="button" className={"v4-rail-item" + (contextDrawerOpen ? " active" : "")} onClick={() => setContextDrawerOpen(v => !v)} title="AI Context Pack(개발자 서랍) 토글" aria-pressed={contextDrawerOpen}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>
+          <span className="v4-ri-label">Context</span>
+        </button>
         <a className="v4-rail-item" href="/ui/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
           <span className="v4-ri-label">LEGACY</span>
@@ -421,16 +426,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               ) : activeTab === "catalog" ? (
                 <V4Catalog baseUrl={baseUrl} />
               ) : (
-                <div className="v4-context">
-                  {typeof window.AIContextPanel === "function" ? (
-                    <window.AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
-                  ) : (
-                    <div className="v4-placeholder">
-                      <h2>AI Context Pack</h2>
-                      <p className="mono">AIContextPanel 미로드 — 번들 재빌드 필요</p>
-                    </div>
-                  )}
-                </div>
+                <div className="v4-placeholder"><p className="mono">알 수 없는 뷰</p></div>
                 )}
               </ErrorBoundary>
             </div>
@@ -445,6 +441,21 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         onGptAuthTest={onGptAuthTest} gptAuthProbe={gptAuthProbe}
         disabled={running || (!isDemo && configSpecStatus && !configSpecStatus.live)} />
       <CodeViewer generation={codeViewGen} onClose={() => setCodeViewGen(null)} runId={runId} baseUrl={baseUrl} />
+      {contextDrawerOpen && (
+        <aside className="v4-context-drawer" role="dialog" aria-label="AI Context Pack (개발자 서랍)">
+          <div className="v4-cdrawer-hd">
+            <b>AI Context Pack · 개발자 서랍</b>
+            <button type="button" className="v4-cdrawer-x" onClick={() => setContextDrawerOpen(false)} aria-label="닫기">✕</button>
+          </div>
+          <div className="v4-cdrawer-bd">
+            {typeof window.AIContextPanel === "function" ? (
+              <window.AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
+            ) : (
+              <p className="mono">AIContextPanel 미로드 — 번들 재빌드 필요</p>
+            )}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

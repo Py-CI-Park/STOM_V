@@ -561,3 +561,10 @@
 .v4-reports-modes .btn.active { color: var(--teal); border-color: rgba(76,214,179,.4); background: rgba(76,214,179,.08); }
 .v4-wiki-view { overflow: auto; background: var(--bg-1); }
 .v4-wiki-md { margin: 0; padding: 16px 18px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-1); white-space: pre-wrap; word-break: break-word; }
+
+/* V5.5 W6: Context 개발자 서랍(우측 오버레이) */
+.v4-context-drawer { position: fixed; top: 0; right: 0; width: min(520px, 92vw); height: 100vh; z-index: 60; background: var(--bg-1); border-left: 1px solid var(--line); box-shadow: -12px 0 40px rgba(0,0,0,.5); display: flex; flex-direction: column; }
+.v4-cdrawer-hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.v4-cdrawer-x { background: none; border: 1px solid var(--line); color: inherit; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; }
+.v4-cdrawer-x:hover { background: var(--line); }
+.v4-cdrawer-bd { flex: 1; overflow: auto; padding: 12px 16px; }
