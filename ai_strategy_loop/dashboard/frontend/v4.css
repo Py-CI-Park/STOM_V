@@ -669,3 +669,12 @@
 .v6-alpha-chron-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); }
 .v6-alpha-chron-series { font-size: 13px; color: var(--ink-1); min-width: 180px; }
 .v6-alpha-chron-meta { font-size: 11px; color: var(--ink-3); margin-left: auto; }
+
+/* V6.7 전수검사: 사이클 원형 개선(컴팩트+가이드 링) · 온보딩 컴팩트 */
+.v6-board-cycle .v4-loop-cycle { max-width: 300px; }
+.v6-board-cycle .v4-loop-cycle::before { content: ""; position: absolute; inset: 7%; border: 2px dashed rgba(76,214,179,.22); border-radius: 50%; pointer-events: none; }
+.v6-board-cycle .v4-loop-node { width: 74px; padding: 5px 3px; }
+.v6-board-cycle .v4-loop-node { font-size: 92%; }
+.v6-onboarding-compact .v4-onboarding-bd { grid-template-columns: 1fr; display: block; }
+.v6-onboarding-compact h2 { font-size: 18px; margin: 0 0 8px; }
+.v6-onboarding-compact p { max-width: 900px; }
