@@ -324,9 +324,20 @@ function BacktestingView({ state }) {
   const lastPnl = last ? (last.value - baseline) : 0;
   const lastDD = state.current_run?.drawdown?.slice(-1)[0]?.value_pct ?? 0;
   const trades = state.current_run?.trades || [];
+  // V5.2(L6): 백테 중 조건식·출처를 그대로 노출(WS state 필드 소비, 재계산 없음).
+  const gen = state.current_run?.generation || {};
+  const buyName = gen.buy_name || gen.buy_strategy || state.latest?.buy_name || (state.best && state.best.buy_name) || "—";
+  const sellName = gen.sell_name || gen.sell_strategy || state.latest?.sell_name || (state.best && state.best.sell_name) || "—";
+  const runId = state.run_id || "—";
+  const genNo = (state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0) ? state.current_gen : "—";
 
   return (
     <div className="bt-view">
+      <div className="bt-condition-band" aria-label="테스트 조건식과 출처">
+        <div><span className="k">매수 조건식</span><b className="mono">{buyName}</b></div>
+        <div><span className="k">매도 조건식</span><b className="mono">{sellName}</b></div>
+        <div><span className="k">출처</span><b className="mono">run {runId} · gen {genNo}</b></div>
+      </div>
       <div className="bt-summary-row">
         <SummaryCell label="현재 자본" value={`${last ? (last.value / 1_000_000).toFixed(2) : "10.00"} M`}
                      color={lastPnl >= 0 ? "var(--teal)" : "var(--red)"}
