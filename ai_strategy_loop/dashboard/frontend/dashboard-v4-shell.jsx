@@ -39,7 +39,7 @@ const V4_TABS = [
   { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰·비-P4, 보조)", group: "secondary" },
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석", group: "secondary" },
-  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4)", badge: "P4", hint: "research_assets.db 판정카드·자산 · 읽기 전용(SELECT-only)", group: "secondary" },
+  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4 · 비정본 prototype)", badge: "P4·시제", hint: "research_assets.db 판정카드·자산 · 비정본 preview · 읽기 전용(SELECT-only)", group: "secondary" },
   { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
@@ -53,8 +53,12 @@ const V4_PATH_TAB_MAP = {
   "lab": "lab",
   "workbench": "workbench",
   "verdict": "history",
+  "audit": "history",
   "process": "research",
 };
+
+// V5.P0: 은퇴한 탭(audit·verdict)의 legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
+const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history" };
 
 function v4TabFromPathname(pathname) {
   try {
@@ -70,6 +74,7 @@ function v4InitialTab() {
   try {
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t && V4_TAB_KEYS.includes(t)) return t;
+    if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
     const fromPath = v4TabFromPathname(window.location.pathname);
     if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
   } catch (e) {}

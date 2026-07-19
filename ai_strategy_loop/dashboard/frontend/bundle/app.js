@@ -35278,7 +35278,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (\uC784\uC2DC \uAD00\uCC30\xB7\uBE44-P4, \uBCF4\uC870)", group: "secondary" },
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D", group: "secondary" },
-    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4)", badge: "P4", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)", group: "secondary" },
+    { key: "catalog", label: "\uCE74\uD0C8\uB85C\uADF8", full: "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4 \xB7 \uBE44\uC815\uBCF8 prototype)", badge: "P4\xB7\uC2DC\uC81C", hint: "research_assets.db \uD310\uC815\uCE74\uB4DC\xB7\uC790\uC0B0 \xB7 \uBE44\uC815\uBCF8 preview \xB7 \uC77D\uAE30 \uC804\uC6A9(SELECT-only)", group: "secondary" },
     { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
@@ -35289,8 +35289,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     "lab": "lab",
     "workbench": "workbench",
     "verdict": "history",
+    "audit": "history",
     "process": "research"
   };
+  var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history" };
   function v4TabFromPathname(pathname) {
     try {
       const parts = String(pathname || "").split("/").filter(Boolean);
@@ -35306,6 +35308,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     try {
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t && V4_TAB_KEYS.includes(t)) return t;
+      if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
       const fromPath = v4TabFromPathname(window.location.pathname);
       if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
     } catch (e) {
