@@ -568,3 +568,16 @@
 .v4-cdrawer-x { background: none; border: 1px solid var(--line); color: inherit; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; }
 .v4-cdrawer-x:hover { background: var(--line); }
 .v4-cdrawer-bd { flex: 1; overflow: auto; padding: 12px 16px; }
+
+/* V5.7 G3: 버전 하이라이트 효과 버튼 */
+.v4-verfx { cursor: pointer; font-family: inherit; }
+.v4-verfx.on { font-size: 15px; font-weight: 700; color: #0c1014; background: linear-gradient(90deg, var(--teal), var(--violet)); border-color: transparent; animation: v4VerGlow 1.2s ease-in-out infinite; }
+@keyframes v4VerGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(76,214,179,.5); } 50% { box-shadow: 0 0 14px 3px rgba(165,148,255,.7); } }
+@media (prefers-reduced-motion: reduce) { .v4-verfx.on { animation: none; } }
+
+/* V5.7 P4 5뷰 스위처 */
+.v4-cat-viewbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+.v4-cat-viewtab { padding: 6px 12px; border: 1px solid var(--line); background: var(--bg-2); color: var(--ink-2); border-radius: 8px; cursor: pointer; font-size: 13px; }
+.v4-cat-viewtab.active { color: var(--teal); border-color: rgba(76,214,179,.45); background: rgba(76,214,179,.08); }
+.v4-cat-skeleton { display: flex; flex-direction: column; gap: 6px; padding: 20px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-3); }
+.v4-cat-traplist { display: flex; flex-direction: column; gap: 6px; padding-left: 16px; }
