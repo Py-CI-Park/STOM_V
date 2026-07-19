@@ -511,3 +511,31 @@
 .v4-catalog-table th { text-align: left; padding: 7px 9px; color: var(--ink-3); border-bottom: 1px solid var(--line-1); position: sticky; top: 0; background: var(--bg-1); }
 .v4-catalog-table td { padding: 6px 9px; border-top: 1px solid var(--line-1); color: var(--ink-1); vertical-align: top; }
 .v4-catalog-sum { color: var(--ink-2); max-width: 340px; }
+
+/* ═══ V5.0 Live 밀도 재설계: 세로 스택 → 핵심 그래프 2열 그리드 ═══ */
+.v5-live-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.v5-live-grid > * { min-width: 0; }
+@media (max-width: 1180px) { .v5-live-grid { grid-template-columns: 1fr; } }
+/* hero(fitness) 높이 상한 ~320px(플랜 수용기준) — 높은 특이도로 P4 울트라와이드 bump 제압 */
+.v5-live-grid .v4-hero-primary .chart-wrap,
+.v5-live-grid .v4-hero-primary .v4-canvas-wrap { min-height: 280px; max-height: 320px; }
+.v5-live-grid .chart-wrap, .v5-live-grid .v4-canvas-wrap { min-height: 240px; max-height: 320px; }
+/* 초광폭에서도 그리드가 늘어지지 않게 hero 그래프 상한 유지 */
+@media (min-width: 2400px) {
+  .v5-live-grid .v4-hero-primary .chart-wrap,
+  .v5-live-grid .v4-hero-primary .v4-canvas-wrap { min-height: 300px; max-height: 320px; }
+}
+@media (min-width: 3200px) {
+  .v5-live-grid .v4-hero-primary .chart-wrap,
+  .v5-live-grid .v4-hero-primary .v4-canvas-wrap { min-height: 300px; max-height: 320px; }
+}
+
+/* V5.0 타이포 확대(G9·G2·G4): 페이지 제목·패널 제목 하한 */
+.v4-view-title h2 { font-size: 22px; }
+.v4-research .panel-hd-title { font-size: 16px; }
+/* V5.0 L2: 실시간 근거 텍스트 블록 → 3열 compact 밴드(세로 나열 제거) */
+.v4-research-evidence-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 18px; margin: 8px 0 0; }
+.v4-research-evidence-grid > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.v4-research-evidence-grid dt { font-size: 10px; color: var(--ink-3); font-family: var(--mono); letter-spacing: .04em; }
+.v4-research-evidence-grid dd { margin: 0; font-size: 11.5px; color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 900px) { .v4-research-evidence-grid { grid-template-columns: 1fr; } }
