@@ -31993,7 +31993,8 @@ def signal_sell(pos, bar, ind):
     return value;
   }
   function _hctDestinationEnvelope(value) {
-    if (!value || typeof value !== "object" || Array.isArray(value) || !["complete", "partial", "missing", "conflict", "unavailable"].includes(value.state) || value.owner != null && (typeof value.owner !== "string" || !value.owner) || value.owner_status != null && typeof value.owner_status !== "string" || value.join_key != null && (typeof value.join_key !== "string" || !value.join_key) || value.join_status != null && typeof value.join_status !== "string" || value.reason != null && typeof value.reason !== "string") return null;
+    const hasOwn = (key) => Object.prototype.hasOwnProperty.call(value, key);
+    if (!value || typeof value !== "object" || Array.isArray(value) || !hasOwn("owner") || !hasOwn("join_key") || !["complete", "partial", "missing", "conflict", "unavailable"].includes(value.state) || value.owner !== null && (typeof value.owner !== "string" || !value.owner) || value.owner_status != null && typeof value.owner_status !== "string" || value.join_key !== null && (typeof value.join_key !== "string" || !value.join_key) || value.join_status != null && typeof value.join_status !== "string" || value.reason != null && typeof value.reason !== "string") return null;
     return value;
   }
   function _hctIndexEnvelope(payload, generation) {

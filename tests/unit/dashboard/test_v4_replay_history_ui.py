@@ -132,6 +132,8 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert 'typeof payload.available !== "boolean"' in tree
     assert "_hctResearchEnvelope" in tree
     assert "_hctDestinationEnvelope" in tree
+    assert 'hasOwn("owner")' in tree
+    assert 'hasOwn("join_key")' in tree
     assert "typeof value.owner !== \"string\"" in tree
     assert "typeof value.owner_status !== \"string\"" in tree
     assert "typeof value.join_key !== \"string\"" in tree
