@@ -1,21 +1,24 @@
-"""연구 리포트 HTML 빌더 — 단일 자가완결 파일(외부 의존 0), 탭 5개 + 바닐라 JS.
+"""연구 리포트 HTML 빌더 — 단일 자가완결 파일(외부 의존 0), 스크립트 없는 해시 앵커 탐색.
 
 디자인 정본 = 결산 v1(`reports/2026-07-16_b1_program_report.html`)의 CSS 토큰·타이포(명조 표제+고딕
 본문)·색 관례(상승=적 --up·하락=청 --down·액센트 jade)·컴포넌트(kpi/barrow/timeline/funnel/badge/
-pre/score)를 그대로 재사용하고, 탭 셸·라이트/다크 토글만 추가. JS 미작동 시 전 탭 순차 노출 폴백.
+pre/score)를 그대로 재사용하고, 탭 셸은 안정적인 `#tab-*` 앵커만 사용한다.
 """
 from __future__ import annotations
 
+import posixpath
+import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import quote
 
 from alpha_lab.reporting import detail, loaders, registry, tabs
 from alpha_lab.reporting.util import escape
 
-# wt-dev 이식: 이 폴더(reports/)를 통째 복사 + 대시보드에서 iframe/정적 서빙(상대 링크·자가완결).
-__all__ = ["build", "build_all", "build_detail", "build_hub"]
+# wt-dev 이식: 이 폴더(reports/)를 통째 복사 + 대시보드에서 iframe/정적 서빙(해시/allowlist 링크·자가완결).
+__all__ = ["build", "build_all", "build_detail", "build_hub", "extract_report_links"]
 
-# 결산 v1 CSS 토큰·컴포넌트 그대로 + 탭 셸/토글 추가(주석으로 출처 명기).
+# 결산 v1 CSS 토큰·컴포넌트 그대로 + 스크립트 없는 탭 앵커 셸 추가(주석으로 출처 명기).
 _CSS = """
 :root{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
   --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
@@ -43,7 +46,7 @@ section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
 .masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
 .meta-grid b{color:var(--ink);font-weight:600}
-.themebtn{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;white-space:nowrap}
+
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
 .kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
@@ -106,39 +109,65 @@ a{color:var(--accent)}
 footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
 footer code{font-family:"Consolas",monospace;font-size:11.5px}
 .tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
-.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
-.tabbtn.active{background:var(--card);color:var(--accent);border-color:var(--accent)}
-.tabpanel{padding-top:6px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;font-family:inherit;text-decoration:none}
+.tabbtn.active,.tabbtn:hover,.tabbtn:focus{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px;scroll-margin-top:74px}
 .tabpanel>section:first-of-type{border-top:none}
-body.js .tabpanel{display:none}
-body.js .tabpanel.active{display:block}
 @media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
 """
 
-_JS = """
-(function(){
-  var b=document.body; b.classList.add('js');
-  var btns=[].slice.call(document.querySelectorAll('.tabbtn'));
-  var panels=[].slice.call(document.querySelectorAll('.tabpanel'));
-  function show(id){
-    if(!document.getElementById('tab-'+id)){id='overview';}
-    btns.forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===id);});
-    panels.forEach(function(p){p.classList.toggle('active',p.id==='tab-'+id);});
-  }
-  btns.forEach(function(x){x.addEventListener('click',function(){location.hash='tab-'+x.getAttribute('data-tab');});});
-  window.addEventListener('hashchange',function(){show((location.hash||'').replace('#tab-',''));});
-  show((location.hash||'').replace('#tab-','')||'overview');
-  var tb=document.getElementById('themebtn');
-  if(tb){tb.addEventListener('click',function(){
-    var cur=document.documentElement.getAttribute('data-theme');
-    var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-    var next=(cur||sys)==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);
-    tb.textContent=next==='dark'?'☀️ 라이트':'🌙 다크';
-  });}
-})();
-"""
+_REPORTS_DOCS_PREFIX = "research/condition_research/reports"
+_HREF_RE = re.compile(r"""href=(["'])(.*?)\1""", re.IGNORECASE)
+
+
+def _report_view_href(report_rel_path: str) -> str:
+    docs_path = f"{_REPORTS_DOCS_PREFIX}/{report_rel_path}"
+    return f"/reports/view?path={quote(docs_path, safe='/._-')}"
+
+
+def _normalize_report_href(href: str, current_path: str) -> str:
+    if href.startswith("#"):
+        return href
+    lowered = href.strip().lower()
+    if (
+        "://" in lowered
+        or lowered.startswith("//")
+        or lowered.startswith("javascript:")
+        or lowered.startswith("data:")
+        or lowered.startswith("mailto:")
+        or lowered.startswith("\\")
+        or "\x00" in href
+    ):
+        raise ValueError(f"disallowed report link: {href!r}")
+
+    path, sep, fragment = href.partition("#")
+    base_dir = posixpath.dirname(current_path)
+    joined = posixpath.normpath(posixpath.join(base_dir, path)) if base_dir else posixpath.normpath(path)
+    if joined == "." or joined.startswith("../") or joined.startswith("/") or not joined.lower().endswith(".html"):
+        raise ValueError(f"disallowed report link: {href!r}")
+    rewritten = _report_view_href(joined)
+    return f"{rewritten}#{fragment}" if sep else rewritten
+
+
+def _rewrite_report_links(html: str, current_path: str) -> str:
+    def repl(match: re.Match[str]) -> str:
+        quote_char, href = match.groups()
+        rewritten = _normalize_report_href(href, current_path)
+        return f"href={quote_char}{escape(rewritten)}{quote_char}"
+
+    return _HREF_RE.sub(repl, html)
+
+
+def extract_report_links(html: str) -> List[str]:
+    """Return generated href targets in document order without duplicates."""
+    seen = set()
+    links: List[str] = []
+    for _quote, href in _HREF_RE.findall(html):
+        if href not in seen:
+            seen.add(href)
+            links.append(href)
+    return links
 
 _HUB_TABS = (("overview", "총괄"), ("studies", "연구 상세"), ("reports", "결과 보고서 관리"),
              ("conditions", "조건식"), ("ledger", "원장·규율"))
@@ -151,15 +180,15 @@ def _gen_ts() -> str:
 
 
 def _page(title: str, masthead: str, nav_tabs: Tuple[Tuple[str, str], ...],
-          panels_html: List[str], footer: str) -> str:
-    """공유 셸(자가완결) — hub·detail 공통. CSS/JS 인라인 중복 허용(템플릿 공유·비용 0)."""
+          panels_html: List[str], footer: str, current_path: str) -> str:
+    """공유 셸(자가완결) — hub·detail 공통. CSS 인라인 중복 허용(템플릿 공유·비용 0)."""
     nav = "".join(
-        f'<button class="tabbtn{" active" if i == 0 else ""}" data-tab="{tid}">{escape(label)}</button>'
+        f'<a class="tabbtn{" active" if i == 0 else ""}" href="#tab-{tid}">{escape(label)}</a>'
         for i, (tid, label) in enumerate(nav_tabs))
     panels = "".join(
-        f'<div id="tab-{tid}" class="tabpanel{" active" if i == 0 else ""}">{panels_html[i]}</div>'
+        f'<div id="tab-{tid}" class="tabpanel">{panels_html[i]}</div>'
         for i, (tid, _l) in enumerate(nav_tabs))
-    return f"""<!doctype html>
+    html = f"""<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -174,16 +203,17 @@ def _page(title: str, masthead: str, nav_tabs: Tuple[Tuple[str, str], ...],
 {panels}
 {footer}
 </div>
-<script>{_JS}</script>
+
 </body>
 </html>
 """
+    return _rewrite_report_links(html, current_path)
 
 
 def _footer(commit: Optional[str], back: Optional[str] = None) -> str:
     home = f' · <a href="{back}">← 허브로</a>' if back else ""
     return f"""<footer>
-  단일 자가완결 HTML(외부 의존 0·상대 링크) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
+  단일 자가완결 HTML(외부 의존 0·스크립트 0·허용 링크만 사용) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
   생성 커밋 <code>{escape(commit or "미기록")}</code> · 생성 시각 <code>{escape(_gen_ts())}</code>{home}<br>
   수치는 판정 json 원문에서 로드(재계산 없음·원장 count 만 aggregate). 정적 서사는 결산 v1 계승.
   <span class="muted">wt-dev 이식: reports/ 폴더 복사 + 대시보드 iframe/정적 서빙.</span>
@@ -204,11 +234,12 @@ def build_hub(commit: Optional[str] = None) -> str:
       <span>연구 <b class="num">{len(registry.STUDIES)}건</b> · 상세 보고서 <b class="num">{len(registry.STUDIES)}종</b></span>
     </div>
   </div>
-  <button class="themebtn" id="themebtn" type="button">🌙 다크 / ☀️ 라이트</button>
+
 </header>"""
     panels = [tabs.render_overview(), tabs.render_studies(), tabs.render_report_index(),
               tabs.render_conditions(), tabs.render_ledger()]
-    return _page("알파 재시작 연구소 — 연구 리포트 허브", masthead, _HUB_TABS, panels, _footer(commit))
+    return _page("알파 재시작 연구소 — 연구 리포트 허브", masthead, _HUB_TABS, panels, _footer(commit),
+                 current_path="research_lab_report.html")
 
 
 def build_detail(study: registry.Study, commit: Optional[str] = None) -> str:
@@ -224,15 +255,14 @@ def build_detail(study: registry.Study, commit: Optional[str] = None) -> str:
       <span>판정 <b>{escape(study.verdict)}</b></span>
     </div>
   </div>
-  <button class="themebtn" id="themebtn" type="button">🌙 다크 / ☀️ 라이트</button>
 </header>"""
     panels = detail.render_detail_panels(study)
     return _page(f"{study.name} — 연구 상세", masthead, _DETAIL_TABS, panels,
-                 _footer(commit, back="../research_lab_report.html"))
+                 _footer(commit, back="../research_lab_report.html"), current_path=f"research/{study.id}.html")
 
 
 def build_all(commit: Optional[str] = None) -> Dict[str, str]:
-    """허브 + 11개 상세 → {reports 상대경로: HTML}. 생성기가 한 번에 전부 산출."""
+    """허브 + 연구별 상세 → {reports 상대경로: HTML}. 생성기가 한 번에 전부 산출."""
     out: Dict[str, str] = {"research_lab_report.html": build_hub(commit)}
     for st in registry.STUDIES:
         out[f"research/{st.id}.html"] = build_detail(st, commit)
