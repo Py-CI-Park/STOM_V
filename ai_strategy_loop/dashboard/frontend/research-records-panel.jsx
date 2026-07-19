@@ -44,6 +44,10 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
   const [runListLoading, setRunListLoading] = useState_rrp(false);
   // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
   const [showAll, setShowAll] = useState_rrp(false);
+  // v5.3.9(검수): 캠페인 필터 + 열 제목 클릭 정렬(연구·시점·세대 체계 탐색).
+  const [rq, setRq] = useState_rrp("");
+  const [sortKey, setSortKey] = useState_rrp("updated_at");
+  const [sortAsc, setSortAsc] = useState_rrp(false);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -119,7 +123,24 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
     } catch (e) {}
   }, []);
 
-  const rows = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
+  const rowsAll = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
+  const _rrpSortVal = (row, k) => {
+    const best = row.best || {};
+    if (k === "name") return String(row.name || "");
+    if (k === "candidate_count") return Number(row.candidate_count || 0);
+    if (k === "profit") return Number(best.profit || 0);
+    if (k === "mdd") return Number(best.mdd || 0);
+    return Number(row.updated_at || 0);
+  };
+  const rows = rowsAll
+    .filter(r => !rq.trim() || String(r.name || "").toLowerCase().includes(rq.trim().toLowerCase()))
+    .sort((a, b) => {
+      const va = _rrpSortVal(a, sortKey), vb = _rrpSortVal(b, sortKey);
+      const c = typeof va === "string" ? va.localeCompare(String(vb)) : (va - vb);
+      return sortAsc ? c : -c;
+    });
+  const onSort = (k) => { if (k === sortKey) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(k === "name"); } };
+  const _si = (k) => (sortKey === k ? (sortAsc ? " ▲" : " ▼") : "");
   const selected = (detail && detail.available && detail.campaign)
     ? detail.campaign : rows.find(r => r.name === selectedCampaign);
   const candidates = (selected && Array.isArray(selected.candidates)) ? selected.candidates.slice(0, 5) : [];
@@ -147,17 +168,21 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
         {err && <div className="research-empty danger">{err}</div>}
         {isDemo && <div className="research-empty">Demo mode</div>}
         {!isDemo && rows.length === 0 && !err && <div className="research-empty">No research records</div>}
-        {rows.length > 0 && (
+        {rowsAll.length > 0 && (
           <div style={{ overflowX: "auto" }}>
+            <input className="toolbar-input" type="search" placeholder="캠페인 검색(필터)"
+                   value={rq} onChange={e => setRq(e.target.value)} aria-label="캠페인 필터"
+                   style={{ marginBottom: 8, width: 260 }} />
+            {rq && <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: "var(--ink-3)" }}>필터 {rows.length}/{rowsAll.length}건</span>}
             <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
               <thead>
                 <tr style={{ color: "var(--ink-3)" }}>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>Campaign</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Candidates</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Best PnL</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>MDD</th>
+                  <th style={{ textAlign: "left", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("name")}>Campaign{_si("name")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("candidate_count")}>Candidates{_si("candidate_count")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("profit")}>Best PnL{_si("profit")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("mdd")}>MDD{_si("mdd")}</button></th>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifacts</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Updated</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("updated_at")}>Updated{_si("updated_at")}</button></th>
                 </tr>
               </thead>
               <tbody>

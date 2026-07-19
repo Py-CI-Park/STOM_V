@@ -25,6 +25,8 @@ import { V4Catalog } from "./v4-catalog.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
+// v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
+const V4_DASH_VERSION = "v5.3.9";
 
 // V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
 //   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
@@ -175,6 +177,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("stom_theme", theme);
+    // v5.3.9: 브라우저 탭 제목에 대시보드 버전 명시(V4 잔존 표기 제거).
+    document.title = "STOM AI · 조건식 자율 진화 대시보드 " + V4_DASH_VERSION;
   }, [theme]);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
@@ -363,7 +367,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         <header className="v4-topbar">
           <div className="v4-brand">
             <b>조건식 AI 연구 터미널</b>
-            <span className="mono">V4 · autonomous_strategy_loop · contract v{health.contract_version ?? state.contract_version ?? 1}</span>
+            <span className="mono v6-dash-ver">대시보드 <b>{V4_DASH_VERSION}</b> · build {buildVer || "?"} · contract v{health.contract_version ?? state.contract_version ?? 1}</span>
           </div>
           <div className="v4-safety" aria-label="안전 경계">
             {isDemo && <span className="v4-sfx demo">DEMO</span>}

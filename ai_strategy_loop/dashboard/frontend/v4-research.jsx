@@ -64,21 +64,11 @@ function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen =
   );
 }
 
-// 온보딩(전수검사: 스테이지 탭·벨트가 루프를 안내하므로 컴팩트 CTA) — idle + 세대 없음일 때만.
+// v5.3.9(검수): 온보딩 문구 전체 삭제 — 상단 시작/설정 버튼과 중복. 설정 버튼 1개만 유지.
 function _V4Onboarding({ onOpenSettings }) {
   return (
-    <div className="panel v4-onboarding v6-onboarding-compact">
-      <div className="panel-bd v4-onboarding-bd">
-        <div>
-          <h2>조건식 AI 루프를 시작할 준비가 되었습니다</h2>
-          <p>
-            AI가 매수/매도 전략을 자동 생성·백테스트·채점·부검하며 조건식을 진화시킵니다.
-            과정은 위 파이프라인 벨트와 아래 단계 탭(생성→백테스트→채점·부검→반복)이 실시간 안내합니다.
-            우승 후보의 운영 export 는 연구 확인과 분리된 human 승인 절차입니다.
-          </p>
-          <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 시작 설정 열기</button>
-        </div>
-      </div>
+    <div className="v6-onboarding-btnrow">
+      <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 설정</button>
     </div>
   );
 }

@@ -135,8 +135,8 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None) -> l
             blocks = []
             for g in gens:
                 blocks.append(
-                    f'<section style="border:1px solid #dde;border-radius:8px;padding:12px 16px;margin:10px 0">'
-                    f'<h3>세대 {g["gen_no"]} {"· gate 통과 ✓" if g["gate_passed"] else ""}</h3>'
+                    f'<section id="gen-{g["gen_no"]}" style="border:1px solid #dde;border-radius:8px;padding:12px 16px;margin:10px 0">'
+                    f'<h3 id="h-gen-{g["gen_no"]}">세대 {g["gen_no"]} {"· gate 통과 ✓" if g["gate_passed"] else ""}</h3>'
                     f'<p><b>조건식</b> 매수 {_esc(g["buy"])} · 매도 {_esc(g["sell"])}<br>'
                     f'<b>가설</b> {_esc(g["gist"] or "(미기재)")}</p>'
                     f'<p><b>백테 결과</b> score {_esc(g["score"])} · MDD {_esc(g["mdd"])} · profit {_esc(g["profit"])} · trades {_esc(g["trades"])}</p>'
@@ -156,9 +156,9 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None) -> l
                 f"<dt>상태</dt><dd>{_esc(status)}</dd>"
                 f"<dt>세대</dt><dd>{len(gens)}세대 · gate 통과 {gate_n}</dd>"
                 f"<dt>best</dt><dd>gen {_esc(best_gen)} · score {_esc(best_score)}</dd></dl>"
-                "<h2>1. 개선 흐름도</h2>" + _flow_svg(gens) +
-                "<h2>2. 세대별 스텝 기록 (생성→백테스트→채점→부검→반영)</h2>" + ("".join(blocks) or "<p>(세대 없음)</p>") +
-                "<h2>3. 안전·한계</h2><p>표본 내 지표 요약이며 성능 증명이 아닙니다(performance_proved=false). "
+                '<h2 id="sec-flow">1. 개선 흐름도</h2>' + _flow_svg(gens) +
+                '<h2 id="sec-gens">2. 세대별 스텝 기록 (생성→백테스트→채점→부검→반영)</h2>' + ("".join(blocks) or "<p>(세대 없음)</p>") +
+                '<h2 id="sec-safety">3. 안전·한계</h2><p>표본 내 지표 요약이며 성능 증명이 아닙니다(performance_proved=false). '
                 "우승 후보의 운영 export 는 human 승인 절차와 분리되어 있으며 이 보고서는 어떤 승격 권한도 없습니다.</p>"
                 f"<footer>생성 {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} · 원천 loop_runs.db(SELECT-only) · 읽기 전용(sandbox·CSP 서빙)</footer>"
                 "</body></html>")
