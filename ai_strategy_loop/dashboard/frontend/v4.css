@@ -554,3 +554,10 @@
 .bt-condition-band .k { font-size: 9.5px; color: var(--ink-3); font-family: var(--mono); letter-spacing: .04em; }
 .bt-condition-band b { font-size: 12px; color: var(--ink-0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 900px) { .bt-condition-band { grid-template-columns: 1fr; } }
+
+/* ═══ V5.6 Reports/Wiki 모드(연구 문서 원문 불변 뷰) ═══ */
+.v4-reports-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.v4-reports-modes { display: flex; gap: 6px; }
+.v4-reports-modes .btn.active { color: var(--teal); border-color: rgba(76,214,179,.4); background: rgba(76,214,179,.08); }
+.v4-wiki-view { overflow: auto; background: var(--bg-1); }
+.v4-wiki-md { margin: 0; padding: 16px 18px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-1); white-space: pre-wrap; word-break: break-word; }

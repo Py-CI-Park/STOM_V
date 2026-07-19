@@ -35166,9 +35166,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return (n / (1024 * 1024)).toFixed(1) + " MB";
   }
   function V4Reports({ baseUrl }) {
+    const [mode, setMode] = useState_rp7("reports");
     const [list, setList] = useState_rp7(null);
     const [err, setErr] = useState_rp7("");
     const [sel, setSel] = useState_rp7("");
+    const [wiki, setWiki] = useState_rp7(null);
+    const [wikiSel, setWikiSel] = useState_rp7("");
+    const [wikiDoc, setWikiDoc] = useState_rp7(null);
+    const wikiReqRef = React.useRef(0);
     useEffect_rp7(() => {
       if (!baseUrl) {
         setList([]);
@@ -35190,29 +35195,40 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         cancelled = true;
       };
     }, [baseUrl]);
-    const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.map((rp) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: rp.path,
-        className: "v4-reports-item" + (sel === rp.path ? " active" : ""),
-        onClick: () => setSel(rp.path),
-        title: rp.path
-      },
-      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, rp.name),
-      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes))
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement(
-      "iframe",
-      {
-        key: viewUrl,
-        className: "v4-reports-frame",
-        src: viewUrl,
-        sandbox: "",
-        referrerPolicy: "no-referrer",
-        title: "\uB9AC\uD3EC\uD2B8: " + sel,
-        loading: "lazy"
+    useEffect_rp7(() => {
+      if (!baseUrl || mode !== "wiki" || wiki !== null) return;
+      let cancelled = false;
+      fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled) {
+          const docs = Array.isArray(j && j.docs) ? j.docs : [];
+          setWiki(docs);
+          setWikiSel((prev) => prev || (docs.length ? docs[0].id : ""));
+        }
+      }).catch(() => {
+        if (!cancelled) setWiki([]);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, wiki]);
+    useEffect_rp7(() => {
+      if (!baseUrl || mode !== "wiki" || !wikiSel) {
+        setWikiDoc(null);
+        return;
       }
-    ) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694"))));
+      const reqId = ++wikiReqRef.current;
+      let cancelled = false;
+      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j);
+      }).catch((e) => {
+        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, wikiSel]);
+    const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-head" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8/\uBB38\uC11C \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-modes", role: "tablist", "aria-label": "\uBDF0 \uBAA8\uB4DC" }, /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "reports", className: "btn ghost sm" + (mode === "reports" ? " active" : ""), onClick: () => setMode("reports") }, "HTML \uB9AC\uD3EC\uD2B8"), /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "wiki", className: "btn ghost sm" + (mode === "wiki" ? " active" : ""), onClick: () => setMode("wiki") }, "\uC5F0\uAD6C \uBB38\uC11C(Wiki)"))), mode === "reports" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.map((rp) => /* @__PURE__ */ React.createElement("button", { key: rp.path, className: "v4-reports-item" + (sel === rp.path ? " active" : ""), onClick: () => setSel(rp.path), title: rp.path }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, rp.name), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes))))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: viewUrl, className: "v4-reports-frame", src: viewUrl, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, wiki === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wiki !== null && wiki.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wiki !== null && wiki.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => setWikiSel(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
   }
   Object.assign(window, { V4Reports });
 
