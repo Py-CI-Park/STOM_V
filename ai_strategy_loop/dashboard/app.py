@@ -3320,7 +3320,7 @@ def create_app(
     def ui_evolution(request: Request, subtab: str = "overview") -> Any:
         if subtab == "history":
             return _redirect_with_query(request, "/ui/evolution/records")
-        allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
+        allowed = {"overview", "process", "records", "lab", "workbench", "verdict", "catalog"}
         if subtab not in allowed:
             return _dashboard_not_found()
         return _dashboard_selected_index_response(request)
