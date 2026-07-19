@@ -1242,6 +1242,7 @@ function ProcessFlowPanel({ state }) {
 
 Object.assign(window, {
   PhaseTimeline,
+  phaseIndex,
   PhaseDetailPanel,
   ProcessFlowPanel,
   ProcessFlowDiagram,
@@ -1262,4 +1263,4 @@ Object.assign(window, {
 //   scope classic script stays a no-op SyntaxError-free (Object.assign above still
 //   publishes the FROZEN globals). KEEP this statement on ONE physical line — the concat
 //   stripper matches a single-line `export { ... };`.
-export { DemoBadge, LivePending, PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel };
+export { DemoBadge, LivePending, PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel, phaseIndex };

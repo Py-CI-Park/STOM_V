@@ -20728,6 +20728,7 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, {
     PhaseTimeline,
+    phaseIndex,
     PhaseDetailPanel,
     ProcessFlowPanel,
     ProcessFlowDiagram,
@@ -34664,40 +34665,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const effOpen = forceOpen || open;
     return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: effOpen, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": effOpen }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
   }
-  function _V4WorkflowStrip({ state, pinnedIdx = null, onStepClick = null }) {
-    const discovery = state.page_data && state.page_data.condition_discovery || {};
-    const observability = discovery.research_observability || {};
-    const ma = observability.mode_authority || {};
-    const latest = state.latest || {};
-    const procLabel = ma.process || discovery.current_process && discovery.current_process.code || "process-research";
-    const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
-    const authLabel = ma.generation_allowed === true ? "research allowed" : ma.generation_allowed === false ? "review only" : "authority \uB300\uAE30";
-    const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
-    const nextMsg = state.latest && (state.latest.message || state.latest.phase) || "\uB300\uAE30";
-    const genLabel = state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0 ? String(state.current_gen) : "\uC2DC\uC791 \uC804";
-    const stepLabel = latest.current_step != null && Number.isFinite(Number(latest.current_step)) && Number(latest.current_step) >= 0 ? String(latest.current_step) : "\uBC1C\uD589 \uB300\uAE30";
-    const timingText = Object.entries(latest.step_timings || {}).filter(([, seconds]) => typeof seconds === "number" && seconds >= 0).map(([step, seconds]) => `${step} ${seconds.toFixed(1)}\uCD08`).join(" \xB7 ") || "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C";
-    const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
-    const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
-    const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || state.blockers || [];
-    const rawBlockers = Array.isArray(blockerSource) ? blockerSource : blockerSource.blockers || [];
-    const blockerText = Array.isArray(rawBlockers) && rawBlockers.length ? rawBlockers.join(" \xB7 ") : "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C";
-    const errorText = state.error || latest.error || "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-wfwrap v4-research-evidence", "aria-labelledby": "v4-research-evidence-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-evidence-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uADFC\uAC70"), /* @__PURE__ */ React.createElement(PhaseTimeline, { state, pinnedIdx, onStepClick }), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement("p", { className: "v4-research-live-summary", role: "status", "aria-live": "polite" }, "\uC138\uB300 ", genLabel, " \xB7 \uD604\uC7AC \uB2E8\uACC4 ", stepLabel, " \xB7 ", state.status || "idle"), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)), /* @__PURE__ */ React.createElement("dl", { className: "v4-research-evidence-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04"), /* @__PURE__ */ React.createElement("dd", null, timingText)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uCC28\uB2E8 \uC0AC\uC720"), /* @__PURE__ */ React.createElement("dd", null, blockerText)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uCD5C\uC2E0 \uB85C\uADF8"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, String(lastLog)))));
-  }
-  function _V4Stats({ state }) {
-    var _a;
-    const curRaw = Number(state.current_gen);
-    const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : "\uC2DC\uC791 \uC804";
-    const max = Number(state.max_generations) || 0;
-    const best = state.best || null;
-    const bestGen = best ? (state.generations || []).find((g) => g.gen_no === best.gen) : null;
-    const bestScore = best && best.graded_score != null ? Number(best.graded_score) : null;
-    const mdd = bestGen && bestGen.mdd != null ? Number(bestGen.mdd) : null;
-    const tokens = state.cumulative && Number(state.cumulative.tokens) || 0;
-    const cost = (_a = state.cumulative && state.cumulative.cost_or_count) != null ? _a : "\u2014";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-stats" }, /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, cur, /* @__PURE__ */ React.createElement("span", { className: "dim" }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "s" }, "\uD604\uC7AC \uC138\uB300 \xB7 ", state.status || "idle")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (bestScore != null ? " pos" : "") }, bestScore != null ? bestScore.toFixed(2) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best fitness", best && best.gate_passed ? " \xB7 gate \u2713" : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (mdd != null ? " neg" : "") }, mdd != null ? "-" + Math.abs(mdd).toFixed(1) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best MDD")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, tokens ? tokens >= 1e3 ? (tokens / 1e3).toFixed(1) + "k" : tokens : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "tokens \xB7 cost ", String(cost))));
-  }
   function _V4Onboarding({ onOpenSettings }) {
     const steps = [
       ["\uC870\uAC74\uC2DD \uB9CC\uB4E4\uAE30", "LLM\uC774 \uC774\uC804 \uC2E4\uD328 \uC6D0\uC778\uACFC \uC88B\uC740 \uC608\uC2DC\uB97C \uCC38\uACE0\uD574 \uB9E4\uC218/\uB9E4\uB3C4 \uADDC\uCE59\uC744 \uC791\uC131\uD569\uB2C8\uB2E4."],
@@ -34720,20 +34687,81 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const fmt = (v, d = 2) => v == null || v === "" ? "\u2014" : Number(v).toFixed(d);
     return /* @__PURE__ */ React.createElement("div", { className: "v4-enggate-bar", "aria-label": "\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD669\uD310" }, /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uC5D4\uC9C4"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-chip " + (running ? "run" : "idle") }, engineLabel), pct != null && /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v" }, pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono" }, "gen ", curGen >= 0 ? curGen : "\u2014", maxGens ? "/" + maxGens : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uAC8C\uC774\uD2B8 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uBAA9\uD45C \uC801\uD569\uB3C4 \uC810\uC218" }, "score \u2265 ", fmt(targetScore)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "MDD \uC0C1\uD55C" }, "MDD \u2264 ", fmt(mddCap)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uCD5C\uC18C \uC77C\uAC70\uB798 \uC218" }, "trades \u2265 ", minDailyTrades != null ? minDailyTrades : "\u2014")));
   }
+  function _V4Stats({ state }) {
+    var _a;
+    const curRaw = Number(state.current_gen);
+    const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : "\uC2DC\uC791 \uC804";
+    const max = Number(state.max_generations) || 0;
+    const best = state.best || null;
+    const bestGen = best ? (state.generations || []).find((g) => g.gen_no === best.gen) : null;
+    const bestScore = best && best.graded_score != null ? Number(best.graded_score) : null;
+    const mdd = bestGen && bestGen.mdd != null ? Number(bestGen.mdd) : null;
+    const tokens = state.cumulative && Number(state.cumulative.tokens) || 0;
+    const cost = (_a = state.cumulative && state.cumulative.cost_or_count) != null ? _a : "\u2014";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-stats" }, /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, cur, /* @__PURE__ */ React.createElement("span", { className: "dim" }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "s" }, "\uD604\uC7AC \uC138\uB300 \xB7 ", state.status || "idle")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (bestScore != null ? " pos" : "") }, bestScore != null ? bestScore.toFixed(2) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best fitness", best && best.gate_passed ? " \xB7 gate \u2713" : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (mdd != null ? " neg" : "") }, mdd != null ? "-" + Math.abs(mdd).toFixed(1) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best MDD")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, tokens ? tokens >= 1e3 ? (tokens / 1e3).toFixed(1) + "k" : tokens : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "tokens \xB7 cost ", String(cost))));
+  }
+  var V6_STAGES = [
+    { key: "generate", label: "\uC0DD\uC131", sub: "\uC870\uAC74\uC2DD \uC0DD\uC131" },
+    { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8", sub: "\uC5D4\uC9C4 \uAC80\uC99D" },
+    { key: "score", label: "\uCC44\uC810", sub: "\uAC8C\uC774\uD2B8\xB7\uC810\uC218" },
+    { key: "autopsy", label: "\uBD80\uAC80", sub: "\uC2E4\uD328 \uBD84\uC11D" },
+    { key: "iterate", label: "\uBC18\uBCF5\xB7\uC131\uACFC", sub: "\uC138\uB300 \uC694\uC57D" }
+  ];
+  function _V6StatusBoard({ state, pinnedIdx = null, onStepClick = null, targetScore, mddCap, minDailyTrades }) {
+    const s = state || {};
+    const latest = s.latest || {};
+    const discovery = s.page_data && s.page_data.condition_discovery || {};
+    const observability = discovery.research_observability || {};
+    const ma = observability.mode_authority || {};
+    const procLabel = ma.process || discovery.current_process && discovery.current_process.code || "process-research";
+    const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
+    const authLabel = ma.generation_allowed === true ? "research allowed" : ma.generation_allowed === false ? "review only" : "authority \uB300\uAE30";
+    const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
+    const nextMsg = latest.message || latest.phase || "\uB300\uAE30";
+    const timings = Object.entries(latest.step_timings || {}).filter(([, sec]) => typeof sec === "number" && sec >= 0);
+    const maxT = timings.reduce((m, [, sec]) => Math.max(m, sec), 0) || 1;
+    const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || s.blockers || [];
+    const rawBlockers = Array.isArray(blockerSource) ? blockerSource : blockerSource.blockers || [];
+    const blockers = Array.isArray(rawBlockers) ? rawBlockers : [];
+    const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
+    const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
+    const errorText = s.error || latest.error || "";
+    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uC0C1\uD669\uD310"), /* @__PURE__ */ React.createElement("div", { className: "v6-board-top" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-timeline" }, /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s, pinnedIdx, onStepClick }), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-cycle" }, /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
+  }
   function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, onOpenSettings, targetScore, mddCap, minDailyTrades }) {
     var _a;
     const [approvalOpen, setApprovalOpen] = useState_v4r(false);
     const [approvalBinding, setApprovalBinding] = useState_v4r(null);
     const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("\uB3D9\uACB0 \uC2B9\uC778 \uADFC\uAC70\uB97C \uD655\uC778\uD558\uB294 \uC911\uC785\uB2C8\uB2E4.");
     const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
-    const [pinnedIdx, setPinnedIdx] = useState_v4r(null);
-    const onStepPin = (i) => setPinnedIdx((prev) => prev === i ? null : i);
+    const [stagePin, setStagePin] = useState_v4r(null);
     const s = state || {};
+    const latest = s.latest || {};
     const runId = s.run_id || "";
     const gens = Array.isArray(s.generations) ? s.generations : [];
     const hasData = gens.length > 0;
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
     const viewCode = typeof onViewCode === "function" ? onViewCode : () => {
+    };
+    const running = s.status === "running" || s.status === "stopping";
+    const liveIdx = running ? phaseIndex(latest.phase) : -1;
+    const activeStage = stagePin != null ? stagePin : liveIdx >= 0 ? liveIdx : hasData ? 4 : 0;
+    const onStagePin = (i) => setStagePin((prev) => prev === i ? null : i);
+    const onStageKey = (e) => {
+      const n = V6_STAGES.length;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setStagePin((activeStage + 1) % n);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setStagePin((activeStage - 1 + n) % n);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setStagePin(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setStagePin(n - 1);
+      }
     };
     useEffect_v4r(() => {
       let active = true;
@@ -34778,25 +34806,66 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_V4WorkflowStrip, { state: s, pinnedIdx, onStepClick: onStepPin }), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades }), pinnedIdx != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setPinnedIdx(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30"), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
-    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), /* @__PURE__ */ React.createElement("div", { className: "v4-rlive" }, /* @__PURE__ */ React.createElement("div", { className: "v4-hero-col" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s }), /* @__PURE__ */ React.createElement("div", { className: "v5-live-grid" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Fitness \uACE1\uC120 \xB7 graded score"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "best ", s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "\u2014", " \xB7 gate ", targetScore != null ? Number(targetScore).toFixed(2) : "\u2014", " \xB7 gen ", s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : "\uC2DC\uC791 \uC804")), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary" }, /* @__PURE__ */ React.createElement(V4HeroChart, { state: s, target: targetScore })), /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-legend" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "2px solid var(--teal)" } }), "graded fitness"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "1px dashed var(--violet)" } }), "gate ", targetScore != null ? Number(targetScore).toFixed(2) : ""), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" } }), "best"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--amber)" } }), "\uD604\uC7AC \uC138\uB300"))), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_live_detail", label: "Live \uC0C1\uC138 \xB7 \uB2E8\uACC4 \uC2A4\uD2B8\uB9AC\uBC0D" + (pinnedIdx != null ? " \xB7 \uB2E8\uACC4 \uACE0\uC815\uB428" : ""), forceOpen: pinnedIdx != null }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \xB7 process selector (research vs review \uAD8C\uD55C)" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "Strategy / Prompt \xB7 \uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(
-      GenerationsTable,
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(
+      _V6StatusBoard,
       {
         state: s,
+        pinnedIdx: stagePin != null && stagePin < 4 ? stagePin : null,
+        onStepClick: onStagePin,
+        targetScore,
         mddCap,
-        minDailyTrades,
-        onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
-        onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+        minDailyTrades
       }
-    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_lab_evidence", label: "Lab \uADFC\uAC70 \xB7 \uD329\uD130/\uC5E3\uC9C0 \uD788\uD2B8\uB9F5 (Lab \uD1B5\uD569, W1)" }, /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(
-      MergedBestWinnerCard,
+    ), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
+    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), /* @__PURE__ */ React.createElement("div", { className: "v6-graphs" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Fitness \xB7 graded score"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "best ", s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "\u2014", " \xB7 gate ", targetScore != null ? Number(targetScore).toFixed(2) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary v6-hero-compact" }, /* @__PURE__ */ React.createElement(V4HeroChart, { state: s, target: targetScore })), /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-legend" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "2px solid var(--teal)" } }), "graded fitness"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "1px dashed var(--violet)" } }), "gate ", targetScore != null ? Number(targetScore).toFixed(2) : ""), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" } }), "best"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--amber)" } }), "\uD604\uC7AC \uC138\uB300"))), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-stage-tabs", role: "tablist", "aria-label": "\uC5F0\uAD6C \uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4", onKeyDown: onStageKey }, V6_STAGES.map((st, i) => /* @__PURE__ */ React.createElement(
+      "button",
       {
-        best: s.best,
-        winner: s.winner,
-        onApprove: requestApproval,
-        onViewCode: viewCode
-      }
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }))), /* @__PURE__ */ React.createElement(
+        key: st.key,
+        type: "button",
+        role: "tab",
+        id: "v6-stage-tab-" + st.key,
+        "aria-selected": activeStage === i,
+        "aria-controls": "v6-stage-panel",
+        tabIndex: activeStage === i ? 0 : -1,
+        className: "v6-stage-tab" + (activeStage === i ? " active" : "") + (liveIdx === i ? " live" : ""),
+        onClick: () => onStagePin(i),
+        title: st.sub + (liveIdx === i ? " \xB7 \uC9C4\uD589 \uC911" : "")
+      },
+      /* @__PURE__ */ React.createElement("b", null, i + 1, ". ", st.label),
+      /* @__PURE__ */ React.createElement("span", null, st.sub),
+      liveIdx === i && /* @__PURE__ */ React.createElement("i", { className: "v6-live-dot", "aria-label": "\uC9C4\uD589 \uC911" })
+    )), stagePin != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setStagePin(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30")), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        id: "v6-stage-panel",
+        className: "v6-stage-panel",
+        role: "tabpanel",
+        "aria-labelledby": "v6-stage-tab-" + V6_STAGES[activeStage].key,
+        "aria-live": "polite"
+      },
+      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
+      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uD329\uD130\xB7\uC5E3\uC9C0 \uD788\uD2B8\uB9F5 (Lab \uD1B5\uD569)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD329\uD130\xB7\uC5E3\uC9C0 \uD788\uD2B8\uB9F5 (Lab \uD1B5\uD569)"), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }))),
+      activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null)), /* @__PURE__ */ React.createElement(
+        GenerationsTable,
+        {
+          state: s,
+          mddCap,
+          minDailyTrades,
+          onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
+          onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+        }
+      ), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 (Lab \uD1B5\uD569)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (Lab \uD1B5\uD569)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId }))),
+      activeStage === 3 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })),
+      activeStage === 4 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, merged ? /* @__PURE__ */ React.createElement(
+        MergedBestWinnerCard,
+        {
+          best: s.best,
+          winner: s.winner,
+          onApprove: requestApproval,
+          onViewCode: viewCode
+        }
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s }))
+    ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {
         winner: approvalOpen ? s.winner : null,
