@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
+import os
 import sqlite3
 from pathlib import Path
 from typing import Final, TypedDict
@@ -183,7 +184,11 @@ def index_compare(run_id: str = "") -> IndexCompareResponse:
 #   DB 는 scripts/build_research_catalog.py 가 생성(gitignore). 부재/오류는 500 아닌 error envelope.
 #   sqlite 는 URI mode=ro 로만 연다(원본 무변형). 계약: 2026-07-12_dashboard_data_contract.md.
 # ===========================================================================
-_CATALOG_DB: Final[Path] = REPO_ROOT / "legacy_non_authoritative_catalogs" / "research_assets.db"
+# V5.7: 정본 경로는 STOM_RESEARCH_ASSETS_DB env 로 지정(무설정 시 legacy 비정본 경로 폴백).
+_CATALOG_DB: Final[Path] = Path(
+    os.environ.get("STOM_RESEARCH_ASSETS_DB")
+    or (REPO_ROOT / "legacy_non_authoritative_catalogs" / "research_assets.db")
+)
 _CATALOG_TABLES: Final[tuple[str, ...]] = (
     "assets", "judgments", "clauses", "strategies", "cells", "ledger_mirror",
 )
@@ -205,21 +210,28 @@ def _catalog_unavailable(reason: str) -> dict:
 
 @router.get("/research/summary")
 def research_catalog_summary() -> dict:
-    conn = _catalog_conn()
-    if conn is None:
+    if not _CATALOG_DB.is_file():
         return _catalog_unavailable("catalog DB missing or unreadable")
+    # V5.7: 서버 COUNT(*) 집계 제거 — 카운트는 빌드 영수증(provenance)에서 읽는다(무재집계).
+    receipt = _CATALOG_DB.parent / "research_assets_build_receipt.json"
+    counts: dict = {t: None for t in _CATALOG_TABLES}
+    generated_at = None
+    if receipt.is_file():
+        try:
+            data = json.loads(receipt.read_text(encoding="utf-8"))
+            table_counts = data.get("table_counts") or {}
+            counts = {t: table_counts.get(t) for t in _CATALOG_TABLES}
+            generated_at = data.get("generated_at")
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
     try:
-        counts: dict = {}
-        for table in _CATALOG_TABLES:
-            try:
-                counts[table] = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]  # noqa: S608 — 고정 테이블명
-            except sqlite3.Error:
-                counts[table] = None
         st = _CATALOG_DB.stat()
-        return {"available": True, "db": "research_assets.db",
-                "mtime": int(st.st_mtime), "size_bytes": st.st_size, "counts": counts}
-    finally:
-        conn.close()
+        mtime, size = int(st.st_mtime), st.st_size
+    except OSError:
+        mtime, size = None, None
+    # authoritative=false: 현 카탈로그는 비정본 preview(정본 승격은 봉인 계약 통과 후).
+    return {"available": True, "db": _CATALOG_DB.name, "authoritative": False,
+            "mtime": mtime, "size_bytes": size, "generated_at": generated_at, "counts": counts}
 
 
 @router.get("/research/assets")
