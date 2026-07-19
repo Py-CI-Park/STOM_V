@@ -33354,7 +33354,7 @@ def signal_sell(pos, bar, ind):
     { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", owner: "\uCC28\uD2B8 \uB9AC\uD50C\uB808\uC774", owns: "\uC77C\uC77C min DB \uB9AC\uD50C\uB808\uC774\uC640 \uC218\uB3D9 \uC2E0\uD638 \uAC80\uD1A0", notOwner: "\uC2E4\uAC70\uB798 \uC8FC\uBB38\xB7\uC804\uB7B5 DB \uC4F0\uAE30", primarySurface: "V4Replay", emptyState: "\uB0A0\uC9DC\xB7\uC885\uBAA9 \uC120\uD0DD \uB300\uAE30", legacyAliases: ["simulation", "chart-replay"], internalAliases: [], prototypeAliases: [] },
     { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 \uBD84\uC11D/\uBE44\uAD50 \xB7 Wiki \xB7 \uAC10\uC0AC \uAC70\uBC84\uB10C\uC2A4", owner: "\uD788\uC2A4\uD1A0\uB9AC\xB7\uAC70\uBC84\uB10C\uC2A4", owns: "run/gen \uC544\uCE74\uC774\uBE0C, legacy \uBD84\uC11D\xB7\uBE44\uAD50, Edge/\uBCC0\uC218 \uBD84\uC11D, Wiki, audit/verdict append-only \uAC70\uBC84\uB10C\uC2A4", notOwner: "final approval/export\xB7\uC6B4\uC6A9 \uBC18\uC601", primarySurface: "V4History", emptyState: "run/\uC138\uB300 \uB610\uB294 \uAC80\uC0C9 \uD544\uD130 \uC870\uC815", legacyAliases: ["records", "audit", "verdict"], internalAliases: ["governance"], prototypeAliases: ["lab"] },
     { key: "workbench", label: "\uC131\uACFC", full: "\uC131\uACFC", badge: "HALL", hint: "Hall-of-Fame \xB7 inventory", owner: "\uC131\uACFC\xB7Hall-of-Fame", owns: "Hall-of-Fame\uC640 inventory", notOwner: "\uD6C4\uBCF4 \uBD84\uC11D\xB7\uBE44\uAD50\xB7\uD788\uC2A4\uD1A0\uB9AC \uAC70\uBC84\uB10C\uC2A4\xB7append-only \uACB0\uC815\xB7final approval", primarySurface: "V4Workbench", emptyState: "Hall-of-Fame \uB370\uC774\uD130 \uB300\uAE30", legacyAliases: ["pro"], internalAliases: [], prototypeAliases: [] },
-    { key: "reports", label: "Reports", full: "Reports", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 Wiki reference", owner: "\uB9AC\uD3EC\uD2B8\xB7Wiki reference", owns: "\uC77D\uAE30 \uC804\uC6A9 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4\uC640 Wiki reference-only sibling", notOwner: "\uD310\uC815 \uC815\uBCF8\xB7\uC804\uB7B5 \uC2B9\uC778\xB7\uCE74\uD0C8\uB85C\uADF8 \uAD8C\uC704\uD654", primarySurface: "V4Reports", emptyState: "\uB9AC\uD3EC\uD2B8 \uC120\uD0DD \uB300\uAE30", legacyAliases: ["wiki"], internalAliases: [], prototypeAliases: ["catalog"] }
+    { key: "reports", label: "Reports", full: "Reports", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 Wiki reference", owner: "\uB9AC\uD3EC\uD2B8\xB7Wiki reference", owns: "\uC77D\uAE30 \uC804\uC6A9 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4, Wiki reference-only sibling, ?prototype=catalog gated \uCE74\uD0C8\uB85C\uADF8 prototype", notOwner: "\uD310\uC815 \uC815\uBCF8\xB7\uC804\uB7B5 \uC2B9\uC778\xB7\uCE74\uD0C8\uB85C\uADF8 \uAD8C\uC704\uD654", primarySurface: "V4Reports", emptyState: "\uB9AC\uD3EC\uD2B8 \uC120\uD0DD \uB300\uAE30", legacyAliases: ["wiki"], internalAliases: [], prototypeAliases: ["catalog"] }
   ];
   var PHASE2_SOURCE_INVENTORY = [
     { surface: "history_records", ownerFiles: ["research-records-panel.jsx", "rp-heatmap.jsx", "bt-result-area.jsx", "research-index.jsx", "dashboard-pages.jsx"], endpoints: ["GET /runs", "GET /bt/evo_gens", "GET /bt/result", "GET /research_records", "GET /research_index", "GET /research_index/detail"], fields: ["run_id", "gen_no", "ResultDetailBody", "Compare", "condition_identity", "evidence_id", "source_path", "exact_link", "summary"], sentinels: ["History owns ResultDetail/Compare", "Workbench handoff only", "route alias history->records", "inert <pre>", "visible row cap"] },
@@ -33379,7 +33379,7 @@ def signal_sell(pos, bar, ind):
   }
   function Phase2InventoryPanel({ compact = false }) {
     const pageCount = DASHBOARD_PAGE_OWNER_MATRIX.length;
-    return /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-panel" + (compact ? " compact" : "") }, /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-kicker mono" }, "V5 CANONICAL DESTINATION INVENTORY"), /* @__PURE__ */ React.createElement("b", null, "\uD398\uC774\uC9C0 \uC5ED\uD560 \xB7 \uC18C\uC2A4 \uC18C\uC720\uAD8C \xB7 \uC131\uB2A5 \uAE30\uC900")), /* @__PURE__ */ React.createElement("span", { className: "mono" }, pageCount, " canonical destinations \xB7 ", PHASE2_SOURCE_INVENTORY.length, " source groups")), /* @__PURE__ */ React.createElement("p", null, "\uC774 \uC778\uBCA4\uD1A0\uB9AC\uB294 \uC77C\uBC18 \uB808\uC77C\uC758 \uC5EC\uC12F \uC815\uBCF8 \uBAA9\uC801\uC9C0\uC640 \uD638\uD658 \uBCC4\uCE6D\uB9CC \uAE30\uB85D\uD569\uB2C8\uB2E4. \uBCC4\uCE6D\uC740 \uC0C8 \uD398\uC774\uC9C0\uAC00 \uC544\uB2C8\uBA70, prototype \uD45C\uBA74\uC740 \uBA85\uC2DC\uC801 rollback \uACC4\uC57D\uC5D0\uC11C\uB9CC \uC811\uADFC\uD569\uB2C8\uB2E4."), !compact && /* @__PURE__ */ React.createElement("div", { className: "phase2-owner-grid" }, DASHBOARD_PAGE_OWNER_MATRIX.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.key, className: "phase2-owner-card" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, item.key), /* @__PURE__ */ React.createElement("b", null, item.owner), /* @__PURE__ */ React.createElement("small", null, "\uC18C\uC720: ", item.owns), /* @__PURE__ */ React.createElement("small", null, "\uBE44\uC18C\uC720: ", item.notOwner)))));
+    return /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-panel" + (compact ? " compact" : "") }, /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "phase2-inventory-kicker mono" }, "V5 CANONICAL DESTINATION INVENTORY"), /* @__PURE__ */ React.createElement("b", null, "\uD398\uC774\uC9C0 \uC5ED\uD560 \xB7 \uC18C\uC2A4 \uC18C\uC720\uAD8C \xB7 \uC131\uB2A5 \uAE30\uC900")), /* @__PURE__ */ React.createElement("span", { className: "mono" }, pageCount, " canonical destinations \xB7 ", PHASE2_SOURCE_INVENTORY.length, " source groups")), /* @__PURE__ */ React.createElement("p", null, "\uC774 \uC778\uBCA4\uD1A0\uB9AC\uB294 \uC77C\uBC18 \uB808\uC77C\uC758 \uC5EC\uC12F \uC815\uBCF8 \uBAA9\uC801\uC9C0\uC640 \uD638\uD658 \uBCC4\uCE6D\uB9CC \uAE30\uB85D\uD569\uB2C8\uB2E4. \uBCC4\uCE6D\uC740 \uC0C8 \uD398\uC774\uC9C0\uAC00 \uC544\uB2C8\uBA70, prototype \uD45C\uBA74\uC740 owner-gated query \uB610\uB294 \uBA85\uC2DC\uC801 rollback\uC5D0\uC11C\uB9CC \uC811\uADFC\uD569\uB2C8\uB2E4."), !compact && /* @__PURE__ */ React.createElement("div", { className: "phase2-owner-grid" }, DASHBOARD_PAGE_OWNER_MATRIX.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.key, className: "phase2-owner-card" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, item.key), /* @__PURE__ */ React.createElement("b", null, item.owner), /* @__PURE__ */ React.createElement("small", null, "\uC18C\uC720: ", item.owns), /* @__PURE__ */ React.createElement("small", null, "\uBE44\uC18C\uC720: ", item.notOwner)))));
   }
   Object.assign(window, { DASHBOARD_PAGE_OWNER_MATRIX, PHASE2_SOURCE_INVENTORY, LARGE_LIST_PERF_TARGETS, pageOwnerContract, listPerfTarget, Phase2InventoryPanel });
 
@@ -36758,6 +36758,219 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Alpha });
 
+  // ai_strategy_loop/dashboard/frontend/v4-catalog.jsx
+  var { useState: useState_cat, useEffect: useEffect_cat, useRef: useRef_cat } = React;
+  var CAT_CONTRACT_VERSION = "rdc-1";
+  var CAT_CELL_SOURCES = Object.freeze(["o1g", "sv1_l0", "sv1_l1", "v2a_full", "v2a_pilot"]);
+  var CAT_ENDPOINTS = Object.freeze({
+    assets: "/research/assets?limit=500",
+    judgments: "/research/judgments?include_ledger=1&limit=200",
+    clauses: "/research/clauses?limit=200"
+  });
+  function _catCellsRoute(source) {
+    return "/research/cells?source=" + encodeURIComponent(source) + "&limit=2000";
+  }
+  function _catVerdictPrefix(v) {
+    const s = String(v || "\u2014");
+    return s.split(" \u2014 ")[0] || s;
+  }
+  function _catVerdictCls(v) {
+    const s = String(v || "");
+    if (/^KILL|^KILL-2|^KILL\(0\/2\)|기각/.test(s)) return "bad";
+    if (/^무가치/.test(s)) return "off";
+    if (/^생존/.test(s)) return "win";
+    if (/^PASS|^양성/.test(s)) return "ok";
+    return "warn";
+  }
+  function _catText(value, fallback = "\u2014") {
+    if (value === null || value === void 0 || value === "") return fallback;
+    if (typeof value === "object") return _catJsonPreview(value);
+    return String(value);
+  }
+  function _catJsonPreview(value) {
+    if (value === null || value === void 0 || value === "") return "\u2014";
+    if (typeof value === "string") return value;
+    try {
+      return JSON.stringify(value);
+    } catch (_err) {
+      return String(value);
+    }
+  }
+  function _catPct(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? (n * 100).toFixed(2) + "%" : "\u2014";
+  }
+  function _catPp(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toFixed(3) + "%p" : "\u2014";
+  }
+  function _catFlag(value) {
+    if (value === true || value === 1 || value === "1") return "yes";
+    if (value === false || value === 0 || value === "0") return "no";
+    return "\u2014";
+  }
+  function _catItems(envelope) {
+    return envelope && envelope.available && Array.isArray(envelope.items) ? envelope.items : [];
+  }
+  function _catNormalizeEnvelope(name, value) {
+    if (!value || typeof value !== "object") return { name, available: false, reason: "malformed_response" };
+    if (value.available === false) return Object.assign({ name }, value);
+    if (value.contract_version !== CAT_CONTRACT_VERSION) {
+      return Object.assign({}, value, {
+        name,
+        available: false,
+        reason: "contract_mismatch",
+        actual_contract_version: value.contract_version || "missing"
+      });
+    }
+    const items = Array.isArray(value.items) ? value.items : [];
+    const count = Number.isFinite(Number(value.count)) ? Number(value.count) : items.length;
+    return Object.assign({}, value, { name, available: true, items, count });
+  }
+  function _catUnavailableText(envelope) {
+    if (!envelope) return "\uC751\uB2F5 \uB300\uAE30";
+    const parts = [envelope.name || "catalog", envelope.reason || "unavailable"];
+    if (envelope.actual_contract_version) parts.push("actual=" + envelope.actual_contract_version);
+    if (envelope.param) parts.push("param=" + envelope.param);
+    if (Array.isArray(envelope.allowed)) parts.push("allowed=" + envelope.allowed.join(","));
+    if (Array.isArray(envelope.missing)) parts.push("missing=" + envelope.missing.join(","));
+    return parts.join(" \xB7 ");
+  }
+  function _catCatalogMtime(envelopes) {
+    const hit = envelopes.find((env) => env && env.catalog && env.catalog.db_mtime_utc);
+    return hit ? hit.catalog.db_mtime_utc : "\u2014";
+  }
+  function _catCellMasked(cell) {
+    return Boolean(cell && (cell.insufficient === true || cell.insufficient === 1 || cell.insufficient === "1" || Number(cell.n) < 2e3));
+  }
+  function _catCellTone(cell) {
+    if (_catCellMasked(cell)) return "insufficient";
+    const ciLow = Number(cell && cell.ci_low);
+    if (Number.isFinite(ciLow) && ciLow > 0) return "positive";
+    if (Number.isFinite(ciLow) && ciLow < 0) return "negative";
+    return "neutral";
+  }
+  function _catUnique(rows, key) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    rows.forEach((row) => {
+      const value = row && row[key];
+      if (value === null || value === void 0 || value === "" || seen.has(String(value))) return;
+      seen.add(String(value));
+      out.push(value);
+    });
+    return out;
+  }
+  function _catSourceLabel(source) {
+    return { o1g: "O-1G", sv1_l0: "S-v1 L0", sv1_l1: "S-v1 L1", v2a_full: "V2-A full", v2a_pilot: "V2-A pilot" }[source] || source;
+  }
+  function _V4CatalogNotice({ loading, error, envelopes }) {
+    const bad = envelopes.find((env) => env && env.available === false);
+    if (loading) return /* @__PURE__ */ React.createElement("div", { className: "research-empty mono" }, "sealed rdc-1 \uCE74\uD0C8\uB85C\uADF8 \uBD88\uB7EC\uC624\uB294 \uC911\u2026");
+    if (error) return /* @__PURE__ */ React.createElement("div", { className: "research-empty danger mono" }, error);
+    if (bad) {
+      return /* @__PURE__ */ React.createElement("div", { className: "research-empty warn mono", role: "status" }, "\uCE74\uD0C8\uB85C\uADF8 \uACBD\uB85C \uC124\uC815 \uD544\uC694(P3-1 \xA72) \xB7 ", _catUnavailableText(bad));
+    }
+    return null;
+  }
+  function _V4CatalogProvenance({ assets }) {
+    const rows = _catItems(assets).slice(0, 8);
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-provenance", "aria-label": "catalog provenance" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-provenance-head" }, /* @__PURE__ */ React.createElement("b", null, "provenance \xB7 /research/assets"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "status_tag \uC6D0\uBB38 \uBCF4\uC874 \xB7 path/raw source \uB9C1\uD06C \uC5C6\uC74C")), rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "\uC790\uC0B0 provenance \uB300\uAE30 \u2014 \uC9D1\uACC4\uB098 \uAE30\uBCF8 \uACBD\uB85C\uB97C \uB9CC\uB4E4\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-asset-grid" }, rows.map((asset) => /* @__PURE__ */ React.createElement("article", { className: "v4-catalog-asset", key: asset.asset_id || asset.kind || asset.summary }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, _catText(asset.asset_id)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, _catText(asset.kind))), /* @__PURE__ */ React.createElement("p", null, _catText(asset.summary)), /* @__PURE__ */ React.createElement("code", { title: _catText(asset.status_tag) }, _catText(asset.status_tag)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "commit ", _catText(asset.produced_commit), " \xB7 seal ", _catText(asset.seal_doc))))));
+  }
+  function _V4CatalogV1({ judgments }) {
+    const rows = _catItems(judgments);
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-panel v4-catalog-v1", "aria-labelledby": "v4-catalog-v1-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-panel-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v4-catalog-v1-heading" }, "V1 \uC5F0\uAD6C \uD30C\uC774\uD504\uB77C\uC778/\uC5F0\uD601\uC2E4"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "/research/judgments?include_ledger=1 \xB7 \uC751\uB2F5 \uC21C\uC11C \uADF8\uB300\uB85C \xB7 \uD655\uC815 \uD310\uC815 \uC7A0\uAE08")), /* @__PURE__ */ React.createElement("span", { className: "v4-chip warn" }, "\uC7AC\uD604\uC131 \uAC8C\uC774\uD2B8")), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "\uC9C4\uD589 \uC911 \uC5F0\uAD6C\uB294 \uCE74\uD0C8\uB85C\uADF8 \uD655\uC7A5 \uD6C4 \uD45C\uC2DC \u2014 \uD604\uC7AC\uB294 \uD578\uB4DC\uC624\uD504 \uBB38\uC11C \uCC38\uC870"), rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "judgments \uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-timeline" }, rows.map((j) => /* @__PURE__ */ React.createElement("article", { className: "v4-catalog-judgment-card", key: j.series || j.report_path }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-card-head" }, /* @__PURE__ */ React.createElement("b", null, _catText(j.series)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict), title: _catText(j.verdict) }, _catVerdictPrefix(j.verdict))), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-verdict" }, _catText(j.verdict)), /* @__PURE__ */ React.createElement("dl", { className: "v4-catalog-kv mono" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "lock"), /* @__PURE__ */ React.createElement("dd", null, "\uC7A0\uAE08 \xB7 \uD655\uC815 \uD310\uC815 \xB7 \uD3B8\uC9D1 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "ledger_rows"), /* @__PURE__ */ React.createElement("dd", null, Array.isArray(j.ledger_rows) ? j.ledger_rows.join(", ") : _catText(j.ledger_rows), " \xB7 n=", _catText(j.n_ledger_rows))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "report"), /* @__PURE__ */ React.createElement("dd", null, _catText(j.report_path))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "commit"), /* @__PURE__ */ React.createElement("dd", null, _catText(j.produced_commit || j.note))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "ga_path_flag"), /* @__PURE__ */ React.createElement("dd", null, _catFlag(j.ga_path_flag), j.ga_path_flag ? " \xB7 GA \uACBD\uB85C \u2014 \uD574\uC11D \uC8FC\uC758" : ""))), /* @__PURE__ */ React.createElement("pre", { className: "v4-catalog-json mono" }, "key_metrics ", _catJsonPreview(j.key_metrics)), Array.isArray(j.ledger) && j.ledger.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-ledger", "data-region": "scroll", tabIndex: 0, "aria-label": _catText(j.series) + " ledger rows" }, j.ledger.slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("div", { key: row.row_num || row.ts, className: "mono" }, "#", _catText(row.row_num), " \xB7 ", _catText(row.ts), " \xB7 ", _catText(row.trial_type), " \xB7 ", _catText(row.target), " \xB7 ", _catText(row.result))))))));
+  }
+  function _V4CatalogV2({ cellsBySource }) {
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-panel v4-catalog-v2", "aria-labelledby": "v4-catalog-v2-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-panel-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v4-catalog-v2-heading" }, "V2 \uD568\uC815 \uC124\uBA85 \uC9C0\uB3C4"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "/research/cells \xB7 insufficient \uD68C\uC0C9 \uB9C8\uC2A4\uD0B9 \xB7 \uC0C9\uC0C1\uC740 ci_low \uAE30\uC900")), /* @__PURE__ */ React.createElement("span", { className: "v4-chip warn" }, "veto \uC544\uB2D8")), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe" }, "FDR \uC0DD\uC874 0 \xB7 \uD604\uC7AC \uCD95\xB7\uC628\uC14B\xB7\uBE44\uC6A9 \uAC00\uC815\uC5D0\uC11C \uD3C9\uADE0 \uC591EV \uC140 0 \u2014 \uAC2D+20% \uCD94\uACA9 \uCD5C\uC545"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe" }, "\uD604\uC7AC \uCD95\xB7\uC628\uC14B \uB77C\uBCA8\uC740 \uCC54\uD53C\uC5B8 \uC6B0\uC704\uB97C \uD3EC\uCC29\uD558\uC9C0 \uBABB\uD568(\uCE78-\uC870\uC900 KILL \u2014 h300\xB7L3 \uAD50\uCC28)"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-map-list" }, CAT_CELL_SOURCES.map((source) => {
+      const envelope = cellsBySource[source];
+      const rows = _catItems(envelope);
+      const labelTag = _catText(rows.find((row) => row && row.label_tag) && rows.find((row) => row && row.label_tag).label_tag);
+      const rowCount = envelope && envelope.available ? _catText(envelope.count) : "\u2014";
+      return /* @__PURE__ */ React.createElement("article", { className: "v4-catalog-map", key: source }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-map-head" }, /* @__PURE__ */ React.createElement("b", null, _catSourceLabel(source)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "count ", rowCount)), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-watermark", title: labelTag }, "label_tag: ", labelTag, " \xB7 \uC124\uBA85 \uC9C0\uB3C4(veto \uC544\uB2D8)"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-map-grid", role: "grid", "aria-label": _catSourceLabel(source) + " \uD568\uC815 \uC124\uBA85 \uC9C0\uB3C4" }, rows.slice(0, 12).map((cell) => {
+        const masked = _catCellMasked(cell);
+        return /* @__PURE__ */ React.createElement("div", { key: cell.cell_id, className: "v4-catalog-map-cell " + _catCellTone(cell), role: "gridcell", title: masked ? "\uD45C\uBCF8 \uBD80\uC871(n<2,000) \u2014 \uD310\uC815 \uAE08\uC9C0" : _catText(cell.label_tag) }, /* @__PURE__ */ React.createElement("b", null, _catText(cell.gap_label || cell.time_label || cell.cell_id)), masked ? /* @__PURE__ */ React.createElement("span", null, "\uD45C\uBCF8 \uBD80\uC871(n<2,000) \u2014 \uD310\uC815 \uAE08\uC9C0") : /* @__PURE__ */ React.createElement("span", null, "ci_low ", _catPct(cell.ci_low), " \xB7 mean ", _catPct(cell.mean_net)));
+      }), rows.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "cells \uB370\uC774\uD130 \uC5C6\uC74C \xB7 \uAE30\uBCF8 source \uCD94\uC815 \uC5C6\uC74C")));
+    })));
+  }
+  function _V4CatalogV3({ clauses }) {
+    const rows = _catItems(clauses);
+    const counts = [
+      ["load_bearing", 5],
+      ["counter_productive", 6],
+      ["weak_signal", 5],
+      ["inconclusive", 4],
+      ["none", 18]
+    ];
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-panel v4-catalog-v3", "aria-labelledby": "v4-catalog-v3-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-panel-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v4-catalog-v3-heading" }, "V3 \uC808 \uC2E4\uD5D8\uC2E4"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "39\uC808 \uC911 \uCE21\uC815 38\uC808(#39=#15 \uC21C\uC218 \uC911\uBCF5 \uBCD1\uD569) \xB7 FDR \uBD84\uBAA8 34")), /* @__PURE__ */ React.createElement("span", { className: "v4-chip warn" }, "RR8_12 \uC870\uAC74\uBD80")), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-class-counts", "aria-label": "classification counts" }, counts.map(([name, count]) => /* @__PURE__ */ React.createElement("span", { key: name, className: "mono" }, name, " ", count))), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "W5 \uC720\uD615 \uBD84\uD3EC: \uB370\uC774\uD130 \uC5C6\uC74C(\uCE74\uD0C8\uB85C\uADF8 \uD655\uC7A5 \uB300\uAE30)"), rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "clauses \uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-clause-grid" }, rows.map((clause) => /* @__PURE__ */ React.createElement("article", { className: "v4-catalog-clause " + _catText(clause.classification, "none"), key: clause.clause_num }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-card-head" }, /* @__PURE__ */ React.createElement("b", null, "#", _catText(clause.clause_num), " ", _catText(clause.text)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, _catText(clause.classification))), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-watermark" }, "RR8_12 \uACC4\uBCF4 \xB7 L3 \uCD9C\uAD6C \uC870\uAC74\uBD80 \xB7 \uC6D0-\uC784\uACC4 \uC774\uC2DD \uAE08\uC9C0"), /* @__PURE__ */ React.createElement("dl", { className: "v4-catalog-kv mono" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "family"), /* @__PURE__ */ React.createElement("dd", null, _catText(clause.family), " \xB7 ", _catText(clause.w5_category))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\u0394 / CI / MDE"), /* @__PURE__ */ React.createElement("dd", null, _catPp(clause.delta_pp), " \xB7 ", _catPp(clause.ci_low_pp), "~", _catPp(clause.ci_high_pp), " \xB7 ", _catPp(clause.mde_pp))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "n_sat/n_unsat"), /* @__PURE__ */ React.createElement("dd", null, _catText(clause.n_sat), " / ", _catText(clause.n_unsat))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "floor/fdr"), /* @__PURE__ */ React.createElement("dd", null, _catFlag(clause.floor_pass), " / ", _catFlag(clause.fdr_survive)))), /* @__PURE__ */ React.createElement("pre", { className: "v4-catalog-json mono" }, "year_delta ", _catJsonPreview(clause.year_delta))))));
+  }
+  function _V4CatalogV4({ cellsBySource, lookupSource, setLookupSource, lookupLabel, setLookupLabel }) {
+    const fallbackSource = CAT_CELL_SOURCES.find((source) => _catItems(cellsBySource[source]).length > 0) || CAT_CELL_SOURCES[0];
+    const activeSource = _catItems(cellsBySource[lookupSource]).length > 0 ? lookupSource : fallbackSource;
+    const sourceRows = _catItems(cellsBySource[activeSource]);
+    const labelOptions = _catUnique(sourceRows, "label_kind");
+    const activeLabel = labelOptions.some((v) => String(v) === String(lookupLabel)) ? lookupLabel : labelOptions[0] || "";
+    const matches = activeLabel ? sourceRows.filter((row) => String(row.label_kind) === String(activeLabel)) : sourceRows;
+    const selected2 = matches[0] || null;
+    const masked = _catCellMasked(selected2);
+    const hasL3 = selected2 && String(selected2.label_kind) === "l3";
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-panel v4-catalog-v4", "aria-labelledby": "v4-catalog-v4-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-panel-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v4-catalog-v4-heading" }, "V4 \uD45C\uBCF8/\uCD9C\uAD6C \uC740\uD589 \uC870\uD68C"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "/research/cells \uC870\uD68C \uC804\uC6A9 \xB7 \uC6D0\uC2DC parquet/json \uC811\uADFC \uC5C6\uC74C \xB7 \uBD84\uD3EC \uACE1\uC120 \uC7AC\uAD6C\uC131 \uC5C6\uC74C"))), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-lookup" }, /* @__PURE__ */ React.createElement("label", null, "source", /* @__PURE__ */ React.createElement("select", { value: activeSource, onChange: (event) => setLookupSource(event.target.value) }, CAT_CELL_SOURCES.map((source) => /* @__PURE__ */ React.createElement("option", { key: source, value: source }, _catSourceLabel(source))))), /* @__PURE__ */ React.createElement("label", null, "label_kind", /* @__PURE__ */ React.createElement("select", { value: activeLabel, onChange: (event) => setLookupLabel(event.target.value) }, labelOptions.map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value))))), !selected2 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty strong", role: "status" }, "\uC774 \uC870\uD569\uC758 \uC0AC\uC804 \uC9D1\uACC4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC6D0\uC2DC \uC7AC\uACC4\uC0B0\uC740 \uAE08\uC9C0\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uD544\uC694\uD558\uBA74 \uC5F0\uAD6C \uD2B8\uB799\uC5D0 \uC9D1\uACC4 \uCD94\uAC00\uB97C \uC694\uCCAD\uD558\uC2ED\uC2DC\uC624(\uC0AC\uC804\uB4F1\uB85D \uC885\uC18D).") : /* @__PURE__ */ React.createElement("article", { className: "v4-catalog-bank-card " + _catCellTone(selected2) }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-card-head" }, /* @__PURE__ */ React.createElement("b", null, _catText(selected2.cell_id), " \xB7 ", _catText(selected2.source), " \xB7 ", _catText(selected2.label_kind)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, masked ? "masked" : "catalog row")), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-watermark", title: _catText(selected2.label_tag) }, _catText(selected2.label_tag), hasL3 ? " \xB7 RR8_12 \uCD9C\uAD6C \uC870\uAC74\uBD80 \u2014 \uC6D0-\uC784\uACC4 \uC774\uC2DD \uAE08\uC9C0" : ""), masked ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "\uD45C\uBCF8 \uBD80\uC871(n<2,000) \u2014 \uD310\uC815 \uAE08\uC9C0") : /* @__PURE__ */ React.createElement("dl", { className: "v4-catalog-bank-metrics mono" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "n"), /* @__PURE__ */ React.createElement("dd", null, _catText(selected2.n))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "mean_net"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.mean_net))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "median_net"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.median_net))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "q25/q75"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.q25_net), " / ", _catPct(selected2.q75_net))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "p_net_ge0/ge1"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.p_net_ge0), " / ", _catPct(selected2.p_net_ge1))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "CI"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.ci_low), " ~ ", _catPct(selected2.ci_high))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "MFE/MAE"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.mfe_mean), " / ", _catPct(selected2.mae_mean))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "2022/2023"), /* @__PURE__ */ React.createElement("dd", null, _catPct(selected2.year2022_mean), "(", _catText(selected2.year2022_sign), ") / ", _catPct(selected2.year2023_mean), "(", _catText(selected2.year2023_sign), ")"))), /* @__PURE__ */ React.createElement("pre", { className: "v4-catalog-json mono" }, "extra ", _catJsonPreview(selected2.extra))), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-empty mono" }, "\uBE48 \uC870\uD569 \uACC4\uC57D: \uC774 \uC870\uD569\uC758 \uC0AC\uC804 \uC9D1\uACC4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC6D0\uC2DC \uC7AC\uACC4\uC0B0\uC740 \uAE08\uC9C0\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4."));
+  }
+  function _V4CatalogV5() {
+    const panels = ["30\uAC70\uB798\uC77C \uCC44\uC810\uD45C", "\uD0AC\uC2A4\uC704\uCE58 \uC18C\uC9C4\uC728", "\uC2E4\uCCB4\uACB0 \uC794\uCC28", "\uC808 \uBC1C\uB3D9 \uAE30\uB85D"];
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog-panel v4-catalog-v5", "aria-labelledby": "v4-catalog-v5-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-panel-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v4-catalog-v5-heading" }, "V5 B1 honest empty skeleton"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "B1\uC740 \uC624\uD504\uB77C\uC778 \uD310\uC815 \uBD88\uAC00(inconclusive\xB7kill-2 \uD558\uD55C \uBBF8\uB2EC) \uCD9C\uC2E0 \u2014 30\uAC70\uB798\uC77C \uCC44\uC810 \uC804 \uC5B4\uB5A4 \uC131\uACF5 \uC8FC\uC7A5\uB3C4 \uAE08\uC9C0")), /* @__PURE__ */ React.createElement("span", { className: "v4-chip off" }, "U-4 \uBBF8\uD655\uC815")), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-b1-status", role: "status" }, "\uC6B4\uC6A9 \uAC1C\uC2DC \uC804 \u2014 \uB370\uC774\uD130 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-b1-grid" }, panels.map((panel) => /* @__PURE__ */ React.createElement("article", { key: panel, className: "v4-catalog-b1-panel" }, /* @__PURE__ */ React.createElement("b", null, panel), /* @__PURE__ */ React.createElement("span", null, "\uC6B4\uC6A9 \uAC1C\uC2DC \uC804 \u2014 \uB370\uC774\uD130 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("em", null, "\uC790\uBCF8 C \xB7 \uD569\uC758 \uC2E4\uD604\uC728 \uAE30\uC900 \xB7 \uAE30\uB85D \uADF8\uB987: U-4 \uBBF8\uD655\uC815")))));
+  }
+  function V4Catalog({ baseUrl }) {
+    const [state, setState] = useState_cat({ loading: false, error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellsBySource: {} });
+    const [lookupSource, setLookupSource] = useState_cat("o1g");
+    const [lookupLabel, setLookupLabel] = useState_cat("l3");
+    const generationRef = useRef_cat(0);
+    const baseRef = useRef_cat(baseUrl);
+    baseRef.current = baseUrl;
+    useEffect_cat(() => {
+      const generation = generationRef.current + 1;
+      generationRef.current = generation;
+      const controller = new AbortController();
+      const timeout2 = setTimeout(() => controller.abort(), 6e3);
+      setState({ loading: Boolean(baseUrl), error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellsBySource: {} });
+      if (!baseUrl) {
+        clearTimeout(timeout2);
+        return () => controller.abort();
+      }
+      const get3 = (path) => fetch(baseUrl + path, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+      const cellRequests = CAT_CELL_SOURCES.map((source) => get3(_catCellsRoute(source)).then((payload) => [source, payload]));
+      Promise.all([get3(CAT_ENDPOINTS.assets), get3(CAT_ENDPOINTS.judgments), get3(CAT_ENDPOINTS.clauses), Promise.all(cellRequests)]).then(([assetsPayload, judgmentsPayload, clausesPayload, cellPairs]) => {
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        const cellsBySource2 = {};
+        cellPairs.forEach(([source, payload]) => {
+          cellsBySource2[source] = _catNormalizeEnvelope("cells:" + source, payload);
+        });
+        setState({
+          loading: false,
+          error: "",
+          listedBase: baseUrl,
+          assets: _catNormalizeEnvelope("assets", assetsPayload),
+          judgments: _catNormalizeEnvelope("judgments", judgmentsPayload),
+          clauses: _catNormalizeEnvelope("clauses", clausesPayload),
+          cellsBySource: cellsBySource2
+        });
+      }).catch((e) => {
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
+        setState({ loading: false, error: String(e && e.message ? e.message : e), listedBase: baseUrl, assets: null, judgments: null, clauses: null, cellsBySource: {} });
+      }).finally(() => clearTimeout(timeout2));
+      return () => {
+        controller.abort();
+        clearTimeout(timeout2);
+      };
+    }, [baseUrl]);
+    const ownsData = Boolean(baseUrl && state.listedBase === baseUrl && !state.loading);
+    const cellsBySource = ownsData ? state.cellsBySource : {};
+    const envelopes = [state.assets, state.judgments, state.clauses].concat(CAT_CELL_SOURCES.map((source) => cellsBySource[source])).filter(Boolean);
+    const catalogMtime = _catCatalogMtime(envelopes);
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog", "aria-labelledby": "v4-catalog-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-catalog-heading", className: "panel-hd-title" }, "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4) \xB7 sealed rdc-1 Reports prototype"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "Reports-owned prototype \xB7 STOM_RESEARCH_ASSETS_DB env-only \xB7 read-only SELECT(mode=ro) \xB7 \uC7AC\uACC4\uC0B0/\uC4F0\uAE30/\uC6D0\uC2DC\uC870\uD68C \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "sealed endpoints only: /research/assets \xB7 /research/judgments \xB7 /research/cells \xB7 /research/clauses \xB7 legacy summary aggregation \uAE08\uC9C0"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-contract mono", "aria-label": "catalog contract metadata" }, /* @__PURE__ */ React.createElement("span", null, "contract ", CAT_CONTRACT_VERSION), /* @__PURE__ */ React.createElement("span", null, "catalog mtime ", catalogMtime), /* @__PURE__ */ React.createElement("span", null, "base guarded ", ownsData ? "fresh" : "pending"), /* @__PURE__ */ React.createElement("span", null, "cell sources ", ownsData ? CAT_CELL_SOURCES.length : "\u2014")), /* @__PURE__ */ React.createElement(_V4CatalogNotice, { loading: state.loading, error: state.error, envelopes }), /* @__PURE__ */ React.createElement(_V4CatalogProvenance, { assets: ownsData ? state.assets : null }), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-view-grid" }, /* @__PURE__ */ React.createElement(_V4CatalogV1, { judgments: ownsData ? state.judgments : null }), /* @__PURE__ */ React.createElement(_V4CatalogV2, { cellsBySource }), /* @__PURE__ */ React.createElement(_V4CatalogV3, { clauses: ownsData ? state.clauses : null }), /* @__PURE__ */ React.createElement(_V4CatalogV4, { cellsBySource, lookupSource, setLookupSource, lookupLabel, setLookupLabel }), /* @__PURE__ */ React.createElement(_V4CatalogV5, null)));
+  }
+  Object.assign(window, { V4Catalog });
+
   // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
   var { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
   function _fmtReportBytes(n) {
@@ -36817,7 +37030,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       manifestMode && /* @__PURE__ */ React.createElement("span", { className: "v4-reports-badges mono" }, _reportStatusText(rp))
     );
   }
-  function V4Reports({ baseUrl }) {
+  function V4Reports({ baseUrl, prototype: reportsPrototype = "" }) {
     const [list, setList] = useState_rp7(null);
     const [manifest, setManifest] = useState_rp7(null);
     const [err, setErr] = useState_rp7("");
@@ -36827,18 +37040,24 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const selectionRef = useRef_rp7("");
     const baseRef = useRef_rp7(baseUrl);
     baseRef.current = baseUrl;
+    const catalogPrototype = reportsPrototype === "catalog";
     useEffect_rp7(() => {
       const generation = generationRef.current + 1;
       generationRef.current = generation;
       const priorSelection = selectionRef.current;
       const controller = new AbortController();
       const timeout2 = setTimeout(() => controller.abort(), 6e3);
-      setList(baseUrl ? null : []);
+      if (catalogPrototype) setList([]);
+      else setList(baseUrl ? null : []);
       setManifest(null);
       setListedBase("");
       setErr("");
       setSel("");
       selectionRef.current = "";
+      if (catalogPrototype) {
+        clearTimeout(timeout2);
+        return () => controller.abort();
+      }
       if (!baseUrl) {
         clearTimeout(timeout2);
         return () => controller.abort();
@@ -36866,7 +37085,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         controller.abort();
         clearTimeout(timeout2);
       };
-    }, [baseUrl]);
+    }, [baseUrl, catalogPrototype]);
     const selectReport = (path) => {
       setSel(path);
       selectionRef.current = path;
@@ -36878,6 +37097,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const selectedManifest = ownsSelection && usingManifest ? manifestRows.find((rp) => rp.path === sel) || null : null;
     const viewUrl = ownsSelection ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
     const groups = usingManifest ? _manifestGroups(manifestRows) : [];
+    if (catalogPrototype) {
+      return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 prototype"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "Reports \uC18C\uC720 gated prototype \xB7 ?prototype=catalog \xB7 \uC77C\uBC18 \uB808\uC77C \uCD94\uAC00 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl }), /* @__PURE__ */ React.createElement("section", { className: "v4-reports-wiki v4-cjk-safe", "aria-labelledby": "v4-reports-wiki-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-wiki-heading", className: "panel-hd-title" }, "Research Wiki \xB7 \uC77D\uAE30 \uC804\uC6A9 \uCC38\uACE0 \uBB38\uC11C"), /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus: "na" })));
+    }
     return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && manifestErrors.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-manifest-errors mono", title: "Invalid manifest entries are dropped before display" }, "manifest errors: ", manifestErrors.slice(0, 3).map(_errorText).join(" / "), manifestErrors.length > 3 ? " +" + (manifestErrors.length - 3) : ""), list !== null && !usingManifest && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-manifest-required mono", role: "status" }, "structured manifest unavailable \xB7 legacy reports are browse-only"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.length > 0 && usingManifest && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-manifest-head mono" }, /* @__PURE__ */ React.createElement("b", null, "manifest v1"), /* @__PURE__ */ React.createElement("span", null, manifestRows.length, " structured \xB7 ", manifest.writer || "manual-offline")), groups.map((group) => /* @__PURE__ */ React.createElement("div", { className: "v4-reports-group", key: group.research_id }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-group-title mono" }, group.research_id), group.items.map((rp) => _renderReportButton(rp, sel, selectReport, true))))), list !== null && list.length > 0 && !usingManifest && list.map((rp) => _renderReportButton(rp, sel, selectReport, false))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, selectedManifest && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail-head" }, /* @__PURE__ */ React.createElement("b", null, selectedManifest.title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, selectedManifest.research_id, selectedManifest.step_id ? " / " + selectedManifest.step_id : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail-grid mono" }, /* @__PURE__ */ React.createElement("span", null, "trust: ", selectedManifest.trust), /* @__PURE__ */ React.createElement("span", null, "status: ", _reportStatusText(selectedManifest)), /* @__PURE__ */ React.createElement("span", { title: selectedManifest.html_sha256 }, "html: ", _shortHash(selectedManifest.html_sha256)), /* @__PURE__ */ React.createElement("span", null, "bytes: ", _fmtReportBytes(selectedManifest.bytes))), selectedManifest.source_paths.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-provenance" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, "provenance"), selectedManifest.source_paths.slice(0, 6).map((src) => /* @__PURE__ */ React.createElement("code", { key: src, title: selectedManifest.source_sha256 && selectedManifest.source_sha256[src] ? selectedManifest.source_sha256[src] : "" }, src, selectedManifest.source_sha256 && selectedManifest.source_sha256[src] ? " \xB7 " + _shortHash(selectedManifest.source_sha256[src]) : ""))), selectedManifest.missing.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-provenance missing" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, "missing sources"), selectedManifest.missing.slice(0, 6).map((src) => /* @__PURE__ */ React.createElement("code", { key: src }, src))), selectedManifest.links.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-provenance" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, "allowlisted links"), selectedManifest.links.slice(0, 4).map((link) => /* @__PURE__ */ React.createElement("code", { key: link }, link)))), viewUrl ? /* @__PURE__ */ React.createElement(
       "iframe",
       {
@@ -36892,41 +37114,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     ) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694"))), /* @__PURE__ */ React.createElement("section", { className: "v4-reports-wiki v4-cjk-safe", "aria-labelledby": "v4-reports-wiki-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-wiki-heading", className: "panel-hd-title" }, "Research Wiki \xB7 \uC77D\uAE30 \uC804\uC6A9 \uCC38\uACE0 \uBB38\uC11C"), /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus: "na" })));
   }
   Object.assign(window, { V4Reports });
-
-  // ai_strategy_loop/dashboard/frontend/v4-catalog.jsx
-  var { useState: useState_cat, useEffect: useEffect_cat } = React;
-  function _catVerdictCls(v) {
-    const s = String(v || "");
-    if (/PASS|양성|생존/.test(s)) return "ok";
-    if (/KILL|무가치|기각/.test(s)) return "bad";
-    return "warn";
-  }
-  function V4Catalog({ baseUrl }) {
-    const [summary, setSummary] = useState_cat(null);
-    const [judgments, setJudgments] = useState_cat(null);
-    const [assets, setAssets] = useState_cat(null);
-    const [err, setErr] = useState_cat("");
-    useEffect_cat(() => {
-      if (!baseUrl) return void 0;
-      let cancelled = false;
-      const get3 = (p) => fetch(baseUrl + p, { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
-      Promise.all([get3("/research/summary"), get3("/research/judgments"), get3("/research/assets?limit=200")]).then(([s, j, a]) => {
-        if (!cancelled) {
-          setSummary(s);
-          setJudgments(j);
-          setAssets(a);
-        }
-      }).catch((e) => {
-        if (!cancelled) setErr(String(e && e.message ? e.message : e));
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [baseUrl]);
-    const unavailable = summary && summary.available === false;
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog", "aria-labelledby": "v4-catalog-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-catalog-heading", className: "panel-hd-title" }, "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4) \xB7 \uBE44\uC815\uBCF8 \uD504\uB85C\uD1A0\uD0C0\uC785"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "\uBE44\uAD8C\uC704\uC801\xB7\uBE44\uADDC\uBC94\uC801 prototype \xB7 sealed P4 API/views \uBBF8\uC644\uC131 \xB7 \uC644\uB8CC/\uD310\uC815/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "research_assets.db SELECT-only \xB7 \uC7AC\uACC4\uC0B0\xB7\uC4F0\uAE30 \uC5C6\uC74C(mode=ro)"), err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), unavailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uCE74\uD0C8\uB85C\uADF8 DB \uC5C6\uC74C \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, summary.hint || "build_research_catalog.py")), summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD310\uC815\uCE74\uB4DC" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD310\uC815\uCE74\uB4DC \xB7 ", judgments.count, "\uAC74"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""))))), assets && assets.available && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC790\uC0B0 \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))));
-  }
-  Object.assign(window, { V4Catalog });
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
@@ -36943,6 +37130,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   var V4_PROTOTYPE_TAB_KEYS = ["lab", "context", "alpha", "catalog"];
   var V4_CONTEXT_DRAWER_QUERY = "v4_context";
   var V4_PROTOTYPE_QUERY = "prototype";
+  var V4_REPORTS_PROTOTYPE_KEYS = ["catalog"];
   var v4LegacyDestinationBootstrapped = false;
   var v4LegacyStoredDestination = "";
   function v4CanonicalDestinationKey(key) {
@@ -36973,8 +37161,25 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return "";
     }
   }
+  function v4ReportsPrototype(search) {
+    try {
+      const value = new URLSearchParams(search === void 0 ? window.location.search : search).get(V4_PROTOTYPE_QUERY);
+      return V4_REPORTS_PROTOTYPE_KEYS.includes(value) ? value : "";
+    } catch (e) {
+      return "";
+    }
+  }
+  function v4PrototypeOwner(key) {
+    return key === "catalog" ? "reports" : "";
+  }
+  function v4PrototypeForTab(tab, search) {
+    const prototype = v4ReportsPrototype(search);
+    return prototype && tab === v4PrototypeOwner(prototype) && !v4LegacyExtrasEnabled(search) ? prototype : "";
+  }
   function v4RequestedDestination(location2 = window.location) {
     try {
+      const prototype = v4ReportsPrototype(location2.search || "");
+      if (prototype) return prototype;
       const requested = new URLSearchParams(location2.search || "").get("tab");
       return requested || v4TabFromPathname(location2.pathname);
     } catch (e) {
@@ -36989,7 +37194,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested)) return requested;
       const canonical = v4CanonicalDestinationKey(requested);
       const isContext = requested === "context";
-      const owner = canonical || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+      const owner = canonical || v4PrototypeOwner(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : "");
       if (!owner) return "";
       const url = new URL(location2.href || location2.pathname + location2.search, window.location.origin);
       if (isContext) {
@@ -36998,7 +37203,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
       } else {
         url.searchParams.set("tab", owner);
-        if (requested === "alpha" || requested === "catalog") url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
+        if (requested === "alpha" || v4PrototypeOwner(requested)) {
+          url.searchParams.delete(V4_PROTOTYPE_QUERY);
+          url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
+        }
       }
       if (url.pathname + url.search !== location2.pathname + location2.search) {
         history.replaceState(null, "", url.pathname + url.search);
@@ -37041,7 +37249,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
     }
     const requested = evolution && primary === "evolution" ? evolution : primary;
-    v4LegacyStoredDestination = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    v4LegacyStoredDestination = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : v4PrototypeOwner(requested));
     return v4LegacyStoredDestination;
   }
   function v4InitialTab(tabKeys = V4_TAB_KEYS, storedDestination = "") {
@@ -37049,7 +37257,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const requested = v4RequestedDestination();
       const rollback = v4LegacyExtrasEnabled();
       if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested) && tabKeys.includes(requested)) return requested;
-      const canonical = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+      const canonical = v4CanonicalDestinationKey(requested) || (requested === "lab" ? "history" : requested === "alpha" ? "research" : v4PrototypeOwner(requested));
       if (canonical && tabKeys.includes(canonical)) return canonical;
       if (!requested && storedDestination && tabKeys.includes(storedDestination)) return storedDestination;
     } catch (e) {
@@ -37152,6 +37360,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [pendingBase, setPendingBase] = useState_v4(baseUrl);
     const [theme, setTheme] = useState_v4(v4InitialTheme);
     const [activeTab, setActiveTab] = useState_v4(initialTabRef.current);
+    const [activePrototype, setActivePrototype] = useState_v4(() => v4PrototypeForTab(initialTabRef.current));
     const [unavailableDestination, setUnavailableDestination] = useState_v4(() => v4UnavailableDestination());
     const [replayVisited, setReplayVisited] = useState_v4(() => initialTabRef.current === "replay");
     const [contextOpen, setContextOpen] = useState_v4(() => {
@@ -37194,6 +37403,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         pendingTabFocusRef.current = nextTab;
         setActiveTab(nextTab);
         setUnavailableDestination(v4UnavailableDestination());
+        setActivePrototype(v4PrototypeForTab(nextTab));
         contextOpenRef.current = nextContextOpen;
         setContextOpen(nextContextOpen);
         if (restoreContextTrigger) setTimeout(() => {
@@ -37413,20 +37623,22 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     };
     const selectTab = (key, retainFocus = true) => {
       if (!tabKeys.includes(key)) return;
-      if (key === activeTab && !contextOpenRef.current) return;
       if (key === activeTab && contextOpenRef.current) {
         setContextDrawer(false, retainFocus);
         return;
       }
+      if (key === activeTab && !activePrototype) return;
       if (retainFocus) pendingTabFocusRef.current = key;
       setActiveTab(key);
       setUnavailableDestination("");
       contextOpenRef.current = false;
       setContextOpen(false);
+      setActivePrototype("");
       try {
         const url = new URL(window.location.href);
         url.searchParams.set("tab", key);
         url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
+        url.searchParams.delete(V4_PROTOTYPE_QUERY);
         window.history.pushState(null, "", url.pathname + url.search);
       } catch (e) {
       }
@@ -37437,7 +37649,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       event.preventDefault();
       selectTab(next);
     };
-    const active = unavailableDestination ? { full: "\uC694\uCCAD \uB300\uC0C1 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC74C", hint: `\uBA85\uC2DC\uC801 route "${unavailableDestination}" \uBCF4\uC874` } : tabs.find((t) => t.key === activeTab) || tabs[0];
+    const activePrototypeMeta = activePrototype === "catalog" ? { full: "Reports \xB7 \uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 prototype", hint: "Reports \uC18C\uC720 gated prototype \xB7 \uC77C\uBC18 \uB808\uC77C \uCD94\uAC00 \uC5C6\uC74C" } : null;
+    const active = unavailableDestination ? { full: "\uC694\uCCAD \uB300\uC0C1 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC74C", hint: `\uBA85\uC2DC\uC801 route "${unavailableDestination}" \uBCF4\uC874` } : activePrototypeMeta || tabs.find((t) => t.key === activeTab) || tabs[0];
     return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, tabs.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -37544,7 +37757,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen })))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl, prototype: activePrototype }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen })))
     ))), contextOpen && /* @__PURE__ */ React.createElement("div", { className: "v4-context-backdrop" }, /* @__PURE__ */ React.createElement(
       "section",
       {

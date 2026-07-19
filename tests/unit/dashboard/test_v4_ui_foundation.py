@@ -318,14 +318,73 @@ console.log(JSON.stringify({ prototype, initial, calls }));
     assert json.loads(result.stdout) == {"prototype": "catalog", "initial": "catalog", "calls": []}
 
 
-def test_v4_catalog_is_explicitly_non_authoritative_prototype() -> None:
+def test_v4_catalog_uses_only_sealed_rdc1_routes_and_guards_stale_base() -> None:
     source = _read("v4-catalog.jsx")
 
-    assert "비정본 프로토타입" in source
-    assert "비권위적·비규범적 prototype" in source
-    assert "sealed P4 API/views 미완성" in source
-    assert "완료/판정/승격 근거 아님" in source
-    assert "SELECT-only" in source
+    assert "sealed rdc-1 Reports prototype" in source
+    assert "STOM_RESEARCH_ASSETS_DB env-only" in source
+    assert 'const CAT_CONTRACT_VERSION = "rdc-1"' in source
+    assert 'assets: "/research/assets?limit=500"' in source
+    assert 'judgments: "/research/judgments?include_ledger=1&limit=200"' in source
+    assert 'clauses: "/research/clauses?limit=200"' in source
+    assert 'return "/research/cells?source=" + encodeURIComponent(source) + "&limit=2000";' in source
+    assert "/research/summary" not in source
+    assert "AbortController" in source
+    assert "generation !== generationRef.current" in source
+    assert "baseUrl !== baseRef.current" in source
+    assert 'value.contract_version !== CAT_CONTRACT_VERSION' in source
+    assert 'reason: "contract_mismatch"' in source
+    assert "asset.path" not in source
+
+
+def test_v4_catalog_renders_five_honest_canonical_views() -> None:
+    source = _read("v4-catalog.jsx")
+
+    for marker in (
+        "V1 연구 파이프라인/연혁실",
+        "V2 함정 설명 지도",
+        "V3 절 실험실",
+        "V4 표본/출구 은행 조회",
+        "V5 B1 honest empty skeleton",
+        "39절 중 측정 38절(#39=#15 순수 중복 병합) · FDR 분모 34",
+        "load_bearing\", 5",
+        "counter_productive\", 6",
+        "weak_signal\", 5",
+        "inconclusive\", 4",
+        "none\", 18",
+        "이 조합의 사전 집계가 없습니다 — 원시 재계산은 금지되어 있습니다.",
+        "운용 개시 전 — 데이터 없음",
+        "U-4 미확정",
+    ):
+        assert marker in source
+
+    assert "_catText(j.verdict)" in source
+    assert "_catText(asset.status_tag)" in source
+    assert "_catText(selected.label_tag)" in source
+    assert "Number(cell.n) < 2000" in source
+    assert "표본 부족(n<2,000) — 판정 금지" in source
+    assert "ciLow > 0" in source
+    assert "설명 지도(veto 아님)" in source
+    assert 'className="v4-chip off"' in source
+    assert "success" not in source[source.index("function _V4CatalogV5"):source.index("function V4Catalog")]
+
+
+def test_v4_catalog_css_supports_responsive_sealed_views() -> None:
+    css = _read("v4.css")
+
+    for marker in (
+        ".v4-catalog-view-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));",
+        ".v4-catalog-provenance, .v4-catalog-panel",
+        ".v4-catalog-watermark",
+        ".v4-catalog-map-cell.insufficient",
+        "filter: grayscale(1)",
+        ".v4-catalog-class-counts",
+        ".v4-catalog-bank-metrics",
+        ".v4-catalog-b1-status",
+        "@media (max-width: 1100px)",
+        "@media (max-width: 720px)",
+    ):
+        assert marker in css
 def test_v5_live_uses_accessible_process_tabs_and_pinned_follow_contract() -> None:
     source = _read("v4-research.jsx")
 

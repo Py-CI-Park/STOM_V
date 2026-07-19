@@ -7,6 +7,7 @@
 const { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
 // dual-safe ESM import (esbuild bundle path). KEEP each on ONE physical line.
 import { ResearchWikiPanel } from "./research-wiki.jsx";
+import { V4Catalog } from "./v4-catalog.jsx";
 
 function _fmtReportBytes(n) {
   if (!Number.isFinite(n)) return "";
@@ -84,7 +85,7 @@ function _renderReportButton(rp, sel, selectReport, manifestMode) {
   );
 }
 
-function V4Reports({ baseUrl }) {
+function V4Reports({ baseUrl, prototype: reportsPrototype = "" }) {
   const [list, setList] = useState_rp7(null); // null=loading, []=empty
   const [manifest, setManifest] = useState_rp7(null);
   const [err, setErr] = useState_rp7("");
@@ -94,6 +95,7 @@ function V4Reports({ baseUrl }) {
   const selectionRef = useRef_rp7("");
   const baseRef = useRef_rp7(baseUrl);
   baseRef.current = baseUrl;
+  const catalogPrototype = reportsPrototype === "catalog";
 
   useEffect_rp7(() => {
     const generation = generationRef.current + 1;
@@ -102,12 +104,18 @@ function V4Reports({ baseUrl }) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
 
-    setList(baseUrl ? null : []);
+    if (catalogPrototype) setList([]);
+    else setList(baseUrl ? null : []);
     setManifest(null);
     setListedBase("");
     setErr("");
     setSel("");
     selectionRef.current = "";
+    if (catalogPrototype) {
+      clearTimeout(timeout);
+      return () => controller.abort();
+    }
+
 
     if (!baseUrl) {
       clearTimeout(timeout);
@@ -141,7 +149,7 @@ function V4Reports({ baseUrl }) {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [baseUrl]);
+  }, [baseUrl, catalogPrototype]);
 
   const selectReport = path => {
     setSel(path);
@@ -155,6 +163,21 @@ function V4Reports({ baseUrl }) {
   const viewUrl = ownsSelection ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
   const groups = usingManifest ? _manifestGroups(manifestRows) : [];
 
+  if (catalogPrototype) {
+    return (
+      <section className="v4-reports" aria-labelledby="v4-reports-heading">
+        <h2 id="v4-reports-heading" className="panel-hd-title">Reports · 연구 카탈로그 prototype</h2>
+        <p className="v4-reports-safe mono" role="note">
+          Reports 소유 gated prototype · ?prototype=catalog · 일반 레일 추가 없음
+        </p>
+        <V4Catalog baseUrl={baseUrl} />
+        <section className="v4-reports-wiki v4-cjk-safe" aria-labelledby="v4-reports-wiki-heading">
+          <h2 id="v4-reports-wiki-heading" className="panel-hd-title">Research Wiki · 읽기 전용 참고 문서</h2>
+          <ResearchWikiPanel baseUrl={baseUrl} wsStatus="na" />
+        </section>
+      </section>
+    );
+  }
   return (
     <section className="v4-reports" aria-labelledby="v4-reports-heading">
       <h2 id="v4-reports-heading" className="panel-hd-title">Reports · 리포트 뷰어</h2>

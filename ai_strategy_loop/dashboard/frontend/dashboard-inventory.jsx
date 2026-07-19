@@ -10,7 +10,7 @@ const DASHBOARD_PAGE_OWNER_MATRIX = [
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", owner: "차트 리플레이", owns: "일일 min DB 리플레이와 수동 신호 검토", notOwner: "실거래 주문·전략 DB 쓰기", primarySurface: "V4Replay", emptyState: "날짜·종목 선택 대기", legacyAliases: ["simulation", "chart-replay"], internalAliases: [], prototypeAliases: [] },
   { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · 분석/비교 · Wiki · 감사 거버넌스", owner: "히스토리·거버넌스", owns: "run/gen 아카이브, legacy 분석·비교, Edge/변수 분석, Wiki, audit/verdict append-only 거버넌스", notOwner: "final approval/export·운용 반영", primarySurface: "V4History", emptyState: "run/세대 또는 검색 필터 조정", legacyAliases: ["records", "audit", "verdict"], internalAliases: ["governance"], prototypeAliases: ["lab"] },
   { key: "workbench", label: "성과", full: "성과", badge: "HALL", hint: "Hall-of-Fame · inventory", owner: "성과·Hall-of-Fame", owns: "Hall-of-Fame와 inventory", notOwner: "후보 분석·비교·히스토리 거버넌스·append-only 결정·final approval", primarySurface: "V4Workbench", emptyState: "Hall-of-Fame 데이터 대기", legacyAliases: ["pro"], internalAliases: [], prototypeAliases: [] },
-  { key: "reports", label: "Reports", full: "Reports", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · Wiki reference", owner: "리포트·Wiki reference", owns: "읽기 전용 리포트 뷰어와 Wiki reference-only sibling", notOwner: "판정 정본·전략 승인·카탈로그 권위화", primarySurface: "V4Reports", emptyState: "리포트 선택 대기", legacyAliases: ["wiki"], internalAliases: [], prototypeAliases: ["catalog"] },
+  { key: "reports", label: "Reports", full: "Reports", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · Wiki reference", owner: "리포트·Wiki reference", owns: "읽기 전용 리포트 뷰어, Wiki reference-only sibling, ?prototype=catalog gated 카탈로그 prototype", notOwner: "판정 정본·전략 승인·카탈로그 권위화", primarySurface: "V4Reports", emptyState: "리포트 선택 대기", legacyAliases: ["wiki"], internalAliases: [], prototypeAliases: ["catalog"] },
 ];
 
 const PHASE2_SOURCE_INVENTORY = [
@@ -51,7 +51,7 @@ function Phase2InventoryPanel({ compact = false }) {
       </div>
       <p>
         이 인벤토리는 일반 레일의 여섯 정본 목적지와 호환 별칭만 기록합니다. 별칭은 새 페이지가 아니며,
-        prototype 표면은 명시적 rollback 계약에서만 접근합니다.
+        prototype 표면은 owner-gated query 또는 명시적 rollback에서만 접근합니다.
       </p>
       {!compact && (
         <div className="phase2-owner-grid">

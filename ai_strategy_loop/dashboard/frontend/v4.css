@@ -565,20 +565,60 @@
   .v4-reports-frame { min-height: 420px; }
 }
 
-/* ── F4 P4 연구 카탈로그 뷰(읽기 전용) ── */
-.v4-catalog { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.v4-catalog-safe { font-size: 10.5px; color: var(--ink-3); }
-.v4-catalog-counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: 10px; overflow: hidden; }
-.v4-catalog-count { background: var(--bg-1); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
-.v4-catalog-count b { font-family: var(--mono); font-size: 20px; color: var(--ink-0); }
-.v4-catalog-count span { font-size: 10px; color: var(--ink-3); font-family: var(--mono); }
-.v4-catalog-judgments { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
-.v4-catalog-jcard { border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-1); padding: 10px 12px; }
-.v4-catalog-jhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.v4-catalog-jhead b { font-size: 12.5px; }
-.v4-catalog-jmeta { font-size: 10px; color: var(--ink-3); margin-top: 5px; }
-.v4-catalog-assets-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--line-1); border-radius: 8px; }
-.v4-catalog-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 720px; }
-.v4-catalog-table th { text-align: left; padding: 7px 9px; color: var(--ink-3); border-bottom: 1px solid var(--line-1); position: sticky; top: 0; background: var(--bg-1); }
-.v4-catalog-table td { padding: 6px 9px; border-top: 1px solid var(--line-1); color: var(--ink-1); vertical-align: top; }
-.v4-catalog-sum { color: var(--ink-2); max-width: 340px; }
+/* ── F4 P4 연구 카탈로그 뷰(읽기 전용 sealed rdc-1 prototype) ── */
+.v4-catalog { display: flex; flex-direction: column; gap: 12px; min-width: 0; font-size: 14px; }
+.v4-catalog-safe { font-size: 11px; color: var(--ink-3); line-height: 1.45; margin: 0; }
+.v4-catalog-contract { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-1); padding: 8px; }
+.v4-catalog-contract span { border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 8px; color: var(--ink-2); background: var(--bg-2); font-size: 11px; }
+.v4-catalog-provenance, .v4-catalog-panel { border: 1px solid var(--line-1); border-radius: 12px; background: var(--bg-1); padding: 12px; min-width: 0; }
+.v4-catalog-provenance-head, .v4-catalog-panel-head, .v4-catalog-card-head, .v4-catalog-map-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.v4-catalog-panel-head h3 { margin: 0 0 3px; font-size: 16px; }
+.v4-catalog-panel-head p, .v4-catalog-provenance-head span { margin: 0; color: var(--ink-3); font-size: 11px; }
+.v4-catalog-view-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; min-width: 0; }
+.v4-catalog-v2, .v4-catalog-v3, .v4-catalog-v5 { grid-column: 1 / -1; }
+.v4-catalog-asset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 9px; }
+.v4-catalog-asset { display: grid; gap: 5px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-2); padding: 9px; min-width: 0; }
+.v4-catalog-asset div { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
+.v4-catalog-asset p { margin: 0; color: var(--ink-2); font-size: 12px; line-height: 1.45; }
+.v4-catalog-asset code, .v4-catalog-watermark { border: 1px dashed rgba(240,179,90,.44); border-radius: 8px; background: rgba(240,179,90,.07); color: var(--amber); padding: 5px 7px; font-size: 11px; overflow-wrap: anywhere; }
+.v4-catalog-empty { border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-2); color: var(--ink-3); padding: 8px 10px; margin-top: 8px; }
+.v4-catalog-empty.strong { color: var(--amber); border-color: rgba(240,179,90,.38); background: rgba(240,179,90,.07); }
+.v4-catalog-timeline, .v4-catalog-map-list, .v4-catalog-clause-grid, .v4-catalog-b1-grid { display: grid; gap: 10px; margin-top: 10px; min-width: 0; }
+.v4-catalog-judgment-card, .v4-catalog-map, .v4-catalog-clause, .v4-catalog-bank-card, .v4-catalog-b1-panel { border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-0); padding: 10px; min-width: 0; }
+.v4-catalog-verdict { margin: 8px 0; line-height: 1.5; color: var(--ink-1); overflow-wrap: anywhere; }
+.v4-catalog-kv, .v4-catalog-bank-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 8px 0 0; }
+.v4-catalog-kv div, .v4-catalog-bank-metrics div { border: 1px solid var(--line-1); border-radius: 7px; padding: 6px; background: var(--bg-2); min-width: 0; }
+.v4-catalog-kv dt, .v4-catalog-bank-metrics dt { color: var(--ink-3); font-size: 10px; }
+.v4-catalog-kv dd, .v4-catalog-bank-metrics dd { margin: 2px 0 0; color: var(--ink-1); overflow-wrap: anywhere; }
+.v4-catalog-json { margin: 8px 0 0; padding: 8px; max-height: 120px; overflow: auto; border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-2); color: var(--ink-2); white-space: pre-wrap; font-size: 11px; }
+.v4-catalog-ledger { margin-top: 8px; display: grid; gap: 4px; max-height: 120px; overflow: auto; border: 1px solid var(--line-1); border-radius: 8px; padding: 7px; background: var(--bg-2); }
+.v4-catalog-map-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.v4-catalog-map-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 8px; }
+.v4-catalog-map-cell { min-height: 74px; border: 1px solid var(--line-2); border-radius: 8px; padding: 7px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; overflow-wrap: anywhere; }
+.v4-catalog-map-cell.positive { color: var(--teal); border-color: rgba(76,214,179,.34); background: rgba(76,214,179,.06); }
+.v4-catalog-map-cell.negative { color: var(--ink-2); border-color: rgba(255,107,107,.24); background: rgba(255,107,107,.04); }
+.v4-catalog-map-cell.neutral { color: var(--ink-2); background: var(--bg-2); }
+.v4-catalog-map-cell.insufficient { color: var(--ink-3); border-color: var(--line-1); background: repeating-linear-gradient(135deg, var(--bg-2), var(--bg-2) 6px, rgba(128,128,128,.10) 6px, rgba(128,128,128,.10) 12px); filter: grayscale(1); }
+.v4-catalog-class-counts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.v4-catalog-class-counts span { border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 8px; color: var(--ink-2); background: var(--bg-2); font-size: 11px; }
+.v4-catalog-clause-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.v4-catalog-clause.load_bearing { border-color: rgba(76,214,179,.44); }
+.v4-catalog-clause.counter_productive { border-color: rgba(255,107,107,.44); background: rgba(255,107,107,.035); }
+.v4-catalog-clause.weak_signal, .v4-catalog-clause.inconclusive, .v4-catalog-clause.none { border-color: var(--line-1); }
+.v4-catalog-lookup { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+.v4-catalog-lookup label { display: flex; flex-direction: column; gap: 4px; color: var(--ink-3); font-size: 11px; min-width: 150px; }
+.v4-catalog-lookup select { min-height: var(--target-touch); border: 1px solid var(--line-2); border-radius: 8px; background: var(--bg-2); color: var(--ink-1); padding: 6px 8px; }
+.v4-catalog-bank-card { margin-top: 10px; }
+.v4-catalog-bank-card.insufficient { filter: grayscale(.8); }
+.v4-catalog-b1-status { margin-top: 8px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg-2); color: var(--ink-2); padding: 14px; font-weight: 600; }
+.v4-catalog-b1-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.v4-catalog-b1-panel { display: grid; gap: 5px; color: var(--ink-2); background: var(--bg-2); }
+.v4-catalog-b1-panel span, .v4-catalog-b1-panel em { color: var(--ink-3); font-style: normal; font-size: 12px; }
+@media (max-width: 1100px) {
+  .v4-catalog-view-grid, .v4-catalog-b1-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .v4-catalog { font-size: 13px; }
+  .v4-catalog-provenance, .v4-catalog-panel { padding: 10px; }
+  .v4-catalog-map-grid, .v4-catalog-kv, .v4-catalog-bank-metrics { grid-template-columns: minmax(0, 1fr); }
+}

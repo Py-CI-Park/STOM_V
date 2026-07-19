@@ -31,7 +31,7 @@ import { AIContextPanel } from "./ai-context.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 
 // V5.P0 정본 IA owner: inventory matrix is the one canonical six-destination rail.
-// Lab/Context/Alpha/Catalog remain explicit rollback-only prototype identities.
+// Lab/Context remain explicit rollback-only identities; Catalog is Reports-owned when gated by prototype=catalog.
 const V4_NORMAL_TABS = DASHBOARD_PAGE_OWNER_MATRIX;
 const V4_LEGACY_ROLLBACK_QUERY = "v4_legacy_extras";
 const V4_LEGACY_EXTRA_TABS = [
@@ -45,6 +45,7 @@ const V4_LEGACY_TAB_KEYS = V4_NORMAL_TABS.concat(V4_LEGACY_EXTRA_TABS).map(t => 
 const V4_PROTOTYPE_TAB_KEYS = ["lab", "context", "alpha", "catalog"];
 const V4_CONTEXT_DRAWER_QUERY = "v4_context";
 const V4_PROTOTYPE_QUERY = "prototype";
+const V4_REPORTS_PROTOTYPE_KEYS = ["catalog"];
 let v4LegacyDestinationBootstrapped = false;
 let v4LegacyStoredDestination = "";
 
@@ -72,8 +73,23 @@ function v4TabFromPathname(pathname) {
     return v4CanonicalDestinationKey(leaf) || leaf;
   } catch (e) { return ""; }
 }
+function v4ReportsPrototype(search) {
+  try {
+    const value = new URLSearchParams(search === undefined ? window.location.search : search).get(V4_PROTOTYPE_QUERY);
+    return V4_REPORTS_PROTOTYPE_KEYS.includes(value) ? value : "";
+  } catch (e) { return ""; }
+}
+function v4PrototypeOwner(key) {
+  return key === "catalog" ? "reports" : "";
+}
+function v4PrototypeForTab(tab, search) {
+  const prototype = v4ReportsPrototype(search);
+  return prototype && tab === v4PrototypeOwner(prototype) && !v4LegacyExtrasEnabled(search) ? prototype : "";
+}
 function v4RequestedDestination(location = window.location) {
   try {
+    const prototype = v4ReportsPrototype(location.search || "");
+    if (prototype) return prototype;
     const requested = new URLSearchParams(location.search || "").get("tab");
     return requested || v4TabFromPathname(location.pathname);
   } catch (e) { return ""; }
@@ -87,7 +103,8 @@ function v4CanonicalizeLegacyLocation(location = window.location, history = wind
 
     const canonical = v4CanonicalDestinationKey(requested);
     const isContext = requested === "context";
-    const owner = canonical || (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    const owner = canonical || v4PrototypeOwner(requested) ||
+      (requested === "lab" ? "history" : requested === "alpha" ? "research" : "");
     if (!owner) return "";
     const url = new URL(location.href || (location.pathname + location.search), window.location.origin);
     if (isContext) {
@@ -96,7 +113,10 @@ function v4CanonicalizeLegacyLocation(location = window.location, history = wind
       url.searchParams.set(V4_CONTEXT_DRAWER_QUERY, "1");
     } else {
       url.searchParams.set("tab", owner);
-      if (requested === "alpha" || requested === "catalog") url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
+      if (requested === "alpha" || v4PrototypeOwner(requested)) {
+        url.searchParams.delete(V4_PROTOTYPE_QUERY);
+        url.searchParams.set(V4_PROTOTYPE_QUERY, requested);
+      }
     }
     if (url.pathname + url.search !== location.pathname + location.search) {
       history.replaceState(null, "", url.pathname + url.search);
@@ -133,7 +153,7 @@ function v4StoredDestination() {
   }
   const requested = evolution && primary === "evolution" ? evolution : primary;
   v4LegacyStoredDestination = v4CanonicalDestinationKey(requested) ||
-    (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+    (requested === "lab" ? "history" : requested === "alpha" ? "research" : v4PrototypeOwner(requested));
   return v4LegacyStoredDestination;
 }
 function v4InitialTab(tabKeys = V4_TAB_KEYS, storedDestination = "") {
@@ -142,7 +162,7 @@ function v4InitialTab(tabKeys = V4_TAB_KEYS, storedDestination = "") {
     const rollback = v4LegacyExtrasEnabled();
     if (rollback && V4_PROTOTYPE_TAB_KEYS.includes(requested) && tabKeys.includes(requested)) return requested;
     const canonical = v4CanonicalDestinationKey(requested) ||
-      (requested === "lab" ? "history" : requested === "alpha" ? "research" : requested === "catalog" ? "reports" : "");
+      (requested === "lab" ? "history" : requested === "alpha" ? "research" : v4PrototypeOwner(requested));
     if (canonical && tabKeys.includes(canonical)) return canonical;
     if (!requested && storedDestination && tabKeys.includes(storedDestination)) return storedDestination;
   } catch (e) {}
@@ -249,6 +269,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [pendingBase, setPendingBase] = useState_v4(baseUrl);
   const [theme, setTheme] = useState_v4(v4InitialTheme);
   const [activeTab, setActiveTab] = useState_v4(initialTabRef.current);
+  const [activePrototype, setActivePrototype] = useState_v4(() => v4PrototypeForTab(initialTabRef.current));
   const [unavailableDestination, setUnavailableDestination] = useState_v4(() => v4UnavailableDestination());
   const [replayVisited, setReplayVisited] = useState_v4(() => initialTabRef.current === "replay");
   const [contextOpen, setContextOpen] = useState_v4(() => {
@@ -276,6 +297,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
       pendingTabFocusRef.current = nextTab;
       setActiveTab(nextTab);
       setUnavailableDestination(v4UnavailableDestination());
+      setActivePrototype(v4PrototypeForTab(nextTab));
       contextOpenRef.current = nextContextOpen;
       setContextOpen(nextContextOpen);
       if (restoreContextTrigger) setTimeout(() => contextTriggerRef.current?.focus(), 0);
@@ -485,20 +507,22 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   };
   const selectTab = (key, retainFocus = true) => {
     if (!tabKeys.includes(key)) return;
-    if (key === activeTab && !contextOpenRef.current) return;
     if (key === activeTab && contextOpenRef.current) {
       setContextDrawer(false, retainFocus);
       return;
     }
+    if (key === activeTab && !activePrototype) return;
     if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
     setUnavailableDestination("");
     contextOpenRef.current = false;
     setContextOpen(false);
+    setActivePrototype("");
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", key);
       url.searchParams.delete(V4_CONTEXT_DRAWER_QUERY);
+      url.searchParams.delete(V4_PROTOTYPE_QUERY);
       window.history.pushState(null, "", url.pathname + url.search);
     } catch (e) {}
   };
@@ -508,9 +532,12 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     event.preventDefault();
     selectTab(next);
   };
+  const activePrototypeMeta = activePrototype === "catalog"
+    ? { full: "Reports · 연구 카탈로그 prototype", hint: "Reports 소유 gated prototype · 일반 레일 추가 없음" }
+    : null;
   const active = unavailableDestination
     ? { full: "요청 대상 사용할 수 없음", hint: `명시적 route "${unavailableDestination}" 보존` }
-    : (tabs.find(t => t.key === activeTab) || tabs[0]);
+    : (activePrototypeMeta || tabs.find(t => t.key === activeTab) || tabs[0]);
 
   return (
     <div className="v4-root" data-v4-tab={activeTab}>
@@ -638,7 +665,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               ) : activeTab === "workbench" ? (
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
               ) : activeTab === "reports" ? (
-                <V4Reports baseUrl={baseUrl} />
+                <V4Reports baseUrl={baseUrl} prototype={activePrototype} />
               ) : activeTab === "alpha" ? (
                 <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : activeTab === "catalog" ? (
