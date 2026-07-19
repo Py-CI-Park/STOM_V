@@ -16,12 +16,23 @@ const HCT_SOURCE_KINDS = [
 ];
 
 function _hctDate(ts) {
-  if (!ts) return "-";
-  try {
-    return new Date(Number(ts) * 1000).toLocaleString();
-  } catch {
+  if (ts == null || ts === "") return "-";
+  let date;
+  if (typeof ts === "number") {
+    date = Number.isFinite(ts) ? new Date(ts * 1000) : null;
+  } else if (typeof ts === "string") {
+    const value = ts.trim();
+    if (!value) return "-";
+    if (/^[+-]?\d+(?:\.\d+)?$/.test(value)) {
+      const epoch = Number(value);
+      date = Number.isFinite(epoch) ? new Date(epoch * 1000) : null;
+    } else {
+      date = new Date(value);
+    }
+  } else {
     return "-";
   }
+  return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "-";
 }
 
 function _hctNum(value) {
@@ -667,10 +678,19 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                               {HCT_EVAL_COLUMNS.map(col => (
                                 <th
                                   key={col.key}
-                                  style={{ textAlign: col.numeric ? "right" : "left", padding: "6px 8px", cursor: col.numeric ? "pointer" : "default" }}
-                                  onClick={() => col.numeric && toggleSort(col.key)}
+                                  aria-sort={col.numeric ? (sortKey === col.key ? (sortDir === "asc" ? "ascending" : "descending") : "none") : undefined}
+                                  style={{ textAlign: col.numeric ? "right" : "left", padding: "6px 8px" }}
                                 >
-                                  {col.label}{sortKey === col.key ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
+                                  {col.numeric ? (
+                                    <button
+                                      type="button"
+                                      className="btn ghost sm"
+                                      onClick={() => toggleSort(col.key)}
+                                      style={{ cursor: "pointer" }}
+                                    >
+                                      {col.label}{sortKey === col.key ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
+                                    </button>
+                                  ) : col.label}
                                 </th>
                               ))}
                             </tr>

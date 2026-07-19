@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Final, Literal, NotRequired, TypedDict
+from typing import Final, Literal, NotRequired, TypedDict, cast
 
 from ai_strategy_loop.dashboard import research_records
 
@@ -702,44 +702,89 @@ def list_research_index(repo_root: Path | None = None, evidence_root: Path | Non
     _CACHE[cache_key] = (signature, response)
     return response
 
+def _redact_markdown_absolute_paths(markdown: str) -> str:
+    """Apply the shared absolute-path redactor to path tokens in markdown text."""
+    chunks: list[str] = []
+    cursor = 0
+    token_boundaries = " \t\r\n([{\"'`="
+    trailing_punctuation = ".,;:!?)]}>`"
+    while cursor < len(markdown):
+        path_start = next(
+            (
+                index
+                for index in range(cursor, len(markdown))
+                if (index == 0 or markdown[index - 1] in token_boundaries)
+                and research_records._ABSOLUTE_PATH.match(markdown[index:])
+            ),
+            None,
+        )
+        if path_start is None:
+            chunks.append(markdown[cursor:])
+            break
+        chunks.append(markdown[cursor:path_start])
+        token_end = path_start
+        while token_end < len(markdown) and not markdown[token_end].isspace():
+            token_end += 1
+        path_end = token_end
+        while path_end > path_start and markdown[path_end - 1] in trailing_punctuation:
+            path_end -= 1
+        redacted = research_records._redact_absolute_paths(markdown[path_start:path_end])
+        chunks.append(redacted if isinstance(redacted, str) else markdown[path_start:path_end])
+        chunks.append(markdown[path_end:token_end])
+        cursor = token_end
+    return "".join(chunks)
+
+
+def _serialize_detail_response(response: ResearchIndexDetailResponse) -> ResearchIndexDetailResponse:
+    """Redact absolute paths from all detail payloads without mutating their sources."""
+    serialized = cast(ResearchIndexDetailResponse, research_records._redact_absolute_paths(response))
+    markdown = serialized.get("markdown")
+    if isinstance(markdown, str):
+        serialized["markdown"] = _redact_markdown_absolute_paths(markdown)
+    return serialized
+
+
+
 
 def research_index_detail(id: str, repo_root: Path | None = None, evidence_root: Path | None = None) -> ResearchIndexDetailResponse:
     root = (repo_root or REPO_ROOT).resolve()
     evidence = (evidence_root or (root / ".omo" / "evidence" / "tmap-walkforward")).resolve()
     match = _SAFE_NAMESPACE.fullmatch(id)
     if match is None:
-        return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": False, "reason": "invalid_id"})
     namespace, payload = match.groups()
     if not _safe_rel(payload) and namespace in {"doc", "update_log", "evidence"}:
-        return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": False, "reason": "invalid_id"})
     index = list_research_index(root, evidence)
     row = next((item for item in index["records"] if item["id"] == id), None)
     if row is None:
-        return {"available": False, "reason": "missing_id"}
+        return _serialize_detail_response({"available": False, "reason": "missing_id"})
     if not row["detail_available"]:
-        return {"available": False, "reason": "detail_unavailable", "row": row}
+        return _serialize_detail_response({"available": False, "reason": "detail_unavailable", "row": row})
     if namespace == "campaign":
         detail = research_records.research_record_detail(payload, evidence)
-        return {"available": bool(detail.get("available")), "row": row, "campaign": _as_object(detail.get("campaign"))}
+        return _serialize_detail_response(
+            {"available": bool(detail.get("available")), "row": row, "campaign": _as_object(detail.get("campaign"))}
+        )
     if namespace in {"doc", "update_log", "evidence"}:
         path = _repo_path(root, row["source_path"])
         if not path.is_file() or not path.resolve().is_relative_to(root):
-            return {"available": False, "reason": "disallowed_path", "row": row}
+            return _serialize_detail_response({"available": False, "reason": "disallowed_path", "row": row})
         markdown = path.read_text(encoding="utf-8", errors="replace")
-        return {"available": True, "row": row, "markdown": markdown}
+        return _serialize_detail_response({"available": True, "row": row, "markdown": markdown})
     if namespace == "registry":
         entry = _registry_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "hof":
         entry = _hof_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "loop_run":
         entry = _loop_run_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "decision":
         entry = _decision_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
-    return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
+    return _serialize_detail_response({"available": False, "reason": "invalid_id"})
 
 
 def _registry_entry(payload: str, repo_root: Path) -> JsonObject | None:

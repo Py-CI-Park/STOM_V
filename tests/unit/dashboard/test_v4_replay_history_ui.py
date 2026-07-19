@@ -257,3 +257,22 @@ def test_history_tree_validates_source_coverage_and_exposes_all_cursors() -> Non
         assert f'loadSection("{section}", sections.{section}.next_cursor)' in tree
     assert 'aria-label="Load more stages"' in tree
     assert 'aria-label="Load more conditions"' in tree
+def test_history_evaluation_sort_headers_are_keyboard_accessible_and_dates_are_safe() -> None:
+    tree = _read("history-condition-tree.jsx")
+
+    # Native buttons preserve focus and provide Enter/Space activation for numeric sorts.
+    sort_header = tree[tree.index("aria-sort="):tree.index("</th>", tree.index("aria-sort="))]
+    assert 'aria-sort={col.numeric ? (sortKey === col.key ? (sortDir === "asc" ? "ascending" : "descending") : "none") : undefined}' in sort_header
+    assert "<button" in sort_header
+    assert 'type="button"' in sort_header
+    assert 'onClick={() => toggleSort(col.key)}' in sort_header
+    assert 'onClick={() => col.numeric && toggleSort(col.key)}' not in tree
+
+    # The index API emits ISO-8601 strings; numeric Unix epochs remain supported.
+    assert 'new Date(value)' in tree
+    assert 'new Date(ts * 1000)' in tree
+    assert 'new Date(epoch * 1000)' in tree
+
+    # Invalid dates render the explicit fallback rather than leaking "Invalid Date".
+    assert 'return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "-";' in tree
+    assert 'new Date(Number(ts) * 1000).toLocaleString()' not in tree

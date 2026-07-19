@@ -31886,12 +31886,23 @@ def signal_sell(pos, bar, ind):
     { value: "loop_run", label: "loop_run" }
   ];
   function _hctDate(ts) {
-    if (!ts) return "-";
-    try {
-      return new Date(Number(ts) * 1e3).toLocaleString();
-    } catch (e) {
+    if (ts == null || ts === "") return "-";
+    let date;
+    if (typeof ts === "number") {
+      date = Number.isFinite(ts) ? new Date(ts * 1e3) : null;
+    } else if (typeof ts === "string") {
+      const value = ts.trim();
+      if (!value) return "-";
+      if (/^[+-]?\d+(?:\.\d+)?$/.test(value)) {
+        const epoch = Number(value);
+        date = Number.isFinite(epoch) ? new Date(epoch * 1e3) : null;
+      } else {
+        date = new Date(value);
+      }
+    } else {
       return "-";
     }
+    return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "-";
   }
   function _hctNum(value) {
     if (value == null || Number.isNaN(Number(value))) return "\u2014";
@@ -32278,11 +32289,20 @@ def signal_sell(pos, bar, ind):
       "th",
       {
         key: col.key,
-        style: { textAlign: col.numeric ? "right" : "left", padding: "6px 8px", cursor: col.numeric ? "pointer" : "default" },
-        onClick: () => col.numeric && toggleSort(col.key)
+        "aria-sort": col.numeric ? sortKey === col.key ? sortDir === "asc" ? "ascending" : "descending" : "none" : void 0,
+        style: { textAlign: col.numeric ? "right" : "left", padding: "6px 8px" }
       },
-      col.label,
-      sortKey === col.key ? sortDir === "asc" ? " \u25B2" : " \u25BC" : ""
+      col.numeric ? /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "btn ghost sm",
+          onClick: () => toggleSort(col.key),
+          style: { cursor: "pointer" }
+        },
+        col.label,
+        sortKey === col.key ? sortDir === "asc" ? " \u25B2" : " \u25BC" : ""
+      ) : col.label
     )))), /* @__PURE__ */ React.createElement("tbody", null, sortedEvaluations.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hctStatusCell(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "traded_symbol_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "net_profit")) } }, _hctMoney(_hctMetric(row, "net_profit"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "gross_loss")) } }, _hctMoney(_hctMetric(row, "gross_loss"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "losing_trades"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "win_rate"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "mdd")))))))), sections.evaluations && sections.evaluations.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", "aria-label": "Load more evaluations", onClick: () => loadSection("evaluations", sections.evaluations.next_cursor), disabled: sections.evaluations.loading }, sections.evaluations.loading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 8, fontSize: 10.5, color: "var(--amber)" } }, "\uD0D0\uC0C9\uC6A9 \uACB0\uACFC \u2014 OOS/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8")))))));
   }
   Object.assign(window, { HistoryConditionTreePanel });
