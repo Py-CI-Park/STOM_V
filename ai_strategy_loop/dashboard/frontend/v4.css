@@ -547,3 +547,10 @@
 .phase-step.pinned { box-shadow: inset 0 0 0 1.5px var(--violet); border-radius: 8px; }
 .phase-step.pinned .phase-num { border-color: var(--violet); color: var(--violet); }
 .v5-pin-reset { align-self: flex-start; color: var(--violet); border-color: rgba(165,148,255,.4); margin: -4px 0 2px; }
+
+/* ═══ V5.2 백테 단계 조건식·출처 밴드(L6) ═══ */
+.bt-condition-band { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px 18px; padding: 8px 12px; border-bottom: 1px solid var(--line-1); background: var(--bg-1); }
+.bt-condition-band > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bt-condition-band .k { font-size: 9.5px; color: var(--ink-3); font-family: var(--mono); letter-spacing: .04em; }
+.bt-condition-band b { font-size: 12px; color: var(--ink-0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 900px) { .bt-condition-band { grid-template-columns: 1fr; } }
