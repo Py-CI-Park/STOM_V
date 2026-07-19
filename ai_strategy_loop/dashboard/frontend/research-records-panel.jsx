@@ -1,9 +1,11 @@
 import { _RpRunCompare, _RpHistory } from "./rp-heatmap.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 /* Evolution dashboard research-record index panel. */
 const {
   useState: useState_rrp,
   useEffect: useEffect_rrp,
   useCallback: useCallback_rrp,
+  useRef: useRef_rrp,
 } = React;
 
 function _rrpMoney(value) {
@@ -32,7 +34,7 @@ function _rrpBestLabel(record) {
   return best.label || best.name || best.strategy_gist || "-";
 }
 
-function ResearchRecordsPanel({ baseUrl, wsStatus }) {
+function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
   const [payload, setPayload] = useState_rrp(null);
   const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
   const [detail, setDetail] = useState_rrp(null);
@@ -40,6 +42,12 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
   const [err, setErr] = useState_rrp("");
   const [runList, setRunList] = useState_rrp([]);
   const [runListLoading, setRunListLoading] = useState_rrp(false);
+  // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
+  const [showAll, setShowAll] = useState_rrp(false);
+  // v5.3.9(검수): 캠페인 필터 + 열 제목 클릭 정렬(연구·시점·세대 체계 탐색).
+  const [rq, setRq] = useState_rrp("");
+  const [sortKey, setSortKey] = useState_rrp("updated_at");
+  const [sortAsc, setSortAsc] = useState_rrp(false);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -65,16 +73,28 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
     return () => clearInterval(timer);
   }, [refresh, baseUrl, isDemo]);
 
+  const detailReqRef = useRef_rrp(0);
   useEffect_rrp(() => {
     if (isDemo || !baseUrl || !selectedCampaign) {
       setDetail(null);
       return;
     }
+    // V5.4(§10-10): 세대 가드 — 늦게 도착한 이전 선택 응답이 새 선택을 덮어쓰지 않게 한다.
+    const reqId = ++detailReqRef.current;
+    const forCampaign = selectedCampaign;
+    let cancelled = false;
     fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
           { signal: AbortSignal.timeout(6000) })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => setDetail(j))
-      .catch(e => setDetail({ available: false, reason: String(e) }));
+      .then(j => {
+        if (!cancelled && reqId === detailReqRef.current) {
+          setDetail(Object.assign({ __campaign: forCampaign }, j));
+          // V6.3(S4): 선택 연구를 상위(History 컨텍스트 바)로 lift — stable ID 마스터-디테일.
+          if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, (j && j.campaign) || null);
+        }
+      })
+      .catch(e => { if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign }); });
+    return () => { cancelled = true; };
   }, [baseUrl, isDemo, selectedCampaign]);
   const refreshRuns = useCallback_rrp(() => {
     if (isDemo || !baseUrl) {
@@ -82,8 +102,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
       return;
     }
     setRunListLoading(true);
-    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(6000) })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+    fetchRunsShared(baseUrl, { timeoutMs: 6000 })
       .then(j => {
         const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -104,7 +123,24 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
     } catch (e) {}
   }, []);
 
-  const rows = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
+  const rowsAll = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
+  const _rrpSortVal = (row, k) => {
+    const best = row.best || {};
+    if (k === "name") return String(row.name || "");
+    if (k === "candidate_count") return Number(row.candidate_count || 0);
+    if (k === "profit") return Number(best.profit || 0);
+    if (k === "mdd") return Number(best.mdd || 0);
+    return Number(row.updated_at || 0);
+  };
+  const rows = rowsAll
+    .filter(r => !rq.trim() || String(r.name || "").toLowerCase().includes(rq.trim().toLowerCase()))
+    .sort((a, b) => {
+      const va = _rrpSortVal(a, sortKey), vb = _rrpSortVal(b, sortKey);
+      const c = typeof va === "string" ? va.localeCompare(String(vb)) : (va - vb);
+      return sortAsc ? c : -c;
+    });
+  const onSort = (k) => { if (k === sortKey) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(k === "name"); } };
+  const _si = (k) => (sortKey === k ? (sortAsc ? " ▲" : " ▼") : "");
   const selected = (detail && detail.available && detail.campaign)
     ? detail.campaign : rows.find(r => r.name === selectedCampaign);
   const candidates = (selected && Array.isArray(selected.candidates)) ? selected.candidates.slice(0, 5) : [];
@@ -132,21 +168,25 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
         {err && <div className="research-empty danger">{err}</div>}
         {isDemo && <div className="research-empty">Demo mode</div>}
         {!isDemo && rows.length === 0 && !err && <div className="research-empty">No research records</div>}
-        {rows.length > 0 && (
+        {rowsAll.length > 0 && (
           <div style={{ overflowX: "auto" }}>
+            <input className="toolbar-input" type="search" placeholder="캠페인 검색(필터)"
+                   value={rq} onChange={e => setRq(e.target.value)} aria-label="캠페인 필터"
+                   style={{ marginBottom: 8, width: 260 }} />
+            {rq && <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: "var(--ink-3)" }}>필터 {rows.length}/{rowsAll.length}건</span>}
             <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
               <thead>
                 <tr style={{ color: "var(--ink-3)" }}>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>Campaign</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Candidates</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Best PnL</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>MDD</th>
+                  <th style={{ textAlign: "left", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("name")}>Campaign{_si("name")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("candidate_count")}>Candidates{_si("candidate_count")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("profit")}>Best PnL{_si("profit")}</button></th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("mdd")}>MDD{_si("mdd")}</button></th>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}>Artifacts</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Updated</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("updated_at")}>Updated{_si("updated_at")}</button></th>
                 </tr>
               </thead>
               <tbody>
-                {rows.slice(0, 12).map(row => {
+                {(showAll ? rows : rows.slice(0, 12)).map(row => {
                   const best = row.best || {};
                   const artifacts = row.artifacts || {};
                   const active = row.name === selectedCampaign;
@@ -156,7 +196,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                       background: active ? "rgba(56, 189, 248, 0.08)" : "transparent",
                     }}>
                       <td style={{ padding: "7px 8px", minWidth: 180 }}>
-                        <button className="btn ghost sm" onClick={() => setSelectedCampaign(row.name)}
+                        <button className="btn ghost sm" onClick={() => { setSelectedCampaign(row.name); if (typeof onSelectCampaign === "function") onSelectCampaign(row.name, null); }}
                                 style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                           {row.name}
                         </button>
@@ -180,6 +220,14 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+        {rows.length > 12 && (
+          <div className="mono" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" }}>
+            <span>{showAll ? `전체 ${rows.length}개 표시 중` : `전체 ${rows.length}개 중 12개 표시`}</span>
+            <button className="btn ghost sm" onClick={() => setShowAll(v => !v)}>
+              {showAll ? "처음 12개만 보기" : `전체 ${rows.length}개 보기`}
+            </button>
           </div>
         )}
         {selected && (

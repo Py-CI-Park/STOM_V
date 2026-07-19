@@ -103,6 +103,8 @@ console.log(JSON.stringify({
   lab: fn('/ui/evolution/lab'),
   workbench: fn('/ui/evolution/workbench'),
   verdict: fn('/ui/evolution/verdict'),
+  audit: fn('/ui/evolution/audit'),
+  audit_top: fn('/ui/audit'),
   backtest: fn('/ui/backtest'),
   replay: fn('/ui/chart-replay'),
   root: fn('/ui/'),
@@ -117,11 +119,39 @@ console.log(JSON.stringify({
         "evolution": "research",
         "process": "research",
         "records": "history",
-        "lab": "lab",
+        "lab": "research",
         "workbench": "workbench",
-        "verdict": "audit",
+        "verdict": "history",
+        "audit": "history",
+        "audit_top": "history",
         "backtest": "backtest",
         "replay": "replay",
         "root": "",
         "unknown": "",
     }
+
+def test_v6_primary_owner_map_order() -> None:
+    # V6.1(R1): 최상위 owner 순서 — Live·History·성과·Reports·Backtest·Replay.
+    #   Backtest·Replay 는 Reports 뒤(사장님 지시). lab 은 Live 스테이지로 은퇴.
+    import re
+    source = _read("dashboard-v4-shell.jsx")
+    primary = re.findall(r'key:\s*"([^"]+)"[^\n]*?group:\s*"primary"', source)
+    assert primary == ["research", "history", "workbench", "reports", "backtest", "replay"], primary
+    # audit·lab 는 더 이상 탭이 아니다(거버넌스→History, Lab→Live 스테이지).
+    assert 'key: "audit"' not in source
+    assert 'key: "lab"' not in source
+
+
+def test_v5p0_retired_tab_deeplinks_sealed_to_owner() -> None:
+    # v5.3.1: audit·verdict·lab·alpha 은퇴 탭의 legacy 딥링크(?tab=·/ui/*) 봉인.
+    source = _read("dashboard-v4-shell.jsx")
+    assert 'const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" }' in source
+    assert "V4_LEGACY_TAB_ALIAS[t]" in source
+    assert '"audit": "history"' in source  # V4_PATH_TAB_MAP path→tab
+
+
+def test_v5p0_catalog_marked_non_authoritative_prototype() -> None:
+    # V5.P0: 현 Catalog 는 비정본 prototype 으로 명시·격하 표기한다.
+    source = _read("dashboard-v4-shell.jsx")
+    catalog_line = next(l for l in source.splitlines() if 'key: "catalog"' in l)
+    assert "비정본" in catalog_line and "prototype" in catalog_line

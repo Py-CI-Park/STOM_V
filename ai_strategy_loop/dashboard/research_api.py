@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import json
+import os
+import sqlite3
 from pathlib import Path
 from typing import Final, TypedDict
 
@@ -143,7 +146,12 @@ def research_doc(id: str = "") -> ResearchDocResponse:
         return {"available": False, "error": "doc_not_allowed", "id": id}
     path, summary = found
     markdown = path.read_text(encoding="utf-8", errors="replace")
-    return {**summary, "available": True, "markdown": markdown, "size": len(markdown)}
+    return {
+        **summary,
+        "available": True,
+        "markdown": research_index.serialize_research_doc_markdown(markdown),
+        "size": len(markdown),
+    }
 
 
 @router.get("/research_records")
@@ -158,8 +166,7 @@ def research_record_detail(campaign: str = ""):
 
 @router.get("/research_index")
 def research_index_route():
-    return research_index.list_research_index()
-
+    return research_index.serialize_research_index_response(research_index.list_research_index())
 
 @router.get("/research_index/detail")
 def research_index_detail(id: str = ""):
@@ -175,3 +182,138 @@ def index_compare(run_id: str = "") -> IndexCompareResponse:
         "network_used": False,
         "source": "local",
     }
+
+# ===========================================================================
+# P4 연구 카탈로그(research_assets.db) — SELECT-only 읽기 전용 조회(재계산·쓰기 금지).
+#   DB 는 scripts/build_research_catalog.py 가 생성(gitignore). 부재/오류는 500 아닌 error envelope.
+#   sqlite 는 URI mode=ro 로만 연다(원본 무변형). 계약: 2026-07-12_dashboard_data_contract.md.
+# ===========================================================================
+# V5.7: 정본 경로는 STOM_RESEARCH_ASSETS_DB env 로 지정(무설정 시 legacy 비정본 경로 폴백).
+_CATALOG_DB: Final[Path] = Path(
+    os.environ.get("STOM_RESEARCH_ASSETS_DB")
+    or (REPO_ROOT / "legacy_non_authoritative_catalogs" / "research_assets.db")
+)
+_CATALOG_TABLES: Final[tuple[str, ...]] = (
+    "assets", "judgments", "clauses", "strategies", "cells", "ledger_mirror",
+)
+
+
+def _catalog_conn() -> "sqlite3.Connection | None":
+    if not _CATALOG_DB.is_file():
+        return None
+    try:
+        return sqlite3.connect(f"file:{_CATALOG_DB.as_posix()}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None
+
+
+def _catalog_unavailable(reason: str) -> dict:
+    return {"available": False, "reason": reason, "db": "research_assets.db",
+            "hint": "python scripts/build_research_catalog.py"}
+
+
+@router.get("/research/summary")
+def research_catalog_summary() -> dict:
+    if not _CATALOG_DB.is_file():
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    # V5.7: 서버 COUNT(*) 집계 제거 — 카운트는 빌드 영수증(provenance)에서 읽는다(무재집계).
+    receipt = _CATALOG_DB.parent / "research_assets_build_receipt.json"
+    counts: dict = {t: None for t in _CATALOG_TABLES}
+    generated_at = None
+    if receipt.is_file():
+        try:
+            data = json.loads(receipt.read_text(encoding="utf-8"))
+            table_counts = data.get("table_counts") or {}
+            counts = {t: table_counts.get(t) for t in _CATALOG_TABLES}
+            generated_at = data.get("generated_at")
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
+    try:
+        st = _CATALOG_DB.stat()
+        mtime, size = int(st.st_mtime), st.st_size
+    except OSError:
+        mtime, size = None, None
+    # authoritative=false: 현 카탈로그는 비정본 preview(정본 승격은 봉인 계약 통과 후).
+    return {"available": True, "db": _CATALOG_DB.name, "authoritative": False,
+            "mtime": mtime, "size_bytes": size, "generated_at": generated_at, "counts": counts}
+
+
+@router.get("/research/assets")
+def research_catalog_assets(limit: int = 200) -> dict:
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    lim = max(1, min(500, int(limit) if str(limit).lstrip("-").isdigit() else 200))
+    try:
+        cur = conn.execute(
+            "SELECT asset_id, kind, path, status_tag, window, seal_doc, summary, "
+            "exists_on_disk FROM assets ORDER BY kind, asset_id LIMIT ?", (lim,))
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        return {"available": True, "count": len(rows), "assets": rows}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()
+
+
+@router.get("/research/judgments")
+def research_catalog_judgments() -> dict:
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    try:
+        cur = conn.execute(
+            "SELECT series, verdict, key_metrics_json, n_ledger_rows, report_path, "
+            "note FROM judgments ORDER BY series")
+        cols = [c[0] for c in cur.description]
+        out: list = []
+        for r in cur.fetchall():
+            row = dict(zip(cols, r))
+            raw = row.pop("key_metrics_json", None)
+            try:
+                row["key_metrics"] = json.loads(raw) if raw else {}
+            except (json.JSONDecodeError, TypeError):
+                row["key_metrics"] = {}
+                row["key_metrics_error"] = True
+            out.append(row)
+        return {"available": True, "count": len(out), "judgments": out}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()
+
+@router.get("/research/clauses")
+def research_catalog_clauses(limit: int = 200) -> dict:
+    # V5.7: 절실험실 뷰용 SELECT-only. 무재집계·읽기 전용.
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    lim = max(1, min(500, int(limit) if str(limit).lstrip("-").isdigit() else 200))
+    try:
+        cur = conn.execute("SELECT * FROM clauses ORDER BY rowid LIMIT ?", (lim,))
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        return {"available": True, "count": len(rows), "clauses": rows}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()
+
+
+@router.get("/research/cells")
+def research_catalog_cells(limit: int = 200) -> dict:
+    # V5.7: 표본/출구은행 뷰용 SELECT-only. 무재집계·읽기 전용.
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    lim = max(1, min(500, int(limit) if str(limit).lstrip("-").isdigit() else 200))
+    try:
+        cur = conn.execute("SELECT * FROM cells ORDER BY rowid LIMIT ?", (lim,))
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        return {"available": True, "count": len(rows), "cells": rows}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()

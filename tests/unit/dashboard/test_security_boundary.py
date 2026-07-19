@@ -96,6 +96,46 @@ def test_top_level_v4_navigation_without_origin_issues_session_cookie(
     assert client.cookies.get(SESSION_COOKIE_NAME)
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/ui/",
+        "/ui/evolution",
+        "/ui/evolution/records",
+        "/ui/evolution/catalog",
+        "/ui/backtest",
+        "/ui/chart-replay",
+    ],
+)
+def test_canonical_v4_shell_paths_bootstrap_session_cookie(
+    monkeypatch,
+    tmp_path: Path,
+    path: str,
+) -> None:
+    """V4 graph-first 승격 정본 경로도 세션을 발급해야 /ws 4401 무한 거부가 없다(UXR-P2)."""
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get(path, headers=ORIGIN_HEADER)
+
+    assert response.status_code == 200
+    cookie = response.headers.get("set-cookie", "").lower()
+    assert f"{SESSION_COOKIE_NAME}=" in cookie
+    assert "httponly" in cookie
+    assert "samesite=strict" in cookie
+    assert client.cookies.get(SESSION_COOKIE_NAME)
+
+
+def test_unknown_evolution_subtab_does_not_issue_cookie(monkeypatch, tmp_path: Path) -> None:
+    """미지 하위탭은 404 — 부트스트랩 접두 매칭이어도 4xx 응답엔 세션을 발급하지 않는다."""
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get("/ui/evolution/garbage", headers=ORIGIN_HEADER, follow_redirects=False)
+
+    assert response.status_code == 404
+    assert response.headers.get("set-cookie") is None
+    assert client.cookies.get(SESSION_COOKIE_NAME) is None
+
+
 def test_v4_bootstrap_rejects_foreign_origin_and_non_loopback_host(
     monkeypatch,
     tmp_path: Path,

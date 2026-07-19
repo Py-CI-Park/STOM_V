@@ -120,9 +120,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js
   var require_use_sync_external_store_shim_development = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js"(exports) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js"(exports) {
       "use strict";
       (function() {
         function is(x, y) {
@@ -184,9 +184,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js
   var require_shim = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -196,9 +196,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js
   var require_with_selector_development = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js"(exports) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js"(exports) {
       "use strict";
       (function() {
         function is(x, y) {
@@ -263,9 +263,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js
   var require_with_selector = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -275,9 +275,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js
   var require_listCacheClear = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js"(exports, module) {
       function listCacheClear() {
         this.__data__ = [];
         this.size = 0;
@@ -286,9 +286,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js
   var require_eq = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js"(exports, module) {
       function eq(value, other) {
         return value === other || value !== value && other !== other;
       }
@@ -296,9 +296,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js
   var require_assocIndexOf = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js"(exports, module) {
       var eq = require_eq();
       function assocIndexOf(array2, key) {
         var length = array2.length;
@@ -313,9 +313,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js
   var require_listCacheDelete = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       var arrayProto = Array.prototype;
       var splice = arrayProto.splice;
@@ -337,9 +337,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js
   var require_listCacheGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheGet(key) {
         var data = this.__data__, index2 = assocIndexOf(data, key);
@@ -349,9 +349,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js
   var require_listCacheHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheHas(key) {
         return assocIndexOf(this.__data__, key) > -1;
@@ -360,9 +360,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js
   var require_listCacheSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheSet(key, value) {
         var data = this.__data__, index2 = assocIndexOf(data, key);
@@ -378,9 +378,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js
   var require_ListCache = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js"(exports, module) {
       var listCacheClear = require_listCacheClear();
       var listCacheDelete = require_listCacheDelete();
       var listCacheGet = require_listCacheGet();
@@ -403,9 +403,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js
   var require_stackClear = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js"(exports, module) {
       var ListCache = require_ListCache();
       function stackClear() {
         this.__data__ = new ListCache();
@@ -415,9 +415,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js
   var require_stackDelete = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js"(exports, module) {
       function stackDelete(key) {
         var data = this.__data__, result = data["delete"](key);
         this.size = data.size;
@@ -427,9 +427,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js
   var require_stackGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js"(exports, module) {
       function stackGet(key) {
         return this.__data__.get(key);
       }
@@ -437,9 +437,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js
   var require_stackHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js"(exports, module) {
       function stackHas(key) {
         return this.__data__.has(key);
       }
@@ -447,17 +447,17 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js
   var require_freeGlobal = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js"(exports, module) {
       var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
       module.exports = freeGlobal;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js
   var require_root = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js"(exports, module) {
       var freeGlobal = require_freeGlobal();
       var freeSelf = typeof self == "object" && self && self.Object === Object && self;
       var root2 = freeGlobal || freeSelf || Function("return this")();
@@ -465,18 +465,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js
   var require_Symbol = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js"(exports, module) {
       var root2 = require_root();
       var Symbol2 = root2.Symbol;
       module.exports = Symbol2;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js
   var require_getRawTag = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
@@ -503,9 +503,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js
   var require_objectToString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js"(exports, module) {
       var objectProto = Object.prototype;
       var nativeObjectToString = objectProto.toString;
       function objectToString(value) {
@@ -515,9 +515,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js
   var require_baseGetTag = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var getRawTag = require_getRawTag();
       var objectToString = require_objectToString();
@@ -534,9 +534,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js
   var require_isObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js"(exports, module) {
       function isObject(value) {
         var type = typeof value;
         return value != null && (type == "object" || type == "function");
@@ -545,9 +545,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js
   var require_isFunction = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObject = require_isObject();
       var asyncTag = "[object AsyncFunction]";
@@ -565,18 +565,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js
   var require_coreJsData = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js"(exports, module) {
       var root2 = require_root();
       var coreJsData = root2["__core-js_shared__"];
       module.exports = coreJsData;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js
   var require_isMasked = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js"(exports, module) {
       var coreJsData = require_coreJsData();
       var maskSrcKey = function() {
         var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
@@ -589,9 +589,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js
   var require_toSource = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js"(exports, module) {
       var funcProto = Function.prototype;
       var funcToString = funcProto.toString;
       function toSource(func) {
@@ -611,9 +611,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js
   var require_baseIsNative = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js"(exports, module) {
       var isFunction = require_isFunction();
       var isMasked = require_isMasked();
       var isObject = require_isObject();
@@ -638,9 +638,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js
   var require_getValue = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js"(exports, module) {
       function getValue(object, key) {
         return object == null ? void 0 : object[key];
       }
@@ -648,9 +648,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js
   var require_getNative = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js"(exports, module) {
       var baseIsNative = require_baseIsNative();
       var getValue = require_getValue();
       function getNative(object, key) {
@@ -661,9 +661,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js
   var require_Map = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Map2 = getNative(root2, "Map");
@@ -671,18 +671,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js
   var require_nativeCreate = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js"(exports, module) {
       var getNative = require_getNative();
       var nativeCreate = getNative(Object, "create");
       module.exports = nativeCreate;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js
   var require_hashClear = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       function hashClear() {
         this.__data__ = nativeCreate ? nativeCreate(null) : {};
@@ -692,9 +692,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js
   var require_hashDelete = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js"(exports, module) {
       function hashDelete(key) {
         var result = this.has(key) && delete this.__data__[key];
         this.size -= result ? 1 : 0;
@@ -704,9 +704,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js
   var require_hashGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       var objectProto = Object.prototype;
@@ -723,9 +723,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js
   var require_hashHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
@@ -737,9 +737,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js
   var require_hashSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       function hashSet(key, value) {
@@ -752,9 +752,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js
   var require_Hash = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js"(exports, module) {
       var hashClear = require_hashClear();
       var hashDelete = require_hashDelete();
       var hashGet = require_hashGet();
@@ -777,9 +777,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js
   var require_mapCacheClear = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js"(exports, module) {
       var Hash = require_Hash();
       var ListCache = require_ListCache();
       var Map2 = require_Map();
@@ -795,9 +795,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js
   var require_isKeyable = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js"(exports, module) {
       function isKeyable(value) {
         var type = typeof value;
         return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
@@ -806,9 +806,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js
   var require_getMapData = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js"(exports, module) {
       var isKeyable = require_isKeyable();
       function getMapData(map, key) {
         var data = map.__data__;
@@ -818,9 +818,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js
   var require_mapCacheDelete = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheDelete(key) {
         var result = getMapData(this, key)["delete"](key);
@@ -831,9 +831,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js
   var require_mapCacheGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheGet(key) {
         return getMapData(this, key).get(key);
@@ -842,9 +842,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js
   var require_mapCacheHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheHas(key) {
         return getMapData(this, key).has(key);
@@ -853,9 +853,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js
   var require_mapCacheSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheSet(key, value) {
         var data = getMapData(this, key), size = data.size;
@@ -867,9 +867,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js
   var require_MapCache = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js"(exports, module) {
       var mapCacheClear = require_mapCacheClear();
       var mapCacheDelete = require_mapCacheDelete();
       var mapCacheGet = require_mapCacheGet();
@@ -892,9 +892,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js
   var require_stackSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js"(exports, module) {
       var ListCache = require_ListCache();
       var Map2 = require_Map();
       var MapCache = require_MapCache();
@@ -918,9 +918,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js
   var require_Stack = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js"(exports, module) {
       var ListCache = require_ListCache();
       var stackClear = require_stackClear();
       var stackDelete = require_stackDelete();
@@ -940,9 +940,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js
   var require_arrayEach = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js"(exports, module) {
       function arrayEach(array2, iteratee) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -956,9 +956,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js
   var require_defineProperty = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js"(exports, module) {
       var getNative = require_getNative();
       var defineProperty = function() {
         try {
@@ -972,9 +972,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js
   var require_baseAssignValue = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js"(exports, module) {
       var defineProperty = require_defineProperty();
       function baseAssignValue(object, key, value) {
         if (key == "__proto__" && defineProperty) {
@@ -992,9 +992,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js
   var require_assignValue = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var eq = require_eq();
       var objectProto = Object.prototype;
@@ -1009,9 +1009,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js
   var require_copyObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js"(exports, module) {
       var assignValue = require_assignValue();
       var baseAssignValue = require_baseAssignValue();
       function copyObject(source, props, object, customizer) {
@@ -1036,9 +1036,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js
   var require_baseTimes = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js"(exports, module) {
       function baseTimes(n, iteratee) {
         var index2 = -1, result = Array(n);
         while (++index2 < n) {
@@ -1050,9 +1050,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js
   var require_isObjectLike = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js"(exports, module) {
       function isObjectLike(value) {
         return value != null && typeof value == "object";
       }
@@ -1060,9 +1060,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js
   var require_baseIsArguments = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObjectLike = require_isObjectLike();
       var argsTag = "[object Arguments]";
@@ -1073,9 +1073,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js
   var require_isArguments = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js"(exports, module) {
       var baseIsArguments = require_baseIsArguments();
       var isObjectLike = require_isObjectLike();
       var objectProto = Object.prototype;
@@ -1090,17 +1090,17 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js
   var require_isArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js"(exports, module) {
       var isArray = Array.isArray;
       module.exports = isArray;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js
   var require_stubFalse = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js"(exports, module) {
       function stubFalse() {
         return false;
       }
@@ -1108,9 +1108,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js
   var require_isBuffer = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js"(exports, module) {
       var root2 = require_root();
       var stubFalse = require_stubFalse();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
@@ -1123,9 +1123,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js
   var require_isIndex = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js"(exports, module) {
       var MAX_SAFE_INTEGER = 9007199254740991;
       var reIsUint = /^(?:0|[1-9]\d*)$/;
       function isIndex(value, length) {
@@ -1137,9 +1137,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js
   var require_isLength = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js"(exports, module) {
       var MAX_SAFE_INTEGER = 9007199254740991;
       function isLength(value) {
         return typeof value == "number" && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
@@ -1148,9 +1148,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js
   var require_baseIsTypedArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isLength = require_isLength();
       var isObjectLike = require_isObjectLike();
@@ -1188,9 +1188,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js
   var require_baseUnary = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js"(exports, module) {
       function baseUnary(func) {
         return function(value) {
           return func(value);
@@ -1200,9 +1200,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js
   var require_nodeUtil = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js"(exports, module) {
       var freeGlobal = require_freeGlobal();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
       var freeModule = freeExports && typeof module == "object" && module && !module.nodeType && module;
@@ -1222,9 +1222,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js
   var require_isTypedArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js"(exports, module) {
       var baseIsTypedArray = require_baseIsTypedArray();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1234,9 +1234,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js
   var require_arrayLikeKeys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js"(exports, module) {
       var baseTimes = require_baseTimes();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -1262,9 +1262,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js
   var require_isPrototype = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js"(exports, module) {
       var objectProto = Object.prototype;
       function isPrototype(value) {
         var Ctor = value && value.constructor, proto = typeof Ctor == "function" && Ctor.prototype || objectProto;
@@ -1274,9 +1274,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js
   var require_overArg = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js"(exports, module) {
       function overArg(func, transform2) {
         return function(arg) {
           return func(transform2(arg));
@@ -1286,18 +1286,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js
   var require_nativeKeys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js"(exports, module) {
       var overArg = require_overArg();
       var nativeKeys = overArg(Object.keys, Object);
       module.exports = nativeKeys;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js
   var require_baseKeys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js"(exports, module) {
       var isPrototype = require_isPrototype();
       var nativeKeys = require_nativeKeys();
       var objectProto = Object.prototype;
@@ -1318,9 +1318,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js
   var require_isArrayLike = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js"(exports, module) {
       var isFunction = require_isFunction();
       var isLength = require_isLength();
       function isArrayLike(value) {
@@ -1330,9 +1330,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js
   var require_keys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js"(exports, module) {
       var arrayLikeKeys = require_arrayLikeKeys();
       var baseKeys = require_baseKeys();
       var isArrayLike = require_isArrayLike();
@@ -1343,9 +1343,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js
   var require_baseAssign = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js"(exports, module) {
       var copyObject = require_copyObject();
       var keys = require_keys();
       function baseAssign(object, source) {
@@ -1355,9 +1355,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js
   var require_nativeKeysIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js"(exports, module) {
       function nativeKeysIn(object) {
         var result = [];
         if (object != null) {
@@ -1371,9 +1371,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js
   var require_baseKeysIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js"(exports, module) {
       var isObject = require_isObject();
       var isPrototype = require_isPrototype();
       var nativeKeysIn = require_nativeKeysIn();
@@ -1395,9 +1395,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js
   var require_keysIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js"(exports, module) {
       var arrayLikeKeys = require_arrayLikeKeys();
       var baseKeysIn = require_baseKeysIn();
       var isArrayLike = require_isArrayLike();
@@ -1408,9 +1408,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js
   var require_baseAssignIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js"(exports, module) {
       var copyObject = require_copyObject();
       var keysIn = require_keysIn();
       function baseAssignIn(object, source) {
@@ -1420,9 +1420,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js
   var require_cloneBuffer = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js"(exports, module) {
       var root2 = require_root();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
       var freeModule = freeExports && typeof module == "object" && module && !module.nodeType && module;
@@ -1441,9 +1441,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js
   var require_copyArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js"(exports, module) {
       function copyArray(source, array2) {
         var index2 = -1, length = source.length;
         array2 || (array2 = Array(length));
@@ -1456,9 +1456,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js
   var require_arrayFilter = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js"(exports, module) {
       function arrayFilter(array2, predicate) {
         var index2 = -1, length = array2 == null ? 0 : array2.length, resIndex = 0, result = [];
         while (++index2 < length) {
@@ -1473,9 +1473,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js
   var require_stubArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js"(exports, module) {
       function stubArray() {
         return [];
       }
@@ -1483,9 +1483,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js
   var require_getSymbols = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js"(exports, module) {
       var arrayFilter = require_arrayFilter();
       var stubArray = require_stubArray();
       var objectProto = Object.prototype;
@@ -1504,9 +1504,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js
   var require_copySymbols = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js"(exports, module) {
       var copyObject = require_copyObject();
       var getSymbols = require_getSymbols();
       function copySymbols(source, object) {
@@ -1516,9 +1516,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js
   var require_arrayPush = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js"(exports, module) {
       function arrayPush(array2, values) {
         var index2 = -1, length = values.length, offset = array2.length;
         while (++index2 < length) {
@@ -1530,18 +1530,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js
   var require_getPrototype = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js"(exports, module) {
       var overArg = require_overArg();
       var getPrototype = overArg(Object.getPrototypeOf, Object);
       module.exports = getPrototype;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js
   var require_getSymbolsIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var getPrototype = require_getPrototype();
       var getSymbols = require_getSymbols();
@@ -1559,9 +1559,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js
   var require_copySymbolsIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js"(exports, module) {
       var copyObject = require_copyObject();
       var getSymbolsIn = require_getSymbolsIn();
       function copySymbolsIn(source, object) {
@@ -1571,9 +1571,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js
   var require_baseGetAllKeys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var isArray = require_isArray();
       function baseGetAllKeys(object, keysFunc, symbolsFunc) {
@@ -1584,9 +1584,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js
   var require_getAllKeys = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js"(exports, module) {
       var baseGetAllKeys = require_baseGetAllKeys();
       var getSymbols = require_getSymbols();
       var keys = require_keys();
@@ -1597,9 +1597,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js
   var require_getAllKeysIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js"(exports, module) {
       var baseGetAllKeys = require_baseGetAllKeys();
       var getSymbolsIn = require_getSymbolsIn();
       var keysIn = require_keysIn();
@@ -1610,9 +1610,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js
   var require_DataView = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var DataView2 = getNative(root2, "DataView");
@@ -1620,9 +1620,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js
   var require_Promise = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Promise2 = getNative(root2, "Promise");
@@ -1630,9 +1630,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js
   var require_Set = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Set2 = getNative(root2, "Set");
@@ -1640,9 +1640,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js
   var require_WeakMap = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var WeakMap = getNative(root2, "WeakMap");
@@ -1650,9 +1650,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js
   var require_getTag = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js"(exports, module) {
       var DataView2 = require_DataView();
       var Map2 = require_Map();
       var Promise2 = require_Promise();
@@ -1696,9 +1696,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js
   var require_initCloneArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js"(exports, module) {
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
       function initCloneArray(array2) {
@@ -1713,18 +1713,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js
   var require_Uint8Array = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js"(exports, module) {
       var root2 = require_root();
       var Uint8Array2 = root2.Uint8Array;
       module.exports = Uint8Array2;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js
   var require_cloneArrayBuffer = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js"(exports, module) {
       var Uint8Array2 = require_Uint8Array();
       function cloneArrayBuffer(arrayBuffer) {
         var result = new arrayBuffer.constructor(arrayBuffer.byteLength);
@@ -1735,9 +1735,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js
   var require_cloneDataView = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       function cloneDataView(dataView, isDeep) {
         var buffer = isDeep ? cloneArrayBuffer(dataView.buffer) : dataView.buffer;
@@ -1747,9 +1747,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js
   var require_cloneRegExp = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js"(exports, module) {
       var reFlags = /\w*$/;
       function cloneRegExp(regexp) {
         var result = new regexp.constructor(regexp.source, reFlags.exec(regexp));
@@ -1760,9 +1760,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js
   var require_cloneSymbol = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var symbolProto = Symbol2 ? Symbol2.prototype : void 0;
       var symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
@@ -1773,9 +1773,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js
   var require_cloneTypedArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       function cloneTypedArray(typedArray, isDeep) {
         var buffer = isDeep ? cloneArrayBuffer(typedArray.buffer) : typedArray.buffer;
@@ -1785,9 +1785,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js
   var require_initCloneByTag = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       var cloneDataView = require_cloneDataView();
       var cloneRegExp = require_cloneRegExp();
@@ -1849,9 +1849,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js
   var require_baseCreate = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js"(exports, module) {
       var isObject = require_isObject();
       var objectCreate = Object.create;
       var baseCreate = /* @__PURE__ */ function() {
@@ -1874,9 +1874,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js
   var require_initCloneObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js"(exports, module) {
       var baseCreate = require_baseCreate();
       var getPrototype = require_getPrototype();
       var isPrototype = require_isPrototype();
@@ -1887,9 +1887,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js
   var require_baseIsMap = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js"(exports, module) {
       var getTag = require_getTag();
       var isObjectLike = require_isObjectLike();
       var mapTag = "[object Map]";
@@ -1900,9 +1900,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js
   var require_isMap = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js"(exports, module) {
       var baseIsMap = require_baseIsMap();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1912,9 +1912,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js
   var require_baseIsSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js"(exports, module) {
       var getTag = require_getTag();
       var isObjectLike = require_isObjectLike();
       var setTag = "[object Set]";
@@ -1925,9 +1925,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js
   var require_isSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js"(exports, module) {
       var baseIsSet = require_baseIsSet();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1937,9 +1937,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js
   var require_baseClone = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js"(exports, module) {
       var Stack = require_Stack();
       var arrayEach = require_arrayEach();
       var assignValue = require_assignValue();
@@ -2058,9 +2058,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js
   var require_clone = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js"(exports, module) {
       var baseClone = require_baseClone();
       var CLONE_SYMBOLS_FLAG = 4;
       function clone(value) {
@@ -2070,9 +2070,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js
   var require_constant = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js"(exports, module) {
       function constant(value) {
         return function() {
           return value;
@@ -2082,9 +2082,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js
   var require_createBaseFor = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js"(exports, module) {
       function createBaseFor(fromRight) {
         return function(object, iteratee, keysFunc) {
           var index2 = -1, iterable = Object(object), props = keysFunc(object), length = props.length;
@@ -2101,18 +2101,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js
   var require_baseFor = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js"(exports, module) {
       var createBaseFor = require_createBaseFor();
       var baseFor = createBaseFor();
       module.exports = baseFor;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js
   var require_baseForOwn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js"(exports, module) {
       var baseFor = require_baseFor();
       var keys = require_keys();
       function baseForOwn(object, iteratee) {
@@ -2122,9 +2122,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js
   var require_createBaseEach = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js"(exports, module) {
       var isArrayLike = require_isArrayLike();
       function createBaseEach(eachFunc, fromRight) {
         return function(collection, iteratee) {
@@ -2147,9 +2147,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js
   var require_baseEach = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js"(exports, module) {
       var baseForOwn = require_baseForOwn();
       var createBaseEach = require_createBaseEach();
       var baseEach = createBaseEach(baseForOwn);
@@ -2157,9 +2157,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js
   var require_identity = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js"(exports, module) {
       function identity4(value) {
         return value;
       }
@@ -2167,9 +2167,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js
   var require_castFunction = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js"(exports, module) {
       var identity4 = require_identity();
       function castFunction(value) {
         return typeof value == "function" ? value : identity4;
@@ -2178,9 +2178,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js
   var require_forEach = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js"(exports, module) {
       var arrayEach = require_arrayEach();
       var baseEach = require_baseEach();
       var castFunction = require_castFunction();
@@ -2193,16 +2193,16 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js
   var require_each = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js"(exports, module) {
       module.exports = require_forEach();
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js
   var require_baseFilter = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js"(exports, module) {
       var baseEach = require_baseEach();
       function baseFilter(collection, predicate) {
         var result = [];
@@ -2217,9 +2217,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js
   var require_setCacheAdd = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js"(exports, module) {
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       function setCacheAdd(value) {
         this.__data__.set(value, HASH_UNDEFINED);
@@ -2229,9 +2229,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js
   var require_setCacheHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js"(exports, module) {
       function setCacheHas(value) {
         return this.__data__.has(value);
       }
@@ -2239,9 +2239,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js
   var require_SetCache = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js"(exports, module) {
       var MapCache = require_MapCache();
       var setCacheAdd = require_setCacheAdd();
       var setCacheHas = require_setCacheHas();
@@ -2258,9 +2258,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js
   var require_arraySome = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js"(exports, module) {
       function arraySome(array2, predicate) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -2274,9 +2274,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js
   var require_cacheHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js"(exports, module) {
       function cacheHas(cache, key) {
         return cache.has(key);
       }
@@ -2284,9 +2284,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js
   var require_equalArrays = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js"(exports, module) {
       var SetCache = require_SetCache();
       var arraySome = require_arraySome();
       var cacheHas = require_cacheHas();
@@ -2339,9 +2339,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js
   var require_mapToArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js"(exports, module) {
       function mapToArray(map) {
         var index2 = -1, result = Array(map.size);
         map.forEach(function(value, key) {
@@ -2353,9 +2353,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js
   var require_setToArray = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js"(exports, module) {
       function setToArray(set3) {
         var index2 = -1, result = Array(set3.size);
         set3.forEach(function(value) {
@@ -2367,9 +2367,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js
   var require_equalByTag = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var Uint8Array2 = require_Uint8Array();
       var eq = require_eq();
@@ -2441,9 +2441,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js
   var require_equalObjects = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js"(exports, module) {
       var getAllKeys = require_getAllKeys();
       var COMPARE_PARTIAL_FLAG = 1;
       var objectProto = Object.prototype;
@@ -2495,9 +2495,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js
   var require_baseIsEqualDeep = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js"(exports, module) {
       var Stack = require_Stack();
       var equalArrays = require_equalArrays();
       var equalByTag = require_equalByTag();
@@ -2546,9 +2546,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js
   var require_baseIsEqual = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js"(exports, module) {
       var baseIsEqualDeep = require_baseIsEqualDeep();
       var isObjectLike = require_isObjectLike();
       function baseIsEqual(value, other, bitmask, customizer, stack) {
@@ -2564,9 +2564,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js
   var require_baseIsMatch = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js"(exports, module) {
       var Stack = require_Stack();
       var baseIsEqual = require_baseIsEqual();
       var COMPARE_PARTIAL_FLAG = 1;
@@ -2606,9 +2606,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js
   var require_isStrictComparable = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js"(exports, module) {
       var isObject = require_isObject();
       function isStrictComparable(value) {
         return value === value && !isObject(value);
@@ -2617,9 +2617,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js
   var require_getMatchData = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js"(exports, module) {
       var isStrictComparable = require_isStrictComparable();
       var keys = require_keys();
       function getMatchData(object) {
@@ -2634,9 +2634,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js
   var require_matchesStrictComparable = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js"(exports, module) {
       function matchesStrictComparable(key, srcValue) {
         return function(object) {
           if (object == null) {
@@ -2649,9 +2649,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js
   var require_baseMatches = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js"(exports, module) {
       var baseIsMatch = require_baseIsMatch();
       var getMatchData = require_getMatchData();
       var matchesStrictComparable = require_matchesStrictComparable();
@@ -2668,9 +2668,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js
   var require_isSymbol = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObjectLike = require_isObjectLike();
       var symbolTag = "[object Symbol]";
@@ -2681,9 +2681,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js
   var require_isKey = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js"(exports, module) {
       var isArray = require_isArray();
       var isSymbol = require_isSymbol();
       var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/;
@@ -2702,9 +2702,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js
   var require_memoize = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js"(exports, module) {
       var MapCache = require_MapCache();
       var FUNC_ERROR_TEXT = "Expected a function";
       function memoize(func, resolver) {
@@ -2728,9 +2728,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js
   var require_memoizeCapped = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js"(exports, module) {
       var memoize = require_memoize();
       var MAX_MEMOIZE_SIZE = 500;
       function memoizeCapped(func) {
@@ -2747,9 +2747,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js
   var require_stringToPath = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js"(exports, module) {
       var memoizeCapped = require_memoizeCapped();
       var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
       var reEscapeChar = /\\(\\)?/g;
@@ -2767,9 +2767,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js
   var require_arrayMap = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js"(exports, module) {
       function arrayMap(array2, iteratee) {
         var index2 = -1, length = array2 == null ? 0 : array2.length, result = Array(length);
         while (++index2 < length) {
@@ -2781,9 +2781,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js
   var require_baseToString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var arrayMap = require_arrayMap();
       var isArray = require_isArray();
@@ -2808,9 +2808,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js
   var require_toString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js"(exports, module) {
       var baseToString = require_baseToString();
       function toString(value) {
         return value == null ? "" : baseToString(value);
@@ -2819,9 +2819,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js
   var require_castPath = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js"(exports, module) {
       var isArray = require_isArray();
       var isKey = require_isKey();
       var stringToPath = require_stringToPath();
@@ -2836,9 +2836,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js
   var require_toKey = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js"(exports, module) {
       var isSymbol = require_isSymbol();
       var INFINITY = 1 / 0;
       function toKey(value) {
@@ -2852,9 +2852,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js
   var require_baseGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js"(exports, module) {
       var castPath = require_castPath();
       var toKey = require_toKey();
       function baseGet(object, path) {
@@ -2869,9 +2869,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js
   var require_get = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js"(exports, module) {
       var baseGet = require_baseGet();
       function get3(object, path, defaultValue) {
         var result = object == null ? void 0 : baseGet(object, path);
@@ -2881,9 +2881,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js
   var require_baseHasIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js"(exports, module) {
       function baseHasIn(object, key) {
         return object != null && key in Object(object);
       }
@@ -2891,9 +2891,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js
   var require_hasPath = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js"(exports, module) {
       var castPath = require_castPath();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -2920,9 +2920,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js
   var require_hasIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js"(exports, module) {
       var baseHasIn = require_baseHasIn();
       var hasPath = require_hasPath();
       function hasIn(object, path) {
@@ -2932,9 +2932,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js
   var require_baseMatchesProperty = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js"(exports, module) {
       var baseIsEqual = require_baseIsEqual();
       var get3 = require_get();
       var hasIn = require_hasIn();
@@ -2957,9 +2957,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js
   var require_baseProperty = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js"(exports, module) {
       function baseProperty(key) {
         return function(object) {
           return object == null ? void 0 : object[key];
@@ -2969,9 +2969,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js
   var require_basePropertyDeep = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js"(exports, module) {
       var baseGet = require_baseGet();
       function basePropertyDeep(path) {
         return function(object) {
@@ -2982,9 +2982,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js
   var require_property = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js"(exports, module) {
       var baseProperty = require_baseProperty();
       var basePropertyDeep = require_basePropertyDeep();
       var isKey = require_isKey();
@@ -2996,9 +2996,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js
   var require_baseIteratee = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js"(exports, module) {
       var baseMatches = require_baseMatches();
       var baseMatchesProperty = require_baseMatchesProperty();
       var identity4 = require_identity();
@@ -3020,9 +3020,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js
   var require_filter = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js"(exports, module) {
       var arrayFilter = require_arrayFilter();
       var baseFilter = require_baseFilter();
       var baseIteratee = require_baseIteratee();
@@ -3035,9 +3035,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js
   var require_baseHas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js"(exports, module) {
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
       function baseHas(object, key) {
@@ -3047,9 +3047,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js
   var require_has = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js"(exports, module) {
       var baseHas = require_baseHas();
       var hasPath = require_hasPath();
       function has(object, path) {
@@ -3059,9 +3059,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js
   var require_isEmpty = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js"(exports, module) {
       var baseKeys = require_baseKeys();
       var getTag = require_getTag();
       var isArguments = require_isArguments();
@@ -3099,9 +3099,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js
   var require_isUndefined = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js"(exports, module) {
       function isUndefined(value) {
         return value === void 0;
       }
@@ -3109,9 +3109,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js
   var require_baseMap = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js"(exports, module) {
       var baseEach = require_baseEach();
       var isArrayLike = require_isArrayLike();
       function baseMap(collection, iteratee) {
@@ -3125,9 +3125,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js
   var require_map = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js"(exports, module) {
       var arrayMap = require_arrayMap();
       var baseIteratee = require_baseIteratee();
       var baseMap = require_baseMap();
@@ -3140,9 +3140,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js
   var require_arrayReduce = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js"(exports, module) {
       function arrayReduce(array2, iteratee, accumulator, initAccum) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         if (initAccum && length) {
@@ -3157,9 +3157,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js
   var require_baseReduce = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js"(exports, module) {
       function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
         eachFunc(collection, function(value, index2, collection2) {
           accumulator = initAccum ? (initAccum = false, value) : iteratee(accumulator, value, index2, collection2);
@@ -3170,9 +3170,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js
   var require_reduce = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js"(exports, module) {
       var arrayReduce = require_arrayReduce();
       var baseEach = require_baseEach();
       var baseIteratee = require_baseIteratee();
@@ -3186,9 +3186,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js
   var require_isString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isArray = require_isArray();
       var isObjectLike = require_isObjectLike();
@@ -3200,18 +3200,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js
   var require_asciiSize = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js"(exports, module) {
       var baseProperty = require_baseProperty();
       var asciiSize = baseProperty("length");
       module.exports = asciiSize;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js
   var require_hasUnicode = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js"(exports, module) {
       var rsAstralRange = "\\ud800-\\udfff";
       var rsComboMarksRange = "\\u0300-\\u036f";
       var reComboHalfMarksRange = "\\ufe20-\\ufe2f";
@@ -3227,9 +3227,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js
   var require_unicodeSize = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js"(exports, module) {
       var rsAstralRange = "\\ud800-\\udfff";
       var rsComboMarksRange = "\\u0300-\\u036f";
       var reComboHalfMarksRange = "\\ufe20-\\ufe2f";
@@ -3261,9 +3261,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js
   var require_stringSize = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js"(exports, module) {
       var asciiSize = require_asciiSize();
       var hasUnicode = require_hasUnicode();
       var unicodeSize = require_unicodeSize();
@@ -3274,9 +3274,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js
   var require_size = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js"(exports, module) {
       var baseKeys = require_baseKeys();
       var getTag = require_getTag();
       var isArrayLike = require_isArrayLike();
@@ -3301,9 +3301,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js
   var require_transform = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js"(exports, module) {
       var arrayEach = require_arrayEach();
       var baseCreate = require_baseCreate();
       var baseForOwn = require_baseForOwn();
@@ -3336,9 +3336,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js
   var require_isFlattenable = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -3350,9 +3350,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js
   var require_baseFlatten = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var isFlattenable = require_isFlattenable();
       function baseFlatten(array2, depth, predicate, isStrict, result) {
@@ -3377,9 +3377,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js
   var require_apply = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js"(exports, module) {
       function apply(func, thisArg, args) {
         switch (args.length) {
           case 0:
@@ -3397,9 +3397,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js
   var require_overRest = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js"(exports, module) {
       var apply = require_apply();
       var nativeMax = Math.max;
       function overRest(func, start2, transform2) {
@@ -3422,9 +3422,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js
   var require_baseSetToString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js"(exports, module) {
       var constant = require_constant();
       var defineProperty = require_defineProperty();
       var identity4 = require_identity();
@@ -3440,9 +3440,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js
   var require_shortOut = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js"(exports, module) {
       var HOT_COUNT = 800;
       var HOT_SPAN = 16;
       var nativeNow = Date.now;
@@ -3465,9 +3465,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js
   var require_setToString = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js"(exports, module) {
       var baseSetToString = require_baseSetToString();
       var shortOut = require_shortOut();
       var setToString = shortOut(baseSetToString);
@@ -3475,9 +3475,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js
   var require_baseRest = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js"(exports, module) {
       var identity4 = require_identity();
       var overRest = require_overRest();
       var setToString = require_setToString();
@@ -3488,9 +3488,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js
   var require_baseFindIndex = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js"(exports, module) {
       function baseFindIndex(array2, predicate, fromIndex, fromRight) {
         var length = array2.length, index2 = fromIndex + (fromRight ? 1 : -1);
         while (fromRight ? index2-- : ++index2 < length) {
@@ -3504,9 +3504,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js
   var require_baseIsNaN = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js"(exports, module) {
       function baseIsNaN(value) {
         return value !== value;
       }
@@ -3514,9 +3514,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js
   var require_strictIndexOf = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js"(exports, module) {
       function strictIndexOf(array2, value, fromIndex) {
         var index2 = fromIndex - 1, length = array2.length;
         while (++index2 < length) {
@@ -3530,9 +3530,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js
   var require_baseIndexOf = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js"(exports, module) {
       var baseFindIndex = require_baseFindIndex();
       var baseIsNaN = require_baseIsNaN();
       var strictIndexOf = require_strictIndexOf();
@@ -3543,9 +3543,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js
   var require_arrayIncludes = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js"(exports, module) {
       var baseIndexOf = require_baseIndexOf();
       function arrayIncludes(array2, value) {
         var length = array2 == null ? 0 : array2.length;
@@ -3555,9 +3555,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js
   var require_arrayIncludesWith = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js"(exports, module) {
       function arrayIncludesWith(array2, value, comparator) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -3571,18 +3571,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js
   var require_noop = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js"(exports, module) {
       function noop2() {
       }
       module.exports = noop2;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js
   var require_createSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js"(exports, module) {
       var Set2 = require_Set();
       var noop2 = require_noop();
       var setToArray = require_setToArray();
@@ -3594,9 +3594,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js
   var require_baseUniq = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js"(exports, module) {
       var SetCache = require_SetCache();
       var arrayIncludes = require_arrayIncludes();
       var arrayIncludesWith = require_arrayIncludesWith();
@@ -3648,9 +3648,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js
   var require_isArrayLikeObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js"(exports, module) {
       var isArrayLike = require_isArrayLike();
       var isObjectLike = require_isObjectLike();
       function isArrayLikeObject(value) {
@@ -3660,9 +3660,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js
   var require_union = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       var baseRest = require_baseRest();
       var baseUniq = require_baseUniq();
@@ -3674,9 +3674,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js
   var require_baseValues = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js"(exports, module) {
       var arrayMap = require_arrayMap();
       function baseValues(object, props) {
         return arrayMap(props, function(key) {
@@ -3687,9 +3687,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js
   var require_values = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js"(exports, module) {
       var baseValues = require_baseValues();
       var keys = require_keys();
       function values(object) {
@@ -3699,9 +3699,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js
   var require_lodash = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js"(exports, module) {
       var lodash;
       if (typeof __require === "function") {
         try {
@@ -3733,9 +3733,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js
   var require_graph = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js"(exports, module) {
       "use strict";
       var _ = require_lodash();
       module.exports = Graph;
@@ -4152,16 +4152,16 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js
   var require_version = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js"(exports, module) {
       module.exports = "2.1.8";
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js
   var require_lib = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js"(exports, module) {
       module.exports = {
         Graph: require_graph(),
         version: require_version()
@@ -4169,9 +4169,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js
   var require_json = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js"(exports, module) {
       var _ = require_lodash();
       var Graph = require_graph();
       module.exports = {
@@ -4236,9 +4236,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js
   var require_components = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js"(exports, module) {
       var _ = require_lodash();
       module.exports = components;
       function components(g) {
@@ -4264,9 +4264,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js
   var require_priority_queue = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js"(exports, module) {
       var _ = require_lodash();
       module.exports = PriorityQueue;
       function PriorityQueue() {
@@ -4366,9 +4366,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js
   var require_dijkstra = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js"(exports, module) {
       var _ = require_lodash();
       var PriorityQueue = require_priority_queue();
       module.exports = dijkstra;
@@ -4419,9 +4419,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js
   var require_dijkstra_all = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js"(exports, module) {
       var dijkstra = require_dijkstra();
       var _ = require_lodash();
       module.exports = dijkstraAll;
@@ -4433,9 +4433,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js
   var require_tarjan = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js"(exports, module) {
       var _ = require_lodash();
       module.exports = tarjan;
       function tarjan(g) {
@@ -4479,9 +4479,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js
   var require_find_cycles = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js"(exports, module) {
       var _ = require_lodash();
       var tarjan = require_tarjan();
       module.exports = findCycles;
@@ -4493,9 +4493,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js
   var require_floyd_warshall = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js"(exports, module) {
       var _ = require_lodash();
       module.exports = floydWarshall;
       var DEFAULT_WEIGHT_FUNC = _.constant(1);
@@ -4546,9 +4546,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js
   var require_topsort = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js"(exports, module) {
       var _ = require_lodash();
       module.exports = topsort;
       topsort.CycleException = CycleException;
@@ -4580,9 +4580,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js
   var require_is_acyclic = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js"(exports, module) {
       var topsort = require_topsort();
       module.exports = isAcyclic;
       function isAcyclic(g) {
@@ -4599,9 +4599,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js
   var require_dfs = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js"(exports, module) {
       var _ = require_lodash();
       module.exports = dfs;
       function dfs(g, vs, order) {
@@ -4636,9 +4636,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js
   var require_postorder = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js"(exports, module) {
       var dfs = require_dfs();
       module.exports = postorder;
       function postorder(g, vs) {
@@ -4647,9 +4647,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js
   var require_preorder = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js"(exports, module) {
       var dfs = require_dfs();
       module.exports = preorder;
       function preorder(g, vs) {
@@ -4658,9 +4658,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js
   var require_prim = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js"(exports, module) {
       var _ = require_lodash();
       var Graph = require_graph();
       var PriorityQueue = require_priority_queue();
@@ -4706,9 +4706,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js
   var require_alg = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js"(exports, module) {
       module.exports = {
         components: require_components(),
         dijkstra: require_dijkstra(),
@@ -4725,9 +4725,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js
   var require_graphlib = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js"(exports, module) {
       var lib = require_lib();
       module.exports = {
         Graph: lib.Graph,
@@ -4738,9 +4738,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js
   var require_graphlib2 = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js"(exports, module) {
       var graphlib;
       if (typeof __require === "function") {
         try {
@@ -4755,9 +4755,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js
   var require_cloneDeep = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js"(exports, module) {
       var baseClone = require_baseClone();
       var CLONE_DEEP_FLAG = 1;
       var CLONE_SYMBOLS_FLAG = 4;
@@ -4768,9 +4768,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js
   var require_isIterateeCall = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js"(exports, module) {
       var eq = require_eq();
       var isArrayLike = require_isArrayLike();
       var isIndex = require_isIndex();
@@ -4789,9 +4789,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js
   var require_defaults = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js"(exports, module) {
       var baseRest = require_baseRest();
       var eq = require_eq();
       var isIterateeCall = require_isIterateeCall();
@@ -4825,9 +4825,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js
   var require_createFind = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js"(exports, module) {
       var baseIteratee = require_baseIteratee();
       var isArrayLike = require_isArrayLike();
       var keys = require_keys();
@@ -4849,9 +4849,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js
   var require_trimmedEndIndex = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js"(exports, module) {
       var reWhitespace = /\s/;
       function trimmedEndIndex(string) {
         var index2 = string.length;
@@ -4863,9 +4863,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js
   var require_baseTrim = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js"(exports, module) {
       var trimmedEndIndex = require_trimmedEndIndex();
       var reTrimStart = /^\s+/;
       function baseTrim(string) {
@@ -4875,9 +4875,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js
   var require_toNumber = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js"(exports, module) {
       var baseTrim = require_baseTrim();
       var isObject = require_isObject();
       var isSymbol = require_isSymbol();
@@ -4908,9 +4908,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js
   var require_toFinite = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js"(exports, module) {
       var toNumber = require_toNumber();
       var INFINITY = 1 / 0;
       var MAX_INTEGER = 17976931348623157e292;
@@ -4929,9 +4929,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js
   var require_toInteger = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js"(exports, module) {
       var toFinite = require_toFinite();
       function toInteger(value) {
         var result = toFinite(value), remainder = result % 1;
@@ -4941,9 +4941,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js
   var require_findIndex = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js"(exports, module) {
       var baseFindIndex = require_baseFindIndex();
       var baseIteratee = require_baseIteratee();
       var toInteger = require_toInteger();
@@ -4963,9 +4963,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js
   var require_find = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js"(exports, module) {
       var createFind = require_createFind();
       var findIndex = require_findIndex();
       var find2 = createFind(findIndex);
@@ -4973,9 +4973,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js
   var require_flatten = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       function flatten(array2) {
         var length = array2 == null ? 0 : array2.length;
@@ -4985,9 +4985,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js
   var require_forIn = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js"(exports, module) {
       var baseFor = require_baseFor();
       var castFunction = require_castFunction();
       var keysIn = require_keysIn();
@@ -4998,9 +4998,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js
   var require_last = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js"(exports, module) {
       function last(array2) {
         var length = array2 == null ? 0 : array2.length;
         return length ? array2[length - 1] : void 0;
@@ -5009,9 +5009,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js
   var require_mapValues = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var baseForOwn = require_baseForOwn();
       var baseIteratee = require_baseIteratee();
@@ -5027,9 +5027,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js
   var require_baseExtremum = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js"(exports, module) {
       var isSymbol = require_isSymbol();
       function baseExtremum(array2, iteratee, comparator) {
         var index2 = -1, length = array2.length;
@@ -5045,9 +5045,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js
   var require_baseGt = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js"(exports, module) {
       function baseGt(value, other) {
         return value > other;
       }
@@ -5055,9 +5055,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js
   var require_max = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseGt = require_baseGt();
       var identity4 = require_identity();
@@ -5068,9 +5068,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js
   var require_assignMergeValue = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var eq = require_eq();
       function assignMergeValue(object, key, value) {
@@ -5082,9 +5082,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js
   var require_isPlainObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var getPrototype = require_getPrototype();
       var isObjectLike = require_isObjectLike();
@@ -5109,9 +5109,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js
   var require_safeGet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js"(exports, module) {
       function safeGet(object, key) {
         if (key === "constructor" && typeof object[key] === "function") {
           return;
@@ -5125,9 +5125,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js
   var require_toPlainObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js"(exports, module) {
       var copyObject = require_copyObject();
       var keysIn = require_keysIn();
       function toPlainObject(value) {
@@ -5137,9 +5137,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js
   var require_baseMergeDeep = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js"(exports, module) {
       var assignMergeValue = require_assignMergeValue();
       var cloneBuffer = require_cloneBuffer();
       var cloneTypedArray = require_cloneTypedArray();
@@ -5202,9 +5202,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js
   var require_baseMerge = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js"(exports, module) {
       var Stack = require_Stack();
       var assignMergeValue = require_assignMergeValue();
       var baseFor = require_baseFor();
@@ -5233,9 +5233,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js
   var require_createAssigner = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js"(exports, module) {
       var baseRest = require_baseRest();
       var isIterateeCall = require_isIterateeCall();
       function createAssigner(assigner) {
@@ -5260,9 +5260,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js
   var require_merge = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js"(exports, module) {
       var baseMerge = require_baseMerge();
       var createAssigner = require_createAssigner();
       var merge = createAssigner(function(object, source, srcIndex) {
@@ -5272,9 +5272,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js
   var require_baseLt = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js"(exports, module) {
       function baseLt(value, other) {
         return value < other;
       }
@@ -5282,9 +5282,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js
   var require_min = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseLt = require_baseLt();
       var identity4 = require_identity();
@@ -5295,9 +5295,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js
   var require_minBy = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseIteratee = require_baseIteratee();
       var baseLt = require_baseLt();
@@ -5308,9 +5308,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js
   var require_now = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js"(exports, module) {
       var root2 = require_root();
       var now2 = function() {
         return root2.Date.now();
@@ -5319,9 +5319,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js
   var require_baseSet = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js"(exports, module) {
       var assignValue = require_assignValue();
       var castPath = require_castPath();
       var isIndex = require_isIndex();
@@ -5354,9 +5354,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js
   var require_basePickBy = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js"(exports, module) {
       var baseGet = require_baseGet();
       var baseSet = require_baseSet();
       var castPath = require_castPath();
@@ -5374,9 +5374,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js
   var require_basePick = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js"(exports, module) {
       var basePickBy = require_basePickBy();
       var hasIn = require_hasIn();
       function basePick(object, paths) {
@@ -5388,9 +5388,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js
   var require_flatRest = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js"(exports, module) {
       var flatten = require_flatten();
       var overRest = require_overRest();
       var setToString = require_setToString();
@@ -5401,9 +5401,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js
   var require_pick = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js"(exports, module) {
       var basePick = require_basePick();
       var flatRest = require_flatRest();
       var pick = flatRest(function(object, paths) {
@@ -5413,9 +5413,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js
   var require_baseRange = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js"(exports, module) {
       var nativeCeil = Math.ceil;
       var nativeMax = Math.max;
       function baseRange(start2, end, step, fromRight) {
@@ -5430,9 +5430,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js
   var require_createRange = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js"(exports, module) {
       var baseRange = require_baseRange();
       var isIterateeCall = require_isIterateeCall();
       var toFinite = require_toFinite();
@@ -5456,18 +5456,18 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js
   var require_range = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js"(exports, module) {
       var createRange = require_createRange();
       var range = createRange();
       module.exports = range;
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js
   var require_baseSortBy = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js"(exports, module) {
       function baseSortBy(array2, comparer) {
         var length = array2.length;
         array2.sort(comparer);
@@ -5480,9 +5480,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js
   var require_compareAscending = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js"(exports, module) {
       var isSymbol = require_isSymbol();
       function compareAscending(value, other) {
         if (value !== other) {
@@ -5501,9 +5501,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js
   var require_compareMultiple = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js"(exports, module) {
       var compareAscending = require_compareAscending();
       function compareMultiple(object, other, orders) {
         var index2 = -1, objCriteria = object.criteria, othCriteria = other.criteria, length = objCriteria.length, ordersLength = orders.length;
@@ -5523,9 +5523,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js
   var require_baseOrderBy = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js"(exports, module) {
       var arrayMap = require_arrayMap();
       var baseGet = require_baseGet();
       var baseIteratee = require_baseIteratee();
@@ -5564,9 +5564,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js
   var require_sortBy = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       var baseOrderBy = require_baseOrderBy();
       var baseRest = require_baseRest();
@@ -5587,9 +5587,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js
   var require_uniqueId = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js"(exports, module) {
       var toString = require_toString();
       var idCounter = 0;
       function uniqueId(prefix) {
@@ -5600,9 +5600,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js
   var require_baseZipObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js"(exports, module) {
       function baseZipObject(props, values, assignFunc) {
         var index2 = -1, length = props.length, valsLength = values.length, result = {};
         while (++index2 < length) {
@@ -5615,9 +5615,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js
   var require_zipObject = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js"(exports, module) {
       var assignValue = require_assignValue();
       var baseZipObject = require_baseZipObject();
       function zipObject(props, values) {
@@ -5627,9 +5627,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js
   var require_lodash2 = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js"(exports, module) {
       var lodash;
       if (typeof __require === "function") {
         try {
@@ -5671,9 +5671,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js
   var require_list = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js"(exports, module) {
       module.exports = List;
       function List() {
         var sentinel = {};
@@ -5722,9 +5722,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js
   var require_greedy_fas = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js"(exports, module) {
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
       var List = require_list();
@@ -5821,9 +5821,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js
   var require_acyclic = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var greedyFAS = require_greedy_fas();
@@ -5883,9 +5883,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js
   var require_util = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -6079,9 +6079,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js
   var require_normalize = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var util = require_util();
@@ -6154,9 +6154,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js
   var require_util2 = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = {
@@ -6189,9 +6189,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js
   var require_feasible_tree = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -6239,9 +6239,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js
   var require_network_simplex = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var feasibleTree = require_feasible_tree();
@@ -6389,9 +6389,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js
   var require_rank = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js"(exports, module) {
       "use strict";
       var rankUtil = require_util2();
       var longestPath = rankUtil.longestPath;
@@ -6424,9 +6424,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js
   var require_parent_dummy_chains = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = parentDummyChains;
       function parentDummyChains(g) {
@@ -6494,9 +6494,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js
   var require_nesting_graph = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = {
@@ -6590,9 +6590,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js
   var require_add_border_segments = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = addBorderSegments;
@@ -6627,9 +6627,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js
   var require_coordinate_system = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = {
@@ -6700,9 +6700,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js
   var require_init_order = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = initOrder;
@@ -6733,9 +6733,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js
   var require_cross_count = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = crossCount;
@@ -6784,9 +6784,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js
   var require_barycenter = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = barycenter;
       function barycenter(g, movable) {
@@ -6813,9 +6813,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js
   var require_resolve_conflicts = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = resolveConflicts;
@@ -6902,9 +6902,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js
   var require_sort = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = sort;
@@ -6953,9 +6953,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js
   var require_sort_subgraph = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js"(exports, module) {
       var _ = require_lodash2();
       var barycenter = require_barycenter();
       var resolveConflicts = require_resolve_conflicts();
@@ -7021,9 +7021,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js
   var require_build_layer_graph = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js"(exports, module) {
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
       module.exports = buildLayerGraph;
@@ -7058,9 +7058,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js
   var require_add_subgraph_constraints = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = addSubgraphConstraints;
       function addSubgraphConstraints(g, cg, vs) {
@@ -7087,9 +7087,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js
   var require_order = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var initOrder = require_init_order();
@@ -7143,9 +7143,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js
   var require_bk = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -7455,9 +7455,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js
   var require_position = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var util = require_util();
@@ -7487,9 +7487,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js
   var require_layout = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var acyclic = require_acyclic();
@@ -7898,9 +7898,9 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js
   var require_debug = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       var Graph = require_graphlib2().Graph;
@@ -7930,16 +7930,16 @@
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js
   var require_version2 = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js"(exports, module) {
       module.exports = "0.8.5";
     }
   });
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js
   var require_dagre = __commonJS({
-    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js"(exports, module) {
+    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js"(exports, module) {
       module.exports = {
         graphlib: require_graphlib2(),
         layout: require_layout(),
@@ -8079,6 +8079,27 @@ def signal_sell(pos, bar, ind):
   // ai_strategy_loop/dashboard/frontend/conn-backend.jsx
   var { useState: useState_cn1, useEffect: useEffect_cn1, useRef: useRef_cn1, useCallback: useCallback_cn1 } = React;
   var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
+  var _WS_DIAG_MAX = 200;
+  var _wsDiag = [];
+  function _recordWsDiag(entry) {
+    try {
+      const rec = Object.assign({ t: Date.now() }, entry);
+      _wsDiag.push(rec);
+      if (_wsDiag.length > _WS_DIAG_MAX) _wsDiag.splice(0, _wsDiag.length - _WS_DIAG_MAX);
+      if (typeof window !== "undefined") window.__stomWsDiag = _wsDiag;
+    } catch (e) {
+    }
+  }
+  function getWsDiag() {
+    const closes = _wsDiag.filter((e) => e.kind === "close" && !e.byUs);
+    const errors = _wsDiag.filter((e) => e.kind === "error");
+    const codes = {};
+    for (const c of closes) {
+      const k = String(c.code == null ? "?" : c.code);
+      codes[k] = (codes[k] || 0) + 1;
+    }
+    return { total: _wsDiag.length, unexpectedCloses: closes.length, errors: errors.length, codes, entries: _wsDiag.slice() };
+  }
   var DEFAULT_CONFIG_SPEC = [
     // 목표/제약
     {
@@ -8351,6 +8372,8 @@ def signal_sell(pos, bar, ind):
     const reconnectAttempt = useRef_cn1(0);
     const closedByUs = useRef_cn1(false);
     const demoRef = useRef_cn1(null);
+    const lastOpenAt = useRef_cn1(0);
+    const graceTimer = useRef_cn1(null);
     const startDemo = useCallback_cn1((config) => {
       var _a, _b, _c, _d, _e, _f, _g, _h;
       stopDemo();
@@ -8838,6 +8861,7 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
         setHealth({ connected: false, contract_version: null });
         setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
+        _recordWsDiag({ kind: "demo" });
         setWsStatus("demo");
       }
     }, [baseUrl]);
@@ -8847,6 +8871,12 @@ def signal_sell(pos, bar, ind):
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
         ws.onopen = () => {
+          _recordWsDiag({ kind: "open", recoveredAfter: reconnectAttempt.current });
+          lastOpenAt.current = Date.now();
+          if (graceTimer.current) {
+            clearTimeout(graceTimer.current);
+            graceTimer.current = null;
+          }
           reconnectAttempt.current = 0;
           stopDemo();
           setWsStatus("open");
@@ -8862,9 +8892,24 @@ def signal_sell(pos, bar, ind):
           } catch (e) {
           }
         };
-        ws.onclose = () => {
+        ws.onclose = (ev) => {
+          _recordWsDiag({ kind: "close", code: ev && ev.code, reason: ev && ev.reason || "", byUs: !!closedByUs.current, attempt: reconnectAttempt.current });
           if (closedByUs.current) return;
-          setWsStatus("reconnecting");
+          const openMs = lastOpenAt.current ? Date.now() - lastOpenAt.current : 0;
+          const flapping = !lastOpenAt.current || openMs < 2e3;
+          if (graceTimer.current) {
+            clearTimeout(graceTimer.current);
+            graceTimer.current = null;
+          }
+          if (flapping) {
+            setWsStatus("reconnecting");
+          } else {
+            graceTimer.current = setTimeout(() => {
+              setWsStatus("reconnecting");
+              graceTimer.current = null;
+            }, 1200);
+          }
+          lastOpenAt.current = 0;
           const delay = Math.min(8e3, 500 * Math.pow(1.7, reconnectAttempt.current));
           reconnectAttempt.current += 1;
           setTimeout(() => {
@@ -8872,6 +8917,7 @@ def signal_sell(pos, bar, ind):
           }, delay);
         };
         ws.onerror = () => {
+          _recordWsDiag({ kind: "error", attempt: reconnectAttempt.current });
         };
       } catch (e) {
         setWsStatus("reconnecting");
@@ -8881,6 +8927,10 @@ def signal_sell(pos, bar, ind):
       tryConnect();
       return () => {
         closedByUs.current = true;
+        if (graceTimer.current) {
+          clearTimeout(graceTimer.current);
+          graceTimer.current = null;
+        }
         if (wsRef.current) wsRef.current.close();
         stopDemo();
       };
@@ -8936,7 +8986,8 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, {
     useBackend: useBackend2,
-    DEFAULT_BASE: DEFAULT_BASE2
+    DEFAULT_BASE: DEFAULT_BASE2,
+    getWsDiag
   });
 
   // ai_strategy_loop/dashboard/frontend/connection.jsx
@@ -9199,6 +9250,37 @@ def signal_sell(pos, bar, ind):
     }
     return /* @__PURE__ */ React.createElement("div", { className: "rp-code-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--teal)" } }, "\uB9E4\uC218 \uC870\uAC74\uC2DD ", code.buy_name ? `\xB7 ${code.buy_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, buy || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: buy })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--blue)" } }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD ", code.sell_name ? `\xB7 ${code.sell_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, sell || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: sell })));
   }
+
+  // ai_strategy_loop/dashboard/frontend/runs-shared.jsx
+  var _RUNS_TTL_MS = 2e4;
+  var _RUNS_TRANSPORT_TIMEOUT_MS = 15e3;
+  var _runsCache = /* @__PURE__ */ new Map();
+  function _cloneRuns(j) {
+    if (!j || typeof j !== "object") return j;
+    return { ...j, runs: Array.isArray(j.runs) ? j.runs.slice() : j.runs || [] };
+  }
+  function fetchRunsShared(baseUrl, opts) {
+    const o = opts || {};
+    const key = baseUrl || "";
+    if (o.force) _runsCache.delete(key);
+    const now2 = Date.now();
+    const entry = _runsCache.get(key);
+    if (entry) {
+      if (entry.promise) return entry.promise.then(_cloneRuns);
+      if (entry.data && now2 - entry.ts < _RUNS_TTL_MS) return Promise.resolve(_cloneRuns(entry.data));
+    }
+    const promise = fetch(key + "/runs", { signal: AbortSignal.timeout(_RUNS_TRANSPORT_TIMEOUT_MS) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      _runsCache.set(key, { ts: Date.now(), promise: null, data: j });
+      return j;
+    }).catch((err) => {
+      const cur = _runsCache.get(key);
+      if (cur && cur.promise === promise) _runsCache.delete(key);
+      throw err;
+    });
+    _runsCache.set(key, { ts: now2, promise, data: entry ? entry.data : null });
+    return promise.then(_cloneRuns);
+  }
+  Object.assign(window, { fetchRunsShared });
 
   // ai_strategy_loop/dashboard/frontend/rp-heatmap.jsx
   function _rpSplitCrossLabel(c) {
@@ -9555,7 +9637,7 @@ def signal_sell(pos, bar, ind):
         return void 0;
       }
       let cancelled = false;
-      _rpFetchJson(baseUrl + "/runs", 6e3).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -10940,10 +11022,10 @@ def signal_sell(pos, bar, ind):
     return React2.createElement(type, withKey(props, key));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
   init_react_shim();
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/classcat/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/classcat/index.js
   function cc(names) {
     if (typeof names === "string" || typeof names === "number") return "" + names;
     let out = "";
@@ -10961,7 +11043,7 @@ def signal_sell(pos, bar, ind):
     return out;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-dispatch/src/dispatch.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-dispatch/src/dispatch.js
   var noop = { value: () => {
   } };
   function dispatch() {
@@ -11031,7 +11113,7 @@ def signal_sell(pos, bar, ind):
   }
   var dispatch_default = dispatch;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespaces.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespaces.js
   var xhtml = "http://www.w3.org/1999/xhtml";
   var namespaces_default = {
     svg: "http://www.w3.org/2000/svg",
@@ -11041,14 +11123,14 @@ def signal_sell(pos, bar, ind):
     xmlns: "http://www.w3.org/2000/xmlns/"
   };
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespace.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespace.js
   function namespace_default(name) {
     var prefix = name += "", i = prefix.indexOf(":");
     if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
     return namespaces_default.hasOwnProperty(prefix) ? { space: namespaces_default[prefix], local: name } : name;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/creator.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/creator.js
   function creatorInherit(name) {
     return function() {
       var document2 = this.ownerDocument, uri = this.namespaceURI;
@@ -11065,7 +11147,7 @@ def signal_sell(pos, bar, ind):
     return (fullname.local ? creatorFixed : creatorInherit)(fullname);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selector.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selector.js
   function none() {
   }
   function selector_default(selector) {
@@ -11074,7 +11156,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/select.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/select.js
   function select_default(select) {
     if (typeof select !== "function") select = selector_default(select);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -11088,12 +11170,12 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, this._parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/array.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/array.js
   function array(x) {
     return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selectorAll.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selectorAll.js
   function empty() {
     return [];
   }
@@ -11103,7 +11185,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectAll.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectAll.js
   function arrayAll(select) {
     return function() {
       return array(select.apply(this, arguments));
@@ -11123,7 +11205,7 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/matcher.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/matcher.js
   function matcher_default(selector) {
     return function() {
       return this.matches(selector);
@@ -11135,7 +11217,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChild.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChild.js
   var find = Array.prototype.find;
   function childFind(match) {
     return function() {
@@ -11149,7 +11231,7 @@ def signal_sell(pos, bar, ind):
     return this.select(match == null ? childFirst : childFind(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChildren.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChildren.js
   var filter = Array.prototype.filter;
   function children() {
     return Array.from(this.children);
@@ -11163,7 +11245,7 @@ def signal_sell(pos, bar, ind):
     return this.selectAll(match == null ? children : childrenFilter(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/filter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/filter.js
   function filter_default(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -11176,12 +11258,12 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, this._parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sparse.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sparse.js
   function sparse_default(update) {
     return new Array(update.length);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/enter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/enter.js
   function enter_default() {
     return new Selection(this._enter || this._groups.map(sparse_default), this._parents);
   }
@@ -11208,14 +11290,14 @@ def signal_sell(pos, bar, ind):
     }
   };
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/constant.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/constant.js
   function constant_default(x) {
     return function() {
       return x;
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/data.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/data.js
   function bindIndex(parent, group, enter, update, exit, data) {
     var i = 0, node, groupLength = group.length, dataLength = data.length;
     for (; i < dataLength; ++i) {
@@ -11287,12 +11369,12 @@ def signal_sell(pos, bar, ind):
     return typeof data === "object" && "length" in data ? data : Array.from(data);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/exit.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/exit.js
   function exit_default() {
     return new Selection(this._exit || this._groups.map(sparse_default), this._parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/join.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/join.js
   function join_default(onenter, onupdate, onexit) {
     var enter = this.enter(), update = this, exit = this.exit();
     if (typeof onenter === "function") {
@@ -11310,7 +11392,7 @@ def signal_sell(pos, bar, ind):
     return enter && update ? enter.merge(update).order() : update;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/merge.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/merge.js
   function merge_default(context) {
     var selection2 = context.selection ? context.selection() : context;
     for (var groups0 = this._groups, groups1 = selection2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -11326,7 +11408,7 @@ def signal_sell(pos, bar, ind):
     return new Selection(merges, this._parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/order.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/order.js
   function order_default() {
     for (var groups = this._groups, j = -1, m = groups.length; ++j < m; ) {
       for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0; ) {
@@ -11339,7 +11421,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sort.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sort.js
   function sort_default(compare) {
     if (!compare) compare = ascending;
     function compareNode(a, b) {
@@ -11359,7 +11441,7 @@ def signal_sell(pos, bar, ind):
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/call.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/call.js
   function call_default() {
     var callback = arguments[0];
     arguments[0] = this;
@@ -11367,12 +11449,12 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/nodes.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/nodes.js
   function nodes_default() {
     return Array.from(this);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/node.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/node.js
   function node_default() {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
@@ -11383,19 +11465,19 @@ def signal_sell(pos, bar, ind):
     return null;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/size.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/size.js
   function size_default() {
     let size = 0;
     for (const node of this) ++size;
     return size;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/empty.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/empty.js
   function empty_default() {
     return !this.node();
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/each.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/each.js
   function each_default(callback) {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -11405,7 +11487,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/attr.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/attr.js
   function attrRemove(name) {
     return function() {
       this.removeAttribute(name);
@@ -11449,12 +11531,12 @@ def signal_sell(pos, bar, ind):
     return this.each((value == null ? fullname.local ? attrRemoveNS : attrRemove : typeof value === "function" ? fullname.local ? attrFunctionNS : attrFunction : fullname.local ? attrConstantNS : attrConstant)(fullname, value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/window.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/window.js
   function window_default(node) {
     return node.ownerDocument && node.ownerDocument.defaultView || node.document && node || node.defaultView;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/style.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/style.js
   function styleRemove(name) {
     return function() {
       this.style.removeProperty(name);
@@ -11479,7 +11561,7 @@ def signal_sell(pos, bar, ind):
     return node.style.getPropertyValue(name) || window_default(node).getComputedStyle(node, null).getPropertyValue(name);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/property.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/property.js
   function propertyRemove(name) {
     return function() {
       delete this[name];
@@ -11501,7 +11583,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length > 1 ? this.each((value == null ? propertyRemove : typeof value === "function" ? propertyFunction : propertyConstant)(name, value)) : this.node()[name];
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/classed.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/classed.js
   function classArray(string) {
     return string.trim().split(/^|\s+/);
   }
@@ -11564,7 +11646,7 @@ def signal_sell(pos, bar, ind):
     return this.each((typeof value === "function" ? classedFunction : value ? classedTrue : classedFalse)(names, value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/text.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/text.js
   function textRemove() {
     this.textContent = "";
   }
@@ -11583,7 +11665,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(value == null ? textRemove : (typeof value === "function" ? textFunction : textConstant)(value)) : this.node().textContent;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/html.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/html.js
   function htmlRemove() {
     this.innerHTML = "";
   }
@@ -11602,7 +11684,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(value == null ? htmlRemove : (typeof value === "function" ? htmlFunction : htmlConstant)(value)) : this.node().innerHTML;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/raise.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/raise.js
   function raise() {
     if (this.nextSibling) this.parentNode.appendChild(this);
   }
@@ -11610,7 +11692,7 @@ def signal_sell(pos, bar, ind):
     return this.each(raise);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/lower.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/lower.js
   function lower() {
     if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
   }
@@ -11618,7 +11700,7 @@ def signal_sell(pos, bar, ind):
     return this.each(lower);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/append.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/append.js
   function append_default(name) {
     var create2 = typeof name === "function" ? name : creator_default(name);
     return this.select(function() {
@@ -11626,7 +11708,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/insert.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/insert.js
   function constantNull() {
     return null;
   }
@@ -11637,7 +11719,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/remove.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/remove.js
   function remove() {
     var parent = this.parentNode;
     if (parent) parent.removeChild(this);
@@ -11646,7 +11728,7 @@ def signal_sell(pos, bar, ind):
     return this.each(remove);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/clone.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/clone.js
   function selection_cloneShallow() {
     var clone = this.cloneNode(false), parent = this.parentNode;
     return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
@@ -11659,12 +11741,12 @@ def signal_sell(pos, bar, ind):
     return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/datum.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/datum.js
   function datum_default(value) {
     return arguments.length ? this.property("__data__", value) : this.node().__data__;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/on.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/on.js
   function contextListener(listener) {
     return function(event) {
       listener.call(this, event, this.__data__);
@@ -11727,7 +11809,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/dispatch.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/dispatch.js
   function dispatchEvent(node, type, params) {
     var window2 = window_default(node), event = window2.CustomEvent;
     if (typeof event === "function") {
@@ -11753,7 +11835,7 @@ def signal_sell(pos, bar, ind):
     return this.each((typeof params === "function" ? dispatchFunction : dispatchConstant)(type, params));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/iterator.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/iterator.js
   function* iterator_default() {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -11762,7 +11844,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/index.js
   var root = [null];
   function Selection(groups, parents) {
     this._groups = groups;
@@ -11814,19 +11896,19 @@ def signal_sell(pos, bar, ind):
   };
   var selection_default = selection;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/select.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/select.js
   function select_default2(selector) {
     return typeof selector === "string" ? new Selection([[document.querySelector(selector)]], [document.documentElement]) : new Selection([[selector]], root);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/sourceEvent.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/sourceEvent.js
   function sourceEvent_default(event) {
     let sourceEvent;
     while (sourceEvent = event.sourceEvent) event = sourceEvent;
     return event;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/pointer.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/pointer.js
   function pointer_default(event, node) {
     event = sourceEvent_default(event);
     if (node === void 0) node = event.currentTarget;
@@ -11846,7 +11928,7 @@ def signal_sell(pos, bar, ind):
     return [event.pageX, event.pageY];
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/noevent.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/noevent.js
   var nonpassive = { passive: false };
   var nonpassivecapture = { capture: true, passive: false };
   function nopropagation(event) {
@@ -11857,7 +11939,7 @@ def signal_sell(pos, bar, ind):
     event.stopImmediatePropagation();
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/nodrag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/nodrag.js
   function nodrag_default(view) {
     var root2 = view.document.documentElement, selection2 = select_default2(view).on("dragstart.drag", noevent_default, nonpassivecapture);
     if ("onselectstart" in root2) {
@@ -11883,10 +11965,10 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/constant.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/constant.js
   var constant_default2 = (x) => () => x;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/event.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/event.js
   function DragEvent(type, {
     sourceEvent,
     subject,
@@ -11918,7 +12000,7 @@ def signal_sell(pos, bar, ind):
     return value === this._ ? this : value;
   };
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/drag.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/drag.js
   function defaultFilter(event) {
     return !event.ctrlKey && !event.button;
   }
@@ -12062,7 +12144,7 @@ def signal_sell(pos, bar, ind):
     return drag;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/define.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/define.js
   function define_default(constructor, factory, prototype) {
     constructor.prototype = factory.prototype = prototype;
     prototype.constructor = constructor;
@@ -12073,7 +12155,7 @@ def signal_sell(pos, bar, ind):
     return prototype;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/color.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/color.js
   function Color() {
   }
   var darker = 0.7;
@@ -12410,7 +12492,7 @@ def signal_sell(pos, bar, ind):
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basis.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basis.js
   function basis(t1, v0, v1, v2, v3) {
     var t2 = t1 * t1, t3 = t2 * t1;
     return ((1 - 3 * t1 + 3 * t2 - t3) * v0 + (4 - 6 * t2 + 3 * t3) * v1 + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2 + t3 * v3) / 6;
@@ -12423,7 +12505,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basisClosed.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basisClosed.js
   function basisClosed_default(values) {
     var n = values.length;
     return function(t) {
@@ -12432,10 +12514,10 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/constant.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/constant.js
   var constant_default3 = (x) => () => x;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/color.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/color.js
   function linear(a, d) {
     return function(t) {
       return a + t * d;
@@ -12456,7 +12538,7 @@ def signal_sell(pos, bar, ind):
     return d ? linear(a, d) : constant_default3(isNaN(a) ? b : a);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/rgb.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/rgb.js
   var rgb_default = function rgbGamma(y) {
     var color2 = gamma(y);
     function rgb2(start2, end) {
@@ -12496,7 +12578,7 @@ def signal_sell(pos, bar, ind):
   var rgbBasis = rgbSpline(basis_default);
   var rgbBasisClosed = rgbSpline(basisClosed_default);
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/numberArray.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/numberArray.js
   function numberArray_default(a, b) {
     if (!b) b = [];
     var n = a ? Math.min(b.length, a.length) : 0, c = b.slice(), i;
@@ -12509,7 +12591,7 @@ def signal_sell(pos, bar, ind):
     return ArrayBuffer.isView(x) && !(x instanceof DataView);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/array.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/array.js
   function genericArray(a, b) {
     var nb = b ? b.length : 0, na = a ? Math.min(nb, a.length) : 0, x = new Array(na), c = new Array(nb), i;
     for (i = 0; i < na; ++i) x[i] = value_default(a[i], b[i]);
@@ -12520,7 +12602,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/date.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/date.js
   function date_default(a, b) {
     var d = /* @__PURE__ */ new Date();
     return a = +a, b = +b, function(t) {
@@ -12528,14 +12610,14 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/number.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/number.js
   function number_default(a, b) {
     return a = +a, b = +b, function(t) {
       return a * (1 - t) + b * t;
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/object.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/object.js
   function object_default(a, b) {
     var i = {}, c = {}, k;
     if (a === null || typeof a !== "object") a = {};
@@ -12553,7 +12635,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/string.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/string.js
   var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
   var reB = new RegExp(reA.source, "g");
   function zero(b) {
@@ -12595,13 +12677,13 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/value.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/value.js
   function value_default(a, b) {
     var t = typeof b, c;
     return b == null || t === "boolean" ? constant_default3(b) : (t === "number" ? number_default : t === "string" ? (c = color(b)) ? (b = c, rgb_default) : string_default : b instanceof color ? rgb_default : b instanceof Date ? date_default : isNumberArray(b) ? numberArray_default : Array.isArray(b) ? genericArray : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object_default : number_default)(a, b);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/decompose.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/decompose.js
   var degrees = 180 / Math.PI;
   var identity = {
     translateX: 0,
@@ -12627,7 +12709,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/parse.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/parse.js
   var svgNode;
   function parseCss(value) {
     const m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
@@ -12642,7 +12724,7 @@ def signal_sell(pos, bar, ind):
     return decompose_default(value.a, value.b, value.c, value.d, value.e, value.f);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/index.js
   function interpolateTransform(parse, pxComma, pxParen, degParen) {
     function pop(s) {
       return s.length ? s.pop() + " " : "";
@@ -12697,7 +12779,7 @@ def signal_sell(pos, bar, ind):
   var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
   var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/zoom.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/zoom.js
   var epsilon2 = 1e-12;
   function cosh(x) {
     return ((x = Math.exp(x)) + 1 / x) / 2;
@@ -12742,7 +12824,7 @@ def signal_sell(pos, bar, ind):
     return zoom;
   }(Math.SQRT2, 2, 4);
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timer.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timer.js
   var frame = 0;
   var timeout = 0;
   var interval = 0;
@@ -12844,7 +12926,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timeout.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timeout.js
   function timeout_default(callback, delay, time) {
     var t = new Timer();
     delay = delay == null ? 0 : +delay;
@@ -12855,7 +12937,7 @@ def signal_sell(pos, bar, ind):
     return t;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/schedule.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/schedule.js
   var emptyOn = dispatch_default("start", "end", "cancel", "interrupt");
   var emptyTween = [];
   var CREATED = 0;
@@ -12966,7 +13048,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/interrupt.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/interrupt.js
   function interrupt_default(node, name) {
     var schedules = node.__transition, schedule, active, empty2 = true, i;
     if (!schedules) return;
@@ -12985,14 +13067,14 @@ def signal_sell(pos, bar, ind):
     if (empty2) delete node.__transition;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/interrupt.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/interrupt.js
   function interrupt_default2(name) {
     return this.each(function() {
       interrupt_default(this, name);
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/tween.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/tween.js
   function tweenRemove(id2, name) {
     var tween0, tween1;
     return function() {
@@ -13053,13 +13135,13 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/interpolate.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/interpolate.js
   function interpolate_default(a, b) {
     var c;
     return (typeof b === "number" ? number_default : b instanceof color ? rgb_default : (c = color(b)) ? (b = c, rgb_default) : string_default)(a, b);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attr.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attr.js
   function attrRemove2(name) {
     return function() {
       this.removeAttribute(name);
@@ -13109,7 +13191,7 @@ def signal_sell(pos, bar, ind):
     return this.attrTween(name, typeof value === "function" ? (fullname.local ? attrFunctionNS2 : attrFunction2)(fullname, i, tweenValue(this, "attr." + name, value)) : value == null ? (fullname.local ? attrRemoveNS2 : attrRemove2)(fullname) : (fullname.local ? attrConstantNS2 : attrConstant2)(fullname, i, value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attrTween.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attrTween.js
   function attrInterpolate(name, i) {
     return function(t) {
       this.setAttribute(name, i.call(this, t));
@@ -13149,7 +13231,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/delay.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/delay.js
   function delayFunction(id2, value) {
     return function() {
       init(this, id2).delay = +value.apply(this, arguments);
@@ -13165,7 +13247,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each((typeof value === "function" ? delayFunction : delayConstant)(id2, value)) : get2(this.node(), id2).delay;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/duration.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/duration.js
   function durationFunction(id2, value) {
     return function() {
       set2(this, id2).duration = +value.apply(this, arguments);
@@ -13181,7 +13263,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each((typeof value === "function" ? durationFunction : durationConstant)(id2, value)) : get2(this.node(), id2).duration;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/ease.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/ease.js
   function easeConstant(id2, value) {
     if (typeof value !== "function") throw new Error();
     return function() {
@@ -13193,7 +13275,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(easeConstant(id2, value)) : get2(this.node(), id2).ease;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/easeVarying.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/easeVarying.js
   function easeVarying(id2, value) {
     return function() {
       var v = value.apply(this, arguments);
@@ -13206,7 +13288,7 @@ def signal_sell(pos, bar, ind):
     return this.each(easeVarying(this._id, value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/filter.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/filter.js
   function filter_default2(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -13219,7 +13301,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, this._parents, this._name, this._id);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/merge.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/merge.js
   function merge_default2(transition2) {
     if (transition2._id !== this._id) throw new Error();
     for (var groups0 = this._groups, groups1 = transition2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -13235,7 +13317,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(merges, this._parents, this._name, this._id);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/on.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/on.js
   function start(name) {
     return (name + "").trim().split(/^|\s+/).every(function(t) {
       var i = t.indexOf(".");
@@ -13256,7 +13338,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length < 2 ? get2(this.node(), id2).on.on(name) : this.each(onFunction(id2, name, listener));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/remove.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/remove.js
   function removeFunction(id2) {
     return function() {
       var parent = this.parentNode;
@@ -13268,7 +13350,7 @@ def signal_sell(pos, bar, ind):
     return this.on("end.remove", removeFunction(this._id));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/select.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/select.js
   function select_default3(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selector_default(select);
@@ -13284,7 +13366,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, this._parents, name, id2);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selectAll.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selectAll.js
   function selectAll_default2(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selectorAll_default(select);
@@ -13304,13 +13386,13 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, parents, name, id2);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selection.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selection.js
   var Selection2 = selection_default.prototype.constructor;
   function selection_default2() {
     return new Selection2(this._groups, this._parents);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/style.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/style.js
   function styleNull(name, interpolate) {
     var string00, string10, interpolate0;
     return function() {
@@ -13351,7 +13433,7 @@ def signal_sell(pos, bar, ind):
     return value == null ? this.styleTween(name, styleNull(name, i)).on("end.style." + name, styleRemove2(name)) : typeof value === "function" ? this.styleTween(name, styleFunction2(name, i, tweenValue(this, "style." + name, value))).each(styleMaybeRemove(this._id, name)) : this.styleTween(name, styleConstant2(name, i, value), priority).on("end.style." + name, null);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/styleTween.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/styleTween.js
   function styleInterpolate(name, i, priority) {
     return function(t) {
       this.style.setProperty(name, i.call(this, t), priority);
@@ -13375,7 +13457,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/text.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/text.js
   function textConstant2(value) {
     return function() {
       this.textContent = value;
@@ -13391,7 +13473,7 @@ def signal_sell(pos, bar, ind):
     return this.tween("text", typeof value === "function" ? textFunction2(tweenValue(this, "text", value)) : textConstant2(value == null ? "" : value + ""));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/textTween.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/textTween.js
   function textInterpolate(i) {
     return function(t) {
       this.textContent = i.call(this, t);
@@ -13415,7 +13497,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, textTween(value));
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/transition.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/transition.js
   function transition_default() {
     var name = this._name, id0 = this._id, id1 = newId();
     for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
@@ -13434,7 +13516,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(groups, this._parents, name, id1);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/end.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/end.js
   function end_default() {
     var on0, on1, that = this, id2 = that._id, size = that.size();
     return new Promise(function(resolve, reject) {
@@ -13455,7 +13537,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/index.js
   var id = 0;
   function Transition(groups, parents, name, id2) {
     this._groups = groups;
@@ -13503,12 +13585,12 @@ def signal_sell(pos, bar, ind):
     [Symbol.iterator]: selection_prototype[Symbol.iterator]
   };
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-ease/src/cubic.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-ease/src/cubic.js
   function cubicInOut(t) {
     return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/transition.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/transition.js
   var defaultTiming = {
     time: null,
     // Set on use.
@@ -13542,14 +13624,14 @@ def signal_sell(pos, bar, ind):
     return new Transition(groups, this._parents, name, id2);
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/index.js
   selection_default.prototype.interrupt = interrupt_default2;
   selection_default.prototype.transition = transition_default2;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/constant.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/constant.js
   var constant_default4 = (x) => () => x;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/event.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/event.js
   function ZoomEvent(type, {
     sourceEvent,
     target,
@@ -13565,7 +13647,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/transform.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/transform.js
   function Transform(k, x, y) {
     this.k = k;
     this.x = x;
@@ -13614,7 +13696,7 @@ def signal_sell(pos, bar, ind):
     return node.__zoom;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/noevent.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/noevent.js
   function nopropagation2(event) {
     event.stopImmediatePropagation();
   }
@@ -13623,7 +13705,7 @@ def signal_sell(pos, bar, ind):
     event.stopImmediatePropagation();
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/zoom.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/zoom.js
   function defaultFilter2(event) {
     return (!event.ctrlKey || event.type === "wheel") && !event.button;
   }
@@ -13938,7 +14020,7 @@ def signal_sell(pos, bar, ind):
     return zoom;
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/system/dist/esm/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/system/dist/esm/index.js
   var errorMessages = {
     error001: (lib = "react") => `Seems like you have not used zustand provider as an ancestor. Help: https://${lib}flow.dev/error#001`,
     error002: () => "It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them.",
@@ -16589,11 +16671,11 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
   init_react_shim();
   var import_with_selector = __toESM(require_with_selector(), 1);
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/vanilla.mjs
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/vanilla.mjs
   var import_meta = {};
   var createStoreImpl = (createState) => {
     let state;
@@ -16626,7 +16708,7 @@ def signal_sell(pos, bar, ind):
   };
   var createStore = (createState) => createState ? createStoreImpl(createState) : createStoreImpl;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
   var { useDebugValue: useDebugValue2 } = react_shim_default;
   var { useSyncExternalStoreWithSelector } = import_with_selector.default;
   var identity3 = (arg) => arg;
@@ -16649,7 +16731,7 @@ def signal_sell(pos, bar, ind):
   };
   var createWithEqualityFn = (createState, defaultEqualityFn) => createState ? createWithEqualityFnImpl(createState, defaultEqualityFn) : createWithEqualityFnImpl;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/shallow.mjs
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/shallow.mjs
   function shallow$1(objA, objB) {
     if (Object.is(objA, objB)) {
       return true;
@@ -16700,7 +16782,7 @@ def signal_sell(pos, bar, ind):
     version: version2
   } = ReactDOM2;
 
-  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
+  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
   var StoreContext = createContext(null);
   var Provider$1 = StoreContext.Provider;
   var zustandErrorMessage = errorMessages["error001"]("react");
@@ -20017,41 +20099,72 @@ def signal_sell(pos, bar, ind):
     }
     return -1;
   }
-  function PhaseTimeline({ state }) {
-    var _a;
-    const running = state.status === "running" || state.status === "stopping";
+  function PhaseTimeline({ state, pinnedIdx = null, onStepClick = null }) {
+    var _a, _b, _c, _d, _e;
+    const status = state.status;
+    const running = status === "running" || status === "stopping";
+    const stopping = status === "stopping";
+    const errored = status === "error";
+    const blocked = status === "blocked";
     const activeIdx = running ? phaseIndex((_a = state.latest) == null ? void 0 : _a.phase) : -1;
+    const failedIdx = errored || blocked ? phaseIndex((_b = state.latest) == null ? void 0 : _b.phase) : -1;
     const activeGen = running ? state.current_gen + 1 : state.current_gen;
-    return /* @__PURE__ */ React.createElement("div", { className: "phase-timeline" }, PHASES.map((p, i) => {
-      const isActive = i === activeIdx;
-      const isDone = activeIdx > i;
-      const isPending = activeIdx < i || activeIdx === -1;
-      return /* @__PURE__ */ React.createElement(React.Fragment, { key: p.key }, /* @__PURE__ */ React.createElement("div", { className: `phase-step ${isActive ? "active" : isDone ? "done" : "pending"}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-num" }, isDone ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M3 8 L7 12 L13 4", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })) : i + 1), /* @__PURE__ */ React.createElement("div", { className: "phase-step-text" }, /* @__PURE__ */ React.createElement("div", { className: "phase-step-label" }, p.label), /* @__PURE__ */ React.createElement("div", { className: "phase-step-sub" }, p.sub)), isActive && /* @__PURE__ */ React.createElement("span", { className: "phase-active-pulse" })), i < PHASES.length - 1 && /* @__PURE__ */ React.createElement("div", { className: `phase-connector ${isDone ? "done" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-connector-fill", style: { width: isDone ? "100%" : isActive ? "50%" : "0%" } })));
-    }), /* @__PURE__ */ React.createElement("div", { className: "phase-gen-tag" }, running ? `\uC138\uB300 ${activeGen} \uC9C4\uD589\uC911` : state.status === "complete" ? `${state.current_gen}\uC138\uB300 \uC644\uB8CC` : "\uB300\uAE30\uC911"));
+    const reason = errored ? ((_c = state.latest) == null ? void 0 : _c.error) || state.error || "\uC2E4\uD589 \uC911 \uC624\uB958\uB85C \uC911\uB2E8\uB428" : blocked ? ((_d = state.latest) == null ? void 0 : _d.block_reason) || ((_e = state.latest) == null ? void 0 : _e.message) || "\uAC8C\uC774\uD2B8/\uC0AC\uC804\uC870\uAC74\uC73C\uB85C \uCC28\uB2E8\uB428" : "";
+    const wrapCls = stopping ? " stopping" : errored ? " errored" : blocked ? " blocked" : "";
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "phase-timeline" + wrapCls }, PHASES.map((p, i) => {
+      const isFailed = failedIdx === i;
+      const isActive = !isFailed && i === activeIdx;
+      const isDone = !isFailed && activeIdx > i;
+      const cls = isFailed ? "failed" : isActive ? "active" : isDone ? "done" : "pending";
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: p.key }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: `phase-step ${cls}${pinnedIdx === i ? " pinned" : ""}${onStepClick ? " clickable" : ""}`,
+          ...onStepClick ? {
+            role: "button",
+            tabIndex: 0,
+            "aria-pressed": pinnedIdx === i,
+            onClick: () => onStepClick(i),
+            onKeyDown: (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onStepClick(i);
+              }
+            }
+          } : {}
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "phase-num" }, isFailed ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M4 4 L12 12 M12 4 L4 12", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round" })) : isDone ? /* @__PURE__ */ React.createElement("svg", { width: "11", height: "11", viewBox: "0 0 16 16" }, /* @__PURE__ */ React.createElement("path", { d: "M3 8 L7 12 L13 4", stroke: "currentColor", strokeWidth: "2", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })) : i + 1),
+        /* @__PURE__ */ React.createElement("div", { className: "phase-step-text" }, /* @__PURE__ */ React.createElement("div", { className: "phase-step-label" }, p.label), /* @__PURE__ */ React.createElement("div", { className: "phase-step-sub" }, p.sub)),
+        isActive && /* @__PURE__ */ React.createElement("span", { className: "phase-active-pulse" })
+      ), i < PHASES.length - 1 && /* @__PURE__ */ React.createElement("div", { className: `phase-connector ${isDone ? "done" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "phase-connector-fill", style: { width: isDone ? "100%" : isActive ? "50%" : "0%" } })));
+    }), /* @__PURE__ */ React.createElement("div", { className: "phase-gen-tag" + wrapCls + (status === "complete" ? " complete" : "") }, stopping ? "\uC815\uC9C0 \uC911\u2026" : errored ? "\uC2E4\uD328 \xB7 \uC911\uB2E8\uB428" : blocked ? "\uCC28\uB2E8\uB428" : running ? `\uC138\uB300 ${activeGen} \uC9C4\uD589\uC911` : status === "complete" ? `${state.current_gen}\uC138\uB300 \uC644\uB8CC` : "\uB300\uAE30\uC911")), reason && /* @__PURE__ */ React.createElement("div", { className: "phase-status-banner " + (errored ? "err" : "warn"), role: "status" }, /* @__PURE__ */ React.createElement("b", null, errored ? "\uC624\uB958" : "\uCC28\uB2E8"), " \xB7 ", reason));
   }
-  function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
+  function PhaseDetailPanel({ state, wsStatus, onViewLatestCode, pinnedIdx = null }) {
     var _a, _b, _c, _d;
     const phase = (_a = state.latest) == null ? void 0 : _a.phase;
     const running = state.status === "running" || state.status === "stopping";
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const livePending = typeof window.livePanelPending === "function" ? window.livePanelPending(wsStatus, state) : false;
+    const pinned = pinnedIdx != null && pinnedIdx >= 0;
+    const effIdx = pinned ? pinnedIdx : phaseIndex(phase);
     let body;
     if (livePending) {
       body = /* @__PURE__ */ React.createElement(LivePending, null);
-    } else if (phase === "\uC0DD\uC131\uC911") {
+    } else if (effIdx === 0) {
       body = /* @__PURE__ */ React.createElement(GenerationView, { state, onViewLatestCode });
-    } else if (phase === "\uBC31\uD14C\uC2A4\uD2B8\uC911") {
+    } else if (effIdx === 1) {
       body = /* @__PURE__ */ React.createElement(BacktestingView, { state });
-    } else if (phase === "\uCC44\uC810\uC911") {
+    } else if (effIdx === 2) {
       body = /* @__PURE__ */ React.createElement(ScoringView, { state });
-    } else if (phase === "\uBD80\uAC80 \uC791\uC131") {
+    } else if (effIdx === 3) {
       body = /* @__PURE__ */ React.createElement(AutopsyView, { state });
     } else if (!running && (((_c = (_b = state.current_run) == null ? void 0 : _b.equity) == null ? void 0 : _c.length) || 0) > 0) {
       body = /* @__PURE__ */ React.createElement(BacktestingView, { state });
     } else {
       body = /* @__PURE__ */ React.createElement(IdlePhaseView, null);
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "panel phase-detail" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uD398\uC774\uC988 \uC0C1\uC138 \u2014 ", phase || "\u2014", isDemo && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, ((_d = state.latest) == null ? void 0 : _d.last_checkpoint) || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: 0 } }, body));
+    const effLabel = effIdx >= 0 && PHASES[effIdx] ? PHASES[effIdx].label : phase || "\u2014";
+    return /* @__PURE__ */ React.createElement("div", { className: "panel phase-detail" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uD398\uC774\uC988 \uC0C1\uC138 \u2014 ", effLabel, pinned ? " \xB7 \uACE0\uC815" : "", isDemo && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, ((_d = state.latest) == null ? void 0 : _d.last_checkpoint) || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: 0 } }, body));
   }
   function GenerationView({ state, onViewLatestCode }) {
     var _a;
@@ -20077,14 +20190,19 @@ def signal_sell(pos, bar, ind):
     return /* @__PURE__ */ React.createElement("div", { className: "gen-view" }, /* @__PURE__ */ React.createElement("div", { className: "gen-view-grid" }, /* @__PURE__ */ React.createElement("div", { className: "gen-side" }, /* @__PURE__ */ React.createElement("div", { className: "side-section" }, /* @__PURE__ */ React.createElement("div", { className: "side-section-title" }, "LLM \uD638\uCD9C"), /* @__PURE__ */ React.createElement("div", { className: "side-kv" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "provider"), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, state.provider), /* @__PURE__ */ React.createElement("span", { className: "k" }, "tokens"), /* @__PURE__ */ React.createElement("span", { className: "v mono tnum" }, (g.stream_tokens || 0).toLocaleString()))), /* @__PURE__ */ React.createElement("div", { className: "side-section" }, /* @__PURE__ */ React.createElement("div", { className: "side-section-title" }, "\uD53C\uB4DC\uBC31 \uCEE8\uD14D\uC2A4\uD2B8 (Few-shot)"), ctx.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "side-empty" }, "\uCCAB \uC138\uB300 \u2014 \uCEE8\uD14D\uC2A4\uD2B8 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("ul", { className: "side-list" }, ctx.map((c, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11 } }, c)))), /* @__PURE__ */ React.createElement("div", { className: "side-section" }, /* @__PURE__ */ React.createElement("div", { className: "side-section-title" }, "\uC9C4\uD589"), /* @__PURE__ */ React.createElement("div", { className: "gen-prog-row" }, /* @__PURE__ */ React.createElement("span", { className: `gen-prog-dot ${buyDone ? "done" : active === "buy" ? "active" : ""}` }), /* @__PURE__ */ React.createElement("span", { className: "gen-prog-label" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("span", { className: `mono gen-prog-state ${buyDone ? "done" : ""}` }, buyDone ? "\u2713" : active === "buy" ? "\u2026" : "")), /* @__PURE__ */ React.createElement("div", { className: "gen-prog-row" }, /* @__PURE__ */ React.createElement("span", { className: `gen-prog-dot ${sellDone ? "done" : active === "sell" ? "active" : ""}` }), /* @__PURE__ */ React.createElement("span", { className: "gen-prog-label" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("span", { className: `mono gen-prog-state ${sellDone ? "done" : ""}` }, sellDone ? "\u2713" : active === "sell" ? "\u2026" : "")))), /* @__PURE__ */ React.createElement("div", { className: "gen-code-col" }, /* @__PURE__ */ React.createElement("div", { className: "gen-code-header" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: active === "sell" ? "var(--amber)" : "var(--teal)" } }, "\u25CF"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: "var(--ink-1)", letterSpacing: ".06em", textTransform: "uppercase" } }, codeLabel), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" } }, (showCode || "").split("\n").length, " lines \xB7 \uC2A4\uD2B8\uB9AC\uBC0D\uC911")), /* @__PURE__ */ React.createElement("pre", { className: "code-block stream", ref: codeRef }, highlighted.map((row, i) => /* @__PURE__ */ React.createElement("div", { key: i }, /* @__PURE__ */ React.createElement("span", { className: "ln" }, row.ln), row.parts.map((p, j) => /* @__PURE__ */ React.createElement("span", { key: j, className: p.cls }, p.t)))), /* @__PURE__ */ React.createElement("span", { className: "stream-caret blink" }, "\u258C")))));
   }
   function BacktestingView({ state }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const equity = ((_a = state.current_run) == null ? void 0 : _a.equity) || [];
     const baseline = 1e7;
     const last = equity[equity.length - 1];
     const lastPnl = last ? last.value - baseline : 0;
     const lastDD = (_e = (_d = (_c = (_b = state.current_run) == null ? void 0 : _b.drawdown) == null ? void 0 : _c.slice(-1)[0]) == null ? void 0 : _d.value_pct) != null ? _e : 0;
     const trades = ((_f = state.current_run) == null ? void 0 : _f.trades) || [];
-    return /* @__PURE__ */ React.createElement("div", { className: "bt-view" }, /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row" }, /* @__PURE__ */ React.createElement(
+    const gen = ((_g = state.current_run) == null ? void 0 : _g.generation) || {};
+    const buyName = gen.buy_name || gen.buy_strategy || ((_h = state.latest) == null ? void 0 : _h.buy_name) || state.best && state.best.buy_name || "\u2014";
+    const sellName = gen.sell_name || gen.sell_strategy || ((_i = state.latest) == null ? void 0 : _i.sell_name) || state.best && state.best.sell_name || "\u2014";
+    const runId = state.run_id || "\u2014";
+    const genNo = state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0 ? state.current_gen : "\u2014";
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-view" }, /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uCD9C\uCC98" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buyName)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sellName)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, "run ", runId, " \xB7 gen ", genNo))), /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row" }, /* @__PURE__ */ React.createElement(
       SummaryCell,
       {
         label: "\uD604\uC7AC \uC790\uBCF8",
@@ -20106,7 +20224,7 @@ def signal_sell(pos, bar, ind):
         label: "\uC2E4\uC2DC\uAC04 \uB099\uD3ED",
         value: `${lastDD.toFixed(2)}%`,
         color: "var(--red)",
-        sub: `peak ${Math.max(0, ...((_h = (_g = state.current_run) == null ? void 0 : _g.drawdown) == null ? void 0 : _h.map((p) => p.value_pct)) || [0]).toFixed(2)}%`
+        sub: `peak ${Math.max(0, ...((_k = (_j = state.current_run) == null ? void 0 : _j.drawdown) == null ? void 0 : _k.map((p) => p.value_pct)) || [0]).toFixed(2)}%`
       }
     ), /* @__PURE__ */ React.createElement(
       SummaryCell,
@@ -20610,6 +20728,7 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, {
     PhaseTimeline,
+    phaseIndex,
     PhaseDetailPanel,
     ProcessFlowPanel,
     ProcessFlowDiagram,
@@ -25358,7 +25477,29 @@ def signal_sell(pos, bar, ind):
     const dailyPnl = ((analysis.equity || {}).daily || []).map((d) => d.pnl || 0);
     const orderflow = analysis.orderflow || {};
     const stats = analysis.stats || [];
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-result-flow", style: { display: "flex", flexDirection: "column", gap: 14 } }, (() => {
+      const spec = result.spec || {};
+      const buy = spec.buy || result.buy || "\u2014";
+      const sell = spec.sell || result.sell || "\u2014";
+      const period = spec.start && spec.end ? `${spec.start}~${spec.end}` : result.period || "\u2014";
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm", href: "/ui/chart-replay", title: "\uC774 \uC870\uAC74\uC2DD \uC2E0\uD638 \uB9E5\uB77D\uC744 \uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778" }, "\u25B6 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778"));
+    })(), (() => {
+      const pf = Number(metricVal("total_profit_pct"));
+      const md = Number(metricVal("mdd_pct"));
+      const wr = Number(metricVal("win_rate"));
+      const tc = Number(metricVal("trade_count"));
+      const known = Number.isFinite(pf) || Number.isFinite(md) || Number.isFinite(wr) || Number.isFinite(tc);
+      if (!known) return null;
+      const flags = [];
+      if (Number.isFinite(pf)) flags.push({ ok: pf > 0, label: `\uC218\uC775 ${pf > 0 ? "+" : ""}${pf.toFixed(2)}%` });
+      if (Number.isFinite(md)) flags.push({ ok: Math.abs(md) <= 15, label: `MDD ${Math.abs(md).toFixed(1)}%` });
+      if (Number.isFinite(wr)) flags.push({ ok: wr >= 50, label: `\uC2B9\uB960 ${wr.toFixed(1)}%` });
+      if (Number.isFinite(tc)) flags.push({ ok: tc >= 10, label: `\uAC70\uB798 ${tc}\uAC74` });
+      const okN = flags.filter((f) => f.ok).length;
+      const cls = okN === flags.length ? "good" : okN >= flags.length - 1 ? "warn" : "bad";
+      const word = cls === "good" ? "\uC591\uD638" : cls === "warn" ? "\uC8FC\uC758" : "\uBD80\uC801\uD569";
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-verdict-band " + cls, role: "note", "aria-label": "\uACB0\uACFC \uC885\uD569 \uD310\uC815(\uD45C\uBCF8 \uB0B4 advisory)" }, /* @__PURE__ */ React.createElement("b", { className: "bt-verdict-word" }, word), flags.map((f) => /* @__PURE__ */ React.createElement("span", { key: f.label, className: "v4-chip " + (f.ok ? "ok" : "warn") }, f.label)), /* @__PURE__ */ React.createElement("span", { className: "bt-verdict-note mono" }, "\uD45C\uBCF8 \uB0B4 \uC694\uC57D \xB7 \uC2B9\uACA9/\uC6B4\uC601 \uD310\uB2E8 \uC544\uB2D8(performance_proved=false)"));
+    })(), range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
       "span",
       {
         className: "mono tag-slim",
@@ -25418,7 +25559,7 @@ def signal_sell(pos, bar, ind):
         brushActive: !!range,
         onBrushClear
       }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement("details", { className: "evo-group bt-flow-full", open: false }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 \uB300\uC0AC(\uD074\uB9AD \uD3BC\uCE68)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }))), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
       _BtFullscreenAnalysis,
       {
         analysis,
@@ -25974,6 +26115,8 @@ def signal_sell(pos, bar, ind):
     const [end, setEnd] = useState_bt("");
     const [timeframe, setTimeframe] = useState_bt("min");
     const [engines, setEngines] = useState_bt(4);
+    const [dividMode, setDividMode] = useState_bt("\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958");
+    const [oneCode, setOneCode] = useState_bt("");
     const [mode, setMode] = useState_bt("backtest");
     const [paramSpace, setParamSpace] = useState_bt("");
     const [trainWindow, setTrainWindow] = useState_bt("");
@@ -26122,6 +26265,17 @@ def signal_sell(pos, bar, ind):
       if (!/^\d{8}$/.test(String(start2)) || !/^\d{8}$/.test(String(end))) {
         setRunErr("\uAE30\uAC04\uC740 YYYYMMDD 8\uC790\uB9AC\uB85C \uC785\uB825\uD558\uC138\uC694.");
         return;
+      }
+      if (mode === "backtest") {
+        payload.divid_mode = dividMode;
+        if (dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529") {
+          const oc = (oneCode || "").trim();
+          if (!oc) {
+            setRunErr("'\uD55C\uC885\uBAA9 \uB85C\uB529'\uC740 \uC885\uBAA9\uCF54\uB4DC\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4(\uC608: A005930).");
+            return;
+          }
+          payload.one_code = oc;
+        }
       }
       if (mode === "optimize") {
         const ps = (paramSpace || "").trim();
@@ -26290,6 +26444,16 @@ def signal_sell(pos, bar, ind):
         max: "16",
         value: engines,
         onChange: (e) => setEngines(e.target.value),
+        disabled: isDemo
+      }
+    )), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input mono",
+        value: oneCode,
+        onChange: (e) => setOneCode(e.target.value),
+        placeholder: "A005930",
+        spellCheck: false,
         disabled: isDemo
       }
     )), /* @__PURE__ */ React.createElement(
@@ -27119,7 +27283,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setLoadingRuns(true);
-      _btFetchJson(baseUrl + "/runs", 6e3).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
     }, [baseUrl, isDemo]);
     useEffect_bt(() => {
       loadRuns();
@@ -30897,7 +31061,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       let cancelled = false;
-      _eaFetchJson(baseUrl + "/runs", 3e3).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 3e3 }).then((j) => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -30987,7 +31151,8 @@ def signal_sell(pos, bar, ind):
   var {
     useState: useState_rrp,
     useEffect: useEffect_rrp,
-    useCallback: useCallback_rrp
+    useCallback: useCallback_rrp,
+    useRef: useRef_rrp
   } = React;
   function _rrpMoney(value) {
     if (value == null || Number.isNaN(Number(value))) return "-";
@@ -31011,7 +31176,7 @@ def signal_sell(pos, bar, ind):
     const best = record && record.best || {};
     return best.label || best.name || best.strategy_gist || "-";
   }
-  function ResearchRecordsPanel({ baseUrl, wsStatus }) {
+  function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
     const [payload, setPayload] = useState_rrp(null);
     const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
     const [detail, setDetail] = useState_rrp(null);
@@ -31019,6 +31184,10 @@ def signal_sell(pos, bar, ind):
     const [err, setErr] = useState_rrp("");
     const [runList, setRunList] = useState_rrp([]);
     const [runListLoading, setRunListLoading] = useState_rrp(false);
+    const [showAll, setShowAll] = useState_rrp(false);
+    const [rq, setRq] = useState_rrp("");
+    const [sortKey, setSortKey] = useState_rrp("updated_at");
+    const [sortAsc, setSortAsc] = useState_rrp(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const refresh = useCallback_rrp(() => {
       if (isDemo || !baseUrl) return;
@@ -31036,15 +31205,29 @@ def signal_sell(pos, bar, ind):
       const timer2 = setInterval(refresh, 6e4);
       return () => clearInterval(timer2);
     }, [refresh, baseUrl, isDemo]);
+    const detailReqRef = useRef_rrp(0);
     useEffect_rrp(() => {
       if (isDemo || !baseUrl || !selectedCampaign) {
         setDetail(null);
         return;
       }
+      const reqId = ++detailReqRef.current;
+      const forCampaign = selectedCampaign;
+      let cancelled = false;
       fetch(
         baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
         { signal: AbortSignal.timeout(6e3) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setDetail(j)).catch((e) => setDetail({ available: false, reason: String(e) }));
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled && reqId === detailReqRef.current) {
+          setDetail(Object.assign({ __campaign: forCampaign }, j));
+          if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, j && j.campaign || null);
+        }
+      }).catch((e) => {
+        if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign });
+      });
+      return () => {
+        cancelled = true;
+      };
     }, [baseUrl, isDemo, selectedCampaign]);
     const refreshRuns = useCallback_rrp(() => {
       if (isDemo || !baseUrl) {
@@ -31052,7 +31235,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setRunListLoading(true);
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      fetchRunsShared(baseUrl, { timeoutMs: 6e3 }).then((j) => {
         const runs = Array.isArray(j && j.runs) ? j.runs.slice() : [];
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
@@ -31068,13 +31251,45 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
       }
     }, []);
-    const rows = payload && Array.isArray(payload.campaigns) ? payload.campaigns : [];
+    const rowsAll = payload && Array.isArray(payload.campaigns) ? payload.campaigns : [];
+    const _rrpSortVal = (row, k) => {
+      const best = row.best || {};
+      if (k === "name") return String(row.name || "");
+      if (k === "candidate_count") return Number(row.candidate_count || 0);
+      if (k === "profit") return Number(best.profit || 0);
+      if (k === "mdd") return Number(best.mdd || 0);
+      return Number(row.updated_at || 0);
+    };
+    const rows = rowsAll.filter((r) => !rq.trim() || String(r.name || "").toLowerCase().includes(rq.trim().toLowerCase())).sort((a, b) => {
+      const va = _rrpSortVal(a, sortKey), vb = _rrpSortVal(b, sortKey);
+      const c = typeof va === "string" ? va.localeCompare(String(vb)) : va - vb;
+      return sortAsc ? c : -c;
+    });
+    const onSort = (k) => {
+      if (k === sortKey) setSortAsc((v) => !v);
+      else {
+        setSortKey(k);
+        setSortAsc(k === "name");
+      }
+    };
+    const _si = (k) => sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "";
     const selected2 = detail && detail.available && detail.campaign ? detail.campaign : rows.find((r) => r.name === selectedCampaign);
     const candidates = selected2 && Array.isArray(selected2.candidates) ? selected2.candidates.slice(0, 5) : [];
     const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
     const currentRunId = runList.length ? runList[0].run_id : "";
     const currentGenNo = 0;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), !isDemo && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Campaign"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Candidates"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Best PnL"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, rows.slice(0, 12).map((row) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), !isDemo && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rowsAll.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "toolbar-input",
+        type: "search",
+        placeholder: "\uCEA0\uD398\uC778 \uAC80\uC0C9(\uD544\uD130)",
+        value: rq,
+        onChange: (e) => setRq(e.target.value),
+        "aria-label": "\uCEA0\uD398\uC778 \uD544\uD130",
+        style: { marginBottom: 8, width: 260 }
+      }
+    ), rq && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: 10, fontSize: 11, color: "var(--ink-3)" } }, "\uD544\uD130 ", rows.length, "/", rowsAll.length, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("name") }, "Campaign", _si("name"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("candidate_count") }, "Candidates", _si("candidate_count"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("profit") }, "Best PnL", _si("profit"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("mdd") }, "MDD", _si("mdd"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("updated_at") }, "Updated", _si("updated_at"))))), /* @__PURE__ */ React.createElement("tbody", null, (showAll ? rows : rows.slice(0, 12)).map((row) => {
       const best = row.best || {};
       const artifacts = row.artifacts || {};
       const active = row.name === selectedCampaign;
@@ -31085,7 +31300,10 @@ def signal_sell(pos, bar, ind):
         "button",
         {
           className: "btn ghost sm",
-          onClick: () => setSelectedCampaign(row.name),
+          onClick: () => {
+            setSelectedCampaign(row.name);
+            if (typeof onSelectCampaign === "function") onSelectCampaign(row.name, null);
+          },
           style: { maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }
         },
         row.name
@@ -31094,7 +31312,7 @@ def signal_sell(pos, bar, ind):
         textAlign: "right",
         color: Number(best.profit || 0) >= 0 ? "var(--teal)" : "var(--red)"
       } }, _rrpMoney(best.profit)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _rrpPct(best.mdd)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, (artifacts.pairs || []).length, " pairs / ", artifacts.summary ? "summary" : "-", " / ", artifacts.run_log ? "log" : "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _rrpDate(row.updated_at)));
-    })))), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 } }, "root=", payload && payload.root || "-")), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
+    })))), rows.length > 12 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", null, showAll ? `\uC804\uCCB4 ${rows.length}\uAC1C \uD45C\uC2DC \uC911` : `\uC804\uCCB4 ${rows.length}\uAC1C \uC911 12\uAC1C \uD45C\uC2DC`), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowAll((v) => !v) }, showAll ? "\uCC98\uC74C 12\uAC1C\uB9CC \uBCF4\uAE30" : `\uC804\uCCB4 ${rows.length}\uAC1C \uBCF4\uAE30`)), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 } }, "root=", payload && payload.root || "-")), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
       display: "grid",
       gridTemplateColumns: "minmax(110px, 1fr) 72px 56px 56px",
       gap: 8,
@@ -34330,144 +34548,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4HeroChart });
 
-  // ai_strategy_loop/dashboard/frontend/v4-loop-cycle.jsx
-  var LOOP_NODES = [
-    { key: "seed", label: "\uC2DC\uB4DC", tip: "\uD0D0\uC0C9 \uC2DC\uC791\uC810 \u2014 \uC2DC\uB4DC \uACA9\uC790\uC5D0\uC11C \uB2E4\uC74C \uC138\uB300 \uC870\uAC74\uC2DD \uD6C4\uBCF4\uC758 \uCD9C\uBC1C \uD30C\uB77C\uBBF8\uD130\uB97C \uACE0\uB978\uB2E4.", step: 0, ai: false },
-    { key: "prompt", label: "\uD504\uB86C\uD504\uD2B8 \uC870\uB9BD", tip: "\uC2DC\uB4DC\uC640 \uC774\uC804 \uC138\uB300 \uBD80\uAC80 \uD53C\uB4DC\uBC31\uC744 \uC870\uD569\uD574 LLM \uD504\uB86C\uD504\uD2B8\uB97C \uAD6C\uC131\uD55C\uB2E4.", step: 0, ai: false },
-    { key: "generate", label: "AI \uC0DD\uC131", tip: "LLM\uC774 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uC0DD\uC131\uD55C\uB2E4.", step: 0, ai: true },
-    { key: "gate", label: "\uAC8C\uC774\uD2B8", tip: "\uC0DD\uC131\uB41C \uCF54\uB4DC\uAC00 \uAD6C\uBB38\xB7\uAE08\uC9C0 \uBCC0\uC218 \uB4F1 \uD544\uD130 \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD558\uB294\uC9C0 \uAC80\uC0AC\uD55C\uB2E4.", step: 0, ai: false },
-    { key: "backtest", label: "\uACF5\uC2DD \uBC31\uD14C", tip: "\uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uCF54\uB4DC\uB97C \uACF5\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC73C\uB85C \uACFC\uAC70 \uB370\uC774\uD130\uC5D0 \uC2E4\uD589\uD55C\uB2E4.", step: 1, ai: false },
-    { key: "score", label: "\uCC44\uC810", tip: "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC5D0\uC11C MDD\xB7\uC218\uC775\xB7\uBE48\uB3C4 \uB4F1\uC73C\uB85C graded fitness \uC810\uC218\uB97C \uC0B0\uCD9C\uD55C\uB2E4.", step: 2, ai: false },
-    { key: "autopsy", label: "\uBD80\uAC80", tip: "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \uB4F1 \uC2E4\uD328 \uC6D0\uC778\uC744 \uBD80\uAC80 \uB9AC\uD3EC\uD2B8\uB85C \uC815\uB9AC\uD55C\uB2E4.", step: 3, ai: false },
-    { key: "feedback", label: "\uD658\uB958", tip: "\uBD80\uAC80 \uC778\uC0AC\uC774\uD2B8\uB97C \uB2E4\uC74C \uC138\uB300 \uD504\uB86C\uD504\uD2B8\uC5D0 \uB418\uBA39\uC784\uD574 \uB8E8\uD504\uB97C \uBC18\uBCF5\uD55C\uB2E4.", step: 4, ai: true }
-  ];
-  var LOOP_STEP_NAMES = ["\uC0DD\uC131", "\uBC31\uD14C", "\uCC44\uC810", "\uBD80\uAC80", "\uBC18\uBCF5"];
-  var _LOOP_CYCLE_PHASE_STEP = {
-    generate_start: 0,
-    generate_done: 0,
-    warm_prepare_start: 0,
-    warm_prepare_done: 0,
-    loop_start: 0,
-    ga_init: 0,
-    backtest_start: 1,
-    backtest_end: 1,
-    ga_evaluate_start: 1,
-    score_start: 2,
-    score_done: 2,
-    autopsy_start: 3,
-    autopsy_done: 3,
-    generation_done: 4,
-    ga_generation_done: 4,
-    complete: -1,
-    stopping: -1
-  };
-  function _loopCycleFallbackStep(rawStep, phase) {
-    let value = Number(rawStep);
-    if (!Number.isInteger(value)) {
-      value = Object.prototype.hasOwnProperty.call(_LOOP_CYCLE_PHASE_STEP, phase) ? _LOOP_CYCLE_PHASE_STEP[phase] : -1;
-    }
-    if (!Number.isInteger(value) || value < 0) return -1;
-    return Math.min(LOOP_STEP_NAMES.length - 1, value);
-  }
-  function _loopCycleCurrentStep(state) {
-    const s = state || {};
-    const latest = s.latest || {};
-    const rawStep = latest.current_step != null ? latest.current_step : s.live_phase_step;
-    const phase = latest.phase || s.phase || "";
-    if (typeof window.normalizeFlowStepIndex === "function") {
-      return window.normalizeFlowStepIndex(rawStep, phase);
-    }
-    return _loopCycleFallbackStep(rawStep, phase);
-  }
-  function _loopCycleNodePos(i, total) {
-    const angle = (-90 + i * 360 / total) * (Math.PI / 180);
-    const radius = 38;
-    return { x: 50 + radius * Math.cos(angle), y: 50 + radius * Math.sin(angle) };
-  }
-  function _loopCycleEdge(i, total, nodeRadius) {
-    const a = _loopCycleNodePos(i, total);
-    const b = _loopCycleNodePos((i + 1) % total, total);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const ux = dx / dist, uy = dy / dist;
-    return {
-      x1: a.x + ux * nodeRadius,
-      y1: a.y + uy * nodeRadius,
-      x2: b.x - ux * nodeRadius,
-      y2: b.y - uy * nodeRadius
-    };
-  }
-  function V4LoopCycle({ state }) {
-    const s = state || {};
-    const running = s.status === "running" || s.status === "stopping";
-    const isComplete = s.status === "complete";
-    const currentStep = running ? _loopCycleCurrentStep(s) : -1;
-    const currentStepName = currentStep >= 0 ? LOOP_STEP_NAMES[currentStep] : null;
-    const total = LOOP_NODES.length;
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-loop-cycle-panel panel", "aria-labelledby": "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title", id: "v4-loop-cycle-heading" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074"), isComplete && /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok", "data-tip": "\uC774\uBC88 run\uC758 \uC138\uB300 \uB8E8\uD504\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4" }, "\uC644\uB8CC \xB7 run \uC885\uB8CC"), !isComplete && currentStepName && /* @__PURE__ */ React.createElement("span", { className: "v4-chip win", "data-tip": "\uD604\uC7AC \uD65C\uC131 \uB2E8\uACC4" }, "\uC9C4\uD589 \uC911 \xB7 ", currentStepName)), /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        className: "v4-loop-cycle" + (isComplete ? " v4-loop-cycle--complete" : ""),
-        role: "img",
-        "aria-label": "\uC870\uAC74\uC2DD AI \uB8E8\uD504 \uBC18\uBCF5 \uC138\uB300 \uC0AC\uC774\uD074 \uB2E4\uC774\uC5B4\uADF8\uB7A8 \xB7 \uC2DC\uB4DC \u2192 \uD504\uB86C\uD504\uD2B8 \uC870\uB9BD \u2192 AI \uC0DD\uC131 \u2192 \uAC8C\uC774\uD2B8 \u2192 \uACF5\uC2DD \uBC31\uD14C \u2192 \uCC44\uC810 \u2192 \uBD80\uAC80 \u2192 \uD658\uB958 \uC21C\uD658. \uD604\uC7AC \uB2E8\uACC4 " + (currentStepName || "\uB300\uAE30")
-      },
-      /* @__PURE__ */ React.createElement("svg", { className: "v4-loop-cycle-svg", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid meet", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
-        "marker",
-        {
-          id: "v4-loop-arrowhead",
-          viewBox: "0 0 10 10",
-          refX: "8",
-          refY: "5",
-          markerWidth: "6",
-          markerHeight: "6",
-          orient: "auto-start-reverse"
-        },
-        /* @__PURE__ */ React.createElement("path", { d: "M0,0 L10,5 L0,10 Z", className: "v4-loop-arrowhead-fill" })
-      )), LOOP_NODES.map((_, i) => {
-        const isWrap = i === total - 1;
-        const lit = currentStep >= 0 && (isWrap ? currentStep === LOOP_STEP_NAMES.length - 1 : LOOP_NODES[(i + 1) % total].step <= currentStep);
-        const { x1, y1, x2, y2 } = _loopCycleEdge(i, total, 9);
-        return /* @__PURE__ */ React.createElement(
-          "line",
-          {
-            key: "edge-" + LOOP_NODES[i].key,
-            x1,
-            y1,
-            x2,
-            y2,
-            className: "v4-loop-edge" + (lit ? " v4-loop-edge--lit" : "") + (isWrap ? " v4-loop-edge--wrap" : ""),
-            markerEnd: "url(#v4-loop-arrowhead)"
-          }
-        );
-      })),
-      LOOP_NODES.map((node, i) => {
-        const pos = _loopCycleNodePos(i, total);
-        const active = running && !isComplete && node.step === currentStep;
-        return /* @__PURE__ */ React.createElement(
-          "div",
-          {
-            key: node.key,
-            className: "v4-loop-node" + (active ? " v4-loop-node--active" : "") + (isComplete ? " v4-loop-node--dim" : ""),
-            style: { left: pos.x + "%", top: pos.y + "%" },
-            "data-tip": node.tip,
-            "aria-label": node.label + " \u2014 " + node.tip + (active ? " (\uD604\uC7AC \uB2E8\uACC4)" : ""),
-            tabIndex: 0
-          },
-          /* @__PURE__ */ React.createElement(
-            "span",
-            {
-              className: "v4-loop-badge " + (node.ai ? "v4-loop-badge--ai" : "v4-loop-badge--code"),
-              title: node.ai ? "AI \uAC1C\uC785 \uC9C0\uC810" : "\uACB0\uC815\uB860\uC801 \uCF54\uB4DC"
-            },
-            node.ai ? "AI" : "\u2699"
-          ),
-          /* @__PURE__ */ React.createElement("span", { className: "v4-loop-node-label" }, node.label)
-        );
-      })
-    ));
-  }
-  Object.assign(window, { V4LoopCycle });
-
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -34484,7 +34564,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const invalidHash = _V4_APPROVAL_HASH_KEYS.find((key) => !/^[0-9a-f]{64}$/.test(String(binding[key])));
     return invalidHash ? `\uC2B9\uC778 \uADFC\uAC70 \uD574\uC2DC \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 (${invalidHash}).` : "";
   }
-  function _V4Fold({ storageKey, label, children: children2, defaultOpen = true }) {
+  function _V4Fold({ storageKey, label, children: children2, defaultOpen = false, forceOpen = false }) {
     const [open, setOpen] = useState_v4r(() => {
       try {
         const v = window.localStorage.getItem(storageKey);
@@ -34501,28 +34581,22 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       } catch (e2) {
       }
     };
-    return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": open }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
+    const effOpen = forceOpen || open;
+    return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: effOpen, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": effOpen }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
   }
-  function _V4WorkflowStrip({ state }) {
-    const discovery = state.page_data && state.page_data.condition_discovery || {};
-    const observability = discovery.research_observability || {};
-    const ma = observability.mode_authority || {};
-    const latest = state.latest || {};
-    const procLabel = ma.process || discovery.current_process && discovery.current_process.code || "process-research";
-    const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
-    const authLabel = ma.generation_allowed === true ? "research allowed" : ma.generation_allowed === false ? "review only" : "authority \uB300\uAE30";
-    const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
-    const nextMsg = state.latest && (state.latest.message || state.latest.phase) || "\uB300\uAE30";
-    const genLabel = state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0 ? String(state.current_gen) : "\uC2DC\uC791 \uC804";
-    const stepLabel = latest.current_step != null && Number.isFinite(Number(latest.current_step)) && Number(latest.current_step) >= 0 ? String(latest.current_step) : "\uBC1C\uD589 \uB300\uAE30";
-    const timingText = Object.entries(latest.step_timings || {}).filter(([, seconds]) => typeof seconds === "number" && seconds >= 0).map(([step, seconds]) => `${step} ${seconds.toFixed(1)}\uCD08`).join(" \xB7 ") || "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C";
-    const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
-    const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
-    const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || state.blockers || [];
-    const rawBlockers = Array.isArray(blockerSource) ? blockerSource : blockerSource.blockers || [];
-    const blockerText = Array.isArray(rawBlockers) && rawBlockers.length ? rawBlockers.join(" \xB7 ") : "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C";
-    const errorText = state.error || latest.error || "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-wfwrap v4-research-evidence", "aria-labelledby": "v4-research-evidence-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-evidence-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uADFC\uAC70"), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement("p", { className: "v4-research-live-summary", role: "status", "aria-live": "polite" }, "\uC138\uB300 ", genLabel, " \xB7 \uD604\uC7AC \uB2E8\uACC4 ", stepLabel, " \xB7 ", state.status || "idle"), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)), /* @__PURE__ */ React.createElement("dl", { className: "v4-research-evidence-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04"), /* @__PURE__ */ React.createElement("dd", null, timingText)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uCC28\uB2E8 \uC0AC\uC720"), /* @__PURE__ */ React.createElement("dd", null, blockerText)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uCD5C\uC2E0 \uB85C\uADF8"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, String(lastLog)))));
+  function _V4Onboarding({ onOpenSettings }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v6-onboarding-btnrow" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC124\uC815"));
+  }
+  function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
+    const s = state || {};
+    const prog = (s.latest || {}).backtest_progress || {};
+    const running = s.status === "running" || s.status === "stopping";
+    const pct = typeof prog.percent === "number" ? Math.max(0, Math.min(100, prog.percent)) : null;
+    const curGen = typeof prog.current_gen === "number" ? prog.current_gen : s.current_gen || 0;
+    const maxGens = prog.max_generations || s.max_generations || 0;
+    const engineLabel = running ? "\uC2E4\uD589 \uC911" : s.status === "done" ? "\uC644\uB8CC" : s.status === "error" ? "\uC624\uB958" : "\uB300\uAE30";
+    const fmt = (v, d = 2) => v == null || v === "" ? "\u2014" : Number(v).toFixed(d);
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-enggate-bar", "aria-label": "\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD669\uD310" }, /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uC5D4\uC9C4"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-chip " + (running ? "run" : "idle") }, engineLabel), pct != null && /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v" }, pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono" }, "gen ", curGen >= 0 ? curGen : "\u2014", maxGens ? "/" + maxGens : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uAC8C\uC774\uD2B8 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uBAA9\uD45C \uC801\uD569\uB3C4 \uC810\uC218" }, "score \u2265 ", fmt(targetScore)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "MDD \uC0C1\uD55C" }, "MDD \u2264 ", fmt(mddCap)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uCD5C\uC18C \uC77C\uAC70\uB798 \uC218" }, "trades \u2265 ", minDailyTrades != null ? minDailyTrades : "\u2014")));
   }
   function _V4Stats({ state }) {
     var _a;
@@ -34537,16 +34611,62 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const cost = (_a = state.cumulative && state.cumulative.cost_or_count) != null ? _a : "\u2014";
     return /* @__PURE__ */ React.createElement("div", { className: "v4-stats" }, /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, cur, /* @__PURE__ */ React.createElement("span", { className: "dim" }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "s" }, "\uD604\uC7AC \uC138\uB300 \xB7 ", state.status || "idle")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (bestScore != null ? " pos" : "") }, bestScore != null ? bestScore.toFixed(2) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best fitness", best && best.gate_passed ? " \xB7 gate \u2713" : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (mdd != null ? " neg" : "") }, mdd != null ? "-" + Math.abs(mdd).toFixed(1) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best MDD")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, tokens ? tokens >= 1e3 ? (tokens / 1e3).toFixed(1) + "k" : tokens : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "tokens \xB7 cost ", String(cost))));
   }
-  function _V4Onboarding({ onOpenSettings }) {
-    const steps = [
-      ["\uC870\uAC74\uC2DD \uB9CC\uB4E4\uAE30", "LLM\uC774 \uC774\uC804 \uC2E4\uD328 \uC6D0\uC778\uACFC \uC88B\uC740 \uC608\uC2DC\uB97C \uCC38\uACE0\uD574 \uB9E4\uC218/\uB9E4\uB3C4 \uADDC\uCE59\uC744 \uC791\uC131\uD569\uB2C8\uB2E4."],
-      ["\uACFC\uAC70 \uB370\uC774\uD130\uB85C \uAC80\uC99D", "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC774 \uC9C0\uC815 \uAE30\uAC04\uC758 \uC885\uBAA9 \uB370\uC774\uD130\uB97C \uB3CC\uB824 \uC190\uC775\xB7\uB099\uD3ED\xB7\uAC70\uB798 \uBE48\uB3C4\uB97C \uACC4\uC0B0\uD569\uB2C8\uB2E4."],
-      ["\uC810\uC218 \uACC4\uC0B0", "\uC218\uC775, \uC704\uD5D8(MDD), \uC6B0\uC0C1\uD5A5, \uC77C\uD3C9\uADE0 \uAC70\uB798, \uC190\uC775\uBE44\uB97C \uBAA9\uD45C \uACF5\uC2DD\uC5D0 \uB9DE\uCDB0 \uC810\uC218\uD654\uD569\uB2C8\uB2E4."],
-      ["\uD1B5\uACFC \uAE30\uC900 \uD655\uC778", "\uBAA9\uD45C \uC801\uD569\uB3C4, MDD \uC0C1\uD55C, \uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C\uC744 \uB9CC\uC871\uD558\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4."],
-      ["\uC2E4\uD328 \uC6D0\uC778 \uC694\uC57D", "\uC65C \uB5A8\uC5B4\uC84C\uB294\uC9C0 \uC26C\uC6B4 \uB9D0\uB85C \uC815\uB9AC\uD574 \uB2E4\uC74C \uC138\uB300 \uD504\uB86C\uD504\uD2B8\uC5D0 \uB123\uC2B5\uB2C8\uB2E4."],
-      ["\uB2E4\uC2DC \uAC1C\uC120", "\uC774\uB984 \uBD99\uC740 run\xB7\uC138\uB300\xB7\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uC800\uC7A5\uD574 \uB098\uC911\uC5D0 \uB2E4\uC2DC \uCC3E\uC744 \uC218 \uC788\uAC8C \uD569\uB2C8\uB2E4."]
-    ];
-    return /* @__PURE__ */ React.createElement("div", { className: "panel v4-onboarding" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4-onboarding-bd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, "\uC870\uAC74\uC2DD AI \uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("p", null, "AI\uAC00 \uD55C\uAD6D \uC8FC\uC2DD \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5\uC744 \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBD80\uAC80\uD558\uBA70 \uC870\uAC74\uC2DD\uC744 \uC9C4\uD654\uC2DC\uD0B5\uB2C8\uB2E4. \uAC01 \uC138\uB300\uC758 \uBD80\uAC80\uC774 \uB2E4\uC74C \uC138\uB300 \uC0DD\uC131\uAE30\uC5D0 \uD53C\uB4DC\uBC31\uB429\uB2C8\uB2E4. \uC6B0\uC2B9 \uD6C4\uBCF4\uC758 \uC6B4\uC601 export \uB294 \uC5F0\uAD6C \uD655\uC778\uACFC \uBD84\uB9AC\uB41C human \uC2B9\uC778 \uC808\uCC28\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("ol", { className: "v4-onboarding-steps" }, steps.map(([k, d], i) => /* @__PURE__ */ React.createElement("li", { key: k }, /* @__PURE__ */ React.createElement("b", null, i + 1, ". ", k), /* @__PURE__ */ React.createElement("span", null, d))))));
+  var V6_STAGES = [
+    { key: "generate", label: "\uC0DD\uC131", sub: "\uC870\uAC74\uC2DD \uC0DD\uC131" },
+    { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8", sub: "\uC5D4\uC9C4 \uAC80\uC99D\xB7\uACB0\uACFC" },
+    { key: "score", label: "\uCC44\uC810\xB7\uBD80\uAC80", sub: "\uAC8C\uC774\uD2B8\xB7\uBD84\uC11D\xB7\uC2E4\uD328" },
+    { key: "iterate", label: "\uBC18\uBCF5\xB7\uC131\uACFC", sub: "\uC138\uB300 \uC694\uC57D" }
+  ];
+  var STAGE_FROM_PHASE = [0, 1, 2, 2];
+  var _BELT_NODES = [
+    { key: "seed", label: "\uC2DC\uB4DC", ai: false, stage: 0 },
+    { key: "prompt", label: "\uD504\uB86C\uD504\uD2B8", ai: false, stage: 0 },
+    { key: "gen", label: "AI \uC0DD\uC131", ai: true, stage: 0 },
+    { key: "gate", label: "\uAC8C\uC774\uD2B8", ai: false, stage: 1 },
+    { key: "bt", label: "\uACF5\uC2DD \uBC31\uD14C", ai: false, stage: 1 },
+    { key: "score", label: "\uCC44\uC810", ai: false, stage: 2 },
+    { key: "autopsy", label: "\uBD80\uAC80", ai: true, stage: 2 },
+    { key: "loop", label: "\uD658\uB958 \u21A9", ai: false, stage: 3 }
+  ];
+  function _V6PipelineBelt({ liveStage, activeStage, onStagePin }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v6-belt", role: "group", "aria-label": "\uBC18\uBCF5 \uC138\uB300 \uD30C\uC774\uD504\uB77C\uC778(\uD074\uB9AD \uC2DC \uD574\uB2F9 \uB2E8\uACC4 \uACE0\uC815)" }, _BELT_NODES.map((n, i) => {
+      const live = liveStage === n.stage;
+      const sel = activeStage === n.stage;
+      return /* @__PURE__ */ React.createElement(React.Fragment, { key: n.key }, i > 0 && /* @__PURE__ */ React.createElement("span", { className: "v6-belt-arrow" + (live ? " lit" : ""), "aria-hidden": "true" }, "\u2192"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "v6-belt-node" + (live ? " live" : "") + (sel ? " sel" : "") + (n.ai ? " ai" : ""),
+          title: (n.ai ? "AI \uAC1C\uC785 \xB7 " : "\uCF54\uB4DC \xB7 ") + V6_STAGES[n.stage].label + " \uB2E8\uACC4\uB85C \uC774\uB3D9",
+          onClick: () => {
+            if (typeof onStagePin === "function") onStagePin(n.stage);
+          }
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "v6-belt-badge" }, n.ai ? "AI" : "\u2699"),
+        /* @__PURE__ */ React.createElement("span", { className: "v6-belt-label" }, n.label)
+      ));
+    }));
+  }
+  function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades }) {
+    const s = state || {};
+    const latest = s.latest || {};
+    const discovery = s.page_data && s.page_data.condition_discovery || {};
+    const observability = discovery.research_observability || {};
+    const ma = observability.mode_authority || {};
+    const procLabel = ma.process || discovery.current_process && discovery.current_process.code || "process-research";
+    const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
+    const authLabel = ma.generation_allowed === true ? "research allowed" : ma.generation_allowed === false ? "review only" : "authority \uB300\uAE30";
+    const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
+    const nextMsg = latest.message || latest.phase || "\uB300\uAE30";
+    const timings = Object.entries(latest.step_timings || {}).filter(([, sec]) => typeof sec === "number" && sec >= 0);
+    const maxT = timings.reduce((m, [, sec]) => Math.max(m, sec), 0) || 1;
+    const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || s.blockers || [];
+    const rawBlockers = Array.isArray(blockerSource) ? blockerSource : blockerSource.blockers || [];
+    const blockers = Array.isArray(rawBlockers) ? rawBlockers : [];
+    const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
+    const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
+    const errorText = s.error || latest.error || "";
+    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uC0C1\uD669\uD310"), /* @__PURE__ */ React.createElement(_V6PipelineBelt, { liveStage, activeStage, onStagePin }), /* @__PURE__ */ React.createElement("div", { className: "v6-board-top v6-board-top--belt" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-timeline" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-curgen" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
   }
   function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, onOpenSettings, targetScore, mddCap, minDailyTrades }) {
     var _a;
@@ -34554,12 +34674,35 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [approvalBinding, setApprovalBinding] = useState_v4r(null);
     const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("\uB3D9\uACB0 \uC2B9\uC778 \uADFC\uAC70\uB97C \uD655\uC778\uD558\uB294 \uC911\uC785\uB2C8\uB2E4.");
     const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
+    const [stagePin, setStagePin] = useState_v4r(null);
     const s = state || {};
+    const latest = s.latest || {};
     const runId = s.run_id || "";
     const gens = Array.isArray(s.generations) ? s.generations : [];
     const hasData = gens.length > 0;
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
     const viewCode = typeof onViewCode === "function" ? onViewCode : () => {
+    };
+    const running = s.status === "running" || s.status === "stopping";
+    const phaseIdx = running ? phaseIndex(latest.phase) : -1;
+    const liveStage = s.status === "done" ? 3 : phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1;
+    const activeStage = stagePin != null ? stagePin : liveStage >= 0 ? liveStage : hasData ? 3 : 0;
+    const onStagePin = (i) => setStagePin((prev) => prev === i ? null : i);
+    const onStageKey = (e) => {
+      const n = V6_STAGES.length;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setStagePin((activeStage + 1) % n);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setStagePin((activeStage - 1 + n) % n);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setStagePin(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setStagePin(n - 1);
+      }
     };
     useEffect_v4r(() => {
       let active = true;
@@ -34604,25 +34747,66 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_V4WorkflowStrip, { state: s }), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
-    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), /* @__PURE__ */ React.createElement("div", { className: "v4-rlive" }, /* @__PURE__ */ React.createElement("div", { className: "v4-hero-col" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Fitness \uACE1\uC120 \xB7 graded score"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "best ", s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "\u2014", " \xB7 gate ", targetScore != null ? Number(targetScore).toFixed(2) : "\u2014", " \xB7 gen ", s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : "\uC2DC\uC791 \uC804")), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary" }, /* @__PURE__ */ React.createElement(V4HeroChart, { state: s, target: targetScore })), /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-legend" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "2px solid var(--teal)" } }), "graded fitness"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "1px dashed var(--violet)" } }), "gate ", targetScore != null ? Number(targetScore).toFixed(2) : ""), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" } }), "best"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--amber)" } }), "\uD604\uC7AC \uC138\uB300"))), /* @__PURE__ */ React.createElement(_V4Stats, { state: s }), /* @__PURE__ */ React.createElement("div", { className: "v4-two" }, /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_live_detail", label: "Live \uC0C1\uC138 \xB7 \uB2E8\uACC4 \uC2A4\uD2B8\uB9AC\uBC0D" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \xB7 process selector (research vs review \uAD8C\uD55C)" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "Strategy / Prompt \xB7 \uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(
-      GenerationsTable,
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live", "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(
+      _V6StatusBoard,
       {
         state: s,
+        liveStage,
+        activeStage,
+        onStagePin,
+        targetScore,
         mddCap,
-        minDailyTrades,
-        onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
-        onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+        minDailyTrades
       }
-    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), /* @__PURE__ */ React.createElement(V4LoopCycle, { state: s }), merged ? /* @__PURE__ */ React.createElement(
-      MergedBestWinnerCard,
+    ), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
+    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), hasData && /* @__PURE__ */ React.createElement("div", { className: "v6-graphs" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Fitness \xB7 graded score"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "best ", s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "\u2014", " \xB7 gate ", targetScore != null ? Number(targetScore).toFixed(2) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary v6-hero-compact" }, /* @__PURE__ */ React.createElement(V4HeroChart, { state: s, target: targetScore })), /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-legend" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "2px solid var(--teal)" } }), "graded fitness"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "1px dashed var(--violet)" } }), "gate ", targetScore != null ? Number(targetScore).toFixed(2) : ""), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" } }), "best"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--amber)" } }), "\uD604\uC7AC \uC138\uB300"))), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-stage-tabs", role: "tablist", "aria-label": "\uC5F0\uAD6C \uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4", onKeyDown: onStageKey }, V6_STAGES.map((st, i) => /* @__PURE__ */ React.createElement(
+      "button",
       {
-        best: s.best,
-        winner: s.winner,
-        onApprove: requestApproval,
-        onViewCode: viewCode
-      }
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }))), /* @__PURE__ */ React.createElement(
+        key: st.key,
+        type: "button",
+        role: "tab",
+        id: "v6-stage-tab-" + st.key,
+        "aria-selected": activeStage === i,
+        "aria-controls": "v6-stage-panel",
+        tabIndex: activeStage === i ? 0 : -1,
+        className: "v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : ""),
+        onClick: () => onStagePin(i),
+        title: st.sub + (liveStage === i ? " \xB7 \uC9C4\uD589 \uC911" : "")
+      },
+      /* @__PURE__ */ React.createElement("b", null, i + 1, ". ", st.label),
+      /* @__PURE__ */ React.createElement("span", null, st.sub),
+      liveStage === i && /* @__PURE__ */ React.createElement("i", { className: "v6-live-dot", "aria-label": "\uC9C4\uD589 \uC911" })
+    )), stagePin != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setStagePin(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30")), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        id: "v6-stage-panel",
+        className: "v6-stage-panel",
+        role: "tabpanel",
+        "aria-labelledby": "v6-stage-tab-" + V6_STAGES[activeStage].key,
+        "aria-live": "polite"
+      },
+      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
+      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 }), /* @__PURE__ */ React.createElement("div", { className: "v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })),
+      activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null)), /* @__PURE__ */ React.createElement(
+        GenerationsTable,
+        {
+          state: s,
+          mddCap,
+          minDailyTrades,
+          onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
+          onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+        }
+      ), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 (\uBD84\uC11D)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 \uD329\uD130/\uC5E3\uC9C0 (\uBD84\uC11D)"), /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab", "aria-label": "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 (\uBD84\uC11D)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D (\uBD84\uC11D)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })),
+      activeStage === 3 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, merged ? /* @__PURE__ */ React.createElement(
+        MergedBestWinnerCard,
+        {
+          best: s.best,
+          winner: s.winner,
+          onApprove: requestApproval,
+          onViewCode: viewCode
+        }
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId }))
+    ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {
         winner: approvalOpen ? s.winner : null,
@@ -34673,177 +34857,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     ));
   }
   Object.assign(window, { V4Replay });
-
-  // ai_strategy_loop/dashboard/frontend/v4-history.jsx
-  function V4History({ baseUrl, wsStatus, onNavigate }) {
-    const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
-    const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))));
-  }
-  Object.assign(window, { V4History });
-
-  // ai_strategy_loop/dashboard/frontend/v4-lab.jsx
-  function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
-    const surfaceState = wsStatus === "connecting" ? "loading" : wsStatus === "error" || wsStatus === "closed" || !baseUrl && runId ? "error" : runId ? "ready" : "empty";
-    const statusText = surfaceState === "loading" ? "\uC5F0\uAD6C \uB370\uC774\uD130\uB97C \uC5F0\uACB0\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : surfaceState === "error" ? "\uC5F0\uAD6C \uB370\uC774\uD130 \uC5F0\uACB0\uC744 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD604\uC7AC \uACB0\uACFC\uB97C \uADFC\uAC70\uB85C \uC0AC\uC6A9\uD558\uC9C0 \uB9C8\uC138\uC694." : surfaceState === "ready" ? `Run ${runId}\uC758 \uD329\uD130\xB7\uC5E3\uC9C0 \uADFC\uAC70\uB97C \uBD84\uC11D\uD569\uB2C8\uB2E4.` : "\uC120\uD0DD\uB41C Run\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. Run\uC744 \uC120\uD0DD\uD558\uBA74 \uD329\uD130\xB7\uC5E3\uC9C0 \uADFC\uAC70\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement(
-      "section",
-      {
-        className: "v4-lab v4-cjk-safe",
-        "aria-labelledby": "v4-lab-title",
-        "aria-busy": surfaceState === "loading",
-        "data-state": surfaceState
-      },
-      /* @__PURE__ */ React.createElement("header", { className: "panel v4-tab-intro" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-lab-title", className: "panel-hd-title" }, "Lab \xB7 \uD329\uD130\uC640 \uC5E3\uC9C0 \uADFC\uAC70 \uAC80\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4-surface-status", role: "status", "aria-live": "polite" }, statusText), surfaceState === "error" && /* @__PURE__ */ React.createElement("p", { className: "research-empty danger", role: "alert" }, "\uC5F0\uACB0 \uC624\uB958\uAC00 \uD574\uC18C\uB418\uAE30 \uC804\uC5D0\uB294 \uBE48 \uACB0\uACFC\uB97C \uC815\uC0C1 \uACB0\uACFC\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."))),
-      /* @__PURE__ */ React.createElement(
-        "section",
-        {
-          className: "v4-lab-region v4-data-region v4-local-scroll v4-cjk-safe",
-          "aria-labelledby": "v4-lab-factor-title",
-          "aria-describedby": "v4-lab-provenance",
-          "data-v4-scroll-owner": "lab-factor-evidence",
-          tabIndex: 0
-        },
-        /* @__PURE__ */ React.createElement("h3", { id: "v4-lab-factor-title", className: "stom-section-label" }, "\uD329\uD130 \uBD84\uD3EC\uC640 \uD0D0\uC0C9 \uC5E3\uC9C0"),
-        /* @__PURE__ */ React.createElement("p", { id: "v4-lab-provenance", className: "v4-data-caveat" }, "\uCD9C\uCC98: \uC120\uD0DD\uD55C Run\uC758 \uC800\uC7A5\uB41C \uC5F0\uAD6C\xB7\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC. \uD45C\uBCF8 \uAD6C\uAC04\uACFC \uD45C\uBCF8 \uC678 \uAD6C\uAC04(OOS)\uC744 \uD568\uAED8 \uD655\uC778\uD558\uACE0, \uC0C1\uAD00\uAD00\uACC4\uB97C \uC778\uACFC\uAD00\uACC4\uB85C \uD574\uC11D\uD558\uC9C0 \uB9C8\uC138\uC694."),
-        /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId })
-      ),
-      /* @__PURE__ */ React.createElement("section", { className: "v4-lab-region v4-cjk-safe", "aria-labelledby": "v4-lab-edge-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-lab-edge-title", className: "stom-section-label" }, "\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uAC80\uC99D"), /* @__PURE__ */ React.createElement(
-        ResearchLabPanel,
-        {
-          baseUrl,
-          wsStatus,
-          runId,
-          onOpenWorkbench: () => {
-            if (typeof onNavigate === "function") onNavigate("workbench");
-          }
-        }
-      )),
-      /* @__PURE__ */ React.createElement("details", { className: "evo-group v4-lab-wiki v4-cjk-safe" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 (\uC120\uD0DD)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId })))
-    );
-  }
-  Object.assign(window, { V4Lab });
-
-  // ai_strategy_loop/dashboard/frontend/run-compare.jsx
-  var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
-  function rcNum(value, digits = 2) {
-    return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
-  }
-  function rcMoney(value) {
-    return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString("ko-KR") : "-";
-  }
-  function rcPct(value) {
-    return typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)}%` : "-";
-  }
-  function rcDuration(sec) {
-    if (typeof sec !== "number" || !Number.isFinite(sec)) return "-";
-    if (sec < 60) return `${sec.toFixed(1)}s`;
-    const min = Math.floor(sec / 60);
-    const rem = Math.round(sec % 60);
-    if (min < 60) return `${min}m ${rem}s`;
-    return `${Math.floor(min / 60)}h ${min % 60}m`;
-  }
-  function rcYears(run) {
-    if (Array.isArray(run.years) && run.years.length) return run.years.join(", ");
-    if (run.start_year && run.end_year) return `${run.start_year}-${run.end_year}`;
-    return "-";
-  }
-  function rcWindow(run) {
-    const start2 = run.bt_universe_start_time;
-    const end = run.bt_universe_end_time;
-    return start2 || end ? `${start2 || "-"}~${end || "-"}` : "-";
-  }
-  function rcValue(run, key) {
-    const v = run[key];
-    return typeof v === "number" && Number.isFinite(v) ? v : Number.NEGATIVE_INFINITY;
-  }
-  function rcDefaultCompareIds(runs) {
-    const matched = runs.filter((r) => /seed|ai/i.test(String(r.run_id || ""))).slice(0, 6).map((r) => r.run_id);
-    return matched.length >= 2 ? matched : runs.slice(0, 2).map((r) => r.run_id);
-  }
-  function RunComparePanel({ baseUrl, wsStatus }) {
-    const [runs, setRuns] = useState_rc([]);
-    const [selected2, setSelected] = useState_rc([]);
-    const [compareRows, setCompareRows] = useState_rc([]);
-    const [sortKey, setSortKey] = useState_rc("final_profit");
-    const [err, setErr] = useState_rc("");
-    const [loading, setLoading] = useState_rc(false);
-    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const sortedRuns = useMemo_rc(() => {
-      return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
-    }, [runs, sortKey]);
-    const refresh = React.useCallback(() => {
-      if (isDemo || !baseUrl) return;
-      setLoading(true);
-      setErr("");
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        const rows = Array.isArray(j.runs) ? j.runs : [];
-        setRuns(rows);
-        setErr(j.error || "");
-        if (!selected2.length) setSelected(rcDefaultCompareIds(rows));
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, selected2.length]);
-    useEffect_rc(() => {
-      refresh();
-    }, [refresh]);
-    useEffect_rc(() => {
-      if (isDemo || !baseUrl || !selected2.length) {
-        setCompareRows([]);
-        return;
-      }
-      const ids = selected2.map(encodeURIComponent).join(",");
-      fetch(baseUrl + "/runs/compare?ids=" + ids, { signal: AbortSignal.timeout(3500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setCompareRows(Array.isArray(j.generation_rows) ? j.generation_rows : [])).catch(() => setCompareRows([]));
-    }, [baseUrl, isDemo, selected2.join("|")]);
-    const toggleSelected = (runId) => {
-      setSelected((prev) => prev.includes(runId) ? prev.filter((x) => x !== runId) : [...prev, runId]);
-    };
-    const selectSeedAi = () => setSelected(rcDefaultCompareIds(runs));
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Run Compare Console", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("final_profit") }, "Sort: Total Profit"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("total_profit_pct") }, "Return %"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: selectSeedAi, disabled: !runs.length }, "Seed vs AI"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "loading" : "refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "Demo mode: run comparison is available with a backend connection.") : err ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty danger" }, "query failed: ", err) : runs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "No recorded runs.") : /* @__PURE__ */ React.createElement("div", { className: "run-compare-shell" }, /* @__PURE__ */ React.createElement("div", { className: "run-compare-kpis" }, /* @__PURE__ */ React.createElement("span", null, "runs=", runs.length), /* @__PURE__ */ React.createElement("span", null, "selected=", selected2.length), /* @__PURE__ */ React.createElement("span", null, "generation_rows=", compareRows.length), /* @__PURE__ */ React.createElement("span", null, "sort=", sortKey)), /* @__PURE__ */ React.createElement("div", { className: "run-compare-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "run-compare-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Pick"), /* @__PURE__ */ React.createElement("th", null, "run_id"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Period"), /* @__PURE__ */ React.createElement("th", null, "Years"), /* @__PURE__ */ React.createElement("th", null, "min/tick"), /* @__PURE__ */ React.createElement("th", null, "Universe Time"), /* @__PURE__ */ React.createElement("th", null, "Total Profit"), /* @__PURE__ */ React.createElement("th", null, "Return %"), /* @__PURE__ */ React.createElement("th", null, "Trades"), /* @__PURE__ */ React.createElement("th", null, "Daily"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "Payoff"), /* @__PURE__ */ React.createElement("th", null, "Max Hold"), /* @__PURE__ */ React.createElement("th", null, "Elapsed"), /* @__PURE__ */ React.createElement("th", null, "Cost/Count"), /* @__PURE__ */ React.createElement("th", null, "Winner"))), /* @__PURE__ */ React.createElement("tbody", null, sortedRuns.map((r) => {
-      var _a;
-      const sparseHoldSuspicious = typeof r.max_hold_count === "number" && r.max_hold_count <= 1 && (r.trade_count || 0) >= 50;
-      return /* @__PURE__ */ React.createElement("tr", { key: r.run_id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected2.includes(r.run_id), onChange: () => toggleSelected(r.run_id) })), /* @__PURE__ */ React.createElement("td", null, r.run_id), /* @__PURE__ */ React.createElement("td", null, r.status || "-"), /* @__PURE__ */ React.createElement("td", null, r.period || "-"), /* @__PURE__ */ React.createElement("td", null, rcYears(r)), /* @__PURE__ */ React.createElement("td", null, r.timeframe || "-"), /* @__PURE__ */ React.createElement("td", null, rcWindow(r)), /* @__PURE__ */ React.createElement("td", { className: r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted" }, rcMoney(r.final_profit)), /* @__PURE__ */ React.createElement("td", { className: r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted" }, rcPct(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", null, (_a = r.trade_count) != null ? _a : 0), /* @__PURE__ */ React.createElement("td", null, rcNum(r.daily_avg_trades, 1)), /* @__PURE__ */ React.createElement("td", { className: r.mdd > 0 ? "num-neg" : "num-muted" }, rcPct(r.mdd)), /* @__PURE__ */ React.createElement("td", null, rcNum(r.payoff_ratio, 2)), /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          className: sparseHoldSuspicious ? "num-neg" : "",
-          title: sparseHoldSuspicious ? "Sparse hold warning: max_hold_count <= 1 with enough trades; compare Backtest Detail CSV peak_holdings. human corridor 6-12" : "max_hold_count"
-        },
-        rcNum(r.max_hold_count, 0),
-        sparseHoldSuspicious ? " !" : ""
-      ), /* @__PURE__ */ React.createElement("td", null, rcDuration(r.elapsed_sec)), /* @__PURE__ */ React.createElement("td", null, r.cost_or_count_text || rcNum(r.cost_or_count, 1)), /* @__PURE__ */ React.createElement("td", null, r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"));
-    })))), /* @__PURE__ */ React.createElement("div", { className: "run-compare-gen" }, /* @__PURE__ */ React.createElement("span", null, "Selected generation preview:"), compareRows.slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("span", { key: `${row.run_id}-${row.gen_no}` }, row.run_id, "/g", row.gen_no, ": ", rcMoney(row.profit), " (", rcPct(row.return_pct), ") ", rcDuration(row.duration_sec)))))));
-  }
-  Object.assign(window, { RunComparePanel });
-
-  // ai_strategy_loop/dashboard/frontend/v4-workbench.jsx
-  function V4Workbench({ baseUrl, wsStatus, runId }) {
-    const surfaceState = wsStatus === "connecting" ? "loading" : wsStatus === "error" || wsStatus === "closed" || !baseUrl && runId ? "error" : runId ? "ready" : "empty";
-    const statusText = surfaceState === "loading" ? "\uD6C4\uBCF4 \uBE44\uAD50 \uB370\uC774\uD130\uB97C \uC5F0\uACB0\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : surfaceState === "error" ? "\uD6C4\uBCF4 \uBE44\uAD50 \uB370\uC774\uD130\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC2B9\uACA9 \uD310\uB2E8\uC744 \uC911\uC9C0\uD558\uC138\uC694." : surfaceState === "ready" ? `Run ${runId} \uD6C4\uBCF4\uB97C \uBE44\uAD50\uD569\uB2C8\uB2E4. \uD6C4\uBCF4 \uC120\uD0DD \uC0C1\uD0DC\uB294 \uC544\uB798 \uBE44\uAD50\uD45C\uC758 \uC120\uD0DD \uAC1C\uC218\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4.` : "\uC120\uD0DD\uB41C Run\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uD6C4\uBCF4 \uC120\uD0DD \uC0C1\uD0DC\uB294 Run\uC744 \uACE0\uB978 \uB4A4 \uBE44\uAD50\uD45C\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement(
-      "section",
-      {
-        className: "v4-workbench v4-cjk-safe",
-        "aria-labelledby": "v4-workbench-title",
-        "aria-busy": surfaceState === "loading",
-        "data-state": surfaceState
-      },
-      /* @__PURE__ */ React.createElement("header", { className: "panel v4-tab-intro" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-workbench-title", className: "panel-hd-title" }, "Workbench \xB7 \uD6C4\uBCF4 \uBE44\uAD50\uC640 \uC758\uC0AC\uACB0\uC815 \uADFC\uAC70")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4-surface-status", role: "status", "aria-live": "polite" }, statusText), surfaceState === "error" && /* @__PURE__ */ React.createElement("p", { className: "research-empty danger", role: "alert" }, "\uC5F0\uACB0 \uC624\uB958 \uB54C\uBB38\uC5D0 \uBE44\uAD50 \uADFC\uAC70\uAC00 \uBD88\uC644\uC804\uD569\uB2C8\uB2E4. \uC5B4\uB5A4 \uD6C4\uBCF4\uB3C4 \uC2B9\uACA9\uD558\uC9C0 \uB9C8\uC138\uC694."), /* @__PURE__ */ React.createElement("p", { id: "v4-workbench-caveat", className: "v4-data-caveat" }, "\uC218\uC775\uB960\xB7\uC810\uC218\uB294 \uBE44\uAD50 \uADFC\uAC70\uC77C \uBFD0 \uBBF8\uB798 \uC131\uACFC\uB97C \uBCF4\uC7A5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uAE30\uAC04, \uD45C\uBCF8 \uC218, MDD, \uCCB4\uACB0 \uBE44\uC6A9\uACFC \uD45C\uBCF8 \uC678 \uAC80\uC99D\uC744 \uD568\uAED8 \uD655\uC778\uD558\uC138\uC694."), /* @__PURE__ */ React.createElement("aside", { className: "v4-decision-blocker", "aria-label": "\uC2B9\uACA9 \uACB0\uC815 \uCC28\uB2E8 \uC870\uAC74" }, "\uC2B9\uACA9\xB7\uCD5C\uC885 \uC2B9\uC778\xB7\uC6B4\uC601 \uBC18\uC601\uC740 \uC774 \uD0ED\uC5D0\uC11C \uC2E4\uD589\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC11C\uBC84 \uAC80\uC99D, hard gate, \uCF54\uB4DC\xB7\uADFC\uAC70 \uD574\uC2DC\uC640 \uC0AC\uB78C\uC758 \uCD5C\uC885 \uC2B9\uC778\uC774 \uC5C6\uC73C\uBA74 \uACB0\uC815\uC740 \uCC28\uB2E8\uB429\uB2C8\uB2E4."))),
-      /* @__PURE__ */ React.createElement("section", { className: "v4-workbench-region v4-cjk-safe", "aria-labelledby": "v4-workbench-analysis-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-analysis-title", className: "stom-section-label" }, "\uD6C4\uBCF4 \uC815\uBC00 \uBD84\uC11D"), /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId })),
-      /* @__PURE__ */ React.createElement(
-        "section",
-        {
-          className: "v4-workbench-region v4-data-region v4-local-scroll v4-cjk-safe",
-          "aria-labelledby": "v4-workbench-compare-title",
-          "aria-describedby": "v4-workbench-caveat",
-          "data-v4-scroll-owner": "workbench-candidate-compare",
-          tabIndex: 0
-        },
-        /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-compare-title", className: "stom-section-label" }, "\uD6C4\uBCF4 \uC120\uD0DD\uACFC \uBE44\uAD50"),
-        /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus })
-      ),
-      /* @__PURE__ */ React.createElement("section", { className: "v4-workbench-region v4-cjk-safe", "aria-labelledby": "v4-workbench-hof-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-hof-title", className: "stom-section-label" }, "\uC7A5\uAE30 \uBE44\uAD50 \uAE30\uC900\uACFC \uBA85\uC608\uC758 \uC804\uB2F9"), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HofInventoryGate, { compact: true }))
-    );
-  }
-  Object.assign(window, { V4Workbench });
 
   // ai_strategy_loop/dashboard/frontend/v4-audit.jsx
   var { useEffect: useEffect_va, useState: useState_va } = React;
@@ -34909,13 +34922,317 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   function V4Audit({ baseUrl, onNavigate }) {
     return /* @__PURE__ */ React.createElement("div", { className: "v4-audit" }, /* @__PURE__ */ React.createElement("section", { className: "v4-safety-strip", "data-safety-boundary": "v4-research-only" }, V4_SAFETY_TILES.map(([title, detail]) => /* @__PURE__ */ React.createElement("div", { key: title, className: "v4-safety-tile" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, detail)))), /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }));
   }
-  Object.assign(window, { V4Audit });
+  Object.assign(window, { V4Audit, AuditDecisionTrace });
+
+  // ai_strategy_loop/dashboard/frontend/run-compare.jsx
+  var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
+  function rcNum(value, digits = 2) {
+    return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
+  }
+  function rcMoney(value) {
+    return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString("ko-KR") : "-";
+  }
+  function rcPct(value) {
+    return typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)}%` : "-";
+  }
+  function rcDuration(sec) {
+    if (typeof sec !== "number" || !Number.isFinite(sec)) return "-";
+    if (sec < 60) return `${sec.toFixed(1)}s`;
+    const min = Math.floor(sec / 60);
+    const rem = Math.round(sec % 60);
+    if (min < 60) return `${min}m ${rem}s`;
+    return `${Math.floor(min / 60)}h ${min % 60}m`;
+  }
+  function rcYears(run) {
+    if (Array.isArray(run.years) && run.years.length) return run.years.join(", ");
+    if (run.start_year && run.end_year) return `${run.start_year}-${run.end_year}`;
+    return "-";
+  }
+  function rcWindow(run) {
+    const start2 = run.bt_universe_start_time;
+    const end = run.bt_universe_end_time;
+    return start2 || end ? `${start2 || "-"}~${end || "-"}` : "-";
+  }
+  function rcValue(run, key) {
+    const v = run[key];
+    return typeof v === "number" && Number.isFinite(v) ? v : Number.NEGATIVE_INFINITY;
+  }
+  function rcDefaultCompareIds(runs) {
+    const matched = runs.filter((r) => /seed|ai/i.test(String(r.run_id || ""))).slice(0, 6).map((r) => r.run_id);
+    return matched.length >= 2 ? matched : runs.slice(0, 2).map((r) => r.run_id);
+  }
+  function RunComparePanel({ baseUrl, wsStatus }) {
+    const [runs, setRuns] = useState_rc([]);
+    const [selected2, setSelected] = useState_rc([]);
+    const [compareRows, setCompareRows] = useState_rc([]);
+    const [sortKey, setSortKey] = useState_rc("final_profit");
+    const [err, setErr] = useState_rc("");
+    const [loading, setLoading] = useState_rc(false);
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const sortedRuns = useMemo_rc(() => {
+      return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
+    }, [runs, sortKey]);
+    const refresh = React.useCallback(() => {
+      if (isDemo || !baseUrl) return;
+      setLoading(true);
+      setErr("");
+      fetchRunsShared(baseUrl, { timeoutMs: 3e3 }).then((j) => {
+        const rows = Array.isArray(j.runs) ? j.runs : [];
+        setRuns(rows);
+        setErr(j.error || "");
+        if (!selected2.length) setSelected(rcDefaultCompareIds(rows));
+      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+    }, [baseUrl, isDemo, selected2.length]);
+    useEffect_rc(() => {
+      refresh();
+    }, [refresh]);
+    useEffect_rc(() => {
+      if (isDemo || !baseUrl || !selected2.length) {
+        setCompareRows([]);
+        return;
+      }
+      const ids = selected2.map(encodeURIComponent).join(",");
+      fetch(baseUrl + "/runs/compare?ids=" + ids, { signal: AbortSignal.timeout(3500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setCompareRows(Array.isArray(j.generation_rows) ? j.generation_rows : [])).catch(() => setCompareRows([]));
+    }, [baseUrl, isDemo, selected2.join("|")]);
+    const toggleSelected = (runId) => {
+      setSelected((prev) => prev.includes(runId) ? prev.filter((x) => x !== runId) : [...prev, runId]);
+    };
+    const selectSeedAi = () => setSelected(rcDefaultCompareIds(runs));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Run Compare Console", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("final_profit") }, "Sort: Total Profit"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("total_profit_pct") }, "Return %"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: selectSeedAi, disabled: !runs.length }, "Seed vs AI"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "loading" : "refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "Demo mode: run comparison is available with a backend connection.") : err ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty danger" }, "query failed: ", err) : runs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "No recorded runs.") : /* @__PURE__ */ React.createElement("div", { className: "run-compare-shell" }, /* @__PURE__ */ React.createElement("div", { className: "run-compare-kpis" }, /* @__PURE__ */ React.createElement("span", null, "runs=", runs.length), /* @__PURE__ */ React.createElement("span", null, "selected=", selected2.length), /* @__PURE__ */ React.createElement("span", null, "generation_rows=", compareRows.length), /* @__PURE__ */ React.createElement("span", null, "sort=", sortKey)), /* @__PURE__ */ React.createElement("div", { className: "run-compare-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "run-compare-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Pick"), /* @__PURE__ */ React.createElement("th", null, "run_id"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Period"), /* @__PURE__ */ React.createElement("th", null, "Years"), /* @__PURE__ */ React.createElement("th", null, "min/tick"), /* @__PURE__ */ React.createElement("th", null, "Universe Time"), /* @__PURE__ */ React.createElement("th", null, "Total Profit"), /* @__PURE__ */ React.createElement("th", null, "Return %"), /* @__PURE__ */ React.createElement("th", null, "Trades"), /* @__PURE__ */ React.createElement("th", null, "Daily"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "Payoff"), /* @__PURE__ */ React.createElement("th", null, "Max Hold"), /* @__PURE__ */ React.createElement("th", null, "Elapsed"), /* @__PURE__ */ React.createElement("th", null, "Cost/Count"), /* @__PURE__ */ React.createElement("th", null, "Winner"))), /* @__PURE__ */ React.createElement("tbody", null, sortedRuns.map((r) => {
+      var _a;
+      const sparseHoldSuspicious = typeof r.max_hold_count === "number" && r.max_hold_count <= 1 && (r.trade_count || 0) >= 50;
+      return /* @__PURE__ */ React.createElement("tr", { key: r.run_id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected2.includes(r.run_id), onChange: () => toggleSelected(r.run_id) })), /* @__PURE__ */ React.createElement("td", null, r.run_id), /* @__PURE__ */ React.createElement("td", null, r.status || "-"), /* @__PURE__ */ React.createElement("td", null, r.period || "-"), /* @__PURE__ */ React.createElement("td", null, rcYears(r)), /* @__PURE__ */ React.createElement("td", null, r.timeframe || "-"), /* @__PURE__ */ React.createElement("td", null, rcWindow(r)), /* @__PURE__ */ React.createElement("td", { className: r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted" }, rcMoney(r.final_profit)), /* @__PURE__ */ React.createElement("td", { className: r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted" }, rcPct(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", null, (_a = r.trade_count) != null ? _a : 0), /* @__PURE__ */ React.createElement("td", null, rcNum(r.daily_avg_trades, 1)), /* @__PURE__ */ React.createElement("td", { className: r.mdd > 0 ? "num-neg" : "num-muted" }, rcPct(r.mdd)), /* @__PURE__ */ React.createElement("td", null, rcNum(r.payoff_ratio, 2)), /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          className: sparseHoldSuspicious ? "num-neg" : "",
+          title: sparseHoldSuspicious ? "Sparse hold warning: max_hold_count <= 1 with enough trades; compare Backtest Detail CSV peak_holdings. human corridor 6-12" : "max_hold_count"
+        },
+        rcNum(r.max_hold_count, 0),
+        sparseHoldSuspicious ? " !" : ""
+      ), /* @__PURE__ */ React.createElement("td", null, rcDuration(r.elapsed_sec)), /* @__PURE__ */ React.createElement("td", null, r.cost_or_count_text || rcNum(r.cost_or_count, 1)), /* @__PURE__ */ React.createElement("td", null, r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"));
+    })))), /* @__PURE__ */ React.createElement("div", { className: "run-compare-gen" }, /* @__PURE__ */ React.createElement("span", null, "Selected generation preview:"), compareRows.slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("span", { key: `${row.run_id}-${row.gen_no}` }, row.run_id, "/g", row.gen_no, ": ", rcMoney(row.profit), " (", rcPct(row.return_pct), ") ", rcDuration(row.duration_sec)))))));
+  }
+  Object.assign(window, { RunComparePanel });
+
+  // ai_strategy_loop/dashboard/frontend/v4-history.jsx
+  var { useState: useState_v4h, useEffect: useEffect_v4h } = React;
+  function V4History({ baseUrl, wsStatus, onNavigate }) {
+    var _a;
+    const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
+    const [selResearch, setSelResearch] = useState_v4h(null);
+    const onSelectCampaign = (name, meta) => setSelResearch((prev) => prev && prev.name === name && !meta ? prev : { name, meta: meta || (prev && prev.name === name ? prev.meta : null) });
+    const [stableWs, setStableWs] = useState_v4h(wsStatus);
+    useEffect_v4h(() => {
+      if (wsStatus !== "reconnecting") {
+        setStableWs(wsStatus);
+        return void 0;
+      }
+      const t = setTimeout(() => setStableWs("reconnecting"), 2e3);
+      return () => clearTimeout(t);
+    }, [wsStatus]);
+    const freshnessLabel = stableWs === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : stableWs === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : stableWs === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), selResearch && /* @__PURE__ */ React.createElement("div", { className: "v6-selres", role: "note", "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uCEE8\uD14D\uC2A4\uD2B8" }, /* @__PURE__ */ React.createElement("span", { className: "v6-selres-id mono", title: "stable research ID" }, "campaign:", selResearch.name), selResearch.meta && /* @__PURE__ */ React.createElement("span", { className: "v6-selres-meta mono" }, "\uC218\uC815 ", (() => {
+      const u = selResearch.meta.updated_at;
+      if (u == null) return "\u2014";
+      const n = Number(u);
+      return Number.isFinite(n) && n > 1e9 ? new Date(n * 1e3).toISOString().slice(0, 10) : String(u).slice(0, 10);
+    })(), " \xB7 \uD6C4\uBCF4 ", (_a = selResearch.meta.candidate_count) != null ? _a : "\u2014", selResearch.meta.best && (selResearch.meta.best.label || selResearch.meta.best.name) ? " \xB7 best " + (selResearch.meta.best.label || selResearch.meta.best.name) : ""), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        title: "stable ID \uBCF5\uC0AC",
+        onClick: () => {
+          try {
+            navigator.clipboard.writeText("campaign:" + selResearch.name);
+          } catch (e) {
+          }
+        }
+      },
+      "ID \uBCF5\uC0AC"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        title: "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778\uC73C\uB85C \uC774\uB3D9",
+        onClick: () => {
+          const el = document.getElementById("v4-history-index-title");
+          el && el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      },
+      "\uC0C9\uC778\uC5D0\uC11C \uAD00\uB828 \uAE30\uB85D"
+    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uC544\uB798 \uBAA8\uB4E0 \uC139\uC158\uC740 \uC774 \uC120\uD0DD \uC5F0\uAD6C\uC758 \uB9E5\uB77D\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", "aria-labelledby": "v4-history-gov-title" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 (\uAE30\uBCF8 \uC811\uD798 \xB7 export \uC2B9\uC778 \uACBD\uACC4\uB294 \uBD88\uBCC0)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate })))));
+  }
+  Object.assign(window, { V4History });
+
+  // ai_strategy_loop/dashboard/frontend/v4-workbench.jsx
+  function V4Workbench({ baseUrl, wsStatus, runId }) {
+    const surfaceState = wsStatus === "connecting" ? "loading" : wsStatus === "error" || wsStatus === "closed" || !baseUrl && runId ? "error" : runId ? "ready" : "empty";
+    const statusText = surfaceState === "loading" ? "\uD6C4\uBCF4 \uBE44\uAD50 \uB370\uC774\uD130\uB97C \uC5F0\uACB0\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4." : surfaceState === "error" ? "\uD6C4\uBCF4 \uBE44\uAD50 \uB370\uC774\uD130\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC2B9\uACA9 \uD310\uB2E8\uC744 \uC911\uC9C0\uD558\uC138\uC694." : surfaceState === "ready" ? `Run ${runId} \uD6C4\uBCF4\uB97C \uBE44\uAD50\uD569\uB2C8\uB2E4. \uD6C4\uBCF4 \uC120\uD0DD \uC0C1\uD0DC\uB294 \uC544\uB798 \uBE44\uAD50\uD45C\uC758 \uC120\uD0DD \uAC1C\uC218\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4.` : "\uC120\uD0DD\uB41C Run\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uD6C4\uBCF4 \uC120\uD0DD \uC0C1\uD0DC\uB294 Run\uC744 \uACE0\uB978 \uB4A4 \uBE44\uAD50\uD45C\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.";
+    return /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        className: "v4-workbench v4-cjk-safe",
+        "aria-labelledby": "v4-workbench-title",
+        "aria-busy": surfaceState === "loading",
+        "data-state": surfaceState
+      },
+      /* @__PURE__ */ React.createElement("header", { className: "panel v4-tab-intro" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-workbench-title", className: "panel-hd-title" }, "\uBA85\uC608\uC758 \uC804\uB2F9 \xB7 \uC778\uAC04+AI \uC131\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4-surface-status", role: "status", "aria-live": "polite" }, statusText), surfaceState === "error" && /* @__PURE__ */ React.createElement("p", { className: "research-empty danger", role: "alert" }, "\uC5F0\uACB0 \uC624\uB958 \uB54C\uBB38\uC5D0 \uBE44\uAD50 \uADFC\uAC70\uAC00 \uBD88\uC644\uC804\uD569\uB2C8\uB2E4. \uC5B4\uB5A4 \uD6C4\uBCF4\uB3C4 \uC2B9\uACA9\uD558\uC9C0 \uB9C8\uC138\uC694."), /* @__PURE__ */ React.createElement("p", { id: "v4-workbench-caveat", className: "v4-data-caveat" }, "\uC218\uC775\uB960\xB7\uC810\uC218\uB294 \uBE44\uAD50 \uADFC\uAC70\uC77C \uBFD0 \uBBF8\uB798 \uC131\uACFC\uB97C \uBCF4\uC7A5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uAE30\uAC04, \uD45C\uBCF8 \uC218, MDD, \uCCB4\uACB0 \uBE44\uC6A9\uACFC \uD45C\uBCF8 \uC678 \uAC80\uC99D\uC744 \uD568\uAED8 \uD655\uC778\uD558\uC138\uC694."), /* @__PURE__ */ React.createElement("aside", { className: "v4-decision-blocker", "aria-label": "\uC2B9\uACA9 \uACB0\uC815 \uCC28\uB2E8 \uC870\uAC74" }, "\uC2B9\uACA9\xB7\uCD5C\uC885 \uC2B9\uC778\xB7\uC6B4\uC601 \uBC18\uC601\uC740 \uC774 \uD0ED\uC5D0\uC11C \uC2E4\uD589\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC11C\uBC84 \uAC80\uC99D, hard gate, \uCF54\uB4DC\xB7\uADFC\uAC70 \uD574\uC2DC\uC640 \uC0AC\uB78C\uC758 \uCD5C\uC885 \uC2B9\uC778\uC774 \uC5C6\uC73C\uBA74 \uACB0\uC815\uC740 \uCC28\uB2E8\uB429\uB2C8\uB2E4."))),
+      /* @__PURE__ */ React.createElement("section", { className: "v4-workbench-region v4-cjk-safe", "aria-labelledby": "v4-workbench-hof-title" }, /* @__PURE__ */ React.createElement("h3", { id: "v4-workbench-hof-title", className: "stom-section-label" }, "\uC7A5\uAE30 \uBE44\uAD50 \uAE30\uC900\uACFC \uBA85\uC608\uC758 \uC804\uB2F9"), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HofInventoryGate, { compact: true }))
+    );
+  }
+  Object.assign(window, { V4Workbench });
+
+  // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
+  var { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+  function _fmtReportBytes(n) {
+    if (!Number.isFinite(n)) return "";
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / (1024 * 1024)).toFixed(1) + " MB";
+  }
+  function V4Reports({ baseUrl }) {
+    const [mode, setMode] = useState_rp7("reports");
+    const [list, setList] = useState_rp7(null);
+    const [err, setErr] = useState_rp7("");
+    const [sel, setSel] = useState_rp7("");
+    const [wiki, setWiki] = useState_rp7(null);
+    const [wikiSel, setWikiSel] = useState_rp7("");
+    const [wikiQuery, setWikiQuery] = useState_rp7("");
+    const [toc, setToc] = useState_rp7([]);
+    const [anchor, setAnchor] = useState_rp7("");
+    const [wikiDoc, setWikiDoc] = useState_rp7(null);
+    const wikiReqRef = React.useRef(0);
+    useEffect_rp7(() => {
+      if (!baseUrl) {
+        setList([]);
+        return;
+      }
+      let cancelled = false;
+      fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (cancelled) return;
+        const reports = Array.isArray(j && j.reports) ? j.reports : [];
+        setList(reports);
+        setSel((prev) => prev || (reports.length ? reports[0].path : ""));
+      }).catch((e) => {
+        if (!cancelled) {
+          setList([]);
+          setErr(String(e && e.message ? e.message : e));
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl]);
+    useEffect_rp7(() => {
+      if (!baseUrl || mode !== "wiki" || wiki !== null) return;
+      let cancelled = false;
+      fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(2e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled) {
+          const docs = Array.isArray(j && j.docs) ? j.docs : [];
+          setWiki(docs);
+          setWikiSel((prev) => prev || (docs.length ? docs[0].id : ""));
+        }
+      }).catch(() => {
+        if (!cancelled) setWiki([]);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, wiki]);
+    useEffect_rp7(() => {
+      if (!baseUrl || mode !== "wiki" || !wikiSel) {
+        setWikiDoc(null);
+        return;
+      }
+      const reqId = ++wikiReqRef.current;
+      let cancelled = false;
+      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j);
+      }).catch((e) => {
+        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, wikiSel]);
+    useEffect_rp7(() => {
+      setToc([]);
+      setAnchor("");
+      if (!baseUrl || mode !== "reports" || !sel) return void 0;
+      let cancelled = false;
+      fetch(baseUrl + "/reports/view?path=" + encodeURIComponent(sel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.text() : "").then((html) => {
+        if (cancelled) return;
+        const out = [];
+        const re = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+        let m2;
+        while ((m2 = re.exec(html)) && out.length < 60) {
+          const txt = m2[3].replace(/<[^>]+>/g, "").trim().slice(0, 48);
+          if (txt) out.push({ lvl: Number(m2[1]), id: m2[2], txt });
+        }
+        setToc(out);
+      }).catch(() => {
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, sel]);
+    const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
+    const frameSrc = viewUrl ? anchor ? viewUrl + "#" + anchor : viewUrl : "";
+    const stepReportsRaw = (list || []).filter((rp) => String(rp.path).startsWith("generated_reports/"));
+    const stepReports = [...stepReportsRaw].sort((a, b) => (/run_report_/.test(b.path) ? 1 : 0) - (/run_report_/.test(a.path) ? 1 : 0));
+    const otherReports = (list || []).filter((rp) => !String(rp.path).startsWith("generated_reports/"));
+    const exampleReport = stepReports.find((rp) => /run_report_/.test(rp.path)) || stepReports.find((rp) => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
+    const wikiFiltered = (wiki || []).filter((d) => {
+      const q = wikiQuery.trim().toLowerCase();
+      if (!q) return true;
+      return ((d.title || "") + " " + (d.id || "") + " " + (d.category || "")).toLowerCase().includes(q);
+    });
+    const renderReportItem = (rp) => /* @__PURE__ */ React.createElement("button", { key: rp.path, className: "v4-reports-item" + (sel === rp.path ? " active" : ""), onClick: () => setSel(rp.path), title: rp.path }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, /run_report_/.test(rp.path) && /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok", style: { marginRight: 6 } }, "run \uC885\uD569"), rp.name), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes)));
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-head" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8/\uBB38\uC11C \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-modes", role: "tablist", "aria-label": "\uBDF0 \uBAA8\uB4DC" }, /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "reports", className: "btn ghost sm" + (mode === "reports" ? " active" : ""), onClick: () => setMode("reports") }, "HTML \uB9AC\uD3EC\uD2B8"), /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "wiki", className: "btn ghost sm" + (mode === "wiki" ? " active" : ""), onClick: () => setMode("wiki") }, "\uC5F0\uAD6C \uBB38\uC11C(Wiki)"), exampleReport && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm v6-report-example",
+        title: "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \uD45C\uC900\uC591\uC2DD \uACB0\uACFC \uC608\uC2DC \uC5F4\uAE30",
+        onClick: () => {
+          setMode("reports");
+          setSel(exampleReport.path);
+        }
+      },
+      "\uACB0\uACFC \uBCF4\uACE0\uC11C \uC608\uC2DC"
+    ), (() => {
+      const flat = [...stepReports, ...otherReports];
+      const idx = flat.findIndex((rp) => rp.path === sel);
+      if (idx < 0 || flat.length < 2) return null;
+      return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", gap: 4 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx <= 0, onClick: () => setSel(flat[idx - 1].path), title: "\uC774\uC804 \uBB38\uC11C" }, "\u25C0 \uC774\uC804"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { alignSelf: "center", fontSize: 11, color: "var(--ink-3)" } }, idx + 1, "/", flat.length), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx >= flat.length - 1, onClick: () => setSel(flat[idx + 1].path), title: "\uB2E4\uC74C \uBB38\uC11C" }, "\uB2E4\uC74C \u25B6"));
+    })())), mode === "reports" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && stepReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \xB7 ", stepReports.length, "\uAC74 (build_step_reports.py)"), list !== null && stepReports.map(renderReportItem), list !== null && otherReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC77C\uBC18 \uBB38\uC11C \uB9AC\uD3EC\uD2B8 \xB7 ", otherReports.length, "\uAC74"), list !== null && otherReports.map(renderReportItem)), toc.length > 0 && /* @__PURE__ */ React.createElement("nav", { className: "v4-reports-toc", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uCC28" }, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uBAA9\uCC28 \xB7 ", toc.length), toc.map((t) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: t.id,
+        className: "v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : ""),
+        onClick: () => setAnchor(t.id),
+        title: t.txt
+      },
+      t.txt
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: frameSrc, className: "v4-reports-frame", src: frameSrc, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "toolbar-input v6-wiki-search",
+        type: "search",
+        placeholder: "\uAC80\uC0C9 (\uC81C\uBAA9\xB7\uACBD\uB85C\xB7\uBD84\uB958)",
+        value: wikiQuery,
+        onChange: (e) => setWikiQuery(e.target.value),
+        "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uAC80\uC0C9"
+      }
+    ), wiki === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wiki !== null && wikiFiltered.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C \xB7 " + wikiQuery : "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wiki !== null && wikiQuery && wikiFiltered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uAC80\uC0C9 \uACB0\uACFC ", wikiFiltered.length, "\uAC74 / \uC804\uCCB4 ", wiki.length, "\uAC74"), wiki !== null && wikiFiltered.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => setWikiSel(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
+  }
+  Object.assign(window, { V4Reports });
 
   // ai_strategy_loop/dashboard/frontend/v4-alpha.jsx
   var {
     useState: useState_va2,
     useEffect: useEffect_va2,
-    useCallback: useCallback_va
+    useCallback: useCallback_va,
+    useRef: useRef_va
   } = React;
   function _vaNum(value) {
     if (value == null || Number.isNaN(Number(value))) return "\u2014";
@@ -34929,15 +35246,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "fdr_survived", label: "FDR \uC0DD\uC874" },
     { key: "translated", label: "\uBC88\uC5ED" },
     { key: "registered", label: "\uB4F1\uC7AC" },
-    { key: "engine_checked", label: "\uC5D4\uC9C4 \uD655\uC778" },
-    { key: "gate_passed", label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
+    { key: "engine_checked", label: "\uC5D4\uC9C4 \uB300\uC0C1" },
+    { key: "gate_passed", label: "\uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC" }
   ];
   function V4Alpha({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [status, setStatus] = useState_va2(null);
     const [funnel, setFunnel] = useState_va2(null);
     const [rules, setRules] = useState_va2(null);
+    const [chron, setChron] = useState_va2(null);
     const [error, setError] = useState_va2("");
+    const reqGenRef = useRef_va(0);
     const load = useCallback_va(() => {
       if (isDemo || !baseUrl) {
         setStatus(null);
@@ -34945,74 +35264,157 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setRules(null);
         return;
       }
-      let done = false;
+      const gen = ++reqGenRef.current;
       Promise.allSettled([
         _vaFetch(baseUrl + "/api/alpha/status"),
         _vaFetch(baseUrl + "/api/alpha/funnel"),
-        _vaFetch(baseUrl + "/api/alpha/rules")
-      ]).then(([s, f, r]) => {
-        if (done) return;
+        _vaFetch(baseUrl + "/api/alpha/rules"),
+        _vaFetch(baseUrl + "/research/judgments")
+      ]).then(([s, f, r, jj]) => {
+        if (gen !== reqGenRef.current) return;
         setStatus(s.status === "fulfilled" ? s.value : null);
         setFunnel(f.status === "fulfilled" ? f.value : null);
         setRules(r.status === "fulfilled" ? r.value : null);
+        setChron(jj.status === "fulfilled" ? jj.value : null);
         const firstErr = [s, f, r].find((x) => x.status === "rejected");
         setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
       });
-      return () => {
-        done = true;
-      };
     }, [baseUrl, isDemo]);
     useEffect_va2(() => {
-      const cleanup = load();
+      load();
       const id2 = setInterval(load, 3e4);
       return () => {
-        if (typeof cleanup === "function") cleanup();
+        reqGenRef.current++;
         clearInterval(id2);
       };
     }, [load]);
     const prereg = status && status.preregistration || {};
     const ledger = status && status.ledger || {};
+    const verdict = funnel && funnel.verdict || status && status.verdict || {};
     const funnelMax = funnel ? Math.max(1, ..._VA_FUNNEL_STAGES.map((s) => Number(funnel[s.key]) || 0)) : 1;
     const ruleRows = rules && Array.isArray(rules.rules) ? rules.rules : [];
     const statusAvailable = !!(status && status.available);
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-alpha" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-title" }, "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC9C4\uD589 \uAD00\uCC30"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778 \xB7 n_trials \uC6D0\uC7A5 \xB7 \uBC1C\uACAC\u2192\uAC8C\uC774\uD2B8 \uD37C\uB110 (\uC77D\uAE30 \uC804\uC6A9 \xB7 PR #108 \uC790\uC0B0)"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo && /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, "\uC608\uC2DC \uC18C\uC2A4 \xB7 \uC6B4\uC601 \uC54C\uD30C \uC0B0\uCD9C\uBB3C\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4."), !isDemo && !statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC54C\uD30C \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uB300\uAE30 \xB7 \uC0AC\uC804\uB4F1\uB85D/\uC6D0\uC7A5/\uD37C\uB110 \uD30C\uC77C\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4", error ? " \xB7 " + error : "", ".", /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACBD\uB85C: ", status && status.run_dir || "docs/research/condition_research/research_runs/\u2026")), statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-status", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "stage"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, status.stage || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, prereg.available ? prereg.program || "sealed" : "\uBBF8\uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: prereg.sha256_match === false ? "var(--red)" : "var(--ink-2)" } }, prereg.sha256_match === true ? "SHA \uC77C\uCE58 \u2713" : prereg.sha256_match === false ? "SHA \uBD88\uC77C\uCE58 \u2717" : "SHA \uBBF8\uAC80\uC99D", prereg.sealed_date ? " \xB7 " + prereg.sealed_date : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "n_trials \uC6D0\uC7A5"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, _vaNum(ledger.total)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, _vaNum(ledger.entries), " \uD56D\uBAA9", ledger.malformed_lines ? " \xB7 \uC190\uC0C1 " + ledger.malformed_lines : ""))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-funnel-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-funnel-title" }, "\uBC1C\uACAC \u2192 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD37C\uB110")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !funnel || !funnel.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uD37C\uB110 \uB370\uC774\uD130 \uB300\uAE30 \xB7 mining/translation/registration/engine/gate \uC601\uC218\uC99D\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-funnel", style: { display: "grid", gap: 6 } }, _VA_FUNNEL_STAGES.map((stage) => {
+    const sealedLabel = prereg.sealed ? prereg.program || "sealed" : prereg.present ? "\uBD09\uC778 \uBBF8\uC644(\uD30C\uC77C \uC874\uC7AC\uD558\uB098 \uBBF8\uBD09\uC778)" : "\uBBF8\uC874\uC7AC";
+    const shaLabel = prereg.sha256_match === true ? "SHA \uC77C\uCE58 \u2713" : prereg.sha256_match === false ? "SHA \uBD88\uC77C\uCE58 \u2717" : "SHA \uBBF8\uAC80\uC99D";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-alpha" }, /* @__PURE__ */ React.createElement("div", { style: { padding: "6px 16px", background: "#3a2e0c", color: "#f0d38a", fontSize: 12, borderRadius: 6, marginBottom: 10 } }, "\uC784\uC2DC \uAD00\uCC30 \uD654\uBA74(\uBE44-P4) \xB7 \uC815\uBCF8 \uB370\uC774\uD130 \uACC4\uC57D\uC740 ", /* @__PURE__ */ React.createElement("b", null, "P4 research_assets.db + /research/*"), " \uC785\uB2C8\uB2E4. \uC774 \uD0ED\uC740 \uBD09\uC778\uB41C P4 \uAD6C\uD604\uC774 \uC544\uB2C8\uBA70 \uC601\uC218\uC99D\uC744 \uC9C1\uC811 \uC77D\uC5B4 \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-title" }, "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC9C4\uD589 \uAD00\uCC30"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778 \xB7 n_trials \uC6D0\uC7A5 \xB7 \uCD5C\uC885 \uD310\uC815 (\uC77D\uAE30 \uC804\uC6A9 \xB7 PR #108 \uC790\uC0B0)"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo && /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, "\uC608\uC2DC \uC18C\uC2A4 \xB7 \uC6B4\uC601 \uC54C\uD30C \uC0B0\uCD9C\uBB3C\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4."), !isDemo && !statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uC54C\uD30C \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uB300\uAE30 \xB7 \uC0AC\uC804\uB4F1\uB85D/\uC6D0\uC7A5/\uD310\uC815 \uD30C\uC77C\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4", error ? " \xB7 " + error : "", ".", /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACBD\uB85C: ", status && status.run_dir || "docs/research/condition_research/research_runs/\u2026")), statusAvailable && /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-status", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uCD5C\uC885 \uD310\uC815"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: verdict.available ? "var(--teal, #4cd6b3)" : "var(--ink-2)" } }, verdict.available ? verdict.verdict || "\u2014" : "\uD310\uC815 \uB300\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, verdict.rho != null ? "rho=" + Number(verdict.rho).toFixed(4) : "", verdict.final ? " \xB7 final" : "", verdict.source ? " \xB7 " + verdict.source.replace(".json", "") : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC0AC\uC804\uB4F1\uB85D \uBD09\uC778"), /* @__PURE__ */ React.createElement("div", { className: "value mono", style: { color: prereg.sealed ? "var(--ink-0)" : "var(--red)" } }, sealedLabel), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: prereg.sha256_match === false ? "var(--red)" : "var(--ink-2)" } }, shaLabel, prereg.sealed_date ? " \xB7 " + prereg.sealed_date : "")), /* @__PURE__ */ React.createElement("div", { className: "cell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "n_trials \uC6D0\uC7A5"), /* @__PURE__ */ React.createElement("div", { className: "value mono" }, _vaNum(ledger.total)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)" } }, _vaNum(ledger.entries), " \uD56D\uBAA9", ledger.malformed_lines ? " \xB7 \uC190\uC0C1 " + ledger.malformed_lines : "", " \xB7 stage ", status && status.stage || "\u2014"))))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-funnel-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-funnel-title" }, "\uBC1C\uACAC \u2192 \uCE21\uC815\uC131\uACF5 \uD37C\uB110")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !funnel || !funnel.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uD37C\uB110 \uB370\uC774\uD130 \uB300\uAE30 \xB7 mining/translation/registration/verdict \uC601\uC218\uC99D\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "v4-alpha-funnel", style: { display: "grid", gap: 6 } }, _VA_FUNNEL_STAGES.map((stage) => {
       const v = Number(funnel[stage.key]) || 0;
       const pct = Math.round(v / funnelMax * 100);
-      return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "120px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
-    })))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBA54\uD0C0"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
+      return /* @__PURE__ */ React.createElement("div", { key: stage.key, style: { display: "grid", gridTemplateColumns: "132px 1fr 60px", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stage.label), /* @__PURE__ */ React.createElement("span", { style: { background: "var(--panel-2, #12202c)", borderRadius: 6, height: 18, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("i", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: pct + "%", background: "linear-gradient(90deg, var(--teal, #4cd6b3), var(--violet, #8c63ff))", borderRadius: 6 } })), /* @__PURE__ */ React.createElement("span", { className: "mono num", style: { textAlign: "right" } }, _vaNum(v)));
+    }), verdict.coverage && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, "\uBD09\uC778 ", _vaNum(verdict.coverage.n_rules_sealed), " \xB7 \uCE21\uC815 \uC644\uB8CC ", _vaNum(verdict.coverage.measured_ok), " \xB7 \uAC80\uC5F4 ", _vaNum(verdict.coverage.censored_timeout), " \xB7 \uC131\uB2A5\uAC8C\uC774\uD2B8 \uD1B5\uACFC ", _vaNum(verdict.performance_gate_passed), " \u2014 \uC9D1\uD569 rho \uAC8C\uC774\uD2B8(" + (verdict.verdict || "\u2014") + ")\uC640 \uAC1C\uBCC4 \uC131\uB2A5\uAC8C\uC774\uD2B8\uB294 \uBCC4\uAC1C")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-rules-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-rules-title" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC (mining \xD7 translation \uBCD1\uD569)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !rules || !rules.available ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uADDC\uCE59 \uB9AC\uB354\uBCF4\uB4DC \uB300\uAE30 \xB7 mining_report.json \uC774 \uD544\uC694\uD569\uB2C8\uB2E4.") : ruleRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uBCD1\uD569\uB41C \uADDC\uCE59\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uACAC 0 \uB610\uB294 FDR \uC804\uBA78).") : /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, style: { maxHeight: 360, overflow: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "v4-alpha-rules", style: { width: "100%", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBC88\uC5ED\uC2DD (expr)"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uAC80\uC99D"))), /* @__PURE__ */ React.createElement("tbody", null, ruleRows.slice(0, 200).map((rule, i) => {
       const isObj = rule && typeof rule === "object";
       const rid = isObj ? rule.rule_id || rule.id || rule.name || "#" + (i + 1) : String(rule);
       const tr = isObj && rule.translation ? rule.translation : null;
-      const trText = tr ? tr.expression || tr.text || tr.rule || JSON.stringify(tr) : "\u2014";
-      const meta = isObj ? Object.entries(rule).filter(([k]) => !["rule_id", "id", "name", "translation"].includes(k)).slice(0, 4).map(([k, v]) => k + "=" + (typeof v === "object" ? "\u2026" : v)).join(" \xB7 ") : "";
-      return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 380, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: "var(--ink-2)" } }, meta));
-    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))));
+      const trText = tr ? tr.expr || tr.buy_statement || tr.rule || "\u2014" : "\u2014";
+      const validated = tr && tr.validated;
+      const reasons = tr && Array.isArray(tr.reasons) ? tr.reasons.join(", ") : "";
+      const validLabel = tr == null ? "\u2014" : validated === true ? "valid \u2713" : validated === false ? "invalid" + (reasons ? " \xB7 " + reasons : "") : "?";
+      return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 420, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: validated === false ? "var(--red)" : "var(--ink-2)" } }, validLabel));
+    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-chron-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-chron-title" }, "\uC5F0\uAD6C \uC5F0\uD601 \xB7 \uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 (P4 SELECT-only)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !(chron && chron.available) && /* @__PURE__ */ React.createElement("p", { className: "research-empty mono" }, "\uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 \uC5C6\uC74C \xB7 research_assets.db \uBE4C\uB4DC \uD544\uC694(scripts/build_research_catalog.py)"), chron && chron.available && /* @__PURE__ */ React.createElement("div", { className: "v6-alpha-chron" }, chron.judgments.map((j) => {
+      const v = String(j.verdict || "");
+      const cls = /pass|양성|생존/i.test(v) ? "ok" : /kill|무가치|기각|실패/i.test(v) ? "warn" : "off";
+      return /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v6-alpha-chron-row" }, /* @__PURE__ */ React.createElement("b", { className: "v6-alpha-chron-series" }, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + cls }, v.slice(0, 28)), /* @__PURE__ */ React.createElement("span", { className: "mono v6-alpha-chron-meta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""));
+    })))));
   }
   Object.assign(window, { V4Alpha });
 
+  // ai_strategy_loop/dashboard/frontend/v4-catalog.jsx
+  var { useState: useState_cat, useEffect: useEffect_cat } = React;
+  function _catVerdictCls(v) {
+    const s = String(v || "");
+    if (/PASS|양성|생존/.test(s)) return "ok";
+    if (/KILL|무가치|기각/.test(s)) return "bad";
+    return "warn";
+  }
+  var _CAT_VIEWS = [
+    { key: "chronicle", label: "\uC5F0\uD601\uC2E4", desc: "\uD310\uC815 \uC6D0\uC7A5\xB7\uC2DC\uB9AC\uC988 \uC5F0\uD601(SELECT-only)" },
+    { key: "trapmap", label: "\uD568\uC815\uC9C0\uB3C4", desc: "\uC2E4\uD328/\uAE30\uAC01 \uD310\uC815 \uD328\uD134 \uC9C0\uB3C4" },
+    { key: "clauselab", label: "\uC808\uC2E4\uD5D8\uC2E4", desc: "\uC870\uAC74 \uC808(clause) \uC2E4\uD5D8 \uCE74\uD0C8\uB85C\uADF8" },
+    { key: "exitbank", label: "\uCD9C\uAD6C\uC740\uD589", desc: "\uD45C\uBCF8\xB7\uC140\xB7\uCD9C\uAD6C \uD504\uB85C\uD30C\uC77C \uC740\uD589" },
+    { key: "alpha", label: "\uC9C4\uD589 \uAD00\uCC30", desc: "\uC54C\uD30C\uB7A9 \uC9C4\uD589 \uAD00\uCC30(\uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110, \uBE44-P4 \uC601\uC218\uC99D)" },
+    { key: "scorecard", label: "B1 scorecard", desc: "\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C(\uC6B4\uC6A9 \uAC1C\uC2DC \uC120\uD589)" }
+  ];
+  function _CatSkeleton({ title, reason }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-cat-skeleton research-empty", role: "note" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("p", { className: "mono" }, reason));
+  }
+  function _catRows(rows) {
+    return rows.slice(0, 200).map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, Object.values(c).slice(0, 6).map((val, k) => /* @__PURE__ */ React.createElement("td", { key: k }, String(val)))));
+  }
+  function V4Catalog({ baseUrl, wsStatus }) {
+    const [summary, setSummary] = useState_cat(null);
+    const [judgments, setJudgments] = useState_cat(null);
+    const [assets, setAssets] = useState_cat(null);
+    const [clauses, setClauses] = useState_cat(null);
+    const [cells, setCells] = useState_cat(null);
+    const [err, setErr] = useState_cat("");
+    const [view, setView] = useState_cat("chronicle");
+    useEffect_cat(() => {
+      if (!baseUrl) return void 0;
+      let cancelled = false;
+      const get3 = (p) => fetch(baseUrl + p, { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+      Promise.all([
+        get3("/research/summary"),
+        get3("/research/judgments"),
+        get3("/research/assets?limit=200"),
+        get3("/research/clauses?limit=200"),
+        get3("/research/cells?limit=200")
+      ]).then(([s, j, a, c, ce]) => {
+        if (!cancelled) {
+          setSummary(s);
+          setJudgments(j);
+          setAssets(a);
+          setClauses(c);
+          setCells(ce);
+        }
+      }).catch((e) => {
+        if (!cancelled) setErr(String(e && e.message ? e.message : e));
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl]);
+    const unavailable = summary && summary.available === false;
+    const NO_DATA = "\uB370\uC774\uD130 \uC5C6\uC74C \xB7 \uC6B4\uC6A9 \uAC1C\uC2DC\xB7U-4\xB7data-vessel \uC120\uD589 \uC99D\uAC70\uAC00 \uC5C6\uC5B4 \uACE8\uACA9\uB9CC \uD45C\uC2DC(performance_proved=false).";
+    const traps = (judgments && judgments.available ? judgments.judgments : []).filter((j) => /kill|무가치|기각|실패|fail|reject/i.test(String(j.verdict)));
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-catalog v4-cjk-safe", "aria-labelledby": "v4-catalog-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-catalog-heading", className: "panel-hd-title" }, "\uC5F0\uAD6C \uCE74\uD0C8\uB85C\uADF8 (P4 \xB7 \uBE44\uC815\uBCF8 prototype) \xB7 \uC77D\uAE30 \uC804\uC6A9"), /* @__PURE__ */ React.createElement("p", { className: "v4-catalog-safe mono", role: "note" }, "research_assets.db SELECT-only \xB7 \uC7AC\uACC4\uC0B0\xB7\uC4F0\uAE30 \uC5C6\uC74C(mode=ro) \xB7 \uC815\uBCF8 \uC2B9\uACA9 \uC804 preview"), err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), unavailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uCE74\uD0C8\uB85C\uADF8 DB \uC5C6\uC74C \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, summary.hint || "build_research_catalog.py")), /* @__PURE__ */ React.createElement("div", { className: "v4-cat-viewbar", role: "tablist", "aria-label": "P4 \uC870\uD68C \uBDF0" }, _CAT_VIEWS.map((v) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: v.key,
+        type: "button",
+        role: "tab",
+        "aria-selected": view === v.key,
+        className: "v4-cat-viewtab" + (view === v.key ? " active" : ""),
+        onClick: () => setView(v.key),
+        title: v.desc
+      },
+      v.label
+    ))), view === "chronicle" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC5F0\uD601\uC2E4" }, summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : "")))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC5F0\uD601\uC2E4", reason: NO_DATA }), assets && assets.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))), view === "trapmap" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD568\uC815\uC9C0\uB3C4" }, traps.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4-cat-traplist mono" }, traps.map((j) => /* @__PURE__ */ React.createElement("li", { key: j.series }, /* @__PURE__ */ React.createElement("b", null, j.series), " \u2014 ", j.verdict, j.note ? " \xB7 " + j.note : ""))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uD568\uC815\uC9C0\uB3C4", reason: NO_DATA })), view === "clauselab" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC808\uC2E4\uD5D8\uC2E4" }, clauses && clauses.available && clauses.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC808(clause) ", clauses.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(clauses.clauses)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC808\uC2E4\uD5D8\uC2E4", reason: NO_DATA })), view === "exitbank" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uCD9C\uAD6C\uC740\uD589" }, cells && cells.available && cells.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uD45C\uBCF8\xB7\uC140 ", cells.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(cells.cells)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uCD9C\uAD6C\uC740\uD589", reason: NO_DATA })), view === "alpha" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC9C4\uD589 \uAD00\uCC30 (\uAD6C Alpha Lab)" }, /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus })), view === "scorecard" && /* @__PURE__ */ React.createElement("section", { "aria-label": "B1 scorecard" }, /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "B1 scorecard (\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C)", reason: NO_DATA })));
+  }
+  Object.assign(window, { V4Catalog });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
+  var V4_DASH_VERSION = "v5.3.9";
   var V4_TABS = [
-    { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2E4\uC2DC\uAC04 \uAD00\uCC30" },
-    { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8" },
-    { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D" },
-    { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9" },
-    { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
-    { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
-    { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" },
-    { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "\uC54C\uD30C \uC5F0\uAD6C \uB7A9 \xB7 \uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110 (PR #108)" },
-    { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5" }
+    { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2A4\uD14C\uC774\uC9C0 \uAD6C\uB3D9 \uC2E4\uC2DC\uAC04 \uAD00\uCC30", group: "primary" },
+    { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9", group: "primary" },
+    { key: "workbench", label: "\uC131\uACFC", full: "\uBA85\uC608\uC758 \uC804\uB2F9 \xB7 \uC778\uAC04+AI \uC131\uACFC", badge: "HALL", hint: "\uBA85\uC608\uC758 \uC804\uB2F9 \uC804\uC6A9 \u2014 \uC778\uAC04 \uBCA4\uCE58\uB9C8\uD06C\uC640 AI \uC5F0\uAD6C \uC131\uACFC \uBE44\uAD50", group: "primary" },
+    { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
+    { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8", group: "primary" },
+    { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", group: "primary" },
+    { key: "catalog", label: "\uC5F0\uAD6C \uC790\uC0B0", full: "\uC5F0\uAD6C \uC790\uC0B0 (P4 \uBE44\uC815\uBCF8 preview prototype + \uC9C4\uD589 \uAD00\uCC30)", badge: "\uC790\uC0B0", hint: "\uC5F0\uD601\uC2E4\xB7\uD568\uC815\uC9C0\uB3C4\xB7\uC808\uC2E4\uD5D8\uC2E4\xB7\uCD9C\uAD6C\uC740\uD589\xB7\uC9C4\uD589 \uAD00\uCC30(\uAD6C Alpha)\xB7B1 \u2014 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uBE44\uC815\uBCF8 preview", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
   var V4_PATH_TAB_MAP = {
     "backtest": "backtest",
     "chart-replay": "replay",
     "records": "history",
-    "lab": "lab",
+    "lab": "research",
     "workbench": "workbench",
-    "verdict": "audit",
+    "verdict": "history",
+    "audit": "history",
     "process": "research"
   };
+  var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
   function v4TabFromPathname(pathname) {
     try {
       const parts = String(pathname || "").split("/").filter(Boolean);
@@ -35028,6 +35430,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     try {
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t && V4_TAB_KEYS.includes(t)) return t;
+      if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
       const fromPath = v4TabFromPathname(window.location.pathname);
       if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
     } catch (e) {
@@ -35056,6 +35459,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     return propBase || DEFAULT_BASE;
   }
+  function v4BundleVersion() {
+    try {
+      const src = Array.from(document.querySelectorAll("script[src]")).map((e) => e.src).find((s) => /\/app\.js\?v=/.test(s));
+      if (src) {
+        const m = src.match(/[?&]v=([0-9A-Za-z._-]+)/);
+        if (m) return m[1];
+      }
+    } catch (e) {
+    }
+    return "";
+  }
   function V4RailIcon({ name }) {
     const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
     if (name === "research") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12 L6 8 L9 10 L15 3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "3", r: "1.3", fill: "currentColor", stroke: "none" }));
@@ -35064,6 +35478,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (name === "history") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "9", r: "6.5" }), /* @__PURE__ */ React.createElement("path", { d: "M9 5.5 V9 L12 10.5" }));
     if (name === "lab") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "11.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "11.5", width: "4", height: "4", rx: "1" }));
     if (name === "workbench") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 14 h7" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "3.5", r: "1.4" }));
+    if (name === "reports") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M4 2 h6 l4 4 v10 H4 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M10 2 v4 h4" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 10 h5 M6.5 12.5 h3" }));
+    if (name === "catalog") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("ellipse", { cx: "9", cy: "4", rx: "6", ry: "2.2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 4 V14 C3 15.2 5.7 16 9 16 C12.3 16 15 15.2 15 14 V4" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9 C3 10.2 5.7 11 9 11 C12.3 11 15 10.2 15 9" }));
     if (name === "audit") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 9 L8.3 10.8 L11.5 7" }));
     return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" }));
   }
@@ -35092,9 +35508,23 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
     const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
     const pendingTabFocusRef = useRef_v4("");
+    const [buildVer] = useState_v4(() => v4BundleVersion());
+    const [newVer, setNewVer] = useState_v4("");
+    useEffect_v4(() => {
+      if (!buildVer) return void 0;
+      const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((j) => {
+        const v = j && j.bundles && j.bundles["app.js"] && j.bundles["app.js"].v;
+        if (v && v !== buildVer) setNewVer(String(v));
+      }).catch(() => {
+      });
+      const id2 = setInterval(check, 6e4);
+      check();
+      return () => clearInterval(id2);
+    }, [buildVer]);
     useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
+      document.title = "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC " + V4_DASH_VERSION;
     }, [theme]);
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
@@ -35119,6 +35549,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       if (prevRunsActiveRef.current && !active2) setRunsEpoch((e) => e + 1);
       prevRunsActiveRef.current = active2;
     }, [liveState.status]);
+    const loadedRunsEpochRef = useRef_v4(-1);
     useEffect_v4(() => {
       if (isDemo || !baseUrl) {
         setRunList([]);
@@ -35126,8 +35557,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
       let cancelled = false;
       let attempt = 0;
+      const force = loadedRunsEpochRef.current !== -1 && runsEpoch !== loadedRunsEpochRef.current;
+      loadedRunsEpochRef.current = runsEpoch;
       const load = () => {
-        fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(15e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        fetchRunsShared(baseUrl, { force }).then((j) => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];
           runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
@@ -35186,6 +35619,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [settingsOpen, setSettingsOpen] = useState_v4(false);
     const [gptAuthProbe, setGptAuthProbe] = useState_v4(null);
     const [codeViewGen, setCodeViewGen] = useState_v4(null);
+    const [contextDrawerOpen, setContextDrawerOpen] = useState_v4(false);
+    const [verFx, setVerFx] = useState_v4(false);
     const onStart = useCallback_v4((config) => {
       send({ action: "start", config });
       setSettingsOpen(false);
@@ -35228,16 +35663,16 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       selectTab(next);
     };
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, V4_TABS.map((tab) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, V4_TABS.map((tab, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: tab.key }, tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && /* @__PURE__ */ React.createElement("div", { className: "v4-rail-div", role: "separator", "aria-label": "\uBCF4\uC870 \uB3C4\uAD6C", title: "\uBCF4\uC870 \uB3C4\uAD6C(\uBD84\uC11D\xB7\uAC10\uC0AC\xB7\uCEE8\uD14D\uC2A4\uD2B8)" }, /* @__PURE__ */ React.createElement("span", null, "\uBCF4\uC870")), /* @__PURE__ */ React.createElement(
       "button",
       {
-        key: tab.key,
         id: "v4-tab-" + tab.key,
         role: "tab",
         "aria-controls": "v4-panel-" + tab.key,
         "aria-selected": activeTab === tab.key,
         tabIndex: activeTab === tab.key ? 0 : -1,
-        className: "v4-rail-item" + (activeTab === tab.key ? " active" : ""),
+        "data-group": tab.group,
+        className: "v4-rail-item" + (tab.group === "secondary" ? " secondary" : "") + (activeTab === tab.key ? " active" : ""),
         onKeyDown: (event) => onTabKeyDown(event, tab.key),
         onClick: () => selectTab(tab.key),
         title: tab.full + " \u2014 " + tab.hint
@@ -35245,7 +35680,20 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-rail-item" + (contextDrawerOpen ? " active" : ""), onClick: () => setContextDrawerOpen((v) => !v), title: "AI Context Pack(\uAC1C\uBC1C\uC790 \uC11C\uB78D) \uD1A0\uAE00", "aria-pressed": contextDrawerOpen }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "Context")), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, newVer && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "v6-stale-banner",
+        onClick: () => window.location.reload(),
+        title: "\uC774 \uD0ED\uC740 \uC774\uC804 \uBE4C\uB4DC\uB97C \uC2E4\uD589 \uC911\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uBA74 \uCD5C\uC2E0 \uBC84\uC804\uC73C\uB85C \uC0C8\uB85C\uACE0\uCE68\uD569\uB2C8\uB2E4."
+      },
+      "\u27F3 \uC0C8 \uBC84\uC804 \uBC30\uD3EC\uB428 (build ",
+      newVer,
+      ") \u2014 \uC774 \uD0ED\uC740 \uAD6C\uBC84\uC804(",
+      buildVer,
+      ")\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uC5EC \uC0C8\uB85C\uACE0\uCE68"
+    ), /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono v6-dash-ver" }, "\uB300\uC2DC\uBCF4\uB4DC ", /* @__PURE__ */ React.createElement("b", null, V4_DASH_VERSION), " \xB7 build ", buildVer || "?", " \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,
@@ -35322,7 +35770,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : activeTab === "alpha" ? /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
@@ -35335,7 +35783,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         gptAuthProbe,
         disabled: running || !isDemo && configSpecStatus && !configSpecStatus.live
       }
-    ), /* @__PURE__ */ React.createElement(CodeViewer, { generation: codeViewGen, onClose: () => setCodeViewGen(null), runId, baseUrl }));
+    ), /* @__PURE__ */ React.createElement(CodeViewer, { generation: codeViewGen, onClose: () => setCodeViewGen(null), runId, baseUrl }), contextDrawerOpen && /* @__PURE__ */ React.createElement("aside", { className: "v4-context-drawer", role: "dialog", "aria-label": "AI Context Pack (\uAC1C\uBC1C\uC790 \uC11C\uB78D)" }, /* @__PURE__ */ React.createElement("div", { className: "v4-cdrawer-hd" }, /* @__PURE__ */ React.createElement("b", null, "AI Context Pack \xB7 \uAC1C\uBC1C\uC790 \uC11C\uB78D"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-cdrawer-x", onClick: () => setContextDrawerOpen(false), "aria-label": "\uB2EB\uAE30" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "v4-cdrawer-bd" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694"))));
   }
   Object.assign(window, { DashboardV4Shell });
 

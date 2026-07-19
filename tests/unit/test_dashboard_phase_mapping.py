@@ -206,3 +206,21 @@ class TestGenerationsTableQualityColumns:
         assert m is not None, "colSpan 없음"
         assert int(m.group(1)) == th_count, \
             f"colSpan {m.group(1)} != th 개수 {th_count}"
+
+
+def test_phase_timeline_surfaces_failure_stop_and_block_states():
+    """UXR-P5 — PhaseTimeline이 error/blocked/stopping/complete를 은폐하지 않고 명시(§10-9)."""
+    src = _read("phase-detail.jsx")
+    start = src.find("function PhaseTimeline(")
+    assert start != -1, "PhaseTimeline 정의가 없습니다"
+    end = src.find("PHASE DETAIL PANEL", start)
+    body = src[start:end if end != -1 else start + 4000]
+    # 상태 판별(running 외 error/blocked/stopping 을 명시적으로 다룬다).
+    for token in ('"error"', '"blocked"', '"stopping"'):
+        assert token in body, f"PhaseTimeline이 {token} 상태를 다루지 않습니다"
+    # 실패 단계 표시 + 사유 배너 + 상태 라벨.
+    assert "failedIdx" in body, "실패 단계 인덱스(failedIdx) 처리 없음"
+    assert "isFailed" in body, "단계 실패 표시(isFailed) 없음"
+    assert "phase-status-banner" in body, "사유 배너(phase-status-banner) 없음"
+    for label in ("실패 · 중단됨", "차단됨", "정지 중"):
+        assert label in body, f"상태 라벨 누락: {label}"

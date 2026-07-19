@@ -19,24 +19,26 @@ import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
 import { V4History } from "./v4-history.jsx";
-import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
-import { V4Audit } from "./v4-audit.jsx";
-import { V4Alpha } from "./v4-alpha.jsx";
+import { V4Reports } from "./v4-reports.jsx";
+import { V4Catalog } from "./v4-catalog.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
+// v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
+const V4_DASH_VERSION = "v5.3.9";
 
-// V4 IA — 좌측 레일 7뷰(승인 프로토타입). 아이콘은 stroke currentColor 인라인 SVG.
+// V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
+//   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
+// V6.1(R1): 연구 흐름 순서 — Live → History → 성과 → Reports → Backtest → Replay.
 const V4_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰" },
-  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트" },
-  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색" },
-  { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
-  { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "후보 비교 · 명예의 전당" },
-  { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · 안전 게이트" },
-  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (PR #108)" },
-  { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "모델에 전달된 컨텍스트 · 복사 가능" },
+  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 스테이지 구동 실시간 관찰", group: "primary" },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
+  { key: "workbench", label: "성과", full: "명예의 전당 · 인간+AI 성과", badge: "HALL", hint: "명예의 전당 전용 — 인간 벤치마크와 AI 연구 성과 비교", group: "primary" },
+  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
+  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
+  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
+  { key: "catalog", label: "연구 자산", full: "연구 자산 (P4 비정본 preview prototype + 진행 관찰)", badge: "자산", hint: "연혁실·함정지도·절실험실·출구은행·진행 관찰(구 Alpha)·B1 — 읽기 전용 · 비정본 preview", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -46,11 +48,15 @@ const V4_PATH_TAB_MAP = {
   "backtest": "backtest",
   "chart-replay": "replay",
   "records": "history",
-  "lab": "lab",
+  "lab": "research",
   "workbench": "workbench",
-  "verdict": "audit",
+  "verdict": "history",
+  "audit": "history",
   "process": "research",
 };
+
+// v5.3.1: 은퇴 탭(audit·verdict·lab·alpha) legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
+const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
 
 function v4TabFromPathname(pathname) {
   try {
@@ -66,6 +72,7 @@ function v4InitialTab() {
   try {
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t && V4_TAB_KEYS.includes(t)) return t;
+    if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
     const fromPath = v4TabFromPathname(window.location.pathname);
     if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
   } catch (e) {}
@@ -96,6 +103,17 @@ function v4InitialBase(propBase) {
   return propBase || DEFAULT_BASE;
 }
 
+// 현재 로드된 번들 빌드 지문(app.js?v=…)을 런타임에 파싱 — 사용자가 최신 빌드 여부를 확인.
+//   빌드 스크립트가 content-hash ?v= 를 HTML script src 에 주입하므로 별도 빌드 변경 불필요.
+function v4BundleVersion() {
+  try {
+    const src = Array.from(document.querySelectorAll("script[src]"))
+      .map(e => e.src).find(s => /\/app\.js\?v=/.test(s));
+    if (src) { const m = src.match(/[?&]v=([0-9A-Za-z._-]+)/); if (m) return m[1]; }
+  } catch (e) {}
+  return "";
+}
+
 function V4RailIcon({ name }) {
   const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
   if (name === "research") return (<svg {...p}><path d="M2 12 L6 8 L9 10 L15 3" /><circle cx="15" cy="3" r="1.3" fill="currentColor" stroke="none" /></svg>);
@@ -104,6 +122,8 @@ function V4RailIcon({ name }) {
   if (name === "history") return (<svg {...p}><circle cx="9" cy="9" r="6.5" /><path d="M9 5.5 V9 L12 10.5" /></svg>);
   if (name === "lab") return (<svg {...p}><rect x="2.5" y="2.5" width="4" height="4" rx="1" /><rect x="11.5" y="2.5" width="4" height="4" rx="1" /><rect x="2.5" y="11.5" width="4" height="4" rx="1" /><rect x="11.5" y="11.5" width="4" height="4" rx="1" /></svg>);
   if (name === "workbench") return (<svg {...p}><path d="M3 6 h12" /><path d="M3 10 h12" /><path d="M3 14 h7" /><circle cx="13" cy="3.5" r="1.4" /></svg>);
+  if (name === "reports") return (<svg {...p}><path d="M4 2 h6 l4 4 v10 H4 Z" /><path d="M10 2 v4 h4" /><path d="M6.5 10 h5 M6.5 12.5 h3" /></svg>);
+  if (name === "catalog") return (<svg {...p}><ellipse cx="9" cy="4" rx="6" ry="2.2" /><path d="M3 4 V14 C3 15.2 5.7 16 9 16 C12.3 16 15 15.2 15 14 V4" /><path d="M3 9 C3 10.2 5.7 11 9 11 C12.3 11 15 10.2 15 9" /></svg>);
   if (name === "audit") return (<svg {...p}><path d="M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" /><path d="M6.5 9 L8.3 10.8 L11.5 7" /></svg>);
   return (<svg {...p}><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>);
 }
@@ -137,10 +157,28 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
   const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
   const pendingTabFocusRef = useRef_v4("");
+  const [buildVer] = useState_v4(() => v4BundleVersion());
+  // v5.3.8: 구버전 탭 감지 — 열린 탭이 옛 JS 를 들고 있으면 배너로 새로고침 유도(검수 불일치 재발 방지).
+  const [newVer, setNewVer] = useState_v4("");
+  useEffect_v4(() => {
+    if (!buildVer) return undefined;
+    const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        const v = j && j.bundles && j.bundles["app.js"] && j.bundles["app.js"].v;
+        if (v && v !== buildVer) setNewVer(String(v));
+      })
+      .catch(() => {});
+    const id = setInterval(check, 60000);
+    check();
+    return () => clearInterval(id);
+  }, [buildVer]);
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("stom_theme", theme);
+    // v5.3.9: 브라우저 탭 제목에 대시보드 버전 명시(V4 잔존 표기 제거).
+    document.title = "STOM AI · 조건식 자율 진화 대시보드 " + V4_DASH_VERSION;
   }, [theme]);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
@@ -169,16 +207,18 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     if (prevRunsActiveRef.current && !active) setRunsEpoch((e) => e + 1);
     prevRunsActiveRef.current = active;
   }, [liveState.status]);
+  const loadedRunsEpochRef = useRef_v4(-1);
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
     let attempt = 0;
-    // 대형 아카이브(/runs 가 수 MB)는 페이지 초기 로드의 동시 fetch 큐 맨 뒤로 밀려
-    //   타임아웃될 수 있다(실측: 8791 아카이브 2.6MB 가 10여 요청 뒤 도착). 15s 타임아웃 +
-    //   실패 시 4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다.
+    // §1c: 런 종료 전이(runsEpoch 증가)에서는 공용 캐시를 강제 무효화해 새 아카이브를 즉시 반영한다.
+    const force = loadedRunsEpochRef.current !== -1 && runsEpoch !== loadedRunsEpochRef.current;
+    loadedRunsEpochRef.current = runsEpoch;
+    // 대형 아카이브(/runs 가 수 MB)는 초기 로드 동시 fetch 큐에 밀려 지연될 수 있어 실패 시
+    //   4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다. transport timeout 은 공용 모듈이 고정.
     const load = () => {
-      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(15000) })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      fetchRunsShared(baseUrl, { force })
         .then(j => {
           if (cancelled) return;
           const runs = Array.isArray(j && j.runs) ? j.runs : [];
@@ -234,6 +274,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [settingsOpen, setSettingsOpen] = useState_v4(false);
   const [gptAuthProbe, setGptAuthProbe] = useState_v4(null);
   const [codeViewGen, setCodeViewGen] = useState_v4(null);
+  const [contextDrawerOpen, setContextDrawerOpen] = useState_v4(false);
+  const [verFx, setVerFx] = useState_v4(false);
 
   const onStart = useCallback_v4((config) => { send({ action: "start", config }); setSettingsOpen(false); }, [send]);
   const onStop = useCallback_v4(() => { send({ action: "stop" }); }, [send]);
@@ -284,20 +326,30 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 15 L6 12 L9 13 L13 7 L18 3" stroke="var(--teal)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="18" cy="3" r="1.8" fill="var(--violet)" /></svg>
         </div>
         <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스">
-          {V4_TABS.map(tab => (
-            <button key={tab.key} id={"v4-tab-" + tab.key} role="tab"
-                    aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
-                    tabIndex={activeTab === tab.key ? 0 : -1}
-                    className={"v4-rail-item" + (activeTab === tab.key ? " active" : "")}
-                    onKeyDown={event => onTabKeyDown(event, tab.key)}
-                    onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
-              <V4RailIcon name={tab.key} />
-              <span className="v4-ri-label">{tab.label}</span>
-              <i className="v4-ri-dot"></i>
-            </button>
+          {V4_TABS.map((tab, i) => (
+            <React.Fragment key={tab.key}>
+              {tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && (
+                <div className="v4-rail-div" role="separator" aria-label="보조 도구" title="보조 도구(분석·감사·컨텍스트)"><span>보조</span></div>
+              )}
+              <button id={"v4-tab-" + tab.key} role="tab"
+                      aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}
+                      tabIndex={activeTab === tab.key ? 0 : -1}
+                      data-group={tab.group}
+                      className={"v4-rail-item" + (tab.group === "secondary" ? " secondary" : "") + (activeTab === tab.key ? " active" : "")}
+                      onKeyDown={event => onTabKeyDown(event, tab.key)}
+                      onClick={() => selectTab(tab.key)} title={tab.full + " — " + tab.hint}>
+                <V4RailIcon name={tab.key} />
+                <span className="v4-ri-label">{tab.label}</span>
+                <i className="v4-ri-dot"></i>
+              </button>
+            </React.Fragment>
           ))}
         </div>
         <div className="v4-rail-spacer"></div>
+        <button type="button" className={"v4-rail-item" + (contextDrawerOpen ? " active" : "")} onClick={() => setContextDrawerOpen(v => !v)} title="AI Context Pack(개발자 서랍) 토글" aria-pressed={contextDrawerOpen}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>
+          <span className="v4-ri-label">Context</span>
+        </button>
         <a className="v4-rail-item" href="/ui/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
           <span className="v4-ri-label">LEGACY</span>
@@ -306,13 +358,20 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
       {/* ===== 워크스페이스 ===== */}
       <div className="v4-workspace">
+        {newVer && (
+          <button type="button" className="v6-stale-banner" onClick={() => window.location.reload()}
+                  title="이 탭은 이전 빌드를 실행 중입니다. 클릭하면 최신 버전으로 새로고침합니다.">
+            ⟳ 새 버전 배포됨 (build {newVer}) — 이 탭은 구버전({buildVer})입니다. 클릭하여 새로고침
+          </button>
+        )}
         <header className="v4-topbar">
           <div className="v4-brand">
             <b>조건식 AI 연구 터미널</b>
-            <span className="mono">V4 · autonomous_strategy_loop · contract v{health.contract_version ?? state.contract_version ?? 1}</span>
+            <span className="mono v6-dash-ver">대시보드 <b>{V4_DASH_VERSION}</b> · build {buildVer || "?"} · contract v{health.contract_version ?? state.contract_version ?? 1}</span>
           </div>
           <div className="v4-safety" aria-label="안전 경계">
             {isDemo && <span className="v4-sfx demo">DEMO</span>}
+            {buildVer && <button type="button" className={"v4-sfx build v4-verfx" + (verFx ? " on" : "")} onClick={() => setVerFx(v => !v)} title="버전 하이라이트 효과 토글(app.js?v=)" aria-pressed={verFx}>build {buildVer}</button>}
             <span className="v4-sfx">실거래 없음</span>
             <span className="v4-sfx">브로커 없음</span>
             <span className="v4-sfx gate">HUMAN GATE</span>
@@ -378,25 +437,14 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : activeTab === "history" ? (
                 <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
-              ) : activeTab === "lab" ? (
-                <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-              ) : activeTab === "audit" ? (
-                <V4Audit baseUrl={baseUrl} onNavigate={selectTab} />
-              ) : activeTab === "alpha" ? (
-                <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
+              ) : activeTab === "reports" ? (
+                <V4Reports baseUrl={baseUrl} />
+              ) : activeTab === "catalog" ? (
+                <V4Catalog baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : (
-                <div className="v4-context">
-                  {typeof window.AIContextPanel === "function" ? (
-                    <window.AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
-                  ) : (
-                    <div className="v4-placeholder">
-                      <h2>AI Context Pack</h2>
-                      <p className="mono">AIContextPanel 미로드 — 번들 재빌드 필요</p>
-                    </div>
-                  )}
-                </div>
+                <div className="v4-placeholder"><p className="mono">알 수 없는 뷰</p></div>
                 )}
               </ErrorBoundary>
             </div>
@@ -411,6 +459,21 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         onGptAuthTest={onGptAuthTest} gptAuthProbe={gptAuthProbe}
         disabled={running || (!isDemo && configSpecStatus && !configSpecStatus.live)} />
       <CodeViewer generation={codeViewGen} onClose={() => setCodeViewGen(null)} runId={runId} baseUrl={baseUrl} />
+      {contextDrawerOpen && (
+        <aside className="v4-context-drawer" role="dialog" aria-label="AI Context Pack (개발자 서랍)">
+          <div className="v4-cdrawer-hd">
+            <b>AI Context Pack · 개발자 서랍</b>
+            <button type="button" className="v4-cdrawer-x" onClick={() => setContextDrawerOpen(false)} aria-label="닫기">✕</button>
+          </div>
+          <div className="v4-cdrawer-bd">
+            {typeof window.AIContextPanel === "function" ? (
+              <window.AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} genNo={state.current_gen} />
+            ) : (
+              <p className="mono">AIContextPanel 미로드 — 번들 재빌드 필요</p>
+            )}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

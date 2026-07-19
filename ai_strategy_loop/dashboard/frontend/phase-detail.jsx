@@ -89,52 +89,84 @@ function phaseIndex(phase) {
   return -1;
 }
 
-function PhaseTimeline({ state }) {
-  const running = state.status === "running" || state.status === "stopping";
+function PhaseTimeline({ state, pinnedIdx = null, onStepClick = null }) {
+  const status = state.status;
+  const running = status === "running" || status === "stopping";
+  const stopping = status === "stopping";
+  const errored = status === "error";
+  const blocked = status === "blocked";
   const activeIdx = running ? phaseIndex(state.latest?.phase) : -1;
+  // §10-9: 실패/차단을 은폐하지 않는다 — 마지막으로 알려진 단계를 실패로 표시.
+  const failedIdx = (errored || blocked) ? phaseIndex(state.latest?.phase) : -1;
   const activeGen = running ? state.current_gen + 1 : state.current_gen;
+  const reason = errored
+    ? (state.latest?.error || state.error || "실행 중 오류로 중단됨")
+    : blocked
+      ? (state.latest?.block_reason || state.latest?.message || "게이트/사전조건으로 차단됨")
+      : "";
+  const wrapCls = stopping ? " stopping" : errored ? " errored" : blocked ? " blocked" : "";
 
   return (
-    <div className="phase-timeline">
-      {PHASES.map((p, i) => {
-        const isActive = i === activeIdx;
-        const isDone = activeIdx > i;
-        const isPending = activeIdx < i || activeIdx === -1;
-        return (
-          <React.Fragment key={p.key}>
-            <div className={`phase-step ${isActive ? "active" : isDone ? "done" : "pending"}`}>
-              <div className="phase-num">
-                {isDone ? (
-                  <svg width="11" height="11" viewBox="0 0 16 16">
-                    <path d="M3 8 L7 12 L13 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  i + 1
-                )}
+    <React.Fragment>
+      <div className={"phase-timeline" + wrapCls}>
+        {PHASES.map((p, i) => {
+          const isFailed = failedIdx === i;
+          const isActive = !isFailed && i === activeIdx;
+          const isDone = !isFailed && activeIdx > i;
+          const cls = isFailed ? "failed" : isActive ? "active" : isDone ? "done" : "pending";
+          return (
+            <React.Fragment key={p.key}>
+              <div className={`phase-step ${cls}${pinnedIdx === i ? " pinned" : ""}${onStepClick ? " clickable" : ""}`}
+                   {...(onStepClick ? { role: "button", tabIndex: 0, "aria-pressed": pinnedIdx === i,
+                        onClick: () => onStepClick(i),
+                        onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onStepClick(i); } } } : {})}>
+                <div className="phase-num">
+                  {isFailed ? (
+                    <svg width="11" height="11" viewBox="0 0 16 16">
+                      <path d="M4 4 L12 12 M12 4 L4 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    </svg>
+                  ) : isDone ? (
+                    <svg width="11" height="11" viewBox="0 0 16 16">
+                      <path d="M3 8 L7 12 L13 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
+                </div>
+                <div className="phase-step-text">
+                  <div className="phase-step-label">{p.label}</div>
+                  <div className="phase-step-sub">{p.sub}</div>
+                </div>
+                {isActive && <span className="phase-active-pulse"></span>}
               </div>
-              <div className="phase-step-text">
-                <div className="phase-step-label">{p.label}</div>
-                <div className="phase-step-sub">{p.sub}</div>
-              </div>
-              {isActive && <span className="phase-active-pulse"></span>}
-            </div>
-            {i < PHASES.length - 1 && (
-              <div className={`phase-connector ${isDone ? "done" : ""}`}>
-                <div className="phase-connector-fill" style={{ width: isDone ? "100%" : isActive ? "50%" : "0%" }}></div>
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-      <div className="phase-gen-tag">
-        {running ? `세대 ${activeGen} 진행중` : state.status === "complete" ? `${state.current_gen}세대 완료` : "대기중"}
+              {i < PHASES.length - 1 && (
+                <div className={`phase-connector ${isDone ? "done" : ""}`}>
+                  <div className="phase-connector-fill" style={{ width: isDone ? "100%" : isActive ? "50%" : "0%" }}></div>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+        <div className={"phase-gen-tag" + wrapCls + (status === "complete" ? " complete" : "")}>
+          {stopping ? "정지 중…"
+            : errored ? "실패 · 중단됨"
+            : blocked ? "차단됨"
+            : running ? `세대 ${activeGen} 진행중`
+            : status === "complete" ? `${state.current_gen}세대 완료`
+            : "대기중"}
+        </div>
       </div>
-    </div>
+      {reason && (
+        <div className={"phase-status-banner " + (errored ? "err" : "warn")} role="status">
+          <b>{errored ? "오류" : "차단"}</b> · {reason}
+        </div>
+      )}
+    </React.Fragment>
   );
 }
 
 // ===================== PHASE DETAIL PANEL =====================
-function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
+function PhaseDetailPanel({ state, wsStatus, onViewLatestCode, pinnedIdx = null }) {
   const phase = state.latest?.phase;
   const running = state.status === "running" || state.status === "stopping";
 
@@ -146,16 +178,20 @@ function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
   const livePending = typeof window.livePanelPending === "function"
     ? window.livePanelPending(wsStatus, state) : false;
 
+  // V5.1: 효과 단계 = 사용자 pin 우선, 없으면 라이브 phase 인덱스(데모 한국어·라이브 영어 겸용).
+  const pinned = pinnedIdx != null && pinnedIdx >= 0;
+  const effIdx = pinned ? pinnedIdx : phaseIndex(phase);
+
   let body;
   if (livePending) {
     body = <LivePending />;
-  } else if (phase === "생성중") {
+  } else if (effIdx === 0) {
     body = <GenerationView state={state} onViewLatestCode={onViewLatestCode} />;
-  } else if (phase === "백테스트중") {
+  } else if (effIdx === 1) {
     body = <BacktestingView state={state} />;
-  } else if (phase === "채점중") {
+  } else if (effIdx === 2) {
     body = <ScoringView state={state} />;
-  } else if (phase === "부검 작성") {
+  } else if (effIdx === 3) {
     body = <AutopsyView state={state} />;
   } else if (!running && (state.current_run?.equity?.length || 0) > 0) {
     // Between gens or complete — show last backtest snapshot
@@ -163,13 +199,14 @@ function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
   } else {
     body = <IdlePhaseView />;
   }
+  const effLabel = (effIdx >= 0 && PHASES[effIdx]) ? PHASES[effIdx].label : (phase || "—");
 
   return (
     <div className="panel phase-detail">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: running ? "var(--amber)" : "var(--ink-3)" }}></span>
-          페이즈 상세 — {phase || "—"}
+          페이즈 상세 — {effLabel}{pinned ? " · 고정" : ""}
           {isDemo && <DemoBadge />}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
@@ -287,9 +324,20 @@ function BacktestingView({ state }) {
   const lastPnl = last ? (last.value - baseline) : 0;
   const lastDD = state.current_run?.drawdown?.slice(-1)[0]?.value_pct ?? 0;
   const trades = state.current_run?.trades || [];
+  // V5.2(L6): 백테 중 조건식·출처를 그대로 노출(WS state 필드 소비, 재계산 없음).
+  const gen = state.current_run?.generation || {};
+  const buyName = gen.buy_name || gen.buy_strategy || state.latest?.buy_name || (state.best && state.best.buy_name) || "—";
+  const sellName = gen.sell_name || gen.sell_strategy || state.latest?.sell_name || (state.best && state.best.sell_name) || "—";
+  const runId = state.run_id || "—";
+  const genNo = (state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0) ? state.current_gen : "—";
 
   return (
     <div className="bt-view">
+      <div className="bt-condition-band" aria-label="테스트 조건식과 출처">
+        <div><span className="k">매수 조건식</span><b className="mono">{buyName}</b></div>
+        <div><span className="k">매도 조건식</span><b className="mono">{sellName}</b></div>
+        <div><span className="k">출처</span><b className="mono">run {runId} · gen {genNo}</b></div>
+      </div>
       <div className="bt-summary-row">
         <SummaryCell label="현재 자본" value={`${last ? (last.value / 1_000_000).toFixed(2) : "10.00"} M`}
                      color={lastPnl >= 0 ? "var(--teal)" : "var(--red)"}
@@ -1194,6 +1242,7 @@ function ProcessFlowPanel({ state }) {
 
 Object.assign(window, {
   PhaseTimeline,
+  phaseIndex,
   PhaseDetailPanel,
   ProcessFlowPanel,
   ProcessFlowDiagram,
@@ -1214,4 +1263,4 @@ Object.assign(window, {
 //   scope classic script stays a no-op SyntaxError-free (Object.assign above still
 //   publishes the FROZEN globals). KEEP this statement on ONE physical line — the concat
 //   stripper matches a single-line `export { ... };`.
-export { DemoBadge, LivePending, PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel };
+export { DemoBadge, LivePending, PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel, phaseIndex };

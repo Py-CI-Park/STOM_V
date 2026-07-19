@@ -9,6 +9,7 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, _btFetchJson, _btPostJson, _BT_OVERLAY_COLORS, _btNum, _pfFmtMoney } from "./bt-tab-utils.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 
 // ===========================================================================
 // 3b-3. 다중 잡 오버레이 — 결과 라이브러리에서 2~4개 선택 → 수익곡선 겹쳐 보기.
@@ -265,7 +266,7 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
   const loadRuns = useCallback_bt(() => {
     if (isDemo || !baseUrl) { setRuns([]); return; }
     setLoadingRuns(true);
-    _btFetchJson(baseUrl + "/runs", 6000)
+    fetchRunsShared(baseUrl, { timeoutMs: 6000 })
       .then(j => setRuns(Array.isArray(j && j.runs) ? j.runs : []))
       .catch(() => setRuns([]))
       .finally(() => setLoadingRuns(false));

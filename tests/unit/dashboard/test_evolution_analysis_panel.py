@@ -62,7 +62,7 @@ class TestPanelSource:
         src = _read_front("evolution-analysis.jsx")
         assert "/bt/evo_gens?run_id=" in src
         # run 셀렉터는 /runs 를 읽는다(기본 현재 run).
-        assert "/runs" in src
+        assert "fetchRunsShared" in src  # §3.1: /runs 는 공용 디듀프 모듈로 조회한다
 
     def test_workbench_link_is_loosely_coupled(self):
         src = _read_front("evolution-analysis.jsx")

@@ -24,6 +24,27 @@ const DEFAULT_BASE = (typeof window !== "undefined" &&
   ? window.location.origin
   : "http://127.0.0.1:8770";
 
+// ---------- WS 끊김 계측(UXR-P1 관측) ----------
+// debounce(P2) 적용 전에 실제 끊김 빈도·원인을 근거로 남긴다(검토 §4: 장애 은폐 방지).
+//   순수 관측 — 연결 동작을 바꾸지 않는다. 링버퍼 + window 미러(수동 점검용).
+const _WS_DIAG_MAX = 200;
+const _wsDiag = [];
+function _recordWsDiag(entry) {
+  try {
+    const rec = Object.assign({ t: Date.now() }, entry);
+    _wsDiag.push(rec);
+    if (_wsDiag.length > _WS_DIAG_MAX) _wsDiag.splice(0, _wsDiag.length - _WS_DIAG_MAX);
+    if (typeof window !== "undefined") window.__stomWsDiag = _wsDiag;
+  } catch (e) {}
+}
+// 끊김 요약: 총 close/error, 우리가 닫은 것 제외, 최근 close code 분포.
+function getWsDiag() {
+  const closes = _wsDiag.filter(e => e.kind === "close" && !e.byUs);
+  const errors = _wsDiag.filter(e => e.kind === "error");
+  const codes = {};
+  for (const c of closes) { const k = String(c.code == null ? "?" : c.code); codes[k] = (codes[k] || 0) + 1; }
+  return { total: _wsDiag.length, unexpectedCloses: closes.length, errors: errors.length, codes, entries: _wsDiag.slice() };
+}
 // ---------- Default config spec (used if /config/spec is unavailable) ----------
 const DEFAULT_CONFIG_SPEC = [
   // 목표/제약
@@ -175,6 +196,10 @@ function useBackend(baseUrl) {
   const reconnectAttempt = useRef_cn1(0);
   const closedByUs = useRef_cn1(false);
   const demoRef = useRef_cn1(null);
+  // UXR-P2 정직한 재연결 grace: 안정 연결의 단발 blip만 짧게 유예하고,
+  //   열리자마자 닫히는 '플래핑'(예: 세션/권한 지속 실패)은 즉시 노출한다(은폐 금지).
+  const lastOpenAt = useRef_cn1(0);
+  const graceTimer = useRef_cn1(null);
 
   // ---- Demo simulator ----
   const startDemo = useCallback_cn1((config) => {
@@ -709,6 +734,7 @@ function useBackend(baseUrl) {
       // Fall back to demo
       setHealth({ connected: false, contract_version: null });
       setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
+      _recordWsDiag({ kind: "demo" });
       setWsStatus("demo");
     }
   }, [baseUrl]); // eslint-disable-line
@@ -719,6 +745,9 @@ function useBackend(baseUrl) {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       ws.onopen = () => {
+        _recordWsDiag({ kind: "open", recoveredAfter: reconnectAttempt.current });
+        lastOpenAt.current = Date.now();
+        if (graceTimer.current) { clearTimeout(graceTimer.current); graceTimer.current = null; }
         reconnectAttempt.current = 0;
         // LIVE↔DEMO 분리: 실제 WS가 열리면 데모 시뮬레이터를 즉시 중단한다.
         //   (이게 없으면 demo가 돌던 중 연결 시 current_run/engine을 계속 날조해
@@ -740,16 +769,27 @@ function useBackend(baseUrl) {
           }
         } catch {}
       };
-      ws.onclose = () => {
+      ws.onclose = (ev) => {
+        _recordWsDiag({ kind: "close", code: ev && ev.code, reason: (ev && ev.reason) || "", byUs: !!closedByUs.current, attempt: reconnectAttempt.current });
         if (closedByUs.current) return;
-        setWsStatus("reconnecting");
+        // 안정 연결(>=2s 유지)의 단발 종료만 1.2s 유예 — 그 안에 재연결 성공하면 깜빡임 없음.
+        //   열리자마자(<2s) 닫히는 플래핑은 지속 장애 신호 → 즉시 노출(은폐 금지, 검토 §4).
+        const openMs = lastOpenAt.current ? (Date.now() - lastOpenAt.current) : 0;
+        const flapping = !lastOpenAt.current || openMs < 2000;
+        if (graceTimer.current) { clearTimeout(graceTimer.current); graceTimer.current = null; }
+        if (flapping) {
+          setWsStatus("reconnecting");
+        } else {
+          graceTimer.current = setTimeout(() => { setWsStatus("reconnecting"); graceTimer.current = null; }, 1200);
+        }
+        lastOpenAt.current = 0;
         const delay = Math.min(8000, 500 * Math.pow(1.7, reconnectAttempt.current));
         reconnectAttempt.current += 1;
         setTimeout(() => {
           if (!closedByUs.current) openWs();
         }, delay);
       };
-      ws.onerror = () => { /* onclose will fire */ };
+      ws.onerror = () => { _recordWsDiag({ kind: "error", attempt: reconnectAttempt.current }); /* onclose will fire */ };
     } catch (e) {
       setWsStatus("reconnecting");
     }
@@ -759,6 +799,7 @@ function useBackend(baseUrl) {
     tryConnect();
     return () => {
       closedByUs.current = true;
+      if (graceTimer.current) { clearTimeout(graceTimer.current); graceTimer.current = null; }
       if (wsRef.current) wsRef.current.close();
       stopDemo();
     };
@@ -817,7 +858,8 @@ function useBackend(baseUrl) {
 Object.assign(window, {
   useBackend,
   DEFAULT_BASE,
+  getWsDiag,
 });
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { useBackend, DEFAULT_BASE, INITIAL_STATE, DEFAULT_CONFIG_SPEC, normalizeConfigSpecPayload };
+export { useBackend, DEFAULT_BASE, INITIAL_STATE, DEFAULT_CONFIG_SPEC, normalizeConfigSpecPayload, getWsDiag };

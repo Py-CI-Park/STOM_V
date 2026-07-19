@@ -98,6 +98,9 @@ def test_alpha_status_reports_seal_and_ledger_totals(monkeypatch, tmp_path: Path
     assert body["available"] is True
     prereg = body["preregistration"]
     assert prereg["available"] is True
+    assert prereg["present"] is True
+    assert prereg["valid_json"] is True
+    assert prereg["sealed"] is True
     assert prereg["sealed_date"] == "2026-07-05"
     assert prereg["sha256"] == sha
     assert prereg["sha256_match"] is True
@@ -108,6 +111,20 @@ def test_alpha_status_reports_seal_and_ledger_totals(monkeypatch, tmp_path: Path
     assert ledger["entries"] == 3
     assert ledger["malformed_lines"] == 1
     assert body["stage"] == "sealed"
+
+
+def test_alpha_status_present_but_sha_mismatch_is_not_sealed(monkeypatch, tmp_path: Path) -> None:
+    """§4.3: 파일이 존재해도 SHA 불일치면 sealed=False, present=True 로 분리 표시한다."""
+    _seal_preregistration(tmp_path)
+    # 봉인 후 파일 바이트를 변조 → 사이드카 SHA와 불일치
+    (tmp_path / "preregistration_v1.json").write_bytes(b'{"program": "tampered"}\n')
+    client = _client(monkeypatch, tmp_path)
+
+    prereg = client.get("/api/alpha/status").json()["preregistration"]
+    assert prereg["present"] is True
+    assert prereg["valid_json"] is True
+    assert prereg["sha256_match"] is False
+    assert prereg["sealed"] is False
 
 
 def test_alpha_status_stage_progression(monkeypatch, tmp_path: Path) -> None:
@@ -239,36 +256,78 @@ def test_alpha_funnel_missing_receipts_all_zero(monkeypatch, tmp_path: Path) -> 
         assert body[key] == 0
 
 
-def test_alpha_funnel_counts_each_stage(monkeypatch, tmp_path: Path) -> None:
-    """전 영수증에서 퍼널 6단계 수를 집계한다(명시 카운트·리스트 폴백 혼용)."""
+def test_alpha_funnel_counts_registration_and_verdict(monkeypatch, tmp_path: Path) -> None:
+    """§4.1: 등재=registration.inserted, 엔진/게이트=verdict.coverage, 판정 동봉."""
     _write_json(
         tmp_path / "mining_report.json",
-        {
-            "rules": [
-                {"rule_id": "r1", "fdr_survived": True},
-                {"rule_id": "r2", "fdr_survived": True},
-                {"rule_id": "r3", "fdr_survived": False},
-            ]
-        },
+        {"n_discovered": 80, "n_fdr_survived": 40, "rules": []},
+    )
+    _write_json(tmp_path / "translation_receipt.json", {"n_translated": 30, "translations": []})
+    _write_json(
+        tmp_path / "rho_gate_registration_receipt.json",
+        {"registration": {"inserted": [{"name": "ALP_RM_01"}, {"name": "ALP_RM_02"}]}},
     )
     _write_json(
-        tmp_path / "translation_receipt.json",
-        {"translations": [{"rule_id": "r1"}, {"rule_id": "r2"}]},
+        tmp_path / "rho_retrial_verdict.json",
+        {
+            "final": True, "status": "finalized", "rho": 0.6687, "verdict": "본빌드 진행 권고",
+            "coverage": {"n_rules_sealed": 10, "measured_ok": 8, "censored_timeout": 2, "no_trades": 0},
+            # §4(검토): per_rule[].gate_passed 만 성능게이트 통과. 측정완료(8)와 구분(전부 MDD 초과 → 0).
+            "per_rule": [
+                {"name": f"R{i}", "gate_passed": False, "gate_reason": "mdd>cap"} for i in range(8)
+            ] + [
+                {"name": "R8", "gate_passed": None}, {"name": "R9", "gate_passed": None},
+            ],
+        },
     )
-    _write_json(tmp_path / "registration_receipt.json", {"n_registered": 2})
-    _write_json(tmp_path / "engine_check_receipt.json", {"engine_checked": ["r1", "r2"]})
-    _write_json(tmp_path / "rho_gate_verdict.json", {"n_gate_passed": 1})
     client = _client(monkeypatch, tmp_path)
 
     body = client.get("/api/alpha/funnel").json()
 
     assert body["available"] is True
-    assert body["discovered"] == 3
-    assert body["fdr_survived"] == 2
-    assert body["translated"] == 2
+    assert body["discovered"] == 80
+    assert body["fdr_survived"] == 40
+    assert body["translated"] == 30
     assert body["registered"] == 2
-    assert body["engine_checked"] == 2
-    assert body["gate_passed"] == 1
+    assert body["engine_checked"] == 10       # 봉인=엔진 대상
+    assert body["measured_ok"] == 8           # 측정 완료(별도 필드)
+    assert body["censored"] == 2
+    assert body["gate_passed"] == 0           # §4 교정: 성능게이트 통과(per_rule)는 0
+    verdict = body["verdict"]
+    assert verdict["available"] is True and verdict["final"] is True
+    assert verdict["source"] == "rho_retrial_verdict.json"
+    assert verdict["verdict"] == "본빌드 진행 권고"
+    assert verdict["performance_gate_passed"] == 0
+
+
+def test_alpha_funnel_prefers_retrial_registration(monkeypatch, tmp_path: Path) -> None:
+    """재판정 등록 영수증이 게이트 등록보다 우선한다."""
+    _write_json(tmp_path / "mining_report.json", {"n_discovered": 1, "n_fdr_survived": 1})
+    _write_json(
+        tmp_path / "rho_gate_registration_receipt.json",
+        {"registration": {"inserted": [{"name": "g1"}, {"name": "g2"}, {"name": "g3"}]}},
+    )
+    _write_json(
+        tmp_path / "rho_retrial_registration_receipt.json",
+        {"registration": {"inserted": [{"name": "r1"}]}},
+    )
+    client = _client(monkeypatch, tmp_path)
+
+    body = client.get("/api/alpha/funnel").json()
+    assert body["registered"] == 1
+    assert body["registration_source"] == "rho_retrial_registration_receipt.json"
+
+
+def test_alpha_funnel_fdr_survived_zero_is_kept(monkeypatch, tmp_path: Path) -> None:
+    """§4.4: authoritative n_fdr_survived=0 을 rule-flag fallback(1)으로 덮지 않는다."""
+    _write_json(
+        tmp_path / "mining_report.json",
+        {"n_discovered": 5, "n_fdr_survived": 0, "rules": [{"rule_id": "r1", "fdr_survived": True}]},
+    )
+    client = _client(monkeypatch, tmp_path)
+
+    body = client.get("/api/alpha/funnel").json()
+    assert body["fdr_survived"] == 0
 
 
 def test_alpha_funnel_prefers_explicit_counts(monkeypatch, tmp_path: Path) -> None:

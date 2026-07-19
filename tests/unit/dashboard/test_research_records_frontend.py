@@ -22,6 +22,15 @@ def test_research_records_panel_contract() -> None:
     assert "export { ResearchRecordsPanel }" in src
 
 
+def test_research_records_surfaces_truncation_not_silent() -> None:
+    """§10-10 — 12개 초과 campaign 을 조용히 자르지 않고 전체 개수·전체 보기 토글로 명시한다."""
+    src = _front("research-records-panel.jsx")
+    assert "showAll" in src, "전체 보기 토글 상태 없음"
+    assert "showAll ? rows : rows.slice(0, 12)" in src, "showAll 기반 슬라이싱 없음"
+    assert "rows.length > 12" in src, "truncation 조건 노출 없음"
+    assert "개 중 12개 표시" in src, "전체 개수 안내 문구 없음"
+
+
 def test_evolution_gui_parity_panel_contract() -> None:
     src = _front("evolution-gui-parity-panel.jsx")
 

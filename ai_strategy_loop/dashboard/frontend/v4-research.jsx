@@ -1,9 +1,11 @@
-/* v4-research.jsx — V4 "Research Live" (플래그십, graph-first)
+/* v4-research.jsx — v5.3.2 "Research Live" 스테이지 구동 단일 포커스 뷰 (4스테이지)
  *
- *   승인 프로토타입 구현: 좌측 대형 hero(V4HeroChart canvas) + 스탯 행 + 보조 차트 +
- *   접이식 분석 스택 / 우측 관찰성 rail(현재세대 · Best/Winner 게이트 ·
- *   조건식 발굴 거버넌스(wt-dev research_observability) · population).
- *   전부 기존 V2 컴포넌트 재배치 + V4 전용 캔버스 hero. 데이터/액션은 셸에서 props.
+ *   구조(위→아래): 통합 상황판[수평 파이프라인 벨트(구 원형 사이클+타임라인 흡수, N3)
+ *   + 현재세대 패널 통합(N4) + KPI + 게이트 + 단계시간 미니바·차단 배지·로그]
+ *   → 핵심 그래프 밴드(hasData 시, 3440 4열) → 스테이지 탭 4개(N6: 채점+부검 통합)
+ *   → 현재 스테이지 단일 포커스 패널.
+ *   배치 계약(N6): 백테 결과(파리티)는 백테스트 스테이지, 탐색 히트맵·엣지 분석은
+ *   채점·부검 스테이지. ProcessFlowPanel 은 벨트·스테이지 탭과 3중 중복이라 제거(N7).
  */
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
@@ -15,9 +17,10 @@ import { ResearchGlossaryPanel } from "./glossary.jsx";
 import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
-import { PhaseTimeline, PhaseDetailPanel, ProcessFlowPanel } from "./phase-detail.jsx";
+import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
-import { V4LoopCycle } from "./v4-loop-cycle.jsx";
+import { ResearchHeatmapPanel } from "./research-pro.jsx";
+import { ResearchLabPanel } from "./research-lab.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -40,7 +43,7 @@ function _v4ApprovalBindingProblem(binding, state) {
 }
 
 // 접이식 섹션(app.jsx _EvoSection 패턴 — styles.css .evo-group 재사용, V4 전용 storage key)
-function _V4Fold({ storageKey, label, children, defaultOpen = true }) {
+function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen = false }) {
   const [open, setOpen] = useState_v4r(() => {
     try { const v = window.localStorage.getItem(storageKey); return v === null ? defaultOpen : v === "1"; }
     catch (e) { return defaultOpen; }
@@ -50,9 +53,10 @@ function _V4Fold({ storageKey, label, children, defaultOpen = true }) {
     setOpen(o);
     try { window.localStorage.setItem(storageKey, o ? "1" : "0"); } catch (e2) {}
   };
+  const effOpen = forceOpen || open;
   return (
-    <details className="evo-group" open={open} onToggle={onToggle}>
-      <summary className="evo-group-summary" aria-expanded={open}>
+    <details className="evo-group" open={effOpen} onToggle={onToggle}>
+      <summary className="evo-group-summary" aria-expanded={effOpen}>
         <div className="stom-section-label">{label}</div>
       </summary>
       <div className="evo-group-body">{children}</div>
@@ -60,43 +64,39 @@ function _V4Fold({ storageKey, label, children, defaultOpen = true }) {
   );
 }
 
-// workflow + authority 스트립: PhaseTimeline(정본) + process/authority 칩 + 다음 행동
-function _V4WorkflowStrip({ state }) {
-  const discovery = (state.page_data && state.page_data.condition_discovery) || {};
-  const observability = discovery.research_observability || {};
-  const ma = observability.mode_authority || {};
-  const latest = state.latest || {};
-  const procLabel = ma.process || (discovery.current_process && discovery.current_process.code) || "process-research";
-  const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
-  const authLabel = ma.generation_allowed === true ? "research allowed"
-    : ma.generation_allowed === false ? "review only" : "authority 대기";
-  const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
-  const nextMsg = (state.latest && (state.latest.message || state.latest.phase)) || "대기";
-  const genLabel = state.current_gen != null && Number.isFinite(Number(state.current_gen)) && Number(state.current_gen) >= 0 ? String(state.current_gen) : "시작 전";
-  const stepLabel = latest.current_step != null && Number.isFinite(Number(latest.current_step)) && Number(latest.current_step) >= 0 ? String(latest.current_step) : "발행 대기";
-  const timingText = Object.entries(latest.step_timings || {}).filter(([, seconds]) => typeof seconds === "number" && seconds >= 0)
-    .map(([step, seconds]) => `${step} ${seconds.toFixed(1)}초`).join(" · ") || "완료 단계 없음";
-  const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
-  const lastLog = logs.length ? logs[logs.length - 1] : "로그 대기";
-  const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || state.blockers || [];
-  const rawBlockers = Array.isArray(blockerSource) ? blockerSource : (blockerSource.blockers || []);
-  const blockerText = Array.isArray(rawBlockers) && rawBlockers.length ? rawBlockers.join(" · ") : "발행된 차단 사유 없음";
-  const errorText = state.error || latest.error || "";
+// v5.3.9(검수): 온보딩 문구 전체 삭제 — 상단 시작/설정 버튼과 중복. 설정 버튼 1개만 유지.
+function _V4Onboarding({ onOpenSettings }) {
   return (
-    <section className="v4-wfwrap v4-research-evidence" aria-labelledby="v4-research-evidence-heading">
-      <h2 id="v4-research-evidence-heading" className="panel-hd-title">실시간 연구 근거</h2>
-      <PhaseTimeline state={state} />
-      <div className="v4-wf-next">
-        <div><span className="k">process</span><b className="mono" style={{ color: "var(--ink-0)" }}>{procLabel}</b></div>
-        <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
-        <div><span className="k">다음 행동</span><b>{nextMsg}</b></div>
+    <div className="v6-onboarding-btnrow">
+      <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 설정</button>
+    </div>
+  );
+}
+
+function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
+  const s = state || {};
+  const prog = (s.latest || {}).backtest_progress || {};
+  const running = s.status === "running" || s.status === "stopping";
+  const pct = typeof prog.percent === "number" ? Math.max(0, Math.min(100, prog.percent)) : null;
+  const curGen = typeof prog.current_gen === "number" ? prog.current_gen : (s.current_gen || 0);
+  const maxGens = prog.max_generations || s.max_generations || 0;
+  const engineLabel = running ? "실행 중" : (s.status === "done" ? "완료" : s.status === "error" ? "오류" : "대기");
+  const fmt = (v, d = 2) => (v == null || v === "" ? "—" : Number(v).toFixed(d));
+  return (
+    <div className="v4-enggate-bar" aria-label="엔진·게이트 상황판">
+      <div className="v4-eg-group">
+        <span className="v4-eg-lbl">엔진</span>
+        <span className={"v4-eg-chip " + (running ? "run" : "idle")}>{engineLabel}</span>
+        {pct != null && <span className="v4-eg-v">{pct.toFixed(0)}%</span>}
+        <span className="v4-eg-v mono">gen {curGen >= 0 ? curGen : "—"}{maxGens ? "/" + maxGens : ""}</span>
       </div>
-      <p className="v4-research-live-summary" role="status" aria-live="polite">세대 {genLabel} · 현재 단계 {stepLabel} · {state.status || "idle"}</p>
-      {errorText && <p className="v4-research-error" role="alert">연구 요청 실패 · {String(errorText)}</p>}
-      <dl className="v4-research-evidence-grid"><div><dt>단계별 실제 시간</dt><dd>{timingText}</dd></div>
-        <div><dt>차단 사유</dt><dd>{blockerText}</dd></div>
-        <div><dt>최신 로그</dt><dd className="mono">{String(lastLog)}</dd></div></dl>
-    </section>
+      <div className="v4-eg-group">
+        <span className="v4-eg-lbl">게이트 · 현재 run 유효값</span>
+        <span className="v4-eg-v mono" title="목표 적합도 점수">score ≥ {fmt(targetScore)}</span>
+        <span className="v4-eg-v mono" title="MDD 상한">MDD ≤ {fmt(mddCap)}</span>
+        <span className="v4-eg-v mono" title="최소 일거래 수">trades ≥ {minDailyTrades != null ? minDailyTrades : "—"}</span>
+      </div>
+    </div>
   );
 }
 
@@ -132,35 +132,114 @@ function _V4Stats({ state }) {
   );
 }
 
-// 온보딩(V2 IdleState 의 Welcome·루프 개요 이식) — idle + 세대 없음일 때만 노출.
-function _V4Onboarding({ onOpenSettings }) {
-  const steps = [
-    ["조건식 만들기", "LLM이 이전 실패 원인과 좋은 예시를 참고해 매수/매도 규칙을 작성합니다."],
-    ["과거 데이터로 검증", "백테스트 엔진이 지정 기간의 종목 데이터를 돌려 손익·낙폭·거래 빈도를 계산합니다."],
-    ["점수 계산", "수익, 위험(MDD), 우상향, 일평균 거래, 손익비를 목표 공식에 맞춰 점수화합니다."],
-    ["통과 기준 확인", "목표 적합도, MDD 상한, 일평균 거래 하한을 만족하는지 확인합니다."],
-    ["실패 원인 요약", "왜 떨어졌는지 쉬운 말로 정리해 다음 세대 프롬프트에 넣습니다."],
-    ["다시 개선", "이름 붙은 run·세대·백테스트 결과를 저장해 나중에 다시 찾을 수 있게 합니다."],
-  ];
+// v5.3.2 스테이지 정의 — 4탭(N6: 채점+부검 통합). phaseIndex(0생성·1백테·2채점·3부검)
+//   → 스테이지 [0,1,2,2]. run 완료(done)는 반복·성과(3).
+const V6_STAGES = [
+  { key: "generate", label: "생성", sub: "조건식 생성" },
+  { key: "backtest", label: "백테스트", sub: "엔진 검증·결과" },
+  { key: "score", label: "채점·부검", sub: "게이트·분석·실패" },
+  { key: "iterate", label: "반복·성과", sub: "세대 요약" },
+];
+const STAGE_FROM_PHASE = [0, 1, 2, 2];
+
+// v5.3.2 수평 파이프라인 벨트(N3) — 구 원형 사이클(V4LoopCycle)+PhaseTimeline 을 흡수한
+//   8노드 가로 벨트. 활성 노드 pulse, 클릭 시 해당 스테이지 pin. 환류(↩)는 다음 세대로.
+const _BELT_NODES = [
+  { key: "seed", label: "시드", ai: false, stage: 0 },
+  { key: "prompt", label: "프롬프트", ai: false, stage: 0 },
+  { key: "gen", label: "AI 생성", ai: true, stage: 0 },
+  { key: "gate", label: "게이트", ai: false, stage: 1 },
+  { key: "bt", label: "공식 백테", ai: false, stage: 1 },
+  { key: "score", label: "채점", ai: false, stage: 2 },
+  { key: "autopsy", label: "부검", ai: true, stage: 2 },
+  { key: "loop", label: "환류 ↩", ai: false, stage: 3 },
+];
+function _V6PipelineBelt({ liveStage, activeStage, onStagePin }) {
   return (
-    <div className="panel v4-onboarding">
-      <div className="panel-bd v4-onboarding-bd">
-        <div>
-          <h2>조건식 AI 루프를 시작할 준비가 되었습니다</h2>
-          <p>
-            AI가 한국 주식 매수/매도 전략을 자동 생성·백테스트·채점·부검하며 조건식을 진화시킵니다.
-            각 세대의 부검이 다음 세대 생성기에 피드백됩니다. 우승 후보의 운영 export 는
-            연구 확인과 분리된 human 승인 절차입니다.
-          </p>
-          <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 시작 설정 열기</button>
-        </div>
-        <ol className="v4-onboarding-steps">
-          {steps.map(([k, d], i) => (
-            <li key={k}><b>{i + 1}. {k}</b><span>{d}</span></li>
-          ))}
-        </ol>
-      </div>
+    <div className="v6-belt" role="group" aria-label="반복 세대 파이프라인(클릭 시 해당 단계 고정)">
+      {_BELT_NODES.map((n, i) => {
+        const live = liveStage === n.stage;
+        const sel = activeStage === n.stage;
+        return (
+          <React.Fragment key={n.key}>
+            {i > 0 && <span className={"v6-belt-arrow" + (live ? " lit" : "")} aria-hidden="true">→</span>}
+            <button type="button"
+                    className={"v6-belt-node" + (live ? " live" : "") + (sel ? " sel" : "") + (n.ai ? " ai" : "")}
+                    title={(n.ai ? "AI 개입 · " : "코드 · ") + V6_STAGES[n.stage].label + " 단계로 이동"}
+                    onClick={() => { if (typeof onStagePin === "function") onStagePin(n.stage); }}>
+              <span className="v6-belt-badge">{n.ai ? "AI" : "⚙"}</span>
+              <span className="v6-belt-label">{n.label}</span>
+            </button>
+          </React.Fragment>
+        );
+      })}
     </div>
+  );
+}
+
+// v5.3.2 통합 상황판 — 벨트 + [프로세스/게이트 | 현재세대(N4 통합) | KPI] + 미니바/배지/로그.
+function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades }) {
+  const s = state || {};
+  const latest = s.latest || {};
+  const discovery = (s.page_data && s.page_data.condition_discovery) || {};
+  const observability = discovery.research_observability || {};
+  const ma = observability.mode_authority || {};
+  const procLabel = ma.process || (discovery.current_process && discovery.current_process.code) || "process-research";
+  const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
+  const authLabel = ma.generation_allowed === true ? "research allowed"
+    : ma.generation_allowed === false ? "review only" : "authority 대기";
+  const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
+  const nextMsg = (latest.message || latest.phase) || "대기";
+  const timings = Object.entries(latest.step_timings || {}).filter(([, sec]) => typeof sec === "number" && sec >= 0);
+  const maxT = timings.reduce((m, [, sec]) => Math.max(m, sec), 0) || 1;
+  const blockerSource = observability.promotion_blockers || discovery.promotion_blockers || s.blockers || [];
+  const rawBlockers = Array.isArray(blockerSource) ? blockerSource : (blockerSource.blockers || []);
+  const blockers = Array.isArray(rawBlockers) ? rawBlockers : [];
+  const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
+  const lastLog = logs.length ? logs[logs.length - 1] : "로그 대기";
+  const errorText = s.error || latest.error || "";
+  return (
+    <section className="v6-board" aria-labelledby="v6-board-heading">
+      <h2 id="v6-board-heading" className="panel-hd-title">실시간 연구 상황판</h2>
+      <_V6PipelineBelt liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin} />
+      <div className="v6-board-top v6-board-top--belt">
+        <div className="v6-board-timeline">
+          <div className="v4-wf-next">
+            <div><span className="k">process</span><b className="mono" style={{ color: "var(--ink-0)" }}>{procLabel}</b></div>
+            <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
+            <div><span className="k">다음 행동</span><b>{nextMsg}</b></div>
+          </div>
+          <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
+        </div>
+        <div className="v6-board-curgen">
+          <CurrentGenPanel state={s} />
+        </div>
+        <div className="v6-board-kpi">
+          <_V4Stats state={s} />
+        </div>
+      </div>
+      <div className="v6-board-strip">
+        <div className="v6-timing" aria-label="단계별 실제 시간">
+          {timings.length ? timings.map(([step, sec]) => (
+            <div key={step} className="v6-timing-item" title={`${step} ${sec.toFixed(1)}초`}>
+              <span className="k mono">{step}</span>
+              <span className="bar"><i style={{ width: Math.max(4, Math.round((sec / maxT) * 100)) + "%" }}></i></span>
+              <span className="v mono">{sec.toFixed(1)}s</span>
+            </div>
+          )) : <span className="mono v6-dim">완료 단계 없음</span>}
+        </div>
+        <div className="v6-blockers" aria-label="차단 사유">
+          {blockers.length
+            ? blockers.map(b => <span key={String(b)} className="v4-chip warn" title="promotion blocker">{String(b)}</span>)
+            : <span className="v4-chip ok">발행된 차단 사유 없음</span>}
+        </div>
+        <details className="v6-log">
+          <summary className="mono" title="최신 로그 · 클릭하면 최근 로그 펼침">{String(lastLog)}</summary>
+          <div className="v6-log-list mono">{logs.slice(-8).map((l, i) => <div key={i}>{String(l)}</div>)}</div>
+        </details>
+      </div>
+      {errorText && <p className="v4-research-error" role="alert">연구 요청 실패 · {String(errorText)}</p>}
+    </section>
   );
 }
 
@@ -169,12 +248,28 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
+  // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
+  const [stagePin, setStagePin] = useState_v4r(null);
   const s = state || {};
+  const latest = s.latest || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
   const hasData = gens.length > 0;
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
+  const running = s.status === "running" || s.status === "stopping";
+  const phaseIdx = running ? phaseIndex(latest.phase) : -1;
+  const liveStage = s.status === "done" ? 3 : (phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1);
+  // 활성 스테이지: pin > 라이브 단계 > (데이터 있으면 반복·성과, 없으면 생성).
+  const activeStage = stagePin != null ? stagePin : (liveStage >= 0 ? liveStage : (hasData ? 3 : 0));
+  const onStagePin = (i) => setStagePin(prev => (prev === i ? null : i));
+  const onStageKey = (e) => {
+    const n = V6_STAGES.length;
+    if (e.key === "ArrowRight") { e.preventDefault(); setStagePin(((activeStage + 1) % n)); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); setStagePin(((activeStage - 1 + n) % n)); }
+    else if (e.key === "Home") { e.preventDefault(); setStagePin(0); }
+    else if (e.key === "End") { e.preventDefault(); setStagePin(n - 1); }
+  };
 
   useEffect_v4r(() => {
     let active = true;
@@ -223,10 +318,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   };
 
   return (
-    <section className="v4-research" aria-labelledby="v4-research-heading">
+    <section className="v4-research v6-live" aria-labelledby="v4-research-heading">
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
-      <_V4WorkflowStrip state={s} />
+
+      {/* ===== 통합 상황판(벨트 + 현재세대 + KPI + 게이트) ===== */}
+      <_V6StatusBoard state={s} liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin}
+                      targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
+
       {!hasData && (s.status === "idle" || !s.status) && (
         <_V4Onboarding onOpenSettings={typeof onOpenSettings === "function" ? onOpenSettings : () => {}} />
       )}
@@ -238,90 +337,116 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         </div>
       )}
 
-      <div className="v4-rlive">
-        {/* ===== HERO 컬럼 ===== */}
-        <div className="v4-hero-col">
-          <div className="panel">
-            <div className="panel-hd">
-              <div className="panel-hd-title"><span className="dot"></span>Fitness 곡선 · graded score</div>
-              <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
-                best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
-                {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
-                {" · gen "}{s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : "시작 전"}
-              </span>
-            </div>
-            <div className="v4-hero-primary">
-              <V4HeroChart state={s} target={targetScore} />
-            </div>
-            <div className="v4-canvas-legend">
-              <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>graded fitness</span>
-              <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>gate {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
-              <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
-              <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
-            </div>
+      {/* ===== 핵심 그래프 밴드 — hasData 시에만(빈 차트 금지) ===== */}
+      {hasData && (
+      <div className="v6-graphs">
+        <div className="panel">
+          <div className="panel-hd">
+            <div className="panel-hd-title"><span className="dot"></span>Fitness · graded score</div>
+            <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+              best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
+              {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
+            </span>
           </div>
-
-          <_V4Stats state={s} />
-
-          <div className="v4-two">
-            <ProfitChart state={s} targetPct={0} />
-            <QualityTrendChart state={s} />
+          <div className="v4-hero-primary v6-hero-compact">
+            <V4HeroChart state={s} target={targetScore} />
           </div>
-          <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-          <EnginePanel state={s} wsStatus={wsStatus} />
+          <div className="v4-canvas-legend">
+            <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>graded fitness</span>
+            <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>gate {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
+            <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
+            <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
+          </div>
+        </div>
+        <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+        <ProfitChart state={s} targetPct={0} />
+        <QualityTrendChart state={s} />
+      </div>
+      )}
 
-          <_V4Fold storageKey="stom_v4_live_detail" label="Live 상세 · 단계 스트리밍">
-            <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} />
+      {/* ===== 스테이지 탭(4) — 라이브 자동전환·pin ===== */}
+      <div className="v6-stage-tabs" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
+        {V6_STAGES.map((st, i) => (
+          <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
+                  aria-selected={activeStage === i} aria-controls="v6-stage-panel"
+                  tabIndex={activeStage === i ? 0 : -1}
+                  className={"v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : "")}
+                  onClick={() => onStagePin(i)}
+                  title={st.sub + (liveStage === i ? " · 진행 중" : "")}>
+            <b>{i + 1}. {st.label}</b>
+            <span>{st.sub}</span>
+            {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
+          </button>
+        ))}
+        {stagePin != null && (
+          <button className="btn ghost sm v5-pin-reset" onClick={() => setStagePin(null)}>
+            단계 고정 해제 · 라이브 따라가기
+          </button>
+        )}
+      </div>
+
+      {/* ===== 현재 스테이지 단일 포커스 패널 ===== */}
+      <div id="v6-stage-panel" className="v6-stage-panel" role="tabpanel"
+           aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
+        {activeStage === 0 && (
+          <div className="v6-stage-grid">
+            <HypothesisPanel state={s} />
             <ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} />
-          </_V4Fold>
-          <_V4Fold storageKey="stom_v4_process" label="프로세스 · process selector (research vs review 권한)">
-            <ProcessFlowPanel state={s} />
-          </_V4Fold>
-          <_V4Fold storageKey="stom_v4_strategy" label="Strategy / Prompt · 세대 이력">
+            <ConditionDiscoveryPanel state={s} wsStatus={wsStatus} />
+          </div>
+        )}
+        {activeStage === 1 && (
+          <div className="v6-stage-grid">
+            <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} pinnedIdx={1} />
+            <div className="v6-engine-xl">
+              <EnginePanel state={s} wsStatus={wsStatus} />
+            </div>
+            <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+            <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+          </div>
+        )}
+        {activeStage === 2 && (
+          <div className="v6-stage-grid">
+            <_V4Fold storageKey="stom_v6_gate" label="게이트·채점 기준 · 현재 run 유효값 (클릭 상세)">
+              <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
+              <ActiveConfigPanel state={s} />
+              <CostPanel state={s} cap={50000} />
+              <ResearchGlossaryPanel />
+            </_V4Fold>
             <GenerationsTable state={s} mddCap={mddCap} minDailyTrades={minDailyTrades}
                               onViewCode={(g) => viewCode(g && g.gen_no != null ? g.gen_no : g)}
                               onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
-            <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
-            <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
-          </_V4Fold>
-          <_V4Fold storageKey="stom_v4_analytics" label="Generation Analytics · 세대 분석">
-            <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-          </_V4Fold>
-          <_V4Fold storageKey="stom_v4_analysis" label="진화 분석 · 가정/부검/계보/홀드아웃">
-            <HypothesisPanel state={s} />
+            <section className="v6-stage-lab" aria-label="탐색 히트맵 (분석)">
+              <h3 className="stom-section-label">탐색 히트맵 · 팩터/엣지 (분석)</h3>
+              <ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            </section>
+            <section className="v6-stage-lab" aria-label="엣지·상관·안정성 (분석)">
+              <h3 className="stom-section-label">엣지·상관·안정성 검증 (분석)</h3>
+              <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            </section>
             <AutopsyPanel state={s} wsStatus={wsStatus} />
             <LineagePanel state={s} wsStatus={wsStatus} />
             <MetaPanel state={s} wsStatus={wsStatus} />
             <HoldoutPanel state={s} wsStatus={wsStatus} />
             <FeedbackPanel state={s} />
-          </_V4Fold>
-          <_V4Fold storageKey="stom_v4_config" label="설정 · 게이트 · 비용" defaultOpen={false}>
-            <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
-            <ResearchGlossaryPanel />
-            <ActiveConfigPanel state={s} />
-            <CostPanel state={s} cap={50000} />
-          </_V4Fold>
-        </div>
-
-        {/* ===== 관찰성 rail ===== */}
-        <aside className="v4-side-col">
-          <CurrentGenPanel state={s} />
-          <V4LoopCycle state={s} />
-          {merged ? (
-            <MergedBestWinnerCard best={s.best} winner={s.winner}
-                                  onApprove={requestApproval} onViewCode={viewCode} />
-          ) : (
-            <>
-              <BestCard best={s.best} onViewCode={viewCode} />
-              <WinnerCard winner={s.winner} onApprove={requestApproval} onViewCode={viewCode} />
-            </>
-          )}
-          {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
-          {/* wt-dev 연구 파이프라인 관찰성: Research Pack/Branch Tree · Candidate Pack ·
-              Prompt Receipts · Promotion Blockers (advisory-only, 대기/폴백 내장) */}
-          <ConditionDiscoveryPanel state={s} wsStatus={wsStatus} />
-          <PopulationPanel state={s} wsStatus={wsStatus} />
-        </aside>
+          </div>
+        )}
+        {activeStage === 3 && (
+          <div className="v6-stage-grid">
+            {merged ? (
+              <MergedBestWinnerCard best={s.best} winner={s.winner}
+                                    onApprove={requestApproval} onViewCode={viewCode} />
+            ) : (
+              <>
+                <BestCard best={s.best} onViewCode={viewCode} />
+                <WinnerCard winner={s.winner} onApprove={requestApproval} onViewCode={viewCode} />
+              </>
+            )}
+            {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
+            <PopulationPanel state={s} wsStatus={wsStatus} />
+            <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+          </div>
+        )}
       </div>
 
       {/* Human approval gate — 연구 확인과 분리된 명시적 승인(운영 export) */}

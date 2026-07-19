@@ -36,6 +36,8 @@ import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
+import re  # noqa: E402
+from urllib.parse import parse_qs  # noqa: E402
 from collections.abc import Callable  # noqa: E402
 from typing import Any, Dict, List, Optional, assert_never  # noqa: E402
 
@@ -85,6 +87,35 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+
+# UXR-P7 Reports 허브 — 리포트 HTML 을 읽기 전용·스크립트 차단으로 안전 서빙한다.
+#   허용 루트는 저장소 docs/ 하위 *.html 로 한정(alpha_lab reporting 산출물·process_flow 등).
+#   보안(§10-5): (1) 경로 탈출(traversal) 차단 — 루트 하위 실제 파일만; (2) CSP default-src 'none'
+#   로 스크립트 전면 차단(리포트에 inline JS 가 있어도 실행 불가); (3) 프론트는 sandbox iframe.
+_REPORTS_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..", "docs")
+_REPORTS_CSP = (
+    "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; "
+    "font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+)
+
+
+def _reports_root_abs() -> str:
+    return os.path.realpath(_REPORTS_ROOT)
+
+
+def _safe_report_path(rel: str) -> Optional[str]:
+    """rel 을 리포트 루트 하위의 실제 .html 파일로 안전 해석. traversal/비-html/부재는 None."""
+    if not rel or "\x00" in rel:
+        return None
+    root = _reports_root_abs()
+    candidate = os.path.realpath(os.path.join(root, rel))
+    # 루트 경계 탈출 차단(realpath 후 접두 검사; 구분자 경계 포함).
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return None
+    if not candidate.lower().endswith(".html") or not os.path.isfile(candidate):
+        return None
+    return candidate
+
 _DASHBOARD_FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
     "<circle cx='32' cy='32' r='28' fill='#081624'/>"
@@ -97,17 +128,37 @@ _DASHBOARD_FAVICON_SVG = (
 #   장기 캐시가 가능하다. Starlette StaticFiles 기본값은 Cache-Control 을 안 붙여, 2.3MB
 #   정적 자산(app.js 2MB 포함)이 매 로드 재검증/재다운로드되던 '크롬 느림'의 주원인이었다.
 #   지문 없는 요청과 .html 은 no-store 로 남겨 셸 HTML(핸들러가 직접 no-store 서빙)과 정합.
+# 지문 형식: 빌드가 발행하는 v 값(8자리 hex 해시 또는 date+alnum, 예: 998fd305 / 20260624u002).
+#   6자 이상 영숫자·._- 조합만 지문으로 인정한다(빈 값·짧은 값·다른 파라미터 부분매칭 배제).
+_FINGERPRINT_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z._-]{5,}$")
+
+
+def _is_fingerprint_query(query: bytes) -> bool:
+    try:
+        params = parse_qs(query.decode("latin-1"))
+    except Exception:  # noqa: BLE001
+        return False
+    values = params.get("v") or []
+    return bool(values and values[0] and _FINGERPRINT_RE.match(values[0]))
+
+
 class _FingerprintedStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope: Any) -> Response:  # type: ignore[override]
         response = await super().get_response(path, scope)
         try:
             lower = path.lower()
             query = scope.get("query_string", b"") or b""
-            fingerprinted = b"v=" in query
+            # §1e(검토): b"v=" in query 는 rev=·prev= 등 부분매칭까지 immutable 로 만든다.
+            #   query 를 정확히 파싱해 비어있지 않은 지문 형식의 v 파라미터만 지문으로 인정한다.
+            fingerprinted = _is_fingerprint_query(query)
             if lower.endswith(".html"):
                 response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
             elif fingerprinted and (lower.endswith(".js") or lower.endswith(".css")):
                 response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            elif lower.endswith(".js") or lower.endswith(".css") or lower.endswith(".jsx"):
+                # §3.4: 지문(?v=) 없는 JS/CSS/JSX 는 내용 주소화가 안 돼 장기 캐시가 위험하다 →
+                #   no-store 로 명시(주석·문서 계약과 코드를 일치시킨다).
+                response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
         except Exception:  # noqa: BLE001 - 캐시 헤더 부여 실패가 정적 서빙을 막지 않는다.
             pass
         return response
@@ -3269,7 +3320,7 @@ def create_app(
     def ui_evolution(request: Request, subtab: str = "overview") -> Any:
         if subtab == "history":
             return _redirect_with_query(request, "/ui/evolution/records")
-        allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
+        allowed = {"overview", "process", "records", "lab", "workbench", "verdict", "catalog"}
         if subtab not in allowed:
             return _dashboard_not_found()
         return _dashboard_selected_index_response(request)
@@ -3338,6 +3389,46 @@ def create_app(
                 "<h1>프로세스 흐름 생성 전</h1><p>아직 생성되지 않았습니다. "
                 "<code>python -m ai_strategy_loop.scripts.build_process_flow_html</code> 실행 후 새로고침.</p>",
                 status_code=200)
+
+    @app.get("/reports")
+    def reports() -> Dict[str, Any]:
+        """docs/ 하위 *.html 리포트 목록(읽기 전용·무예외). 루트 하위만 walk — traversal 무관."""
+        root = _reports_root_abs()
+        items: list = []
+        for base, _dirs, files in os.walk(root):
+            for fn in files:
+                if not fn.lower().endswith(".html"):
+                    continue
+                rel = os.path.relpath(os.path.join(base, fn), root).replace(os.sep, "/")
+                full = _safe_report_path(rel)
+                if full is None:
+                    continue
+                try:
+                    st = os.stat(full)
+                    items.append({"path": rel, "name": fn, "bytes": st.st_size, "mtime": int(st.st_mtime)})
+                except OSError:
+                    continue
+        items.sort(key=lambda x: x["path"])
+        return {"root": "docs", "count": len(items), "reports": items}
+
+    @app.get("/reports/view")
+    def reports_view(path: str = "") -> Response:
+        """리포트 HTML 을 스크립트 차단 CSP + nosniff 로 서빙(sandbox iframe 소비 전제).
+           inline JS 가 있어도 CSP default-src 'none' 로 실행 불가(§10-5). traversal/비-html 은 404."""
+        target = _safe_report_path(path)
+        if target is None:
+            return Response("report not found", status_code=404, media_type="text/plain; charset=utf-8")
+        try:
+            with open(target, "r", encoding="utf-8", errors="replace") as _fh:
+                html = _fh.read()
+        except OSError:
+            return Response("report unreadable", status_code=404, media_type="text/plain; charset=utf-8")
+        return HTMLResponse(html, headers={
+            "Content-Security-Policy": _REPORTS_CSP,
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "Cache-Control": "no-store",
+        })
 
     @app.get("/status")
     def status() -> Dict[str, Any]:

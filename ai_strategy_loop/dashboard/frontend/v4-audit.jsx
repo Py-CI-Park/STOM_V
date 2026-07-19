@@ -148,6 +148,6 @@ function V4Audit({ baseUrl, onNavigate }) {
   );
 }
 
-Object.assign(window, { V4Audit });
+Object.assign(window, { V4Audit, AuditDecisionTrace });
 // dual-safe ESM export. KEEP on ONE physical line.
-export { V4Audit };
+export { V4Audit, AuditDecisionTrace };

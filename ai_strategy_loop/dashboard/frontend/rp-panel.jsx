@@ -8,6 +8,7 @@
 
 // Track Z (PR-3) — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_rp, useEffect_rp, useCallback_rp, useMemo_rp, _rpFetchJson } from "./rp-utils.jsx";
+import { fetchRunsShared } from "./runs-shared.jsx";
 import { _RpBigHeatmap, _RpHallOfFame, _RpProcessFlowOverlay } from "./rp-heatmap.jsx";
 
 /* ── 메인: ResearchProPanel — 풀스크린 워크스페이스. ── */
@@ -35,7 +36,7 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
       return undefined;
     }
     let cancelled = false;
-    _rpFetchJson(baseUrl + "/runs", 6000)
+    fetchRunsShared(baseUrl, { timeoutMs: 6000 })
       .then((j) => {
         if (cancelled) return;
         const runs = Array.isArray(j && j.runs) ? j.runs : [];

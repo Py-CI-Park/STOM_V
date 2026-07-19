@@ -54,6 +54,20 @@ _STAGE_LADDER: Final[tuple[tuple[str, str], ...]] = (
     ("rules_mined", "mining_report.json"),
     ("rules_translated", "translation_receipt.json"),
     ("events_analyzed", "event_cells_report.json"),
+    ("registered", "rho_gate_registration_receipt.json"),
+    ("engine_confirmed", "rho_gate_engine_runs.json"),
+    ("rho_gate_verdict", "rho_gate_verdict.json"),
+    ("retrial_finalized", "rho_retrial_verdict.json"),
+)
+
+# 등록/판정 authoritative 영수증(재판정 우선, 없으면 게이트) — §4.1 실제 파일명.
+_REGISTRATION_FILES: Final[tuple[str, ...]] = (
+    "rho_retrial_registration_receipt.json",
+    "rho_gate_registration_receipt.json",
+)
+_VERDICT_FILES: Final[tuple[str, ...]] = (
+    "rho_retrial_verdict.json",
+    "rho_gate_verdict.json",
 )
 
 _RULE_LIST_KEYS: Final[tuple[str, ...]] = ("rules", "leaves", "leaderboard", "candidates")
@@ -101,11 +115,25 @@ def _preregistration_status(run_dir: Path) -> dict[str, Any]:
     payload, error = _load_json(prereg_path)
     sidecar = _sidecar_sha(run_dir)
     sha_match: bool | None = None
+    read_error: str | None = None
     if prereg_path.is_file() and sidecar is not None:
-        actual = hashlib.sha256(prereg_path.read_bytes()).hexdigest()
-        sha_match = actual == sidecar
+        # §1b(검토): 직접 read_bytes 를 soft-error 로 감싼다 — 권한/레이스 오류가 HTTP 500 으로
+        #   전파되지 않게 하고, present-but-unreadable 을 sha_match=None + 오류로 노출한다.
+        try:
+            actual = hashlib.sha256(prereg_path.read_bytes()).hexdigest()
+            sha_match = actual == sidecar
+        except OSError as exc:
+            read_error = f"{_PREREG_FILE}: {exc}"
+            logger.warning("alpha_api: prereg read 실패: %s", exc)
+    valid_json = isinstance(payload, dict)
+    # §4.3: 파일 존재만으로 sealed 판정 금지 — 정상 JSON + 사이드카 + SHA 일치 모두 요구.
+    sealed = bool(prereg_path.is_file() and valid_json and sha_match is True)
     status: dict[str, Any] = {
+        "present": prereg_path.is_file(),
         "available": prereg_path.is_file(),
+        "valid_json": valid_json,
+        "sidecar_present": sidecar is not None,
+        "sealed": sealed,
         "sealed_date": payload.get("sealed_date") if isinstance(payload, dict) else None,
         "program": payload.get("program") if isinstance(payload, dict) else None,
         "sha256": sidecar,
@@ -113,6 +141,8 @@ def _preregistration_status(run_dir: Path) -> dict[str, Any]:
     }
     if error:
         status["error"] = error
+    elif read_error:
+        status["error"] = read_error
     return status
 
 
@@ -122,8 +152,18 @@ def _ledger_status(run_dir: Path) -> dict[str, Any]:
     totals: dict[str, int] = {program: 0 for program in _LEDGER_PROGRAMS}
     entries = 0
     malformed = 0
+
     if path.is_file():
-        for raw in path.read_text(encoding="utf-8").splitlines():
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError as exc:
+            # §1b: 원장 직접 읽기 오류를 soft-error 로 노출(HTTP 500 금지·측정 0 위장 금지).
+            logger.warning("alpha_api: ledger read 실패: %s", exc)
+            return {
+                "available": True, "totals": totals, "total": 0, "entries": 0,
+                "malformed_lines": 0, "error": f"{_LEDGER_FILE}: {exc}",
+            }
+        for raw in lines:
             line = raw.strip()
             if not line:
                 continue
@@ -170,6 +210,7 @@ def alpha_status() -> dict[str, Any]:
         "ledger": _ledger_status(run_dir),
         "stage": stage,
         "artifacts": artifacts,
+        "verdict": _authoritative_verdict(run_dir),
     }
 
 
@@ -283,9 +324,11 @@ def _count_in(payload: Any, count_keys: tuple[str, ...], list_keys: tuple[str, .
 
 
 def _fdr_survived_count(mining: Any) -> int:
-    explicit = _count_in(mining, ("n_fdr_survived",), ())
-    if explicit:
-        return explicit
+    # §4.4: authoritative n_fdr_survived 는 0 도 유효값 — truthiness 대신 타입 검사.
+    if isinstance(mining, dict):
+        explicit = mining.get("n_fdr_survived")
+        if isinstance(explicit, int) and not isinstance(explicit, bool):
+            return max(explicit, 0)
     rules, _ = _extract_list(mining, _RULE_LIST_KEYS)
     return sum(
         1
@@ -294,22 +337,88 @@ def _fdr_survived_count(mining: Any) -> int:
     )
 
 
+def _registration_count(run_dir: Path) -> tuple[int, str | None]:
+    """등재 수 — 재판정 우선, 없으면 게이트. registration.inserted 리스트 길이."""
+    for name in _REGISTRATION_FILES:
+        payload, _ = _load_json(run_dir / name)
+        if isinstance(payload, dict):
+            reg = payload.get("registration")
+            if isinstance(reg, dict) and isinstance(reg.get("inserted"), list):
+                return len(reg["inserted"]), name
+    return 0, None
+
+
+def _authoritative_verdict(run_dir: Path) -> dict[str, Any]:
+    """권위 최종 판정 — 재판정 verdict 우선(final), 없으면 게이트 verdict.
+
+    §4.1: 제네릭 이름(rho_gate_verdict) 고정 대신 실제 파일을 명시 선택하고,
+    발견/FDR/번역 뒤 단계(등재·엔진·게이트)의 실제 결과를 노출한다.
+    """
+    for name in _VERDICT_FILES:
+        payload, error = _load_json(run_dir / name)
+        if isinstance(payload, dict):
+            cov = payload.get("coverage") if isinstance(payload.get("coverage"), dict) else {}
+            per_rule = payload.get("per_rule") if isinstance(payload.get("per_rule"), list) else []
+            # §4(검토): measured_ok(측정 완료) 와 gate_passed(성능게이트 통과)는 다른 의미다.
+            #   per_rule[].gate_passed(True) 만 실제 성능게이트 통과다(현 데이터는 전부 MDD 초과 → 0).
+            gate_passed_n = sum(
+                1 for r in per_rule if isinstance(r, dict) and r.get("gate_passed") is True
+            )
+            return {
+                "available": True,
+                "source": name,
+                "final": bool(payload.get("final")),
+                "status": payload.get("status"),
+                "rho": payload.get("rho"),
+                "verdict": payload.get("verdict"),
+                "n_per_rule": len(per_rule),
+                "performance_gate_passed": gate_passed_n,
+                "coverage": {
+                    "n_rules_sealed": cov.get("n_rules_sealed"),
+                    "measured_ok": cov.get("measured_ok"),
+                    "censored_timeout": cov.get("censored_timeout"),
+                    "no_trades": cov.get("no_trades"),
+                },
+            }
+        if error:
+            # §1b: present-but-broken 영수증은 0/이전값으로 축소하지 않고 오류로 노출한다.
+            return {"available": False, "source": name, "error": error}
+    return {"available": False}
+
+
 @alpha_router.get("/funnel")
 def alpha_funnel() -> dict[str, Any]:
-    """퍼널 6단계 집계: 발견→FDR 생존→번역→등재→엔진 확인→게이트 통과."""
+    """퍼널 6단계: 발견→FDR 생존→번역→등재→엔진 대상→성능게이트 통과. 판정·검열 동봉.
+
+    §4(검토) 교정: gate_passed 는 measured_ok(측정 완료)가 아니라 per_rule[].gate_passed(True)
+    로 집계한 **실제 성능게이트 통과 수**다(현 데이터는 전부 MDD>cap 로 0). measured_ok·censored
+    는 별도 필드로 노출해 의미 혼합을 없앤다. 판정 카드의 rho(집합 상관 게이트)와도 구분한다.
+    """
     run_dir = _run_dir()
     mining, _ = _load_json(run_dir / "mining_report.json")
     translation, _ = _load_json(run_dir / "translation_receipt.json")
-    registration, _ = _load_json(run_dir / "registration_receipt.json")
-    engine, _ = _load_json(run_dir / "engine_check_receipt.json")
-    gate, _ = _load_json(run_dir / "rho_gate_verdict.json")
+    registered, reg_source = _registration_count(run_dir)
+    verdict = _authoritative_verdict(run_dir)
+    cov = verdict.get("coverage") if isinstance(verdict.get("coverage"), dict) else {}
+    n_sealed = cov.get("n_rules_sealed")
+    measured_ok = cov.get("measured_ok")
+    censored = cov.get("censored_timeout")
+    engine_checked = n_sealed if isinstance(n_sealed, int) else 0   # 봉인=엔진 대상 수
+    perf_gate = verdict.get("performance_gate_passed")
+    gate_passed = perf_gate if isinstance(perf_gate, int) else 0    # 개별 성능게이트 통과(실측 0)
     discovered = _count_in(mining, ("n_discovered",), _RULE_LIST_KEYS)
     return {
-        "available": any(p is not None for p in (mining, translation, registration, engine, gate)),
+        "available": any(
+            p is not None for p in (mining, translation)
+        ) or registered > 0 or bool(verdict.get("available")),
         "discovered": discovered,
         "fdr_survived": _fdr_survived_count(mining),
         "translated": _count_in(translation, ("n_translated",), _TRANSLATION_LIST_KEYS),
-        "registered": _count_in(registration, ("n_registered",), ("registered", "strategies", "entries")),
-        "engine_checked": _count_in(engine, ("n_engine_checked", "n_checked"), ("engine_checked", "checked", "entries")),
-        "gate_passed": _count_in(gate, ("n_gate_passed", "n_passed"), ("gate_passed", "passed_rules", "passed")),
+        "registered": registered,
+        "registration_source": reg_source,
+        "engine_checked": engine_checked,
+        "measured_ok": measured_ok if isinstance(measured_ok, int) else None,
+        "censored": censored if isinstance(censored, int) else None,
+        "gate_passed": gate_passed,
+        "verdict": verdict,
     }

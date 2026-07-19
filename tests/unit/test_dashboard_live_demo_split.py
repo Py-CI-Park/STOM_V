@@ -107,7 +107,7 @@ class TestRunComparePanel:
     def test_run_compare_fetches_runs_endpoint(self):
         # page_data 라이브 발행이 아니라 REST /runs를 baseUrl로 조회한다.
         src = _read("run-compare.jsx")  # P1: 정본 run-compare.jsx
-        assert '"/runs"' in src
+        assert "fetchRunsShared" in src  # §3.1: /runs 는 공용 디듀프 모듈로 조회한다
         assert "baseUrl" in src
 
     def test_run_compare_demo_branch(self):

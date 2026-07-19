@@ -221,7 +221,49 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+  <div className="bt-result-flow" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
+    {(() => {
+      const spec = result.spec || {};
+      const buy = spec.buy || result.buy || "—";
+      const sell = spec.sell || result.sell || "—";
+      const period = (spec.start && spec.end) ? `${spec.start}~${spec.end}` : (result.period || "—");
+      return (
+        <div className="bt-condition-band" aria-label="테스트 조건식과 기간">
+          <div><span className="k">매수 조건식</span><b className="mono">{buy}</b></div>
+          <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
+          <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
+          {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
+          <a className="btn ghost sm" href="/ui/chart-replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
+        </div>
+      );
+    })()}
+    {/* V6.5(S6): 결과 종합 판정 배너 — 표본 내 요약 advisory. 승격/운영 판단 권한 없음. */}
+    {(() => {
+      const pf = Number(metricVal("total_profit_pct"));
+      const md = Number(metricVal("mdd_pct"));
+      const wr = Number(metricVal("win_rate"));
+      const tc = Number(metricVal("trade_count"));
+      const known = Number.isFinite(pf) || Number.isFinite(md) || Number.isFinite(wr) || Number.isFinite(tc);
+      if (!known) return null;
+      const flags = [];
+      if (Number.isFinite(pf)) flags.push({ ok: pf > 0, label: `수익 ${pf > 0 ? "+" : ""}${pf.toFixed(2)}%` });
+      if (Number.isFinite(md)) flags.push({ ok: Math.abs(md) <= 15, label: `MDD ${Math.abs(md).toFixed(1)}%` });
+      if (Number.isFinite(wr)) flags.push({ ok: wr >= 50, label: `승률 ${wr.toFixed(1)}%` });
+      if (Number.isFinite(tc)) flags.push({ ok: tc >= 10, label: `거래 ${tc}건` });
+      const okN = flags.filter(f => f.ok).length;
+      const cls = okN === flags.length ? "good" : okN >= flags.length - 1 ? "warn" : "bad";
+      const word = cls === "good" ? "양호" : cls === "warn" ? "주의" : "부적합";
+      return (
+        <div className={"bt-verdict-band " + cls} role="note" aria-label="결과 종합 판정(표본 내 advisory)">
+          <b className="bt-verdict-word">{word}</b>
+          {flags.map(f => (
+            <span key={f.label} className={"v4-chip " + (f.ok ? "ok" : "warn")}>{f.label}</span>
+          ))}
+          <span className="bt-verdict-note mono">표본 내 요약 · 승격/운영 판단 아님(performance_proved=false)</span>
+        </div>
+      );
+    })()}
     {/* 구간 분석 상태 배너 */}
     {range && (
       <div className="bt-range-bar">
@@ -297,8 +339,13 @@ return (
     <BtOrderflowPanel orderflow={orderflow} />
     <BtStatTestPanel stats={stats} />
 
-    {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
-    <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+    {/* B3 — GUI 패리티(v5.3.7 검수: 6,969px 세로 점유 → 기본닫힘 fold 격하, 내용 불변) */}
+    <details className="evo-group bt-flow-full" open={false}>
+      <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사(클릭 펼침)</div></summary>
+      <div className="evo-group-body">
+        <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+      </div>
+    </details>
 
     {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
     <details className="bt-extra-charts" open={false}>
