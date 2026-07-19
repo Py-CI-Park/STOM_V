@@ -11,7 +11,9 @@
 """
 
 from __future__ import annotations
-
+import hashlib
+import json
+import os
 from pathlib import Path
 
 import pytest
@@ -72,6 +74,28 @@ def test_report_view_rejects_traversal_and_non_html(monkeypatch, tmp_path: Path,
     client = _client(monkeypatch, tmp_path)
     r = client.get("/reports/view", params={"path": bad}, headers=ORIGIN_HEADER)
     assert r.status_code == 404, f"경로 유출 가능: {bad!r}"
+
+
+def test_report_routes_reject_symlink_escape(monkeypatch, tmp_path: Path) -> None:
+    reports_root = tmp_path / "docs"
+    reports_root.mkdir()
+    outside = tmp_path / "outside.html"
+    outside.write_text("<h1>outside secret</h1>", encoding="utf-8")
+    escape = reports_root / "escape.html"
+    try:
+        os.symlink(outside, escape)
+    except OSError as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+
+    monkeypatch.setattr(app_module, "_REPORTS_ROOT", str(reports_root))
+    client = _client(monkeypatch, tmp_path)
+
+    assert app_module._safe_report_path("escape.html") is None
+    view = client.get("/reports/view", params={"path": "escape.html"}, headers=ORIGIN_HEADER)
+    assert view.status_code == 404
+    listed = client.get("/reports", headers=ORIGIN_HEADER)
+    assert listed.status_code == 200
+    assert "escape.html" not in {item["path"] for item in listed.json()["reports"]}
 
 
 def test_safe_report_path_unit_boundary() -> None:

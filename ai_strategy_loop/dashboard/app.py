@@ -3320,7 +3320,7 @@ def create_app(
     def ui_evolution(request: Request, subtab: str = "overview") -> Any:
         if subtab == "history":
             return _redirect_with_query(request, "/ui/evolution/records")
-        allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
+        allowed = {"overview", "process", "records", "lab", "workbench", "verdict", "catalog"}
         if subtab not in allowed:
             return _dashboard_not_found()
         return _dashboard_selected_index_response(request)
@@ -3399,10 +3399,12 @@ def create_app(
             for fn in files:
                 if not fn.lower().endswith(".html"):
                     continue
-                full = os.path.join(base, fn)
+                rel = os.path.relpath(os.path.join(base, fn), root).replace(os.sep, "/")
+                full = _safe_report_path(rel)
+                if full is None:
+                    continue
                 try:
                     st = os.stat(full)
-                    rel = os.path.relpath(full, root).replace(os.sep, "/")
                     items.append({"path": rel, "name": fn, "bytes": st.st_size, "mtime": int(st.st_mtime)})
                 except OSError:
                     continue
