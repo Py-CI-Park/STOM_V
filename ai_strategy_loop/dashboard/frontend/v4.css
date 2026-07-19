@@ -529,21 +529,41 @@
 .phase-status-banner.warn { color: var(--amber); border: 1px solid rgba(240,179,90,0.34);  background: rgba(240,179,90,0.07); }
 .phase-status-banner b { font-weight: 600; }
 
-/* ── UXR-P7 Reports 뷰어(sandbox iframe) ── */
+/* ── UXR-P7 Reports 뷰어(sandbox iframe + optional structured manifest) ── */
 .v4-reports { display: flex; flex-direction: column; gap: 10px; min-width: 0; height: calc(100vh - 190px); }
 .v4-reports-safe { font-size: 10.5px; color: var(--ink-3); }
-.v4-reports-body { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; flex: 1; min-height: 0; }
-@media (max-width: 900px) { .v4-reports-body { grid-template-columns: 1fr; } }
-.v4-reports-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; border: 1px solid var(--line-1); border-radius: 10px; padding: 8px; background: var(--bg-1); }
-.v4-reports-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ink-1); cursor: pointer; }
+.v4-reports-body { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 12px; flex: 1; min-height: 0; }
+.v4-reports-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; border: 1px solid var(--line-1); border-radius: 10px; padding: 8px; background: var(--bg-1); }
+.v4-reports-manifest-head, .v4-reports-manifest-errors { border: 1px solid var(--line-1); border-radius: 8px; padding: 7px 9px; font-size: 10px; color: var(--ink-3); background: var(--bg-2); display: flex; flex-direction: column; gap: 2px; }
+.v4-reports-manifest-errors { color: var(--amber); border-color: rgba(240,179,90,.34); background: rgba(240,179,90,.07); }
+.v4-reports-group { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line-1); padding-top: 7px; }
+.v4-reports-group-title { font-size: 10px; color: var(--ink-3); padding: 0 2px; word-break: break-all; }
+.v4-reports-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ink-1); cursor: pointer; width: 100%; }
 .v4-reports-item:hover { background: var(--bg-2); }
 .v4-reports-item.active { background: rgba(76,214,179,.10); border-color: rgba(76,214,179,.34); color: var(--ink-0); }
-.v4-reports-name { font-size: 12.5px; word-break: break-all; }
-.v4-reports-meta { font-size: 10px; color: var(--ink-3); }
-.v4-reports-view { border: 1px solid var(--line-1); border-radius: 10px; overflow: hidden; background: var(--bg-0); min-height: 0; }
-.v4-reports-frame { width: 100%; height: 100%; min-height: 480px; border: 0; background: #fff; }
+.v4-reports-item.missing { border-color: rgba(255,107,107,.30); }
+.v4-reports-item.stale { background: rgba(240,179,90,.05); }
+.v4-reports-name { font-size: 12.5px; word-break: break-word; }
+.v4-reports-meta, .v4-reports-badges { font-size: 10px; color: var(--ink-3); }
+.v4-reports-badges { color: var(--amber); }
+.v4-reports-view { border: 1px solid var(--line-1); border-radius: 10px; overflow: hidden; background: var(--bg-0); min-height: 0; display: flex; flex-direction: column; }
+.v4-reports-detail { border-bottom: 1px solid var(--line-1); background: var(--bg-1); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.v4-reports-detail-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; color: var(--ink-1); }
+.v4-reports-detail-head b { font-size: 13px; }
+.v4-reports-detail-head span { font-size: 10px; color: var(--ink-3); }
+.v4-reports-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 5px 10px; font-size: 10px; color: var(--ink-3); }
+.v4-reports-provenance { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.v4-reports-provenance span { font-size: 10px; color: var(--ink-3); }
+.v4-reports-provenance code { border: 1px solid var(--line-1); border-radius: 999px; padding: 2px 6px; color: var(--ink-2); background: var(--bg-2); font-size: 10px; word-break: break-all; }
+.v4-reports-frame { width: 100%; height: 100%; min-height: 480px; border: 0; background: #fff; flex: 1; }
 .v4-reports-empty { padding: 24px; color: var(--ink-3); font-size: 12px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .v4-reports-hint { font-size: 10.5px; color: var(--ink-3); opacity: .8; }
+@media (max-width: 900px) {
+  .v4-reports { height: auto; min-height: calc(100vh - 150px); }
+  .v4-reports-body { grid-template-columns: 1fr; }
+  .v4-reports-list { max-height: 36vh; }
+  .v4-reports-frame { min-height: 420px; }
+}
 
 /* ── F4 P4 연구 카탈로그 뷰(읽기 전용) ── */
 .v4-catalog { display: flex; flex-direction: column; gap: 12px; min-width: 0; }

@@ -2002,6 +2002,47 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   max-height: 520px;
   overflow: auto;
 }
+.research-wiki-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  border: 1px solid var(--line-1);
+  border-radius: 5px;
+  background: var(--bg-0);
+  padding: 7px;
+}
+.research-wiki-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.research-wiki-filters input,
+.research-wiki-filters select {
+  width: 100%;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  color: var(--ink-1);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 6px;
+}
+.research-wiki-pagebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+.research-wiki-pagebar span {
+  flex: 1;
+}
 .research-wiki-category {
   border: 1px solid var(--line-1);
   border-radius: 5px;
@@ -2063,6 +2104,74 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   font-family: var(--mono);
   font-size: 10px;
   word-break: break-all;
+}
+.research-wiki-chips,
+.research-wiki-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.research-wiki-chips span,
+.research-wiki-chips button,
+.research-wiki-related button {
+  border: 1px solid var(--line-1);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 3px 7px;
+}
+.research-wiki-chips span.danger {
+  border-color: rgba(255,92,122,0.45);
+  color: var(--red);
+}
+.research-wiki-chips button,
+.research-wiki-related button {
+  cursor: pointer;
+}
+.research-wiki-chips button:hover,
+.research-wiki-related button:hover {
+  border-color: rgba(76,214,179,0.5);
+  color: var(--teal);
+}
+.research-wiki-metadata {
+  display: grid;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-1);
+  background: rgba(255,255,255,0.015);
+}
+.research-wiki-section-title {
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.research-wiki-section ol {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.research-wiki-section li {
+  margin: 3px 0;
+}
+.research-wiki-section li b {
+  color: var(--ink-1);
+  font-family: var(--mono);
+  font-size: 10px;
+  margin-right: 6px;
+}
+.research-wiki-section li small,
+.research-wiki-related small {
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10px;
 }
 .research-wiki-markdown {
   margin: 0;

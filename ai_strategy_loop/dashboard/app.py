@@ -97,6 +97,12 @@ _REPORTS_CSP = (
     "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; "
     "font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
 )
+_REPORTS_MANIFEST_REL = "research/condition_research/reports/research_report_manifest.json"
+_REPORTS_MANIFEST_SCHEMA = "stom-research-report-manifest-v1"
+_REPORTS_MANUAL_WRITER = "manual-offline"
+_REPORTS_MANIFEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_REPORTS_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
 
 
 def _reports_root_abs() -> str:
@@ -115,6 +121,531 @@ def _safe_report_path(rel: str) -> Optional[str]:
     if not candidate.lower().endswith(".html") or not os.path.isfile(candidate):
         return None
     return candidate
+
+
+def _safe_public_rel(value: Any) -> Optional[str]:
+    """Return a normalized relative path label safe to expose, or None."""
+    if not isinstance(value, str) or not value or "\x00" in value:
+        return None
+    rel = value.replace("\\", "/").strip()
+    if (
+        not rel
+        or rel.startswith("/")
+        or re.match(r"^[A-Za-z]:", rel)
+        or "://" in rel
+        or rel.lower().startswith(("javascript:", "data:", "file:"))
+    ):
+        return None
+    parts: list[str] = []
+    for part in rel.split("/"):
+        if part in ("", "."):
+            continue
+        if part == "..":
+            return None
+        parts.append(part)
+    if not parts:
+        return None
+    return "/".join(parts)
+
+
+def _safe_manifest_label(value: Any, fallback: str, limit: int = 180) -> str:
+    if not isinstance(value, str) or "\x00" in value:
+        return fallback
+    text = value.strip()
+    if not text or re.search(r"(^|\s)([A-Za-z]:[\\/]|/[^/\s])", text):
+        return fallback
+    return text[:limit]
+
+
+def _manifest_error(
+    error_type: str,
+    message: str,
+    *,
+    index: Optional[int] = None,
+    field: Optional[str] = None,
+    path: Any = None,
+    research_id: Any = None,
+    step_id: Any = None,
+) -> Dict[str, Any]:
+    """Typed manifest validation error without echoing unsafe raw values."""
+    error: Dict[str, Any] = {"type": error_type, "message": message}
+    if index is not None:
+        error["index"] = index
+    if field:
+        error["field"] = field
+    safe_path = _safe_public_rel(path)
+    if safe_path:
+        error["path"] = safe_path
+    if isinstance(research_id, str) and _REPORTS_MANIFEST_ID_RE.match(research_id):
+        error["research_id"] = research_id
+    if isinstance(step_id, str) and _REPORTS_MANIFEST_ID_RE.match(step_id):
+        error["step_id"] = step_id
+    return error
+
+
+def _reports_manifest_abs() -> str:
+    return os.path.realpath(os.path.join(_reports_root_abs(), _REPORTS_MANIFEST_REL))
+
+
+def _is_manifest_id(value: Any) -> bool:
+    return isinstance(value, str) and bool(_REPORTS_MANIFEST_ID_RE.match(value))
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(_REPORTS_SHA256_RE.match(value))
+
+
+def _file_sha256(path: str) -> Optional[str]:
+    digest = hashlib.sha256()
+    try:
+        with open(path, "rb") as _fh:
+            for chunk in iter(lambda: _fh.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError:
+        return None
+    return digest.hexdigest()
+
+
+def _manifest_bool(
+    row: Dict[str, Any],
+    field: str,
+    errors: list[Dict[str, Any]],
+    index: int,
+    *,
+    default: bool = False,
+) -> bool:
+    value = row.get(field, default)
+    if isinstance(value, bool):
+        return value
+    errors.append(_manifest_error(
+        "report_field_invalid",
+        f"manifest report {field} must be boolean",
+        index=index,
+        field=field,
+        path=row.get("path"),
+        research_id=row.get("research_id"),
+        step_id=row.get("step_id"),
+    ))
+    return default
+
+
+def _manifest_source_paths(value: Any, errors: list[Dict[str, Any]], index: int, row: Dict[str, Any]) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        errors.append(_manifest_error(
+            "report_source_paths_invalid",
+            "manifest report source_paths must be a list",
+            index=index,
+            field="source_paths",
+            path=row.get("path"),
+            research_id=row.get("research_id"),
+            step_id=row.get("step_id"),
+        ))
+        return []
+    out: list[str] = []
+    for source_path in value:
+        safe = _safe_public_rel(source_path)
+        if not safe:
+            errors.append(_manifest_error(
+                "report_source_path_invalid",
+                "manifest report source path is not a safe relative path",
+                index=index,
+                field="source_paths",
+                path=row.get("path"),
+                research_id=row.get("research_id"),
+                step_id=row.get("step_id"),
+            ))
+            continue
+        if safe not in out:
+            out.append(safe)
+    return out
+
+
+def _manifest_source_sha256(
+    value: Any,
+    errors: list[Dict[str, Any]],
+    index: int,
+    row: Dict[str, Any],
+) -> Dict[str, Optional[str]]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        errors.append(_manifest_error(
+            "report_source_sha256_invalid",
+            "manifest report source_sha256 must be an object",
+            index=index,
+            field="source_sha256",
+            path=row.get("path"),
+            research_id=row.get("research_id"),
+            step_id=row.get("step_id"),
+        ))
+        return {}
+    out: Dict[str, Optional[str]] = {}
+    for source_path, digest in value.items():
+        safe = _safe_public_rel(source_path)
+        if not safe:
+            errors.append(_manifest_error(
+                "report_source_path_invalid",
+                "manifest report source hash key is not a safe relative path",
+                index=index,
+                field="source_sha256",
+                path=row.get("path"),
+                research_id=row.get("research_id"),
+                step_id=row.get("step_id"),
+            ))
+            continue
+        if digest is not None and not _is_sha256(digest):
+            errors.append(_manifest_error(
+                "report_source_hash_invalid",
+                "manifest report source hash must be sha256 hex or null",
+                index=index,
+                field="source_sha256",
+                path=row.get("path"),
+                research_id=row.get("research_id"),
+                step_id=row.get("step_id"),
+            ))
+            continue
+        out[safe] = digest.lower() if isinstance(digest, str) else None
+    return out
+
+
+def _allowed_manifest_link(link: Any) -> bool:
+    if not isinstance(link, str) or not link or "\x00" in link or any(c in link for c in "\r\n\t"):
+        return False
+    if link.startswith("#"):
+        return len(link) > 1
+    if not link.startswith("/reports/view?"):
+        return False
+    base = link.split("#", 1)[0]
+    try:
+        query = base.split("?", 1)[1]
+    except IndexError:
+        return False
+    params = parse_qs(query, keep_blank_values=False)
+    if set(params) != {"path"} or len(params.get("path", [])) != 1:
+        return False
+    return _safe_report_path(params["path"][0]) is not None
+
+
+def _manifest_links(value: Any, errors: list[Dict[str, Any]], index: int, row: Dict[str, Any]) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        errors.append(_manifest_error(
+            "report_links_invalid",
+            "manifest report links must be a list",
+            index=index,
+            field="links",
+            path=row.get("path"),
+            research_id=row.get("research_id"),
+            step_id=row.get("step_id"),
+        ))
+        return []
+    out: list[str] = []
+    for link in value:
+        if not _allowed_manifest_link(link):
+            errors.append(_manifest_error(
+                "report_link_invalid",
+                "manifest report link is not allowlisted",
+                index=index,
+                field="links",
+                path=row.get("path"),
+                research_id=row.get("research_id"),
+                step_id=row.get("step_id"),
+            ))
+            continue
+        if link not in out:
+            out.append(link)
+    return out
+
+
+def _validated_manifest_report(
+    row: Any,
+    index: int,
+    flat_by_path: Dict[str, Dict[str, Any]],
+    errors: list[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(row, dict):
+        errors.append(_manifest_error(
+            "report_entry_invalid",
+            "manifest report entry must be an object",
+            index=index,
+        ))
+        return None
+
+    target = _safe_report_path(row.get("path") if isinstance(row.get("path"), str) else "")
+    if target is None:
+        errors.append(_manifest_error(
+            "report_path_invalid",
+            "manifest report path is not a safe existing html report",
+            index=index,
+            field="path",
+            path=row.get("path"),
+            research_id=row.get("research_id"),
+            step_id=row.get("step_id"),
+        ))
+        return None
+
+    root = _reports_root_abs()
+    rel = os.path.relpath(target, root).replace(os.sep, "/")
+    research_id = row.get("research_id")
+    step_id = row.get("step_id")
+    if not _is_manifest_id(research_id):
+        errors.append(_manifest_error(
+            "report_research_id_invalid",
+            "manifest report research_id must be a stable id",
+            index=index,
+            field="research_id",
+            path=rel,
+        ))
+        return None
+    if step_id in (None, ""):
+        step_id = ""
+    elif not _is_manifest_id(step_id):
+        errors.append(_manifest_error(
+            "report_step_id_invalid",
+            "manifest report step_id must be a stable id",
+            index=index,
+            field="step_id",
+            path=rel,
+            research_id=research_id,
+        ))
+        return None
+
+    try:
+        st = os.stat(target)
+    except OSError:
+        errors.append(_manifest_error(
+            "report_path_invalid",
+            "manifest report path became unreadable",
+            index=index,
+            field="path",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+        return None
+
+    flat = flat_by_path.get(rel, {})
+    name = str(flat.get("name") or os.path.basename(rel))
+    actual_bytes = int(st.st_size)
+    title = _safe_manifest_label(row.get("title"), name)
+    kind = _safe_manifest_label(row.get("kind"), "report", limit=64)
+    trust = _safe_manifest_label(row.get("trust"), _REPORTS_MANUAL_WRITER, limit=64)
+
+    if not _is_sha256(row.get("html_sha256")):
+        errors.append(_manifest_error(
+            "report_hash_invalid",
+            "manifest report html_sha256 must be sha256 hex",
+            index=index,
+            field="html_sha256",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+        return None
+    html_sha256 = str(row["html_sha256"]).lower()
+    actual_hash = _file_sha256(target)
+    if actual_hash is None:
+        errors.append(_manifest_error(
+            "report_hash_unreadable",
+            "manifest report html could not be hashed",
+            index=index,
+            field="html_sha256",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+        return None
+    if actual_hash == html_sha256:
+        hash_status = "match"
+    else:
+        hash_status = "mismatch"
+        errors.append(_manifest_error(
+            "report_hash_mismatch",
+            "manifest report html hash does not match current file",
+            index=index,
+            field="html_sha256",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+
+    stale = _manifest_bool(row, "stale", errors, index) or hash_status == "mismatch"
+    raw_bytes = row.get("bytes")
+    if isinstance(raw_bytes, int) and raw_bytes >= 0 and raw_bytes != actual_bytes:
+        stale = True
+        errors.append(_manifest_error(
+            "report_bytes_mismatch",
+            "manifest report byte count does not match current file",
+            index=index,
+            field="bytes",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+    elif raw_bytes is not None and (not isinstance(raw_bytes, int) or raw_bytes < 0):
+        errors.append(_manifest_error(
+            "report_bytes_invalid",
+            "manifest report bytes must be a non-negative integer",
+            index=index,
+            field="bytes",
+            path=rel,
+            research_id=research_id,
+            step_id=step_id,
+        ))
+
+    source_paths = _manifest_source_paths(row.get("source_paths"), errors, index, row)
+    source_sha256 = _manifest_source_sha256(row.get("source_sha256"), errors, index, row)
+    for source_path in source_sha256:
+        if source_path not in source_paths:
+            source_paths.append(source_path)
+
+    return {
+        "manifest": True,
+        "path": rel,
+        "name": name,
+        "title": title,
+        "kind": kind,
+        "research_id": research_id,
+        "step_id": step_id,
+        "bytes": actual_bytes,
+        "mtime": int(st.st_mtime),
+        "html_sha256": html_sha256,
+        "hash_status": hash_status,
+        "trust": trust,
+        "missing": _manifest_bool(row, "missing", errors, index),
+        "stale": stale,
+        "source_paths": source_paths,
+        "source_sha256": source_sha256,
+        "links": _manifest_links(row.get("links"), errors, index, row),
+    }
+
+
+def _reports_manifest_payload(flat_reports: list[Dict[str, Any]]) -> Dict[str, Any]:
+    """Load the optional manual report manifest from its single allowlisted path."""
+    base: Dict[str, Any] = {
+        "available": False,
+        "schema": _REPORTS_MANIFEST_SCHEMA,
+        "source": _REPORTS_MANIFEST_REL,
+        "writer": None,
+        "generated_at": None,
+        "commit": None,
+        "count": 0,
+        "reports": [],
+        "errors": [],
+    }
+    root = _reports_root_abs()
+    manifest_path = _reports_manifest_abs()
+    if manifest_path != root and not manifest_path.startswith(root + os.sep):
+        return {**base, "errors": [_manifest_error(
+            "manifest_path_invalid",
+            "report manifest source is outside docs root",
+            path=_REPORTS_MANIFEST_REL,
+        )]}
+    if not os.path.isfile(manifest_path):
+        return base
+
+    errors: list[Dict[str, Any]] = []
+    try:
+        with open(manifest_path, "r", encoding="utf-8") as _fh:
+            raw = json.load(_fh)
+    except json.JSONDecodeError:
+        return {**base, "errors": [_manifest_error(
+            "manifest_json_invalid",
+            "report manifest is not valid json",
+            path=_REPORTS_MANIFEST_REL,
+        )]}
+    except OSError:
+        return {**base, "errors": [_manifest_error(
+            "manifest_unreadable",
+            "report manifest could not be read",
+            path=_REPORTS_MANIFEST_REL,
+        )]}
+
+    if not isinstance(raw, dict):
+        return {**base, "errors": [_manifest_error(
+            "manifest_invalid",
+            "report manifest must be a json object",
+            path=_REPORTS_MANIFEST_REL,
+        )]}
+    if raw.get("schema") != _REPORTS_MANIFEST_SCHEMA:
+        return {**base, "errors": [_manifest_error(
+            "manifest_schema_invalid",
+            "report manifest schema is not supported",
+            path=_REPORTS_MANIFEST_REL,
+            field="schema",
+        )]}
+    if raw.get("writer") != _REPORTS_MANUAL_WRITER:
+        return {**base, "errors": [_manifest_error(
+            "manifest_writer_invalid",
+            "report manifest writer must be manual-offline",
+            path=_REPORTS_MANIFEST_REL,
+            field="writer",
+        )]}
+
+    reports_raw = raw.get("reports")
+    if not isinstance(reports_raw, list):
+        return {
+            **base,
+            "available": True,
+            "writer": _REPORTS_MANUAL_WRITER,
+            "generated_at": _safe_manifest_label(raw.get("generated_at"), "", limit=64) or None,
+            "commit": _safe_manifest_label(raw.get("commit"), "", limit=80) if raw.get("commit") else None,
+            "errors": [_manifest_error(
+                "manifest_reports_invalid",
+                "report manifest reports must be a list",
+                path=_REPORTS_MANIFEST_REL,
+                field="reports",
+            )],
+        }
+
+    flat_by_path = {str(item.get("path")): item for item in flat_reports if isinstance(item, dict)}
+    rows: list[Dict[str, Any]] = []
+    seen_paths: set[str] = set()
+    seen_steps: set[tuple[str, str]] = set()
+    for index, raw_row in enumerate(reports_raw):
+        row = _validated_manifest_report(raw_row, index, flat_by_path, errors)
+        if row is None:
+            continue
+        step_key = row["step_id"] or row["path"]
+        research_step = (row["research_id"], step_key)
+        if row["path"] in seen_paths:
+            errors.append(_manifest_error(
+                "report_path_duplicate",
+                "manifest report path is duplicated",
+                index=index,
+                path=row["path"],
+                research_id=row["research_id"],
+                step_id=row["step_id"],
+            ))
+            continue
+        if research_step in seen_steps:
+            errors.append(_manifest_error(
+                "report_step_duplicate",
+                "manifest report research_id/step_id is duplicated",
+                index=index,
+                path=row["path"],
+                research_id=row["research_id"],
+                step_id=row["step_id"],
+            ))
+            continue
+        seen_paths.add(row["path"])
+        seen_steps.add(research_step)
+        rows.append(row)
+
+    rows.sort(key=lambda row: (row["research_id"], row.get("step_id") or "", row["path"]))
+    return {
+        **base,
+        "available": True,
+        "writer": _REPORTS_MANUAL_WRITER,
+        "generated_at": _safe_manifest_label(raw.get("generated_at"), "", limit=64) or None,
+        "commit": _safe_manifest_label(raw.get("commit"), "", limit=80) if raw.get("commit") else None,
+        "count": len(rows),
+        "reports": rows,
+        "errors": errors,
+    }
 
 _DASHBOARD_FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
@@ -3397,7 +3928,7 @@ def create_app(
 
     @app.get("/reports")
     def reports() -> Dict[str, Any]:
-        """docs/ 하위 *.html 리포트 목록(읽기 전용·무예외). 루트 하위만 walk — traversal 무관."""
+        """docs/ 하위 *.html 리포트 목록 + optional validated manifest envelope (read-only)."""
         root = _reports_root_abs()
         items: list = []
         for base, _dirs, files in os.walk(root):
@@ -3412,7 +3943,8 @@ def create_app(
                 except OSError:
                     continue
         items.sort(key=lambda x: x["path"])
-        return {"root": "docs", "count": len(items), "reports": items}
+        manifest = _reports_manifest_payload(items)
+        return {"root": "docs", "count": len(items), "reports": items, "manifest": manifest}
 
     @app.get("/reports/view")
     def reports_view(path: str = "") -> Response:

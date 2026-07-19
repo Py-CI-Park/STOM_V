@@ -9823,7 +9823,9 @@ def signal_sell(pos, bar, ind):
 
   // ai_strategy_loop/dashboard/frontend/research-wiki.jsx
   var { useState: useState_rw, useEffect: useEffect_rw, useMemo: useMemo_rw, useRef: useRef_rw, useCallback: useCallback_rw } = React;
+  var WIKI_PAGE_LIMIT = 60;
   var RESEARCH_WIKI_CATEGORIES = [
+    { key: "", label: "All" },
     { key: "wiki", label: "Methods" },
     { key: "good_results", label: "Good Results" },
     { key: "condition_research", label: "Metrics" },
@@ -9834,11 +9836,31 @@ def signal_sell(pos, bar, ind):
     const found = RESEARCH_WIKI_CATEGORIES.find((c) => c.key === category);
     return found ? found.label : category || "Docs";
   }
+  function isStringList(value) {
+    return Array.isArray(value) && value.every((item) => typeof item === "string");
+  }
+  function isWikiChronology(value) {
+    return Array.isArray(value) && value.every((item) => item && typeof item === "object" && (item.date == null || typeof item.date === "string") && (item.label == null || typeof item.label === "string") && (item.status == null || typeof item.status === "string") && (item.id == null || typeof item.id === "string"));
+  }
   function isWikiRow(row) {
-    return Boolean(row && typeof row === "object" && typeof row.id === "string" && row.id && typeof row.title === "string" && typeof row.category === "string" && Number.isFinite(row.size));
+    return Boolean(row && typeof row === "object" && typeof row.id === "string" && row.id && typeof row.title === "string" && typeof row.category === "string" && Number.isFinite(row.size) && (row.source_sha256 == null || typeof row.source_sha256 === "string") && (row.source_bytes == null || Number.isFinite(row.source_bytes)) && (row.tags == null || isStringList(row.tags)) && (row.related_ids == null || isStringList(row.related_ids)) && (row.chronology == null || isWikiChronology(row.chronology)) && (row.history == null || isWikiChronology(row.history)));
   }
   function isSelectedWikiDoc(value, selectedId) {
-    return Boolean(value && typeof value === "object" && value.id === selectedId && (value.available === false || value.available === true && typeof value.title === "string" && typeof value.category === "string" && typeof value.markdown === "string"));
+    return Boolean(value && typeof value === "object" && value.id === selectedId && (value.available === false || value.available === true && isWikiRow(value) && typeof value.markdown === "string"));
+  }
+  function shortWikiSha(value) {
+    return typeof value === "string" && value.length >= 12 ? value.slice(0, 12) : value || "unknown";
+  }
+  function wikiMetaChips(row) {
+    if (!row || typeof row !== "object") return [];
+    const chips = [];
+    if (row.trust) chips.push(["trust", "trust", row.trust]);
+    if (row.standard_template_status) chips.push(["template", "template", row.standard_template_status]);
+    if (row.metadata_status) chips.push(["metadata", "metadata", row.metadata_status]);
+    if (row.stale === true) chips.push(["stale", "stale", "source changed"]);
+    if (Number.isFinite(row.source_bytes)) chips.push(["bytes", "raw bytes", String(row.source_bytes)]);
+    if (row.source_sha256) chips.push(["sha", "sha256", shortWikiSha(row.source_sha256)]);
+    return chips;
   }
   function ResearchWikiPanel({ baseUrl, wsStatus }) {
     const [docs, setDocs] = useState_rw([]);
@@ -9849,6 +9871,13 @@ def signal_sell(pos, bar, ind):
     const [detailLoading, setDetailLoading] = useState_rw(false);
     const [detailErr, setDetailErr] = useState_rw("");
     const [listedBase, setListedBase] = useState_rw("");
+    const [query, setQuery] = useState_rw("");
+    const [tagFilter, setTagFilter] = useState_rw("");
+    const [categoryFilter, setCategoryFilter] = useState_rw("");
+    const [cursor, setCursor] = useState_rw("0");
+    const [nextCursor, setNextCursor] = useState_rw("");
+    const [totalCount, setTotalCount] = useState_rw(0);
+    const filtersRef = useRef_rw({ q: "", tag: "", category: "", cursor: "0" });
     const listGenerationRef = useRef_rw(0);
     const detailGenerationRef = useRef_rw(0);
     const listControllerRef = useRef_rw(null);
@@ -9866,16 +9895,22 @@ def signal_sell(pos, bar, ind):
       }
       return out;
     }, [docs]);
+    const allowedDocById = useMemo_rw(() => {
+      const out = {};
+      for (const row of docs) out[row.id] = row;
+      return out;
+    }, [docs]);
     const loadDocs = useCallback_rw(() => {
       const generation = listGenerationRef.current + 1;
       listGenerationRef.current = generation;
       const priorSelection = selectedIdRef.current;
+      const filters = filtersRef.current || { q: "", tag: "", category: "", cursor: "0" };
       if (listControllerRef.current) listControllerRef.current.abort();
       if (detailControllerRef.current) detailControllerRef.current.abort();
       detailGenerationRef.current += 1;
       const controller = new AbortController();
       listControllerRef.current = controller;
-      const timeout2 = setTimeout(() => controller.abort(), 3500);
+      const timeout2 = setTimeout(() => controller.abort(), 15e3);
       setDocs([]);
       setListedBase("");
       setSelectedId("");
@@ -9884,14 +9919,28 @@ def signal_sell(pos, bar, ind):
       setListErr("");
       setDetailErr("");
       setDetailLoading(false);
+      setNextCursor("");
+      setTotalCount(0);
       if (isDemo || !baseUrl) {
         setListLoading(false);
         clearTimeout(timeout2);
         return () => controller.abort();
       }
+      const params = new URLSearchParams();
+      params.set("limit", String(WIKI_PAGE_LIMIT));
+      params.set("cursor", filters.cursor || "0");
+      if ((filters.q || "").trim()) params.set("q", filters.q.trim());
+      if ((filters.tag || "").trim()) params.set("tag", filters.tag.trim());
+      if ((filters.category || "").trim()) params.set("category", filters.category.trim());
       setListLoading(true);
-      fetch(baseUrl + "/research_docs", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+      fetch(baseUrl + "/research_docs?" + params.toString(), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
         if (controller.signal.aborted || generation !== listGenerationRef.current || baseUrl !== baseRef.current) return;
+        if (j && j.available === false) {
+          setDocs([]);
+          setListErr(j.error || j.status || "wiki_query_rejected");
+          setCursor(typeof j.cursor === "string" ? j.cursor : "0");
+          return;
+        }
         const rows = Array.isArray(j && j.docs) ? j.docs.filter(isWikiRow) : [];
         const retained = rows.some((row) => row.id === priorSelection) ? priorSelection : "";
         const preferred = rows.find((row) => row.category === "wiki") || rows[0];
@@ -9900,6 +9949,9 @@ def signal_sell(pos, bar, ind):
         setListedBase(baseUrl);
         setSelectedId(nextSelectedId);
         selectedIdRef.current = nextSelectedId;
+        setCursor(typeof j.cursor === "string" ? j.cursor : filters.cursor || "0");
+        setNextCursor(typeof j.next_cursor === "string" ? j.next_cursor : "");
+        setTotalCount(Number.isFinite(j.total_count) ? j.total_count : rows.length);
       }).catch((e) => {
         if (controller.signal.aborted || generation !== listGenerationRef.current || baseUrl !== baseRef.current) return;
         setDocs([]);
@@ -9925,7 +9977,7 @@ def signal_sell(pos, bar, ind):
       if (detailControllerRef.current) detailControllerRef.current.abort();
       const controller = new AbortController();
       detailControllerRef.current = controller;
-      const timeout2 = setTimeout(() => controller.abort(), 3500);
+      const timeout2 = setTimeout(() => controller.abort(), 15e3);
       const owned = listedBase === baseUrl && docs.some((row) => row.id === selectedId);
       setDoc(null);
       setDetailErr("");
@@ -9951,13 +10003,66 @@ def signal_sell(pos, bar, ind):
       };
     }, [baseUrl, docs, isDemo, listedBase, selectedId]);
     const ownsDetail = Boolean(listedBase === baseUrl && isSelectedWikiDoc(doc, selectedId));
+    const chronology = ownsDetail && doc.available ? Array.isArray(doc.chronology) ? doc.chronology : Array.isArray(doc.history) ? doc.history : [] : [];
+    const relatedDocs = ownsDetail && doc.available && Array.isArray(doc.related_ids) && listedBase === baseUrl ? doc.related_ids.map((id2) => allowedDocById[id2]).filter(Boolean) : [];
+    const hiddenRelatedCount = ownsDetail && doc.available && Array.isArray(doc.related_ids) ? Math.max(0, doc.related_ids.length - relatedDocs.length) : 0;
+    const pageOffset = Math.max(0, Number.parseInt(cursor || "0", 10) || 0);
+    const previousCursor = String(Math.max(0, pageOffset - WIKI_PAGE_LIMIT));
+    const hasPrevious = pageOffset > 0;
+    const applyFilters = (next) => {
+      const normalized = {
+        q: String(next.q || ""),
+        tag: String(next.tag || ""),
+        category: String(next.category || ""),
+        cursor: String(next.cursor || "0")
+      };
+      filtersRef.current = normalized;
+      setQuery(normalized.q);
+      setTagFilter(normalized.tag);
+      setCategoryFilter(normalized.category);
+      setCursor(normalized.cursor);
+      loadDocs();
+    };
     const selectDocument = (id2) => {
+      if (listedBase !== baseUrl || !docs.some((row) => row.id === id2)) return;
       setSelectedId(id2);
       selectedIdRef.current = id2;
       setDoc(null);
       setDetailErr("");
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel research-wiki" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "Research Wiki", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadDocs, disabled: isDemo || listLoading }, listLoading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-note" }, "Good Results screenshots are reference only, not live proof. Markdown is displayed as plain text."), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Backend connection required for wiki documents.") : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-list" }, listErr && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "wiki query failed: ", listErr), !listErr && listLoading && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-muted" }, "loading documents\u2026"), RESEARCH_WIKI_CATEGORIES.map((cat) => /* @__PURE__ */ React.createElement("div", { key: cat.key, className: "research-wiki-category" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-category-title" }, cat.label), (grouped[cat.key] || []).slice(0, 12).map((row) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel research-wiki" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "Research Wiki", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadDocs, disabled: isDemo || listLoading }, listLoading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-note" }, "Good Results screenshots are reference only, not live proof. Markdown is displayed as plain text; metadata is read-only sidecar/index data."), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Backend connection required for wiki documents.") : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-list" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-filters" }, /* @__PURE__ */ React.createElement("label", null, "q", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: query,
+        maxLength: 120,
+        onChange: (e) => applyFilters({ ...filtersRef.current, q: e.target.value, cursor: "0" }),
+        placeholder: "title, id, tag, sha"
+      }
+    )), /* @__PURE__ */ React.createElement("label", null, "tag", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: tagFilter,
+        maxLength: 48,
+        onChange: (e) => applyFilters({ ...filtersRef.current, tag: e.target.value, cursor: "0" }),
+        placeholder: "e.g. audit"
+      }
+    )), /* @__PURE__ */ React.createElement("label", null, "category", /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: categoryFilter,
+        onChange: (e) => applyFilters({ ...filtersRef.current, category: e.target.value, cursor: "0" })
+      },
+      RESEARCH_WIKI_CATEGORIES.map((cat) => /* @__PURE__ */ React.createElement("option", { key: cat.key || "all", value: cat.key }, cat.label))
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm",
+        onClick: () => applyFilters({ q: "", tag: "", category: "", cursor: "0" }),
+        disabled: listLoading && !query && !tagFilter && !categoryFilter
+      },
+      "clear"
+    )), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-pagebar" }, /* @__PURE__ */ React.createElement("span", null, docs.length, " / ", totalCount, " docs"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", disabled: !hasPrevious || listLoading, onClick: () => applyFilters({ ...filtersRef.current, cursor: previousCursor }) }, "prev"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", disabled: !nextCursor || listLoading, onClick: () => applyFilters({ ...filtersRef.current, cursor: nextCursor }) }, "next")), listErr && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "wiki query failed: ", listErr), !listErr && listLoading && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-muted" }, "loading documents\u2026"), RESEARCH_WIKI_CATEGORIES.filter((cat) => cat.key).map((cat) => /* @__PURE__ */ React.createElement("div", { key: cat.key, className: "research-wiki-category" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-category-title" }, cat.label), (grouped[cat.key] || []).map((row) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: row.id,
@@ -9966,8 +10071,9 @@ def signal_sell(pos, bar, ind):
         title: row.id
       },
       /* @__PURE__ */ React.createElement("span", null, row.title || row.id),
-      /* @__PURE__ */ React.createElement("small", null, row.size || 0, " bytes")
-    )), !(grouped[cat.key] || []).length && !listLoading && /* @__PURE__ */ React.createElement("small", { className: "research-wiki-muted" }, "no docs")))), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc" }, detailLoading ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Loading document\u2026") : detailErr ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "document query failed: ", detailErr) : ownsDetail && doc.available ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc-head" }, /* @__PURE__ */ React.createElement("strong", null, doc.title || selectedId), /* @__PURE__ */ React.createElement("span", null, wikiLabel(doc.category), " / ", doc.id)), /* @__PURE__ */ React.createElement("pre", { className: "research-wiki-markdown" }, doc.markdown || "")) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, selectedId ? "Document unavailable or not allowed." : "Select a research document.")))));
+      /* @__PURE__ */ React.createElement("small", null, row.source_bytes || row.size || 0, " raw bytes \xB7 ", row.trust || "unknown trust"),
+      (row.tags || []).length > 0 && /* @__PURE__ */ React.createElement("small", null, row.tags.slice(0, 4).map((tag) => `#${tag}`).join(" "))
+    )), !(grouped[cat.key] || []).length && !listLoading && /* @__PURE__ */ React.createElement("small", { className: "research-wiki-muted" }, "no docs")))), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc" }, detailLoading ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Loading document\u2026") : detailErr ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "document query failed: ", detailErr) : ownsDetail && doc.available ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-doc-head" }, /* @__PURE__ */ React.createElement("strong", null, doc.title || selectedId), /* @__PURE__ */ React.createElement("span", null, wikiLabel(doc.category), " / ", doc.id), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-chips" }, wikiMetaChips(doc).map(([key, label, value]) => /* @__PURE__ */ React.createElement("span", { key, className: key === "stale" ? "danger" : "" }, label, ": ", value)), (doc.tags || []).slice(0, 10).map((tag) => /* @__PURE__ */ React.createElement("button", { key: tag, type: "button", onClick: () => applyFilters({ ...filtersRef.current, tag, cursor: "0" }) }, "#", tag)))), (chronology.length > 0 || relatedDocs.length > 0 || hiddenRelatedCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-metadata" }, chronology.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-section" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-section-title" }, "Chronology / history"), /* @__PURE__ */ React.createElement("ol", null, chronology.map((item, index2) => /* @__PURE__ */ React.createElement("li", { key: `${item.date || "event"}-${index2}` }, /* @__PURE__ */ React.createElement("b", null, item.date || "undated"), /* @__PURE__ */ React.createElement("span", null, item.label || item.status || "event"), item.status && /* @__PURE__ */ React.createElement("small", null, item.status))))), (relatedDocs.length > 0 || hiddenRelatedCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-section" }, /* @__PURE__ */ React.createElement("div", { className: "research-wiki-section-title" }, "Related docs"), /* @__PURE__ */ React.createElement("div", { className: "research-wiki-related" }, relatedDocs.map((row) => /* @__PURE__ */ React.createElement("button", { key: row.id, type: "button", onClick: () => selectDocument(row.id), title: row.id }, row.title || row.id)), hiddenRelatedCount > 0 && /* @__PURE__ */ React.createElement("small", null, hiddenRelatedCount, " related id(s) outside the current allowed result set hidden.")))), /* @__PURE__ */ React.createElement("pre", { className: "research-wiki-markdown" }, doc.markdown || "")) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, selectedId ? "Document unavailable or not allowed." : "Select a research document.")))));
   }
   Object.assign(window, { ResearchWikiPanel });
 
@@ -36661,11 +36767,60 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
     return (n / (1024 * 1024)).toFixed(1) + " MB";
   }
+  function _shortHash(value) {
+    return typeof value === "string" && value.length > 12 ? value.slice(0, 12) + "\u2026" : value || "\u2014";
+  }
   function isReport(row) {
     return Boolean(row && typeof row === "object" && typeof row.path === "string" && row.path && typeof row.name === "string" && Number.isFinite(row.bytes));
   }
+  function isManifestReport(row) {
+    return Boolean(isReport(row) && row.manifest === true && typeof row.title === "string" && typeof row.kind === "string" && typeof row.research_id === "string" && row.research_id && typeof row.step_id === "string" && typeof row.html_sha256 === "string" && typeof row.hash_status === "string" && typeof row.trust === "string" && typeof row.missing === "boolean" && typeof row.stale === "boolean" && Array.isArray(row.source_paths) && Array.isArray(row.links) && row.source_paths.every((v) => typeof v === "string") && row.links.every((v) => typeof v === "string"));
+  }
+  function isManifestEnvelope(value) {
+    return Boolean(value && typeof value === "object" && value.schema === "stom-research-report-manifest-v1" && typeof value.available === "boolean" && Array.isArray(value.reports) && Array.isArray(value.errors));
+  }
+  function _manifestGroups(rows) {
+    const map = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      if (!map.has(row.research_id)) map.set(row.research_id, { research_id: row.research_id, items: [] });
+      map.get(row.research_id).items.push(row);
+    });
+    return Array.from(map.values());
+  }
+  function _reportStatusText(row) {
+    const states = [];
+    if (row.missing) states.push("missing");
+    if (row.stale) states.push("stale");
+    if (row.hash_status) states.push("hash:" + row.hash_status);
+    return states.length ? states.join(" \xB7 ") : "fresh";
+  }
+  function _errorText(error) {
+    if (!error || typeof error !== "object") return "manifest_error";
+    const parts = [String(error.type || "manifest_error")];
+    if (typeof error.field === "string") parts.push(error.field);
+    if (typeof error.path === "string") parts.push(error.path);
+    return parts.join(" \xB7 ");
+  }
+  function _renderReportButton(rp, sel, selectReport, manifestMode) {
+    const label = manifestMode ? rp.title || rp.name : rp.name;
+    const meta = manifestMode ? [rp.kind, _fmtReportBytes(rp.bytes), rp.trust].filter(Boolean).join(" \xB7 ") : _fmtReportBytes(rp.bytes);
+    const classes = "v4-reports-item" + (sel === rp.path ? " active" : "") + (manifestMode && rp.missing ? " missing" : "") + (manifestMode && rp.stale ? " stale" : "");
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: rp.path,
+        className: classes,
+        onClick: () => selectReport(rp.path),
+        title: rp.path
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, manifestMode && rp.step_id ? rp.step_id + " \xB7 " : "", label),
+      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, meta),
+      manifestMode && /* @__PURE__ */ React.createElement("span", { className: "v4-reports-badges mono" }, _reportStatusText(rp))
+    );
+  }
   function V4Reports({ baseUrl }) {
     const [list, setList] = useState_rp7(null);
+    const [manifest, setManifest] = useState_rp7(null);
     const [err, setErr] = useState_rp7("");
     const [sel, setSel] = useState_rp7("");
     const [listedBase, setListedBase] = useState_rp7("");
@@ -36680,6 +36835,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const controller = new AbortController();
       const timeout2 = setTimeout(() => controller.abort(), 6e3);
       setList(baseUrl ? null : []);
+      setManifest(null);
       setListedBase("");
       setErr("");
       setSel("");
@@ -36691,15 +36847,20 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       fetch(baseUrl + "/reports", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
         if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
         const reports = Array.isArray(j && j.reports) ? j.reports.filter(isReport) : [];
-        const retained = reports.some((rp) => rp.path === priorSelection) ? priorSelection : "";
-        const nextSelection = retained || (reports.length ? reports[0].path : "");
+        const nextManifest = isManifestEnvelope(j && j.manifest) ? j.manifest : null;
+        const manifestReports = nextManifest && nextManifest.available ? nextManifest.reports.filter(isManifestReport) : [];
+        const selectionPool = manifestReports.length ? manifestReports : reports;
+        const retained = selectionPool.some((rp) => rp.path === priorSelection) ? priorSelection : "";
+        const nextSelection = retained || (selectionPool.length ? selectionPool[0].path : "");
         setList(reports);
+        setManifest(nextManifest);
         setListedBase(baseUrl);
         setSel(nextSelection);
         selectionRef.current = nextSelection;
       }).catch((e) => {
         if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
         setList([]);
+        setManifest(null);
         setErr(String(e && e.message ? e.message : e));
       }).finally(() => clearTimeout(timeout2));
       return () => {
@@ -36712,18 +36873,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       selectionRef.current = path;
     };
     const ownsSelection = Boolean(baseUrl && listedBase === baseUrl && Array.isArray(list) && list.some((rp) => rp.path === sel));
+    const manifestRows = manifest && manifest.available && Array.isArray(manifest.reports) ? manifest.reports.filter(isManifestReport) : [];
+    const manifestErrors = manifest && Array.isArray(manifest.errors) ? manifest.errors : [];
+    const usingManifest = manifestRows.length > 0;
+    const selectedManifest = ownsSelection && usingManifest ? manifestRows.find((rp) => rp.path === sel) || null : null;
     const viewUrl = ownsSelection ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.map((rp) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: rp.path,
-        className: "v4-reports-item" + (sel === rp.path ? " active" : ""),
-        onClick: () => selectReport(rp.path),
-        title: rp.path
-      },
-      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, rp.name),
-      /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes))
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement(
+    const groups = usingManifest ? _manifestGroups(manifestRows) : [];
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && manifestErrors.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-manifest-errors mono", title: "Invalid manifest entries are dropped before display" }, "manifest errors: ", manifestErrors.slice(0, 3).map(_errorText).join(" / "), manifestErrors.length > 3 ? " +" + (manifestErrors.length - 3) : ""), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.length > 0 && usingManifest && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-manifest-head mono" }, /* @__PURE__ */ React.createElement("b", null, "manifest v1"), /* @__PURE__ */ React.createElement("span", null, manifestRows.length, " structured \xB7 ", manifest.writer || "manual-offline")), groups.map((group) => /* @__PURE__ */ React.createElement("div", { className: "v4-reports-group", key: group.research_id }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-group-title mono" }, group.research_id), group.items.map((rp) => _renderReportButton(rp, sel, selectReport, true))))), list !== null && list.length > 0 && !usingManifest && list.map((rp) => _renderReportButton(rp, sel, selectReport, false))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, selectedManifest && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail-head" }, /* @__PURE__ */ React.createElement("b", null, selectedManifest.title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, selectedManifest.research_id, selectedManifest.step_id ? " / " + selectedManifest.step_id : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-detail-grid mono" }, /* @__PURE__ */ React.createElement("span", null, "trust: ", selectedManifest.trust), /* @__PURE__ */ React.createElement("span", null, "status: ", _reportStatusText(selectedManifest)), /* @__PURE__ */ React.createElement("span", { title: selectedManifest.html_sha256 }, "html: ", _shortHash(selectedManifest.html_sha256)), /* @__PURE__ */ React.createElement("span", null, "bytes: ", _fmtReportBytes(selectedManifest.bytes))), selectedManifest.source_paths.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-provenance" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, "provenance"), selectedManifest.source_paths.slice(0, 6).map((src) => /* @__PURE__ */ React.createElement("code", { key: src, title: selectedManifest.source_sha256 && selectedManifest.source_sha256[src] ? selectedManifest.source_sha256[src] : "" }, src, selectedManifest.source_sha256 && selectedManifest.source_sha256[src] ? " \xB7 " + _shortHash(selectedManifest.source_sha256[src]) : ""))), selectedManifest.links.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-provenance" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, "allowlisted links"), selectedManifest.links.slice(0, 4).map((link) => /* @__PURE__ */ React.createElement("code", { key: link }, link)))), viewUrl ? /* @__PURE__ */ React.createElement(
       "iframe",
       {
         key: viewUrl,
