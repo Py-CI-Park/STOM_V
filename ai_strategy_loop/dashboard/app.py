@@ -3935,10 +3935,12 @@ def create_app(
             for fn in files:
                 if not fn.lower().endswith(".html"):
                     continue
-                full = os.path.join(base, fn)
+                rel = os.path.relpath(os.path.join(base, fn), root).replace(os.sep, "/")
+                full = _safe_report_path(rel)
+                if full is None:
+                    continue
                 try:
                     st = os.stat(full)
-                    rel = os.path.relpath(full, root).replace(os.sep, "/")
                     items.append({"path": rel, "name": fn, "bytes": st.st_size, "mtime": int(st.st_mtime)})
                 except OSError:
                     continue
