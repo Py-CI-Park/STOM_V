@@ -116,7 +116,7 @@ _ABSOLUTE_PATH_START = re.compile(
         \\\\[?]\\(?:UNC\\[^\\/\s]+[\\/][^\\/\s]+|[A-Za-z]:[\\/]) |
         \\\\(?![?.]\\)[^\\/\s]+[\\/][^\\/\s]+ |
         (?<![A-Za-z0-9])[A-Za-z]:[\\/] |
-        (?<![A-Za-z0-9/\\])/(?!/)
+        (?<![A-Za-z0-9/\\])/(?: (?=(?:private|home|Users|tmp|var|root|mnt|Volumes)(?:/|$)) | (?=$))
     )""",
     re.VERBOSE,
 )
@@ -759,6 +759,10 @@ def _sanitize_public_payload(value: JsonValue) -> JsonValue:
 def serialize_research_index_response(response: ResearchIndexResponse) -> ResearchIndexResponse:
     """Return a sanitized copy suitable for the public index route."""
     return cast(ResearchIndexResponse, _sanitize_public_payload(response))
+def serialize_research_doc_markdown(markdown: str) -> str:
+    """Sanitize a public Wiki document without changing its source bytes."""
+    return _redact_embedded_absolute_paths(markdown)
+
 
 
 def _serialize_detail_response(response: ResearchIndexDetailResponse) -> ResearchIndexDetailResponse:

@@ -146,7 +146,12 @@ def research_doc(id: str = "") -> ResearchDocResponse:
         return {"available": False, "error": "doc_not_allowed", "id": id}
     path, summary = found
     markdown = path.read_text(encoding="utf-8", errors="replace")
-    return {**summary, "available": True, "markdown": markdown, "size": len(markdown)}
+    return {
+        **summary,
+        "available": True,
+        "markdown": research_index.serialize_research_doc_markdown(markdown),
+        "size": len(markdown),
+    }
 
 
 @router.get("/research_records")
