@@ -233,6 +233,8 @@ return (
           <div><span className="k">매수 조건식</span><b className="mono">{buy}</b></div>
           <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
           <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
+          {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
+          <a className="btn ghost sm" href="/ui/chart-replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
         </div>
       );
     })()}
