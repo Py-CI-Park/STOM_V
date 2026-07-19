@@ -75,3 +75,35 @@ def test_write_reports_manifest_shape(tmp_path: Path) -> None:
     on_disk = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert on_disk["count"] == 2 and len(on_disk["reports"]) == 2
     assert all(len(r["sha256"]) == 64 for r in on_disk["reports"])
+
+def test_specs_from_loop_runs_builds_standard_specs(tmp_path: Path) -> None:
+    # V6.4(S5): loop_runs.db → 세대별 스텝 spec 자동 구성(SELECT-only·오프라인).
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import specs_from_loop_runs
+
+    db = tmp_path / "loop_runs.db"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT, status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL)")
+    conn.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, calmar REAL, uptrend_r2 REAL, gate_passed INTEGER, reason TEXT, csv_path TEXT, trade_count INTEGER, mdd REAL, profit REAL, strategy_gist TEXT, created_at REAL, PRIMARY KEY (run_id, gen_no))")
+    conn.execute("INSERT INTO runs VALUES ('runA', 1752900000, '{}', 'done', 2, 1.5, 1752903600)")
+    conn.execute("INSERT INTO generations (run_id, gen_no, buy_name, sell_name, status, score, gate_passed, reason, trade_count, mdd, profit, strategy_gist, created_at) "
+                 "VALUES ('runA', 1, 'buy1', 'sell1', 'done', 0.8, 0, '거래빈도 미달', 3, 12.0, -50000, '갭 상승 추종', 1752900100)")
+    conn.execute("INSERT INTO generations (run_id, gen_no, buy_name, sell_name, status, score, gate_passed, reason, trade_count, mdd, profit, strategy_gist, created_at) "
+                 "VALUES ('runA', 2, 'buy2', 'sell2', 'done', 1.5, 1, '', 9, 8.0, 120000, '갭+거래강도', 1752900200)")
+    conn.commit()
+    conn.close()
+
+    specs = specs_from_loop_runs(str(db))
+    assert len(specs) == 2
+    s2 = specs[1]
+    assert s2["research_id"] == "runA" and s2["step_id"] == "gen2"
+    assert "게이트 통과 후보" in s2["conclusion"] and "best gen 2" in s2["conclusion"]
+    assert s2["hypothesis"] == "갭+거래강도"
+    assert any("gate 통과" in r for r in s2["results"])
+    assert s2["date"] == "2026-07-19" or s2["date"].startswith("20")  # epoch 포맷
+    # 표준양식 렌더까지 통과(주입 없음)
+    from ai_strategy_loop.dashboard.report_writer import render_report_html
+    html = render_report_html(s2)
+    assert "<script" not in html and "runA" in html

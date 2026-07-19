@@ -20,6 +20,7 @@ function V4Reports({ baseUrl }) {
   const [sel, setSel] = useState_rp7("");
   const [wiki, setWiki] = useState_rp7(null);
   const [wikiSel, setWikiSel] = useState_rp7("");
+  const [wikiQuery, setWikiQuery] = useState_rp7("");
   const [wikiDoc, setWikiDoc] = useState_rp7(null);
   const wikiReqRef = React.useRef(0);
 
@@ -41,7 +42,7 @@ function V4Reports({ baseUrl }) {
   useEffect_rp7(() => { // V5.6 Wiki 색인(모드 진입 시 1회) — 원문 불변, /research_docs 소비.
     if (!baseUrl || mode !== "wiki" || wiki !== null) return;
     let cancelled = false;
-    fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(6000) })
+    fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(20000) }) // 930+ 문서 색인 — 콜드 서버에서 6s 초과 실측
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => { if (!cancelled) { const docs = Array.isArray(j && j.docs) ? j.docs : []; setWiki(docs); setWikiSel(prev => prev || (docs.length ? docs[0].id : "")); } })
       .catch(() => { if (!cancelled) setWiki([]); });
@@ -52,7 +53,7 @@ function V4Reports({ baseUrl }) {
     if (!baseUrl || mode !== "wiki" || !wikiSel) { setWikiDoc(null); return; }
     const reqId = ++wikiReqRef.current;
     let cancelled = false;
-    fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(6000) })
+    fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(12000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => { if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j); })
       .catch(e => { if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) }); });
@@ -60,6 +61,21 @@ function V4Reports({ baseUrl }) {
   }, [baseUrl, mode, wikiSel]);
 
   const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
+  // V6.4(S5): 스텝 자동 리포트(generated_reports/)와 일반 문서를 구분 + 결과 보고서 예시 바로가기.
+  const stepReports = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
+  const otherReports = (list || []).filter(rp => !String(rp.path).startsWith("generated_reports/"));
+  const exampleReport = stepReports.find(rp => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
+  const wikiFiltered = (wiki || []).filter(d => {
+    const q = wikiQuery.trim().toLowerCase();
+    if (!q) return true;
+    return ((d.title || "") + " " + (d.id || "") + " " + (d.category || "")).toLowerCase().includes(q);
+  });
+  const renderReportItem = (rp) => (
+    <button key={rp.path} className={"v4-reports-item" + (sel === rp.path ? " active" : "")} onClick={() => setSel(rp.path)} title={rp.path}>
+      <span className="v4-reports-name">{rp.name}</span>
+      <span className="v4-reports-meta mono">{_fmtReportBytes(rp.bytes)}</span>
+    </button>
+  );
 
   return (
     <section className="v4-reports" aria-labelledby="v4-reports-heading">
@@ -68,6 +84,10 @@ function V4Reports({ baseUrl }) {
         <div className="v4-reports-modes" role="tablist" aria-label="뷰 모드">
           <button role="tab" aria-selected={mode === "reports"} className={"btn ghost sm" + (mode === "reports" ? " active" : "")} onClick={() => setMode("reports")}>HTML 리포트</button>
           <button role="tab" aria-selected={mode === "wiki"} className={"btn ghost sm" + (mode === "wiki" ? " active" : "")} onClick={() => setMode("wiki")}>연구 문서(Wiki)</button>
+          {exampleReport && (
+            <button className="btn ghost sm v6-report-example" title="스텝 자동 리포트 표준양식 결과 예시 열기"
+                    onClick={() => { setMode("reports"); setSel(exampleReport.path); }}>결과 보고서 예시</button>
+          )}
         </div>
       </div>
       {mode === "reports" ? (
@@ -79,12 +99,14 @@ function V4Reports({ baseUrl }) {
               {list !== null && list.length === 0 && (
                 <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>
               )}
-              {list !== null && list.map(rp => (
-                <button key={rp.path} className={"v4-reports-item" + (sel === rp.path ? " active" : "")} onClick={() => setSel(rp.path)} title={rp.path}>
-                  <span className="v4-reports-name">{rp.name}</span>
-                  <span className="v4-reports-meta mono">{_fmtReportBytes(rp.bytes)}</span>
-                </button>
-              ))}
+              {list !== null && stepReports.length > 0 && (
+                <div className="v6-report-group mono">스텝 자동 리포트 · {stepReports.length}건 (build_step_reports.py)</div>
+              )}
+              {list !== null && stepReports.map(renderReportItem)}
+              {list !== null && otherReports.length > 0 && (
+                <div className="v6-report-group mono">일반 문서 리포트 · {otherReports.length}건</div>
+              )}
+              {list !== null && otherReports.map(renderReportItem)}
             </aside>
             <div className="v4-reports-view">
               {viewUrl ? (
@@ -100,9 +122,15 @@ function V4Reports({ baseUrl }) {
           <p className="v4-reports-safe mono" role="note">읽기 전용 · 원문 마크다운 불변(pre 텍스트 표시) · /research_docs 색인</p>
           <div className="v4-reports-body">
             <aside className="v4-reports-list" aria-label="연구 문서 목록">
+              <input className="toolbar-input v6-wiki-search" type="search" placeholder="검색 (제목·경로·분류)"
+                     value={wikiQuery} onChange={e => setWikiQuery(e.target.value)}
+                     aria-label="연구 문서 검색" />
               {wiki === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
-              {wiki !== null && wiki.length === 0 && <div className="v4-reports-empty mono">연구 문서 없음</div>}
-              {wiki !== null && wiki.map(d => (
+              {wiki !== null && wikiFiltered.length === 0 && <div className="v4-reports-empty mono">{wikiQuery ? "검색 결과 없음 · " + wikiQuery : "연구 문서 없음"}</div>}
+              {wiki !== null && wikiQuery && wikiFiltered.length > 0 && (
+                <div className="v6-report-group mono">검색 결과 {wikiFiltered.length}건 / 전체 {wiki.length}건</div>
+              )}
+              {wiki !== null && wikiFiltered.map(d => (
                 <button key={d.id} className={"v4-reports-item" + (wikiSel === d.id ? " active" : "")} onClick={() => setWikiSel(d.id)} title={d.id}>
                   <span className="v4-reports-name">{d.title || d.id}</span>
                   <span className="v4-reports-meta mono">{d.category || ""}</span>
