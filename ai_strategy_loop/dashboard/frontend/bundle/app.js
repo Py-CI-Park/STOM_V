@@ -35199,6 +35199,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [status, setStatus] = useState_va2(null);
     const [funnel, setFunnel] = useState_va2(null);
     const [rules, setRules] = useState_va2(null);
+    const [chron, setChron] = useState_va2(null);
     const [error, setError] = useState_va2("");
     const reqGenRef = useRef_va(0);
     const load = useCallback_va(() => {
@@ -35212,12 +35213,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       Promise.allSettled([
         _vaFetch(baseUrl + "/api/alpha/status"),
         _vaFetch(baseUrl + "/api/alpha/funnel"),
-        _vaFetch(baseUrl + "/api/alpha/rules")
-      ]).then(([s, f, r]) => {
+        _vaFetch(baseUrl + "/api/alpha/rules"),
+        _vaFetch(baseUrl + "/research/judgments")
+      ]).then(([s, f, r, jj]) => {
         if (gen !== reqGenRef.current) return;
         setStatus(s.status === "fulfilled" ? s.value : null);
         setFunnel(f.status === "fulfilled" ? f.value : null);
         setRules(r.status === "fulfilled" ? r.value : null);
+        setChron(jj.status === "fulfilled" ? jj.value : null);
         const firstErr = [s, f, r].find((x) => x.status === "rejected");
         setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
       });
@@ -35251,7 +35254,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const reasons = tr && Array.isArray(tr.reasons) ? tr.reasons.join(", ") : "";
       const validLabel = tr == null ? "\u2014" : validated === true ? "valid \u2713" : validated === false ? "invalid" + (reasons ? " \xB7 " + reasons : "") : "?";
       return /* @__PURE__ */ React.createElement("tr", { key: i, style: { borderTop: "1px solid var(--line, #1e2b38)" } }, /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", whiteSpace: "nowrap" } }, rid), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", maxWidth: 420, overflow: "hidden", textOverflow: "ellipsis" } }, trText), /* @__PURE__ */ React.createElement("td", { className: "mono", style: { padding: "4px 6px", color: validated === false ? "var(--red)" : "var(--ink-2)" } }, validLabel));
-    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))));
+    }))), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-2)" } }, ruleRows.length > 200 ? "\uC0C1\uC704 200\uD589 \uD45C\uC2DC \xB7 \uC804\uCCB4 " + ruleRows.length + "\uD589" : ruleRows.length + "\uD589", rules.translation_available ? " \xB7 \uBC88\uC5ED \uBCD1\uD569\uB428" : " \xB7 \uBC88\uC5ED \uBBF8\uAC00\uC6A9")))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-alpha-chron-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-alpha-chron-title" }, "\uC5F0\uAD6C \uC5F0\uD601 \xB7 \uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 (P4 SELECT-only)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !(chron && chron.available) && /* @__PURE__ */ React.createElement("p", { className: "research-empty mono" }, "\uD310\uC815 \uCE74\uD0C8\uB85C\uADF8 \uC5C6\uC74C \xB7 research_assets.db \uBE4C\uB4DC \uD544\uC694(scripts/build_research_catalog.py)"), chron && chron.available && /* @__PURE__ */ React.createElement("div", { className: "v6-alpha-chron" }, chron.judgments.map((j) => {
+      const v = String(j.verdict || "");
+      const cls = /pass|양성|생존/i.test(v) ? "ok" : /kill|무가치|기각|실패/i.test(v) ? "warn" : "off";
+      return /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v6-alpha-chron-row" }, /* @__PURE__ */ React.createElement("b", { className: "v6-alpha-chron-series" }, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + cls }, v.slice(0, 28)), /* @__PURE__ */ React.createElement("span", { className: "mono v6-alpha-chron-meta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : ""));
+    })))));
   }
   Object.assign(window, { V4Alpha });
 

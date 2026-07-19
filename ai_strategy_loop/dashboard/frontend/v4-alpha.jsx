@@ -37,6 +37,7 @@ function V4Alpha({ baseUrl, wsStatus }) {
   const [status, setStatus] = useState_va(null);
   const [funnel, setFunnel] = useState_va(null);
   const [rules, setRules] = useState_va(null);
+  const [chron, setChron] = useState_va(null); // V6.6(S7): 연구 연혁(판정 카탈로그, SELECT-only)
   const [error, setError] = useState_va("");
   // §4.5: 요청 세대 카운터 — interval/base 변경 시 이전 응답이 최신 상태를 덮지 않게 한다.
   const reqGenRef = useRef_va(0);
@@ -48,11 +49,13 @@ function V4Alpha({ baseUrl, wsStatus }) {
       _vaFetch(baseUrl + "/api/alpha/status"),
       _vaFetch(baseUrl + "/api/alpha/funnel"),
       _vaFetch(baseUrl + "/api/alpha/rules"),
-    ]).then(([s, f, r]) => {
+      _vaFetch(baseUrl + "/research/judgments"),
+    ]).then(([s, f, r, jj]) => {
       if (gen !== reqGenRef.current) return; // 더 최신 요청이 있으면 폐기
       setStatus(s.status === "fulfilled" ? s.value : null);
       setFunnel(f.status === "fulfilled" ? f.value : null);
       setRules(r.status === "fulfilled" ? r.value : null);
+      setChron(jj.status === "fulfilled" ? jj.value : null);
       const firstErr = [s, f, r].find(x => x.status === "rejected");
       setError(firstErr ? String(firstErr.reason && firstErr.reason.message || firstErr.reason) : "");
     });
@@ -212,6 +215,34 @@ function V4Alpha({ baseUrl, wsStatus }) {
                 {ruleRows.length > 200 ? "상위 200행 표시 · 전체 " + ruleRows.length + "행" : ruleRows.length + "행"}
                 {rules.translation_available ? " · 번역 병합됨" : " · 번역 미가용"}
               </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* V6.6(S7): 연구 연혁 · 판정 카탈로그 — governed /research/judgments(SELECT-only) 소비.
+          알파랩 연구 시리즈의 최종 판정을 한 곳에서 연혁으로 열람(R3 체계화). */}
+      <section className="panel" aria-labelledby="v4-alpha-chron-title">
+        <header className="panel-hd">
+          <div className="stom-section-label" id="v4-alpha-chron-title">연구 연혁 · 판정 카탈로그 (P4 SELECT-only)</div>
+        </header>
+        <div className="panel-bd">
+          {!(chron && chron.available) && (
+            <p className="research-empty mono">판정 카탈로그 없음 · research_assets.db 빌드 필요(scripts/build_research_catalog.py)</p>
+          )}
+          {chron && chron.available && (
+            <div className="v6-alpha-chron">
+              {chron.judgments.map(j => {
+                const v = String(j.verdict || "");
+                const cls = /pass|양성|생존/i.test(v) ? "ok" : /kill|무가치|기각|실패/i.test(v) ? "warn" : "off";
+                return (
+                  <div key={j.series} className="v6-alpha-chron-row">
+                    <b className="v6-alpha-chron-series">{j.series}</b>
+                    <span className={"v4-chip " + cls}>{v.slice(0, 28)}</span>
+                    <span className="mono v6-alpha-chron-meta">원장 {j.n_ledger_rows}행{j.report_path ? " · " + j.report_path : ""}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
