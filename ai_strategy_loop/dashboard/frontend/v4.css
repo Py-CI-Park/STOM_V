@@ -703,3 +703,25 @@
 .v6-engine-xl .stom-gauge-label { font-size: 13px; }
 .v6-engine-xl .engine-cell { font-size: 13px; }
 .v6-engine-xl .engine-log-strip { display: none; }
+
+/* ===== v5.3.7 검수 보정: BT 결과 밀도 — 전폭 세로나열(11.8화면) → 2열 골고루 배치 ===== */
+.bt-result-flow .panel svg { max-height: 420px; }
+.bt-result-flow details svg { max-height: 420px; }
+@media (min-width: 2000px) {
+  .bt-result-flow { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .bt-result-flow > .bt-condition-band, .bt-result-flow > .bt-verdict-band, .bt-result-flow > .bt-range-bar,
+  .bt-result-flow > .bt-flow-full, .bt-result-flow > .bt-extra-charts,
+  .bt-result-flow > .panel:first-of-type { grid-column: 1 / -1; }
+}
+@media (min-width: 3000px) {
+  .bt-result-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bt-result-flow .panel svg, .bt-result-flow details svg { max-height: 360px; }
+}
+
+/* v5.3.7 상황판 타이포 고도화(검수): KPI·벨트·보드 제목 확대 */
+.v6-board > .panel-hd-title { font-size: 17px; }
+.v6-board .v4-stats .v { font-size: 22px; }
+.v6-board .v4-stats .s { font-size: 12px; }
+.v6-belt-node .v6-belt-label { font-size: 13.5px; }
+.v6-stage-tab b { font-size: 16px; }
+.v4-eg-v { font-size: 13px; }
