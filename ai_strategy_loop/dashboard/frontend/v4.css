@@ -539,3 +539,11 @@
 .v4-research-evidence-grid dt { font-size: 10px; color: var(--ink-3); font-family: var(--mono); letter-spacing: .04em; }
 .v4-research-evidence-grid dd { margin: 0; font-size: 11.5px; color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 900px) { .v4-research-evidence-grid { grid-template-columns: 1fr; } }
+
+/* ═══ V5.1 프로세스 단계 클릭 pin(단계별 뷰 고정·라이브 자동전환 존중) ═══ */
+.phase-step.clickable { cursor: pointer; border-radius: 8px; transition: background .15s; }
+.phase-step.clickable:hover { background: var(--bg-2); }
+.phase-step.clickable:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.phase-step.pinned { box-shadow: inset 0 0 0 1.5px var(--violet); border-radius: 8px; }
+.phase-step.pinned .phase-num { border-color: var(--violet); color: var(--violet); }
+.v5-pin-reset { align-self: flex-start; color: var(--violet); border-color: rgba(165,148,255,.4); margin: -4px 0 2px; }
