@@ -7,10 +7,10 @@
 const { useState: useState_cat, useEffect: useEffect_cat, useRef: useRef_cat } = React;
 
 const CAT_CONTRACT_VERSION = "rdc-1";
-const CAT_CELL_SOURCES = Object.freeze(["o1g", "sv1_l0", "sv1_l1", "v2a_full", "v2a_pilot"]);
 const CAT_ENDPOINTS = Object.freeze({
   assets: "/research/assets?limit=500",
   judgments: "/research/judgments?include_ledger=1&limit=200",
+  cells: "/research/cells?limit=1",
   clauses: "/research/clauses?limit=200",
 });
 
@@ -122,6 +122,20 @@ function _catUnique(rows, key) {
   });
   return out;
 }
+function _catDiscoveredCellSources(envelope) {
+  if (!envelope || envelope.contract_version !== CAT_CONTRACT_VERSION) return [];
+  const raw = Array.isArray(envelope.allowed) ? envelope.allowed : [];
+  const seen = new Set();
+  const out = [];
+  raw.forEach(source => {
+    const text = String(source === null || source === undefined ? "" : source).trim();
+    if (!text || seen.has(text)) return;
+    seen.add(text);
+    out.push(text);
+  });
+  return out;
+}
+
 
 
 function _catSourceLabel(source) {
@@ -216,7 +230,7 @@ function _V4CatalogV1({ judgments }) {
   );
 }
 
-function _V4CatalogV2({ cellsBySource }) {
+function _V4CatalogV2({ cellsBySource, cellSources }) {
   return (
     <section className="v4-catalog-panel v4-catalog-v2" aria-labelledby="v4-catalog-v2-heading">
       <div className="v4-catalog-panel-head">
@@ -229,10 +243,13 @@ function _V4CatalogV2({ cellsBySource }) {
       <p className="v4-catalog-safe">FDR 생존 0 · 현재 축·온셋·비용 가정에서 평균 양EV 셀 0 — 갭+20% 추격 최악</p>
       <p className="v4-catalog-safe">현재 축·온셋 라벨은 챔피언 우위를 포착하지 못함(칸-조준 KILL — h300·L3 교차)</p>
       <div className="v4-catalog-map-list">
-        {CAT_CELL_SOURCES.map(source => {
+        {cellSources.length === 0 ? (
+          <div className="v4-catalog-empty strong" role="status">cells source allowlist 없음 · /research/cells?limit=1 allowed[] 비어 있음 · 기본 source 추정 없음</div>
+        ) : cellSources.map(source => {
           const envelope = cellsBySource[source];
           const rows = _catItems(envelope);
-          const labelTag = _catText(rows.find(row => row && row.label_tag) && rows.find(row => row && row.label_tag).label_tag);
+          const labelRow = rows.find(row => row && row.label_tag);
+          const labelTag = _catText(labelRow && labelRow.label_tag);
           const rowCount = envelope && envelope.available ? _catText(envelope.count) : "—";
           return (
             <article className="v4-catalog-map" key={source}>
@@ -306,16 +323,17 @@ function _V4CatalogV3({ clauses }) {
   );
 }
 
-function _V4CatalogV4({ cellsBySource, lookupSource, setLookupSource, lookupLabel, setLookupLabel }) {
-  const fallbackSource = CAT_CELL_SOURCES.find(source => _catItems(cellsBySource[source]).length > 0) || CAT_CELL_SOURCES[0];
-  const activeSource = _catItems(cellsBySource[lookupSource]).length > 0 ? lookupSource : fallbackSource;
-  const sourceRows = _catItems(cellsBySource[activeSource]);
+function _V4CatalogV4({ cellsBySource, cellSources, lookupSource, setLookupSource, lookupLabel, setLookupLabel }) {
+  const activeSource = cellSources.includes(lookupSource) ? lookupSource : (cellSources[0] || "");
+  const sourceRows = activeSource ? _catItems(cellsBySource[activeSource]) : [];
   const labelOptions = _catUnique(sourceRows, "label_kind");
   const activeLabel = labelOptions.some(v => String(v) === String(lookupLabel)) ? lookupLabel : (labelOptions[0] || "");
   const matches = activeLabel ? sourceRows.filter(row => String(row.label_kind) === String(activeLabel)) : sourceRows;
   const selected = matches[0] || null;
   const masked = _catCellMasked(selected);
   const hasL3 = selected && String(selected.label_kind) === "l3";
+  const hasSources = cellSources.length > 0;
+  const hasLabels = labelOptions.length > 0;
   return (
     <section className="v4-catalog-panel v4-catalog-v4" aria-labelledby="v4-catalog-v4-heading">
       <div className="v4-catalog-panel-head">
@@ -325,8 +343,8 @@ function _V4CatalogV4({ cellsBySource, lookupSource, setLookupSource, lookupLabe
         </div>
       </div>
       <div className="v4-catalog-lookup">
-        <label>source<select value={activeSource} onChange={event => setLookupSource(event.target.value)}>{CAT_CELL_SOURCES.map(source => <option key={source} value={source}>{_catSourceLabel(source)}</option>)}</select></label>
-        <label>label_kind<select value={activeLabel} onChange={event => setLookupLabel(event.target.value)}>{labelOptions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label>source<select value={activeSource} disabled={!hasSources} onChange={event => { setLookupSource(event.target.value); setLookupLabel(""); }}>{cellSources.map(source => <option key={source} value={source}>{_catSourceLabel(source)}</option>)}</select></label>
+        <label>label_kind<select value={activeLabel} disabled={!hasLabels} onChange={event => setLookupLabel(event.target.value)}>{labelOptions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
       </div>
       {!selected ? (
         <div className="v4-catalog-empty strong" role="status">이 조합의 사전 집계가 없습니다 — 원시 재계산은 금지되어 있습니다. 필요하면 연구 트랙에 집계 추가를 요청하십시오(사전등록 종속).</div>
@@ -382,9 +400,9 @@ function _V4CatalogV5() {
 }
 
 function V4Catalog({ baseUrl }) {
-  const [state, setState] = useState_cat({ loading: false, error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellsBySource: {} });
-  const [lookupSource, setLookupSource] = useState_cat("o1g");
-  const [lookupLabel, setLookupLabel] = useState_cat("l3");
+  const [state, setState] = useState_cat({ loading: false, error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellDiscovery: null, cellSources: [], cellsBySource: {} });
+  const [lookupSource, setLookupSource] = useState_cat("");
+  const [lookupLabel, setLookupLabel] = useState_cat("");
   const generationRef = useRef_cat(0);
   const baseRef = useRef_cat(baseUrl);
   baseRef.current = baseUrl;
@@ -395,7 +413,7 @@ function V4Catalog({ baseUrl }) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
 
-    setState({ loading: Boolean(baseUrl), error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellsBySource: {} });
+    setState({ loading: Boolean(baseUrl), error: "", listedBase: "", assets: null, judgments: null, clauses: null, cellDiscovery: null, cellSources: [], cellsBySource: {} });
     if (!baseUrl) {
       clearTimeout(timeout);
       return () => controller.abort();
@@ -403,10 +421,17 @@ function V4Catalog({ baseUrl }) {
 
     const get = path => fetch(baseUrl + path, { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
-    const cellRequests = CAT_CELL_SOURCES.map(source => get(_catCellsRoute(source)).then(payload => [source, payload]));
-
-    Promise.all([get(CAT_ENDPOINTS.assets), get(CAT_ENDPOINTS.judgments), get(CAT_ENDPOINTS.clauses), Promise.all(cellRequests)])
-      .then(([assetsPayload, judgmentsPayload, clausesPayload, cellPairs]) => {
+    Promise.all([get(CAT_ENDPOINTS.assets), get(CAT_ENDPOINTS.judgments), get(CAT_ENDPOINTS.cells), get(CAT_ENDPOINTS.clauses)])
+      .then(([assetsPayload, judgmentsPayload, cellDiscoveryPayload, clausesPayload]) => {
+        const cellDiscovery = _catNormalizeEnvelope("cells:discovery", cellDiscoveryPayload);
+        const cellSources = _catDiscoveredCellSources(cellDiscovery);
+        if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current || cellSources.length === 0) {
+          return { assetsPayload, judgmentsPayload, clausesPayload, cellDiscovery, cellSources, cellPairs: [] };
+        }
+        return Promise.all(cellSources.map(source => get(_catCellsRoute(source)).then(payload => [source, payload])))
+          .then(cellPairs => ({ assetsPayload, judgmentsPayload, clausesPayload, cellDiscovery, cellSources, cellPairs }));
+      })
+      .then(({ assetsPayload, judgmentsPayload, clausesPayload, cellDiscovery, cellSources, cellPairs }) => {
         if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
         const cellsBySource = {};
         cellPairs.forEach(([source, payload]) => { cellsBySource[source] = _catNormalizeEnvelope("cells:" + source, payload); });
@@ -417,12 +442,14 @@ function V4Catalog({ baseUrl }) {
           assets: _catNormalizeEnvelope("assets", assetsPayload),
           judgments: _catNormalizeEnvelope("judgments", judgmentsPayload),
           clauses: _catNormalizeEnvelope("clauses", clausesPayload),
+          cellDiscovery,
+          cellSources,
           cellsBySource,
         });
       })
       .catch(e => {
         if (controller.signal.aborted || generation !== generationRef.current || baseUrl !== baseRef.current) return;
-        setState({ loading: false, error: String(e && e.message ? e.message : e), listedBase: baseUrl, assets: null, judgments: null, clauses: null, cellsBySource: {} });
+        setState({ loading: false, error: String(e && e.message ? e.message : e), listedBase: baseUrl, assets: null, judgments: null, clauses: null, cellDiscovery: null, cellSources: [], cellsBySource: {} });
       })
       .finally(() => clearTimeout(timeout));
 
@@ -433,8 +460,11 @@ function V4Catalog({ baseUrl }) {
   }, [baseUrl]);
 
   const ownsData = Boolean(baseUrl && state.listedBase === baseUrl && !state.loading);
+  const cellSources = ownsData ? state.cellSources : [];
   const cellsBySource = ownsData ? state.cellsBySource : {};
-  const envelopes = [state.assets, state.judgments, state.clauses].concat(CAT_CELL_SOURCES.map(source => cellsBySource[source])).filter(Boolean);
+  const cellEnvelopes = cellSources.map(source => cellsBySource[source]);
+  const discoveryEnvelope = ownsData && cellSources.length === 0 ? state.cellDiscovery : null;
+  const envelopes = (ownsData ? [state.assets, state.judgments, state.clauses] : []).concat(cellEnvelopes, discoveryEnvelope ? [discoveryEnvelope] : []).filter(Boolean);
   const catalogMtime = _catCatalogMtime(envelopes);
 
   return (
@@ -446,15 +476,15 @@ function V4Catalog({ baseUrl }) {
         <span>contract {CAT_CONTRACT_VERSION}</span>
         <span>catalog mtime {catalogMtime}</span>
         <span>base guarded {ownsData ? "fresh" : "pending"}</span>
-        <span>cell sources {ownsData ? CAT_CELL_SOURCES.length : "—"}</span>
+        <span>cell sources {ownsData ? cellSources.length : "—"}</span>
       </div>
       <_V4CatalogNotice loading={state.loading} error={state.error} envelopes={envelopes} />
       <_V4CatalogProvenance assets={ownsData ? state.assets : null} />
       <div className="v4-catalog-view-grid">
         <_V4CatalogV1 judgments={ownsData ? state.judgments : null} />
-        <_V4CatalogV2 cellsBySource={cellsBySource} />
+        <_V4CatalogV2 cellsBySource={cellsBySource} cellSources={cellSources} />
         <_V4CatalogV3 clauses={ownsData ? state.clauses : null} />
-        <_V4CatalogV4 cellsBySource={cellsBySource} lookupSource={lookupSource} setLookupSource={setLookupSource} lookupLabel={lookupLabel} setLookupLabel={setLookupLabel} />
+        <_V4CatalogV4 cellsBySource={cellsBySource} cellSources={cellSources} lookupSource={lookupSource} setLookupSource={setLookupSource} lookupLabel={lookupLabel} setLookupLabel={setLookupLabel} />
         <_V4CatalogV5 />
       </div>
     </section>

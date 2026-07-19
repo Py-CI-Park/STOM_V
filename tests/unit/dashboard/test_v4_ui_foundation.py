@@ -328,6 +328,7 @@ def test_v4_catalog_uses_only_sealed_rdc1_routes_and_guards_stale_base() -> None
     assert 'judgments: "/research/judgments?include_ledger=1&limit=200"' in source
     assert 'clauses: "/research/clauses?limit=200"' in source
     assert 'return "/research/cells?source=" + encodeURIComponent(source) + "&limit=2000";' in source
+    assert 'cells: "/research/cells?limit=1"' in source
     assert "/research/summary" not in source
     assert "AbortController" in source
     assert "generation !== generationRef.current" in source
@@ -335,6 +336,30 @@ def test_v4_catalog_uses_only_sealed_rdc1_routes_and_guards_stale_base() -> None
     assert 'value.contract_version !== CAT_CONTRACT_VERSION' in source
     assert 'reason: "contract_mismatch"' in source
     assert "asset.path" not in source
+    assert "CAT_CELL_SOURCES" not in source
+
+
+def test_v4_catalog_discovers_cell_sources_from_allowed_allowlist() -> None:
+    source = _read("v4-catalog.jsx")
+
+    for forbidden in (
+        'const CAT_CELL_SOURCES = Object.freeze(["o1g"',
+        "CAT_CELL_SOURCES.map",
+        "CAT_CELL_SOURCES.length",
+        'useState_cat("o1g")',
+        'useState_cat("l3")',
+        "const fallbackSource =",
+    ):
+        assert forbidden not in source
+
+    assert "function _catDiscoveredCellSources(envelope)" in source
+    assert "const raw = Array.isArray(envelope.allowed) ? envelope.allowed : [];" in source
+    assert "const cellSources = _catDiscoveredCellSources(cellDiscovery);" in source
+    assert "cellSources.length === 0" in source
+    assert "cellSources.map(source => get(_catCellsRoute(source)).then(payload => [source, payload]))" in source
+    assert "<_V4CatalogV2 cellsBySource={cellsBySource} cellSources={cellSources} />" in source
+    assert "cellSources.map(source => <option" in source
+    assert 'cell sources {ownsData ? cellSources.length : "—"}' in source
 
 
 def test_v4_catalog_renders_five_honest_canonical_views() -> None:
