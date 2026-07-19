@@ -31,7 +31,7 @@ section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
 .masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
 .meta-grid b{color:var(--ink);font-weight:600}
-.themebtn{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;white-space:nowrap}
+
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
 .kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
@@ -94,12 +94,10 @@ a{color:var(--accent)}
 footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
 footer code{font-family:"Consolas",monospace;font-size:11.5px}
 .tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
-.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
-.tabbtn.active{background:var(--card);color:var(--accent);border-color:var(--accent)}
-.tabpanel{padding-top:6px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;font-family:inherit;text-decoration:none}
+.tabbtn.active,.tabbtn:hover,.tabbtn:focus{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px;scroll-margin-top:74px}
 .tabpanel>section:first-of-type{border-top:none}
-body.js .tabpanel{display:none}
-body.js .tabpanel.active{display:block}
 @media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
 @media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
 </style>
@@ -113,24 +111,24 @@ body.js .tabpanel.active{display:block}
     <div class="meta-grid">
       <span>측정창 <b class="num">2022-03-23 ~ 2023-12-31 (발견창 437거래일)</b></span>
       <span>워크트리 <b>STOM_V.wt-alpha</b></span>
-      <span>측정 장부 <b class="num">263행</b></span>
+      <span>측정 장부 <b class="num">264행</b></span>
       <span>연구 <b class="num">13건</b> · 상세 보고서 <b class="num">13종</b></span>
     </div>
   </div>
-  <button class="themebtn" id="themebtn" type="button">🌙 다크 / ☀️ 라이트</button>
+
 </header>
-<nav class="tabs" role="tablist"><button class="tabbtn active" data-tab="overview">총괄</button><button class="tabbtn" data-tab="studies">연구 상세</button><button class="tabbtn" data-tab="reports">결과 보고서 관리</button><button class="tabbtn" data-tab="conditions">조건식</button><button class="tabbtn" data-tab="ledger">원장·규율</button></nav>
-<div id="tab-overview" class="tabpanel active"><section>
+<nav class="tabs" role="tablist"><a class="tabbtn active" href="#tab-overview">총괄</a><a class="tabbtn" href="#tab-studies">연구 상세</a><a class="tabbtn" href="#tab-reports">결과 보고서 관리</a><a class="tabbtn" href="#tab-conditions">조건식</a><a class="tabbtn" href="#tab-ledger">원장·규율</a></nav>
+<div id="tab-overview" class="tabpanel"><section>
   <div class="eyebrow">§0 — 총괄</div>
   <h2>11개 연구, 양성 3건·실전 1건·오답 6축·미결 1건</h2>
   <p class="lede">이 연구소는 새 시장 데이터 없이 <b>존재하는 DB에서 발굴</b>했다. 모든 측정은 사전등록·봉인 후에만 이뤄졌고(번복 0회), 가짜 후보 400여 개가 실전 자본을 만나기 전에 차단됐다. 아래 KPI·타임라인은 판정 장부와 판정 json 에서 로드한 값이다.</p>
-  <div class="kpis"><div class="kpi"><div class="label">측정 시행 (장부)</div><div class="value  num">263</div><div class="sub">전 방향·세션 합산 (n_trials 원장)</div></div><div class="kpi"><div class="label">양성·실전 성과</div><div class="value pos num">4건</div><div class="sub">압력 절 · 2절 시너지 · B1(실전 이관)</div></div><div class="kpi"><div class="label">오답 확정 (기각·종결)</div><div class="value  num">8축</div><div class="sub">봉인된 자로 잰 확정 지식 · 미결 1</div></div><div class="kpi"><div class="label">B1 엔진 A/B 4런</div><div class="value pos num">전체 PASS</div><div class="sub">2년 ΣΔ +1538872원</div></div></div>
+  <div class="kpis"><div class="kpi"><div class="label">측정 시행 (장부)</div><div class="value  num">264</div><div class="sub">전 방향·세션 합산 (n_trials 원장)</div></div><div class="kpi"><div class="label">양성·실전 성과</div><div class="value pos num">4건</div><div class="sub">압력 절 · 2절 시너지 · B1(실전 이관)</div></div><div class="kpi"><div class="label">오답 확정 (기각·종결)</div><div class="value  num">8축</div><div class="sub">봉인된 자로 잰 확정 지식 · 미결 1</div></div><div class="kpi"><div class="label">B1 엔진 A/B 4런</div><div class="value pos num">전체 PASS</div><div class="sub">2년 ΣΔ +1538872원</div></div></div>
 
   <h3>판정 연대기 (전부 사전등록 봉인 후 측정)</h3>
   <ul class="timeline"><li><span class="tdate num">07-11</span><span class="badge kill">기각</span><span><b>S-트랙 칸-조준</b> — 지도를 아무리 촘촘히 그려도 챔피언 사냥터가 '평균 이하 칸'으로 보였다 — 엣지는 구역이 아니었다.</span></li><li><span class="tdate num">07-11</span><span class="badge kill">기각</span><span><b>시초 갭×시총 144셀</b> — '싸게 시작해 튀는 소형주'라는 직관을 144칸 전수로 재보니 양(+)인 칸이 하나도 없었다.</span></li><li><span class="tdate num">07-12</span><span class="badge posv">양성</span><span><b>D1 챔피언 절 분해</b> — 우승 레시피(챔피언 매수식)를 재료 하나씩 뜯어 '진짜 맛을 내는 재료' 5개를 찾았다.</span></li><li><span class="tdate num">07-12</span><span class="badge kill">기각</span><span><b>D5-R 청산 triage</b> — 8가지 청산 개선안을 재보니 통계 하한엔 못 미쳤지만, 그 안에서 진짜 메커니즘 하나(저활력 절단)가 살아 있었다.</span></li><li><span class="tdate num">07-12</span><span class="badge live">실전이관</span><span><b>B1 청산 패치 (실전 이관)</b> — "120초 들고도 최고 1%도 못 갔고 지금 손실이면 잘라라" — 매수는 그대로, 매도에 절 하나 추가.</span></li><li><span class="tdate num">07-12</span><span class="badge kill">기각</span><span><b>D5·D9 전이 온셋</b> — '관심종목에 새로 등장하는 순간'이 특별한가 봤더니, 대개 '거래급증' ±30초 안에서 일어나는 같은 사건이었다.</span></li><li><span class="tdate num">07-12</span><span class="badge posv">양성</span><span><b>D1 2절 시너지</b> — 혼자 넣으면 맛을 깎던 재료(가격대 필터)가 압력 재료와 함께면 해가 사라진다 — '궁합'의 최초 실증.</span></li><li><span class="tdate num">07-12</span><span class="badge kill">기각</span><span><b>O-3 돌파 온셋</b> — 차트술사가 사랑하는 '벽 뚫는 순간'(돌파)에 들어가 봤더니 다섯 종류 모두 평균 손해였다.</span></li><li><span class="tdate num">07-13</span><span class="badge kill">기각</span><span><b>O-4 생성 문법</b> — 합격한 부품(압력 절+결합 규칙)으로 후보 158개를 조립했지만 전 조합이 전원 음(−) — 가산 조합엔 금맥이 없었다.</span></li><li><span class="tdate num">07-13</span><span class="badge hold">미결</span><span><b>B-트랙 가지 분해</b> — 챔피언은 '경우의 수(가지)'로 사는데 우리 후보는 단일 AND였다 — 챔피언 깊은 가지가 최초의 양(+) 신호였다(표본 부족).</span></li><li><span class="tdate num">07-14</span><span class="badge kill">종결</span><span><b>B-ext 다전략 확장</b> — 같은 가문 전략들의 깊은 가지를 모아 표본을 늘려도 여전히 확정 불가(c) — 오프라인 발굴 축을 정직하게 종결했다.</span></li><li><span class="tdate num">07-16</span><span class="badge posv">양성</span><span><b>매도식 D1 (절 제거 ablation)</b> — 매도식 9개 절을 하나씩 꺼 보니 '빼서 좋아질 절'은 없었다 — 다섯 절은 확실히 돈을 지키는 절(load-bearing)이었다.</span></li><li><span class="tdate num">07-17</span><span class="badge kill">기각</span><span><b>X1 매수 절-삭제 엔진 A/B</b> — 그물코(매수 조건) 4개를 하나씩 빼고 실제 바다(엔진)에 던져 봤다 — 더 많이 잡되 총어획이 느는 그물은 없었다.</span></li></ul>
 
   <h3>검증 깔때기 — 실전에 가짜를 넣지 않은 것이 이 공장의 실수익</h3>
-  <div class="funnel"><div class="fstep" style="background:var(--muted)"><span>측정 시행 (전량 장부 기록)</span><b class="num">263</b></div><div class="fstep" style="background:var(--down)"><span>검정된 후보 (조합·셀·가지·온셋)</span><b class="num">400+ 개</b></div><div class="fstep" style="background:var(--accent)"><span>통계 관문 통과 (양성 지식)</span><b class="num">3건</b></div><div class="fstep" style="background:var(--up)"><span>실전 후보로 승격</span><b class="num">1건 (B1)</b></div></div>
+  <div class="funnel"><div class="fstep" style="background:var(--muted)"><span>측정 시행 (전량 장부 기록)</span><b class="num">264</b></div><div class="fstep" style="background:var(--down)"><span>검정된 후보 (조합·셀·가지·온셋)</span><b class="num">400+ 개</b></div><div class="fstep" style="background:var(--accent)"><span>통계 관문 통과 (양성 지식)</span><b class="num">3건</b></div><div class="fstep" style="background:var(--up)"><span>실전 후보로 승격</span><b class="num">1건 (B1)</b></div></div>
   <p class="muted" style="font-size:13px">가짜 후보 약 400개가 실전 자본을 만나기 전에 차단됨 — 사전등록·봉인·전수 측정 규율의 직접 효과.</p>
 
   <h3>냉정한 자체 평가 — 65 / 100 <span class="muted" style="font-size:13px">(결산 v1 §4 계승)</span></h3>
@@ -142,79 +140,79 @@ body.js .tabpanel.active{display:block}
   <h2>연구별 카드 — 목적·방법·핵심 수치·판정</h2>
   <p class="lede">각 카드의 핵심 수치는 해당 연구의 판정 json 에서 로드한 값이다(파일 부재 시 '증거 파일 없음' 표기). 판정 배지와 봉인 커밋은 봉인된 프로그램 사실이다.</p>
   <div class="studycard">
-  <div class="shead"><h3>S-트랙 칸-조준</h3><span><span class="badge kill">기각</span><a href="research/strack.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>S-트랙 칸-조준</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/strack.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">지도를 아무리 촘촘히 그려도 챔피언 사냥터가 '평균 이하 칸'으로 보였다 — 엣지는 구역이 아니었다.</p>
   <p class="method"><b>방법.</b> 시간대×등락율×시총으로 시초 30분을 격자로 나눠 챔피언 점유 칸의 실현손익(L3) 우위를 두 라벨(h300·L3)로 가문 투표 검정.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">가문 투표</td><td style="white-space:normal;font-weight:600">0/2 통과</td></tr><tr><td style="white-space:normal;color:var(--muted)">L3 라벨 챔피언 칸 우위</td><td style="white-space:normal;font-weight:600">3/4 미달</td></tr><tr><td style="white-space:normal;color:var(--muted)">전체 L1 L3 평균</td><td style="white-space:normal;font-weight:600">-1.008%p</td></tr></table></div><p class="method">해석: 두 라벨(h300·L3) 교차 KILL — 엣지는 구역이 아니다</p>
   <div class="ev">봉인 커밋 <span class="sha">f553378b</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-11_s_track_preregistration_v2a.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/v2c_gate_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>시초 갭×시총 144셀</h3><span><span class="badge kill">기각</span><a href="research/o1g.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>시초 갭×시총 144셀</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/o1g.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">'싸게 시작해 튀는 소형주'라는 직관을 144칸 전수로 재보니 양(+)인 칸이 하나도 없었다.</p>
   <p class="method"><b>방법.</b> 시가갭×시총×진입창×출구 4종의 144셀 전수 측정 — 각 셀 조건부 기대값(비용 차감 L3)에 BH-FDR.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">144셀 FDR 생존</td><td style="white-space:normal;font-weight:600">0개</td></tr><tr><td style="white-space:normal;color:var(--muted)">strong 셀</td><td style="white-space:normal;font-weight:600">0개</td></tr><tr><td style="white-space:normal;color:var(--muted)">판정</td><td style="white-space:normal;font-weight:600">양EV 증거 0</td></tr></table></div><p class="method">해석: 갭+20% 추격이 최악(−2.1%) — 무조건부 시초는 함정</p>
   <div class="ev">봉인 커밋 <span class="sha">8bc8dbb9</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-11_o1g_gap_feasibility_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/o1g/o1g_grid_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>D1 챔피언 절 분해</h3><span><span class="badge posv">양성</span><a href="research/d1.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>D1 챔피언 절 분해</h3><span><span class="badge posv">양성</span><a href="/reports/view?path=research/condition_research/reports/research/d1.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">우승 레시피(챔피언 매수식)를 재료 하나씩 뜯어 '진짜 맛을 내는 재료' 5개를 찾았다.</p>
   <p class="method"><b>방법.</b> 챔피언 매수식의 39 유니크 절을 863,446 서지 온셋 위에서 만족/미만족으로 갈라 L3 평균차(Δ)를 효과크기·CI·FDR·연도부호로 검정.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">load-bearing 절</td><td style="white-space:normal;font-weight:600">5종(4족)</td></tr><tr><td style="white-space:normal;color:var(--muted)">역생산 절</td><td style="white-space:normal;font-weight:600">6종</td></tr><tr><td style="white-space:normal;color:var(--muted)">압력 절 Δ 범위</td><td style="white-space:normal;font-weight:600">+0.134 ~ +0.198%p</td></tr></table></div><p class="method">해석: 챔피언의 '돈 되는 부품' 5개 실증 — 수요 압력 미시구조</p>
   <div class="ev">봉인 커밋 <span class="sha">56564cba</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_d1_clause_ablation_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d1_clause_ablation_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>D5-R 청산 triage</h3><span><span class="badge kill">기각</span><a href="research/d5r.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>D5-R 청산 triage</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/d5r.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">8가지 청산 개선안을 재보니 통계 하한엔 못 미쳤지만, 그 안에서 진짜 메커니즘 하나(저활력 절단)가 살아 있었다.</p>
   <p class="method"><b>방법.</b> 챔피언 실거래를 재현해 8개 청산 후보의 손익 개선을 하한·상태강건성으로 triage — kill-2였으나 T=120 저활력 절단만 실전 후보로.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">챔피언 실거래(dedup)</td><td style="white-space:normal;font-weight:600">318건</td></tr><tr><td style="white-space:normal;color:var(--muted)">후보 / 최선</td><td style="white-space:normal;font-weight:600">8개 / B1</td></tr><tr><td style="white-space:normal;color:var(--muted)">최선 후보 Δnet</td><td style="white-space:normal;font-weight:600">+0.292%p</td></tr></table></div><p class="method">해석: 8후보 kill-2(하한 미달)였으나 T=120 저활력 절단(B1) 메커니즘만 실전 이관</p>
   <div class="ev">봉인 커밋 <span class="sha">ac5ca448</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_d5r_conditional_exit_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_triage_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>B1 청산 패치 (실전 이관)</h3><span><span class="badge live">실전이관</span><a href="research/b1.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>B1 청산 패치 (실전 이관)</h3><span><span class="badge live">실전이관</span><a href="/reports/view?path=research/condition_research/reports/research/b1.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">"120초 들고도 최고 1%도 못 갔고 지금 손실이면 잘라라" — 매수는 그대로, 매도에 절 하나 추가.</p>
   <p class="method"><b>방법.</b> 챔피언 매도식 + 저활력 절단 절 1개. STOM 엔진 A/B 4런(2022·2023 × 원본/B1, tick·배팅 500만)으로 실측 검증 → 전략 DB 등록.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">엔진 A/B 4런</td><td style="white-space:normal;font-weight:600">전체 PASS</td></tr><tr><td style="white-space:normal;color:var(--muted)">2년 ΣΔ</td><td style="white-space:normal;font-weight:600">+1,538,872원</td></tr><tr><td style="white-space:normal;color:var(--muted)">연도 동방향</td><td style="white-space:normal;font-weight:600">예(+)</td></tr></table></div><p class="method">해석: 챔피언 매도식 + 저활력 절단 절 1개 → 전략 DB 등록·절차서 완비</p>
   <div class="ev">봉인 커밋 <span class="sha">1ca2c7aa</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json</code> · <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json</code> · <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>D5·D9 전이 온셋</h3><span><span class="badge kill">기각</span><a href="research/d5d9.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>D5·D9 전이 온셋</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/d5d9.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">'관심종목에 새로 등장하는 순간'이 특별한가 봤더니, 대개 '거래급증' ±30초 안에서 일어나는 같은 사건이었다.</p>
   <p class="method"><b>방법.</b> 관심종목 진입(D9 전이) 온셋을 서지 온셋과 ±30초 겹침률로 대조 — 겹침이 상한 0.50을 넘으면 구별되는 모집단 아님(kill-3).</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">서지 겹침(±30초)</td><td style="white-space:normal;font-weight:600">?</td></tr><tr><td style="white-space:normal;color:var(--muted)">상한</td><td style="white-space:normal;font-weight:600">0.50</td></tr><tr><td style="white-space:normal;color:var(--muted)">판정</td><td style="white-space:normal;font-weight:600">kill-3(서지 재포장)</td></tr></table></div><p class="method">해석: '게시판 등장'은 대개 '거래급증' ±30초 안 — 구별되는 모집단 아님</p>
   <div class="ev">봉인 커밋 <span class="sha">99944213</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_d5_d9_transition_onset_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/d5_d9_r3_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>D1 2절 시너지</h3><span><span class="badge posv">양성</span><a href="research/d1pair.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>D1 2절 시너지</h3><span><span class="badge posv">양성</span><a href="/reports/view?path=research/condition_research/reports/research/d1pair.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">혼자 넣으면 맛을 깎던 재료(가격대 필터)가 압력 재료와 함께면 해가 사라진다 — '궁합'의 최초 실증.</p>
   <p class="method"><b>방법.</b> D1 압력 5절 × 선정가드 6절 등 39짝의 2×2 차이-속-차이(교호 효과 I)를 CI·FDR·연도부호로 검정.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">시너지 짝</td><td style="white-space:normal;font-weight:600">2짝 ['16x37', '16x38']</td></tr><tr><td style="white-space:normal;color:var(--muted)">16×37 I</td><td style="white-space:normal;font-weight:600">+0.129%p CI[+0.078,+0.195]</td></tr><tr><td style="white-space:normal;color:var(--muted)">16×38 I</td><td style="white-space:normal;font-weight:600">+0.157%p CI[+0.090,+0.230]</td></tr></table></div><p class="method">해석: 혼자 해로운 가격대 필터가 압력 절과 함께면 무해 — '가드는 조합 조건부'</p>
   <div class="ev">봉인 커밋 <span class="sha">e1c12697</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_d1_pairwise_interaction_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/d1_pairwise_interaction_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>O-3 돌파 온셋</h3><span><span class="badge kill">기각</span><a href="research/o3.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>O-3 돌파 온셋</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/o3.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">차트술사가 사랑하는 '벽 뚫는 순간'(돌파)에 들어가 봤더니 다섯 종류 모두 평균 손해였다.</p>
   <p class="method"><b>방법.</b> 구간최고가·신고가·시가·VI 돌파 5변형 70만건 온셋에 챔피언 출구(L3)를 붙여 변형×모집단별 절대 EV를 검정 — 전 단위 음(−).</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">자격 변형×모집단</td><td style="white-space:normal;font-weight:600">10</td></tr><tr><td style="white-space:normal;color:var(--muted)">strong(양EV)</td><td style="white-space:normal;font-weight:600">0개</td></tr><tr><td style="white-space:normal;color:var(--muted)">CI 상한</td><td style="white-space:normal;font-weight:600">전부 음(−0.83~−1.01%p)</td></tr></table></div><p class="method">해석: 시초 30분 내 돌파 추격은 함정 — 추격 매수의 온셋판</p>
   <div class="ev">봉인 커밋 <span class="sha">96a37d28</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-12_o3_breakout_onset_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>O-4 생성 문법</h3><span><span class="badge kill">기각</span><a href="research/o4.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>O-4 생성 문법</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/o4.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">합격한 부품(압력 절+결합 규칙)으로 후보 158개를 조립했지만 전 조합이 전원 음(−) — 가산 조합엔 금맥이 없었다.</p>
   <p class="method"><b>방법.</b> 압력 4족 ± 조건부 가드 ± 함정 회피로 조립한 매수 후보 158개(닫힌 문법)의 발화 집합 mean L3 를 효과 하한·FDR·겹침으로 검정.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">자격 후보</td><td style="white-space:normal;font-weight:600">158 / 158</td></tr><tr><td style="white-space:normal;color:var(--muted)">생존(양EV∧구별)</td><td style="white-space:normal;font-weight:600">0개</td></tr><tr><td style="white-space:normal;color:var(--muted)">양EV 증거 0</td><td style="white-space:normal;font-weight:600">158개 전원</td></tr></table></div><p class="method">해석: 검증 부품의 전 가산 조합이 전원 음(−) — 가산 조합 문법 한계 확정</p>
   <div class="ev">봉인 커밋 <span class="sha">fd7bae48</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>B-트랙 가지 분해</h3><span><span class="badge hold">미결</span><a href="research/btrack.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>B-트랙 가지 분해</h3><span><span class="badge hold">미결</span><a href="/reports/view?path=research/condition_research/reports/research/btrack.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">챔피언은 '경우의 수(가지)'로 사는데 우리 후보는 단일 AND였다 — 챔피언 깊은 가지가 최초의 양(+) 신호였다(표본 부족).</p>
   <p class="method"><b>방법.</b> 챔피언 시간-분리 2가지(902 24절·905 26절)의 AND 발화 합집합 mean L3 를 3분법(재현/프레임갭/미결)으로 — n=114, +0.166%p, CI 0 걸침(c).</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">합동 anchor 발화</td><td style="white-space:normal;font-weight:600">n=114</td></tr><tr><td style="white-space:normal;color:var(--muted)">mean L3</td><td style="white-space:normal;font-weight:600">+0.166%p</td></tr><tr><td style="white-space:normal;color:var(--muted)">판정</td><td style="white-space:normal;font-weight:600">(c) 미결(CI 0 걸침·검정력 부족)</td></tr></table></div><p class="method">해석: 챔피언 깊은 가지(24~26절)가 최초의 양(+) 집합 — 단 표본 부족</p>
   <div class="ev">봉인 커밋 <span class="sha">db08c1de</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-13_b_track_branch_decomposition_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/b_track/b_branch_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>B-ext 다전략 확장</h3><span><span class="badge kill">종결</span><a href="research/bext.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>B-ext 다전략 확장</h3><span><span class="badge kill">종결</span><a href="/reports/view?path=research/condition_research/reports/research/bext.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">같은 가문 전략들의 깊은 가지를 모아 표본을 늘려도 여전히 확정 불가(c) — 오프라인 발굴 축을 정직하게 종결했다.</p>
   <p class="method"><b>방법.</b> 902905 가문 13종의 깊은 가지 + 챔피언 902/905 발화 합집합(합동 anchor) mean L3 를 3분법·층화로 재검정 — 표본 확장에도 (c) 재발.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">합동 anchor 발화</td><td style="white-space:normal;font-weight:600">n=180</td></tr><tr><td style="white-space:normal;color:var(--muted)">프레임 판정</td><td style="white-space:normal;font-weight:600">undetermined</td></tr><tr><td style="white-space:normal;color:var(--muted)">정식/관찰 양(+)</td><td style="white-space:normal;font-weight:600">0/0</td></tr></table></div><p class="method">해석: 가문 13종 고겹침 — (c) 재발로 오프라인 발굴 축 최종 종결</p>
   <div class="ev">봉인 커밋 <span class="sha">1e179bb6</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-14_b_track_ext_multistrategy_branches_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/b_track_ext/b_ext_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>매도식 D1 (절 제거 ablation)</h3><span><span class="badge posv">양성</span><a href="research/sell_d1.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>매도식 D1 (절 제거 ablation)</h3><span><span class="badge posv">양성</span><a href="/reports/view?path=research/condition_research/reports/research/sell_d1.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">매도식 9개 절을 하나씩 꺼 보니 '빼서 좋아질 절'은 없었다 — 다섯 절은 확실히 돈을 지키는 절(load-bearing)이었다.</p>
   <p class="method"><b>방법.</b> 매도식 발화 절 9개를 drop 미러 하니스로 하나씩 제거 재채점(영향 집합 {l3_clause==k} 서로소 분할) — 원본재현 862,932건 전수 비트동일 게이트 후 Δ·CI·FDR·연도부호 판정.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">load-bearing 확정</td><td style="white-space:normal;font-weight:600">5절 [1, 3, 6, 8, 9]</td></tr><tr><td style="white-space:normal;color:var(--muted)">제거-개선(B2 후보)</td><td style="white-space:normal;font-weight:600">없음</td></tr><tr><td style="white-space:normal;color:var(--muted)">지배 절 3 (청산 62.8%)</td><td style="white-space:normal;font-weight:600">제거 Δ -0.108%p — 보존 확정</td></tr></table></div><p class="method">해석: 9절 전부 음/중립 — 매도식은 '뺄 것 없음', 개선 방향은 추가(B1)뿐</p>
   <div class="ev">봉인 커밋 <span class="sha">bd5bb3c4</span> · 봉인 문서 <code>docs/research/condition_research/plans/2026-07-16_sell_d1_exit_ablation_preregistration.md</code> · 증거 <code>docs/research/condition_research/research_runs/alpha_restart_20260710/sell_d1/sell_d1_summary.json</code></div>
 </div><div class="studycard">
-  <div class="shead"><h3>X1 매수 절-삭제 엔진 A/B</h3><span><span class="badge kill">기각</span><a href="research/x1.html"><b>전체 보고서 →</b></a></span></div>
+  <div class="shead"><h3>X1 매수 절-삭제 엔진 A/B</h3><span><span class="badge kill">기각</span><a href="/reports/view?path=research/condition_research/reports/research/x1.html"><b>전체 보고서 →</b></a></span></div>
   <p class="easy">그물코(매수 조건) 4개를 하나씩 빼고 실제 바다(엔진)에 던져 봤다 — 더 많이 잡되 총어획이 느는 그물은 없었다.</p>
   <p class="method"><b>방법.</b> 역생산 절 4종(시총 게이트·회전율·잔량비 2종)을 각각 삭제한 변형 매수식의 엔진 A/B 8런(기준 A=B1 런 재사용, 프로파일 동일) — C1 Δ총수익 양년동방향·C2 거래수 ≤4×·C3 MDD(×1.5 ∧ ≤15%)·C4 무오류 전건 요구.</p>
   <div class="tablebox"><table><tr><td style="white-space:normal;color:var(--muted)">X1 후보(전 관문 통과)</td><td style="white-space:normal;font-weight:600">0</td></tr><tr><td style="white-space:normal;color:var(--muted)">최선 유혹(기각 사유의 실물)</td><td style="white-space:normal;font-weight:600">DROP15: 2022 +2,248,649원 / 2023 -1,274,079원 — 연도 혼재</td></tr><tr><td style="white-space:normal;color:var(--muted)">식붕괴</td><td style="white-space:normal;font-weight:600">없음</td></tr></table></div><p class="method">해석: 입(X1)·출(매도식 D1) 모두 '뺄 것 없음' — 챔피언은 절 단위 국소 최적(대칭 확정)</p>
@@ -229,268 +227,92 @@ body.js .tabpanel.active{display:block}
   <div><span class="badge kill">기각</span></div>
   <div class="rone">가문 투표: 0/2 통과</div>
   <div class="rmeta">봉인 2026-07-11 · <span class="sha">f553378b</span></div>
-  <a class="open" href="research/strack.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/strack.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">시초 갭×시총 144셀</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">144셀 FDR 생존: 0개</div>
   <div class="rmeta">봉인 2026-07-11 · <span class="sha">8bc8dbb9</span></div>
-  <a class="open" href="research/o1g.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/o1g.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">D1 챔피언 절 분해</div>
   <div><span class="badge posv">양성</span></div>
   <div class="rone">load-bearing 절: 5종(4족)</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">56564cba</span></div>
-  <a class="open" href="research/d1.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/d1.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">D5-R 청산 triage</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">챔피언 실거래(dedup): 318건</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">ac5ca448</span></div>
-  <a class="open" href="research/d5r.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/d5r.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">B1 청산 패치 (실전 이관)</div>
   <div><span class="badge live">실전이관</span></div>
   <div class="rone">엔진 A/B 4런: 전체 PASS</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">1ca2c7aa</span></div>
-  <a class="open" href="research/b1.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/b1.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">D5·D9 전이 온셋</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">서지 겹침(±30초): ?</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">99944213</span></div>
-  <a class="open" href="research/d5d9.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/d5d9.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">D1 2절 시너지</div>
   <div><span class="badge posv">양성</span></div>
   <div class="rone">시너지 짝: 2짝 ['16x37', '16x38']</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">e1c12697</span></div>
-  <a class="open" href="research/d1pair.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/d1pair.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">O-3 돌파 온셋</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">자격 변형×모집단: 10</div>
   <div class="rmeta">봉인 2026-07-12 · <span class="sha">96a37d28</span></div>
-  <a class="open" href="research/o3.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/o3.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">O-4 생성 문법</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">자격 후보: 158 / 158</div>
   <div class="rmeta">봉인 2026-07-13 · <span class="sha">fd7bae48</span></div>
-  <a class="open" href="research/o4.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/o4.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">B-트랙 가지 분해</div>
   <div><span class="badge hold">미결</span></div>
   <div class="rone">합동 anchor 발화: n=114</div>
   <div class="rmeta">봉인 2026-07-13 · <span class="sha">db08c1de</span></div>
-  <a class="open" href="research/btrack.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/btrack.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">B-ext 다전략 확장</div>
   <div><span class="badge kill">종결</span></div>
   <div class="rone">합동 anchor 발화: n=180</div>
   <div class="rmeta">봉인 2026-07-14 · <span class="sha">1e179bb6</span></div>
-  <a class="open" href="research/bext.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/bext.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">매도식 D1 (절 제거 ablation)</div>
   <div><span class="badge posv">양성</span></div>
   <div class="rone">load-bearing 확정: 5절 [1, 3, 6, 8, 9]</div>
   <div class="rmeta">봉인 2026-07-16 · <span class="sha">bd5bb3c4</span></div>
-  <a class="open" href="research/sell_d1.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/sell_d1.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">X1 매수 절-삭제 엔진 A/B</div>
   <div><span class="badge kill">기각</span></div>
   <div class="rone">X1 후보(전 관문 통과): 0</div>
   <div class="rmeta">봉인 2026-07-17 · <span class="sha">cb8a9d6a</span></div>
-  <a class="open" href="research/x1.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/research/x1.html">보고서 열기 →</a>
 </div><div class="repcard">
   <div class="rtitle">B1 결산 보고서 v1</div>
   <div><span class="badge live">결산</span></div>
   <div class="rone">B1 백테스트 성과 + 프로그램 결산 — 디자인 정본</div>
   <div class="rmeta">발행 2026-07-16</div>
-  <a class="open" href="2026-07-16_b1_program_report.html">보고서 열기 →</a>
+  <a class="open" href="/reports/view?path=research/condition_research/reports/2026-07-16_b1_program_report.html">보고서 열기 →</a>
 </div></div>
   <div class="evfoot">근거 파일: <code>docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl</code></div>
 </section></div><div id="tab-conditions" class="tabpanel"><section>
   <div class="eyebrow">§3 — 조건식 전문 (실전 등록본)</div>
   <h2>매수·매도 조건식 — strategy.db 등록 원문 (생성 시점 추출)</h2>
   <p class="lede">STOM GUI에서 <b>매수 <span class="sha">ALP_V4_RR8_12</span> + 매도 <span class="sha">ALP_D5R_B1_S</span></b> 페어로 선택하면 아래 그대로 작동한다. 원문은 <code>_database/strategy.db</code>에서 read-only 로 추출하고 sha 를 검증했다(&lt; 등 HTML 이스케이프 완료).</p>
-  <div class="codehead"><b>① 매수 조건식 — ALP_V4_RR8_12</b><span>sha256 <span class="sha">348c5181</span> · sha 일치</span><span>구조: <b>시간 분리 2가지</b> — 개장 첫 2분(902) / 09:02~09:07(905)</span></div><pre><span class="c"># ================================</span>
-<span class="c">#  공통 계산 지표</span>
-<span class="c"># ================================</span>
-전일종가          = 현재가 / (1 + (등락율 / 100))                      # 단위: 원
-시가등락율        = ((시가 - 전일종가) / 전일종가) * 100                # 단위: 퍼센트
-시가대비등락율    = ((현재가 - 시가) / 시가) * 100                      # 단위: 퍼센트
-초당순매수금액    = (초당매수수량 - 초당매도수량) * 현재가 / 1_000_000   # 단위: 백만원
-<span class="c"># ------------------------------------------------</span>
-<span class="c">#  New 지표 (미사용 시 주석 처리)</span>
-<span class="c">#    · 누적거래대금비율 · 초당순매수비율 · 거래대금/체결강도 가속도 등</span>
-<span class="c"># ------------------------------------------------</span>
-
-
-
-<span class="c"># ================================</span>
-<span class="c">#  매수 조건 (902 ↔ 905 통합)</span>
-<span class="c"># ================================</span>
-VI아래5호가 = VI가격 - VI호가단위 * 5
-매수 = True
-
-
-<span class="k">if</span> not (관심종목 == 1):                         # 공통 필터 – 관심종목
-    매수 = False
-
-
-<span class="c"># ---------- 09:00:00 ~ 09:02:00 (902 전략) ----------</span>
-<span class="k">elif</span> 시분초 &lt; 90200:
-    <span class="k">if</span> not (1000 &lt; 현재가 &lt;= 50000):
-        매수 = False
-    <span class="k">elif</span> not (1.0 &lt; 등락율 &lt;= 8.0):
-        매수 = False
-    <span class="k">elif</span> not (고저평균대비등락율 &gt; 0):
-        매수 = False
-    <span class="k">elif</span> not (현재가 &lt; VI아래5호가):
-        매수 = False
-    <span class="k">elif</span> 라운드피겨위5호가이내:
-        매수 = False
-<span class="c">    # 초당거래대금 필터는 주석 처리 (원본 동일)</span>
-    <span class="k">elif</span> 시분초 &lt; 90200:                         # 세부 조건
-        <span class="k">if</span> 시가총액 &lt; 3000:
-            <span class="k">if</span> not (2.0 &lt;= 시가등락율 &lt; 4.0):
-                매수 = False
-            <span class="k">elif</span> not (0.5 &lt;= 시가대비등락율 &lt; 6.0):
-                매수 = False
-            <span class="k">elif</span> not (1 &lt; 초당순매수금액 &lt; 1000):
-                매수 = False
-            <span class="k">elif</span> not (현재가 &gt; (고가 - (고가 - 저가) * 0.20)):
-                매수 = False
-            <span class="k">elif</span> not (전일비 &gt; 0 and 전일동시간비 &gt; 0):
-                매수 = False
-            <span class="k">elif</span> not (1.5 &lt; 회전율):
-                매수 = False
-            <span class="k">elif</span> not (당일거래대금 &gt; 5 * 100):
-                매수 = False
-            <span class="k">elif</span> not (당일거래대금각도(30) &gt; 5 and 당일거래대금각도(30) &lt; 30): # 스터디 요기까지함
-                매수 = False
-            <span class="k">elif</span> not (초당거래대금 / 초당거래대금평균(30) &gt; 2.5):
-                매수 = False
-            <span class="k">elif</span> not (초당매수수량 &gt; 매도총잔량 * 0.20):
-                매수 = False
-            <span class="k">elif</span> not (매도총잔량 &gt; 매수총잔량 * 0.10 and 매도총잔량 &lt; 매수총잔량 * 2.0):
-                매수 = False
-            <span class="k">elif</span> not (체결강도 &gt;= 70 and 체결강도 &lt;= 300):
-                매수 = False
-        <span class="k">else</span>:
-            매수 = False
-    <span class="k">else</span>:
-        매수 = False
-
-
-<span class="c"># ---------- 09:02:00 ~ 09:05:00 (905 전략) ----------</span>
-<span class="k">elif</span> 90200 &lt;= 시분초 &lt; 90700:
-    <span class="k">if</span> not (1000 &lt; 현재가 &lt;= 30000):
-        매수 = False
-    <span class="k">elif</span> not (2.0 &lt; 등락율 &lt;= 15.0):
-        매수 = False
-    <span class="k">elif</span> not (고저평균대비등락율 &gt; 0):
-        매수 = False
-    <span class="k">elif</span> not (현재가 &lt; VI아래5호가):
-        매수 = False
-    <span class="k">elif</span> 라운드피겨위5호가이내:
-        매수 = False
-    <span class="k">elif</span> not (초당거래대금 &gt; 초당거래대금N(1) * 1.0):
-        매수 = False
-    <span class="k">else</span>:
-        <span class="k">if</span> 시가총액 &lt; 3000:
-            <span class="k">if</span> not (0.0 &lt;= 시가등락율 &lt; 8.0):
-                매수 = False
-            <span class="k">elif</span> not (3.0 &lt;= 시가대비등락율 &lt; 8.0):
-                매수 = False
-            <span class="k">elif</span> not (1 &lt; 초당순매수금액 &lt; 1000):
-                매수 = False
-            <span class="k">elif</span> not (현재가 &gt; (고가 - (고가 - 저가) * 0.20)):
-                매수 = False
-            <span class="k">elif</span> not (전일비 &gt; 5 and 전일동시간비 &gt; 0):
-                매수 = False
-            <span class="k">elif</span> not (회전율 &gt; 1.5):
-                매수 = False
-            <span class="k">elif</span> not (당일거래대금 &gt; 50 * 100):
-                매수 = False
-            <span class="k">elif</span> not (당일거래대금각도(30) &gt; 10 and 당일거래대금각도(30) &lt; 30):
-                매수 = False
-            <span class="k">elif</span> not (초당거래대금 / 초당거래대금평균(30) &gt; 2.0):
-                매수 = False
-            <span class="k">elif</span> not (초당매수수량 &gt; 매도총잔량 * 0.30):
-                매수 = False
-            <span class="k">elif</span> not (매도총잔량 * 0.10 &lt; 매수총잔량 * 1.0):
-                매수 = False
-            <span class="k">elif</span> not (누적초당매수수량(30) * 0.5 &lt; 누적초당매도수량(30) * 1.0):
-                매수 = False
-            <span class="k">elif</span> not (누적초당매도수량(30) * 1.0 &lt; 누적초당매수수량(30) * 1.0):
-                매수 = False
-            <span class="k">elif</span> not (체결강도 &gt;= 70 and 체결강도 &lt;= 300):
-                매수 = False
-        <span class="k">else</span>:
-            매수 = False
-
-
-<span class="c"># ---------- 09:05:00 이후 ----------</span>
-<span class="k">else</span>:
-    매수 = False
-
-
-<span class="c"># ================================</span>
-<span class="c">#  매수 호출</span>
-<span class="c"># ================================</span>
-<span class="k">if</span> 매수:
-    self.Buy()</pre><div class="codehead"><b>② 매도 조건식 — ALP_D5R_B1_S</b><span>sha256 <span class="sha">48018620</span> · sha 일치</span><span>= 챔피언 매도 원문 + <b style="color:var(--mark-line)">B1 저활력 절단 절 1개</b>(하이라이트)</span></div><pre><span class="c"># ================================</span>
-<span class="c">#  공통 계산 지표</span>
-<span class="c"># ================================</span>
-시가대비등락율    = ((현재가 - 시가) / 시가) * 100                      # 단위: 퍼센트
-<span class="c"># ------------------------------------------------</span>
-<span class="c">#  New 지표 (미사용 시 주석 처리)</span>
-<span class="c">#   · 매도잔량압력 · 체결강도변동성 · RSI변화율 등</span>
-<span class="c"># ------------------------------------------------</span>
-
-
-
-<span class="c"># ================================</span>
-<span class="c">#  매도 조건 (902 ↔ 905 통합)</span>
-<span class="c"># ================================</span>
-매도 = False
-
-
-<span class="c"># 등락율 상한가 직전</span>
-<span class="k">if</span> 등락율 &gt; 29.5:
-    매도 = True
-<span class="k">elif</span> 시가대비등락율 &lt; 0 and 수익률 &lt;= -2.0 and 현재가 &lt; 최저현재가(int(60), int(보유시간)):
-    매도 = True
-
-
-<span class="k">elif</span> 보유시간 &gt; 60 and 현재가 &lt; 최저현재가(int(60), int(보유시간)):
-    매도 = True
-<span class="k">elif</span> 시분초 &lt; 93000:
-    <span class="k">if</span> 수익률 &gt;= 9 or 수익률 &lt;= -5.0:
-        매도 = True
-    <span class="k">elif</span> 최고수익률 &gt; 3 and 최고수익률 * 0.6 &gt;= 수익률:
-        매도 = True
-    <span class="k">elif</span> 시가총액 &lt; 10000:
-        <span class="k">if</span> 등락율각도(30) &gt;= 10 and (초당매도수량 - 초당매수수량) &gt;= 매수총잔량 * 0.5 and (현재가 / 현재가N(1) - 1) * 100 &lt; -0.5:
-            매도 = True
-        <span class="k">elif</span> 등락율각도(30) &lt; 10 and 등락율각도(30) &gt;= 5 and (초당매도수량 - 초당매수수량) &gt;= 매수총잔량 * 0.7 and (현재가 / 현재가N(1) - 1) * 100 &lt; -0.7:
-            매도 = True
-        <span class="k">elif</span> 등락율각도(30) &lt; 5 and 등락율각도(30) &gt;= 0 and (초당매도수량 - 초당매수수량) &gt;= 매수총잔량 * 0.8 and (현재가 / 현재가N(1) - 1) * 100 &lt; -0.5:
-            매도 = True
-        <span class="k">elif</span> 4.5 &lt; 최고수익률 and 현재가N(1) &gt;= 이동평균(60, 1) and 이동평균(60) &gt; 현재가:
-            매도 = True
-<mark>        <span class="k">elif</span> 보유시간 &gt;= 120 and 최고수익률 &lt; 1.0 and 수익률 &lt; 0.0:</mark>
-<mark><span class="c">            # D5R_B1_저활력절단</span></mark>
-<mark>            매도 = True</mark>
-
-
-<span class="c"># ================================</span>
-<span class="c">#  매도 호출</span>
-<span class="c"># ================================</span>
-<span class="k">if</span> 매도:
-    self.Sell()</pre>
+  <p class="muted">증거 파일 없음 — <code>strategy.db stockbuy:ALP_V4_RR8_12</code></p><p class="muted">증거 파일 없음 — <code>strategy.db stocksell:ALP_D5R_B1_S</code></p>
   <div class="callout"><b>운용 주의</b> — ① 원본 매도식과 <b>동시 병렬 운용 금지</b>(매수식 같아 중복 주문). ② 실전 개시 시 절차서(<code>plans/2026-07-12_b1_supervised_live_protocol.md</code>)의 킬스위치·30거래일 채점표가 정본.</div>
   <div class="evfoot">근거: <code>_database/strategy.db</code> (stockbuy/stocksell, read-only)</div>
 </section></div><div id="tab-ledger" class="tabpanel"><section>
@@ -498,8 +320,8 @@ VI아래5호가 = VI가격 - VI호가단위 * 5
   <h2>측정 장부·창-지위·SOP·정직한 한정</h2>
 
   <h3>계열별 시행 (n_trials 원장 — discipline.ledger.aggregate)</h3>
-  <div class="tablebox"><table><tr><th>계열</th><th>시행 수</th><th>√(2·ln n)</th></tr><tr><td>O-4</td><td><span class="num">158</span></td><td><span class="num">3.18</span></td></tr><tr><td>D1</td><td><span class="num">38</span></td><td><span class="num">2.70</span></td></tr><tr><td>D1_PAIR</td><td><span class="num">19</span></td><td><span class="num">2.43</span></td></tr><tr><td>D5-R</td><td><span class="num">12</span></td><td><span class="num">2.23</span></td></tr><tr><td>O-3</td><td><span class="num">10</span></td><td><span class="num">2.15</span></td></tr><tr><td>X1</td><td><span class="num">10</span></td><td><span class="num">2.15</span></td></tr><tr><td>매도식-D1</td><td><span class="num">8</span></td><td><span class="num">2.04</span></td></tr><tr><td>D5</td><td><span class="num">3</span></td><td><span class="num">1.48</span></td></tr><tr><td>S-트랙</td><td><span class="num">2</span></td><td><span class="num">1.18</span></td></tr><tr><td>B-트랙</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr><tr><td>B-트랙-ext</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr><tr><td>O-1G</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr></table></div>
-  <p class="muted" style="font-size:13px">합계 <b class="num">263</b>행 · known 창 접촉 <b class="num">0</b></p>
+  <div class="tablebox"><table><tr><th>계열</th><th>시행 수</th><th>√(2·ln n)</th></tr><tr><td>O-4</td><td><span class="num">158</span></td><td><span class="num">3.18</span></td></tr><tr><td>D1</td><td><span class="num">38</span></td><td><span class="num">2.70</span></td></tr><tr><td>D1_PAIR</td><td><span class="num">19</span></td><td><span class="num">2.43</span></td></tr><tr><td>D5-R</td><td><span class="num">12</span></td><td><span class="num">2.23</span></td></tr><tr><td>O-3</td><td><span class="num">10</span></td><td><span class="num">2.15</span></td></tr><tr><td>X1</td><td><span class="num">10</span></td><td><span class="num">2.15</span></td></tr><tr><td>매도식-D1</td><td><span class="num">8</span></td><td><span class="num">2.04</span></td></tr><tr><td>D5</td><td><span class="num">3</span></td><td><span class="num">1.48</span></td></tr><tr><td>S-트랙</td><td><span class="num">2</span></td><td><span class="num">1.18</span></td></tr><tr><td>B-트랙</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr><tr><td>B-트랙-ext</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr><tr><td>G003-V1-negative-veto</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr><tr><td>O-1G</td><td><span class="num">1</span></td><td><span class="num">0.00</span></td></tr></table></div>
+  <p class="muted" style="font-size:13px">합계 <b class="num">264</b>행 · known 창 접촉 <b class="num">0</b></p>
 
   <h3>창-지위 원장 요약 (모든 측정의 관문)</h3>
   <div class="tablebox"><table><tr><th>창</th><th>지위</th><th>사용 규칙</th></tr><tr><td>2022-03-23 ~ 2023-12-31 (437일)</td><td>발견 가용(DISCOVERY)</td><td>모든 측정창 — 발견·프로파일링·판정</td></tr><tr><td>2024-01-01 ~ 2024-12-31</td><td>조건부/known</td><td>청산 레버·챔피언 선정 계열엔 known — 측정 금지</td></tr><tr><td>2025-01-01 ~ 2026-02-27</td><td>known/audit (전 방향)</td><td>veto 전용 — 선택·튜닝 금지·blind 주장 금지</td></tr><tr><td>2026-03 이후</td><td>부재(NONE)</td><td>데이터 없음 — 미래 검증 = 감독형 소액 실전</td></tr></table></div>
@@ -513,34 +335,12 @@ VI아래5호가 = VI가격 - VI호가단위 * 5
   <div class="evfoot">근거 파일: <code>docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl</code></div>
 </section></div>
 <footer>
-  단일 자가완결 HTML(외부 의존 0·상대 링크) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
-  생성 커밋 <code>7f354821</code> · 생성 시각 <code>2026-07-17 15:36 대한민국 표준시</code><br>
+  단일 자가완결 HTML(외부 의존 0·스크립트 0·허용 링크만 사용) · 디자인 정본 = 결산 v1 · 생성기 <code>alpha_lab/reporting/</code> ·
+  생성 커밋 <code>732dda8ffa63f9aafd48546d985c8501136555c6</code> · 생성 시각 <code>2026-07-19 16:48 대한민국 표준시</code><br>
   수치는 판정 json 원문에서 로드(재계산 없음·원장 count 만 aggregate). 정적 서사는 결산 v1 계승.
   <span class="muted">wt-dev 이식: reports/ 폴더 복사 + 대시보드 iframe/정적 서빙.</span>
 </footer>
 </div>
-<script>
-(function(){
-  var b=document.body; b.classList.add('js');
-  var btns=[].slice.call(document.querySelectorAll('.tabbtn'));
-  var panels=[].slice.call(document.querySelectorAll('.tabpanel'));
-  function show(id){
-    if(!document.getElementById('tab-'+id)){id='overview';}
-    btns.forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===id);});
-    panels.forEach(function(p){p.classList.toggle('active',p.id==='tab-'+id);});
-  }
-  btns.forEach(function(x){x.addEventListener('click',function(){location.hash='tab-'+x.getAttribute('data-tab');});});
-  window.addEventListener('hashchange',function(){show((location.hash||'').replace('#tab-',''));});
-  show((location.hash||'').replace('#tab-','')||'overview');
-  var tb=document.getElementById('themebtn');
-  if(tb){tb.addEventListener('click',function(){
-    var cur=document.documentElement.getAttribute('data-theme');
-    var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-    var next=(cur||sys)==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);
-    tb.textContent=next==='dark'?'☀️ 라이트':'🌙 다크';
-  });}
-})();
-</script>
+
 </body>
 </html>

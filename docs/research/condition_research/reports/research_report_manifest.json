@@ -1,0 +1,495 @@
+{
+  "commit": "732dda8ffa63f9aafd48546d985c8501136555c6",
+  "generated_at": "2026-07-19T07:48:55Z",
+  "reports": [
+    {
+      "bytes": 50624,
+      "html_sha256": "7fc290bced074bd50d0e48bb22ffda9fd3e77f53d7aa2bc51f575a38be57c54f",
+      "kind": "hub",
+      "links": [
+        "#tab-overview",
+        "#tab-studies",
+        "#tab-reports",
+        "#tab-conditions",
+        "#tab-ledger",
+        "/reports/view?path=research/condition_research/reports/research/strack.html",
+        "/reports/view?path=research/condition_research/reports/research/o1g.html",
+        "/reports/view?path=research/condition_research/reports/research/d1.html",
+        "/reports/view?path=research/condition_research/reports/research/d5r.html",
+        "/reports/view?path=research/condition_research/reports/research/b1.html",
+        "/reports/view?path=research/condition_research/reports/research/d5d9.html",
+        "/reports/view?path=research/condition_research/reports/research/d1pair.html",
+        "/reports/view?path=research/condition_research/reports/research/o3.html",
+        "/reports/view?path=research/condition_research/reports/research/o4.html",
+        "/reports/view?path=research/condition_research/reports/research/btrack.html",
+        "/reports/view?path=research/condition_research/reports/research/bext.html",
+        "/reports/view?path=research/condition_research/reports/research/sell_d1.html",
+        "/reports/view?path=research/condition_research/reports/research/x1.html",
+        "/reports/view?path=research/condition_research/reports/2026-07-16_b1_program_report.html"
+      ],
+      "missing": [],
+      "path": "research_lab_report.html",
+      "research_id": "alpha_restart_20260710",
+      "source_paths": [
+        "alpha_lab/reporting/build_html.py",
+        "alpha_lab/reporting/detail.py",
+        "alpha_lab/reporting/loaders.py",
+        "alpha_lab/reporting/registry.py",
+        "alpha_lab/reporting/tabs.py",
+        "alpha_lab/reporting/util.py",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl",
+        "docs/research/condition_research/plans/2026-07-11_s_track_preregistration_v2a.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/v2c_gate_summary.json",
+        "docs/research/condition_research/plans/2026-07-11_o1g_gap_feasibility_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o1g/o1g_grid_summary.json",
+        "docs/research/condition_research/plans/2026-07-12_d1_clause_ablation_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_clause_ablation_summary.json",
+        "docs/research/condition_research/plans/2026-07-12_d5r_conditional_exit_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_triage_summary.json",
+        "docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json",
+        "docs/research/condition_research/plans/2026-07-12_d5_d9_transition_onset_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/d5_d9_r3_summary.json",
+        "docs/research/condition_research/plans/2026-07-12_d1_pairwise_interaction_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_pairwise_interaction_summary.json",
+        "docs/research/condition_research/plans/2026-07-12_o3_breakout_onset_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json",
+        "docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json",
+        "docs/research/condition_research/plans/2026-07-13_b_track_branch_decomposition_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track/b_branch_summary.json",
+        "docs/research/condition_research/plans/2026-07-14_b_track_ext_multistrategy_branches_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track_ext/b_ext_summary.json",
+        "docs/research/condition_research/plans/2026-07-16_sell_d1_exit_ablation_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/sell_d1/sell_d1_summary.json",
+        "docs/research/condition_research/plans/2026-07-17_x1_buy_clause_drop_ab_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/x1/x1_summary.json"
+      ],
+      "source_sha256": {
+        "alpha_lab/reporting/build_html.py": "0e2648258ee5d92718efd8c8dec2663f05a413b5b459b15c7723bb651055ef3f",
+        "alpha_lab/reporting/detail.py": "46763c19f7d7a9a07fe247c0fb3da0e95fee07e19ec31f3e73267dbee815189b",
+        "alpha_lab/reporting/loaders.py": "00340b6a045f92ca0890bd52a6b688692f2aaeb1fb636a3183519ae4892a3720",
+        "alpha_lab/reporting/registry.py": "e9d7c97c4624b6e76e95c4eb5067a5392f8706c6b220337b88a6e3adb0546922",
+        "alpha_lab/reporting/tabs.py": "6a65658f8eec260a9cc764a203838d6b640cc98adde211480df34dd1c7bcb902",
+        "alpha_lab/reporting/util.py": "ebe6009e6bece039bfec91fc94f50ee114b8870bfdb1964aebd73fb6d57a344d",
+        "docs/research/condition_research/plans/2026-07-11_o1g_gap_feasibility_preregistration.md": "f951fa4f6f6706bb3197de2a7521ff1d1773f1b1220213afc8023f0444614ecd",
+        "docs/research/condition_research/plans/2026-07-11_s_track_preregistration_v2a.md": "badb442f6edca10466954c9c2c2129d8efd7f55af55c7323ed7becf82d57da19",
+        "docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md": "f924041888f6ca2590ed927ad7c56990b33faefc4f58ad3c5b0a2975808db21c",
+        "docs/research/condition_research/plans/2026-07-12_d1_clause_ablation_preregistration.md": "40116e74d992f792ee13d78c4440a9196de0edce91862f358c6855a37c1f14cc",
+        "docs/research/condition_research/plans/2026-07-12_d1_pairwise_interaction_preregistration.md": "774b61b05bb8d221a47a3e67feb1a78673c169db4835f6483e8157befdf0c127",
+        "docs/research/condition_research/plans/2026-07-12_d5_d9_transition_onset_preregistration.md": "05cff89124133528c7dc2c0e7bf71b39771ceeba7dce0dd07fe76d028baad57f",
+        "docs/research/condition_research/plans/2026-07-12_d5r_conditional_exit_preregistration.md": "f3833e3f07daf457d39492bacf528a3d389bc28ee5f142201102ea42d4eaa908",
+        "docs/research/condition_research/plans/2026-07-12_o3_breakout_onset_preregistration.md": "83aa6ffbccc1eef5200b87d431f8867d302b7cc6182101a2c8a0d3b5c2af697e",
+        "docs/research/condition_research/plans/2026-07-13_b_track_branch_decomposition_preregistration.md": "5cf8bec1f60aa1793d37b64742408b63b7e4d5650862a89699254e41fb84014e",
+        "docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md": "6cd32ad172df498ac1b8b0c0df9419c74edfa7376262097e74cadd0553329b9d",
+        "docs/research/condition_research/plans/2026-07-14_b_track_ext_multistrategy_branches_preregistration.md": "31ec89622c46b66e02b1d4a5053f42b10dd0927593d5465128890ec9a82e26de",
+        "docs/research/condition_research/plans/2026-07-16_sell_d1_exit_ablation_preregistration.md": "979630a806748f1be2c2ceb5a405cff570fe0512edad6267d0102108a34193f8",
+        "docs/research/condition_research/plans/2026-07-17_x1_buy_clause_drop_ab_preregistration.md": "f16da48b74317367c8135b31c851e7cfd3e715c73290f518d0df85168b271c42",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track/b_branch_summary.json": "82275b08a84d53a1d1ddce4f286a8d102a96f6c608fc260a9b43a62ddd9edbf0",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track_ext/b_ext_summary.json": "94fa679013adbd172e0a0c3802de590403073b01752e64e3d010f7883d8e526e",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_clause_ablation_summary.json": "3c2baa4c59c07b743d7e6d50b763919f59d36c21f667292b9eb9e13265292915",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_pairwise_interaction_summary.json": "dec4b2dd8dccf1d53512ac19ad932086be6f7dee63f46a7b15e317147ed6f788",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/d5_d9_r3_summary.json": "1114f8a7b9a2f75c14941a51d70472ed8a0ae7c54d6d45bf20785c5c2d872369",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json": "f9e0e66c4dc3d6fcf27c266accad3548fc5405f7dd1743427101c7834b1eb4de",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json": "542b7877286f5cb1e156ea9c67f4788119388bfc80ddd527040140debc80f9af",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json": "6b54b56544fa10027fb2738a0d8fd9a970243a3592da58a800ed52fa14839a82",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_triage_summary.json": "1408cebb1b527ff8cb9bb354dcbf0230faf9b3e7f73ace59f22a61e73ecf03e8",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/n_trials_ledger.jsonl": "9ceb0e74425cf36f48ae2e729913879fa56fc62e45b80822557017f428ffaff6",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o1g/o1g_grid_summary.json": "9552aefc1d235c07a2d306fbccf801f38d0bf0ca4984321dd4eb23013b96d538",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json": "13a03c57c9ecc74473f88537f6c053ae879e86085b3ac0f9014191d93490f4ba",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json": "65f20ea3f229f03420c8ef088b60c64b7810330575ddb163096ca95461e1ea37",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/sell_d1/sell_d1_summary.json": "6e023e2cf41695c8c9b3ab7dd40383d31be9f81b3e17c74289986aa976f5dc36",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/v2c_gate_summary.json": "389912a637ba90b223688ad81d5eaa764148c3d892efa84468a0cccf9f03c448",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/x1/x1_summary.json": "75edaa43250d67353fb36cc0bd9ffaf24e13772b82274f0df046d1fc949bc25d"
+      },
+      "stale": false,
+      "title": "알파 재시작 연구소 — 연구 리포트 허브",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 24240,
+      "html_sha256": "60a25278fb8aa56e1d2f28c165b08d96afa9c805d73500de39ae66ab32de77b3",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/strack.html",
+      "research_id": "strack",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-11_s_track_preregistration_v2a.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/v2c_gate_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-11_s_track_preregistration_v2a.md": "badb442f6edca10466954c9c2c2129d8efd7f55af55c7323ed7becf82d57da19",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/v2c_gate_summary.json": "389912a637ba90b223688ad81d5eaa764148c3d892efa84468a0cccf9f03c448"
+      },
+      "stale": false,
+      "step_id": "strack",
+      "title": "S-트랙 칸-조준 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 21734,
+      "html_sha256": "47b531cf50ab75b8671b30739026777111309554257d61e1c46a654bfb73cadd",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/o1g.html",
+      "research_id": "o1g",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-11_o1g_gap_feasibility_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o1g/o1g_grid_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-11_o1g_gap_feasibility_preregistration.md": "f951fa4f6f6706bb3197de2a7521ff1d1773f1b1220213afc8023f0444614ecd",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o1g/o1g_grid_summary.json": "9552aefc1d235c07a2d306fbccf801f38d0bf0ca4984321dd4eb23013b96d538"
+      },
+      "stale": false,
+      "step_id": "o1g",
+      "title": "시초 갭×시총 144셀 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 25360,
+      "html_sha256": "d25617c0d00eec4a9b0814d9b5c5150e799471224c34ecbc8fd3fe0b31b3ede4",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/d1.html",
+      "research_id": "d1",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_d1_clause_ablation_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_clause_ablation_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_d1_clause_ablation_preregistration.md": "40116e74d992f792ee13d78c4440a9196de0edce91862f358c6855a37c1f14cc",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_clause_ablation_summary.json": "3c2baa4c59c07b743d7e6d50b763919f59d36c21f667292b9eb9e13265292915"
+      },
+      "stale": false,
+      "step_id": "d1",
+      "title": "D1 챔피언 절 분해 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 21695,
+      "html_sha256": "eeb312c1b4596e7fc5ca8aa73a187e7db6b0e1b5d8a7de99aee9e327250db1f6",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/d5r.html",
+      "research_id": "d5r",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_d5r_conditional_exit_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_triage_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_d5r_conditional_exit_preregistration.md": "f3833e3f07daf457d39492bacf528a3d389bc28ee5f142201102ea42d4eaa908",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_triage_summary.json": "1408cebb1b527ff8cb9bb354dcbf0230faf9b3e7f73ace59f22a61e73ecf03e8"
+      },
+      "stale": false,
+      "step_id": "d5r",
+      "title": "D5-R 청산 triage — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 19129,
+      "html_sha256": "42eb5f36811d50fe8b9f6a99bd5e3409d27fb36d6b157741eb6b6a0d3d86d852",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/b1.html",
+      "research_id": "b1",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_b1_supervised_live_protocol.md": "f924041888f6ca2590ed927ad7c56990b33faefc4f58ad3c5b0a2975808db21c",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/A_2022.json": "f9e0e66c4dc3d6fcf27c266accad3548fc5405f7dd1743427101c7834b1eb4de",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/B_2022.json": "542b7877286f5cb1e156ea9c67f4788119388bfc80ddd527040140debc80f9af",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5r_b1_live/_ab_verdict.json": "6b54b56544fa10027fb2738a0d8fd9a970243a3592da58a800ed52fa14839a82"
+      },
+      "stale": false,
+      "step_id": "b1",
+      "title": "B1 청산 패치 (실전 이관) — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 16863,
+      "html_sha256": "2ecec2206c2656ea82d0cbf59ce69e394759402ce1c8f27cfbe202e66b37556a",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/d5d9.html",
+      "research_id": "d5d9",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_d5_d9_transition_onset_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/d5_d9_r3_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_d5_d9_transition_onset_preregistration.md": "05cff89124133528c7dc2c0e7bf71b39771ceeba7dce0dd07fe76d028baad57f",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d5_d9/d5_d9_r3_summary.json": "1114f8a7b9a2f75c14941a51d70472ed8a0ae7c54d6d45bf20785c5c2d872369"
+      },
+      "stale": false,
+      "step_id": "d5d9",
+      "title": "D5·D9 전이 온셋 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 19666,
+      "html_sha256": "0b07fc219b2271b087a4f169684e47a9f71931586649c8b8916610b722139be3",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/d1pair.html",
+      "research_id": "d1pair",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_d1_pairwise_interaction_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_pairwise_interaction_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_d1_pairwise_interaction_preregistration.md": "774b61b05bb8d221a47a3e67feb1a78673c169db4835f6483e8157befdf0c127",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/d1_pairwise_interaction_summary.json": "dec4b2dd8dccf1d53512ac19ad932086be6f7dee63f46a7b15e317147ed6f788"
+      },
+      "stale": false,
+      "step_id": "d1pair",
+      "title": "D1 2절 시너지 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 21031,
+      "html_sha256": "d22ead697a3ddd36f290d626f2deec81ac3a2cac48b9640463a5bf932b98923e",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/o3.html",
+      "research_id": "o3",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-12_o3_breakout_onset_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-12_o3_breakout_onset_preregistration.md": "83aa6ffbccc1eef5200b87d431f8867d302b7cc6182101a2c8a0d3b5c2af697e",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o3/o3_breakout_summary.json": "13a03c57c9ecc74473f88537f6c053ae879e86085b3ac0f9014191d93490f4ba"
+      },
+      "stale": false,
+      "step_id": "o3",
+      "title": "O-3 돌파 온셋 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 21606,
+      "html_sha256": "bae0db3dbb1fbd816c5cfa72855b28804c697a2311e8992540745f8a82651563",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/o4.html",
+      "research_id": "o4",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-13_o4_generation_grammar_preregistration.md": "6cd32ad172df498ac1b8b0c0df9419c74edfa7376262097e74cadd0553329b9d",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/o4/o4_candidate_summary.json": "65f20ea3f229f03420c8ef088b60c64b7810330575ddb163096ca95461e1ea37"
+      },
+      "stale": false,
+      "step_id": "o4",
+      "title": "O-4 생성 문법 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 19776,
+      "html_sha256": "c8dbef0fffa5c94791d7020ec8bcae9b02a3093de9d7aaa5001dc14dbc38d5dc",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/btrack.html",
+      "research_id": "btrack",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-13_b_track_branch_decomposition_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track/b_branch_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-13_b_track_branch_decomposition_preregistration.md": "5cf8bec1f60aa1793d37b64742408b63b7e4d5650862a89699254e41fb84014e",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track/b_branch_summary.json": "82275b08a84d53a1d1ddce4f286a8d102a96f6c608fc260a9b43a62ddd9edbf0"
+      },
+      "stale": false,
+      "step_id": "btrack",
+      "title": "B-트랙 가지 분해 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 25166,
+      "html_sha256": "b1256ead06c6ed936d2225f17770dc428e9422ba333a07dbe648c9866bdd2b29",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/bext.html",
+      "research_id": "bext",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-14_b_track_ext_multistrategy_branches_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track_ext/b_ext_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-14_b_track_ext_multistrategy_branches_preregistration.md": "31ec89622c46b66e02b1d4a5053f42b10dd0927593d5465128890ec9a82e26de",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/b_track_ext/b_ext_summary.json": "94fa679013adbd172e0a0c3802de590403073b01752e64e3d010f7883d8e526e"
+      },
+      "stale": false,
+      "step_id": "bext",
+      "title": "B-ext 다전략 확장 — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 19058,
+      "html_sha256": "3149ef515597ad090280b4e61c82e0b4af6e6779515147c17df2f0cb10ec8e26",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/sell_d1.html",
+      "research_id": "sell_d1",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-16_sell_d1_exit_ablation_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/sell_d1/sell_d1_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-16_sell_d1_exit_ablation_preregistration.md": "979630a806748f1be2c2ceb5a405cff570fe0512edad6267d0102108a34193f8",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/sell_d1/sell_d1_summary.json": "6e023e2cf41695c8c9b3ab7dd40383d31be9f81b3e17c74289986aa976f5dc36"
+      },
+      "stale": false,
+      "step_id": "sell_d1",
+      "title": "매도식 D1 (절 제거 ablation) — 연구 상세",
+      "trust": "manual-offline"
+    },
+    {
+      "bytes": 19483,
+      "html_sha256": "655d1d5fc8a13a9644636aea906f0922f90063b55ff86aac99956dbcb498660f",
+      "kind": "study-detail",
+      "links": [
+        "/reports/view?path=research/condition_research/reports/research_lab_report.html",
+        "#tab-overview",
+        "#tab-method",
+        "#tab-results",
+        "#tab-fulltable",
+        "#tab-verdict",
+        "#tab-evidence"
+      ],
+      "missing": [],
+      "path": "research/x1.html",
+      "research_id": "x1",
+      "source_paths": [
+        "docs/research/condition_research/plans/2026-07-17_x1_buy_clause_drop_ab_preregistration.md",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/x1/x1_summary.json"
+      ],
+      "source_sha256": {
+        "docs/research/condition_research/plans/2026-07-17_x1_buy_clause_drop_ab_preregistration.md": "f16da48b74317367c8135b31c851e7cfd3e715c73290f518d0df85168b271c42",
+        "docs/research/condition_research/research_runs/alpha_restart_20260710/x1/x1_summary.json": "75edaa43250d67353fb36cc0bd9ffaf24e13772b82274f0df046d1fc949bc25d"
+      },
+      "stale": false,
+      "step_id": "x1",
+      "title": "X1 매수 절-삭제 엔진 A/B — 연구 상세",
+      "trust": "manual-offline"
+    }
+  ],
+  "schema": "stom-research-report-manifest-v1",
+  "writer": "manual-offline"
+}
