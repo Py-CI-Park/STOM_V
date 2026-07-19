@@ -226,6 +226,36 @@ const RIX_HARNESS_ROWS = [
     trace_status: "unlinked",
     exact_link: "research-index://evidence:.omo/evidence/tmap-walkforward/manual_evidence.json",
   },
+  {
+    id: "doc:docs/research/condition_research/missing-row.md",
+    kind: "doc",
+    title: "Missing Row Detail",
+    source_path: "docs/research/condition_research/missing-row.md",
+    updated_at: "2026-06-17T00:06:00Z",
+    canonicality: "reference",
+    source_authority: "curated_doc",
+    detail_available: true,
+    tags: ["identity"],
+    related_ids: [],
+    summary: "Available details must carry the selected row identity.",
+    trace_status: "unknown",
+    exact_link: "research-index://doc:docs/research/condition_research/missing-row.md",
+  },
+  {
+    id: "doc:docs/research/condition_research/wrong-row.md",
+    kind: "doc",
+    title: "Wrong Row Detail",
+    source_path: "docs/research/condition_research/wrong-row.md",
+    updated_at: "2026-06-17T00:07:00Z",
+    canonicality: "reference",
+    source_authority: "curated_doc",
+    detail_available: true,
+    tags: ["identity"],
+    related_ids: [],
+    summary: "Foreign detail rows must not publish.",
+    trace_status: "unknown",
+    exact_link: "research-index://doc:docs/research/condition_research/wrong-row.md",
+  },
 ];
 
 // makeDom(opts) — opts.state: the /status (and /run_state) payload to serve (default IDLE_STATE).
@@ -302,8 +332,8 @@ function makeDom(opts = {}) {
     // Lab/Records/Pro/Verdict + backtest/sim on-demand GETs: contract-shaped benign empties.
     if (u.includes("/research_index/detail")) {
       const detailId = new URL(u, "http://localhost").searchParams.get("id") || "";
-      if (detailId === "registry:beta") return jsonResp({ available: true, registry_entry: { machine_name: "beta" } });
-      return jsonResp({ available: true, markdown: "<script>alert(1)</script>\n# Alpha detail" });
+      if (detailId === "registry:beta") return jsonResp({ available: true, row: { id: detailId }, registry_entry: { machine_name: "beta" } });
+      return jsonResp({ available: true, row: { id: detailId }, markdown: "<script>alert(1)</script>\n# Alpha detail" });
     }
     if (u.includes("/research_index")) {
       return jsonResp({
@@ -500,7 +530,7 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectNoIframe, e
   //   넘겨 마커 miss 로 오탐되는 flake 방지. 기대 마커가 나타날 때까지 추가 폴링.
   await waitFor(() => {
     const html = root.innerHTML;
-    if (expectRecordsIndex && !(html.includes("Governed Research Index") && html.includes("Alpha Doc"))) return false;
+    if (expectRecordsIndex && !(html.includes("Governed Exact-Link Evidence") && html.includes("Global Research Catalog") && html.includes("Alpha Doc"))) return false;
     if (expectProcessLive && !(root.querySelector(".process-live-strip") && html.includes("[gen2] scored graded=1.2"))) return false;
     return html.trim().length > 0;
   });
@@ -517,7 +547,8 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectNoIframe, e
   const processIframeAbsent = expectNoIframe ? root.querySelector('iframe[src*="/process_flow"]') == null : undefined;
   const iframeOk = expectNoIframe ? processIframeAbsent === true : true;
   const recordsIndexContent = expectRecordsIndex
-    ? rootHtml.includes("Governed Research Index")
+    ? rootHtml.includes("Governed Exact-Link Evidence")
+      && rootHtml.includes("Global Research Catalog")
       && rootHtml.includes("Alpha Doc")
       && rootHtml.includes("Beta Registry")
       && root.querySelector(".research-index-warning") != null
@@ -701,6 +732,13 @@ function jsonResponse(obj) {
 }
 async function runV5() {
   const calls = [];
+  const governedRows = Array.from({ length: 13 }, (_, index) => ({
+    ...RIX_HARNESS_ROWS[0],
+    id: `doc:governed-${index + 1}`,
+    title: `Governed evidence ${index + 1}`,
+    related_ids: ["campaign:governed"],
+  }));
+  let governedMode = false;
   const researchFetch = (url) => {
     const u = String(url);
     calls.push(u);
@@ -709,21 +747,28 @@ async function runV5() {
       if (id === "doc:docs/research/condition_research/slow.md") {
         return new Promise((resolve) => setTimeout(() => resolve({
           ok: true, status: 200,
-          json: () => Promise.resolve({ available: true, markdown: "SLOW_STALE_MARKER" }),
+          json: () => Promise.resolve({ available: true, row: { id }, markdown: "SLOW_STALE_MARKER" }),
           text: () => Promise.resolve("SLOW_STALE_MARKER"),
           headers: { get: () => null },
         }), 120));
       }
       if (id === "registry:beta") {
-        return jsonResponse({ available: true, registry_entry: { machine_name: "beta", detail: "registry detail" } });
+        return jsonResponse({ available: true, row: { id }, registry_entry: { machine_name: "beta", detail: "registry detail" } });
       }
-      return jsonResponse({ available: true, markdown: "<script>alert(1)</script>\n# Alpha detail" });
+      if (id === "doc:docs/research/condition_research/missing-row.md") {
+        return jsonResponse({ available: true, markdown: "MISSING_ROW_MUST_FAIL_CLOSED" });
+      }
+      if (id === "doc:docs/research/condition_research/wrong-row.md") {
+        return jsonResponse({ available: true, row: { id: "doc:docs/research/condition_research/alpha.md" }, markdown: "WRONG_ROW_MUST_FAIL_CLOSED" });
+      }
+      return jsonResponse({ available: true, row: { id }, markdown: "<script>alert(1)</script>\n# Alpha detail" });
     }
     if (u.includes("/research_index")) {
+      const records = governedMode ? governedRows : RIX_HARNESS_ROWS;
       return jsonResponse({
-        records: RIX_HARNESS_ROWS,
+        records,
         errors: [{ source_path: "bad.json", reason: "JSONDecodeError" }],
-        count: RIX_HARNESS_ROWS.length,
+        count: records.length,
         cache: { hit: false, sources: 3 },
       });
     }
@@ -758,7 +803,7 @@ async function runV5() {
   const detailCallsBeforeSelection = calls.filter((u) => u.includes("/research_index/detail")).length;
   const detailLazyOk = detailCallsBeforeSelection === 0
     && root.querySelector(".research-index-pre") == null
-    && initialText.includes("Select a governed research record.");
+    && initialText.includes("Select a global catalog record.");
 
   const alphaBtn = root.querySelector('button[title="doc:docs/research/condition_research/alpha.md"]');
   let inertDetail = false;
@@ -809,7 +854,8 @@ async function runV5() {
     setSelectValue(window, selects[2], "unknown");
     await wait(230);
     const unknownButtons = Array.from(root.querySelectorAll(".research-index-list button"));
-    traceFilterOk = unknownButtons.length === 1 && unknownButtons[0].getAttribute("title") === "doc:docs/research/condition_research/slow.md";
+    traceFilterOk = unknownButtons.length === 3
+      && unknownButtons.some((button) => button.getAttribute("title") === "doc:docs/research/condition_research/slow.md");
     setSelectValue(window, selects[2], "all");
     await wait(80);
   }
@@ -827,10 +873,55 @@ async function runV5() {
     staleDetailGuardOk = text.includes('"machine_name": "beta"') && !text.includes("SLOW_STALE_MARKER");
   }
 
+  let detailIdentityGuardOk = false;
+  if (search) {
+    setInputValue(window, search, "Missing Row Detail");
+    await wait(230);
+    const missingBtn = root.querySelector('button[title="doc:docs/research/condition_research/missing-row.md"]');
+    if (missingBtn) {
+      missingBtn.click();
+      await wait(80);
+      const missingClosed = root.textContent.includes("Detail unavailable")
+        && !root.textContent.includes("MISSING_ROW_MUST_FAIL_CLOSED");
+      setInputValue(window, search, "Wrong Row Detail");
+      await wait(230);
+      const wrongBtn = root.querySelector('button[title="doc:docs/research/condition_research/wrong-row.md"]');
+      if (wrongBtn) {
+        wrongBtn.click();
+        await wait(80);
+        detailIdentityGuardOk = missingClosed && root.textContent.includes("Detail unavailable")
+          && !root.textContent.includes("WRONG_ROW_MUST_FAIL_CLOSED");
+      }
+    }
+    setInputValue(window, search, "");
+    await wait(80);
+  }
+
+  governedMode = true;
+  const governedRoot = window.document.createElement("div");
+  root.parentNode.appendChild(governedRoot);
+  window.ReactDOM.createRoot(governedRoot).render(window.React.createElement(window.ResearchIndexPanel, {
+    baseUrl: window.location.origin,
+    initialLimit: 3,
+    selectedResearchId: "campaign:governed",
+    onSelectResearch: () => {},
+  }));
+  await wait(300);
+  const governedWindow = governedRoot.querySelector(".research-index-timeline-window")?.textContent.includes("12/13") === true;
+  const loadMore = Array.from(governedRoot.querySelectorAll("button"))
+    .find((button) => button.textContent.includes("Load 12 more"));
+  if (loadMore) {
+    loadMore.click();
+    await wait(60);
+  }
+  const governedExpandOk = governedWindow
+    && governedRoot.querySelectorAll(".research-index-timeline-rail > button").length === 13
+    && governedRoot.querySelector(".research-index-timeline-window") == null;
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
   const pass = componentIsFn && !mountError && errs.length === 0 && dynReq.length === 0
     && badgesVisible && filterLabelsVisible && detailLazyOk && inertDetail
-    && searchFilterOk && noMatchOk && kindFilterOk && canonicalityFilterOk && traceFilterOk && staleDetailGuardOk;
+    && searchFilterOk && noMatchOk && kindFilterOk && canonicalityFilterOk && traceFilterOk && staleDetailGuardOk
+    && detailIdentityGuardOk && governedExpandOk;
   return {
     name: "V5_records_behavior",
     pass,
@@ -846,6 +937,9 @@ async function runV5() {
     canonicalityFilterOk,
     traceFilterOk,
     staleDetailGuardOk,
+    detailIdentityGuardOk,
+    governedExpandOk,
+    governedVisibleRows: governedRoot.querySelectorAll(".research-index-timeline-rail > button").length,
     fetchCallCount: calls.length,
     dynamicRequireErrors: dynReq,
     errorCount: errs.length,

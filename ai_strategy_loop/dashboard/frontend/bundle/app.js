@@ -31645,6 +31645,42 @@ def signal_sell(pos, bar, ind):
     const campaignId = row && (row.id || row.name);
     return typeof campaignId === "string" && campaignId ? `campaign:${campaignId}` : "";
   }
+  function _rrpUnavailable(reason, conflict) {
+    return {
+      available: false,
+      reason: typeof reason === "string" && reason ? reason : "research_record_unavailable",
+      conflict: typeof conflict === "string" && conflict ? conflict : null
+    };
+  }
+  function _rrpRecordsEnvelope(payload) {
+    if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean" || !Array.isArray(payload.campaigns) || !Array.isArray(payload.errors) || !payload.campaigns.every((row) => row && typeof row === "object" && typeof row.name === "string") || !payload.errors.every((item) => item && typeof item === "object")) {
+      return _rrpUnavailable("malformed_research_records_envelope");
+    }
+    if (!payload.available) {
+      return {
+        ..._rrpUnavailable(payload.reason, payload.conflict),
+        campaigns: payload.campaigns,
+        errors: payload.errors
+      };
+    }
+    return {
+      available: true,
+      reason: null,
+      conflict: null,
+      campaigns: payload.campaigns,
+      errors: payload.errors
+    };
+  }
+  function _rrpDetailEnvelope(payload, activeCampaign) {
+    if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean") {
+      return _rrpUnavailable("malformed_research_record_detail_envelope");
+    }
+    if (!payload.available) return _rrpUnavailable(payload.reason, payload.conflict);
+    if (!payload.campaign || typeof payload.campaign !== "object" || payload.campaign.name !== activeCampaign) {
+      return _rrpUnavailable("malformed_research_record_detail_envelope");
+    }
+    return { available: true, reason: null, conflict: null, campaign: payload.campaign };
+  }
   function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch, showRunCompare = true }) {
     const [payload, setPayload] = useState_rrp(null);
     const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
@@ -31653,6 +31689,7 @@ def signal_sell(pos, bar, ind):
     const [err, setErr] = useState_rrp("");
     const [runList, setRunList] = useState_rrp([]);
     const [runListLoading, setRunListLoading] = useState_rrp(false);
+    const [runListErr, setRunListErr] = useState_rrp("");
     const [showAll, setShowAll] = useState_rrp(false);
     const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });
     const generationRef = useRef_rrp({ records: 0, runs: 0, detail: 0 });
@@ -31676,6 +31713,7 @@ def signal_sell(pos, bar, ind):
       setErr("");
       setRunList([]);
       setRunListLoading(false);
+      setRunListErr("");
       setShowAll(false);
     }, [baseIdentity]);
     const refresh = useCallback_rrp(() => {
@@ -31687,22 +31725,29 @@ def signal_sell(pos, bar, ind):
       requestsRef.current.records = controller;
       setLoading(true);
       setErr("");
-      const timeoutId = setTimeout(() => controller.abort(), 6e3);
+      let timedOut = false;
+      const timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 6e3);
       fetch(baseUrl + "/research_records", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!j || typeof j !== "object" || !Array.isArray(j.campaigns) || !Array.isArray(j.errors) || !j.campaigns.every((row) => row && typeof row === "object" && typeof row.name === "string") || !j.errors.every((item) => item && typeof item === "object")) {
+        const envelope = _rrpRecordsEnvelope(j);
+        if (envelope.available === false && envelope.reason === "malformed_research_records_envelope") {
           throw new Error("Malformed research records response");
         }
         if (generation !== generationRef.current.records || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
-        setPayload(j);
+        setPayload(envelope);
         setErr("");
-        if (!controlled && !selectedCampaign && j.campaigns.length) setSelectedCampaign(j.campaigns[0].name || "");
+        if (!controlled && !selectedCampaign && envelope.campaigns.length) {
+          setSelectedCampaign(envelope.campaigns[0].name || "");
+        }
       }).catch((e) => {
-        if (generation !== generationRef.current.records || controller.signal.aborted || baseIdentityRef.current !== requestBase) return;
+        if (generation !== generationRef.current.records || baseIdentityRef.current !== requestBase) return;
         setPayload(null);
-        setErr(String(e));
+        setErr(timedOut ? "research_records_timeout" : "research_records_request_failed: " + String(e));
       }).finally(() => {
         clearTimeout(timeoutId);
-        if (generation === generationRef.current.records && !controller.signal.aborted && baseIdentityRef.current === requestBase) setLoading(false);
+        if (generation === generationRef.current.records && baseIdentityRef.current === requestBase) setLoading(false);
       });
     }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled]);
     useEffect_rrp(() => {
@@ -31726,12 +31771,10 @@ def signal_sell(pos, bar, ind):
         baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(activeCampaign2),
         { signal: controller.signal }
       ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!j || typeof j !== "object" || typeof j.available !== "boolean" || j.available && (!j.campaign || typeof j.campaign !== "object" || j.campaign.name !== activeCampaign2)) {
-          throw new Error("Malformed research record detail response");
-        }
-        if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(j);
+        const envelope = _rrpDetailEnvelope(j, activeCampaign2);
+        if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(envelope);
       }).catch((e) => {
-        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail({ available: false, reason: String(e) });
+        if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(_rrpUnavailable(String(e)));
       });
       return () => controller.abort();
     }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled, controlledCampaign]);
@@ -31743,7 +31786,12 @@ def signal_sell(pos, bar, ind):
       const requestBase = baseIdentity;
       requestsRef.current.runs = controller;
       setRunListLoading(true);
-      fetchRunsShared(baseUrl, { timeoutMs: 6e3, signal: controller.signal }).then((j) => {
+      setRunListErr("");
+      let timeoutId = null;
+      const timeout2 = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error("runs_request_timeout")), 6e3);
+      });
+      Promise.race([fetchRunsShared(baseUrl, { timeoutMs: 6e3, signal: controller.signal }), timeout2]).then((j) => {
         if (!j || typeof j !== "object" || !Array.isArray(j.runs) || !j.runs.every((run) => run && typeof run === "object")) {
           throw new Error("Malformed shared runs response");
         }
@@ -31751,9 +31799,13 @@ def signal_sell(pos, bar, ind):
         const runs = j.runs.slice();
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
-      }).catch(() => {
-        if (generation === generationRef.current.runs && !controller.signal.aborted && baseIdentityRef.current === requestBase) setRunList([]);
+        setRunListErr("");
+      }).catch((e) => {
+        if (generation === generationRef.current.runs && !controller.signal.aborted && baseIdentityRef.current === requestBase) {
+          setRunListErr(String(e).includes("runs_request_timeout") ? "runs_request_timeout" : "runs_request_failed: " + String(e));
+        }
       }).finally(() => {
+        if (timeoutId != null) clearTimeout(timeoutId);
         if (generation === generationRef.current.runs && !controller.signal.aborted && baseIdentityRef.current === requestBase) setRunListLoading(false);
       });
     }, [baseUrl, baseIdentity, isDemo]);
@@ -31767,8 +31819,9 @@ def signal_sell(pos, bar, ind):
       }
     }, []);
     const rows = payload && Array.isArray(payload.campaigns) ? payload.campaigns : [];
+    const recordsUnavailable = payload && payload.available === false ? payload : null;
     const activeCampaign = controlled ? controlledCampaign : selectedCampaign;
-    const selected2 = detail && detail.available && detail.campaign && detail.campaign.name === activeCampaign ? detail.campaign : rows.find((r) => r.name === activeCampaign);
+    const selected2 = detail && detail.available === true && detail.campaign && detail.campaign.name === activeCampaign ? detail.campaign : null;
     const candidates = selected2 && Array.isArray(selected2.candidates) ? selected2.candidates.slice(0, 5) : [];
     const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
     const selectedRunId = typeof selectedResearchId === "string" && selectedResearchId.startsWith("loop_run:") ? selectedResearchId.slice("loop_run:".length) : "";
@@ -31779,7 +31832,7 @@ def signal_sell(pos, bar, ind):
       const researchId = _rrpCampaignResearchId(row);
       if (researchId && typeof onSelectResearch === "function") onSelectResearch(researchId);
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), !isDemo && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Campaign"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Candidates"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Best PnL"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, (showAll ? rows : rows.slice(0, 12)).map((row) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), recordsUnavailable && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, "Research records source unavailable: ", recordsUnavailable.reason, recordsUnavailable.conflict && /* @__PURE__ */ React.createElement("div", null, "conflict: ", recordsUnavailable.conflict)), !isDemo && payload && payload.available === true && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Campaign"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Candidates"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Best PnL"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, (showAll ? rows : rows.slice(0, 12)).map((row) => {
       const best = row.best || {};
       const artifacts = row.artifacts || {};
       const active = row.name === activeCampaign;
@@ -31799,14 +31852,14 @@ def signal_sell(pos, bar, ind):
         textAlign: "right",
         color: Number(best.profit || 0) >= 0 ? "var(--teal)" : "var(--red)"
       } }, _rrpMoney(best.profit)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _rrpPct(best.mdd)), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, (artifacts.pairs || []).length, " pairs / ", artifacts.summary ? "summary" : "-", " / ", artifacts.run_log ? "log" : "-"), /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _rrpDate(row.updated_at)));
-    })))), rows.length > 12 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", null, showAll ? `\uC804\uCCB4 ${rows.length}\uAC1C \uD45C\uC2DC \uC911` : `\uC804\uCCB4 ${rows.length}\uAC1C \uC911 12\uAC1C \uD45C\uC2DC`), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowAll((v) => !v) }, showAll ? "\uCC98\uC74C 12\uAC1C\uB9CC \uBCF4\uAE30" : `\uC804\uCCB4 ${rows.length}\uAC1C \uBCF4\uAE30`)), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 } }, "source=", payload && payload.root || "-")), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
+    })))), rows.length > 12 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", gap: 10, fontSize: 10.5, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", null, showAll ? `\uC804\uCCB4 ${rows.length}\uAC1C \uD45C\uC2DC \uC911` : `\uC804\uCCB4 ${rows.length}\uAC1C \uC911 12\uAC1C \uD45C\uC2DC`), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowAll((v) => !v) }, showAll ? "\uCC98\uC74C 12\uAC1C\uB9CC \uBCF4\uAE30" : `\uC804\uCCB4 ${rows.length}\uAC1C \uBCF4\uAE30`)), detail && detail.available !== true && activeCampaign && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, "Research record unavailable: ", detail.reason, detail.conflict && /* @__PURE__ */ React.createElement("div", null, "conflict: ", detail.conflict)), selected2 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Selected"), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-0)", marginBottom: 6 } }, selected2.name), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-2)", fontSize: 11 } }, "best=", _rrpBestLabel(selected2))), /* @__PURE__ */ React.createElement("div", { style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Top Candidates"), candidates.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "8px 0" } }, "No candidate rows") : candidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: `${c.label}-${c.round || ""}`, className: "mono", style: {
       display: "grid",
       gridTemplateColumns: "minmax(110px, 1fr) 72px 56px 56px",
       gap: 8,
       padding: "4px 0",
       borderTop: "1px solid var(--line-1)",
       fontSize: 11
-    } }, /* @__PURE__ */ React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, c.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: Number(c.profit || 0) >= 0 ? "var(--teal)" : "var(--red)" } }, _rrpMoney(c.profit)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, _rrpPct(c.mdd)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, c.trades || 0))))), /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD788\uC2A4\uD1A0\uB9AC ResultDetail", showRunCompare ? " \xB7 Compare" : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refreshRuns, disabled: isDemo || runListLoading }, runListLoading ? "run \uB85C\uB529\u2026" : "run \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, "History\uAC00 \uACFC\uAC70 run/gen \uC544\uCE74\uC774\uBE0C\uC640 Compare\uB97C \uC18C\uC720\uD569\uB2C8\uB2E4. Workbench\uB294 \uAE4A\uC740 \uBD84\uC11D\uC73C\uB85C \uC5F0\uACB0\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4."), showRunCompare && /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, c.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: Number(c.profit || 0) >= 0 ? "var(--teal)" : "var(--red)" } }, _rrpMoney(c.profit)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, _rrpPct(c.mdd)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, c.trades || 0))))), /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD788\uC2A4\uD1A0\uB9AC ResultDetail", showRunCompare ? " \xB7 Compare" : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refreshRuns, disabled: isDemo || runListLoading }, runListLoading ? "run \uB85C\uB529\u2026" : "run \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, "History\uAC00 \uACFC\uAC70 run/gen \uC544\uCE74\uC774\uBE0C\uC640 Compare\uB97C \uC18C\uC720\uD569\uB2C8\uB2E4. Workbench\uB294 \uAE4A\uC740 \uBD84\uC11D\uC73C\uB85C \uC5F0\uACB0\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4."), runListErr && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, "Run history unavailable: ", runListErr), showRunCompare && /* @__PURE__ */ React.createElement(
       _RpRunCompare,
       {
         baseUrl,
@@ -31872,17 +31925,21 @@ def signal_sell(pos, bar, ind):
     }
   }
   function _hctStatusCell(row) {
-    const status = row.evaluation_status || "";
+    const status = typeof row.evaluation_status === "string" ? row.evaluation_status : "unknown";
+    const reason = row.reason ? `: ${row.reason}` : "";
+    if (status === "success") {
+      return /* @__PURE__ */ React.createElement("span", { className: "badge ok" }, "success");
+    }
     if (status === "no_trades") {
       return /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-2)" } }, "0 trades");
     }
-    if (status === "failed" || status === "missing") {
-      return /* @__PURE__ */ React.createElement("span", { className: "badge err", title: row.reason || "" }, status, row.reason ? `: ${row.reason}` : "");
+    if (status === "failed" || status === "missing" || status === "unavailable" || status === "unknown") {
+      return /* @__PURE__ */ React.createElement("span", { className: "badge err", title: row.reason || "" }, status, reason);
     }
-    if (status === "timeout") {
-      return /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: row.reason || "" }, status, row.reason ? `: ${row.reason}` : "");
+    if (status === "timeout" || status === "not_run" || status === "partial") {
+      return /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: row.reason || "" }, status, reason);
     }
-    return /* @__PURE__ */ React.createElement("span", { className: "badge ok" }, status || "\u2014");
+    return /* @__PURE__ */ React.createElement("span", { className: "badge err", title: row.reason || "" }, "unknown: ", status, reason);
   }
   var HCT_EVAL_COLUMNS = [
     { key: "evaluation_status", label: "\uC0C1\uD0DC", numeric: false },
@@ -31916,7 +31973,7 @@ def signal_sell(pos, bar, ind):
     return fetch(url, { signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
   function _hctDestinationState(value) {
-    return ["complete", "partial", "missing", "conflict"].includes(value) ? value : "missing";
+    return ["complete", "partial", "missing", "conflict", "unavailable"].includes(value) ? value : "missing";
   }
   function _hctCompactValue(value) {
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
@@ -31924,15 +31981,49 @@ def signal_sell(pos, bar, ind):
     if (value && typeof value === "object") return Object.keys(value).join(", ") || "present";
     return "missing";
   }
+  function _hctUnavailable(reason, conflict) {
+    return {
+      available: false,
+      reason: typeof reason === "string" && reason ? reason : "history_detail_unavailable",
+      conflict: typeof conflict === "string" && conflict ? conflict : null
+    };
+  }
+  function _hctCoverageSource(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value) || typeof value.available !== "boolean" || !Number.isInteger(value.total) || value.total < 0 || value.reason != null && typeof value.reason !== "string" || value.available === false && !value.reason) return null;
+    return value;
+  }
+  function _hctIndexEnvelope(payload, generation) {
+    if (!payload || typeof payload !== "object" || String(payload.selection_generation) !== String(generation) || !Array.isArray(payload.items) || !Number.isInteger(payload.total) || payload.total < 0 || payload.next_cursor != null && typeof payload.next_cursor !== "string" || !payload.coverage || typeof payload.coverage !== "object" || Array.isArray(payload.coverage) || !_hctCoverageSource(payload.coverage.campaign) || !_hctCoverageSource(payload.coverage.loop_run)) return null;
+    return payload;
+  }
+  function _hctResearchEnvelope(payload, selectedId, generation) {
+    if (!payload || typeof payload !== "object" || payload.research_id !== selectedId || payload.section !== "research" || String(payload.selection_generation) !== String(generation) || typeof payload.available !== "boolean") {
+      return _hctUnavailable("malformed_history_research_envelope");
+    }
+    if (!payload.available) return _hctUnavailable(payload.reason, payload.conflict);
+    const node = payload.node;
+    const identity4 = node && node.identity;
+    const destinations = identity4 && identity4.destinations;
+    const byteIdentical = identity4 && identity4.byte_identical;
+    const requiredDestinations = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
+    const validDestinations = destinations && requiredDestinations.every((name) => destinations[name] && ["complete", "partial", "missing", "conflict", "unavailable"].includes(destinations[name].state));
+    if (!node || typeof node !== "object" || node.research_id !== selectedId || !identity4 || typeof identity4 !== "object" || !validDestinations || !byteIdentical || typeof byteIdentical !== "object" || !byteIdentical.values || typeof byteIdentical.values !== "object" || Array.isArray(byteIdentical.values)) {
+      return _hctUnavailable("malformed_history_research_envelope");
+    }
+    return { available: true, reason: null, conflict: null, node };
+  }
   function _hctResearchWorkspace(node, selectedId) {
     const research = node && typeof node === "object" ? node : {};
     const identity4 = research.identity && typeof research.identity === "object" ? research.identity : {};
     const destinations = identity4.destinations && typeof identity4.destinations === "object" ? identity4.destinations : {};
+    const byteValues = identity4.byte_identical && typeof identity4.byte_identical === "object" ? identity4.byte_identical.values : void 0;
     const names = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
-    return /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uC0C1\uC138 \uADFC\uAC70", style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label" }, "Governed research detail \xB7 ", _hctCompactValue(research.research_id || selectedId)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", margin: "5px 0" } }, "source owner: ", _hctCompactValue(identity4.provenance_owner), " \xB7 redaction: ", _hctCompactValue(identity4.redaction), " \xB7 byte-identical: ", _hctCompactValue(identity4.byte_identical)), /* @__PURE__ */ React.createElement("div", { role: "list", "aria-label": "\uC5F0\uAD6C \uADFC\uAC70 \uBAA9\uC801\uC9C0 \uC0C1\uD0DC", style: { display: "flex", gap: 5, flexWrap: "wrap" } }, names.map((name) => {
+    return /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uC0C1\uC138 \uADFC\uAC70", style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label" }, "Governed research detail \xB7 ", _hctCompactValue(research.research_id || selectedId)), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", margin: "5px 0" } }, "source owner: ", _hctCompactValue(identity4.provenance_owner), " \xB7 redaction: ", _hctCompactValue(identity4.redaction)), /* @__PURE__ */ React.createElement("pre", { className: "mono", "aria-label": "byte-identical values", style: { margin: "5px 0", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, JSON.stringify(byteValues, null, 2)), /* @__PURE__ */ React.createElement("div", { role: "list", "aria-label": "\uC5F0\uAD6C \uADFC\uAC70 \uBAA9\uC801\uC9C0 \uC0C1\uD0DC", style: { display: "flex", gap: 5, flexWrap: "wrap" } }, names.map((name) => {
       const value = destinations[name];
       const state = _hctDestinationState(value && value.state);
-      return /* @__PURE__ */ React.createElement("span", { key: name, role: "listitem", className: "badge " + (state === "complete" ? "ok" : state === "conflict" ? "err" : "warn") }, name, ": ", state);
+      const badgeClass = state === "complete" ? "ok" : state === "conflict" ? "err" : state === "unavailable" ? "err" : "warn";
+      const reason = value && typeof value.reason === "string" && value.reason ? `: ${value.reason}` : "";
+      return /* @__PURE__ */ React.createElement("span", { key: name, role: "listitem", className: "badge " + badgeClass, title: reason }, name, ": ", state, reason);
     })));
   }
   function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange }) {
@@ -31945,6 +32036,7 @@ def signal_sell(pos, bar, ind):
     const [items, setItems] = useState_hct([]);
     const [nextCursor, setNextCursor] = useState_hct(null);
     const [total, setTotal] = useState_hct(0);
+    const [coverage, setCoverage] = useState_hct(null);
     const [indexLoading, setIndexLoading] = useState_hct(false);
     const [indexErr, setIndexErr] = useState_hct("");
     const [sections, setSections] = useState_hct({});
@@ -31965,15 +32057,21 @@ def signal_sell(pos, bar, ind):
       if (sourceKind) url += "&source_kind=" + encodeURIComponent(sourceKind);
       if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
       fetch(url, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (generation !== generationRef.current.index || controller.signal.aborted || !j || String(j.selection_generation) !== String(generation)) return;
-        const rows = Array.isArray(j.items) ? j.items : [];
+        if (generation !== generationRef.current.index || controller.signal.aborted) return;
+        const envelope = _hctIndexEnvelope(j, generation);
+        if (!envelope) throw new Error("Malformed history index envelope");
+        const rows = envelope.items;
         setItems((prev) => cursor ? prev.concat(rows) : rows);
-        setNextCursor(j.next_cursor ? j.next_cursor : null);
-        setTotal(j.total != null ? j.total : rows.length);
+        setNextCursor(envelope.next_cursor || null);
+        setTotal(envelope.total);
+        setCoverage(envelope.coverage);
       }).catch((e) => {
         if (generation !== generationRef.current.index || controller.signal.aborted) return;
         setIndexErr(String(e));
-        if (!cursor) setItems([]);
+        if (!cursor) {
+          setItems([]);
+          setCoverage(null);
+        }
       }).finally(() => {
         if (generation === generationRef.current.index && !controller.signal.aborted) setIndexLoading(false);
       });
@@ -31994,11 +32092,12 @@ def signal_sell(pos, bar, ind):
       requestsRef.current.detail = controller;
       setSections({ research: { loading: true, err: "", node: null } });
       _hctFetchSection(baseUrl, selectedId, "research", null, generation, controller.signal).then((payload) => {
-        if (generation !== generationRef.current.detail || controller.signal.aborted || !payload || payload.research_id !== selectedId || payload.section !== "research" || String(payload.selection_generation) !== String(generation)) return;
-        setSections({ research: { loading: false, err: "", node: payload.node || null } });
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        const research = _hctResearchEnvelope(payload, selectedId, generation);
+        setSections({ research: { loading: false, err: "", ...research } });
       }).catch((e) => {
         if (generation !== generationRef.current.detail || controller.signal.aborted) return;
-        setSections({ research: { loading: false, err: String(e), node: null } });
+        setSections({ research: { loading: false, err: "", ..._hctUnavailable(String(e)) } });
       });
       return () => controller.abort();
     }, [baseUrl, isDemo, selectedId]);
@@ -32010,7 +32109,8 @@ def signal_sell(pos, bar, ind):
       if (researchId && researchId !== selectedId && onSelectedResearchIdChange) onSelectedResearchIdChange(researchId);
     }, [onSelectedResearchIdChange, selectedId]);
     const loadSection = useCallback_hct((section, cursor) => {
-      if (isDemo || !baseUrl || !selectedId) return;
+      const research = sections.research;
+      if (isDemo || !baseUrl || !selectedId || !research || research.available !== true) return;
       if (requestsRef.current.detail) requestsRef.current.detail.abort();
       const controller = new AbortController();
       const generation = ++generationRef.current.detail;
@@ -32020,8 +32120,24 @@ def signal_sell(pos, bar, ind):
         [section]: { ...prev[section] || {}, loading: true, err: prev[section] ? prev[section].err : "" }
       }));
       _hctFetchSection(baseUrl, selectedId, section, cursor, generation, controller.signal).then((payload) => {
-        if (generation !== generationRef.current.detail || controller.signal.aborted || !payload || payload.research_id !== selectedId || payload.section !== section || String(payload.selection_generation) !== String(generation)) return;
-        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        if (!payload || typeof payload !== "object" || payload.research_id !== selectedId || payload.section !== section || String(payload.selection_generation) !== String(generation) || typeof payload.available !== "boolean") {
+          throw new Error("Malformed history detail section envelope");
+        }
+        if (!payload.available) {
+          setSections((prev) => ({
+            ...prev,
+            [section]: {
+              loading: false,
+              err: `History detail unavailable: ${payload.reason || "unknown_reason"}`,
+              rows: [],
+              next_cursor: null
+            }
+          }));
+          return;
+        }
+        if (!Array.isArray(payload.rows)) throw new Error("Malformed history detail section envelope");
+        const rows = payload.rows;
         setSections((prev) => ({
           ...prev,
           [section]: {
@@ -32035,7 +32151,7 @@ def signal_sell(pos, bar, ind):
         if (generation !== generationRef.current.detail || controller.signal.aborted) return;
         setSections((prev) => ({ ...prev, [section]: { loading: false, err: String(e), rows: prev[section] && prev[section].rows || [], next_cursor: null } }));
       });
-    }, [baseUrl, isDemo, selectedId]);
+    }, [baseUrl, isDemo, selectedId, sections.research]);
     const toggleStage = useCallback_hct((stageId) => {
       setExpandedStages((prev) => ({ ...prev, [stageId]: !prev[stageId] }));
       if (!sections.conditions) loadSection("conditions", null);
@@ -32079,7 +32195,12 @@ def signal_sell(pos, bar, ind):
         onChange: (e) => setSourceKind(e.target.value)
       },
       HCT_SOURCE_KINDS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.value, value: o.value }, o.label))
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null), disabled: indexLoading }, indexLoading ? "\uC870\uD68C\uC911\u2026" : "\uAC80\uC0C9")), indexErr && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, indexErr, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null) }, "\uC7AC\uC2DC\uB3C4"))), !indexErr && items.length === 0 && !indexLoading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAE30\uB85D \uC5C6\uC74C"), items.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Label"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Source"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Stages"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Conditions"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Evaluations"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Tree"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, items.map((row) => {
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null), disabled: indexLoading }, indexLoading ? "\uC870\uD68C\uC911\u2026" : "\uAC80\uC0C9")), indexErr && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, indexErr, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(null) }, "\uC7AC\uC2DC\uB3C4"))), coverage && /* @__PURE__ */ React.createElement("div", { "aria-label": "History index source coverage", style: { display: "flex", gap: 5, flexWrap: "wrap" } }, ["campaign", "loop_run"].map((kind) => {
+      const source = coverage[kind];
+      const state = source.available ? "available" : "unavailable";
+      const reason = source.available ? "" : `: ${source.reason}`;
+      return /* @__PURE__ */ React.createElement("span", { key: kind, className: "badge " + (source.available ? "ok" : "warn") }, kind, ": ", state, " \xB7 ", source.total, reason);
+    })), !indexErr && items.length === 0 && !indexLoading && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uAE30\uB85D \uC5C6\uC74C"), items.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Label"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Source"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Stages"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Conditions"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Evaluations"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Tree"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, items.map((row) => {
       const active = row.research_id === selectedId;
       const counts = row.counts || {};
       return /* @__PURE__ */ React.createElement(
@@ -32088,21 +32209,20 @@ def signal_sell(pos, bar, ind):
           key: row.research_id,
           style: {
             borderTop: "1px solid var(--line-1)",
-            background: active ? "rgba(159,180,255,0.08)" : "transparent",
-            cursor: "pointer"
-          },
-          tabIndex: 0,
-          role: "button",
-          "aria-pressed": active,
-          onClick: () => selectResearch(row.research_id),
-          onKeyDown: (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              selectResearch(row.research_id);
-            }
+            background: active ? "rgba(159,180,255,0.08)" : "transparent"
           }
         },
-        /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" } }, /* @__PURE__ */ React.createElement("div", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, row.label || row.research_id), (row.series || row.ab_role || row.gate_passed_count > 0) && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 } }, row.series && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "series" }, row.series), row.ab_role && row.ab_role.pair && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "A/B \uC5ED\uD560(pair\xB7arm)" }, row.ab_role.pair, row.ab_role.arm ? "\xB7" + row.ab_role.arm : ""), row.gate_passed_count > 0 && /* @__PURE__ */ React.createElement("span", { className: "badge ok", title: "gate \uD1B5\uACFC \uC138\uB300\uC218" }, "gate ", row.gate_passed_count))),
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" } }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            className: "btn ghost sm",
+            "aria-pressed": active,
+            onClick: () => selectResearch(row.research_id),
+            style: { maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }
+          },
+          /* @__PURE__ */ React.createElement("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, row.label || row.research_id)
+        ), (row.series || row.ab_role || row.gate_passed_count > 0) && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 } }, row.series && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "series" }, row.series), row.ab_role && row.ab_role.pair && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "A/B \uC5ED\uD560(pair\xB7arm)" }, row.ab_role.pair, row.ab_role.arm ? "\xB7" + row.ab_role.arm : ""), row.gate_passed_count > 0 && /* @__PURE__ */ React.createElement("span", { className: "badge ok", title: "gate \uD1B5\uACFC \uC138\uB300\uC218" }, "gate ", row.gate_passed_count))),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", color: "var(--ink-2)" } }, row.source_kind || "-"),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.stages)),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right" } }, _hctNum(counts.conditions)),
@@ -32110,17 +32230,46 @@ def signal_sell(pos, bar, ind):
         /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "badge" }, row.condition_tree_status || "-")),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "7px 8px", textAlign: "right", color: "var(--ink-3)" } }, _hctDate(row.updated_at))
       );
-    }))), nextCursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadIndex(nextCursor), disabled: indexLoading }, indexLoading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), selectedId && /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), selectedId), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null), disabled: sections.stages && sections.stages.loading }, sections.stages && sections.stages.loading ? "\uB85C\uB529\u2026" : "Stages \uB85C\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, sections.research && !sections.research.loading && _hctResearchWorkspace(sections.research.node, selectedId), sections.research && sections.research.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.research.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => selectResearch(selectedId) }, "\uC7AC\uC2DC\uB3C4"))), sections.stages && sections.stages.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.stages.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null) }, "\uC7AC\uC2DC\uB3C4"))), stageRows.length === 0 && !(sections.stages && sections.stages.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, sections.stages ? "stage \uC5C6\uC74C" : "Stages \uB85C\uB4DC \uBC84\uD2BC\uC73C\uB85C \uD2B8\uB9AC\uB97C \uD3BC\uCE58\uC138\uC694"), stageRows.map((stage) => {
+    })))), nextCursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", "aria-label": "Load more history records", onClick: () => loadIndex(nextCursor), disabled: indexLoading }, indexLoading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30")), selectedId && /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: "var(--line-1)", background: "var(--bg-0)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), selectedId), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null), disabled: !sections.research || sections.research.available !== true || sections.stages && sections.stages.loading }, sections.stages && sections.stages.loading ? "\uB85C\uB529\u2026" : "Stages \uB85C\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, sections.research && !sections.research.loading && sections.research.available === true && _hctResearchWorkspace(sections.research.node, selectedId), sections.research && !sections.research.loading && sections.research.available !== true && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, "History detail unavailable: ", sections.research.reason, sections.research.conflict && /* @__PURE__ */ React.createElement("div", null, "conflict: ", sections.research.conflict)), sections.research && sections.research.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.research.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => selectResearch(selectedId) }, "\uC7AC\uC2DC\uB3C4"))), sections.research && sections.research.available === true && sections.stages && sections.stages.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.stages.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("stages", null) }, "\uC7AC\uC2DC\uB3C4"))), sections.research && sections.research.available === true && stageRows.length === 0 && !(sections.stages && sections.stages.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, sections.stages ? "stage \uC5C6\uC74C" : "Stages \uB85C\uB4DC \uBC84\uD2BC\uC73C\uB85C \uD2B8\uB9AC\uB97C \uD3BC\uCE58\uC138\uC694"), stageRows.map((stage) => {
       const stageOpen = !!expandedStages[stage.stage_id];
       const stageConditions = conditionRows.filter((c) => c.stage_id === stage.stage_id);
-      return /* @__PURE__ */ React.createElement("div", { key: stage.stage_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }, onClick: () => toggleStage(stage.stage_id) }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, stageOpen ? "\u25BC" : "\u25B6"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-0)" } }, stage.label || stage.stage_id), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, stage.stage_id)), stageOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 } }, sections.conditions && sections.conditions.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.conditions.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("conditions", null) }, "\uC7AC\uC2DC\uB3C4"))), stageConditions.length === 0 && !(sections.conditions && sections.conditions.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "condition \uC5C6\uC74C"), stageConditions.map((cond) => {
+      return /* @__PURE__ */ React.createElement("div", { key: stage.stage_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 } }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "btn ghost sm",
+          "aria-expanded": stageOpen,
+          "aria-controls": "hct-stage-" + stage.stage_id,
+          onClick: () => toggleStage(stage.stage_id),
+          style: { display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left" }
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "mono" }, stageOpen ? "\u25BC" : "\u25B6"),
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-0)" } }, stage.label || stage.stage_id),
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, stage.stage_id)
+      ), /* @__PURE__ */ React.createElement("div", { id: "hct-stage-" + stage.stage_id, hidden: !stageOpen, style: { marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 } }, sections.conditions && sections.conditions.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.conditions.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("conditions", null) }, "\uC7AC\uC2DC\uB3C4"))), stageConditions.length === 0 && !(sections.conditions && sections.conditions.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "condition \uC5C6\uC74C"), stageConditions.map((cond) => {
         const condOpen = !!expandedConditions[cond.condition_id];
         const condEvaluations = evaluationRows.filter((e) => e.condition_id === cond.condition_id);
         const meta = _hctLabelMeta(cond);
         const parentId = meta && meta.parent_condition_id || cond.parent_condition_id;
-        return /* @__PURE__ */ React.createElement("div", { key: cond.condition_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: "pointer" }, onClick: () => toggleCondition(cond.condition_id) }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, condOpen ? "\u25BC" : "\u25B6"), /* @__PURE__ */ React.createElement("span", { className: "badge", style: { color: cond.side === "sell" ? "var(--red)" : "var(--teal)" } }, cond.side || "-"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, cond.condition_id), parentId && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, "parent=", parentId), meta && meta.code_lookup_status && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "buy/sell \uC774\uB984 \uCC38\uC870\uC758 \uCF54\uB4DC \uC870\uD68C \uC0C1\uD0DC (\uC11C\uBC84 code_lookup_status)" }, "code ", meta.code_lookup_status), meta && "hypotheses_present" in meta && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "\uAC00\uC124(hypotheses_json) \uC874\uC7AC \uC5EC\uBD80" }, "\uAC00\uC124 ", _hctPresence(!!meta.hypotheses_present))), condOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, marginLeft: 18 } }, sections.evaluations && sections.evaluations.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.evaluations.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", null) }, "\uC7AC\uC2DC\uB3C4"))), condEvaluations.length === 0 && !(sections.evaluations && sections.evaluations.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "evaluation \uC5C6\uC74C"), condEvaluations.map((ev) => /* @__PURE__ */ React.createElement("div", { key: ev.evaluation_id, className: "mono", style: { display: "flex", gap: 8, padding: "3px 0", fontSize: 10.5, color: "var(--ink-2)" } }, /* @__PURE__ */ React.createElement("span", null, ev.evaluation_id), _hctStatusCell(ev)))));
+        return /* @__PURE__ */ React.createElement("div", { key: cond.condition_id, style: { border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 } }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            className: "btn ghost sm",
+            "aria-expanded": condOpen,
+            "aria-controls": "hct-condition-" + cond.condition_id,
+            onClick: () => toggleCondition(cond.condition_id),
+            style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", width: "100%", textAlign: "left" }
+          },
+          /* @__PURE__ */ React.createElement("span", { className: "mono" }, condOpen ? "\u25BC" : "\u25B6"),
+          /* @__PURE__ */ React.createElement("span", { className: "badge", style: { color: cond.side === "sell" ? "var(--red)" : "var(--teal)" } }, cond.side || "-"),
+          /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, cond.condition_id),
+          parentId && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5 } }, "parent=", parentId),
+          meta && meta.code_lookup_status && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "buy/sell \uC774\uB984 \uCC38\uC870\uC758 \uCF54\uB4DC \uC870\uD68C \uC0C1\uD0DC (\uC11C\uBC84 code_lookup_status)" }, "code ", meta.code_lookup_status),
+          meta && "hypotheses_present" in meta && /* @__PURE__ */ React.createElement("span", { className: "badge", title: "\uAC00\uC124(hypotheses_json) \uC874\uC7AC \uC5EC\uBD80" }, "\uAC00\uC124 ", _hctPresence(!!meta.hypotheses_present))
+        ), /* @__PURE__ */ React.createElement("div", { id: "hct-condition-" + cond.condition_id, hidden: !condOpen, style: { marginTop: 6, marginLeft: 18 } }, sections.evaluations && sections.evaluations.err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, sections.evaluations.err, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", null) }, "\uC7AC\uC2DC\uB3C4"))), condEvaluations.length === 0 && !(sections.evaluations && sections.evaluations.loading) && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "4px 0" } }, "evaluation \uC5C6\uC74C"), condEvaluations.map((ev) => /* @__PURE__ */ React.createElement("div", { key: ev.evaluation_id, className: "mono", style: { display: "flex", gap: 8, padding: "3px 0", fontSize: 10.5, color: "var(--ink-2)" } }, /* @__PURE__ */ React.createElement("span", null, ev.evaluation_id), _hctStatusCell(ev)))));
       })));
-    }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Evaluation Rows"), sortedEvaluations.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "evaluation \uB85C\uB4DC \uD6C4 \uD45C\uC2DC\uB429\uB2C8\uB2E4 (\uC870\uAC74 \uB178\uB4DC\uB97C \uD3BC\uCE58\uC138\uC694)") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, HCT_EVAL_COLUMNS.map((col) => /* @__PURE__ */ React.createElement(
+    }), sections.stages && sections.stages.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", "aria-label": "Load more stages", onClick: () => loadSection("stages", sections.stages.next_cursor), disabled: sections.stages.loading }, sections.stages.loading ? "\uB85C\uB529\u2026" : "Stages \uB354\uBCF4\uAE30")), sections.conditions && sections.conditions.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", "aria-label": "Load more conditions", onClick: () => loadSection("conditions", sections.conditions.next_cursor), disabled: sections.conditions.loading }, sections.conditions.loading ? "\uB85C\uB529\u2026" : "Conditions \uB354\uBCF4\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, "Evaluation Rows"), sortedEvaluations.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "evaluation \uB85C\uB4DC \uD6C4 \uD45C\uC2DC\uB429\uB2C8\uB2E4 (\uC870\uAC74 \uB178\uB4DC\uB97C \uD3BC\uCE58\uC138\uC694)") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, HCT_EVAL_COLUMNS.map((col) => /* @__PURE__ */ React.createElement(
       "th",
       {
         key: col.key,
@@ -32129,7 +32278,7 @@ def signal_sell(pos, bar, ind):
       },
       col.label,
       sortKey === col.key ? sortDir === "asc" ? " \u25B2" : " \u25BC" : ""
-    )))), /* @__PURE__ */ React.createElement("tbody", null, sortedEvaluations.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hctStatusCell(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "traded_symbol_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "net_profit")) } }, _hctMoney(_hctMetric(row, "net_profit"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "gross_loss")) } }, _hctMoney(_hctMetric(row, "gross_loss"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "losing_trades"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "win_rate"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "mdd"))))))), sections.evaluations && sections.evaluations.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => loadSection("evaluations", sections.evaluations.next_cursor), disabled: sections.evaluations.loading }, sections.evaluations.loading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 8, fontSize: 10.5, color: "var(--amber)" } }, "\uD0D0\uC0C9\uC6A9 \uACB0\uACFC \u2014 OOS/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8")))))));
+    )))), /* @__PURE__ */ React.createElement("tbody", null, sortedEvaluations.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hctStatusCell(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "trade_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "traded_symbol_count"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "net_profit")) } }, _hctMoney(_hctMetric(row, "net_profit"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hctNegColor(_hctMetric(row, "gross_loss")) } }, _hctMoney(_hctMetric(row, "gross_loss"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctNum(_hctMetric(row, "losing_trades"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "win_rate"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hctPct(_hctMetric(row, "mdd")))))))), sections.evaluations && sections.evaluations.next_cursor && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", "aria-label": "Load more evaluations", onClick: () => loadSection("evaluations", sections.evaluations.next_cursor), disabled: sections.evaluations.loading }, sections.evaluations.loading ? "\uB85C\uB529\u2026" : "\uB354\uBCF4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 8, fontSize: 10.5, color: "var(--amber)" } }, "\uD0D0\uC0C9\uC6A9 \uACB0\uACFC \u2014 OOS/\uC2B9\uACA9 \uADFC\uAC70 \uC544\uB2D8")))))));
   }
   Object.assign(window, { HistoryConditionTreePanel });
 
@@ -32172,18 +32321,39 @@ def signal_sell(pos, bar, ind):
   function _hvFetchJson(url, signal) {
     return fetch(url, { signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
+  function _hvUnavailable(reason, conflict) {
+    return {
+      available: false,
+      reason: typeof reason === "string" && reason ? reason : "history_detail_unavailable",
+      conflict: typeof conflict === "string" && conflict ? conflict : null
+    };
+  }
   function _hvFetchAllPages(url, signal, validatePage) {
     const MAX_PAGES = 50;
     const sep = url.includes("?") ? "&" : "?";
     const base = url + sep + "limit=100";
+    const pageError = (payload) => {
+      const error = new Error("History detail response identity mismatch");
+      error.historyUnavailable = _hvUnavailable(
+        payload && payload.available === false ? payload.reason : "malformed_history_detail_envelope",
+        payload && payload.available === false ? payload.conflict : null
+      );
+      return error;
+    };
     const step = (cursor, acc, page) => {
       const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
       return _hvFetchJson(pageUrl, signal).then((payload) => {
-        if (!validatePage(payload)) throw new Error("History detail response identity mismatch");
-        const rows = Array.isArray(payload.rows) ? payload.rows : [];
-        const merged = acc.concat(rows);
+        if (!payload || payload.available !== true || !Array.isArray(payload.rows) || !validatePage(payload)) {
+          throw pageError(payload);
+        }
+        const merged = acc.concat(payload.rows);
         const next = payload.next_cursor ? payload.next_cursor : null;
-        if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+        if (next && page >= MAX_PAGES) {
+          const error = new Error("History detail page ceiling exceeded");
+          error.historyUnavailable = _hvUnavailable("history_detail_page_ceiling_exceeded");
+          throw error;
+        }
+        if (next) return step(next, merged, page + 1);
         return merged;
       });
     };
@@ -32220,6 +32390,10 @@ def signal_sell(pos, bar, ind):
     if (!err) return null;
     return /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err, onRetry && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onRetry }, "\uC7AC\uC2DC\uB3C4")));
   }
+  function _HvUnavailable({ unavailable }) {
+    if (!unavailable) return null;
+    return /* @__PURE__ */ React.createElement(_HvEmpty, null, "History evidence unavailable: ", unavailable.reason, unavailable.conflict ? ` (conflict: ${unavailable.conflict})` : "");
+  }
   function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [series, setSeries] = useState_hv("");
@@ -32228,8 +32402,8 @@ def signal_sell(pos, bar, ind):
     const [pairsLoading, setPairsLoading] = useState_hv(false);
     const [pairsErr, setPairsErr] = useState_hv("");
     const [selectedPair, setSelectedPair] = useState_hv("");
-    const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
-    const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+    const [legacyRows, setLegacyRows] = useState_hv({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+    const [typedRows, setTypedRows] = useState_hv({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
     const requestsRef = useRef_hv({ pairs: null, legacy: null, typed: null });
     const generationRef = useRef_hv({ pairs: 0, legacy: 0, typed: 0 });
     const loadPairs = useCallback_hv(() => {
@@ -32242,8 +32416,19 @@ def signal_sell(pos, bar, ind):
       setPairsErr("");
       _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), controller.signal).then((payload) => {
         if (generation !== generationRef.current.pairs || controller.signal.aborted) return;
-        const items = Array.isArray(payload && payload.items) ? payload.items : [];
-        setPairsAvailable(!!(payload && payload.available));
+        if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean") {
+          throw new Error("Malformed A/B pairs envelope");
+        }
+        if (!payload.available) {
+          setPairsAvailable(false);
+          setPairs([]);
+          setSelectedPair("");
+          setPairsErr(`A/B evidence unavailable: ${payload.reason || "unknown_reason"}${payload.conflict ? ` (conflict: ${payload.conflict})` : ""}`);
+          return;
+        }
+        if (!Array.isArray(payload.items)) throw new Error("Malformed A/B pairs envelope");
+        const items = payload.items;
+        setPairsAvailable(true);
         setPairs(items.filter((item) => item && (item.legacy_research_id === selectedResearchId || item.typed_research_id === selectedResearchId)));
         setSelectedPair("");
       }).catch((error) => {
@@ -32263,8 +32448,8 @@ def signal_sell(pos, bar, ind):
       });
       setPairs([]);
       setSelectedPair("");
-      setLegacyRows({ loading: false, err: "", rows: [] });
-      setTypedRows({ loading: false, err: "", rows: [] });
+      setLegacyRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+      setTypedRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
     }, [baseUrl, isDemo, selectedResearchId]);
     useEffect_hv(() => () => {
       Object.keys(requestsRef.current).forEach((key) => {
@@ -32274,7 +32459,7 @@ def signal_sell(pos, bar, ind):
     const current = pairs.find((p) => p.pair === selectedPair && (p.legacy_research_id === selectedResearchId || p.typed_research_id === selectedResearchId)) || null;
     const loadSide = useCallback_hv((sideName, researchId, setter) => {
       if (isDemo || !baseUrl || !researchId) {
-        setter({ loading: false, err: "", rows: [] });
+        setter({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
         return;
       }
       if (requestsRef.current[sideName]) requestsRef.current[sideName].abort();
@@ -32282,27 +32467,31 @@ def signal_sell(pos, bar, ind):
       const generation = ++generationRef.current[sideName];
       const selectionGeneration = sideName + "-" + generation;
       requestsRef.current[sideName] = controller;
-      setter((prev) => ({ ...prev, loading: true, err: "" }));
+      setter((prev) => ({ ...prev, loading: true, available: null, reason: null, conflict: null, err: "" }));
       const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
-      _hvFetchAllPages(url, controller.signal, (payload) => payload && payload.research_id === researchId && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((rows) => {
+      _hvFetchAllPages(url, controller.signal, (payload) => payload.research_id === researchId && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((rows) => {
         if (generation === generationRef.current[sideName] && !controller.signal.aborted) {
-          setter({ loading: false, err: "", rows });
+          setter({ loading: false, available: true, reason: null, conflict: null, err: "", rows });
         }
       }).catch((error) => {
         if (generation !== generationRef.current[sideName] || _hvIsAbort(error, controller)) return;
-        setter({ loading: false, err: String(error), rows: [] });
+        if (error.historyUnavailable) {
+          setter({ loading: false, ...error.historyUnavailable, err: "", rows: [] });
+          return;
+        }
+        setter({ loading: false, available: false, reason: null, conflict: null, err: String(error), rows: [] });
       });
     }, [baseUrl, isDemo]);
     useEffect_hv(() => {
       if (!current) {
-        setLegacyRows({ loading: false, err: "", rows: [] });
-        setTypedRows({ loading: false, err: "", rows: [] });
+        setLegacyRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+        setTypedRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
         return;
       }
       loadSide("legacy", current.legacy_research_id, setLegacyRows);
       loadSide("typed", current.typed_research_id, setTypedRows);
     }, [current, loadSide]);
-    const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, typeof gatePassedFlag === "boolean" && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), !side.err && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetricAny(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) } }, _hvMoney(_hvMetric(row, "profit")))))))));
+    const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, typeof gatePassedFlag === "boolean" && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.available === false && !side.err && /* @__PURE__ */ React.createElement(_HvEmpty, null, "A/B evidence unavailable: ", side.reason, side.conflict ? ` (conflict: ${side.conflict})` : ""), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), side.available === true && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetricAny(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) } }, _hvMoney(_hvMetric(row, "profit")))))))));
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "A/B \uC30D\uB300\uBE44\uAD50 (legacy \xB7 typed)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: isDemo || pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC A/B \uC30D\uB300\uBE44\uAD50\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -32328,52 +32517,25 @@ def signal_sell(pos, bar, ind):
   }
   function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const [campaigns, setCampaigns] = useState_hv([]);
-    const [campaignsLoading, setCampaignsLoading] = useState_hv(false);
-    const [campaignsErr, setCampaignsErr] = useState_hv("");
     const selected2 = selectedResearchId || "";
+    const selectedIsCampaign = selected2.startsWith("campaign:");
     const [rows, setRows] = useState_hv([]);
     const [rowsLoading, setRowsLoading] = useState_hv(false);
     const [rowsErr, setRowsErr] = useState_hv("");
+    const [rowsUnavailable, setRowsUnavailable] = useState_hv(null);
     const [metricMode, setMetricMode] = useState_hv("profit");
-    const requestsRef = useRef_hv({ campaigns: null, rows: null });
-    const generationRef = useRef_hv({ campaigns: 0, rows: 0 });
-    const loadCampaigns = useCallback_hv(() => {
-      if (isDemo || !baseUrl) return;
-      if (requestsRef.current.campaigns) requestsRef.current.campaigns.abort();
-      const controller = new AbortController();
-      const generation = ++generationRef.current.campaigns;
-      const selectionGeneration = "campaigns-" + generation;
-      requestsRef.current.campaigns = controller;
-      setCampaignsLoading(true);
-      setCampaignsErr("");
-      _hvFetchJson(
-        baseUrl + "/history/index?limit=50&source_kind=campaign&selection_generation=" + encodeURIComponent(selectionGeneration),
-        controller.signal
-      ).then((payload) => {
-        if (generation !== generationRef.current.campaigns || controller.signal.aborted || !payload || String(payload.selection_generation) !== selectionGeneration) return;
-        setCampaigns(Array.isArray(payload.items) ? payload.items : []);
-      }).catch((error) => {
-        if (generation !== generationRef.current.campaigns || _hvIsAbort(error, controller)) return;
-        setCampaignsErr(String(error));
-        setCampaigns([]);
-      }).finally(() => {
-        if (generation === generationRef.current.campaigns && !controller.signal.aborted) setCampaignsLoading(false);
-      });
-    }, [baseUrl, isDemo, selected2]);
-    useEffect_hv(() => {
-      loadCampaigns();
-    }, [loadCampaigns]);
+    const requestsRef = useRef_hv({ rows: null });
+    const generationRef = useRef_hv({ rows: 0 });
     useEffect_hv(() => () => {
-      Object.keys(requestsRef.current).forEach((key) => {
-        if (requestsRef.current[key]) requestsRef.current[key].abort();
-      });
+      if (requestsRef.current.rows) requestsRef.current.rows.abort();
     }, []);
     const loadRows = useCallback_hv(() => {
       if (requestsRef.current.rows) requestsRef.current.rows.abort();
       const generation = ++generationRef.current.rows;
-      if (isDemo || !baseUrl || !selected2) {
+      if (isDemo || !baseUrl || !selectedIsCampaign) {
         setRows([]);
+        setRowsUnavailable(null);
+        setRowsErr(selected2 ? "Unavailable: CellHeatmap requires campaign:<id>" : "");
         setRowsLoading(false);
         return;
       }
@@ -32383,17 +32545,23 @@ def signal_sell(pos, bar, ind):
       setRowsLoading(true);
       setRowsErr("");
       setRows([]);
+      setRowsUnavailable(null);
       const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
-      _hvFetchAllPages(url, controller.signal, (payload) => payload && payload.research_id === selected2 && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((nextRows) => {
+      _hvFetchAllPages(url, controller.signal, (payload) => payload && payload.available === true && payload.research_id === selected2 && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((nextRows) => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRows(nextRows);
       }).catch((error) => {
         if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
-        setRowsErr(String(error));
         setRows([]);
+        if (error.historyUnavailable) {
+          setRowsUnavailable(error.historyUnavailable);
+          setRowsErr("");
+          return;
+        }
+        setRowsErr(String(error));
       }).finally(() => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
       });
-    }, [baseUrl, isDemo, selected2]);
+    }, [baseUrl, isDemo, selected2, selectedIsCampaign]);
     useEffect_hv(() => {
       loadRows();
     }, [loadRows]);
@@ -32426,7 +32594,7 @@ def signal_sell(pos, bar, ind):
       if (!capLabels.length || !timeLabels.length) return null;
       return { timeLabels, capLabels, cellMap };
     })();
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mono", "aria-live": "polite", style: { fontSize: 10.5, color: "var(--ink-3)" } }, selected2 ? "\uC120\uD0DD \uC5F0\uAD6C: " + selected2 : "\uC120\uD0DD \uC5F0\uAD6C \uC5C6\uC74C \xB7 \uD788\uD2B8\uB9F5 \uADFC\uAC70 missing"), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%"), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selectedIsCampaign }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mono", "aria-live": "polite", style: { fontSize: 10.5, color: "var(--ink-3)" } }, selected2 ? "\uC120\uD0DD \uC5F0\uAD6C: " + selected2 : "\uC120\uD0DD \uC5F0\uAD6C \uC5C6\uC74C \xB7 \uD788\uD2B8\uB9F5 \uADFC\uAC70 missing"), selectedIsCampaign && hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%"), !selectedIsCampaign && selected2 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Unavailable: CellHeatmap requires campaign:<id>"), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), /* @__PURE__ */ React.createElement(_HvUnavailable, { unavailable: rowsUnavailable }), selectedIsCampaign && !rowsErr && !rowsUnavailable && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion evaluation\uC774 \uBC1C\uD589\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), selectedIsCampaign && grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
       const cell = grid.cellMap[t + "\xD7" + c];
       const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
       return /* @__PURE__ */ React.createElement(
@@ -32442,51 +32610,24 @@ def signal_sell(pos, bar, ind):
   }
   function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const [runs, setRuns] = useState_hv([]);
-    const [runsLoading, setRunsLoading] = useState_hv(false);
-    const [runsErr, setRunsErr] = useState_hv("");
     const selected2 = selectedResearchId || "";
+    const selectedIsLoopRun = selected2.startsWith("loop_run:");
     const [rows, setRows] = useState_hv([]);
     const [rowsLoading, setRowsLoading] = useState_hv(false);
     const [rowsErr, setRowsErr] = useState_hv("");
-    const requestsRef = useRef_hv({ runs: null, rows: null });
-    const generationRef = useRef_hv({ runs: 0, rows: 0 });
-    const loadRuns = useCallback_hv(() => {
-      if (isDemo || !baseUrl) return;
-      if (requestsRef.current.runs) requestsRef.current.runs.abort();
-      const controller = new AbortController();
-      const generation = ++generationRef.current.runs;
-      const selectionGeneration = "runs-" + generation;
-      requestsRef.current.runs = controller;
-      setRunsLoading(true);
-      setRunsErr("");
-      _hvFetchJson(
-        baseUrl + "/history/index?limit=50&source_kind=loop_run&selection_generation=" + encodeURIComponent(selectionGeneration),
-        controller.signal
-      ).then((payload) => {
-        if (generation !== generationRef.current.runs || controller.signal.aborted || !payload || String(payload.selection_generation) !== selectionGeneration) return;
-        setRuns(Array.isArray(payload.items) ? payload.items : []);
-      }).catch((error) => {
-        if (generation !== generationRef.current.runs || _hvIsAbort(error, controller)) return;
-        setRunsErr(String(error));
-        setRuns([]);
-      }).finally(() => {
-        if (generation === generationRef.current.runs && !controller.signal.aborted) setRunsLoading(false);
-      });
-    }, [baseUrl, isDemo, selected2]);
-    useEffect_hv(() => {
-      loadRuns();
-    }, [loadRuns]);
+    const [rowsUnavailable, setRowsUnavailable] = useState_hv(null);
+    const requestsRef = useRef_hv({ rows: null });
+    const generationRef = useRef_hv({ rows: 0 });
     useEffect_hv(() => () => {
-      Object.keys(requestsRef.current).forEach((key) => {
-        if (requestsRef.current[key]) requestsRef.current[key].abort();
-      });
+      if (requestsRef.current.rows) requestsRef.current.rows.abort();
     }, []);
     const loadRows = useCallback_hv(() => {
       if (requestsRef.current.rows) requestsRef.current.rows.abort();
       const generation = ++generationRef.current.rows;
-      if (isDemo || !baseUrl || !selected2) {
+      if (isDemo || !baseUrl || !selectedIsLoopRun) {
         setRows([]);
+        setRowsUnavailable(null);
+        setRowsErr(selected2 ? "Unavailable: HoldoutFunnel requires loop_run:<id>" : "");
         setRowsLoading(false);
         return;
       }
@@ -32496,35 +32637,30 @@ def signal_sell(pos, bar, ind):
       setRowsLoading(true);
       setRowsErr("");
       setRows([]);
+      setRowsUnavailable(null);
       const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
-      _hvFetchAllPages(url, controller.signal, (payload) => payload && payload.research_id === selected2 && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((nextRows) => {
+      _hvFetchAllPages(url, controller.signal, (payload) => payload && payload.available === true && payload.research_id === selected2 && payload.section === "evaluations" && String(payload.selection_generation) === selectionGeneration).then((nextRows) => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRows(nextRows);
       }).catch((error) => {
         if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
-        setRowsErr(String(error));
         setRows([]);
+        if (error.historyUnavailable) {
+          setRowsUnavailable(error.historyUnavailable);
+          setRowsErr("");
+          return;
+        }
+        setRowsErr(String(error));
       }).finally(() => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
       });
-    }, [baseUrl, isDemo, selected2]);
+    }, [baseUrl, isDemo, selected2, selectedIsLoopRun]);
     useEffect_hv(() => {
       loadRows();
     }, [loadRows]);
     const evaluatedCount = rows.length;
     const gateSignalSeen = rows.some((r) => r && typeof r.gate_passed === "boolean");
     const gatePassedCount = rows.filter((r) => r && r.gate_passed === true).length;
-    let holdoutTotal = 0;
-    let holdoutPassed = 0;
-    let holdoutSignalSeen = false;
-    for (const row of rows) {
-      const metrics = row && row.metrics || {};
-      const metricKeys = Object.keys(metrics).filter((k) => k.toLowerCase().includes("holdout"));
-      if (metricKeys.length === 0) continue;
-      holdoutSignalSeen = true;
-      holdoutTotal += 1;
-      const truthy = metricKeys.some((k) => !!metrics[k]);
-      if (truthy) holdoutPassed += 1;
-    }
+    const holdoutUnavailable = _hvUnavailable("holdout_owner_unavailable");
     const maxCount = Math.max(evaluatedCount, 1);
     const barStyle = (count) => ({
       height: 22,
@@ -32538,7 +32674,7 @@ def signal_sell(pos, bar, ind):
       fontWeight: 600,
       fontSize: 11
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mono", "aria-live": "polite", style: { fontSize: 10.5, color: "var(--ink-3)" } }, selected2 ? "\uC120\uD0DD \uC5F0\uAD6C: " + selected2 : "\uC120\uD0DD \uC5F0\uAD6C \uC5C6\uC74C \xB7 \uD640\uB4DC\uC544\uC6C3 \uADFC\uAC70 missing"), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uC2E0\uD638 \uBBF8\uBC1C\uD589(\uD5A5\uD6C4 \uC81C\uACF5)"))))));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selectedIsLoopRun }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mono", "aria-live": "polite", style: { fontSize: 10.5, color: "var(--ink-3)" } }, selected2 ? "\uC120\uD0DD \uC5F0\uAD6C: " + selected2 : "\uC120\uD0DD \uC5F0\uAD6C \uC5C6\uC74C \xB7 \uD640\uB4DC\uC544\uC6C3 \uADFC\uAC70 missing"), !selectedIsLoopRun && selected2 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Unavailable: HoldoutFunnel requires loop_run:<id>"), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), /* @__PURE__ */ React.createElement(_HvUnavailable, { unavailable: rowsUnavailable }), selectedIsLoopRun && !rowsErr && !rowsUnavailable && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), selectedIsLoopRun && !rowsErr && !rowsUnavailable && !rowsLoading && evaluatedCount === 0 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 unavailable: ", holdoutUnavailable.reason, " (no backend-owned typed contract)"), selectedIsLoopRun && evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 unavailable: ", holdoutUnavailable.reason, " (no backend-owned typed contract)"))))));
   }
   Object.assign(window, { AbPairCompareView, CellHeatmap, HoldoutFunnel });
 
@@ -32709,11 +32845,16 @@ def signal_sell(pos, bar, ind):
   }
   function _rixExactResearchId(record) {
     if (!record || typeof record !== "object") return "";
-    const direct = [record.research_id, record.id].find((candidate) => typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate));
-    if (direct) return direct;
+    if (typeof record.id === "string" && /^(campaign|loop_run):\S+$/.test(record.id)) return record.id;
     if (typeof record.exact_link !== "string") return "";
-    const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):.+)$/);
+    if (/^(campaign|loop_run):\S+$/.test(record.exact_link)) return record.exact_link;
+    const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):\S+)$/);
     return match ? match[1] : "";
+  }
+  function _rixHasExactGovernedLink(record, researchId) {
+    if (!record || typeof record !== "object" || typeof researchId !== "string" || !/^(campaign|loop_run):\S+$/.test(researchId)) return false;
+    if (record.id === researchId || record.exact_link === researchId || record.exact_link === `research-index://${researchId}`) return true;
+    return Array.isArray(record.related_ids) && record.related_ids.includes(researchId);
   }
   function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedResearchId, onSelectResearch }) {
     const base = _rixBase(baseUrl);
@@ -32734,6 +32875,7 @@ def signal_sell(pos, bar, ind):
     const [traceStatus, setTraceStatus] = useState_rix("all");
     const [sortKey, setSortKey] = useState_rix("updated_desc");
     const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
+    const [timelineLimit, setTimelineLimit] = useState_rix(12);
     const requestsRef = useRef_rix({ index: null, detail: null });
     const generationRef = useRef_rix({ index: 0, detail: 0 });
     const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
@@ -32754,6 +32896,7 @@ def signal_sell(pos, bar, ind):
       setDetailLoading(false);
       setLoading(false);
       setElapsed(0);
+      setTimelineLimit(12);
       setErr("");
     }, [baseIdentity]);
     useEffect_rix(() => {
@@ -32843,7 +32986,7 @@ def signal_sell(pos, bar, ind):
       setDetailLoading(true);
       setDetail(null);
       fetch(base + "/research_index/detail?id=" + encodeURIComponent(selectedId), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!j || typeof j !== "object" || typeof j.available !== "boolean" || j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId)) {
+        if (!j || typeof j !== "object" || typeof j.available !== "boolean" || j.available && (!j.row || typeof j.row !== "object" || j.row.id !== selectedId) || !j.available && j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId)) {
           throw new Error("Malformed research index detail response");
         }
         if (requestId === generationRef.current.detail && !controller.signal.aborted && baseIdentityRef.current === requestBase) setDetail(j);
@@ -32868,13 +33011,20 @@ def signal_sell(pos, bar, ind):
       for (const row of records) if (out[row.trace_status] != null) out[row.trace_status] += 1;
       return out;
     }, [records]);
-    const timelineRows = useMemo_rix(() => visibleRows.slice(0, 12), [visibleRows]);
+    const governedExactRows = useMemo_rix(() => {
+      if (!/^(campaign|loop_run):\S+$/.test(selectedResearchId || "")) return [];
+      return records.filter((row) => _rixHasExactGovernedLink(row, selectedResearchId));
+    }, [records, selectedResearchId]);
+    const timelineRows = useMemo_rix(
+      () => governedExactRows.slice(0, timelineLimit),
+      [governedExactRows, timelineLimit]
+    );
     const selectRecord = (record) => {
       setSelectedId(record.id);
       const researchId = _rixExactResearchId(record);
       if (researchId && typeof onSelectResearch === "function") onSelectResearch(researchId);
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel research-index" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Governed Research Index", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null), controlled && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "parent research ", typeof selectedResearchId === "string" ? selectedResearchId : "none")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadIndex, disabled: isDemo || loading }, loading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "Governed exact-link timeline across campaigns, docs, update logs, HOF, loop_runs, evidence artifacts, decisions, and allowlisted registry rows. Badges use closed source_authority, canonicality, and trace_status values; unknown/unlinked lineage stays visible instead of being hidden."), isDemo ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "demo", compact: true, title: "Backend connection required" }, "Governed research index is available when the dashboard backend is connected.") : err ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "error", compact: true, title: "index query failed", detail: err }, "Refresh after checking backend connectivity.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-index-controls" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel research-index" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Catalog", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null), controlled && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "governed research ", typeof selectedResearchId === "string" ? selectedResearchId : "none")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadIndex, disabled: isDemo || loading }, loading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "Global catalog browsing is separate from governed evidence. Selecting a catalog row opens its own detail; only an explicit campaign:/loop_run: id or exact_link can change the governed research identity."), isDemo ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "demo", compact: true, title: "Backend connection required" }, "Governed research index is available when the dashboard backend is connected.") : err ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "error", compact: true, title: "index query failed", detail: err }, "Refresh after checking backend connectivity.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-index-controls" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "search",
@@ -32883,7 +33033,7 @@ def signal_sell(pos, bar, ind):
         onChange: (e) => setQueryInput(e.target.value),
         placeholder: "Search title, source path, tag, related id"
       }
-    ), /* @__PURE__ */ React.createElement("label", null, "kind", /* @__PURE__ */ React.createElement("select", { value: kind, onChange: (e) => setKind(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "campaign" }, "campaign"), /* @__PURE__ */ React.createElement("option", { value: "doc" }, "doc"), /* @__PURE__ */ React.createElement("option", { value: "update_log" }, "update_log"), /* @__PURE__ */ React.createElement("option", { value: "registry" }, "registry"), /* @__PURE__ */ React.createElement("option", { value: "hof" }, "hof"), /* @__PURE__ */ React.createElement("option", { value: "loop_run" }, "loop_run"), /* @__PURE__ */ React.createElement("option", { value: "decision" }, "decision"), /* @__PURE__ */ React.createElement("option", { value: "evidence" }, "evidence"))), /* @__PURE__ */ React.createElement("label", null, "canonicality", /* @__PURE__ */ React.createElement("select", { value: canonicality, onChange: (e) => setCanonicality(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "canonical" }, "canonical"), /* @__PURE__ */ React.createElement("option", { value: "derived" }, "derived"), /* @__PURE__ */ React.createElement("option", { value: "historical" }, "historical"), /* @__PURE__ */ React.createElement("option", { value: "reference" }, "reference"), /* @__PURE__ */ React.createElement("option", { value: "candidate" }, "candidate"), /* @__PURE__ */ React.createElement("option", { value: "stale" }, "stale"))), /* @__PURE__ */ React.createElement("label", null, "trace", /* @__PURE__ */ React.createElement("select", { value: traceStatus, onChange: (e) => setTraceStatus(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "linked" }, "linked"), /* @__PURE__ */ React.createElement("option", { value: "unlinked" }, "unlinked"), /* @__PURE__ */ React.createElement("option", { value: "unknown" }, "unknown"))), /* @__PURE__ */ React.createElement("label", null, "sort", /* @__PURE__ */ React.createElement("select", { value: sortKey, onChange: (e) => setSortKey(e.target.value) }, Object.entries(RIX_SORT_LABELS).map(([value, label]) => /* @__PURE__ */ React.createElement("option", { key: value, value }, label))))), /* @__PURE__ */ React.createElement("div", { className: "research-index-kpis" }, /* @__PURE__ */ React.createElement("span", null, "rows ", /* @__PURE__ */ React.createElement("b", null, records.length)), /* @__PURE__ */ React.createElement("span", null, "shown ", /* @__PURE__ */ React.createElement("b", null, visibleRows.length), filtered.length > visibleRows.length ? ` / ${filtered.length}` : ""), /* @__PURE__ */ React.createElement("span", null, "campaign ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.campaign)), /* @__PURE__ */ React.createElement("span", null, "doc ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.doc)), /* @__PURE__ */ React.createElement("span", null, "update_log ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.update_log)), /* @__PURE__ */ React.createElement("span", null, "registry ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.registry)), /* @__PURE__ */ React.createElement("span", null, "hof ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.hof)), /* @__PURE__ */ React.createElement("span", null, "loop_runs ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.loop_run)), /* @__PURE__ */ React.createElement("span", null, "decisions ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.decision)), /* @__PURE__ */ React.createElement("span", null, "evidence ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.evidence)), /* @__PURE__ */ React.createElement("span", null, "linked ", /* @__PURE__ */ React.createElement("b", null, traceCounts.linked)), /* @__PURE__ */ React.createElement("span", null, "unlinked ", /* @__PURE__ */ React.createElement("b", null, traceCounts.unlinked)), /* @__PURE__ */ React.createElement("span", null, "unknown ", /* @__PURE__ */ React.createElement("b", null, traceCounts.unknown)), cacheInfo && /* @__PURE__ */ React.createElement("span", null, "cache ", /* @__PURE__ */ React.createElement("b", null, cacheInfo.hit ? "hit" : "miss"), " \xB7 sources ", cacheInfo.sources), /* @__PURE__ */ React.createElement("span", null, "cap ", /* @__PURE__ */ React.createElement("b", null, displayLimit), filtered.length > displayLimit ? " windowed" : "")), errors.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "research-index-warning" }, errors.length, " index source warning(s); details remain read-only."), /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline", "aria-label": "governed exact-link research timeline" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Governed Exact-Link Timeline"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "source_authority \xB7 canonicality \xB7 trace_status \xB7 exact_link")), /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-rail" }, timelineRows.map((row) => /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("label", null, "kind", /* @__PURE__ */ React.createElement("select", { value: kind, onChange: (e) => setKind(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "campaign" }, "campaign"), /* @__PURE__ */ React.createElement("option", { value: "doc" }, "doc"), /* @__PURE__ */ React.createElement("option", { value: "update_log" }, "update_log"), /* @__PURE__ */ React.createElement("option", { value: "registry" }, "registry"), /* @__PURE__ */ React.createElement("option", { value: "hof" }, "hof"), /* @__PURE__ */ React.createElement("option", { value: "loop_run" }, "loop_run"), /* @__PURE__ */ React.createElement("option", { value: "decision" }, "decision"), /* @__PURE__ */ React.createElement("option", { value: "evidence" }, "evidence"))), /* @__PURE__ */ React.createElement("label", null, "canonicality", /* @__PURE__ */ React.createElement("select", { value: canonicality, onChange: (e) => setCanonicality(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "canonical" }, "canonical"), /* @__PURE__ */ React.createElement("option", { value: "derived" }, "derived"), /* @__PURE__ */ React.createElement("option", { value: "historical" }, "historical"), /* @__PURE__ */ React.createElement("option", { value: "reference" }, "reference"), /* @__PURE__ */ React.createElement("option", { value: "candidate" }, "candidate"), /* @__PURE__ */ React.createElement("option", { value: "stale" }, "stale"))), /* @__PURE__ */ React.createElement("label", null, "trace", /* @__PURE__ */ React.createElement("select", { value: traceStatus, onChange: (e) => setTraceStatus(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "linked" }, "linked"), /* @__PURE__ */ React.createElement("option", { value: "unlinked" }, "unlinked"), /* @__PURE__ */ React.createElement("option", { value: "unknown" }, "unknown"))), /* @__PURE__ */ React.createElement("label", null, "sort", /* @__PURE__ */ React.createElement("select", { value: sortKey, onChange: (e) => setSortKey(e.target.value) }, Object.entries(RIX_SORT_LABELS).map(([value, label]) => /* @__PURE__ */ React.createElement("option", { key: value, value }, label))))), /* @__PURE__ */ React.createElement("div", { className: "research-index-kpis" }, /* @__PURE__ */ React.createElement("span", null, "rows ", /* @__PURE__ */ React.createElement("b", null, records.length)), /* @__PURE__ */ React.createElement("span", null, "shown ", /* @__PURE__ */ React.createElement("b", null, visibleRows.length), filtered.length > visibleRows.length ? ` / ${filtered.length}` : ""), /* @__PURE__ */ React.createElement("span", null, "campaign ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.campaign)), /* @__PURE__ */ React.createElement("span", null, "doc ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.doc)), /* @__PURE__ */ React.createElement("span", null, "update_log ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.update_log)), /* @__PURE__ */ React.createElement("span", null, "registry ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.registry)), /* @__PURE__ */ React.createElement("span", null, "hof ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.hof)), /* @__PURE__ */ React.createElement("span", null, "loop_runs ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.loop_run)), /* @__PURE__ */ React.createElement("span", null, "decisions ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.decision)), /* @__PURE__ */ React.createElement("span", null, "evidence ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.evidence)), /* @__PURE__ */ React.createElement("span", null, "linked ", /* @__PURE__ */ React.createElement("b", null, traceCounts.linked)), /* @__PURE__ */ React.createElement("span", null, "unlinked ", /* @__PURE__ */ React.createElement("b", null, traceCounts.unlinked)), /* @__PURE__ */ React.createElement("span", null, "unknown ", /* @__PURE__ */ React.createElement("b", null, traceCounts.unknown)), cacheInfo && /* @__PURE__ */ React.createElement("span", null, "cache ", /* @__PURE__ */ React.createElement("b", null, cacheInfo.hit ? "hit" : "miss"), " \xB7 sources ", cacheInfo.sources), /* @__PURE__ */ React.createElement("span", null, "cap ", /* @__PURE__ */ React.createElement("b", null, displayLimit), filtered.length > displayLimit ? " windowed" : "")), errors.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "research-index-warning" }, errors.length, " index source warning(s); details remain read-only."), /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline", "aria-label": "governed exact-link evidence" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Governed Exact-Link Evidence"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "selected identity \xB7 explicit id/exact_link/related_ids only")), /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-rail" }, timelineRows.map((row) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -32896,7 +33046,15 @@ def signal_sell(pos, bar, ind):
       /* @__PURE__ */ React.createElement("strong", null, row.title || row.id),
       /* @__PURE__ */ React.createElement("span", { className: "research-index-row-badges" }, /* @__PURE__ */ React.createElement(ResearchBadge, { type: "trace", value: row.trace_status }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "canonicality", value: row.canonicality }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "authority", value: row.source_authority })),
       /* @__PURE__ */ React.createElement("small", null, row.exact_link || row.id)
-    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: `\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026 (\uACBD\uACFC ${elapsed}s)` }, "\uC218\uCC9C \uAC74\uC758 exact-link \uB808\uCF54\uB4DC\uB97C \uC9D1\uACC4 \uC911\uC785\uB2C8\uB2E4(\uB300\uC6A9\uB7C9 \xB7 \uBCF4\uD1B5 ~11\uCD08, \uCD5C\uB300 ~20\uCD08)."), !loading && timelineRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No timeline records." }, "\uD544\uD130\uB97C \uC870\uC815\uD558\uBA74 exact-link \uD0C0\uC784\uB77C\uC778\uC774 \uB2E4\uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "research-index-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-list", role: "listbox", "aria-label": "research index records" }, visibleRows.map((row) => /* @__PURE__ */ React.createElement(
+    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: `\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026 (\uACBD\uACFC ${elapsed}s)` }, "\uC120\uD0DD\uD55C identity\uC758 explicit exact-link \uADFC\uAC70\uB97C \uC9D1\uACC4 \uC911\uC785\uB2C8\uB2E4."), !loading && !selectedResearchId && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "Governed evidence unavailable." }, "HistoryConditionTree \uB610\uB294 \uBA85\uC2DC\uC801 campaign:/loop_run: catalog row\uB97C \uC120\uD0DD\uD558\uC138\uC694."), !loading && selectedResearchId && timelineRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No exact linked governed evidence." }, "id, exact_link \uB610\uB294 related_ids\uAC00 \uC120\uD0DD identity\uC640 \uC815\uD655\uD788 \uC77C\uCE58\uD558\uB294 \uADFC\uAC70\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), governedExactRows.length > timelineRows.length && /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-window mono" }, /* @__PURE__ */ React.createElement("span", null, "Exact-link window ", timelineRows.length, "/", governedExactRows.length, "; additional linked evidence is not shown yet."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm",
+        onClick: () => setTimelineLimit((v) => Math.min(governedExactRows.length, v + 12))
+      },
+      "Load 12 more"
+    ))), /* @__PURE__ */ React.createElement("div", { className: "research-index-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-list", role: "group", "aria-label": "global research catalog records" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-timeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Global Research Catalog"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "browse/detail only; governed identity changes only on explicit stable IDs")), visibleRows.map((row) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -32923,7 +33081,7 @@ def signal_sell(pos, bar, ind):
       const related = records.find((row) => row.id === id2);
       if (related) selectRecord(related);
       else setSelectedId(id2);
-    } }, id2))), (!selectedRow.related_ids || selectedRow.related_ids.length === 0) && /* @__PURE__ */ React.createElement("div", { className: "research-index-related research-index-related-muted" }, "Trace lineage: ", selectedRow.trace_status === "unlinked" ? "unlinked source" : "unknown lineage"), detailLoading ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: "Detail loading\u2026" }, "\uC120\uD0DD\uD55C \uAE30\uB85D\uC758 \uC0C1\uC138\uB97C \uC9C0\uC5F0 \uC870\uD68C \uC911\uC785\uB2C8\uB2E4.") : detail && detail.available ? /* @__PURE__ */ React.createElement("pre", { className: "research-index-pre" }, detailText) : /* @__PURE__ */ React.createElement(UiStateBlock, { kind: detail ? "error" : "empty", compact: true, title: detail ? "Detail unavailable" : "Select a row to lazy-load detail", detail: detail ? detail.reason || "unknown" : "no selected detail" }, "Raw evidence remains read-only and linked by lineage.")) : /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "Select a governed research record." }, "\uC67C\uCABD \uBAA9\uB85D\uC5D0\uC11C \uD589\uC744 \uC120\uD0DD\uD558\uBA74 \uC0C1\uC138\uB97C \uC9C0\uC5F0 \uB85C\uB529\uD569\uB2C8\uB2E4."))))));
+    } }, id2))), (!selectedRow.related_ids || selectedRow.related_ids.length === 0) && /* @__PURE__ */ React.createElement("div", { className: "research-index-related research-index-related-muted" }, "Trace lineage: ", selectedRow.trace_status === "unlinked" ? "unlinked source" : "unknown lineage"), detailLoading ? /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: "Detail loading\u2026" }, "\uC120\uD0DD\uD55C \uAE30\uB85D\uC758 \uC0C1\uC138\uB97C \uC9C0\uC5F0 \uC870\uD68C \uC911\uC785\uB2C8\uB2E4.") : detail && detail.available ? /* @__PURE__ */ React.createElement("pre", { className: "research-index-pre" }, detailText) : /* @__PURE__ */ React.createElement(UiStateBlock, { kind: detail ? "error" : "empty", compact: true, title: detail ? "Detail unavailable" : "Select a row to lazy-load detail", detail: detail ? detail.reason || "unknown" : "no selected detail" }, "Raw catalog detail remains read-only; governed evidence requires an explicit exact link.")) : /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "Select a global catalog record." }, "\uD589\uC744 \uC120\uD0DD\uD558\uBA74 \uD574\uB2F9 catalog detail\uC744 \uC9C0\uC5F0 \uB85C\uB529\uD569\uB2C8\uB2E4."))))));
   }
   Object.assign(window, { ResearchIndexPanel });
 
@@ -36300,15 +36458,18 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/v4-history.jsx
   var { useState: useState_v4history, useCallback: useCallback_v4history } = React;
+  function _v4GovernedResearchId(researchId) {
+    return typeof researchId === "string" && /^(campaign|loop_run):\S+$/.test(researchId) ? researchId : "";
+  }
   function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
     const [selectedResearchId, setSelectedResearchId] = useState_v4history("");
-    const selectResearch = useCallback_v4history((researchId) => {
-      setSelectedResearchId(typeof researchId === "string" ? researchId : "");
+    const selectGovernedResearch = useCallback_v4history((researchId) => {
+      setSelectedResearchId(_v4GovernedResearchId(researchId));
     }, []);
     const analysisRunId = typeof selectedResearchId === "string" && /^loop_run:\S+$/.test(selectedResearchId) ? selectedResearchId.slice("loop_run:".length) : "";
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
     const freshnessLabel = wsStatus === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : wsStatus === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : wsStatus === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uB9CC \uC77D\uAE30 \uC804\uC6A9\uC774\uBA70, \uC544\uB798 append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC608\uC678\uC785\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, selectedResearchId, onSelectResearch: selectResearch, showRunCompare: false }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed analysis run: ", analysisRunId || "unavailable \xB7 loop_run:<nonempty> research selection\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.", " \xB7 campaign \uB610\uB294 \uBBF8\uC120\uD0DD\uC740 \uBD84\uC11D run\uC744 \uC81C\uACF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uC5F0\uAD6C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uB9CC \uC77D\uAE30 \uC804\uC6A9\uC774\uBA70, \uC544\uB798 append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC608\uC678\uC785\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D \xB7 Compare ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: "10.5px", color: "var(--ink-3)" } }, "\u2014 legacy run/gen archive selection (governed research selection\uACFC \uBCC4\uB3C4)")), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, showRunCompare: false }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-lineage-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed research selection: ", selectedResearchId || "\uC120\uD0DD \uC5C6\uC74C \xB7 \uADFC\uAC70\uB294 unavailable/missing\uC73C\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, selectedResearchId, onSelectedResearchIdChange: selectGovernedResearch }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, selectedResearchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, selectedResearchId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-analysis-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-analysis-title" }, "\uC5E3\uC9C0 \xB7 \uBCC0\uC218 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "Governed analysis run: ", analysisRunId || "unavailable \xB7 loop_run:<nonempty> research selection\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.", " \xB7 campaign \uB610\uB294 \uBBF8\uC120\uD0DD\uC740 \uBD84\uC11D run\uC744 \uC81C\uACF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uC5F0\uAD6C run \uAE30\uBC18 \uC5E3\uC9C0\uC640 \uBCC0\uC218 \uBD84\uC11D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(
       ResearchLabPanel,
       {
         baseUrl,
@@ -36318,7 +36479,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         showOpsStatus: false,
         showWorkbenchLink: false
       }
-    ))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-candidate-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-candidate-title" }, "\uD6C4\uBCF4 Compare"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uD6C4\uBCF4 \uBD84\uC11D\uACFC \uBE44\uAD50 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-wiki-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-wiki-title" }, "\uC5F0\uAD6C Wiki"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC704\uD0A4 \uAE30\uB85D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, selectedResearchId, onSelectResearch: selectResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "\uC77D\uAE30 \uC804\uC6A9 \uBC94\uC704\uB294 \uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uBFD0\uC785\uB2C8\uB2E4. ", /* @__PURE__ */ React.createElement("b", null, "Append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC4F0\uAE30 \uC608\uC678"), "\uC774\uBA70, \uC544\uB798 \uC2B9\uAE09/Export \uAC70\uBC84\uB10C\uC2A4 \uC81C\uC5B4 \uC804\uC5D0 \uBA85\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl, selectedResearchId, onSelectResearch: selectResearch, showDecisionLedger: false }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
+    ))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-candidate-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-candidate-title" }, "\uD6C4\uBCF4 Compare"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC544\uCE74\uC774\uBE0C run \uAE30\uBC18 \uD6C4\uBCF4 \uBD84\uC11D\uACFC \uBE44\uAD50 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-wiki-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-wiki-title" }, "\uC5F0\uAD6C Wiki"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC704\uD0A4 \uAE30\uB85D \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-index-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, selectedResearchId, onSelectResearch: selectGovernedResearch }))), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-gov-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 \xB7 \uC2B9\uAE09/Export \uACBD\uACC4"), /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "\uC77D\uAE30 \uC804\uC6A9 \uBC94\uC704\uB294 \uC544\uCE74\uC774\uBE0C/Compare \uD0D0\uC0C9\uBFD0\uC785\uB2C8\uB2E4. ", /* @__PURE__ */ React.createElement("b", null, "Append-only \uACB0\uC815 \uAE30\uB85D\uC740 \uC4F0\uAE30 \uC608\uC678"), "\uC774\uBA70, \uC544\uB798 \uC2B9\uAE09/Export \uAC70\uBC84\uB10C\uC2A4 \uC81C\uC5B4 \uC804\uC5D0 \uBA85\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl, selectedResearchId, onSelectResearch: selectGovernedResearch, showDecisionLedger: false }), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }))));
   }
   Object.assign(window, { V4History });
 

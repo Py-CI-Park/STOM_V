@@ -264,6 +264,34 @@ class TestHistoryIndex:
         assert item["research_id"] == "campaign:campaign_alpha"
         assert item["series"] == "campaign"
         assert "gate_passed_count" not in item
+    def test_campaign_coverage_is_typed_for_missing_or_malformed_evidence(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        missing = tmp_path / "missing-evidence"
+        monkeypatch.setattr(history_api, "EVIDENCE_ROOT", missing)
+        missing_body = client.get("/history/index", params={"source_kind": "campaign"}).json()
+        assert missing_body["coverage"]["campaign"] == {
+            "available": False,
+            "total": 0,
+            "reason": "evidence_root_unavailable",
+        }
+        assert missing_body["coverage"]["loop_run"] == {
+            "available": False,
+            "total": 0,
+            "reason": "not_queried",
+        }
+
+        malformed = tmp_path / "malformed-evidence"
+        malformed.mkdir()
+        (malformed / "campaign_alpha_summary.json").write_text("{", encoding="utf-8")
+        monkeypatch.setattr(history_api, "EVIDENCE_ROOT", malformed)
+        malformed_body = client.get("/history/index", params={"source_kind": "campaign"}).json()
+        assert malformed_body["coverage"]["campaign"] == {
+            "available": False,
+            "total": 0,
+            "reason": "source_errors",
+        }
+
 
 
 # ---------------------------------------------------------------------------
@@ -441,11 +469,20 @@ class TestHistoryDetail:
         ]
         assert identity["provenance_owner"] == "research_records"
         assert identity["state"] == "partial"
-        assert identity["destinations"]["conditions"]["state"] == "complete"
-        assert identity["destinations"]["evaluations"]["state"] == "complete"
-        for destination in ("autopsy", "holdout", "docs", "commits", "governance"):
-            assert identity["destinations"][destination]["state"] == "missing"
-            assert identity["destinations"][destination]["join_key"] == "campaign:campaign_alpha"
+        for destination in ("conditions", "evaluations"):
+            assert identity["destinations"][destination] == {
+                "state": "complete",
+                "owner": "research_records",
+                "join_key": "campaign:campaign_alpha",
+            }
+        for destination in ("autopsy", "holdout", "ab", "docs", "commits", "governance"):
+            assert identity["destinations"][destination] == {
+                "state": "unavailable",
+                "owner": None,
+                "owner_status": "unavailable",
+                "join_key": None,
+                "join_status": "not_queried",
+            }
         assert identity["byte_identical"]["allowlist"] == [
             "research_id",
             "label",
@@ -478,10 +515,14 @@ class TestHistoryDetail:
         assert identity["source_precedence"] == ["loop_state"]
         assert identity["provenance_owner"] == "loop_state"
         assert identity["state"] == "partial"
-        assert identity["destinations"]["conditions"]["state"] == "complete"
-        assert identity["destinations"]["evaluations"]["state"] == "complete"
+        for destination in ("conditions", "evaluations"):
+            assert identity["destinations"][destination] == {
+                "state": "complete",
+                "owner": "loop_state",
+                "join_key": f"loop_run:{loop_run_env}",
+            }
 
-    def test_companion_identity_mismatch_is_explicit_conflict(
+    def test_companion_identity_mismatch_fails_closed_for_every_section(
         self, client: TestClient, campaign_env: Path
     ) -> None:
         companion = {
@@ -502,15 +543,41 @@ class TestHistoryDetail:
             json.dumps(companion),
             encoding="utf-8",
         )
+
+        for section in ("research", "stages", "conditions", "evaluations"):
+            body = client.get(
+                "/history/detail",
+                params={
+                    "research_id": "campaign:campaign_alpha",
+                    "section": section,
+                    "selection_generation": "37",
+                },
+            ).json()
+            assert body["available"] is False
+            assert body["reason"] == "identity_conflict"
+            assert body["research_id"] == "campaign:campaign_alpha"
+            assert body["section"] == section
+            assert body["selection_generation"] == "37"
+            assert body["node"] is None
+            assert body["rows"] is None
+            assert body["next_cursor"] is None
+    def test_ab_destination_has_an_owner_only_for_an_exact_role(
+        self, client: TestClient, ab_pair_env: str
+    ) -> None:
         body = client.get(
             "/history/detail",
-            params={"research_id": "campaign:campaign_alpha", "section": "research"},
+            params={
+                "research_id": f"loop_run:{ab_pair_env}_p1_typed",
+                "section": "research",
+            },
         ).json()
-        identity = body["node"]["identity"]
-        assert identity["provenance_owner"] == "condition_history_v1_companion"
-        assert identity["state"] == "conflict"
-        assert identity["destinations"]["conditions"]["state"] == "conflict"
-        assert identity["destinations"]["evaluations"]["state"] == "conflict"
+
+        assert body["available"] is True
+        assert body["node"]["identity"]["destinations"]["ab"] == {
+            "state": "partial",
+            "owner": "history_ab_pairs",
+            "join_key": f"series:{ab_pair_env}",
+        }
 
     def test_stages_and_conditions_sections(self, client: TestClient, loop_run_env: str) -> None:
         research_id = f"loop_run:{loop_run_env}"

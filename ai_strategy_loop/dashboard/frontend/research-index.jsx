@@ -90,12 +90,19 @@ function _rixDetailText(detail) {
 
 function _rixExactResearchId(record) {
   if (!record || typeof record !== "object") return "";
-  const direct = [record.research_id, record.id]
-    .find(candidate => typeof candidate === "string" && /^(campaign|loop_run):.+$/.test(candidate));
-  if (direct) return direct;
+  if (typeof record.id === "string" && /^(campaign|loop_run):\S+$/.test(record.id)) return record.id;
   if (typeof record.exact_link !== "string") return "";
-  const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):.+)$/);
+  if (/^(campaign|loop_run):\S+$/.test(record.exact_link)) return record.exact_link;
+  const match = record.exact_link.match(/^research-index:\/\/((?:campaign|loop_run):\S+)$/);
   return match ? match[1] : "";
+}
+
+function _rixHasExactGovernedLink(record, researchId) {
+  if (!record || typeof record !== "object" || typeof researchId !== "string"
+    || !/^(campaign|loop_run):\S+$/.test(researchId)) return false;
+  if (record.id === researchId || record.exact_link === researchId
+    || record.exact_link === `research-index://${researchId}`) return true;
+  return Array.isArray(record.related_ids) && record.related_ids.includes(researchId);
 }
 
 function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedResearchId, onSelectResearch }) {
@@ -118,6 +125,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
   const [traceStatus, setTraceStatus] = useState_rix("all");
   const [sortKey, setSortKey] = useState_rix("updated_desc");
   const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
+  const [timelineLimit, setTimelineLimit] = useState_rix(12);
   const requestsRef = useRef_rix({ index: null, detail: null });
   const generationRef = useRef_rix({ index: 0, detail: 0 });
   const controlled = selectedResearchId != null || typeof onSelectResearch === "function";
@@ -139,6 +147,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
     setDetailLoading(false);
     setLoading(false);
     setElapsed(0);
+    setTimelineLimit(12);
     setErr("");
   }, [baseIdentity]);
 
@@ -252,7 +261,8 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
         if (!j || typeof j !== "object" || typeof j.available !== "boolean"
-          || (j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId))) {
+          || (j.available && (!j.row || typeof j.row !== "object" || j.row.id !== selectedId))
+          || (!j.available && j.row != null && (typeof j.row !== "object" || j.row.id !== selectedId))) {
           throw new Error("Malformed research index detail response");
         }
         if (requestId === generationRef.current.detail && !controller.signal.aborted
@@ -283,7 +293,14 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
     for (const row of records) if (out[row.trace_status] != null) out[row.trace_status] += 1;
     return out;
   }, [records]);
-  const timelineRows = useMemo_rix(() => visibleRows.slice(0, 12), [visibleRows]);
+  const governedExactRows = useMemo_rix(() => {
+    if (!/^(campaign|loop_run):\S+$/.test(selectedResearchId || "")) return [];
+    return records.filter(row => _rixHasExactGovernedLink(row, selectedResearchId));
+  }, [records, selectedResearchId]);
+  const timelineRows = useMemo_rix(
+    () => governedExactRows.slice(0, timelineLimit),
+    [governedExactRows, timelineLimit]
+  );
   const selectRecord = record => {
     setSelectedId(record.id);
     const researchId = _rixExactResearchId(record);
@@ -296,10 +313,10 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
-          Governed Research Index
+          Research Catalog
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
           {controlled && <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-            parent research {typeof selectedResearchId === "string" ? selectedResearchId : "none"}
+            governed research {typeof selectedResearchId === "string" ? selectedResearchId : "none"}
           </span>}
         </div>
         <button className="btn ghost sm" onClick={loadIndex} disabled={isDemo || loading}>
@@ -308,7 +325,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
       </div>
       <div className="panel-bd">
         <div className="research-index-note">
-          Governed exact-link timeline across campaigns, docs, update logs, HOF, loop_runs, evidence artifacts, decisions, and allowlisted registry rows. Badges use closed source_authority, canonicality, and trace_status values; unknown/unlinked lineage stays visible instead of being hidden.
+          Global catalog browsing is separate from governed evidence. Selecting a catalog row opens its own detail; only an explicit campaign:/loop_run: id or exact_link can change the governed research identity.
         </div>
         {isDemo ? (
           <UiStateBlock kind="demo" compact title="Backend connection required">Governed research index is available when the dashboard backend is connected.</UiStateBlock>
@@ -386,10 +403,10 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
                 {errors.length} index source warning(s); details remain read-only.
               </div>
             )}
-            <div className="research-index-timeline" aria-label="governed exact-link research timeline">
+            <div className="research-index-timeline" aria-label="governed exact-link evidence">
               <div className="research-index-timeline-head">
-                <b>Governed Exact-Link Timeline</b>
-                <span className="mono">source_authority · canonicality · trace_status · exact_link</span>
+                <b>Governed Exact-Link Evidence</b>
+                <span className="mono">selected identity · explicit id/exact_link/related_ids only</span>
               </div>
               <div className="research-index-timeline-rail">
                 {timelineRows.map(row => (
@@ -410,12 +427,26 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
                     <small>{row.exact_link || row.id}</small>
                   </button>
                 ))}
-                {loading && records.length === 0 && <UiStateBlock kind="loading" compact title={`거버넌스 인덱스 로딩 중… (경과 ${elapsed}s)`}>수천 건의 exact-link 레코드를 집계 중입니다(대용량 · 보통 ~11초, 최대 ~20초).</UiStateBlock>}
-                {!loading && timelineRows.length === 0 && <UiStateBlock kind="empty" compact title="No timeline records.">필터를 조정하면 exact-link 타임라인이 다시 표시됩니다.</UiStateBlock>}
+                {loading && records.length === 0 && <UiStateBlock kind="loading" compact title={`거버넌스 인덱스 로딩 중… (경과 ${elapsed}s)`}>선택한 identity의 explicit exact-link 근거를 집계 중입니다.</UiStateBlock>}
+                {!loading && !selectedResearchId && <UiStateBlock kind="empty" compact title="Governed evidence unavailable.">HistoryConditionTree 또는 명시적 campaign:/loop_run: catalog row를 선택하세요.</UiStateBlock>}
+                {!loading && selectedResearchId && timelineRows.length === 0 && <UiStateBlock kind="empty" compact title="No exact linked governed evidence.">id, exact_link 또는 related_ids가 선택 identity와 정확히 일치하는 근거만 표시합니다.</UiStateBlock>}
               </div>
+              {governedExactRows.length > timelineRows.length && (
+                <div className="research-index-timeline-window mono">
+                  <span>Exact-link window {timelineRows.length}/{governedExactRows.length}; additional linked evidence is not shown yet.</span>
+                  <button type="button" className="btn ghost sm"
+                          onClick={() => setTimelineLimit(v => Math.min(governedExactRows.length, v + 12))}>
+                    Load 12 more
+                  </button>
+                </div>
+              )}
             </div>
             <div className="research-index-layout">
-              <div className="research-index-list" role="listbox" aria-label="research index records">
+              <div className="research-index-list" role="group" aria-label="global research catalog records">
+                <div className="research-index-timeline-head">
+                  <b>Global Research Catalog</b>
+                  <span className="mono">browse/detail only; governed identity changes only on explicit stable IDs</span>
+                </div>
                 {visibleRows.map(row => (
                   <button
                     type="button"
@@ -487,12 +518,12 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, selectedRese
                       <pre className="research-index-pre">{detailText}</pre>
                     ) : (
                       <UiStateBlock kind={detail ? "error" : "empty"} compact title={detail ? "Detail unavailable" : "Select a row to lazy-load detail"} detail={detail ? (detail.reason || "unknown") : "no selected detail"}>
-                        Raw evidence remains read-only and linked by lineage.
+                        Raw catalog detail remains read-only; governed evidence requires an explicit exact link.
                       </UiStateBlock>
                     )}
                   </>
                 ) : (
-                  <UiStateBlock kind="empty" compact title="Select a governed research record.">왼쪽 목록에서 행을 선택하면 상세를 지연 로딩합니다.</UiStateBlock>
+                  <UiStateBlock kind="empty" compact title="Select a global catalog record.">행을 선택하면 해당 catalog detail을 지연 로딩합니다.</UiStateBlock>
                 )}
               </div>
             </div>

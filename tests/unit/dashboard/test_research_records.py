@@ -100,6 +100,9 @@ def test_research_records_lists_campaigns(tmp_path: Path) -> None:
 
     payload = research_records.list_research_records(evidence)
 
+    assert payload["available"] is True
+    assert "reason" not in payload
+
     assert payload["count"] == 1
     campaign = payload["campaigns"][0]
     assert campaign["name"] == "campaign_alpha"
@@ -117,6 +120,9 @@ def test_research_records_root_is_a_safe_logical_label(tmp_path: Path) -> None:
     payload = research_records.list_research_records(evidence)
 
     assert payload["root"] == "research-records"
+    text = json.dumps(payload, ensure_ascii=False)
+    assert ":\\" not in text
+    assert "C:/" not in text
     assert not Path(payload["root"]).is_absolute()
     assert str(evidence) not in payload["root"]
     assert str(evidence.parent) not in payload["root"]
@@ -131,8 +137,81 @@ def test_research_records_root_is_a_safe_logical_label(tmp_path: Path) -> None:
     assert str(missing) not in missing_payload["root"]
     assert str(missing.parent) not in missing_payload["root"]
     assert missing_payload["count"] == 0
+    assert missing_payload["available"] is False
+    assert missing_payload["reason"] == "evidence_root_unavailable"
+
     assert missing_payload["campaigns"] == []
 
+def test_research_records_marks_malformed_campaign_sources_unavailable(tmp_path: Path) -> None:
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    (evidence / "campaign_alpha_summary.json").write_text("{", encoding="utf-8")
+
+    payload = research_records.list_research_records(evidence)
+
+    assert payload["available"] is False
+    assert payload["reason"] == "source_errors"
+    assert payload["count"] == 0
+    assert payload["errors"][0]["file"] == "campaign_alpha_summary.json"
+    assert payload["errors"][0]["reason"].startswith("json:")
+
+
+
+def test_research_records_endpoint_redacts_absolute_evidence_paths(monkeypatch, tmp_path: Path) -> None:
+    evidence = (tmp_path / "private-parent" / "campaign-evidence").resolve()
+    _write_campaign(evidence)
+    (evidence / "campaign_alpha_summary.json").write_text(
+        json.dumps(
+            {
+                "best_overall": {"label": "alpha", "profit": 1200, "mdd": 3.4},
+                "evidence_root": str(evidence),
+                "windows_evidence_root": r"C:\private\evidence\campaign_alpha_summary.json",
+                "posix_path": "/private/evidence/posix.json",
+                "drive_path": "D:/private/evidence/drive.json",
+                "unc_path": r"\\server\share\unc.json",
+                "extended_drive_path": r"\\?\C:\private\evidence\extended-drive.json",
+                "extended_unc_path": r"\\?\UNC\server\share\extended-unc.json",
+                "/private/evidence/posix-key.json": "posix-key-value",
+                "D:/private/evidence/drive-key.json": "drive-key-value",
+                r"\\server\share\unc-key.json": "unc-key-value",
+                r"\\?\C:\private\evidence\extended-drive-key.json": "extended-drive-key-value",
+                r"\\?\UNC\server\share\extended-unc-key.json": "extended-unc-key-value",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(research_records, "EVIDENCE_ROOT", evidence)
+    monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
+    monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+
+    response = authorized_dashboard_client(create_app()).get("/research_records")
+
+    assert response.status_code == 200
+    payload = response.json()
+    text = json.dumps(payload, ensure_ascii=False)
+    assert payload["root"] == "research-records"
+    assert payload["campaigns"][0]["summary"]["evidence_root"] == "campaign-evidence"
+    assert payload["campaigns"][0]["summary"]["windows_evidence_root"] == "campaign_alpha_summary.json"
+    summary = payload["campaigns"][0]["summary"]
+    assert summary["posix_path"] == "posix.json"
+    assert summary["drive_path"] == "drive.json"
+    assert summary["unc_path"] == "unc.json"
+    assert summary["extended_drive_path"] == "extended-drive.json"
+    assert summary["extended_unc_path"] == "extended-unc.json"
+    assert summary["posix-key.json"] == "posix-key-value"
+    assert summary["drive-key.json"] == "drive-key-value"
+    assert summary["unc-key.json"] == "unc-key-value"
+    assert summary["extended-drive-key.json"] == "extended-drive-key-value"
+    assert summary["extended-unc-key.json"] == "extended-unc-key-value"
+
+    assert str(evidence) not in text
+    assert "C:\\private" not in text
+    assert "C:/private" not in text
+    assert "/private/evidence" not in text
+    assert "D:/private" not in text
+    assert "\\\\server\\share" not in text
+    assert "\\\\?\\C:" not in text
+    assert "\\\\?\\UNC\\" not in text
 
 def test_governed_index_has_namespaced_rows_and_safe_detail(tmp_path: Path) -> None:
     repo = tmp_path / "repo"

@@ -203,22 +203,74 @@ def test_verdict_endpoint_payloads_require_backend_owned_shapes() -> None:
     ]
 
 
-def test_research_index_links_only_explicit_governed_history_ids() -> None:
+def test_research_index_governed_selection_and_evidence_require_explicit_stable_links() -> None:
     source = _read("research-index.jsx")
-    expression = """[
+    selection_expression = """[
       fn({research_id:'loop_run:r1'}),
       fn({id:'campaign:c1',kind:'campaign'}),
-      fn({exact_link:'research-index://loop_run:r2'}),
+      fn({exact_link:'loop_run:r2'}),
       fn({exact_link:'research-index://campaign:c2'}),
       fn({id:'doc:campaign:c3',kind:'doc'}),
       fn({exact_link:'research-index://doc:loop_run:r3'}),
       fn({id:'campaignish:c4'}),
       fn(null)
     ]"""
-    assert _run_helper(source, "_rixExactResearchId", expression) == [
-        "loop_run:r1", "campaign:c1", "loop_run:r2", "campaign:c2",
-        "", "", "", "",
+    assert _run_helper(source, "_rixExactResearchId", selection_expression) == [
+        "", "campaign:c1", "loop_run:r2", "campaign:c2", "", "", "", "",
     ]
+
+    evidence_expression = """[
+      fn({id:'campaign:c1'}, 'campaign:c1'),
+      fn({exact_link:'research-index://loop_run:r1'}, 'loop_run:r1'),
+      fn({related_ids:['campaign:c1']}, 'campaign:c1'),
+      fn({id:'doc:campaign:c1', related_ids:[]}, 'campaign:c1'),
+      fn({exact_link:'campaign:c1-extra'}, 'campaign:c1'),
+      fn({related_ids:['campaign:c1-extra']}, 'campaign:c1'),
+      fn({related_ids:['campaign:c1']}, 'loop_run:r1'),
+      fn({related_ids:['campaign:c1']}, 'not-a-stable-id')
+    ]"""
+    assert _run_helper(source, "_rixHasExactGovernedLink", evidence_expression) == [
+        True, True, True, False, False, False, False, False,
+    ]
+def test_research_index_detail_identity_and_governed_window_fail_closed() -> None:
+    source = _read("research-index.jsx")
+    harness = (ROOT / "ai_strategy_loop" / "dashboard" / "webui-build" / "track-z-harness.mjs").read_text(encoding="utf-8")
+    records = _read("research-records-panel.jsx")
+
+    for marker in (
+        'j.available && (!j.row || typeof j.row !== "object" || j.row.id !== selectedId)',
+        'Exact-link window {timelineRows.length}/{governedExactRows.length}',
+        "Load 12 more",
+    ):
+        assert marker in source
+    for marker in (
+        "MISSING_ROW_MUST_FAIL_CLOSED",
+        "WRONG_ROW_MUST_FAIL_CLOSED",
+        "detailIdentityGuardOk",
+        "governedExpandOk",
+    ):
+        assert marker in harness
+    assert "evaluation_status" not in records
+    assert 'setErr(timedOut ? "research_records_timeout"' in records
+    assert 'setRunListErr(String(e).includes("runs_request_timeout")' in records
+
+
+
+def test_v4_history_keeps_legacy_archive_selection_out_of_governed_state() -> None:
+    source = _read("v4-history.jsx")
+    assert _run_helper(
+        source,
+        "_v4GovernedResearchId",
+        "['campaign:c1', 'loop_run:r1', 'doc:c1', 'campaign:', null].map(fn)",
+    ) == ["campaign:c1", "loop_run:r1", "", "", ""]
+
+    archive_start = source.index("<ResearchRecordsPanel")
+    archive_end = source.index("/>", archive_start) + 2
+    archive_mount = source[archive_start:archive_end]
+    assert "selectedResearchId" not in archive_mount
+    assert "onSelectResearch" not in archive_mount
+    assert "onSelectedResearchIdChange={selectGovernedResearch}" in source
+    assert "onSelectResearch={selectGovernedResearch}" in source
 
 
 def test_verdict_panel_aborts_and_generation_guards_all_governance_sources() -> None:
@@ -245,3 +297,43 @@ def test_verdict_panel_aborts_and_generation_guards_all_governance_sources() -> 
         'throw new Error("Malformed /record_decision response")',
     ):
         assert marker in panel
+def test_records_unavailable_envelope_preserves_partial_rows_and_reason() -> None:
+    source = _read("research-records-panel.jsx")
+    expression = """[
+      fn({available:true,campaigns:[],errors:[]}),
+      fn({available:false,reason:'source_errors',conflict:'stale_snapshot',campaigns:[{name:'partial'}],errors:[{file:'bad.json',reason:'json'}]}),
+      fn({available:false,campaigns:[],errors:[]}),
+      fn({available:true,campaigns:[{}],errors:[]})
+    ]"""
+    assert _run_helper_block(
+        source,
+        "_rrpUnavailable",
+        "_rrpRecordsEnvelope",
+        "_rrpRecordsEnvelope",
+        expression,
+    ) == [
+        {"available": True, "reason": None, "conflict": None, "campaigns": [], "errors": []},
+        {
+            "available": False,
+            "reason": "source_errors",
+            "conflict": "stale_snapshot",
+            "campaigns": [{"name": "partial"}],
+            "errors": [{"file": "bad.json", "reason": "json"}],
+        },
+        {"available": False, "reason": "research_record_unavailable", "conflict": None, "campaigns": [], "errors": []},
+        {"available": False, "reason": "malformed_research_records_envelope", "conflict": None},
+    ]
+    assert "Research records source unavailable:" in source
+    assert 'payload && payload.available === true && rows.length === 0' in source
+
+
+def test_history_visualizations_keep_typed_unavailability_and_never_infer_holdout_passes() -> None:
+    source = _read("history-viz.jsx")
+
+    assert 'error.historyUnavailable = _hvUnavailable("history_detail_page_ceiling_exceeded")' in source
+    assert source.count("setRowsUnavailable(error.historyUnavailable)") == 2
+    assert source.count("<_HvUnavailable unavailable={rowsUnavailable} />") == 2
+    assert 'const holdoutUnavailable = _hvUnavailable("holdout_owner_unavailable")' in source
+    assert "Object.keys(metrics).filter" not in source
+    assert "holdoutSignalSeen" not in source
+    assert "holdoutPassed" not in source

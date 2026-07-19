@@ -67,25 +67,21 @@ function _hctLabelMeta(row) {
 }
 
 function _hctStatusCell(row) {
-  const status = row.evaluation_status || "";
+  const status = typeof row.evaluation_status === "string" ? row.evaluation_status : "unknown";
+  const reason = row.reason ? `: ${row.reason}` : "";
+  if (status === "success") {
+    return <span className="badge ok">success</span>;
+  }
   if (status === "no_trades") {
     return <span className="mono" style={{ color: "var(--ink-2)" }}>0 trades</span>;
   }
-  if (status === "failed" || status === "missing") {
-    return (
-      <span className="badge err" title={row.reason || ""}>
-        {status}{row.reason ? `: ${row.reason}` : ""}
-      </span>
-    );
+  if (status === "failed" || status === "missing" || status === "unavailable" || status === "unknown") {
+    return <span className="badge err" title={row.reason || ""}>{status}{reason}</span>;
   }
-  if (status === "timeout") {
-    return (
-      <span className="badge warn" title={row.reason || ""}>
-        {status}{row.reason ? `: ${row.reason}` : ""}
-      </span>
-    );
+  if (status === "timeout" || status === "not_run" || status === "partial") {
+    return <span className="badge warn" title={row.reason || ""}>{status}{reason}</span>;
   }
-  return <span className="badge ok">{status || "\u2014"}</span>;
+  return <span className="badge err" title={row.reason || ""}>unknown: {status}{reason}</span>;
 }
 
 const HCT_EVAL_COLUMNS = [
@@ -126,7 +122,7 @@ function _hctFetchSection(baseUrl, researchId, section, cursor, selectionGenerat
 }
 
 function _hctDestinationState(value) {
-  return ["complete", "partial", "missing", "conflict"].includes(value) ? value : "missing";
+  return ["complete", "partial", "missing", "conflict", "unavailable"].includes(value) ? value : "missing";
 }
 
 function _hctCompactValue(value) {
@@ -136,22 +132,85 @@ function _hctCompactValue(value) {
   return "missing";
 }
 
+function _hctUnavailable(reason, conflict) {
+  return {
+    available: false,
+    reason: typeof reason === "string" && reason ? reason : "history_detail_unavailable",
+    conflict: typeof conflict === "string" && conflict ? conflict : null,
+  };
+}
+function _hctCoverageSource(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || typeof value.available !== "boolean"
+    || !Number.isInteger(value.total) || value.total < 0
+    || (value.reason != null && typeof value.reason !== "string")
+    || (value.available === false && !value.reason)) return null;
+  return value;
+}
+
+function _hctIndexEnvelope(payload, generation) {
+  if (!payload || typeof payload !== "object"
+    || String(payload.selection_generation) !== String(generation)
+    || !Array.isArray(payload.items)
+    || !Number.isInteger(payload.total) || payload.total < 0
+    || (payload.next_cursor != null && typeof payload.next_cursor !== "string")
+    || !payload.coverage || typeof payload.coverage !== "object"
+    || Array.isArray(payload.coverage)
+    || !_hctCoverageSource(payload.coverage.campaign)
+    || !_hctCoverageSource(payload.coverage.loop_run)) return null;
+  return payload;
+}
+
+function _hctResearchEnvelope(payload, selectedId, generation) {
+  if (!payload || typeof payload !== "object"
+    || payload.research_id !== selectedId || payload.section !== "research"
+    || String(payload.selection_generation) !== String(generation)
+    || typeof payload.available !== "boolean") {
+    return _hctUnavailable("malformed_history_research_envelope");
+  }
+  if (!payload.available) return _hctUnavailable(payload.reason, payload.conflict);
+  const node = payload.node;
+  const identity = node && node.identity;
+  const destinations = identity && identity.destinations;
+  const byteIdentical = identity && identity.byte_identical;
+  const requiredDestinations = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
+  const validDestinations = destinations && requiredDestinations.every(name => (
+    destinations[name] && ["complete", "partial", "missing", "conflict", "unavailable"].includes(destinations[name].state)
+  ));
+  if (!node || typeof node !== "object" || node.research_id !== selectedId
+      || !identity || typeof identity !== "object"
+      || !validDestinations
+      || !byteIdentical || typeof byteIdentical !== "object"
+      || !byteIdentical.values || typeof byteIdentical.values !== "object"
+      || Array.isArray(byteIdentical.values)) {
+    return _hctUnavailable("malformed_history_research_envelope");
+  }
+  return { available: true, reason: null, conflict: null, node };
+}
+
 function _hctResearchWorkspace(node, selectedId) {
   const research = node && typeof node === "object" ? node : {};
   const identity = research.identity && typeof research.identity === "object" ? research.identity : {};
   const destinations = identity.destinations && typeof identity.destinations === "object" ? identity.destinations : {};
+  const byteValues = identity.byte_identical && typeof identity.byte_identical === "object"
+    ? identity.byte_identical.values : undefined;
   const names = ["conditions", "evaluations", "autopsy", "holdout", "ab", "docs", "commits", "governance"];
   return (
     <section aria-label="선택 연구 상세 근거" style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 }}>
       <div className="stat-label">Governed research detail · {_hctCompactValue(research.research_id || selectedId)}</div>
       <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", margin: "5px 0" }}>
-        source owner: {_hctCompactValue(identity.provenance_owner)} · redaction: {_hctCompactValue(identity.redaction)} · byte-identical: {_hctCompactValue(identity.byte_identical)}
+        source owner: {_hctCompactValue(identity.provenance_owner)} · redaction: {_hctCompactValue(identity.redaction)}
       </div>
+      <pre className="mono" aria-label="byte-identical values" style={{ margin: "5px 0", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+        {JSON.stringify(byteValues, null, 2)}
+      </pre>
       <div role="list" aria-label="연구 근거 목적지 상태" style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
         {names.map(name => {
           const value = destinations[name];
           const state = _hctDestinationState(value && value.state);
-          return <span key={name} role="listitem" className={"badge " + (state === "complete" ? "ok" : state === "conflict" ? "err" : "warn")}>{name}: {state}</span>;
+          const badgeClass = state === "complete" ? "ok" : state === "conflict" ? "err" : state === "unavailable" ? "err" : "warn";
+          const reason = value && typeof value.reason === "string" && value.reason ? `: ${value.reason}` : "";
+          return <span key={name} role="listitem" className={"badge " + badgeClass} title={reason}>{name}: {state}{reason}</span>;
         })}
       </div>
     </section>
@@ -170,6 +229,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
   const [items, setItems] = useState_hct([]);
   const [nextCursor, setNextCursor] = useState_hct(null);
   const [total, setTotal] = useState_hct(0);
+  const [coverage, setCoverage] = useState_hct(null);
   const [indexLoading, setIndexLoading] = useState_hct(false);
   const [indexErr, setIndexErr] = useState_hct("");
   const [sections, setSections] = useState_hct({});
@@ -193,17 +253,22 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
     fetch(url, { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
-        if (generation !== generationRef.current.index || controller.signal.aborted
-          || !j || String(j.selection_generation) !== String(generation)) return;
-        const rows = Array.isArray(j.items) ? j.items : [];
+        if (generation !== generationRef.current.index || controller.signal.aborted) return;
+        const envelope = _hctIndexEnvelope(j, generation);
+        if (!envelope) throw new Error("Malformed history index envelope");
+        const rows = envelope.items;
         setItems(prev => (cursor ? prev.concat(rows) : rows));
-        setNextCursor(j.next_cursor ? j.next_cursor : null);
-        setTotal(j.total != null ? j.total : rows.length);
+        setNextCursor(envelope.next_cursor || null);
+        setTotal(envelope.total);
+        setCoverage(envelope.coverage);
       })
       .catch(e => {
         if (generation !== generationRef.current.index || controller.signal.aborted) return;
         setIndexErr(String(e));
-        if (!cursor) setItems([]);
+        if (!cursor) {
+          setItems([]);
+          setCoverage(null);
+        }
       })
       .finally(() => {
         if (generation === generationRef.current.index && !controller.signal.aborted) setIndexLoading(false);
@@ -228,14 +293,13 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
     setSections({ research: { loading: true, err: "", node: null } });
     _hctFetchSection(baseUrl, selectedId, "research", null, generation, controller.signal)
       .then(payload => {
-        if (generation !== generationRef.current.detail || controller.signal.aborted
-          || !payload || payload.research_id !== selectedId || payload.section !== "research"
-          || String(payload.selection_generation) !== String(generation)) return;
-        setSections({ research: { loading: false, err: "", node: payload.node || null } });
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        const research = _hctResearchEnvelope(payload, selectedId, generation);
+        setSections({ research: { loading: false, err: "", ...research } });
       })
       .catch(e => {
         if (generation !== generationRef.current.detail || controller.signal.aborted) return;
-        setSections({ research: { loading: false, err: String(e), node: null } });
+        setSections({ research: { loading: false, err: "", ..._hctUnavailable(String(e)) } });
       });
     return () => controller.abort();
   }, [baseUrl, isDemo, selectedId]);
@@ -250,7 +314,8 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
   }, [onSelectedResearchIdChange, selectedId]);
 
   const loadSection = useCallback_hct((section, cursor) => {
-    if (isDemo || !baseUrl || !selectedId) return;
+    const research = sections.research;
+    if (isDemo || !baseUrl || !selectedId || !research || research.available !== true) return;
     if (requestsRef.current.detail) requestsRef.current.detail.abort();
     const controller = new AbortController();
     const generation = ++generationRef.current.detail;
@@ -261,10 +326,26 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
     }));
     _hctFetchSection(baseUrl, selectedId, section, cursor, generation, controller.signal)
       .then(payload => {
-        if (generation !== generationRef.current.detail || controller.signal.aborted
-          || !payload || payload.research_id !== selectedId || payload.section !== section
-          || String(payload.selection_generation) !== String(generation)) return;
-        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        if (generation !== generationRef.current.detail || controller.signal.aborted) return;
+        if (!payload || typeof payload !== "object" || payload.research_id !== selectedId
+          || payload.section !== section || String(payload.selection_generation) !== String(generation)
+          || typeof payload.available !== "boolean") {
+          throw new Error("Malformed history detail section envelope");
+        }
+        if (!payload.available) {
+          setSections(prev => ({
+            ...prev,
+            [section]: {
+              loading: false,
+              err: `History detail unavailable: ${payload.reason || "unknown_reason"}`,
+              rows: [],
+              next_cursor: null,
+            },
+          }));
+          return;
+        }
+        if (!Array.isArray(payload.rows)) throw new Error("Malformed history detail section envelope");
+        const rows = payload.rows;
         setSections(prev => ({
           ...prev,
           [section]: {
@@ -277,7 +358,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
         if (generation !== generationRef.current.detail || controller.signal.aborted) return;
         setSections(prev => ({ ...prev, [section]: { loading: false, err: String(e), rows: (prev[section] && prev[section].rows) || [], next_cursor: null } }));
       });
-  }, [baseUrl, isDemo, selectedId]);
+  }, [baseUrl, isDemo, selectedId, sections.research]);
 
   const toggleStage = useCallback_hct((stageId) => {
     setExpandedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
@@ -347,6 +428,16 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                 <div style={{ marginTop: 8 }}><button className="btn ghost sm" onClick={() => loadIndex(null)}>재시도</button></div>
               </div>
             )}
+            {coverage && (
+              <div aria-label="History index source coverage" style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {["campaign", "loop_run"].map(kind => {
+                  const source = coverage[kind];
+                  const state = source.available ? "available" : "unavailable";
+                  const reason = source.available ? "" : `: ${source.reason}`;
+                  return <span key={kind} className={"badge " + (source.available ? "ok" : "warn")}>{kind}: {state} · {source.total}{reason}</span>;
+                })}
+              </div>
+            )}
             {!indexErr && items.length === 0 && !indexLoading && <div className="research-empty">기록 없음</div>}
             {items.length > 0 && (
               <div style={{ overflowX: "auto" }}>
@@ -372,16 +463,18 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                           style={{
                             borderTop: "1px solid var(--line-1)",
                             background: active ? "rgba(159,180,255,0.08)" : "transparent",
-                            cursor: "pointer",
                           }}
-                          tabIndex={0}
-                          role="button"
-                          aria-pressed={active}
-                          onClick={() => selectResearch(row.research_id)}
-                          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectResearch(row.research_id); } }}
                         >
                           <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
-                            <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</div>
+                            <button
+                              type="button"
+                              className="btn ghost sm"
+                              aria-pressed={active}
+                              onClick={() => selectResearch(row.research_id)}
+                              style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}
+                            >
+                              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</span>
+                            </button>
                             {(row.series || row.ab_role || (row.gate_passed_count > 0)) && (
                               <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 }}>
                                 {row.series && (
@@ -409,13 +502,13 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                     })}
                   </tbody>
                 </table>
-                {nextCursor && (
-                  <div style={{ marginTop: 8 }}>
-                    <button className="btn ghost sm" onClick={() => loadIndex(nextCursor)} disabled={indexLoading}>
-                      {indexLoading ? "로딩…" : "더보기"}
-                    </button>
-                  </div>
-                )}
+              </div>
+            )}
+            {nextCursor && (
+              <div style={{ marginTop: 8 }}>
+                <button className="btn ghost sm" aria-label="Load more history records" onClick={() => loadIndex(nextCursor)} disabled={indexLoading}>
+                  {indexLoading ? "로딩…" : "더보기"}
+                </button>
               </div>
             )}
 
@@ -426,25 +519,31 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                     <span className="dot" style={{ background: "var(--teal)" }}></span>
                     {selectedId}
                   </div>
-                  <button className="btn ghost sm" onClick={() => loadSection("stages", null)} disabled={sections.stages && sections.stages.loading}>
+                  <button className="btn ghost sm" onClick={() => loadSection("stages", null)} disabled={!sections.research || sections.research.available !== true || (sections.stages && sections.stages.loading)}>
                     {sections.stages && sections.stages.loading ? "로딩…" : "Stages 로드"}
                   </button>
                 </div>
                 <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {sections.research && !sections.research.loading && _hctResearchWorkspace(sections.research.node, selectedId)}
+                  {sections.research && !sections.research.loading && sections.research.available === true && _hctResearchWorkspace(sections.research.node, selectedId)}
+                  {sections.research && !sections.research.loading && sections.research.available !== true && (
+                    <div className="research-empty danger">
+                      History detail unavailable: {sections.research.reason}
+                      {sections.research.conflict && <div>conflict: {sections.research.conflict}</div>}
+                    </div>
+                  )}
                   {sections.research && sections.research.err && (
                     <div className="research-empty danger">
                       {sections.research.err}
                       <div style={{ marginTop: 8 }}><button className="btn ghost sm" onClick={() => selectResearch(selectedId)}>재시도</button></div>
                     </div>
                   )}
-                  {sections.stages && sections.stages.err && (
+                  {sections.research && sections.research.available === true && sections.stages && sections.stages.err && (
                     <div className="research-empty danger">
                       {sections.stages.err}
                       <div style={{ marginTop: 8 }}><button className="btn ghost sm" onClick={() => loadSection("stages", null)}>재시도</button></div>
                     </div>
                   )}
-                  {stageRows.length === 0 && !(sections.stages && sections.stages.loading) && (
+                  {sections.research && sections.research.available === true && stageRows.length === 0 && !(sections.stages && sections.stages.loading) && (
                     <div className="research-empty">{sections.stages ? "stage 없음" : "Stages 로드 버튼으로 트리를 펼치세요"}</div>
                   )}
                   {stageRows.map(stage => {
@@ -452,13 +551,19 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                     const stageConditions = conditionRows.filter(c => c.stage_id === stage.stage_id);
                     return (
                       <div key={stage.stage_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleStage(stage.stage_id)}>
+                        <button
+                          type="button"
+                          className="btn ghost sm"
+                          aria-expanded={stageOpen}
+                          aria-controls={"hct-stage-" + stage.stage_id}
+                          onClick={() => toggleStage(stage.stage_id)}
+                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left" }}
+                        >
                           <span className="mono">{stageOpen ? "▼" : "▶"}</span>
                           <span className="mono" style={{ color: "var(--ink-0)" }}>{stage.label || stage.stage_id}</span>
                           <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{stage.stage_id}</span>
-                        </div>
-                        {stageOpen && (
-                          <div style={{ marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                        </button>
+                        <div id={"hct-stage-" + stage.stage_id} hidden={!stageOpen} style={{ marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
                             {sections.conditions && sections.conditions.err && (
                               <div className="research-empty danger">
                                 {sections.conditions.err}
@@ -475,7 +580,14 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                               const parentId = (meta && meta.parent_condition_id) || cond.parent_condition_id;
                               return (
                                 <div key={cond.condition_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: "pointer" }} onClick={() => toggleCondition(cond.condition_id)}>
+                                  <button
+                                    type="button"
+                                    className="btn ghost sm"
+                                    aria-expanded={condOpen}
+                                    aria-controls={"hct-condition-" + cond.condition_id}
+                                    onClick={() => toggleCondition(cond.condition_id)}
+                                    style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", width: "100%", textAlign: "left" }}
+                                  >
                                     <span className="mono">{condOpen ? "▼" : "▶"}</span>
                                     <span className="badge" style={{ color: cond.side === "sell" ? "var(--red)" : "var(--teal)" }}>{cond.side || "-"}</span>
                                     <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{cond.condition_id}</span>
@@ -490,9 +602,8 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                                     {meta && ("hypotheses_present" in meta) && (
                                       <span className="badge" title="가설(hypotheses_json) 존재 여부">가설 {_hctPresence(!!meta.hypotheses_present)}</span>
                                     )}
-                                  </div>
-                                  {condOpen && (
-                                    <div style={{ marginTop: 6, marginLeft: 18 }}>
+                                  </button>
+                                  <div id={"hct-condition-" + cond.condition_id} hidden={!condOpen} style={{ marginTop: 6, marginLeft: 18 }}>
                                       {sections.evaluations && sections.evaluations.err && (
                                         <div className="research-empty danger">
                                           {sections.evaluations.err}
@@ -509,15 +620,27 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                                         </div>
                                       ))}
                                     </div>
-                                  )}
                                 </div>
                               );
                             })}
                           </div>
-                        )}
                       </div>
                     );
                   })}
+                  {sections.stages && sections.stages.next_cursor && (
+                    <div style={{ marginTop: 8 }}>
+                      <button className="btn ghost sm" aria-label="Load more stages" onClick={() => loadSection("stages", sections.stages.next_cursor)} disabled={sections.stages.loading}>
+                        {sections.stages.loading ? "로딩…" : "Stages 더보기"}
+                      </button>
+                    </div>
+                  )}
+                  {sections.conditions && sections.conditions.next_cursor && (
+                    <div style={{ marginTop: 8 }}>
+                      <button className="btn ghost sm" aria-label="Load more conditions" onClick={() => loadSection("conditions", sections.conditions.next_cursor)} disabled={sections.conditions.loading}>
+                        {sections.conditions.loading ? "로딩…" : "Conditions 더보기"}
+                      </button>
+                    </div>
+                  )}
 
                   <div>
                     <div className="stat-label" style={{ marginBottom: 6 }}>Evaluation Rows</div>
@@ -554,13 +677,13 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, selectedResearchId, onSe
                             ))}
                           </tbody>
                         </table>
-                        {sections.evaluations && sections.evaluations.next_cursor && (
-                          <div style={{ marginTop: 8 }}>
-                            <button className="btn ghost sm" onClick={() => loadSection("evaluations", sections.evaluations.next_cursor)} disabled={sections.evaluations.loading}>
-                              {sections.evaluations.loading ? "로딩…" : "더보기"}
-                            </button>
-                          </div>
-                        )}
+                      </div>
+                    )}
+                    {sections.evaluations && sections.evaluations.next_cursor && (
+                      <div style={{ marginTop: 8 }}>
+                        <button className="btn ghost sm" aria-label="Load more evaluations" onClick={() => loadSection("evaluations", sections.evaluations.next_cursor)} disabled={sections.evaluations.loading}>
+                          {sections.evaluations.loading ? "로딩…" : "더보기"}
+                        </button>
                       </div>
                     )}
                     <div className="mono" style={{ marginTop: 8, fontSize: 10.5, color: "var(--amber)" }}>

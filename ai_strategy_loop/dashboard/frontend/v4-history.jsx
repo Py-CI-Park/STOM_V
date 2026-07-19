@@ -16,10 +16,14 @@ import { RunComparePanel } from "./run-compare.jsx";
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 
 const { useState: useState_v4history, useCallback: useCallback_v4history } = React;
+function _v4GovernedResearchId(researchId) {
+  return typeof researchId === "string" && /^(campaign|loop_run):\S+$/.test(researchId) ? researchId : "";
+}
+
 function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
   const [selectedResearchId, setSelectedResearchId] = useState_v4history("");
-  const selectResearch = useCallback_v4history((researchId) => {
-    setSelectedResearchId(typeof researchId === "string" ? researchId : "");
+  const selectGovernedResearch = useCallback_v4history((researchId) => {
+    setSelectedResearchId(_v4GovernedResearchId(researchId));
   }, []);
   const analysisRunId = typeof selectedResearchId === "string" && /^loop_run:\S+$/.test(selectedResearchId)
     ? selectedResearchId.slice("loop_run:".length) : "";
@@ -63,7 +67,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       <section aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약 · Compare <span className="mono" style={{ fontSize: "10.5px", color: "var(--ink-3)" }}>— legacy run/gen archive selection (governed research selection과 별도)</span></h2>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
-          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showRunCompare={false} />
+          <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} showRunCompare={false} />
         </div>
       </section>
 
@@ -73,7 +77,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
           Governed research selection: {selectedResearchId || "선택 없음 · 근거는 unavailable/missing으로 표시됩니다."}
         </p>
         <div data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리와 연구 시각화 영역">
-          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectedResearchIdChange={selectResearch} />
+          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectedResearchIdChange={selectGovernedResearch} />
           <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
           <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
           <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} />
@@ -113,7 +117,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
       <section aria-labelledby="v4-history-index-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거</h2>
         <div data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역">
-          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />
+          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectGovernedResearch} />
         </div>
       </section>
 
@@ -123,7 +127,7 @@ function V4History({ baseUrl, wsStatus, runId, onNavigate }) {
           읽기 전용 범위는 아카이브/Compare 탐색뿐입니다. <b>Append-only 결정 기록은 쓰기 예외</b>이며, 아래 승급/Export 거버넌스 제어 전에 명시합니다.
         </p>
         <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-          <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showDecisionLedger={false} />
+          <AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectGovernedResearch} showDecisionLedger={false} />
           <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
         </div>
       </section>

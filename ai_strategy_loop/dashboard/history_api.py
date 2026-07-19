@@ -103,16 +103,6 @@ class HistoryDetailResponse(TypedDict, total=False):
     node: Optional[dict]
     next_cursor: Optional[str]
     selection_generation: Optional[str]
-_RESEARCH_DESTINATIONS = (
-    "conditions",
-    "evaluations",
-    "autopsy",
-    "holdout",
-    "ab",
-    "docs",
-    "commits",
-    "governance",
-)
 _BYTE_IDENTICAL_RESEARCH_FIELDS = ("research_id", "label", "coverage_status")
 
 
@@ -145,20 +135,6 @@ def _research_destination_states(
     condition_count = sum(len(stage["conditions"]) for stage in research["stages"])
     evaluation_rows = flat_rows(research)
     evaluation_count = len(evaluation_rows)
-    identity_conflict = research["research_id"] != research_id
-
-    if identity_conflict:
-        states = {
-            "conditions": "conflict",
-            "evaluations": "conflict",
-            "autopsy": "missing",
-            "holdout": "missing",
-            "ab": "missing",
-            "docs": "missing",
-            "commits": "missing",
-            "governance": "missing",
-        }
-        return "conflict", states
 
     conditions_state = "complete" if condition_count else "missing"
     if not evaluation_count:
@@ -168,17 +144,18 @@ def _research_destination_states(
     else:
         evaluations_state = "complete"
 
-    ab_state = "partial" if derive_ab_role(research_id.split(":", 1)[1]) is not None else "missing"
+    ab_state = "partial" if derive_ab_role(research_id.split(":", 1)[1]) is not None else "unavailable"
     states = {
         "conditions": conditions_state,
         "evaluations": evaluations_state,
-        "autopsy": "missing",
-        "holdout": "missing",
+        "autopsy": "unavailable",
+        "holdout": "unavailable",
         "ab": ab_state,
-        "docs": "missing",
-        "commits": "missing",
-        "governance": "missing",
+        "docs": "unavailable",
+        "commits": "unavailable",
+        "governance": "unavailable",
     }
+
     present = set(states.values())
     if present == {"missing"}:
         return "missing", states
@@ -191,14 +168,46 @@ def _research_identity_contract(research_id: str, research: ResearchNode) -> dic
     overall_state, states = _research_destination_states(research_id, research)
     owner = source_metadata["provenance_owner"]
     join_key = source_metadata["source"]["join_key"]
+    source_id = research_id.split(":", 1)[1]
+    ab_role = derive_ab_role(source_id)
+    ab_join_key = f"series:{derive_series(source_id)}"
     destinations = {
-        destination: {
-            "state": states[destination],
+        "conditions": {
+            "state": states["conditions"],
             "owner": owner,
             "join_key": join_key,
-        }
-        for destination in _RESEARCH_DESTINATIONS
+        },
+        "evaluations": {
+            "state": states["evaluations"],
+            "owner": owner,
+            "join_key": join_key,
+        },
+        "ab": (
+            {
+                "state": states["ab"],
+                "owner": "history_ab_pairs",
+                "join_key": ab_join_key,
+            }
+            if ab_role is not None
+            else {
+                "state": states["ab"],
+                "owner": None,
+                "owner_status": "unavailable",
+                "join_key": None,
+                "join_status": "not_queried",
+            }
+
+        ),
     }
+    for destination in ("autopsy", "holdout", "docs", "commits", "governance"):
+        destinations[destination] = {
+            "state": states[destination],
+            "owner": None,
+            "owner_status": "unavailable",
+            "join_key": None,
+            "join_status": "not_queried",
+        }
+
     return {
         **source_metadata,
         "redaction": {
@@ -290,7 +299,10 @@ def _apply_ab_derivation(item: HistoryIndexItem, name: str) -> None:
         item["ab_role"] = ab_role
 
 
-def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
+def _campaign_index_items(
+    series_filter: Optional[str] = None,
+) -> tuple[list[HistoryIndexItem], bool, Optional[str]]:
+
     """캠페인 인덱스 항목을 빌드한다.
 
     ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
@@ -341,7 +353,8 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
         }
         _apply_ab_derivation(item, name)
         items.append(item)
-    return items, True
+    return items, listing["available"], listing.get("reason")
+
 
 
 def _loop_run_gate_passed_counts(state: LoopState) -> dict[str, int]:
@@ -367,7 +380,10 @@ def _loop_run_gate_passed_counts(state: LoopState) -> dict[str, int]:
     return counts
 
 
-def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
+def _loop_run_index_items(
+    series_filter: Optional[str] = None,
+) -> tuple[list[HistoryIndexItem], bool, Optional[str]]:
+
     """루프런 인덱스 항목을 빌드한다.
 
     ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
@@ -377,12 +393,14 @@ def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[His
     try:
         state = LoopState(db_path=str(LOOP_RUNS_DB), readonly=True)
     except Exception:  # noqa: BLE001 -- DB 부재/손상은 typed unavailable.
-        return [], False
+        return [], False, "loop_state_unavailable"
+
     try:
         runs = state.list_runs()
     except Exception:  # noqa: BLE001
         state.close()
-        return [], False
+        return [], False, "loop_state_unavailable"
+
 
     adapter = LoopRunAdapter(db_path=str(LOOP_RUNS_DB))
     items: list[HistoryIndexItem] = []
@@ -409,7 +427,8 @@ def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[His
             items.append(item)
     finally:
         state.close()
-    return items, True
+    return items, True, None
+
 
 
 def _matches_query(item: HistoryIndexItem, q: str) -> bool:
@@ -431,14 +450,15 @@ def history_index(
     # source_kind 필터가 지정되면 반대편 소스의 트리 빌드를 아예 생략한다
     # (전체 인덱스는 항목당 트리 빌드 비용이 커서, 필터형 소비자는 단락 경로 사용).
     if source_kind == "campaign":
-        campaign_items, campaign_available = _campaign_index_items()
-        loop_run_items, loop_run_available = [], True
+        campaign_items, campaign_available, campaign_reason = _campaign_index_items()
+        loop_run_items, loop_run_available, loop_run_reason = [], False, "not_queried"
     elif source_kind == "loop_run":
-        campaign_items, campaign_available = [], True
-        loop_run_items, loop_run_available = _loop_run_index_items()
+        campaign_items, campaign_available, campaign_reason = [], False, "not_queried"
+        loop_run_items, loop_run_available, loop_run_reason = _loop_run_index_items()
     else:
-        campaign_items, campaign_available = _campaign_index_items()
-        loop_run_items, loop_run_available = _loop_run_index_items()
+        campaign_items, campaign_available, campaign_reason = _campaign_index_items()
+        loop_run_items, loop_run_available, loop_run_reason = _loop_run_index_items()
+
 
     all_items = campaign_items + loop_run_items
     all_items = [item for item in all_items if _matches_query(item, q)]
@@ -470,9 +490,18 @@ def history_index(
         "total": len(all_items),
         "selection_generation": selection_generation,
         "coverage": {
-            "campaign": {"available": campaign_available, "total": len(campaign_items)},
-            "loop_run": {"available": loop_run_available, "total": len(loop_run_items)},
-        },
+            "campaign": {
+                "available": campaign_available,
+                "total": len(campaign_items),
+                "reason": campaign_reason,
+            },
+            "loop_run": {
+                "available": loop_run_available,
+                "total": len(loop_run_items),
+                "reason": loop_run_reason,
+            },
+        }
+
     }
 
 
@@ -515,8 +544,8 @@ def history_ab_pairs(
     series에 pair 매칭 항목이 하나도 없으면 ``available=False,
     reason="unknown_series"``(기존 detail의 관례를 따른다).
     """
-    campaign_items, _ = _campaign_index_items(series_filter=series)
-    loop_run_items, _ = _loop_run_index_items(series_filter=series)
+    campaign_items, _, _ = _campaign_index_items(series_filter=series)
+    loop_run_items, _, _ = _loop_run_index_items(series_filter=series)
 
     pairs: dict[str, AbPairItem] = {}
     for item in campaign_items + loop_run_items:
@@ -631,6 +660,17 @@ def history_detail(
         return {
             "available": False,
             "reason": reason,
+            "research_id": research_id,
+            "section": section,
+            "selection_generation": selection_generation,
+            "rows": None,
+            "node": None,
+            "next_cursor": None,
+        }
+    if research["research_id"] != research_id:
+        return {
+            "available": False,
+            "reason": "identity_conflict",
             "research_id": research_id,
             "section": section,
             "selection_generation": selection_generation,

@@ -46,10 +46,12 @@ class CampaignRecord(TypedDict):
 
 
 class ResearchRecordsResponse(TypedDict):
+    available: bool
     root: str
     count: int
     campaigns: list[CampaignRecord]
     errors: list[ResearchRecordError]
+    reason: NotRequired[str]
 
 
 class ResearchRecordDetailResponse(TypedDict):
@@ -63,6 +65,8 @@ EVIDENCE_ROOT = REPO_ROOT / ".omo" / "evidence" / "tmap-walkforward"
 _SAFE_CAMPAIGN = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 # Compatibility field: expose a logical label, never a filesystem path.
 _RESEARCH_RECORDS_ROOT_LABEL = "research-records"
+_ABSOLUTE_PATH = re.compile(r"^(?:/|[A-Za-z]:[\\/]|\\\\(?:[?.][\\/]|[^\\/]))")
+
 
 
 
@@ -104,10 +108,31 @@ def _safe_campaign_name(name: str) -> bool:
 def _root_label() -> str:
     return _RESEARCH_RECORDS_ROOT_LABEL
 
+def _redact_absolute_paths(value: JsonValue) -> JsonValue:
+    """응답 증거의 절대경로를 파일명으로 축소한다(키와 값 모두)."""
+    if isinstance(value, str) and _ABSOLUTE_PATH.match(value):
+        return value.replace("\\", "/").rsplit("/", 1)[-1]
+    if isinstance(value, list):
+        return [_redact_absolute_paths(item) for item in value]
+    if isinstance(value, dict):
+        redacted: dict[str, JsonValue] = {}
+        for key, item in value.items():
+            base_key = str(_redact_absolute_paths(key))
+            redacted_key = base_key
+            duplicate = 2
+            while redacted_key in redacted:
+                redacted_key = f"{base_key}#{duplicate}"
+                duplicate += 1
+            redacted[redacted_key] = _redact_absolute_paths(item)
+        return redacted
+    return value
+
+
+
 
 def _read_json(path: Path, errors: list[ResearchRecordError]) -> JsonValue | None:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return _redact_absolute_paths(json.loads(path.read_text(encoding="utf-8")))
     except json.JSONDecodeError as exc:
         errors.append({"file": path.name, "reason": f"json:{exc.msg}"})
     except OSError as exc:
@@ -187,7 +212,7 @@ def _load_candidates(path: Path, errors: list[ResearchRecordError]) -> list[Cand
         if not line.strip():
             continue
         try:
-            parsed = json.loads(line)
+            parsed = _redact_absolute_paths(json.loads(line))
         except json.JSONDecodeError as exc:
             errors.append({"file": path.name, "reason": f"line{idx}:json:{exc.msg}"})
             continue
@@ -203,7 +228,15 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
     campaigns: dict[str, CampaignRecord] = {}
     errors: list[ResearchRecordError] = []
     if not evidence.is_dir():
-        return {"root": _root_label(), "count": 0, "campaigns": [], "errors": []}
+        return {
+            "available": False,
+            "reason": "evidence_root_unavailable",
+            "root": _root_label(),
+            "count": 0,
+            "campaigns": [],
+            "errors": [],
+        }
+
 
     for summary_path in sorted(evidence.glob("*_summary.json")):
         name = summary_path.stem.removesuffix("_summary")
@@ -245,7 +278,16 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
 
     items = list(campaigns.values())
     items.sort(key=lambda row: (row["updated_at"], row["name"]), reverse=True)
-    return {"root": _root_label(), "count": len(items), "campaigns": items, "errors": errors}
+    response: ResearchRecordsResponse = {
+        "available": not errors,
+        "root": _root_label(),
+        "count": len(items),
+        "campaigns": items,
+        "errors": errors,
+    }
+    if errors:
+        response["reason"] = "source_errors"
+    return response
 
 
 def research_record_detail(campaign: str, root: Path | None = None) -> ResearchRecordDetailResponse:

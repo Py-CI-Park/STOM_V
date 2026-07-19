@@ -53,18 +53,40 @@ function _hvFetchJson(url, signal) {
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
+function _hvUnavailable(reason, conflict) {
+  return {
+    available: false,
+    reason: typeof reason === "string" && reason ? reason : "history_detail_unavailable",
+    conflict: typeof conflict === "string" && conflict ? conflict : null,
+  };
+}
+
 function _hvFetchAllPages(url, signal, validatePage) {
   const MAX_PAGES = 50;
   const sep = url.includes("?") ? "&" : "?";
   const base = url + sep + "limit=100";
+  const pageError = (payload) => {
+    const error = new Error("History detail response identity mismatch");
+    error.historyUnavailable = _hvUnavailable(
+      payload && payload.available === false ? payload.reason : "malformed_history_detail_envelope",
+      payload && payload.available === false ? payload.conflict : null,
+    );
+    return error;
+  };
   const step = (cursor, acc, page) => {
     const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
     return _hvFetchJson(pageUrl, signal).then(payload => {
-      if (!validatePage(payload)) throw new Error("History detail response identity mismatch");
-      const rows = Array.isArray(payload.rows) ? payload.rows : [];
-      const merged = acc.concat(rows);
+      if (!payload || payload.available !== true || !Array.isArray(payload.rows) || !validatePage(payload)) {
+        throw pageError(payload);
+      }
+      const merged = acc.concat(payload.rows);
       const next = payload.next_cursor ? payload.next_cursor : null;
-      if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+      if (next && page >= MAX_PAGES) {
+        const error = new Error("History detail page ceiling exceeded");
+        error.historyUnavailable = _hvUnavailable("history_detail_page_ceiling_exceeded");
+        throw error;
+      }
+      if (next) return step(next, merged, page + 1);
       return merged;
     });
   };
@@ -117,6 +139,15 @@ function _HvError({ err, onRetry }) {
     </div>
   );
 }
+function _HvUnavailable({ unavailable }) {
+  if (!unavailable) return null;
+  return (
+    <_HvEmpty>
+      History evidence unavailable: {unavailable.reason}
+      {unavailable.conflict ? ` (conflict: ${unavailable.conflict})` : ""}
+    </_HvEmpty>
+  );
+}
 
 /* ── B-3: AbPairCompareView — series의 legacy/typed 발행기 쌍을 세대별로 나란히 비교. ── */
 function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
@@ -130,8 +161,8 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
   const [pairsErr, setPairsErr] = useState_hv("");
   const [selectedPair, setSelectedPair] = useState_hv("");
 
-  const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
-  const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+  const [legacyRows, setLegacyRows] = useState_hv({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+  const [typedRows, setTypedRows] = useState_hv({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
   const requestsRef = useRef_hv({ pairs: null, legacy: null, typed: null });
   const generationRef = useRef_hv({ pairs: 0, legacy: 0, typed: 0 });
 
@@ -146,8 +177,19 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
     _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), controller.signal)
       .then(payload => {
         if (generation !== generationRef.current.pairs || controller.signal.aborted) return;
-        const items = Array.isArray(payload && payload.items) ? payload.items : [];
-        setPairsAvailable(!!(payload && payload.available));
+        if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean") {
+          throw new Error("Malformed A/B pairs envelope");
+        }
+        if (!payload.available) {
+          setPairsAvailable(false);
+          setPairs([]);
+          setSelectedPair("");
+          setPairsErr(`A/B evidence unavailable: ${payload.reason || "unknown_reason"}${payload.conflict ? ` (conflict: ${payload.conflict})` : ""}`);
+          return;
+        }
+        if (!Array.isArray(payload.items)) throw new Error("Malformed A/B pairs envelope");
+        const items = payload.items;
+        setPairsAvailable(true);
         setPairs(items.filter(item => item && (
           item.legacy_research_id === selectedResearchId || item.typed_research_id === selectedResearchId
         )));
@@ -172,8 +214,8 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
     });
     setPairs([]);
     setSelectedPair("");
-    setLegacyRows({ loading: false, err: "", rows: [] });
-    setTypedRows({ loading: false, err: "", rows: [] });
+    setLegacyRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+    setTypedRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
   }, [baseUrl, isDemo, selectedResearchId]);
 
   useEffect_hv(() => () => {
@@ -188,7 +230,7 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
 
   const loadSide = useCallback_hv((sideName, researchId, setter) => {
     if (isDemo || !baseUrl || !researchId) {
-      setter({ loading: false, err: "", rows: [] });
+      setter({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
       return;
     }
     if (requestsRef.current[sideName]) requestsRef.current[sideName].abort();
@@ -196,28 +238,32 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
     const generation = ++generationRef.current[sideName];
     const selectionGeneration = sideName + "-" + generation;
     requestsRef.current[sideName] = controller;
-    setter(prev => ({ ...prev, loading: true, err: "" }));
+    setter(prev => ({ ...prev, loading: true, available: null, reason: null, conflict: null, err: "" }));
     const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId)
       + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
     _hvFetchAllPages(url, controller.signal, payload => (
-      payload && payload.research_id === researchId && payload.section === "evaluations"
+      payload.research_id === researchId && payload.section === "evaluations"
       && String(payload.selection_generation) === selectionGeneration
     ))
       .then(rows => {
         if (generation === generationRef.current[sideName] && !controller.signal.aborted) {
-          setter({ loading: false, err: "", rows });
+          setter({ loading: false, available: true, reason: null, conflict: null, err: "", rows });
         }
       })
       .catch(error => {
         if (generation !== generationRef.current[sideName] || _hvIsAbort(error, controller)) return;
-        setter({ loading: false, err: String(error), rows: [] });
+        if (error.historyUnavailable) {
+          setter({ loading: false, ...error.historyUnavailable, err: "", rows: [] });
+          return;
+        }
+        setter({ loading: false, available: false, reason: null, conflict: null, err: String(error), rows: [] });
       });
   }, [baseUrl, isDemo]);
 
   useEffect_hv(() => {
     if (!current) {
-      setLegacyRows({ loading: false, err: "", rows: [] });
-      setTypedRows({ loading: false, err: "", rows: [] });
+      setLegacyRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
+      setTypedRows({ loading: false, available: null, reason: null, conflict: null, err: "", rows: [] });
       return;
     }
     loadSide("legacy", current.legacy_research_id, setLegacyRows);
@@ -233,8 +279,11 @@ function AbPairCompareView({ baseUrl, wsStatus, selectedResearchId }) {
           </span>
         )}
       </div>
+      {side.available === false && !side.err && (
+        <_HvEmpty>A/B evidence unavailable: {side.reason}{side.conflict ? ` (conflict: ${side.conflict})` : ""}</_HvEmpty>
+      )}
       {side.err && <_HvError err={side.err} />}
-      {!side.err && side.rows.length === 0 && !side.loading && (
+      {side.available === true && side.rows.length === 0 && !side.loading && (
         <_HvEmpty>evaluation 데이터 없음</_HvEmpty>
       )}
       {side.loading && <_HvEmpty>조회중…</_HvEmpty>}
@@ -336,61 +385,28 @@ function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
-  const [campaigns, setCampaigns] = useState_hv([]);
-  const [campaignsLoading, setCampaignsLoading] = useState_hv(false);
-  const [campaignsErr, setCampaignsErr] = useState_hv("");
   const selected = selectedResearchId || "";
+  const selectedIsCampaign = selected.startsWith("campaign:");
 
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
+  const [rowsUnavailable, setRowsUnavailable] = useState_hv(null);
   const [metricMode, setMetricMode] = useState_hv("profit");
-  const requestsRef = useRef_hv({ campaigns: null, rows: null });
-  const generationRef = useRef_hv({ campaigns: 0, rows: 0 });
-
-  const loadCampaigns = useCallback_hv(() => {
-    if (isDemo || !baseUrl) return;
-    if (requestsRef.current.campaigns) requestsRef.current.campaigns.abort();
-    const controller = new AbortController();
-    const generation = ++generationRef.current.campaigns;
-    const selectionGeneration = "campaigns-" + generation;
-    requestsRef.current.campaigns = controller;
-    setCampaignsLoading(true);
-    setCampaignsErr("");
-    _hvFetchJson(
-      baseUrl + "/history/index?limit=50&source_kind=campaign&selection_generation=" + encodeURIComponent(selectionGeneration),
-      controller.signal
-    )
-      .then(payload => {
-        if (generation !== generationRef.current.campaigns || controller.signal.aborted
-          || !payload || String(payload.selection_generation) !== selectionGeneration) return;
-        setCampaigns(Array.isArray(payload.items) ? payload.items : []);
-      })
-      .catch(error => {
-        if (generation !== generationRef.current.campaigns || _hvIsAbort(error, controller)) return;
-        setCampaignsErr(String(error));
-        setCampaigns([]);
-      })
-      .finally(() => {
-        if (generation === generationRef.current.campaigns && !controller.signal.aborted) setCampaignsLoading(false);
-      });
-  }, [baseUrl, isDemo, selected]);
-
-  useEffect_hv(() => {
-    loadCampaigns();
-  }, [loadCampaigns]);
+  const requestsRef = useRef_hv({ rows: null });
+  const generationRef = useRef_hv({ rows: 0 });
 
   useEffect_hv(() => () => {
-    Object.keys(requestsRef.current).forEach(key => {
-      if (requestsRef.current[key]) requestsRef.current[key].abort();
-    });
+    if (requestsRef.current.rows) requestsRef.current.rows.abort();
   }, []);
 
   const loadRows = useCallback_hv(() => {
     if (requestsRef.current.rows) requestsRef.current.rows.abort();
     const generation = ++generationRef.current.rows;
-    if (isDemo || !baseUrl || !selected) {
+    if (isDemo || !baseUrl || !selectedIsCampaign) {
       setRows([]);
+      setRowsUnavailable(null);
+      setRowsErr(selected ? "Unavailable: CellHeatmap requires campaign:<id>" : "");
       setRowsLoading(false);
       return;
     }
@@ -400,10 +416,11 @@ function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
     setRowsLoading(true);
     setRowsErr("");
     setRows([]);
+    setRowsUnavailable(null);
     const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected)
       + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
     _hvFetchAllPages(url, controller.signal, payload => (
-      payload && payload.research_id === selected && payload.section === "evaluations"
+      payload && payload.available === true && payload.research_id === selected && payload.section === "evaluations"
       && String(payload.selection_generation) === selectionGeneration
     ))
       .then(nextRows => {
@@ -411,13 +428,18 @@ function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
       })
       .catch(error => {
         if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
-        setRowsErr(String(error));
         setRows([]);
+        if (error.historyUnavailable) {
+          setRowsUnavailable(error.historyUnavailable);
+          setRowsErr("");
+          return;
+        }
+        setRowsErr(String(error));
       })
       .finally(() => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
       });
-  }, [baseUrl, isDemo, selected]);
+  }, [baseUrl, isDemo, selected, selectedIsCampaign]);
 
   useEffect_hv(() => {
     loadRows();
@@ -461,7 +483,7 @@ function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
           <span className="dot" style={{ background: "var(--amber)" }}></span>
           12셀 히트맵 (시간창 × 시총)
         </div>
-        <button className="btn ghost sm" onClick={loadRows} disabled={isDemo || rowsLoading || !selected}>
+        <button className="btn ghost sm" onClick={loadRows} disabled={isDemo || rowsLoading || !selectedIsCampaign}>
           {rowsLoading ? "조회중…" : "\u21bb 새로고침"}
         </button>
       </div>
@@ -472,20 +494,18 @@ function CellHeatmap({ baseUrl, wsStatus, selectedResearchId }) {
             <div className="mono" aria-live="polite" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
               {selected ? "선택 연구: " + selected : "선택 연구 없음 · 히트맵 근거 missing"}
             </div>
-            {hasProfit && hasPct && (
+            {selectedIsCampaign && hasProfit && hasPct && (
               <button className="btn ghost sm" onClick={() => setMetricMode(m => (m === "profit" ? "total_profit_pct" : "profit"))}>
                 값: {effectiveMode === "profit" ? "손익" : (pctIsWinRate ? "승률" : "수익률%")}
               </button>
             )}
-            <_HvError err={campaignsErr} onRetry={loadCampaigns} />
+            {!selectedIsCampaign && selected && <_HvEmpty>Unavailable: CellHeatmap requires campaign:&lt;id&gt;</_HvEmpty>}
             <_HvError err={rowsErr} onRetry={loadRows} />
-            {!campaignsErr && campaigns.length === 0 && !campaignsLoading && (
-              <_HvEmpty>캠페인 companion 발행 시 표시됩니다</_HvEmpty>
+            <_HvUnavailable unavailable={rowsUnavailable} />
+            {selectedIsCampaign && !rowsErr && !rowsUnavailable && !grid && !rowsLoading && (
+              <_HvEmpty>캠페인 companion evaluation이 발행되면 표시됩니다</_HvEmpty>
             )}
-            {!rowsErr && campaigns.length > 0 && !grid && !rowsLoading && (
-              <_HvEmpty>캠페인 companion 발행 시 표시됩니다</_HvEmpty>
-            )}
-            {grid && (
+            {selectedIsCampaign && grid && (
               <div style={{ overflowX: "auto" }}>
                 <table className="mono" style={{ borderCollapse: "collapse", fontSize: 11 }}>
                   <thead>
@@ -534,60 +554,27 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
-  const [runs, setRuns] = useState_hv([]);
-  const [runsLoading, setRunsLoading] = useState_hv(false);
-  const [runsErr, setRunsErr] = useState_hv("");
   const selected = selectedResearchId || "";
+  const selectedIsLoopRun = selected.startsWith("loop_run:");
 
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
-  const requestsRef = useRef_hv({ runs: null, rows: null });
-  const generationRef = useRef_hv({ runs: 0, rows: 0 });
-
-  const loadRuns = useCallback_hv(() => {
-    if (isDemo || !baseUrl) return;
-    if (requestsRef.current.runs) requestsRef.current.runs.abort();
-    const controller = new AbortController();
-    const generation = ++generationRef.current.runs;
-    const selectionGeneration = "runs-" + generation;
-    requestsRef.current.runs = controller;
-    setRunsLoading(true);
-    setRunsErr("");
-    _hvFetchJson(
-      baseUrl + "/history/index?limit=50&source_kind=loop_run&selection_generation=" + encodeURIComponent(selectionGeneration),
-      controller.signal
-    )
-      .then(payload => {
-        if (generation !== generationRef.current.runs || controller.signal.aborted
-          || !payload || String(payload.selection_generation) !== selectionGeneration) return;
-        setRuns(Array.isArray(payload.items) ? payload.items : []);
-      })
-      .catch(error => {
-        if (generation !== generationRef.current.runs || _hvIsAbort(error, controller)) return;
-        setRunsErr(String(error));
-        setRuns([]);
-      })
-      .finally(() => {
-        if (generation === generationRef.current.runs && !controller.signal.aborted) setRunsLoading(false);
-      });
-  }, [baseUrl, isDemo, selected]);
-
-  useEffect_hv(() => {
-    loadRuns();
-  }, [loadRuns]);
+  const [rowsUnavailable, setRowsUnavailable] = useState_hv(null);
+  const requestsRef = useRef_hv({ rows: null });
+  const generationRef = useRef_hv({ rows: 0 });
 
   useEffect_hv(() => () => {
-    Object.keys(requestsRef.current).forEach(key => {
-      if (requestsRef.current[key]) requestsRef.current[key].abort();
-    });
+    if (requestsRef.current.rows) requestsRef.current.rows.abort();
   }, []);
 
   const loadRows = useCallback_hv(() => {
     if (requestsRef.current.rows) requestsRef.current.rows.abort();
     const generation = ++generationRef.current.rows;
-    if (isDemo || !baseUrl || !selected) {
+    if (isDemo || !baseUrl || !selectedIsLoopRun) {
       setRows([]);
+      setRowsUnavailable(null);
+      setRowsErr(selected ? "Unavailable: HoldoutFunnel requires loop_run:<id>" : "");
       setRowsLoading(false);
       return;
     }
@@ -597,10 +584,11 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
     setRowsLoading(true);
     setRowsErr("");
     setRows([]);
+    setRowsUnavailable(null);
     const url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected)
       + "&section=evaluations&selection_generation=" + encodeURIComponent(selectionGeneration);
     _hvFetchAllPages(url, controller.signal, payload => (
-      payload && payload.research_id === selected && payload.section === "evaluations"
+      payload && payload.available === true && payload.research_id === selected && payload.section === "evaluations"
       && String(payload.selection_generation) === selectionGeneration
     ))
       .then(nextRows => {
@@ -608,13 +596,18 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
       })
       .catch(error => {
         if (generation !== generationRef.current.rows || _hvIsAbort(error, controller)) return;
-        setRowsErr(String(error));
         setRows([]);
+        if (error.historyUnavailable) {
+          setRowsUnavailable(error.historyUnavailable);
+          setRowsErr("");
+          return;
+        }
+        setRowsErr(String(error));
       })
       .finally(() => {
         if (generation === generationRef.current.rows && !controller.signal.aborted) setRowsLoading(false);
       });
-  }, [baseUrl, isDemo, selected]);
+  }, [baseUrl, isDemo, selected, selectedIsLoopRun]);
 
   useEffect_hv(() => {
     loadRows();
@@ -625,20 +618,9 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
   // boolean 신호가 하나라도 있을 때만 통과수를 집계하고, 전혀 없으면 "—"로 정직하게 표시한다.
   const gateSignalSeen = rows.some(r => r && typeof r.gate_passed === "boolean");
   const gatePassedCount = rows.filter(r => r && r.gate_passed === true).length;
-  // 홀드아웃 신호는 metrics 키에 "holdout"이 실제로 존재할 때만 집계한다
-  // (추측 금지 — 서버가 명시적으로 내려준 신호만 사용, reason 같은 존재하지 않는 필드는 참조하지 않는다).
-  let holdoutTotal = 0;
-  let holdoutPassed = 0;
-  let holdoutSignalSeen = false;
-  for (const row of rows) {
-    const metrics = (row && row.metrics) || {};
-    const metricKeys = Object.keys(metrics).filter(k => k.toLowerCase().includes("holdout"));
-    if (metricKeys.length === 0) continue;
-    holdoutSignalSeen = true;
-    holdoutTotal += 1;
-    const truthy = metricKeys.some(k => !!metrics[k]);
-    if (truthy) holdoutPassed += 1;
-  }
+  // No backend-owned typed holdout contract exists. Do not derive a pass/fail claim
+  // from metric names or values; the funnel must remain explicitly unavailable.
+  const holdoutUnavailable = _hvUnavailable("holdout_owner_unavailable");
 
   const maxCount = Math.max(evaluatedCount, 1);
   const barStyle = (count) => ({
@@ -661,7 +643,7 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
           <span className="dot" style={{ background: "var(--violet)" }}></span>
           홀드아웃 퍼널
         </div>
-        <button className="btn ghost sm" onClick={loadRows} disabled={isDemo || rowsLoading || !selected}>
+        <button className="btn ghost sm" onClick={loadRows} disabled={isDemo || rowsLoading || !selectedIsLoopRun}>
           {rowsLoading ? "조회중…" : "\u21bb 새로고침"}
         </button>
       </div>
@@ -672,15 +654,18 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
             <div className="mono" aria-live="polite" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
               {selected ? "선택 연구: " + selected : "선택 연구 없음 · 홀드아웃 근거 missing"}
             </div>
-            <_HvError err={runsErr} onRetry={loadRuns} />
+            {!selectedIsLoopRun && selected && <_HvEmpty>Unavailable: HoldoutFunnel requires loop_run:&lt;id&gt;</_HvEmpty>}
             <_HvError err={rowsErr} onRetry={loadRows} />
-            {!runsErr && runs.length === 0 && !runsLoading && (
-              <_HvEmpty>run이 누적되면 표시됩니다</_HvEmpty>
-            )}
-            {!rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && (
+            <_HvUnavailable unavailable={rowsUnavailable} />
+            {selectedIsLoopRun && !rowsErr && !rowsUnavailable && evaluatedCount === 0 && !rowsLoading && (
               <_HvEmpty>evaluation 데이터 없음</_HvEmpty>
             )}
-            {evaluatedCount > 0 && (
+            {selectedIsLoopRun && !rowsErr && !rowsUnavailable && !rowsLoading && evaluatedCount === 0 && (
+              <_HvEmpty>
+                홀드아웃 unavailable: {holdoutUnavailable.reason} (no backend-owned typed contract)
+              </_HvEmpty>
+            )}
+            {selectedIsLoopRun && evaluatedCount > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div>
                   <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>평가수</div>
@@ -696,11 +681,9 @@ function HoldoutFunnel({ baseUrl, wsStatus, selectedResearchId }) {
                 </div>
                 <div>
                   <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>홀드아웃</div>
-                  {holdoutSignalSeen ? (
-                    <div style={barStyle(holdoutPassed)}>{_hvNum(holdoutPassed)} / {_hvNum(holdoutTotal)}</div>
-                  ) : (
-                    <_HvEmpty>홀드아웃 신호 미발행(향후 제공)</_HvEmpty>
-                  )}
+                  <_HvEmpty>
+                    홀드아웃 unavailable: {holdoutUnavailable.reason} (no backend-owned typed contract)
+                  </_HvEmpty>
                 </div>
               </div>
             )}

@@ -42,6 +42,46 @@ function _rrpCampaignResearchId(row) {
   const campaignId = row && (row.id || row.name);
   return typeof campaignId === "string" && campaignId ? `campaign:${campaignId}` : "";
 }
+function _rrpUnavailable(reason, conflict) {
+  return {
+    available: false,
+    reason: typeof reason === "string" && reason ? reason : "research_record_unavailable",
+    conflict: typeof conflict === "string" && conflict ? conflict : null,
+  };
+}
+function _rrpRecordsEnvelope(payload) {
+  if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean"
+    || !Array.isArray(payload.campaigns) || !Array.isArray(payload.errors)
+    || !payload.campaigns.every(row => row && typeof row === "object" && typeof row.name === "string")
+    || !payload.errors.every(item => item && typeof item === "object")) {
+    return _rrpUnavailable("malformed_research_records_envelope");
+  }
+  if (!payload.available) {
+    return {
+      ..._rrpUnavailable(payload.reason, payload.conflict),
+      campaigns: payload.campaigns,
+      errors: payload.errors,
+    };
+  }
+  return {
+    available: true,
+    reason: null,
+    conflict: null,
+    campaigns: payload.campaigns,
+    errors: payload.errors,
+  };
+}
+
+function _rrpDetailEnvelope(payload, activeCampaign) {
+  if (!payload || typeof payload !== "object" || typeof payload.available !== "boolean") {
+    return _rrpUnavailable("malformed_research_record_detail_envelope");
+  }
+  if (!payload.available) return _rrpUnavailable(payload.reason, payload.conflict);
+  if (!payload.campaign || typeof payload.campaign !== "object" || payload.campaign.name !== activeCampaign) {
+    return _rrpUnavailable("malformed_research_record_detail_envelope");
+  }
+  return { available: true, reason: null, conflict: null, campaign: payload.campaign };
+}
 
 function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectResearch, showRunCompare = true }) {
   const [payload, setPayload] = useState_rrp(null);
@@ -51,6 +91,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
   const [err, setErr] = useState_rrp("");
   const [runList, setRunList] = useState_rrp([]);
   const [runListLoading, setRunListLoading] = useState_rrp(false);
+  const [runListErr, setRunListErr] = useState_rrp("");
   // §10-10 completeness: 12개 초과 campaign 을 조용히 자르지 않고 명시(전체 보기 토글).
   const [showAll, setShowAll] = useState_rrp(false);
   const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });
@@ -78,6 +119,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
     setErr("");
     setRunList([]);
     setRunListLoading(false);
+    setRunListErr("");
     setShowAll(false);
   }, [baseIdentity]);
 
@@ -90,30 +132,35 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
     requestsRef.current.records = controller;
     setLoading(true);
     setErr("");
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 6000);
     fetch(baseUrl + "/research_records", { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
-        if (!j || typeof j !== "object" || !Array.isArray(j.campaigns) || !Array.isArray(j.errors)
-          || !j.campaigns.every(row => row && typeof row === "object" && typeof row.name === "string")
-          || !j.errors.every(item => item && typeof item === "object")) {
+        const envelope = _rrpRecordsEnvelope(j);
+        if (envelope.available === false && envelope.reason === "malformed_research_records_envelope") {
           throw new Error("Malformed research records response");
         }
         if (generation !== generationRef.current.records || controller.signal.aborted
           || baseIdentityRef.current !== requestBase) return;
-        setPayload(j);
+        setPayload(envelope);
         setErr("");
-        if (!controlled && !selectedCampaign && j.campaigns.length) setSelectedCampaign(j.campaigns[0].name || "");
+        if (!controlled && !selectedCampaign && envelope.campaigns.length) {
+          setSelectedCampaign(envelope.campaigns[0].name || "");
+        }
       })
       .catch(e => {
-        if (generation !== generationRef.current.records || controller.signal.aborted
+        if (generation !== generationRef.current.records
           || baseIdentityRef.current !== requestBase) return;
         setPayload(null);
-        setErr(String(e));
+        setErr(timedOut ? "research_records_timeout" : "research_records_request_failed: " + String(e));
       })
       .finally(() => {
         clearTimeout(timeoutId);
-        if (generation === generationRef.current.records && !controller.signal.aborted
+        if (generation === generationRef.current.records
           && baseIdentityRef.current === requestBase) setLoading(false);
       });
   }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled]);
@@ -140,16 +187,13 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
           { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
-        if (!j || typeof j !== "object" || typeof j.available !== "boolean"
-          || (j.available && (!j.campaign || typeof j.campaign !== "object" || j.campaign.name !== activeCampaign))) {
-          throw new Error("Malformed research record detail response");
-        }
+        const envelope = _rrpDetailEnvelope(j, activeCampaign);
         if (requestId === generationRef.current.detail && !controller.signal.aborted
-          && baseIdentityRef.current === requestBase) setDetail(j);
+          && baseIdentityRef.current === requestBase) setDetail(envelope);
       })
       .catch(e => {
         if (e.name !== "AbortError" && requestId === generationRef.current.detail && !controller.signal.aborted
-          && baseIdentityRef.current === requestBase) setDetail({ available: false, reason: String(e) });
+          && baseIdentityRef.current === requestBase) setDetail(_rrpUnavailable(String(e)));
       });
     return () => controller.abort();
   }, [baseUrl, baseIdentity, isDemo, selectedCampaign, controlled, controlledCampaign]);
@@ -162,7 +206,12 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
     const requestBase = baseIdentity;
     requestsRef.current.runs = controller;
     setRunListLoading(true);
-    fetchRunsShared(baseUrl, { timeoutMs: 6000, signal: controller.signal })
+    setRunListErr("");
+    let timeoutId = null;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("runs_request_timeout")), 6000);
+    });
+    Promise.race([fetchRunsShared(baseUrl, { timeoutMs: 6000, signal: controller.signal }), timeout])
       .then(j => {
         if (!j || typeof j !== "object" || !Array.isArray(j.runs)
           || !j.runs.every(run => run && typeof run === "object")) {
@@ -173,12 +222,18 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
         const runs = j.runs.slice();
         runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
         setRunList(runs);
+        setRunListErr("");
       })
-      .catch(() => {
+      .catch(e => {
         if (generation === generationRef.current.runs && !controller.signal.aborted
-          && baseIdentityRef.current === requestBase) setRunList([]);
+          && baseIdentityRef.current === requestBase) {
+          setRunListErr(String(e).includes("runs_request_timeout")
+            ? "runs_request_timeout"
+            : "runs_request_failed: " + String(e));
+        }
       })
       .finally(() => {
+        if (timeoutId != null) clearTimeout(timeoutId);
         if (generation === generationRef.current.runs && !controller.signal.aborted
           && baseIdentityRef.current === requestBase) setRunListLoading(false);
       });
@@ -195,9 +250,10 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
   }, []);
 
   const rows = (payload && Array.isArray(payload.campaigns)) ? payload.campaigns : [];
+  const recordsUnavailable = payload && payload.available === false ? payload : null;
   const activeCampaign = controlled ? controlledCampaign : selectedCampaign;
-  const selected = (detail && detail.available && detail.campaign && detail.campaign.name === activeCampaign)
-    ? detail.campaign : rows.find(r => r.name === activeCampaign);
+  const selected = (detail && detail.available === true && detail.campaign && detail.campaign.name === activeCampaign)
+    ? detail.campaign : null;
   const candidates = (selected && Array.isArray(selected.candidates)) ? selected.candidates.slice(0, 5) : [];
   const errors = (payload && Array.isArray(payload.errors)) ? payload.errors : [];
   const selectedRunId = typeof selectedResearchId === "string" && selectedResearchId.startsWith("loop_run:")
@@ -229,7 +285,15 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {err && <div className="research-empty danger">{err}</div>}
         {isDemo && <div className="research-empty">Demo mode</div>}
-        {!isDemo && rows.length === 0 && !err && <div className="research-empty">No research records</div>}
+        {recordsUnavailable && (
+          <div className="research-empty danger">
+            Research records source unavailable: {recordsUnavailable.reason}
+            {recordsUnavailable.conflict && <div>conflict: {recordsUnavailable.conflict}</div>}
+          </div>
+        )}
+        {!isDemo && payload && payload.available === true && rows.length === 0 && !err && (
+          <div className="research-empty">No research records</div>
+        )}
         {rows.length > 0 && (
           <div style={{ overflowX: "auto" }}>
             <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
@@ -288,6 +352,12 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
             </button>
           </div>
         )}
+        {detail && detail.available !== true && activeCampaign && (
+          <div className="research-empty danger">
+            Research record unavailable: {detail.reason}
+            {detail.conflict && <div>conflict: {detail.conflict}</div>}
+          </div>
+        )}
         {selected && (
           <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 }}>
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
@@ -295,9 +365,6 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
               <div className="mono" style={{ color: "var(--ink-0)", marginBottom: 6 }}>{selected.name}</div>
               <div className="mono" style={{ color: "var(--ink-2)", fontSize: 11 }}>
                 best={_rrpBestLabel(selected)}
-              </div>
-              <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 }}>
-                source={(payload && payload.root) || "-"}
               </div>
             </div>
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
@@ -336,6 +403,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, selectedResearchId, onSelectR
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>
               History가 과거 run/gen 아카이브와 Compare를 소유합니다. Workbench는 깊은 분석으로 연결만 제공합니다.
             </div>
+            {runListErr && <div className="research-empty danger">Run history unavailable: {runListErr}</div>}
             {showRunCompare && (
               <_RpRunCompare
                 baseUrl={baseUrl}

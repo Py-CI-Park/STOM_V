@@ -49,11 +49,11 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "Compare" in source
     assert "마지막 응답일 수 있습니다" in source
     assert "selectedResearchId" in source
-    assert "onSelectResearch={selectResearch}" in source
+    assert "onSelectedResearchIdChange={selectGovernedResearch}" in source
     assert "legacy run/gen archive selection" in source
-    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showRunCompare={false} />" in source
-    assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} />" in source
-    assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectResearch} showDecisionLedger={false} />" in source
+    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} showRunCompare={false} />" in source
+    assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} selectedResearchId={selectedResearchId} onSelectResearch={selectGovernedResearch} />" in source
+    assert "<AuditDecisionTrace baseUrl={baseUrl} selectedResearchId={selectedResearchId} onSelectResearch={selectGovernedResearch} showDecisionLedger={false} />" in source
     assert "<VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />" in source
     assert "style={{" in source
     assert "아카이브/Compare 탐색만 읽기 전용" in source
@@ -113,25 +113,28 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "new AbortController()" in tree
     assert "generation !== generationRef.current" in tree
     assert "controller.abort()" in tree
-    assert "aria-pressed={active}" in tree
-    assert "aria-selected={active}" not in tree
-    assert 'role="button"' in tree
-    assert 'e.key === "Enter" || e.key === " "' in tree
-    assert "row.evaluation_status ||" in tree
+    assert 'role="button"' not in tree
+    assert 'aria-selected={active}' not in tree
+    assert '<button' in tree
+    assert 'aria-pressed={active}' in tree
+    assert 'typeof row.evaluation_status === "string" ? row.evaluation_status : "unknown"' in tree
     assert '{ key: "evaluation_status", label: "상태", numeric: false }' in tree
-    assert 'source={(payload && payload.root) || "-"}' in records
-    assert "root={(payload && payload.root)" not in records
+    assert "payload.root" not in records
+    assert "selected.evaluation_status" not in records
     assert 'aria-label="연구 근거 목적지 상태"' in tree
     for state in ("complete", "partial", "missing", "conflict"):
         assert state in tree
     assert "generationRef = useRef_hct({ index: 0, detail: 0 })" in tree
     assert 'selection_generation=" + encodeURIComponent(String(selectionGeneration))' in tree
-    assert "payload.research_id !== selectedId || payload.section !== section" in tree
+    assert "payload.research_id !== selectedId" in tree
+    assert "payload.section !== section" in tree
     assert "String(payload.selection_generation) !== String(generation)" in tree
-    assert "node: payload.node || null" in tree
+    assert 'typeof payload.available !== "boolean"' in tree
+    assert "_hctResearchEnvelope" in tree
     assert "identity.provenance_owner" in tree
     assert "identity.redaction" in tree
-    assert "identity.byte_identical" in tree
+    assert "identity.byte_identical.values" in tree
+    assert "JSON.stringify(byteValues, null, 2)" in tree
     assert '["conditions", "evaluations"' in tree
     assert "const provenance = research.provenance" not in tree
     assert "_hctCompactValue" in tree
@@ -147,12 +150,20 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "_hvFetchJson(pageUrl, signal)" in viz
     assert "History detail response identity mismatch" in viz
     assert "requestsRef = useRef_hv({ pairs: null, legacy: null, typed: null })" in viz
-    assert "requestsRef = useRef_hv({ campaigns: null, rows: null })" in viz
-    assert "requestsRef = useRef_hv({ runs: null, rows: null })" in viz
+    assert viz.count("requestsRef = useRef_hv({ rows: null })") == 2
+    assert "campaigns: null" not in viz
+    assert "runs: null" not in viz
     assert "item.legacy_research_id === selectedResearchId || item.typed_research_id === selectedResearchId" in viz
     assert 'payload.section === "evaluations"' in viz
+    assert "payload.available === true" in viz
     assert "String(payload.selection_generation) === selectionGeneration" in viz
     assert "_hvIsAbort(error, controller)" in viz
+    assert "History detail page ceiling exceeded" in viz
+    assert "page >= MAX_PAGES" in viz
+    assert 'selected.startsWith("campaign:")' in viz
+    assert 'selected.startsWith("loop_run:")' in viz
+    assert "CellHeatmap requires campaign:<id>" in viz
+    assert "HoldoutFunnel requires loop_run:<id>" in viz
     assert "setRows([]);" in viz
     index = _read("research-index.jsx")
     assert "const requestsRef = useRef_rrp({ records: null, runs: null, detail: null });" in records
@@ -177,3 +188,65 @@ def test_history_governed_panels_have_controlled_identity_and_abort_guards() -> 
     assert "setErrors([]);" in index
     assert "setSelectedId(\"\");" in index
     assert "controller.abort()" in index
+def test_history_detail_envelopes_fail_closed_and_preserve_unavailable_contract() -> None:
+    tree = _read("history-condition-tree.jsx")
+    records = _read("research-records-panel.jsx")
+    viz = _read("history-viz.jsx")
+
+    assert 'return _hctUnavailable("malformed_history_research_envelope")' in tree
+    assert "History detail unavailable: {sections.research.reason}" in tree
+    assert "{sections.research.conflict &&" in tree
+    assert "research.available !== true" in tree
+    assert 'throw new Error("Malformed history detail section envelope")' in tree
+    assert "function _rrpDetailEnvelope(payload, activeCampaign)" in records
+    assert 'return _rrpUnavailable("malformed_research_record_detail_envelope")' in records
+    assert "Research record unavailable: {detail.reason}" in records
+    assert "detail.available === true" in records
+    assert "rows.find(r => r.name === activeCampaign)" not in records
+    assert "payload.root" not in records
+    assert "History detail page ceiling exceeded" in viz
+def test_history_status_disclosures_and_ab_evidence_fail_closed() -> None:
+    tree = _read("history-condition-tree.jsx")
+    viz = _read("history-viz.jsx")
+
+    for status in ("unavailable", "not_run", "partial", "unknown"):
+        assert f'status === "{status}"' in tree
+    assert 'className="badge ok">success</span>' in tree
+    assert 'return <span className="badge err" title={row.reason || ""}>unknown:' in tree
+    assert 'aria-expanded={stageOpen}' in tree
+    assert 'aria-controls={"hct-stage-" + stage.stage_id}' in tree
+    assert 'id={"hct-stage-" + stage.stage_id}' in tree
+    assert 'aria-expanded={condOpen}' in tree
+    assert 'aria-controls={"hct-condition-" + cond.condition_id}' in tree
+    assert 'id={"hct-condition-" + cond.condition_id}' in tree
+    assert '<div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleStage' not in tree
+
+    assert "function _hvUnavailable(reason, conflict)" in viz
+    assert "payload.available !== true || !Array.isArray(payload.rows)" in viz
+    assert "error.historyUnavailable = _hvUnavailable(" in viz
+    assert "A/B evidence unavailable: {side.reason}" in viz
+    assert "side.available === true && side.rows.length === 0" in viz
+    assert "A/B evidence unavailable: ${payload.reason ||" in viz
+def test_history_tree_validates_source_coverage_and_exposes_all_cursors() -> None:
+    tree = _read("history-condition-tree.jsx")
+
+    assert "function _hctCoverageSource(value)" in tree
+    assert "function _hctIndexEnvelope(payload, generation)" in tree
+    assert "String(payload.selection_generation) !== String(generation)" in tree
+    assert "!_hctCoverageSource(payload.coverage.campaign)" in tree
+    assert "!_hctCoverageSource(payload.coverage.loop_run)" in tree
+    assert '(value.available === false && !value.reason)' in tree
+    assert 'throw new Error("Malformed history index envelope")' in tree
+    assert 'aria-label="History index source coverage"' in tree
+    assert 'const state = source.available ? "available" : "unavailable";' in tree
+    assert 'const reason = source.available ? "" : `: ${source.reason}`;' in tree
+
+    assert '["complete", "partial", "missing", "conflict", "unavailable"]' in tree
+    assert 'state === "unavailable" ? "err"' in tree
+    assert 'const reason = value && typeof value.reason === "string" && value.reason ? `: ${value.reason}` : "";' in tree
+
+    for section in ("stages", "conditions", "evaluations"):
+        assert f'sections.{section} && sections.{section}.next_cursor' in tree
+        assert f'loadSection("{section}", sections.{section}.next_cursor)' in tree
+    assert 'aria-label="Load more stages"' in tree
+    assert 'aria-label="Load more conditions"' in tree
