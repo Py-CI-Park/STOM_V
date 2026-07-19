@@ -34,7 +34,7 @@ function _rrpBestLabel(record) {
   return best.label || best.name || best.strategy_gist || "-";
 }
 
-function ResearchRecordsPanel({ baseUrl, wsStatus }) {
+function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
   const [payload, setPayload] = useState_rrp(null);
   const [selectedCampaign, setSelectedCampaign] = useState_rrp("");
   const [detail, setDetail] = useState_rrp(null);
@@ -82,7 +82,13 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
     fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
           { signal: AbortSignal.timeout(6000) })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then(j => { if (!cancelled && reqId === detailReqRef.current) setDetail(Object.assign({ __campaign: forCampaign }, j)); })
+      .then(j => {
+        if (!cancelled && reqId === detailReqRef.current) {
+          setDetail(Object.assign({ __campaign: forCampaign }, j));
+          // V6.3(S4): 선택 연구를 상위(History 컨텍스트 바)로 lift — stable ID 마스터-디테일.
+          if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, (j && j.campaign) || null);
+        }
+      })
       .catch(e => { if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign }); });
     return () => { cancelled = true; };
   }, [baseUrl, isDemo, selectedCampaign]);
@@ -165,7 +171,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus }) {
                       background: active ? "rgba(56, 189, 248, 0.08)" : "transparent",
                     }}>
                       <td style={{ padding: "7px 8px", minWidth: 180 }}>
-                        <button className="btn ghost sm" onClick={() => setSelectedCampaign(row.name)}
+                        <button className="btn ghost sm" onClick={() => { setSelectedCampaign(row.name); if (typeof onSelectCampaign === "function") onSelectCampaign(row.name, null); }}
                                 style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                           {row.name}
                         </button>
