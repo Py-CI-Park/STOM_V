@@ -31134,7 +31134,8 @@ def signal_sell(pos, bar, ind):
   var {
     useState: useState_rrp,
     useEffect: useEffect_rrp,
-    useCallback: useCallback_rrp
+    useCallback: useCallback_rrp,
+    useRef: useRef_rrp
   } = React;
   function _rrpMoney(value) {
     if (value == null || Number.isNaN(Number(value))) return "-";
@@ -31184,15 +31185,26 @@ def signal_sell(pos, bar, ind):
       const timer2 = setInterval(refresh, 6e4);
       return () => clearInterval(timer2);
     }, [refresh, baseUrl, isDemo]);
+    const detailReqRef = useRef_rrp(0);
     useEffect_rrp(() => {
       if (isDemo || !baseUrl || !selectedCampaign) {
         setDetail(null);
         return;
       }
+      const reqId = ++detailReqRef.current;
+      const forCampaign = selectedCampaign;
+      let cancelled = false;
       fetch(
         baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
         { signal: AbortSignal.timeout(6e3) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setDetail(j)).catch((e) => setDetail({ available: false, reason: String(e) }));
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled && reqId === detailReqRef.current) setDetail(Object.assign({ __campaign: forCampaign }, j));
+      }).catch((e) => {
+        if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign });
+      });
+      return () => {
+        cancelled = true;
+      };
     }, [baseUrl, isDemo, selectedCampaign]);
     const refreshRuns = useCallback_rrp(() => {
       if (isDemo || !baseUrl) {
