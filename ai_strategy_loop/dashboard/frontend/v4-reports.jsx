@@ -30,7 +30,7 @@ function isManifestReport(row) {
     typeof row.research_id === "string" && row.research_id &&
     typeof row.step_id === "string" && typeof row.html_sha256 === "string" &&
     typeof row.hash_status === "string" && typeof row.trust === "string" &&
-    typeof row.missing === "boolean" && typeof row.stale === "boolean" &&
+    Array.isArray(row.missing) && row.missing.every(v => typeof v === "string") &&
     Array.isArray(row.source_paths) && Array.isArray(row.links) &&
     row.source_paths.every(v => typeof v === "string") &&
     row.links.every(v => typeof v === "string"));
@@ -54,7 +54,7 @@ function _manifestGroups(rows) {
 
 function _reportStatusText(row) {
   const states = [];
-  if (row.missing) states.push("missing");
+  if (row.missing.length > 0) states.push("missing:" + row.missing.length);
   if (row.stale) states.push("stale");
   if (row.hash_status) states.push("hash:" + row.hash_status);
   return states.length ? states.join(" · ") : "fresh";
@@ -72,7 +72,7 @@ function _renderReportButton(rp, sel, selectReport, manifestMode) {
   const label = manifestMode ? (rp.title || rp.name) : rp.name;
   const meta = manifestMode ? [rp.kind, _fmtReportBytes(rp.bytes), rp.trust].filter(Boolean).join(" · ") : _fmtReportBytes(rp.bytes);
   const classes = "v4-reports-item" + (sel === rp.path ? " active" : "") +
-    (manifestMode && rp.missing ? " missing" : "") + (manifestMode && rp.stale ? " stale" : "");
+    (manifestMode && rp.missing.length > 0 ? " missing" : "") + (manifestMode && rp.stale ? " stale" : "");
   return (
     <button key={rp.path}
             className={classes}
@@ -169,6 +169,11 @@ function V4Reports({ baseUrl }) {
               manifest errors: {manifestErrors.slice(0, 3).map(_errorText).join(" / ")}{manifestErrors.length > 3 ? " +" + (manifestErrors.length - 3) : ""}
             </div>
           )}
+          {list !== null && !usingManifest && (
+            <div className="v4-reports-manifest-required mono" role="status">
+              structured manifest unavailable · legacy reports are browse-only
+            </div>
+          )}
           {list !== null && list.length === 0 && (
             <div className="v4-reports-empty mono">
               리포트 없음{err ? " · " + err : ""}
@@ -212,6 +217,12 @@ function V4Reports({ baseUrl }) {
                       {src}{selectedManifest.source_sha256 && selectedManifest.source_sha256[src] ? " · " + _shortHash(selectedManifest.source_sha256[src]) : ""}
                     </code>
                   ))}
+                </div>
+              )}
+              {selectedManifest.missing.length > 0 && (
+                <div className="v4-reports-provenance missing">
+                  <span className="mono">missing sources</span>
+                  {selectedManifest.missing.slice(0, 6).map(src => <code key={src}>{src}</code>)}
                 </div>
               )}
               {selectedManifest.links.length > 0 && (

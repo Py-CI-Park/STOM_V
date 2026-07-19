@@ -98,6 +98,7 @@ _REPORTS_CSP = (
     "font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
 )
 _REPORTS_MANIFEST_REL = "research/condition_research/reports/research_report_manifest.json"
+_REPORTS_MANIFEST_DIR_REL = _REPORTS_MANIFEST_REL.rsplit("/", 1)[0]
 _REPORTS_MANIFEST_SCHEMA = "stom-research-report-manifest-v1"
 _REPORTS_MANUAL_WRITER = "manual-offline"
 _REPORTS_MANIFEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -262,6 +263,44 @@ def _manifest_source_paths(value: Any, errors: list[Dict[str, Any]], index: int,
     return out
 
 
+def _manifest_missing_paths(
+    value: Any,
+    errors: list[Dict[str, Any]],
+    index: int,
+    row: Dict[str, Any],
+) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        errors.append(_manifest_error(
+            "report_missing_invalid",
+            "manifest report missing must be a list of safe source paths",
+            index=index,
+            field="missing",
+            path=row.get("path"),
+            research_id=row.get("research_id"),
+            step_id=row.get("step_id"),
+        ))
+        return []
+    out: list[str] = []
+    for source_path in value:
+        safe = _safe_public_rel(source_path)
+        if not safe:
+            errors.append(_manifest_error(
+                "report_missing_path_invalid",
+                "manifest report missing path is not a safe relative path",
+                index=index,
+                field="missing",
+                path=row.get("path"),
+                research_id=row.get("research_id"),
+                step_id=row.get("step_id"),
+            ))
+            continue
+        if safe not in out:
+            out.append(safe)
+    return out
+
+
 def _manifest_source_sha256(
     value: Any,
     errors: list[Dict[str, Any]],
@@ -360,6 +399,15 @@ def _manifest_links(value: Any, errors: list[Dict[str, Any]], index: int, row: D
     return out
 
 
+def _manifest_report_public_path(value: Any) -> Optional[str]:
+    safe = _safe_public_rel(value)
+    if safe is None:
+        return None
+    if safe == _REPORTS_MANIFEST_DIR_REL or safe.startswith(_REPORTS_MANIFEST_DIR_REL + "/"):
+        return safe
+    return f"{_REPORTS_MANIFEST_DIR_REL}/{safe}"
+
+
 def _validated_manifest_report(
     row: Any,
     index: int,
@@ -374,7 +422,8 @@ def _validated_manifest_report(
         ))
         return None
 
-    target = _safe_report_path(row.get("path") if isinstance(row.get("path"), str) else "")
+    public_path = _manifest_report_public_path(row.get("path"))
+    target = _safe_report_path(public_path or "")
     if target is None:
         errors.append(_manifest_error(
             "report_path_invalid",
@@ -498,10 +547,13 @@ def _validated_manifest_report(
 
     source_paths = _manifest_source_paths(row.get("source_paths"), errors, index, row)
     source_sha256 = _manifest_source_sha256(row.get("source_sha256"), errors, index, row)
+    missing = _manifest_missing_paths(row.get("missing"), errors, index, row)
     for source_path in source_sha256:
         if source_path not in source_paths:
             source_paths.append(source_path)
-
+    for source_path in missing:
+        if source_path not in source_paths:
+            source_paths.append(source_path)
     return {
         "manifest": True,
         "path": rel,
@@ -515,7 +567,7 @@ def _validated_manifest_report(
         "html_sha256": html_sha256,
         "hash_status": hash_status,
         "trust": trust,
-        "missing": _manifest_bool(row, "missing", errors, index),
+        "missing": missing,
         "stale": stale,
         "source_paths": source_paths,
         "source_sha256": source_sha256,
@@ -545,7 +597,11 @@ def _reports_manifest_payload(flat_reports: list[Dict[str, Any]]) -> Dict[str, A
             path=_REPORTS_MANIFEST_REL,
         )]}
     if not os.path.isfile(manifest_path):
-        return base
+        return {**base, "errors": [_manifest_error(
+            "manifest_missing",
+            "structured report manifest is unavailable; flat reports are legacy-only",
+            path=_REPORTS_MANIFEST_REL,
+        )]}
 
     errors: list[Dict[str, Any]] = []
     try:

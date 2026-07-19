@@ -174,7 +174,7 @@ def _validate_report_paths(files: Mapping[str, str]) -> None:
 
 def _write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(text, encoding="utf-8", newline="")
 
 def _existing_managed_paths(out_dir: Path) -> set[str]:
     manifest_path = out_dir / _MANIFEST_NAME

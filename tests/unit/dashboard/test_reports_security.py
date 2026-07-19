@@ -141,7 +141,7 @@ def test_safe_report_path_unit_boundary() -> None:
     assert app_module._safe_report_path("a\x00b.html") is None
 
 
-def test_reports_flat_fallback_when_manifest_missing(monkeypatch, tmp_path: Path) -> None:
+def test_reports_marks_flat_fallback_as_legacy_when_manifest_missing(monkeypatch, tmp_path: Path) -> None:
     client, docs = _manifest_client(monkeypatch, tmp_path)
     _write_report(docs, "flat/only.html")
 
@@ -154,7 +154,37 @@ def test_reports_flat_fallback_when_manifest_missing(monkeypatch, tmp_path: Path
     ]
     assert body["manifest"]["available"] is False
     assert body["manifest"]["reports"] == []
-    assert body["manifest"]["errors"] == []
+    assert body["manifest"]["errors"][0]["type"] == "manifest_missing"
+
+
+def test_reports_accepts_writer_generated_manifest_contract(monkeypatch, tmp_path: Path) -> None:
+    from alpha_lab.reporting.build_html import build_all
+    from scripts import build_research_report as report_writer
+
+    client, docs = _manifest_client(monkeypatch, tmp_path)
+    out_dir = docs / "research" / "condition_research" / "reports"
+    _write_report(
+        docs,
+        "research/condition_research/reports/2026-07-16_b1_program_report.html",
+        "<h1>preserved legacy report</h1>",
+    )
+    files = build_all(commit="writer-contract")
+    manifest = report_writer.build_manifest(
+        files,
+        commit="writer-contract",
+        generated_at="2026-07-19T00:00:00Z",
+    )
+    report_writer.write_reports_atomic(out_dir, files, manifest)
+
+    response = client.get("/reports", headers=ORIGIN_HEADER)
+
+    assert response.status_code == 200
+    envelope = response.json()["manifest"]
+    assert envelope["available"] is True
+    assert envelope["errors"] == []
+    assert envelope["count"] == len(files)
+    assert all(isinstance(row["missing"], list) for row in envelope["reports"])
+    assert all(row["trust"] == "manual-offline" for row in envelope["reports"])
 
 
 def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeypatch, tmp_path: Path) -> None:
@@ -183,7 +213,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
                 "source_paths": ["research/source/good.md", "../escape.md"],
                 "source_sha256": {"research/source/good.md": "1" * 64, str(tmp_path / "secret.md"): "2" * 64},
                 "trust": "manual-offline",
-                "missing": True,
+                "missing": ["research/source/good.md", "../escape.md"],
                 "stale": False,
                 "links": ["#summary", f"/reports/view?path={good_rel}#summary", "https://example.invalid/report"],
             },
@@ -198,7 +228,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
                 "source_paths": [],
                 "source_sha256": {},
                 "trust": "manual-offline",
-                "missing": False,
+                "missing": [],
                 "stale": False,
                 "links": [],
             },
@@ -213,7 +243,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
                 "source_paths": [],
                 "source_sha256": {},
                 "trust": "manual-offline",
-                "missing": False,
+                "missing": [],
                 "stale": False,
                 "links": [],
             },
@@ -228,7 +258,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
                 "source_paths": [],
                 "source_sha256": {},
                 "trust": "manual-offline",
-                "missing": False,
+                "missing": [],
                 "stale": False,
                 "links": [],
             },
@@ -248,7 +278,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
     assert rows[good_rel]["research_id"] == "rid-good"
     assert rows[good_rel]["step_id"] == "step-1"
     assert rows[good_rel]["hash_status"] == "match"
-    assert rows[good_rel]["missing"] is True
+    assert rows[good_rel]["missing"] == ["research/source/good.md"]
     assert rows[good_rel]["stale"] is False
     assert rows[good_rel]["source_paths"] == ["research/source/good.md"]
     assert rows[good_rel]["source_sha256"] == {"research/source/good.md": "1" * 64}
@@ -259,6 +289,7 @@ def test_reports_manifest_validates_paths_and_exposes_only_safe_metadata(monkeyp
     assert {
         "report_path_invalid",
         "report_source_path_invalid",
+        "report_missing_path_invalid",
         "report_link_invalid",
         "report_hash_invalid",
         "report_hash_mismatch",
@@ -287,7 +318,7 @@ def test_reports_manifest_requires_manual_writer(monkeypatch, tmp_path: Path) ->
             "source_paths": [],
             "source_sha256": {},
             "trust": "manual-offline",
-            "missing": False,
+            "missing": [],
             "stale": False,
             "links": [],
         }],

@@ -9,7 +9,6 @@ const RESEARCH_WIKI_CATEGORIES = [
   { key: "good_results", label: "Good Results" },
   { key: "condition_research", label: "Metrics" },
   { key: "update_log", label: "Failed Candidates" },
-  { key: "next", label: "Next Experiments" },
 ];
 
 function wikiLabel(category) {
