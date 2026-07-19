@@ -725,3 +725,7 @@
 .v6-belt-node .v6-belt-label { font-size: 13.5px; }
 .v6-stage-tab b { font-size: 16px; }
 .v4-eg-v { font-size: 13px; }
+
+/* v5.3.8 구버전 탭 감지 배너 */
+.v6-stale-banner { width: 100%; padding: 10px 16px; background: linear-gradient(90deg, rgba(165,148,255,.25), rgba(76,214,179,.25)); border: 1px solid var(--violet); border-radius: 0 0 10px 10px; color: var(--ink-0); font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; }
+.v6-stale-banner:hover { filter: brightness(1.15); }

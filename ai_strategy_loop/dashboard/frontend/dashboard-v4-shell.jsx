@@ -156,6 +156,21 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
   const pendingTabFocusRef = useRef_v4("");
   const [buildVer] = useState_v4(() => v4BundleVersion());
+  // v5.3.8: 구버전 탭 감지 — 열린 탭이 옛 JS 를 들고 있으면 배너로 새로고침 유도(검수 불일치 재발 방지).
+  const [newVer, setNewVer] = useState_v4("");
+  useEffect_v4(() => {
+    if (!buildVer) return undefined;
+    const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        const v = j && j.bundles && j.bundles["app.js"] && j.bundles["app.js"].v;
+        if (v && v !== buildVer) setNewVer(String(v));
+      })
+      .catch(() => {});
+    const id = setInterval(check, 60000);
+    check();
+    return () => clearInterval(id);
+  }, [buildVer]);
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -339,6 +354,12 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
       {/* ===== 워크스페이스 ===== */}
       <div className="v4-workspace">
+        {newVer && (
+          <button type="button" className="v6-stale-banner" onClick={() => window.location.reload()}
+                  title="이 탭은 이전 빌드를 실행 중입니다. 클릭하면 최신 버전으로 새로고침합니다.">
+            ⟳ 새 버전 배포됨 (build {newVer}) — 이 탭은 구버전({buildVer})입니다. 클릭하여 새로고침
+          </button>
+        )}
         <header className="v4-topbar">
           <div className="v4-brand">
             <b>조건식 AI 연구 터미널</b>

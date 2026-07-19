@@ -35435,6 +35435,18 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
     const pendingTabFocusRef = useRef_v4("");
     const [buildVer] = useState_v4(() => v4BundleVersion());
+    const [newVer, setNewVer] = useState_v4("");
+    useEffect_v4(() => {
+      if (!buildVer) return void 0;
+      const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((j) => {
+        const v = j && j.bundles && j.bundles["app.js"] && j.bundles["app.js"].v;
+        if (v && v !== buildVer) setNewVer(String(v));
+      }).catch(() => {
+      });
+      const id2 = setInterval(check, 6e4);
+      check();
+      return () => clearInterval(id2);
+    }, [buildVer]);
     useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
@@ -35593,7 +35605,20 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-rail-item" + (contextDrawerOpen ? " active" : ""), onClick: () => setContextDrawerOpen((v) => !v), title: "AI Context Pack(\uAC1C\uBC1C\uC790 \uC11C\uB78D) \uD1A0\uAE00", "aria-pressed": contextDrawerOpen }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "Context")), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-rail-item" + (contextDrawerOpen ? " active" : ""), onClick: () => setContextDrawerOpen((v) => !v), title: "AI Context Pack(\uAC1C\uBC1C\uC790 \uC11C\uB78D) \uD1A0\uAE00", "aria-pressed": contextDrawerOpen }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "Context")), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, newVer && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "v6-stale-banner",
+        onClick: () => window.location.reload(),
+        title: "\uC774 \uD0ED\uC740 \uC774\uC804 \uBE4C\uB4DC\uB97C \uC2E4\uD589 \uC911\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uBA74 \uCD5C\uC2E0 \uBC84\uC804\uC73C\uB85C \uC0C8\uB85C\uACE0\uCE68\uD569\uB2C8\uB2E4."
+      },
+      "\u27F3 \uC0C8 \uBC84\uC804 \uBC30\uD3EC\uB428 (build ",
+      newVer,
+      ") \u2014 \uC774 \uD0ED\uC740 \uAD6C\uBC84\uC804(",
+      buildVer,
+      ")\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uC5EC \uC0C8\uB85C\uACE0\uCE68"
+    ), /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,
