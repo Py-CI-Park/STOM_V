@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Final, Literal, NotRequired, TypedDict
+from typing import Final, Literal, NotRequired, TypedDict, cast
 
 from ai_strategy_loop.dashboard import research_records
 
@@ -321,17 +321,26 @@ def _campaign_rows(repo_root: Path, evidence_root: Path) -> tuple[list[ResearchI
     errors: list[ResearchIndexError] = [
         {"source_path": item["file"], "reason": item["reason"]} for item in response["errors"]
     ]
-    root = Path(response["root"])
+    root = evidence_root.resolve()
     for campaign in response["campaigns"]:
         artifacts = campaign["artifacts"]
         rel_source = ""
         for key in ("summary", "jsonl", "run_log"):
             value = artifacts.get(key)  # type: ignore[arg-type]
-            if isinstance(value, str) and value:
-                rel_source = _relative(repo_root, root / value)
-                break
+            if isinstance(value, str) and _safe_rel(value):
+                artifact_path = (root / value).resolve()
+                if artifact_path.is_relative_to(root):
+                    try:
+                        rel_source = _relative(repo_root, artifact_path)
+                    except ValueError:
+                        pass
+                if rel_source:
+                    break
         if not rel_source:
-            rel_source = _relative(repo_root, root) if root.exists() else str(root)
+            try:
+                rel_source = _relative(repo_root, root)
+            except ValueError:
+                rel_source = response["root"]
         best = campaign.get("best", {})
         title = str(best.get("label") or campaign["name"])
         rows.append(_row(
@@ -777,38 +786,40 @@ def research_index_detail(id: str, repo_root: Path | None = None, evidence_root:
     evidence = (evidence_root or (root / ".omo" / "evidence" / "tmap-walkforward")).resolve()
     match = _SAFE_NAMESPACE.fullmatch(id)
     if match is None:
-        return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": False, "reason": "invalid_id"})
     namespace, payload = match.groups()
     if not _safe_rel(payload) and namespace in {"doc", "update_log", "evidence"}:
-        return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": False, "reason": "invalid_id"})
     index = list_research_index(root, evidence)
     row = next((item for item in index["records"] if item["id"] == id), None)
     if row is None:
-        return {"available": False, "reason": "missing_id"}
+        return _serialize_detail_response({"available": False, "reason": "missing_id"})
     if not row["detail_available"]:
-        return {"available": False, "reason": "detail_unavailable", "row": row}
+        return _serialize_detail_response({"available": False, "reason": "detail_unavailable", "row": row})
     if namespace == "campaign":
         detail = research_records.research_record_detail(payload, evidence)
-        return {"available": bool(detail.get("available")), "row": row, "campaign": _as_object(detail.get("campaign"))}
+        return _serialize_detail_response(
+            {"available": bool(detail.get("available")), "row": row, "campaign": _as_object(detail.get("campaign"))}
+        )
     if namespace in {"doc", "update_log", "evidence"}:
         path = _repo_path(root, row["source_path"])
         if not path.is_file() or not path.resolve().is_relative_to(root):
-            return {"available": False, "reason": "disallowed_path", "row": row}
+            return _serialize_detail_response({"available": False, "reason": "disallowed_path", "row": row})
         markdown = path.read_text(encoding="utf-8", errors="replace")
-        return {"available": True, "row": row, "markdown": markdown}
+        return _serialize_detail_response({"available": True, "row": row, "markdown": markdown})
     if namespace == "registry":
         entry = _registry_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "hof":
         entry = _hof_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "loop_run":
         entry = _loop_run_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
     if namespace == "decision":
         entry = _decision_entry(payload, root)
-        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
-    return {"available": False, "reason": "invalid_id"}
+        return _serialize_detail_response({"available": entry is not None, "row": row, "registry_entry": entry or {}})
+    return _serialize_detail_response({"available": False, "reason": "invalid_id"})
 
 
 def _registry_entry(payload: str, repo_root: Path) -> JsonObject | None:
