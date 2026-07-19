@@ -33,22 +33,25 @@ def test_lab_exposes_honest_factor_evidence_regions_and_states() -> None:
     assert '표본 외 구간' in source
 
 
-def test_workbench_exposes_selection_caveats_and_promotion_blockers() -> None:
-    # Given: the V4 Workbench wrapper around candidate comparison panels.
+def test_workbench_is_hof_only_and_compare_moved_to_history() -> None:
+    # V6.1(W2·W3): 성과 탭은 명예의 전당 전용. RunCompare 는 History 로 이동(중복 제거).
     source = _read("v4-workbench.jsx")
-
-    # When/Then: comparison ownership and dangerous-action boundaries are announced.
     assert '<section' in source and 'className="v4-workbench v4-cjk-safe"' in source
     assert 'aria-labelledby="v4-workbench-title"' in source
     assert '<h2 id="v4-workbench-title"' in source
     assert 'role="status"' in source and 'aria-live="polite"' in source
     assert 'data-state={surfaceState}' in source
-    assert 'data-v4-scroll-owner="workbench-candidate-compare"' in source
-    assert 'aria-describedby="v4-workbench-caveat"' in source
-    assert 'id="v4-workbench-caveat"' in source
-    assert '후보 선택 상태' in source
+    assert '명예의 전당' in source
+    assert '<HallOfFamePanel' in source and '<HofInventoryGate' in source
+    # 중복 제거: 정밀분석·비교는 이 탭에 없다.
+    assert '<ResearchProPanel' not in source
+    assert '<RunComparePanel' not in source
+    # 위험 행동 경계 문구는 유지.
     assert '승격·최종 승인·운영 반영은 이 탭에서 실행되지 않습니다.' in source
     assert '서버 검증' in source and '차단' in source
+    # 비교 owner 는 History.
+    history = _read("v4-history.jsx")
+    assert '<RunComparePanel' in history
 
 
 @pytest.mark.parametrize("name", ["v4-lab.jsx", "v4-workbench.jsx"])
