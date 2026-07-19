@@ -652,3 +652,14 @@
 .v6-report-group { padding: 8px 10px 4px; font-size: 11px; color: var(--ink-3); text-transform: none; border-bottom: 1px dashed var(--line); }
 .v6-report-example { color: var(--violet); border-color: rgba(165,148,255,.45); }
 .v6-wiki-search { width: calc(100% - 16px); margin: 8px; }
+
+/* V6.5(S6) Backtest 결과 종합 판정 배너(표본 내 advisory) */
+.bt-verdict-band { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); }
+.bt-verdict-band.good { border-color: rgba(76,214,179,.55); }
+.bt-verdict-band.warn { border-color: rgba(255,193,7,.5); }
+.bt-verdict-band.bad { border-color: rgba(255,99,99,.55); }
+.bt-verdict-word { font-size: 18px; }
+.bt-verdict-band.good .bt-verdict-word { color: var(--teal); }
+.bt-verdict-band.warn .bt-verdict-word { color: var(--amber); }
+.bt-verdict-band.bad .bt-verdict-word { color: #ff6363; }
+.bt-verdict-note { margin-left: auto; font-size: 11px; color: var(--ink-3); }
