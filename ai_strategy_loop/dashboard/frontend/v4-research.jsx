@@ -18,6 +18,7 @@ import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./ca
 import { PhaseTimeline, PhaseDetailPanel, ProcessFlowPanel } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
 import { V4LoopCycle } from "./v4-loop-cycle.jsx";
+import { ResearchHeatmapPanel } from "./research-pro.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -294,6 +295,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           </_V4Fold>
           <_V4Fold storageKey="stom_v4_analytics" label="Generation Analytics · 세대 분석">
             <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+          </_V4Fold>
+          <_V4Fold storageKey="stom_v4_lab_evidence" label="Lab 근거 · 팩터/엣지 히트맵 (Lab 통합, W1)">
+            <ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
           </_V4Fold>
           <_V4Fold storageKey="stom_v4_analysis" label="진화 분석 · 가정/부검/계보/홀드아웃">
             <HypothesisPanel state={s} />
