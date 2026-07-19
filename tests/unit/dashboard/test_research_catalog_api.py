@@ -104,3 +104,31 @@ def test_catalog_connection_is_read_only(monkeypatch, tmp_path: Path) -> None:
     with pytest.raises(sqlite3.OperationalError):
         conn.execute("INSERT INTO assets VALUES ('x','k','p','s','w','d','m',0)")
     conn.close()
+
+def test_catalog_clauses_and_cells_select_only(monkeypatch, tmp_path: Path) -> None:
+    # V5.7: 절실험실(clauses)·출구은행(cells) SELECT-only 엔드포인트(4엔드포인트 계약).
+    db = tmp_path / "research_assets.db"
+    _make_db(db)
+    conn = sqlite3.connect(db)
+    conn.execute("INSERT INTO clauses (x) VALUES (7)")
+    conn.execute("INSERT INTO cells (x) VALUES (9)")
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(research_api, "_CATALOG_DB", db)
+    client = _client(monkeypatch, tmp_path)
+
+    clauses = client.get("/research/clauses").json()
+    assert clauses["available"] is True and clauses["count"] == 1
+    assert clauses["clauses"][0]["x"] == 7
+
+    cells = client.get("/research/cells").json()
+    assert cells["available"] is True and cells["count"] == 1
+    assert cells["cells"][0]["x"] == 9
+
+
+def test_catalog_clauses_missing_db_returns_envelope(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(research_api, "_CATALOG_DB", tmp_path / "absent.db")
+    client = _client(monkeypatch, tmp_path)
+    r = client.get("/research/clauses")
+    assert r.status_code == 200
+    assert r.json()["available"] is False

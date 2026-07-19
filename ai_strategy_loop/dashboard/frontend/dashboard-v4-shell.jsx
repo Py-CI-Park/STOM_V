@@ -260,6 +260,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [gptAuthProbe, setGptAuthProbe] = useState_v4(null);
   const [codeViewGen, setCodeViewGen] = useState_v4(null);
   const [contextDrawerOpen, setContextDrawerOpen] = useState_v4(false);
+  const [verFx, setVerFx] = useState_v4(false);
 
   const onStart = useCallback_v4((config) => { send({ action: "start", config }); setSettingsOpen(false); }, [send]);
   const onStop = useCallback_v4(() => { send({ action: "stop" }); }, [send]);
@@ -349,7 +350,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           </div>
           <div className="v4-safety" aria-label="안전 경계">
             {isDemo && <span className="v4-sfx demo">DEMO</span>}
-            {buildVer && <span className="v4-sfx build" title="현재 로드된 번들 빌드 지문(app.js?v=)">build {buildVer}</span>}
+            {buildVer && <button type="button" className={"v4-sfx build v4-verfx" + (verFx ? " on" : "")} onClick={() => setVerFx(v => !v)} title="버전 하이라이트 효과 토글(app.js?v=)" aria-pressed={verFx}>build {buildVer}</button>}
             <span className="v4-sfx">실거래 없음</span>
             <span className="v4-sfx">브로커 없음</span>
             <span className="v4-sfx gate">HUMAN GATE</span>

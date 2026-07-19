@@ -278,3 +278,38 @@ def research_catalog_judgments() -> dict:
         return _catalog_unavailable(f"query failed: {exc}")
     finally:
         conn.close()
+
+@router.get("/research/clauses")
+def research_catalog_clauses(limit: int = 200) -> dict:
+    # V5.7: 절실험실 뷰용 SELECT-only. 무재집계·읽기 전용.
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    lim = max(1, min(500, int(limit) if str(limit).lstrip("-").isdigit() else 200))
+    try:
+        cur = conn.execute("SELECT * FROM clauses ORDER BY rowid LIMIT ?", (lim,))
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        return {"available": True, "count": len(rows), "clauses": rows}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()
+
+
+@router.get("/research/cells")
+def research_catalog_cells(limit: int = 200) -> dict:
+    # V5.7: 표본/출구은행 뷰용 SELECT-only. 무재집계·읽기 전용.
+    conn = _catalog_conn()
+    if conn is None:
+        return _catalog_unavailable("catalog DB missing or unreadable")
+    lim = max(1, min(500, int(limit) if str(limit).lstrip("-").isdigit() else 200))
+    try:
+        cur = conn.execute("SELECT * FROM cells ORDER BY rowid LIMIT ?", (lim,))
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        return {"available": True, "count": len(rows), "cells": rows}
+    except sqlite3.Error as exc:
+        return _catalog_unavailable(f"query failed: {exc}")
+    finally:
+        conn.close()
