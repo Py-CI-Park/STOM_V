@@ -89,8 +89,9 @@ def render_report_html(spec: dict) -> str:
     for key, label in STANDARD_SECTIONS:
         raw = spec.get(key)
         as_links = key in ("related_docs", "related_commits")
+        # v5.3.9: 섹션 앵커 id — 뷰어 목차(TOC)/fragment 점프 소비.
         body_sections.append(
-            f"<section><h2>{_esc(label)}</h2>{_render_list_or_text(raw, as_links=as_links)}</section>"
+            f'<section id="sec-{key}"><h2>{_esc(label)}</h2>{_render_list_or_text(raw, as_links=as_links)}</section>'
         )
 
     generated_at = _now_iso()

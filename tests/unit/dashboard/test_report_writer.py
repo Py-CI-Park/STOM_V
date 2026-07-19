@@ -131,7 +131,8 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     html = (tmp_path / "run_report_runB.html").read_text(encoding="utf-8")
     assert "<script" not in html  # 무script(CSP/sandbox 그대로 통과)
     assert "<svg" in html and "<polyline" in html  # 개선 흐름도
-    assert html.count("<h3>세대") == 3  # 세대 블록 3개
+    assert html.count('id="h-gen-') == 3  # 세대 블록 3개(v5.3.9 앵커 id 포함)
+    assert 'id="sec-flow"' in html and 'id="gen-1"' in html  # TOC 앵커
     assert "gate 통과 ✓" in html  # gen3 통과 마커
     assert "performance_proved=false" in html  # 안전 문구
     assert "/reports/view?path=generated_reports/runB__gen1.html" in html  # 스텝 리포트 링크

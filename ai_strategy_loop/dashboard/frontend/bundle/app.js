@@ -31185,6 +31185,9 @@ def signal_sell(pos, bar, ind):
     const [runList, setRunList] = useState_rrp([]);
     const [runListLoading, setRunListLoading] = useState_rrp(false);
     const [showAll, setShowAll] = useState_rrp(false);
+    const [rq, setRq] = useState_rrp("");
+    const [sortKey, setSortKey] = useState_rrp("updated_at");
+    const [sortAsc, setSortAsc] = useState_rrp(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const refresh = useCallback_rrp(() => {
       if (isDemo || !baseUrl) return;
@@ -31248,13 +31251,45 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
       }
     }, []);
-    const rows = payload && Array.isArray(payload.campaigns) ? payload.campaigns : [];
+    const rowsAll = payload && Array.isArray(payload.campaigns) ? payload.campaigns : [];
+    const _rrpSortVal = (row, k) => {
+      const best = row.best || {};
+      if (k === "name") return String(row.name || "");
+      if (k === "candidate_count") return Number(row.candidate_count || 0);
+      if (k === "profit") return Number(best.profit || 0);
+      if (k === "mdd") return Number(best.mdd || 0);
+      return Number(row.updated_at || 0);
+    };
+    const rows = rowsAll.filter((r) => !rq.trim() || String(r.name || "").toLowerCase().includes(rq.trim().toLowerCase())).sort((a, b) => {
+      const va = _rrpSortVal(a, sortKey), vb = _rrpSortVal(b, sortKey);
+      const c = typeof va === "string" ? va.localeCompare(String(vb)) : va - vb;
+      return sortAsc ? c : -c;
+    });
+    const onSort = (k) => {
+      if (k === sortKey) setSortAsc((v) => !v);
+      else {
+        setSortKey(k);
+        setSortAsc(k === "name");
+      }
+    };
+    const _si = (k) => sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "";
     const selected2 = detail && detail.available && detail.campaign ? detail.campaign : rows.find((r) => r.name === selectedCampaign);
     const candidates = selected2 && Array.isArray(selected2.candidates) ? selected2.candidates.slice(0, 5) : [];
     const errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
     const currentRunId = runList.length ? runList[0].run_id : "";
     const currentGenNo = 0;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), !isDemo && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Campaign"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Candidates"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Best PnL"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "Updated"))), /* @__PURE__ */ React.createElement("tbody", null, (showAll ? rows : rows.slice(0, 12)).map((row) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Research Records"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, rows.length, " campaigns"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "Loading" : "Refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, err && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger" }, err), isDemo && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "Demo mode"), !isDemo && rows.length === 0 && !err && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "No research records"), rowsAll.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "toolbar-input",
+        type: "search",
+        placeholder: "\uCEA0\uD398\uC778 \uAC80\uC0C9(\uD544\uD130)",
+        value: rq,
+        onChange: (e) => setRq(e.target.value),
+        "aria-label": "\uCEA0\uD398\uC778 \uD544\uD130",
+        style: { marginBottom: 8, width: 260 }
+      }
+    ), rq && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: 10, fontSize: 11, color: "var(--ink-3)" } }, "\uD544\uD130 ", rows.length, "/", rowsAll.length, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("name") }, "Campaign", _si("name"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("candidate_count") }, "Candidates", _si("candidate_count"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("profit") }, "Best PnL", _si("profit"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("mdd") }, "MDD", _si("mdd"))), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "Artifacts"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("button", { className: "rrp-th", onClick: () => onSort("updated_at") }, "Updated", _si("updated_at"))))), /* @__PURE__ */ React.createElement("tbody", null, (showAll ? rows : rows.slice(0, 12)).map((row) => {
       const best = row.best || {};
       const artifacts = row.artifacts || {};
       const active = row.name === selectedCampaign;
@@ -34550,7 +34585,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: effOpen, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": effOpen }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
   }
   function _V4Onboarding({ onOpenSettings }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "panel v4-onboarding v6-onboarding-compact" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4-onboarding-bd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, "\uC870\uAC74\uC2DD AI \uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("p", null, "AI\uAC00 \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5\uC744 \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBD80\uAC80\uD558\uBA70 \uC870\uAC74\uC2DD\uC744 \uC9C4\uD654\uC2DC\uD0B5\uB2C8\uB2E4. \uACFC\uC815\uC740 \uC704 \uD30C\uC774\uD504\uB77C\uC778 \uBCA8\uD2B8\uC640 \uC544\uB798 \uB2E8\uACC4 \uD0ED(\uC0DD\uC131\u2192\uBC31\uD14C\uC2A4\uD2B8\u2192\uCC44\uC810\xB7\uBD80\uAC80\u2192\uBC18\uBCF5)\uC774 \uC2E4\uC2DC\uAC04 \uC548\uB0B4\uD569\uB2C8\uB2E4. \uC6B0\uC2B9 \uD6C4\uBCF4\uC758 \uC6B4\uC601 export \uB294 \uC5F0\uAD6C \uD655\uC778\uACFC \uBD84\uB9AC\uB41C human \uC2B9\uC778 \uC808\uCC28\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"))));
+    return /* @__PURE__ */ React.createElement("div", { className: "v6-onboarding-btnrow" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onOpenSettings }, "\u25B8 \uC870\uAC74\uC2DD AI \uC124\uC815"));
   }
   function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
     const s = state || {};
@@ -35063,6 +35098,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [wiki, setWiki] = useState_rp7(null);
     const [wikiSel, setWikiSel] = useState_rp7("");
     const [wikiQuery, setWikiQuery] = useState_rp7("");
+    const [toc, setToc] = useState_rp7([]);
+    const [anchor, setAnchor] = useState_rp7("");
     const [wikiDoc, setWikiDoc] = useState_rp7(null);
     const wikiReqRef = React.useRef(0);
     useEffect_rp7(() => {
@@ -35118,7 +35155,29 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         cancelled = true;
       };
     }, [baseUrl, mode, wikiSel]);
+    useEffect_rp7(() => {
+      setToc([]);
+      setAnchor("");
+      if (!baseUrl || mode !== "reports" || !sel) return void 0;
+      let cancelled = false;
+      fetch(baseUrl + "/reports/view?path=" + encodeURIComponent(sel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.text() : "").then((html) => {
+        if (cancelled) return;
+        const out = [];
+        const re = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+        let m2;
+        while ((m2 = re.exec(html)) && out.length < 60) {
+          const txt = m2[3].replace(/<[^>]+>/g, "").trim().slice(0, 48);
+          if (txt) out.push({ lvl: Number(m2[1]), id: m2[2], txt });
+        }
+        setToc(out);
+      }).catch(() => {
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode, sel]);
     const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
+    const frameSrc = viewUrl ? anchor ? viewUrl + "#" + anchor : viewUrl : "";
     const stepReportsRaw = (list || []).filter((rp) => String(rp.path).startsWith("generated_reports/"));
     const stepReports = [...stepReportsRaw].sort((a, b) => (/run_report_/.test(b.path) ? 1 : 0) - (/run_report_/.test(a.path) ? 1 : 0));
     const otherReports = (list || []).filter((rp) => !String(rp.path).startsWith("generated_reports/"));
@@ -35140,7 +35199,21 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         }
       },
       "\uACB0\uACFC \uBCF4\uACE0\uC11C \uC608\uC2DC"
-    ))), mode === "reports" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && stepReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \xB7 ", stepReports.length, "\uAC74 (build_step_reports.py)"), list !== null && stepReports.map(renderReportItem), list !== null && otherReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC77C\uBC18 \uBB38\uC11C \uB9AC\uD3EC\uD2B8 \xB7 ", otherReports.length, "\uAC74"), list !== null && otherReports.map(renderReportItem)), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: viewUrl, className: "v4-reports-frame", src: viewUrl, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement(
+    ), (() => {
+      const flat = [...stepReports, ...otherReports];
+      const idx = flat.findIndex((rp) => rp.path === sel);
+      if (idx < 0 || flat.length < 2) return null;
+      return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", gap: 4 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx <= 0, onClick: () => setSel(flat[idx - 1].path), title: "\uC774\uC804 \uBB38\uC11C" }, "\u25C0 \uC774\uC804"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { alignSelf: "center", fontSize: 11, color: "var(--ink-3)" } }, idx + 1, "/", flat.length), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx >= flat.length - 1, onClick: () => setSel(flat[idx + 1].path), title: "\uB2E4\uC74C \uBB38\uC11C" }, "\uB2E4\uC74C \u25B6"));
+    })())), mode === "reports" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && stepReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \xB7 ", stepReports.length, "\uAC74 (build_step_reports.py)"), list !== null && stepReports.map(renderReportItem), list !== null && otherReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC77C\uBC18 \uBB38\uC11C \uB9AC\uD3EC\uD2B8 \xB7 ", otherReports.length, "\uAC74"), list !== null && otherReports.map(renderReportItem)), toc.length > 0 && /* @__PURE__ */ React.createElement("nav", { className: "v4-reports-toc", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uCC28" }, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uBAA9\uCC28 \xB7 ", toc.length), toc.map((t) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: t.id,
+        className: "v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : ""),
+        onClick: () => setAnchor(t.id),
+        title: t.txt
+      },
+      t.txt
+    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: frameSrc, className: "v4-reports-frame", src: frameSrc, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "toolbar-input v6-wiki-search",
@@ -35320,6 +35393,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
+  var V4_DASH_VERSION = "v5.3.9";
   var V4_TABS = [
     { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2A4\uD14C\uC774\uC9C0 \uAD6C\uB3D9 \uC2E4\uC2DC\uAC04 \uAD00\uCC30", group: "primary" },
     { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9", group: "primary" },
@@ -35450,6 +35524,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
+      document.title = "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC " + V4_DASH_VERSION;
     }, [theme]);
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
@@ -35618,7 +35693,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ") \u2014 \uC774 \uD0ED\uC740 \uAD6C\uBC84\uC804(",
       buildVer,
       ")\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uC5EC \uC0C8\uB85C\uACE0\uCE68"
-    ), /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono v6-dash-ver" }, "\uB300\uC2DC\uBCF4\uB4DC ", /* @__PURE__ */ React.createElement("b", null, V4_DASH_VERSION), " \xB7 build ", buildVer || "?", " \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {
         value: pendingBase,

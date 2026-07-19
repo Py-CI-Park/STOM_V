@@ -21,6 +21,9 @@ function V4Reports({ baseUrl }) {
   const [wiki, setWiki] = useState_rp7(null);
   const [wikiSel, setWikiSel] = useState_rp7("");
   const [wikiQuery, setWikiQuery] = useState_rp7("");
+  // v5.3.9: 뷰어 강화 — 목차(TOC)·앵커 점프·이전/다음 문서 순회.
+  const [toc, setToc] = useState_rp7([]);
+  const [anchor, setAnchor] = useState_rp7("");
   const [wikiDoc, setWikiDoc] = useState_rp7(null);
   const wikiReqRef = React.useRef(0);
 
@@ -59,8 +62,29 @@ function V4Reports({ baseUrl }) {
       .catch(e => { if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) }); });
     return () => { cancelled = true; };
   }, [baseUrl, mode, wikiSel]);
+  useEffect_rp7(() => { // v5.3.9 TOC: 선택 리포트 HTML 에서 id 있는 h2/h3 추출(무실행 텍스트 파싱).
+    setToc([]); setAnchor("");
+    if (!baseUrl || mode !== "reports" || !sel) return undefined;
+    let cancelled = false;
+    fetch(baseUrl + "/reports/view?path=" + encodeURIComponent(sel), { signal: AbortSignal.timeout(12000) })
+      .then(r => (r.ok ? r.text() : ""))
+      .then(html => {
+        if (cancelled) return;
+        const out = [];
+        const re = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
+        let m2;
+        while ((m2 = re.exec(html)) && out.length < 60) {
+          const txt = m2[3].replace(/<[^>]+>/g, "").trim().slice(0, 48);
+          if (txt) out.push({ lvl: Number(m2[1]), id: m2[2], txt });
+        }
+        setToc(out);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [baseUrl, mode, sel]);
 
   const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
+  const frameSrc = viewUrl ? (anchor ? viewUrl + "#" + anchor : viewUrl) : "";
   // V6.4(S5): 스텝 자동 리포트(generated_reports/)와 일반 문서를 구분 + 결과 보고서 예시 바로가기.
   // v5.3.7: run 종합 보고서를 스텝 그룹 최상단에 고정 + 배지 구분.
   const stepReportsRaw = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
@@ -90,6 +114,18 @@ function V4Reports({ baseUrl }) {
             <button className="btn ghost sm v6-report-example" title="스텝 자동 리포트 표준양식 결과 예시 열기"
                     onClick={() => { setMode("reports"); setSel(exampleReport.path); }}>결과 보고서 예시</button>
           )}
+          {(() => { // v5.3.9: 이전/다음 문서 순회(보는 순서).
+            const flat = [...stepReports, ...otherReports];
+            const idx = flat.findIndex(rp => rp.path === sel);
+            if (idx < 0 || flat.length < 2) return null;
+            return (
+              <span style={{ display: "inline-flex", gap: 4 }}>
+                <button className="btn ghost sm" disabled={idx <= 0} onClick={() => setSel(flat[idx - 1].path)} title="이전 문서">◀ 이전</button>
+                <span className="mono" style={{ alignSelf: "center", fontSize: 11, color: "var(--ink-3)" }}>{idx + 1}/{flat.length}</span>
+                <button className="btn ghost sm" disabled={idx >= flat.length - 1} onClick={() => setSel(flat[idx + 1].path)} title="다음 문서">다음 ▶</button>
+              </span>
+            );
+          })()}
         </div>
       </div>
       {mode === "reports" ? (
@@ -110,9 +146,18 @@ function V4Reports({ baseUrl }) {
               )}
               {list !== null && otherReports.map(renderReportItem)}
             </aside>
+            {toc.length > 0 && (
+              <nav className="v4-reports-toc" aria-label="리포트 목차">
+                <div className="v6-report-group mono">목차 · {toc.length}</div>
+                {toc.map(t => (
+                  <button key={t.id} className={"v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : "")}
+                          onClick={() => setAnchor(t.id)} title={t.txt}>{t.txt}</button>
+                ))}
+              </nav>
+            )}
             <div className="v4-reports-view">
               {viewUrl ? (
-                <iframe key={viewUrl} className="v4-reports-frame" src={viewUrl} sandbox="" referrerPolicy="no-referrer" title={"리포트: " + sel} loading="lazy" />
+                <iframe key={frameSrc} className="v4-reports-frame" src={frameSrc} sandbox="" referrerPolicy="no-referrer" title={"리포트: " + sel} loading="lazy" />
               ) : (
                 <div className="v4-reports-empty mono">리포트를 선택하세요</div>
               )}
