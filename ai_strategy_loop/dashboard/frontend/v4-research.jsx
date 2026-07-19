@@ -65,33 +65,21 @@ function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen =
   );
 }
 
-// 온보딩(V2 IdleState 의 Welcome·루프 개요 이식) — idle + 세대 없음일 때만 노출.
+// 온보딩(V6.7 전수검사: 6스텝 목록 제거 — 사이클 다이어그램·스테이지 탭이 같은 루프를
+//   이미 안내하므로 중복. 컴팩트 CTA 카드로 축소) — idle + 세대 없음일 때만 노출.
 function _V4Onboarding({ onOpenSettings }) {
-  const steps = [
-    ["조건식 만들기", "LLM이 이전 실패 원인과 좋은 예시를 참고해 매수/매도 규칙을 작성합니다."],
-    ["과거 데이터로 검증", "백테스트 엔진이 지정 기간의 종목 데이터를 돌려 손익·낙폭·거래 빈도를 계산합니다."],
-    ["점수 계산", "수익, 위험(MDD), 우상향, 일평균 거래, 손익비를 목표 공식에 맞춰 점수화합니다."],
-    ["통과 기준 확인", "목표 적합도, MDD 상한, 일평균 거래 하한을 만족하는지 확인합니다."],
-    ["실패 원인 요약", "왜 떨어졌는지 쉬운 말로 정리해 다음 세대 프롬프트에 넣습니다."],
-    ["다시 개선", "이름 붙은 run·세대·백테스트 결과를 저장해 나중에 다시 찾을 수 있게 합니다."],
-  ];
   return (
-    <div className="panel v4-onboarding">
+    <div className="panel v4-onboarding v6-onboarding-compact">
       <div className="panel-bd v4-onboarding-bd">
         <div>
           <h2>조건식 AI 루프를 시작할 준비가 되었습니다</h2>
           <p>
-            AI가 한국 주식 매수/매도 전략을 자동 생성·백테스트·채점·부검하며 조건식을 진화시킵니다.
-            각 세대의 부검이 다음 세대 생성기에 피드백됩니다. 우승 후보의 운영 export 는
-            연구 확인과 분리된 human 승인 절차입니다.
+            AI가 매수/매도 전략을 자동 생성·백테스트·채점·부검하며 조건식을 진화시킵니다.
+            과정은 위 사이클 다이어그램과 아래 단계 탭(생성→백테스트→채점→부검→반복)이 실시간 안내합니다.
+            우승 후보의 운영 export 는 연구 확인과 분리된 human 승인 절차입니다.
           </p>
           <button className="btn primary lg" onClick={onOpenSettings}>▸ 조건식 AI 시작 설정 열기</button>
         </div>
-        <ol className="v4-onboarding-steps">
-          {steps.map(([k, d], i) => (
-            <li key={k}><b>{i + 1}. {k}</b><span>{d}</span></li>
-          ))}
-        </ol>
       </div>
     </div>
   );
@@ -326,7 +314,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         </div>
       )}
 
-      {/* ===== 핵심 그래프 밴드 — 여러 과정 동시 노출(3440: 4열) ===== */}
+      {/* ===== 핵심 그래프 밴드 — 여러 과정 동시 노출(3440: 4열).
+           V6.7 전수검사: 데이터 없는 idle 에선 빈 차트 4개가 자리만 차지 → hasData 시에만 렌더. ===== */}
+      {hasData && (
       <div className="v6-graphs">
         <div className="panel">
           <div className="panel-hd">
@@ -350,6 +340,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         <ProfitChart state={s} targetPct={0} />
         <QualityTrendChart state={s} />
       </div>
+      )}
 
       {/* ===== 프로세스 스테이지 탭 — 라이브 자동전환·pin ===== */}
       <div className="v6-stage-tabs" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
