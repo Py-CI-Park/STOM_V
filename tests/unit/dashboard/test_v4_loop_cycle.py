@@ -52,18 +52,18 @@ def test_v4_loop_cycle_reuses_five_step_phase_mapping_convention() -> None:
     assert "_loopCycleFallbackStep" in source
 
 
-def test_v4_research_places_loop_cycle_in_observability_rail() -> None:
-    # Given: the V4 Research Live tab source.
+def test_v4_research_places_loop_cycle_in_status_board() -> None:
+    # Given: the V6.0 V4 Research Live tab source (stage-driven redesign).
     source = _read(FRONTEND / "v4-research.jsx")
 
     # When/Then: it imports the loop-cycle component and renders it inside the
-    # observability rail (aside), alongside CurrentGenPanel.
+    # unified status board (v6-board-cycle), while CurrentGenPanel lives in the
+    # generate stage panel. Invariant preserved: both are wired in Live.
     assert 'import { V4LoopCycle } from "./v4-loop-cycle.jsx";' in source
-    aside_start = source.index('<aside className="v4-side-col">')
-    aside_end = source.index("</aside>", aside_start)
-    aside_body = source[aside_start:aside_end]
-    assert "<CurrentGenPanel state={s} />" in aside_body
-    assert "<V4LoopCycle state={s} />" in aside_body
+    board_start = source.index('className="v6-board-cycle"')
+    board_end = source.index("</div>", board_start)
+    assert "<V4LoopCycle state={s} />" in source[board_start:board_end]
+    assert "<CurrentGenPanel state={s} />" in source
 
 
 def test_v4_css_declares_loop_cycle_pulse_animation_with_reduced_motion_guard() -> None:

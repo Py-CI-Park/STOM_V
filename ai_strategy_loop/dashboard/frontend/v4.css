@@ -590,3 +590,54 @@
 .v4-eg-chip.run { color: #0c1014; background: var(--teal); }
 .v4-eg-chip.idle { color: var(--ink-2); background: var(--line); }
 .v4-eg-v { font-size: 12.5px; color: var(--ink-1); }
+
+/* ===== V6.0 Live 스테이지 구동 재설계 ===== */
+/* 통합 상황판 */
+.v6-board { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 8px 0; }
+.v6-board > .panel-hd-title { font-size: 16px; margin-bottom: 8px; }
+.v6-board-top { display: grid; grid-template-columns: 1fr 380px 340px; gap: 16px; align-items: start; }
+.v6-board-timeline { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.v6-board-cycle { min-width: 0; }
+.v6-board-cycle .panel { margin: 0; }
+.v6-board-kpi .v4-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 2000px) { .v6-board-top { grid-template-columns: 1fr 340px; } .v6-board-kpi { grid-column: 1 / -1; } }
+/* 단계시간 미니바 · 차단 배지 · 로그 (글자블록 L2 대체) */
+.v6-board-strip { display: grid; grid-template-columns: minmax(280px, 1.2fr) minmax(240px, 1fr) minmax(240px, 1.4fr); gap: 16px; margin-top: 10px; align-items: start; }
+@media (max-width: 1500px) { .v6-board-strip { grid-template-columns: 1fr; } }
+.v6-timing { display: flex; flex-direction: column; gap: 3px; }
+.v6-timing-item { display: grid; grid-template-columns: 84px 1fr 52px; gap: 8px; align-items: center; }
+.v6-timing-item .k { font-size: 11px; color: var(--ink-3); }
+.v6-timing-item .bar { height: 8px; background: var(--bg-1); border-radius: 4px; overflow: hidden; }
+.v6-timing-item .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--violet)); border-radius: 4px; }
+.v6-timing-item .v { font-size: 11px; color: var(--ink-2); text-align: right; }
+.v6-blockers { display: flex; flex-wrap: wrap; gap: 6px; align-content: start; }
+.v6-log summary { cursor: pointer; font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; list-style: none; }
+.v6-log summary::before { content: "▸ "; color: var(--ink-3); }
+.v6-log[open] summary::before { content: "▾ "; }
+.v6-log-list { margin-top: 6px; padding: 8px 10px; background: var(--bg-1); border-radius: 8px; font-size: 11.5px; line-height: 1.5; max-height: 160px; overflow: auto; }
+.v6-dim { color: var(--ink-3); font-size: 12px; }
+/* 핵심 그래프 밴드 — 3440: 4열 동시 노출, 그래프 과대 금지 */
+.v6-graphs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 10px 0; }
+@media (min-width: 2400px) { .v6-graphs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.v6-graphs .panel { margin: 0; min-width: 0; }
+.v6-graphs .v6-hero-compact { height: 220px; max-height: 220px; }
+.v6-graphs canvas { max-height: 240px; }
+/* 스테이지 탭 */
+.v6-stage-tabs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0 10px; }
+.v6-stage-tab { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 18px; min-width: 150px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; color: var(--ink-2); cursor: pointer; text-align: left; }
+.v6-stage-tab b { font-size: 15px; color: var(--ink-1); }
+.v6-stage-tab span { font-size: 11.5px; color: var(--ink-3); }
+.v6-stage-tab.active { border-color: rgba(76,214,179,.55); background: rgba(76,214,179,.08); }
+.v6-stage-tab.active b { color: var(--teal); }
+.v6-stage-tab.live { border-color: rgba(165,148,255,.55); }
+.v6-live-dot { position: absolute; top: 8px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--violet); animation: v6StagePulse 1.2s ease-in-out infinite; }
+@keyframes v6StagePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(165,148,255,.6); } 50% { box-shadow: 0 0 0 6px rgba(165,148,255,0); } }
+@media (prefers-reduced-motion: reduce) { .v6-live-dot { animation: none; } }
+/* 스테이지 패널 — 단일 포커스, 내부 2열 그리드 */
+.v6-stage-panel { min-height: 200px; }
+.v6-stage-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 1500px) { .v6-stage-grid { grid-template-columns: 1fr; } }
+.v6-stage-grid > .panel, .v6-stage-grid > section, .v6-stage-grid > details { margin: 0; min-width: 0; }
+.v6-stage-lab { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+/* G4: 레일 탭 타이포 확대 */
+.v4-rail-item .v4-ri-label { font-size: 12.5px; letter-spacing: .02em; }
