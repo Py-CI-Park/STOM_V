@@ -25483,6 +25483,22 @@ def signal_sell(pos, bar, ind):
       const sell = spec.sell || result.sell || "\u2014";
       const period = spec.start && spec.end ? `${spec.start}~${spec.end}` : result.period || "\u2014";
       return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")));
+    })(), (() => {
+      const pf = Number(metricVal("total_profit_pct"));
+      const md = Number(metricVal("mdd_pct"));
+      const wr = Number(metricVal("win_rate"));
+      const tc = Number(metricVal("trade_count"));
+      const known = Number.isFinite(pf) || Number.isFinite(md) || Number.isFinite(wr) || Number.isFinite(tc);
+      if (!known) return null;
+      const flags = [];
+      if (Number.isFinite(pf)) flags.push({ ok: pf > 0, label: `\uC218\uC775 ${pf > 0 ? "+" : ""}${pf.toFixed(2)}%` });
+      if (Number.isFinite(md)) flags.push({ ok: Math.abs(md) <= 15, label: `MDD ${Math.abs(md).toFixed(1)}%` });
+      if (Number.isFinite(wr)) flags.push({ ok: wr >= 50, label: `\uC2B9\uB960 ${wr.toFixed(1)}%` });
+      if (Number.isFinite(tc)) flags.push({ ok: tc >= 10, label: `\uAC70\uB798 ${tc}\uAC74` });
+      const okN = flags.filter((f) => f.ok).length;
+      const cls = okN === flags.length ? "good" : okN >= flags.length - 1 ? "warn" : "bad";
+      const word = cls === "good" ? "\uC591\uD638" : cls === "warn" ? "\uC8FC\uC758" : "\uBD80\uC801\uD569";
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-verdict-band " + cls, role: "note", "aria-label": "\uACB0\uACFC \uC885\uD569 \uD310\uC815(\uD45C\uBCF8 \uB0B4 advisory)" }, /* @__PURE__ */ React.createElement("b", { className: "bt-verdict-word" }, word), flags.map((f) => /* @__PURE__ */ React.createElement("span", { key: f.label, className: "v4-chip " + (f.ok ? "ok" : "warn") }, f.label)), /* @__PURE__ */ React.createElement("span", { className: "bt-verdict-note mono" }, "\uD45C\uBCF8 \uB0B4 \uC694\uC57D \xB7 \uC2B9\uACA9/\uC6B4\uC601 \uD310\uB2E8 \uC544\uB2D8(performance_proved=false)"));
     })(), range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
       "span",
       {

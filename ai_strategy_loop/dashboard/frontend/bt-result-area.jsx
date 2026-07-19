@@ -236,6 +236,32 @@ return (
         </div>
       );
     })()}
+    {/* V6.5(S6): 결과 종합 판정 배너 — 표본 내 요약 advisory. 승격/운영 판단 권한 없음. */}
+    {(() => {
+      const pf = Number(metricVal("total_profit_pct"));
+      const md = Number(metricVal("mdd_pct"));
+      const wr = Number(metricVal("win_rate"));
+      const tc = Number(metricVal("trade_count"));
+      const known = Number.isFinite(pf) || Number.isFinite(md) || Number.isFinite(wr) || Number.isFinite(tc);
+      if (!known) return null;
+      const flags = [];
+      if (Number.isFinite(pf)) flags.push({ ok: pf > 0, label: `수익 ${pf > 0 ? "+" : ""}${pf.toFixed(2)}%` });
+      if (Number.isFinite(md)) flags.push({ ok: Math.abs(md) <= 15, label: `MDD ${Math.abs(md).toFixed(1)}%` });
+      if (Number.isFinite(wr)) flags.push({ ok: wr >= 50, label: `승률 ${wr.toFixed(1)}%` });
+      if (Number.isFinite(tc)) flags.push({ ok: tc >= 10, label: `거래 ${tc}건` });
+      const okN = flags.filter(f => f.ok).length;
+      const cls = okN === flags.length ? "good" : okN >= flags.length - 1 ? "warn" : "bad";
+      const word = cls === "good" ? "양호" : cls === "warn" ? "주의" : "부적합";
+      return (
+        <div className={"bt-verdict-band " + cls} role="note" aria-label="결과 종합 판정(표본 내 advisory)">
+          <b className="bt-verdict-word">{word}</b>
+          {flags.map(f => (
+            <span key={f.label} className={"v4-chip " + (f.ok ? "ok" : "warn")}>{f.label}</span>
+          ))}
+          <span className="bt-verdict-note mono">표본 내 요약 · 승격/운영 판단 아님(performance_proved=false)</span>
+        </div>
+      );
+    })()}
     {/* 구간 분석 상태 배너 */}
     {range && (
       <div className="bt-range-bar">
