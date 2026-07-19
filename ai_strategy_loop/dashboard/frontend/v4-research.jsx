@@ -40,7 +40,7 @@ function _v4ApprovalBindingProblem(binding, state) {
 }
 
 // 접이식 섹션(app.jsx _EvoSection 패턴 — styles.css .evo-group 재사용, V4 전용 storage key)
-function _V4Fold({ storageKey, label, children, defaultOpen = true }) {
+function _V4Fold({ storageKey, label, children, defaultOpen = false }) {
   const [open, setOpen] = useState_v4r(() => {
     try { const v = window.localStorage.getItem(storageKey); return v === null ? defaultOpen : v === "1"; }
     catch (e) { return defaultOpen; }
@@ -241,33 +241,32 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <div className="v4-rlive">
         {/* ===== HERO 컬럼 ===== */}
         <div className="v4-hero-col">
-          <div className="panel">
-            <div className="panel-hd">
-              <div className="panel-hd-title"><span className="dot"></span>Fitness 곡선 · graded score</div>
-              <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
-                best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
-                {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
-                {" · gen "}{s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : "시작 전"}
-              </span>
-            </div>
-            <div className="v4-hero-primary">
-              <V4HeroChart state={s} target={targetScore} />
-            </div>
-            <div className="v4-canvas-legend">
-              <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>graded fitness</span>
-              <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>gate {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
-              <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
-              <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
-            </div>
-          </div>
-
+          {/* V5.0 Live 밀도: KPI 바 상단 + 핵심 그래프 2×2 그리드(세로 스택 해체) */}
           <_V4Stats state={s} />
-
-          <div className="v4-two">
+          <div className="v5-live-grid">
+            <div className="panel">
+              <div className="panel-hd">
+                <div className="panel-hd-title"><span className="dot"></span>Fitness 곡선 · graded score</div>
+                <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+                  best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
+                  {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
+                  {" · gen "}{s.current_gen != null && Number.isFinite(Number(s.current_gen)) && Number(s.current_gen) >= 0 ? Number(s.current_gen) : "시작 전"}
+                </span>
+              </div>
+              <div className="v4-hero-primary">
+                <V4HeroChart state={s} target={targetScore} />
+              </div>
+              <div className="v4-canvas-legend">
+                <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>graded fitness</span>
+                <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>gate {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
+                <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
+                <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
+              </div>
+            </div>
+            <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
             <ProfitChart state={s} targetPct={0} />
             <QualityTrendChart state={s} />
           </div>
-          <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
           <EnginePanel state={s} wsStatus={wsStatus} />
 
           <_V4Fold storageKey="stom_v4_live_detail" label="Live 상세 · 단계 스트리밍">
