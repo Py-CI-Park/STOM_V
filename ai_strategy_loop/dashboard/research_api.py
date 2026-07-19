@@ -161,8 +161,7 @@ def research_record_detail(campaign: str = ""):
 
 @router.get("/research_index")
 def research_index_route():
-    return research_index.list_research_index()
-
+    return research_index.serialize_research_index_response(research_index.list_research_index())
 
 @router.get("/research_index/detail")
 def research_index_detail(id: str = ""):
