@@ -20,7 +20,6 @@ import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
 import { V4History } from "./v4-history.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
-import { V4Alpha } from "./v4-alpha.jsx";
 import { V4Reports } from "./v4-reports.jsx";
 import { V4Catalog } from "./v4-catalog.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
@@ -37,8 +36,7 @@ const V4_TABS = [
   { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
-  { key: "alpha", label: "Alpha", full: "Alpha Lab", badge: "ALPHA", hint: "알파 연구 랩 · 사전등록·원장·퍼널 (임시 관찰·비-P4, 보조)", group: "secondary" },
-  { key: "catalog", label: "카탈로그", full: "연구 카탈로그 (P4 · 비정본 prototype)", badge: "P4·시제", hint: "research_assets.db 판정카드·자산 · 비정본 preview · 읽기 전용(SELECT-only)", group: "secondary" },
+  { key: "catalog", label: "연구 자산", full: "연구 자산 (P4 비정본 preview prototype + 진행 관찰)", badge: "자산", hint: "연혁실·함정지도·절실험실·출구은행·진행 관찰(구 Alpha)·B1 — 읽기 전용 · 비정본 preview", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -55,9 +53,8 @@ const V4_PATH_TAB_MAP = {
   "process": "research",
 };
 
-// V5.P0: 은퇴한 탭(audit·verdict)의 legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
-// V5.P0/V6.1: 은퇴한 탭(audit·verdict·lab)의 legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
-const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research" };
+// v5.3.1: 은퇴 탭(audit·verdict·lab·alpha) legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
+const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
 
 function v4TabFromPathname(pathname) {
   try {
@@ -419,10 +416,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
               ) : activeTab === "reports" ? (
                 <V4Reports baseUrl={baseUrl} />
-              ) : activeTab === "alpha" ? (
-                <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : activeTab === "catalog" ? (
-                <V4Catalog baseUrl={baseUrl} />
+                <V4Catalog baseUrl={baseUrl} wsStatus={wsStatus} />
               ) : (
                 <div className="v4-placeholder"><p className="mono">알 수 없는 뷰</p></div>
                 )}
