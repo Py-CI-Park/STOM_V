@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from pathlib import Path
 
@@ -39,6 +40,12 @@ def _make_db(path: Path) -> None:
         conn.execute(f"CREATE TABLE {table} (x INTEGER)")
     conn.commit()
     conn.close()
+    # V5.7: 카운트는 서버 COUNT 가 아닌 빌드 영수증(provenance)에서 온다 — 합성 영수증 생성.
+    receipt = path.parent / "research_assets_build_receipt.json"
+    receipt.write_text(json.dumps({
+        "table_counts": {"assets": 1, "judgments": 2, "clauses": 0, "strategies": 0, "cells": 0, "ledger_mirror": 0},
+        "generated_at": "2026-07-19T00:00:00Z",
+    }), encoding="utf-8")
 
 
 def _client(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> TestClient:
@@ -55,8 +62,10 @@ def test_catalog_summary_and_assets_when_db_present(monkeypatch, tmp_path: Path)
 
     summary = client.get("/research/summary").json()
     assert summary["available"] is True
+    assert summary["authoritative"] is False
     assert summary["counts"]["assets"] == 1
     assert summary["counts"]["judgments"] == 2
+    assert summary["generated_at"] == "2026-07-19T00:00:00Z"
 
     assets = client.get("/research/assets").json()
     assert assets["available"] is True and assets["count"] == 1
