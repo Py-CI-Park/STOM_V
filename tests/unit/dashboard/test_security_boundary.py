@@ -102,6 +102,7 @@ def test_top_level_v4_navigation_without_origin_issues_session_cookie(
         "/ui/",
         "/ui/evolution",
         "/ui/evolution/records",
+        "/ui/evolution/catalog",
         "/ui/backtest",
         "/ui/chart-replay",
     ],
