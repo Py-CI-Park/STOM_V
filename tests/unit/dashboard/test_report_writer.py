@@ -107,3 +107,31 @@ def test_specs_from_loop_runs_builds_standard_specs(tmp_path: Path) -> None:
     from ai_strategy_loop.dashboard.report_writer import render_report_html
     html = render_report_html(s2)
     assert "<script" not in html and "runA" in html
+
+def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
+    # v5.3.3(U4): run 종합 보고서 — 개선 흐름도 SVG + 세대 블록 + 무script + 안전 문구.
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import build_run_report
+
+    db = tmp_path / "loop_runs.db"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT, status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL)")
+    conn.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, calmar REAL, uptrend_r2 REAL, gate_passed INTEGER, reason TEXT, csv_path TEXT, trade_count INTEGER, mdd REAL, profit REAL, strategy_gist TEXT, created_at REAL, PRIMARY KEY (run_id, gen_no))")
+    conn.execute("INSERT INTO runs VALUES ('runB', 1752900000, '{}', 'done', 3, 1.7, 1752903600)")
+    for gen, score, gate in [(1, 0.6, 0), (2, 1.1, 0), (3, 1.7, 1)]:
+        conn.execute("INSERT INTO generations (run_id, gen_no, buy_name, sell_name, status, score, gate_passed, reason, trade_count, mdd, profit, strategy_gist, created_at) "
+                     "VALUES ('runB', ?, 'b', 's', 'done', ?, ?, 'r', 5, 10.0, 1000, 'g', 1752900100)", (gen, score, gate))
+    conn.commit()
+    conn.close()
+
+    written = build_run_report(str(db), str(tmp_path))
+    assert len(written) == 1 and written[0]["run_id"] == "runB"
+    html = (tmp_path / "run_report_runB.html").read_text(encoding="utf-8")
+    assert "<script" not in html  # 무script(CSP/sandbox 그대로 통과)
+    assert "<svg" in html and "<polyline" in html  # 개선 흐름도
+    assert html.count("<h3>세대") == 3  # 세대 블록 3개
+    assert "gate 통과 ✓" in html  # gen3 통과 마커
+    assert "performance_proved=false" in html  # 안전 문구
+    assert "/reports/view?path=generated_reports/runB__gen1.html" in html  # 스텝 리포트 링크
