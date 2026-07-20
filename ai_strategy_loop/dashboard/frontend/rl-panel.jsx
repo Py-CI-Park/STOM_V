@@ -280,8 +280,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   }, [onOpenWorkbench]);
   return (
     <div className="research-lab-shell">
-      <div className="research-section-filter" aria-label="연구실 섹션 필터">
-        {RESEARCH_TABS.map(item => (
+      <div className="research-section-filter" aria-label="연구실 보기 선택">
+        {/* v5.5 F4 — 매트릭스(전체 동시)가 기본. 칩 탭은 '개별 보기'에서만 노출. */}
+        {!viewAll && RESEARCH_TABS.map(item => (
           <button key={item.id}
                   type="button"
                   className={"research-filter-chip" + (tab === item.id ? " active" : "")}
@@ -293,9 +294,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
         <button type="button"
                 className={"research-filter-chip" + (viewAll ? " active" : "")}
                 aria-pressed={viewAll}
-                title="5개 분석(히트맵·중요도·상관·조합·검증)을 개별 그래프 그리드로 동시에 봅니다."
+                title={viewAll ? "개별 분석을 하나씩 크게 보는 모드로 전환" : "5개 분석을 매트릭스로 동시에 보는 기본 모드로 복귀"}
                 onClick={() => setViewAllPersist(!viewAll)}>
-          ▦ 한눈에 보기
+          {viewAll ? "개별 보기 전환" : "▦ 매트릭스 보기(기본)"}
         </button>
         {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
         <button type="button" className="research-filter-action"
