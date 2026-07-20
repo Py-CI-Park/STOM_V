@@ -103,7 +103,7 @@ function FitnessChart({ state, target = 1.0 }) {
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
-          적합도 추이 — Fitness Trajectory
+          적합도 추이
           <span data-tip="적합도(graded_score) = 수익·MDD·거래수 게이트를 통과한 정도를 0~100으로 등급화한 점수. 세대가 진행되며 점수가 우상향하면 진화가 작동 중이라는 뜻. 점선 = 지금까지의 최고점, 링 = 게이트 통과 세대."
                 style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
                          borderRadius: "50%", width: 15, height: 15, display: "inline-flex",
@@ -332,7 +332,7 @@ function ProfitChart({ state, targetPct = 0 }) {
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          수익 추이 — Profit Trajectory
+          수익 추이
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <LegendDot color="var(--amber)" label="수익률 %" />
@@ -532,7 +532,7 @@ function QualityTrendChart({ state }) {
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--violet)" }}></span>
-          품질지표 추이 — Quality Metrics
+          품질지표 추이
           <span data-tip="품질 = 수익 크기와 별개로 '전략이 얼마나 건강한가'를 보는 위험조정 지표 묶음(calmar·우상향 R²·MDD·일평균 거래·동시보유·손익비). 각 칩에 마우스를 올리면 지표별 설명이 나오고, 클릭하면 표시를 켜고 끕니다."
                 style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
                          borderRadius: "50%", width: 15, height: 15, display: "inline-flex",

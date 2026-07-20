@@ -107,6 +107,14 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
 
 function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   const [tab, setTab] = useState_rl("edge");
+  // v5.4 L5 — 한눈에 보기: 5개 분석 섹션을 그리드로 동시 표시(개별 그래프 한눈에).
+  const [viewAll, setViewAll] = useState_rl(() => {
+    try { return window.localStorage.getItem("stom_v54_lab_all") !== "0"; } catch (e) { return true; }
+  });
+  const setViewAllPersist = (v) => {
+    setViewAll(v);
+    try { window.localStorage.setItem("stom_v54_lab_all", v ? "1" : "0"); } catch (e) {}
+  };
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
   const [opsError, setOpsError] = useState_rl(null);
 
@@ -136,7 +144,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
-  const needsCorrelation = tab === "correlation" || tab === "combos";
+  const needsCorrelation = viewAll || tab === "correlation" || tab === "combos";
 
   const refreshCorrelation = useCallback_rl(() => {
     if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
@@ -213,6 +221,45 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
       </div>
     );
   }
+  // v5.4 L5 — 한눈에(전체) 그리드: 각 분석을 개별 블록으로 병렬 표시(탭 선택보다 우선).
+  if (viewAll) {
+    const corrReady = !isDemo && runId && !err && data;
+    body = (
+      <div className="v54-lab-all">
+        <section className="v54-lab-cell wide">
+          <h4 className="stom-section-label">탐색 히트맵 · Edge Ratio</h4>
+          <EdgeRatioPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+        </section>
+        <section className="v54-lab-cell">
+          <h4 className="stom-section-label">변수 중요도</h4>
+          <FeatureImportancePanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+        </section>
+        <section className="v54-lab-cell">
+          <h4 className="stom-section-label">상관관계</h4>
+          {corrReady
+            ? (<div><_CorrelationHeatmap rows={matrixRows.length ? matrixRows : outcomeRows} />
+                 <_RecencyResearchBadge recency={recencyResearch} /></div>)
+            : <_ResearchEmptyState message={err ? ("응답을 받지 못했습니다: " + err) : "상관 분석 데이터 대기(run 컨텍스트 필요)"} />}
+        </section>
+        <section className="v54-lab-cell">
+          <h4 className="stom-section-label">변수 조합 후보</h4>
+          {corrReady && pairRows.length
+            ? <_CombinationList rows={pairRows} />
+            : <_ResearchEmptyState message="변수 조합 후보 대기" />}
+        </section>
+        <section className="v54-lab-cell">
+          <h4 className="stom-section-label">구간 요약</h4>
+          {corrReady
+            ? (<div><_RangeSummaryList rows={rangeRows} /><_SegmentSummaryList summary={segmentSummary} axis={axis} /></div>)
+            : <_ResearchEmptyState message="구간 요약 데이터 대기" />}
+        </section>
+        <section className="v54-lab-cell">
+          <h4 className="stom-section-label">검증 · 안정성</h4>
+          <_ValidationPanel baseUrl={baseUrl} runId={runId} isDemo={isDemo} />
+        </section>
+      </div>
+    );
+  }
 
   const activeOps = !opsError && opsStrip ? (opsStrip.active || []) : [];
   const recentOps = !opsError && opsStrip ? (opsStrip.recent || []) : [];
@@ -239,10 +286,17 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
                   type="button"
                   className={"research-filter-chip" + (tab === item.id ? " active" : "")}
                   aria-pressed={tab === item.id}
-                  onClick={() => setTab(item.id)}>
+                  onClick={() => { setViewAllPersist(false); setTab(item.id); }}>
             {item.label}
           </button>
         ))}
+        <button type="button"
+                className={"research-filter-chip" + (viewAll ? " active" : "")}
+                aria-pressed={viewAll}
+                title="5개 분석(히트맵·중요도·상관·조합·검증)을 개별 그래프 그리드로 동시에 봅니다."
+                onClick={() => setViewAllPersist(!viewAll)}>
+          ▦ 한눈에 보기
+        </button>
         {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
         <button type="button" className="research-filter-action"
                 title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
