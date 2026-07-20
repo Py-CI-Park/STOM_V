@@ -36,6 +36,11 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot"></span>세대 이력 — Generations
+          {/* v5.6.1 — 연구 타이틀(어느 run 의 이력인지) 명시 */}
+          {state.run_id && (
+            <span className="mono tag-slim" style={{ marginLeft: 8, fontSize: 10.5, color: "var(--violet)" }}
+                  title="이 세대 이력이 속한 연구 run">{state.run_id}</span>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
@@ -162,7 +167,9 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                       title="기회 반납률 — MFE 도달 후 손실 전환 비율. 낮을수록 우수">
                     {typeof g.give_back_rate === "number" ? (g.give_back_rate * 100).toFixed(1) + "%" : "—"}
                   </td>
-                  <td className={`mono ${mddBad ? "num-neg" : ""}`}>{fmtPct(g.mdd)}</td>
+                  <td className={`mono ${typeof g.mdd !== "number" ? "num-muted" : "num-neg"}`}
+                      style={mddBad ? { fontWeight: 700 } : undefined}
+                      title={mddBad ? `MDD 상한(${mddCap}%) 초과` : "최대 낙폭"}>{fmtPct(g.mdd)}</td>
                   <td className={`mono ${typeof g.total_profit_pct !== "number" ? "num-muted" : g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>
                     {typeof g.total_profit_pct === "number" ? fmtPct(g.total_profit_pct) : "—"}
                   </td>

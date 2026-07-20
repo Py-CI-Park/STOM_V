@@ -432,11 +432,38 @@ function MetaPanel({ state, wsStatus }) {
       </div>
       <div className="panel-bd">
         {!meta || meta.status !== "ok" ? (
-          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
-            {isDemo
-              ? "데모 모드 — 메타분석은 라이브 실행에서 누적 발행됩니다."
-              : "실시간 데이터 대기 — run 종료 시 누적 메타 인사이트가 발행됩니다."}
-          </div>
+          // v5.6.1 — 폴백: 메타 미발행 시 세대 데이터에서 누적 학습 요약을 파생(빈 화면 금지).
+          (() => {
+            const gens = (Array.isArray(state.generations) ? state.generations : []).filter(g => g.gen_no >= 0);
+            if (!gens.length) {
+              return (
+                <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+                  {isDemo ? "데모 모드 — 메타분석은 라이브 실행에서 누적 발행됩니다." : "세대 데이터 대기 — run 진행 시 누적 학습 요약이 표시됩니다."}
+                </div>
+              );
+            }
+            const scores = gens.map(g => Number(g.graded_score)).filter(Number.isFinite);
+            const passN = gens.filter(g => g.gate_passed).length;
+            const first = scores.length ? scores[0] : null;
+            const bestS = scores.length ? Math.max(...scores) : null;
+            const rows = [
+              ["누적 세대", String(gens.length)],
+              ["게이트 통과율", `${passN}/${gens.length} (${gens.length ? Math.round(passN / gens.length * 100) : 0}%)`],
+              ["평균 score", scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : "—"],
+              ["score 개선(첫→최고)", first != null && bestS != null ? `${first.toFixed(2)} → ${bestS.toFixed(2)}` : "—"],
+              ["최근 5세대 평균", scores.length ? (scores.slice(-5).reduce((a, b) => a + b, 0) / Math.min(5, scores.length)).toFixed(2) : "—"],
+            ];
+            return (
+              <div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 }}>메타 발행 전 — 세대 누적 요약(파생)</div>
+                {rows.map(([k, v]) => (
+                  <div key={k} className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, padding: "4px 0", borderBottom: "1px solid var(--line-1)" }}>
+                    <span style={{ color: "var(--ink-2)" }}>{k}</span><b style={{ color: "var(--ink-0)" }}>{v}</b>
+                  </div>
+                ))}
+              </div>
+            );
+          })()
         ) : (
           <div>
             {commonVars.length > 0 && (

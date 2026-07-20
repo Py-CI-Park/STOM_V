@@ -557,6 +557,20 @@ function QualityTrendChart({ state }) {
         </div>
       </div>
       <div className="panel-bd">
+        {/* v5.6.1 — 테마 통일: 수익 추이처럼 최신 수치를 상단에 숫자로 명시 */}
+        {okGens.length > 0 && (() => {
+          const last = okGens[okGens.length - 1];
+          return (
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 6, fontFamily: "var(--mono)", fontSize: 11.5 }}>
+              <span style={{ color: "var(--ink-3)" }}>최신 gen_{String(last.gen_no).padStart(2, "0")}</span>
+              {_QUALITY_METRICS.map(m => (
+                <span key={m.key} style={{ color: enabled[m.key] ? m.color : "var(--ink-3)" }}>
+                  {m.label} <b style={{ color: "var(--ink-0)" }}>{typeof last[m.key] === "number" ? Number(last[m.key]).toFixed(2) : "—"}</b>
+                </span>
+              ))}
+            </div>
+          );
+        })()}
         <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 }}>
           각 지표는 자기 범위로 정규화한 '추세 모양' — 실제값은 hover 참조. 보고서 목표: 일평균10~23·동시보유6~12·MDD&lt;7%·손익비&gt;1.25
         </div>
