@@ -481,8 +481,13 @@
 /* ── UXR-P7 Reports 뷰어(sandbox iframe) ── */
 .v4-reports { display: flex; flex-direction: column; gap: 10px; min-width: 0; height: calc(100vh - 190px); }
 .v4-reports-safe { font-size: 10.5px; color: var(--ink-3); }
-.v4-reports-body { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; flex: 1; min-height: 0; }
-@media (max-width: 900px) { .v4-reports-body { grid-template-columns: 1fr; } }
+/* v5.4 R1 — 배치 깨짐 근본수정: 2열 grid 에 TOC(3번째 자식)가 끼며 뷰어가 260px 열로
+   떨어지던 회귀. 자식 수와 무관한 flex 3열(목록 | 목차 | 뷰어)로 교정. */
+.v4-reports-body { display: flex; gap: 12px; flex: 1; min-height: 0; align-items: stretch; }
+.v4-reports-body > .v4-reports-list { flex: 0 0 260px; min-height: 0; }
+.v4-reports-body > .v4-reports-toc { flex: 0 0 240px; min-height: 0; }
+.v4-reports-body > .v4-reports-view, .v4-reports-body > .v4-wiki-view { flex: 1 1 auto; min-width: 0; min-height: 0; }
+@media (max-width: 900px) { .v4-reports-body { flex-direction: column; } .v4-reports-body > .v4-reports-list, .v4-reports-body > .v4-reports-toc { flex: 0 0 auto; } }
 .v4-reports-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; border: 1px solid var(--line-1); border-radius: 10px; padding: 8px; background: var(--bg-1); }
 .v4-reports-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ink-1); cursor: pointer; }
 .v4-reports-item:hover { background: var(--bg-2); }
@@ -760,3 +765,65 @@
 .v4-toc-item.lvl3 { padding-left: 22px; font-size: 11.5px; color: var(--ink-3); }
 .v4-toc-item:hover { color: var(--teal); }
 .v4-toc-item.active { color: var(--teal); background: rgba(76,214,179,.08); }
+
+/* ===== v5.4 L1 — 그래프 밴드 상황판 내부 통합 · 제목 라인 정렬 ===== */
+.v6-board .v6-graphs { margin: 10px 0 2px; }
+.v6-graphs .panel-hd { min-height: 34px; align-items: center; }
+.v6-graphs .panel-hd-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ===== v5.4 L2 — 스테이지 그리드 열 수 선택 ===== */
+.v6-cols-pick { display: inline-flex; gap: 4px; align-items: center; margin-left: auto; }
+.v6-cols-pick .lbl { font-size: 11px; color: var(--ink-3); }
+.v6-cols-pick .btn.on { border-color: var(--teal); color: var(--teal); font-weight: 700; }
+.v6-stage-panel.cols-4 .v6-stage-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 2200px) { .v6-stage-panel.cols-4 .v6-stage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1500px) { .v6-stage-panel .v6-stage-grid { grid-template-columns: 1fr; } }
+
+/* ===== v5.4 L3 — 매수/매도 조건식 대형 카드 · 분리 코드 ===== */
+.v54-cond-names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.v54-cond-name { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--bg-1); display: flex; flex-direction: column; gap: 4px; }
+.v54-cond-name .k { font-size: 11px; letter-spacing: .08em; color: var(--ink-3); }
+.v54-cond-name b { font-size: 19px; line-height: 1.25; word-break: break-all; }
+.v54-cond-name.buy { border-left: 3px solid var(--teal); }
+.v54-cond-name.buy b { color: var(--teal); }
+.v54-cond-name.sell { border-left: 3px solid #e05561; }
+.v54-cond-name.sell b { color: #e05561; }
+.v54-cond-codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.v54-cond-code .cap { font-size: 11.5px; font-weight: 700; margin-bottom: 4px; }
+.v54-cond-code.buy .cap { color: var(--teal); }
+.v54-cond-code.sell .cap { color: #e05561; }
+.v54-cond-code .code-block { max-height: 240px; overflow: auto; margin: 0; font-size: 12.5px; line-height: 1.55; }
+@media (max-width: 1500px) { .v54-cond-codes, .v54-cond-names { grid-template-columns: 1fr; } }
+/* v5.4 L3 — 거버넌스 핵심 확대 + 상세 폴드 */
+.v54-gov-fold { margin-top: 10px; }
+.condition-discovery-score-row .condition-score-card b { font-size: 22px; }
+.condition-discovery-hero b { font-size: 16px; }
+
+/* ===== v5.4 L4/L5 — 스테이지 행 균등 · 전폭 섹션 · 연구실 한눈에 그리드 ===== */
+.v6-stage-grid { align-items: stretch; }
+.v6-stage-grid > .v54-span-all { grid-column: 1 / -1; }
+.v6-engine-xl .panel { height: 100%; }
+.v54-lab-all { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+@media (min-width: 2400px) { .v54-lab-all { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.v54-lab-cell { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg-1); min-width: 0; overflow: auto; }
+.v54-lab-cell.wide { grid-column: span 2; }
+@media (max-width: 1500px) { .v54-lab-all { grid-template-columns: 1fr; } .v54-lab-cell.wide { grid-column: auto; } }
+
+/* ===== v5.4 B1 — BT 결과 4열 그리드 + 퀀트 인사이트 패널 ===== */
+@media (min-width: 3000px) {
+  .bt-result-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .bt-result-flow > .v54-quant { grid-column: span 2; }
+}
+.v54-quant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1500px) { .v54-quant-grid { grid-template-columns: 1fr; } }
+.v54-quant-grid section { min-width: 0; border: 1px solid var(--line-1); border-radius: 8px; padding: 8px 10px; }
+.v54-beta-row { display: grid; grid-template-columns: 110px 1fr 130px; gap: 8px; align-items: center; padding: 3px 0; }
+.v54-beta-row .k { font-size: 12px; color: var(--ink-2); }
+.v54-beta-row .bar { height: 12px; background: var(--bg-2); border-radius: 6px; overflow: hidden; display: block; }
+.v54-beta-row .bar i { display: block; height: 100%; border-radius: 6px; }
+.v54-beta-row .bar i.pos { background: var(--teal); }
+.v54-beta-row .bar i.neg { background: #e05561; }
+.v54-beta-row .v { font-size: 12px; text-align: right; }
+.v54-quant-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.55; margin: 6px 0 0; }
+
+/* v5.4 R2 — 결과 리포트 그룹(자동 생성) 강조 구분 */
+.v6-report-group.run { color: var(--teal); border-color: rgba(76,214,179,.35); background: rgba(76,214,179,.07); }

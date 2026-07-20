@@ -114,6 +114,69 @@ def _flow_svg(gens: list) -> str:
     )
 
 
+def _viz_section(gens: list) -> str:
+    """v5.4 R2 — 표준 포맷 v2 성과 시각화: KPI 표 + score 바차트 + MDD×score 산점도(무script SVG)."""
+    scored = [g for g in gens if isinstance(g.get("score"), (int, float))]
+    if not scored:
+        return "<p>(시각화할 score 데이터 없음)</p>"
+    n = len(scored)
+    avg = lambda arr: (sum(arr) / len(arr)) if arr else 0.0
+    scores = [g["score"] for g in scored]
+    mdds = [g["mdd"] for g in scored if isinstance(g.get("mdd"), (int, float))]
+    trades = [g["trades"] for g in scored if isinstance(g.get("trades"), (int, float))]
+    profits = [g["profit"] for g in scored if isinstance(g.get("profit"), (int, float))]
+    gate_n = sum(1 for g in scored if g.get("gate_passed"))
+    kpi = (
+        '<table style="border-collapse:collapse;width:100%;margin:8px 0">'
+        "<tr>" + "".join(
+            f'<td style="border:1px solid #dde;padding:8px 12px;text-align:center"><div style="font-size:11px;color:#889">{k}</div>'
+            f'<div style="font-size:18px;font-weight:700">{v}</div></td>'
+            for k, v in [
+                ("세대", f"{n}"), ("gate 통과율", f"{gate_n}/{n} ({gate_n / n * 100:.0f}%)"),
+                ("평균 score", f"{avg(scores):.2f}"), ("최고 score", f"{max(scores):.2f}"),
+                ("평균 MDD", f"{avg(mdds):.1f}%" if mdds else "—"),
+                ("누적 profit", f"{sum(profits):,.0f}" if profits else "—"),
+                ("평균 거래", f"{avg(trades):.0f}건" if trades else "—"),
+            ]) + "</tr></table>")
+    # score 바차트
+    W, H, PAD = 760, 200, 34
+    bw = max(3.0, (W - 2 * PAD) / max(1, n) * 0.72)
+    smax = max(scores) or 1
+    bars = []
+    for i, g in enumerate(scored):
+        x = PAD + (W - 2 * PAD) * (i + 0.14) / max(1, n)
+        h = max(2.0, (g["score"] / smax) * (H - 2 * PAD))
+        color = "#4cd6b3" if g.get("gate_passed") else "#a9b4c6"
+        bars.append(f'<rect x="{x:.1f}" y="{H - PAD - h:.1f}" width="{bw:.1f}" height="{h:.1f}" fill="{color}">'
+                    f'<title>gen {g["gen_no"]} · score {g["score"]}</title></rect>')
+    bar_svg = (
+        f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="세대별 score 바차트" '
+        f'style="width:100%;max-width:{W}px;background:#f7f9fb;border:1px solid #dde;border-radius:8px">'
+        f'<text x="{PAD}" y="18" font-size="12" fill="#556">세대별 score (초록=gate 통과)</text>'
+        + "".join(bars) + "</svg>")
+    # MDD × score 산점도
+    pts_src = [g for g in scored if isinstance(g.get("mdd"), (int, float))]
+    scatter_svg = ""
+    if len(pts_src) >= 3:
+        mx0, mx1 = min(g["mdd"] for g in pts_src), max(g["mdd"] for g in pts_src)
+        sy0, sy1 = min(g["score"] for g in pts_src), max(g["score"] for g in pts_src)
+        if mx1 == mx0: mx1 = mx0 + 1
+        if sy1 == sy0: sy1 = sy0 + 1
+        px = lambda v: PAD + (v - mx0) / (mx1 - mx0) * (W - 2 * PAD)
+        py = lambda v: H - PAD - (v - sy0) / (sy1 - sy0) * (H - 2 * PAD)
+        dots = "".join(
+            f'<circle cx="{px(g["mdd"]):.1f}" cy="{py(g["score"]):.1f}" r="4.5" '
+            f'fill="{"#4cd6b3" if g.get("gate_passed") else "#8892a6"}" fill-opacity="0.8">'
+            f'<title>gen {g["gen_no"]} · MDD {g["mdd"]} · score {g["score"]}</title></circle>'
+            for g in pts_src)
+        scatter_svg = (
+            f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="MDD 대 score 산점도" '
+            f'style="width:100%;max-width:{W}px;background:#f7f9fb;border:1px solid #dde;border-radius:8px;margin-top:10px">'
+            f'<text x="{PAD}" y="18" font-size="12" fill="#556">위험(MDD, x) 대 성과(score, y) — 우상단일수록 저위험·고성과</text>'
+            + dots + "</svg>")
+    return kpi + bar_svg + scatter_svg
+
+
 def build_run_report(db_path: str, out_dir: str, run_id: str | None = None) -> list:
     """run 1개당 종합 HTML 1개(U4): 표지·개선 흐름도·세대별 스텝 블록·최종 후보·안전 문구.
     loop_runs.db SELECT-only · 오프라인 · 무script(인라인 SVG). 생성 파일 경로 리스트 반환."""
@@ -157,10 +220,11 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None) -> l
                 f"<dt>세대</dt><dd>{len(gens)}세대 · gate 통과 {gate_n}</dd>"
                 f"<dt>best</dt><dd>gen {_esc(best_gen)} · score {_esc(best_score)}</dd></dl>"
                 '<h2 id="sec-flow">1. 개선 흐름도</h2>' + _flow_svg(gens) +
-                '<h2 id="sec-gens">2. 세대별 스텝 기록 (생성→백테스트→채점→부검→반영)</h2>' + ("".join(blocks) or "<p>(세대 없음)</p>") +
-                '<h2 id="sec-safety">3. 안전·한계</h2><p>표본 내 지표 요약이며 성능 증명이 아닙니다(performance_proved=false). '
+                '<h2 id="sec-viz">2. 성과 시각화 (KPI · score 바차트 · 위험-성과 산점도)</h2>' + _viz_section(gens) +
+                '<h2 id="sec-gens">3. 세대별 스텝 기록 (생성→백테스트→채점→부검→반영)</h2>' + ("".join(blocks) or "<p>(세대 없음)</p>") +
+                '<h2 id="sec-safety">4. 안전·한계</h2><p>표본 내 지표 요약이며 성능 증명이 아닙니다(performance_proved=false). '
                 "우승 후보의 운영 export 는 human 승인 절차와 분리되어 있으며 이 보고서는 어떤 승격 권한도 없습니다.</p>"
-                f"<footer>생성 {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} · 원천 loop_runs.db(SELECT-only) · 읽기 전용(sandbox·CSP 서빙)</footer>"
+                f"<footer>생성 {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} · 포맷 run-comprehensive-v2 · 원천 loop_runs.db(SELECT-only) · 읽기 전용(sandbox·CSP 서빙)</footer>"
                 "</body></html>")
             fname = f"run_report_{rid}.html"
             full = os.path.join(out_dir, fname)

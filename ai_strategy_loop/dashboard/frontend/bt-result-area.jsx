@@ -23,6 +23,7 @@ import {
   BtOrderflowPanel, BtStatTestPanel, BtCompareView,
 } from "./bt-stat-panels.jsx";
 import { BtGuiParitySection } from "./bt-gui-parity.jsx";
+import { BtQuantPanel } from "./bt-quant.jsx";
 
 // ===========================================================================
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
@@ -332,6 +333,8 @@ return (
     <BtHeatmap heatmap={analysis.heatmap} />
     <BtUnderwaterChart underwater={analysis.underwater} />
     <BtMaeMfeScatter points={analysis.mae_mfe} />
+    {/* v5.4 B1 — 퀀트 인사이트(다차원 회귀·자기상관·보유시간 회귀·요일 구조) */}
+    <BtQuantPanel analysis={analysis} />
     <BtExitReasonPanel rows={analysis.exit_reasons} />
 
     {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
@@ -452,6 +455,7 @@ function _BtFullscreenAnalysis({
         <BtUnderwaterChart underwater={analysis.underwater} />
         <BtHeatmap heatmap={analysis.heatmap} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
+        <BtQuantPanel analysis={analysis} />
         <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
         <BtExitReasonPanel rows={analysis.exit_reasons} />
         <BtOrderflowPanel orderflow={orderflow} />

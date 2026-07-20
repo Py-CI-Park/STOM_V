@@ -19,7 +19,6 @@ import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
 import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
-import { ResearchHeatmapPanel } from "./research-pro.jsx";
 import { ResearchLabPanel } from "./research-lab.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
@@ -177,8 +176,38 @@ function _V6PipelineBelt({ liveStage, activeStage, onStagePin }) {
   );
 }
 
+// v5.4 L1 — 핵심 그래프 밴드(적합도·수익곡선·수익·품질) : 상황판 내부로 이동, 영어 제목 제거.
+function _V6GraphBand({ state, baseUrl, wsStatus, runId, targetScore }) {
+  const s = state || {};
+  return (
+    <div className="v6-graphs" aria-label="핵심 품질 지표 추이 4종">
+      <div className="panel">
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot"></span>적합도 · 채점 점수</div>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+            best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
+            {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
+          </span>
+        </div>
+        <div className="v4-hero-primary v6-hero-compact">
+          <V4HeroChart state={s} target={targetScore} />
+        </div>
+        <div className="v4-canvas-legend">
+          <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>채점 적합도</span>
+          <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>게이트 {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
+          <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
+          <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
+        </div>
+      </div>
+      <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+      <ProfitChart state={s} targetPct={0} />
+      <QualityTrendChart state={s} />
+    </div>
+  );
+}
+
 // v5.3.2 통합 상황판 — 벨트 + [프로세스/게이트 | 현재세대(N4 통합) | KPI] + 미니바/배지/로그.
-function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades }) {
+function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore, mddCap, minDailyTrades, baseUrl, wsStatus, runId, hasData }) {
   const s = state || {};
   const latest = s.latest || {};
   const discovery = (s.page_data && s.page_data.condition_discovery) || {};
@@ -238,6 +267,7 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
           <div className="v6-log-list mono">{logs.slice(-8).map((l, i) => <div key={i}>{String(l)}</div>)}</div>
         </details>
       </div>
+      {hasData && <_V6GraphBand state={s} baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} targetScore={targetScore} />}
       {errorText && <p className="v4-research-error" role="alert">연구 요청 실패 · {String(errorText)}</p>}
     </section>
   );
@@ -250,6 +280,15 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
   // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
+  // v5.4 L2 — 스테이지 그리드 열 수 선택(2열/4열, localStorage 유지).
+  const [stageCols, setStageCols] = useState_v4r(() => {
+    try { const v = window.localStorage.getItem("stom_v6_stage_cols"); return v === "2" || v === "4" ? v : "4"; }
+    catch (e) { return "4"; }
+  });
+  const setStageColsPersist = (c) => {
+    setStageCols(c);
+    try { window.localStorage.setItem("stom_v6_stage_cols", c); } catch (e) {}
+  };
   const s = state || {};
   const latest = s.latest || {};
   const runId = s.run_id || "";
@@ -324,7 +363,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
 
       {/* ===== 통합 상황판(벨트 + 현재세대 + KPI + 게이트) ===== */}
       <_V6StatusBoard state={s} liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin}
-                      targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
+                      targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades}
+                      baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} hasData={hasData} />
 
       {!hasData && (s.status === "idle" || !s.status) && (
         <_V4Onboarding onOpenSettings={typeof onOpenSettings === "function" ? onOpenSettings : () => {}} />
@@ -337,34 +377,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         </div>
       )}
 
-      {/* ===== 핵심 그래프 밴드 — hasData 시에만(빈 차트 금지) ===== */}
-      {hasData && (
-      <div className="v6-graphs">
-        <div className="panel">
-          <div className="panel-hd">
-            <div className="panel-hd-title"><span className="dot"></span>Fitness · graded score</div>
-            <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
-              best {s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "—"}
-              {" · gate "}{targetScore != null ? Number(targetScore).toFixed(2) : "—"}
-            </span>
-          </div>
-          <div className="v4-hero-primary v6-hero-compact">
-            <V4HeroChart state={s} target={targetScore} />
-          </div>
-          <div className="v4-canvas-legend">
-            <span><i style={{ borderTop: "2px solid var(--teal)" }}></i>graded fitness</span>
-            <span><i style={{ borderTop: "1px dashed var(--violet)" }}></i>gate {targetScore != null ? Number(targetScore).toFixed(2) : ""}</span>
-            <span><span className="dot-v" style={{ background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" }}></span>best</span>
-            <span><span className="dot-v" style={{ background: "var(--amber)" }}></span>현재 세대</span>
-          </div>
-        </div>
-        <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-        <ProfitChart state={s} targetPct={0} />
-        <QualityTrendChart state={s} />
-      </div>
-      )}
 
       {/* ===== 스테이지 탭(4) — 라이브 자동전환·pin ===== */}
+      {/* v5.4 L2: 스테이지 탭 우측 배치(열 수) 선택 */}
       <div className="v6-stage-tabs" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
         {V6_STAGES.map((st, i) => (
           <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
@@ -383,10 +398,17 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             단계 고정 해제 · 라이브 따라가기
           </button>
         )}
+        <span className="v6-cols-pick" role="group" aria-label="스테이지 배치 열 수 선택">
+          <span className="lbl">배치</span>
+          {["2", "4"].map(c => (
+            <button key={c} type="button" className={"btn ghost sm" + (stageCols === c ? " on" : "")}
+                    aria-pressed={stageCols === c} onClick={() => setStageColsPersist(c)}>{c}열</button>
+          ))}
+        </span>
       </div>
 
       {/* ===== 현재 스테이지 단일 포커스 패널 ===== */}
-      <div id="v6-stage-panel" className="v6-stage-panel" role="tabpanel"
+      <div id="v6-stage-panel" className={"v6-stage-panel cols-" + stageCols} role="tabpanel"
            aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
         {activeStage === 0 && (
           <div className="v6-stage-grid">
@@ -416,12 +438,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <GenerationsTable state={s} mddCap={mddCap} minDailyTrades={minDailyTrades}
                               onViewCode={(g) => viewCode(g && g.gen_no != null ? g.gen_no : g)}
                               onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
-            <section className="v6-stage-lab" aria-label="탐색 히트맵 (분석)">
-              <h3 className="stom-section-label">탐색 히트맵 · 팩터/엣지 (분석)</h3>
-              <ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-            </section>
-            <section className="v6-stage-lab" aria-label="엣지·상관·안정성 (분석)">
-              <h3 className="stom-section-label">엣지·상관·안정성 검증 (분석)</h3>
+            {/* v5.4 L5 — 탐색 히트맵(edge)과 엣지·상관·안정성 중복 병합: 연구실 단일 섹션(전폭) */}
+            <section className="v6-stage-lab v54-span-all" aria-label="탐색·엣지·상관·안정성 통합 분석">
+              <h3 className="stom-section-label">탐색 히트맵 · 엣지 · 상관 · 안정성 검증 (통합 분석)</h3>
               <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
             </section>
             <AutopsyPanel state={s} wsStatus={wsStatus} />
@@ -444,7 +463,10 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             )}
             {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
             <PopulationPanel state={s} wsStatus={wsStatus} />
-            <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            <section className="v6-stage-lab v54-span-all" aria-label="세대 진화 분석(전폭)">
+              <h3 className="stom-section-label">세대 진화 분석 · 개별 그래프</h3>
+              <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            </section>
           </div>
         )}
       </div>

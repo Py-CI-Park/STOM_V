@@ -60,11 +60,12 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
         setPayload(j);
         setErr("");
         const rows = Array.isArray(j && j.campaigns) ? j.campaigns : [];
-        if (!selectedCampaign && rows.length) setSelectedCampaign(rows[0].name || "");
+        // v5.4 H1 — 함수형 갱신으로 selectedCampaign 의존 제거(선택 변경마다 목록 재fetch 하던 중복 해소).
+        if (rows.length) setSelectedCampaign(prev => prev || rows[0].name || "");
       })
       .catch(e => setErr(String(e)))
       .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, selectedCampaign]);
+  }, [baseUrl, isDemo]);
 
   useEffect_rrp(() => {
     refresh();

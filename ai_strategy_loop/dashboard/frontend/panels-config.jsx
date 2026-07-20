@@ -178,53 +178,56 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
     ? "streaming_partial"
     : (codePayload?.code_status || (active.source === "no_strategy" ? "no_strategy" : "loading"));
   const diffStatus = diffPayload?.diff_status || (canFetch ? "loading" : "unavailable");
-  const previewCode = [buyCode, sellCode].filter(Boolean).join("\n\n# sell\n");
-  const previewLines = (previewCode || "").split("\n");
-  const boundedPreview = previewLines.slice(0, expanded ? 80 : 10).join("\n");
+  // v5.4 L3 — 매수/매도 코드를 분리 표기(대형 가독). 연결문자열 미리보기는 폐기.
+  const limit = expanded ? 60 : 8;
+  const buyPreview = (buyCode || "").split("\n").slice(0, limit).join("\n");
+  const sellPreview = (sellCode || "").split("\n").slice(0, limit).join("\n");
 
   return (
     <div className="panel active-strategy-panel">
       <div className="panel-hd">
-        <div className="panel-hd-title"><span className="dot"></span>Active Strategy</div>
+        <div className="panel-hd-title"><span className="dot"></span>현재 조건식 · 매수/매도</div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          source={active.source}
+          gen {genNo ?? "—"} · {codeStatus === "ok" ? "코드 수신" : codeStatus}
         </span>
       </div>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
-          <div className="stat">
-            <span className="stat-label">buy_name</span>
-            <span className="stat-sub mono">{buyName || "empty"}</span>
+        {/* v5.4 L3 — 매수/매도 조건식 이름 대형 카드 */}
+        <div className="v54-cond-names">
+          <div className="v54-cond-name buy">
+            <span className="k">매수 조건식</span>
+            <b className="mono">{buyName || "생성 대기"}</b>
           </div>
-          <div className="stat">
-            <span className="stat-label">sell_name</span>
-            <span className="stat-sub mono">{sellName || "empty"}</span>
+          <div className="v54-cond-name sell">
+            <span className="k">매도 조건식</span>
+            <b className="mono">{sellName || "생성 대기"}</b>
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>run_id={runId || "none"}</span>
-          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>gen_no={genNo ?? "none"}</span>
-          <span className="mono" style={{ fontSize: 11, color: "var(--teal)" }}>code_status={codeStatus}</span>
-          <span className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>diff_status={diffStatus}</span>
         </div>
         {fetchError && (
           <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>
-            active strategy fetch error: {fetchError}
+            조건식 코드 조회 실패: {fetchError}
           </div>
         )}
-        <pre className="code-block" style={{ maxHeight: 170, overflow: "auto", margin: 0 }}>
-          {boundedPreview || `unavailable: ${codeStatus}`}
-        </pre>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="v54-cond-codes">
+          <div className="v54-cond-code buy">
+            <div className="cap">매수 로직</div>
+            <pre className="code-block">{buyPreview || `대기: ${codeStatus}`}</pre>
+          </div>
+          <div className="v54-cond-code sell">
+            <div className="cap">매도 로직</div>
+            <pre className="code-block">{sellPreview || `대기: ${codeStatus}`}</pre>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <button className="btn ghost sm" onClick={() => setExpanded(!expanded)}>
-            {expanded ? "collapse" : "expand"} preview
+            {expanded ? "미리보기 접기" : "미리보기 펼치기"}
           </button>
           <button className="btn ghost sm" disabled={genNo === null || !onViewCode}
                   onClick={() => onViewCode && onViewCode(genNo)}>
-            open full code
+            전체 코드 열기
           </button>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", alignSelf: "center" }}>
-            Previous Diff via /strategy_diff
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+            run {runId || "—"} · diff {diffStatus} · source {active.source}
           </span>
         </div>
       </div>
