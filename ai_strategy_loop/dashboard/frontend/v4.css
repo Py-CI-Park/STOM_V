@@ -481,8 +481,13 @@
 /* ── UXR-P7 Reports 뷰어(sandbox iframe) ── */
 .v4-reports { display: flex; flex-direction: column; gap: 10px; min-width: 0; height: calc(100vh - 190px); }
 .v4-reports-safe { font-size: 10.5px; color: var(--ink-3); }
-.v4-reports-body { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; flex: 1; min-height: 0; }
-@media (max-width: 900px) { .v4-reports-body { grid-template-columns: 1fr; } }
+/* v5.4 R1 — 배치 깨짐 근본수정: 2열 grid 에 TOC(3번째 자식)가 끼며 뷰어가 260px 열로
+   떨어지던 회귀. 자식 수와 무관한 flex 3열(목록 | 목차 | 뷰어)로 교정. */
+.v4-reports-body { display: flex; gap: 12px; flex: 1; min-height: 0; align-items: stretch; }
+.v4-reports-body > .v4-reports-list { flex: 0 0 260px; min-height: 0; }
+.v4-reports-body > .v4-reports-toc { flex: 0 0 240px; min-height: 0; }
+.v4-reports-body > .v4-reports-view, .v4-reports-body > .v4-wiki-view { flex: 1 1 auto; min-width: 0; min-height: 0; }
+@media (max-width: 900px) { .v4-reports-body { flex-direction: column; } .v4-reports-body > .v4-reports-list, .v4-reports-body > .v4-reports-toc { flex: 0 0 auto; } }
 .v4-reports-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; border: 1px solid var(--line-1); border-radius: 10px; padding: 8px; background: var(--bg-1); }
 .v4-reports-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ink-1); cursor: pointer; }
 .v4-reports-item:hover { background: var(--bg-2); }
@@ -819,3 +824,6 @@
 .v54-beta-row .bar i.neg { background: #e05561; }
 .v54-beta-row .v { font-size: 12px; text-align: right; }
 .v54-quant-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.55; margin: 6px 0 0; }
+
+/* v5.4 R2 — 결과 리포트 그룹(자동 생성) 강조 구분 */
+.v6-report-group.run { color: var(--teal); border-color: rgba(76,214,179,.35); background: rgba(76,214,179,.07); }
