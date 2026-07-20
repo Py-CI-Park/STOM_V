@@ -232,6 +232,9 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
           </div>
         </div>
 
+        {/* v5.4 L3 — 거버넌스 분리: 기술 상세는 접이식, 핵심(정책·게이트·점수)만 상시 노출 */}
+        <details className="evo-group v54-gov-fold">
+        <summary className="evo-group-summary"><div className="stom-section-label">연구 관찰성 · Research Pack 상세</div></summary>
         <div className="condition-discovery-grid research-observability-grid" aria-label="Research Pack Branch Tree">
           <section>
             <h4>Research Pack / Branch Tree</h4>
@@ -298,6 +301,9 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             </div>
           </section>
         </div>
+        </details>
+        <details className="evo-group v54-gov-fold">
+        <summary className="evo-group-summary"><div className="stom-section-label">증거 건전성 · 저장 · 부검 가설 상세</div></summary>
 
         <div className="condition-discovery-grid">
           <section>
@@ -355,6 +361,7 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             </div>
           </section>
         </div>
+        </details>
       </div>
     </div>
   );
