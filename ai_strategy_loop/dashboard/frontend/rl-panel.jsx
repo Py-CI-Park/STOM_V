@@ -107,13 +107,14 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
 
 function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   const [tab, setTab] = useState_rl("edge");
-  // v5.4 L5 — 한눈에 보기: 5개 분석 섹션을 그리드로 동시 표시(개별 그래프 한눈에).
+  // v5.5.1 F4 — 매트릭스가 기본. 구 키(stom_v54_lab_all)는 검수 중 저장된 "0"이 기본을 덮어
+  //   사장님 화면에 탭 모드가 고정되던 원인이라 **무시**하고 새 키로 마이그레이션한다.
   const [viewAll, setViewAll] = useState_rl(() => {
-    try { return window.localStorage.getItem("stom_v54_lab_all") !== "0"; } catch (e) { return true; }
+    try { return window.localStorage.getItem("stom_v55_lab_view") !== "single"; } catch (e) { return true; }
   });
   const setViewAllPersist = (v) => {
     setViewAll(v);
-    try { window.localStorage.setItem("stom_v54_lab_all", v ? "1" : "0"); } catch (e) {}
+    try { window.localStorage.setItem("stom_v55_lab_view", v ? "matrix" : "single"); } catch (e) {}
   };
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
   const [opsError, setOpsError] = useState_rl(null);
