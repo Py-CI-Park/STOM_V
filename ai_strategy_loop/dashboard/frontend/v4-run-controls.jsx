@@ -40,17 +40,26 @@ function V4RunControls({
           <span className="mono">연구 진행 {cur ?? "—"}/{max || "—"} · Live ↗</span>
         </button>
       )}
+      {/* v5.5 F6 — RUN 셀렉터는 Live 탭 전용(다른 탭에선 화면 내용과 무관해 혼선). */}
+      {isLive && (
       <div className={"v4-runsel" + (selectedRun ? " is-archive" : "")}
            title="볼 연구 run 선택 — LIVE(현재 진행) 또는 과거 실 run 아카이브">
         <span className="mono v4-runsel-lbl">연구 RUN</span>
         <select className="mono v4-runsel-select" value={selectedRun} disabled={isDemo}
                 onChange={e => onSelectRun(e.target.value)}>
           <option value="">● LIVE (현재 진행)</option>
-          {(runList || []).map(r => (
-            <option key={r.run_id} value={r.run_id}>
-              {(r.gate_passed_count > 0 ? "✓ " : "")}{r.run_id}{r.label ? " · " + r.label : ""}
-            </option>
-          ))}
+          {(runList || []).map(r => {
+            // v5.5 F6 — 가독 라벨: 날짜 · run_id · 세대수 · 게이트(제목 잘림은 폭 확장 CSS 로 해소).
+            const d = typeof r.started_at === "number" && r.started_at > 1e9
+              ? new Date(r.started_at * 1000).toISOString().slice(0, 10) : "";
+            const gens = r.gen_count != null ? ` · ${r.gen_count}세대` : "";
+            const gate = r.gate_passed_count > 0 ? ` · ✓${r.gate_passed_count}` : "";
+            return (
+              <option key={r.run_id} value={r.run_id}>
+                {(d ? d + " · " : "")}{r.run_id}{gens}{gate}{r.label ? " · " + r.label : ""}
+              </option>
+            );
+          })}
         </select>
         <span className={"v4-chip " + (selectedRun ? "warn" : "ok")}>
           {selectedRun ? "아카이브" : "LIVE"}
@@ -60,6 +69,7 @@ function V4RunControls({
                   data-tip="선택 run 새로고침">↻</button>
         )}
       </div>
+      )}
       {/* 정지 — Live 에선 상시(비활성 시 disabled), 다른 탭에선 도는 중일 때만(안전 중단) */}
       {(isLive || running) && (
         <button className="btn danger" onClick={onStop} disabled={!running}>◼ 정지</button>

@@ -22,11 +22,13 @@ import { V4History } from "./v4-history.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Reports } from "./v4-reports.jsx";
 import { V4Catalog } from "./v4-catalog.jsx";
+import { V4SettingsTab } from "./v4-settings.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
-const V4_DASH_VERSION = "v5.4.0";
+// v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
+const V4_DASH_VERSION = "v5.5.0";
 
 // V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
 //   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
@@ -39,6 +41,7 @@ const V4_TABS = [
   { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
   { key: "catalog", label: "연구 자산", full: "연구 자산 (P4 비정본 preview prototype + 진행 관찰)", badge: "자산", hint: "연혁실·함정지도·절실험실·출구은행·진행 관찰(구 Alpha)·B1 — 읽기 전용 · 비정본 preview", group: "secondary" },
+  { key: "settings", label: "설정", full: "설정 · 대시보드 관리", badge: "CFG", hint: "화면 배치·UI 저장상태·버전 정보 — 클라이언트 표시 설정 전용", group: "secondary" },
 ];
 const V4_TAB_KEYS = V4_TABS.map(t => t.key);
 
@@ -443,6 +446,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                 <V4Reports baseUrl={baseUrl} />
               ) : activeTab === "catalog" ? (
                 <V4Catalog baseUrl={baseUrl} wsStatus={wsStatus} />
+              ) : activeTab === "settings" ? (
+                <V4SettingsTab baseUrl={baseUrl} dashVersion={V4_DASH_VERSION} />
               ) : (
                 <div className="v4-placeholder"><p className="mono">알 수 없는 뷰</p></div>
                 )}

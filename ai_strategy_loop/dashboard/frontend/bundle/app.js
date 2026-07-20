@@ -20825,7 +20825,7 @@ def signal_sell(pos, bar, ind):
     for (let i = 0; i < workers; i++) {
       pips.push(i < workersActive ? "active" : "idle");
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \u2014 Runtime", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, btTimeframe), /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, "chunks ", (_H = e.chunks_done) != null ? _H : 0, "/", (_I = e.chunks_total) != null ? _I : 0))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "engine-summary-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Overall Progress"), " ", overallPct.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Elapsed"), " ", fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Remaining"), " ", remainingGens, " gen"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "ETA"), " ", fmtElapsed(etaMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Timeout"), " ", fmtElapsed(timeoutMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Deadline"), " ", fmtEpoch(timeoutDeadline)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Progress Source"), " ", progressSource), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Units"), " ", doneUnits, "/", totalUnits)), /* @__PURE__ */ React.createElement("div", { className: "engine-config-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Engine Config")), /* @__PURE__ */ React.createElement("span", null, "min/tick=", btTimeframe), /* @__PURE__ */ React.createElement("span", null, "mode=", engineMode), /* @__PURE__ */ React.createElement("span", null, "cpu=", cpuCount), /* @__PURE__ */ React.createElement("span", null, "engines=", effectiveEngineCount), /* @__PURE__ */ React.createElement("span", null, genModeLabel), /* @__PURE__ */ React.createElement("span", null, "Period ", periodStart, "~", periodEnd), /* @__PURE__ */ React.createElement("span", null, "bt_full_start=", periodStart), /* @__PURE__ */ React.createElement("span", null, "bt_full_end=", periodEnd), /* @__PURE__ */ React.createElement("span", null, "window=", windowStart, "~", windowEnd), /* @__PURE__ */ React.createElement("span", null, "bt_timeout=", coldTimeout), /* @__PURE__ */ React.createElement("span", null, "bt_warm_run_timeout=", warmTimeout)), /* @__PURE__ */ React.createElement("div", { className: "engine-log-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Recent Logs")), /* @__PURE__ */ React.createElement("span", null, progressInfo.phase || latest.phase || state.status || "-"), /* @__PURE__ */ React.createElement("span", null, progressInfo.message || latest.last_checkpoint || e.current_symbol || "waiting for engine event"), recentLogs.slice(-2).map((line, i) => /* @__PURE__ */ React.createElement("span", { key: i }, line))), liveNoEngine && typeof window.LivePending === "function" ? /* @__PURE__ */ React.createElement(LivePending, { note: "\uC5D4\uC9C4 \uB7F0\uD0C0\uC784 \uBA54\uD2B8\uB9AD(CPU/\uBA54\uBAA8\uB9AC/\uC6CC\uCEE4)\uC740 backend\uAC00 \uC544\uC9C1 \uBC1C\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." }) : /* @__PURE__ */ React.createElement("div", { className: "engine-grid" }, isDemo && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \u2014 Runtime", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, btTimeframe), /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, "chunks ", (_H = e.chunks_done) != null ? _H : 0, "/", (_I = e.chunks_total) != null ? _I : 0))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v55-eng-progress" + (running ? " running" : ""), "aria-label": "\uC804\uCCB4 \uC9C4\uD589\uB960" }, /* @__PURE__ */ React.createElement("div", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(0, Math.min(100, overallPct)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "mono v55-eng-progress-txt" }, overallPct.toFixed(1), "% \xB7 gen ", currentGen, "/", maxGens || "\u2014", " \xB7 ", running ? "\uC2E4\uD589 \uC911" : state.status || "\uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "engine-summary-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Overall Progress"), " ", overallPct.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Elapsed"), " ", fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Remaining"), " ", remainingGens, " gen"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "ETA"), " ", fmtElapsed(etaMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Timeout"), " ", fmtElapsed(timeoutMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Deadline"), " ", fmtEpoch(timeoutDeadline)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Progress Source"), " ", progressSource), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Units"), " ", doneUnits, "/", totalUnits)), /* @__PURE__ */ React.createElement("div", { className: "engine-config-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Engine Config")), /* @__PURE__ */ React.createElement("span", null, "min/tick=", btTimeframe), /* @__PURE__ */ React.createElement("span", null, "mode=", engineMode), /* @__PURE__ */ React.createElement("span", null, "cpu=", cpuCount), /* @__PURE__ */ React.createElement("span", null, "engines=", effectiveEngineCount), /* @__PURE__ */ React.createElement("span", null, genModeLabel), /* @__PURE__ */ React.createElement("span", null, "Period ", periodStart, "~", periodEnd), /* @__PURE__ */ React.createElement("span", null, "bt_full_start=", periodStart), /* @__PURE__ */ React.createElement("span", null, "bt_full_end=", periodEnd), /* @__PURE__ */ React.createElement("span", null, "window=", windowStart, "~", windowEnd), /* @__PURE__ */ React.createElement("span", null, "bt_timeout=", coldTimeout), /* @__PURE__ */ React.createElement("span", null, "bt_warm_run_timeout=", warmTimeout)), /* @__PURE__ */ React.createElement("div", { className: "engine-log-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Recent Logs")), /* @__PURE__ */ React.createElement("span", null, progressInfo.phase || latest.phase || state.status || "-"), /* @__PURE__ */ React.createElement("span", null, progressInfo.message || latest.last_checkpoint || e.current_symbol || "waiting for engine event"), recentLogs.slice(-2).map((line, i) => /* @__PURE__ */ React.createElement("span", { key: i }, line))), liveNoEngine && typeof window.LivePending === "function" ? /* @__PURE__ */ React.createElement(LivePending, { note: "\uC5D4\uC9C4 \uB7F0\uD0C0\uC784 \uBA54\uD2B8\uB9AD(CPU/\uBA54\uBAA8\uB9AC/\uC6CC\uCEE4)\uC740 backend\uAC00 \uC544\uC9C1 \uBC1C\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." }) : /* @__PURE__ */ React.createElement("div", { className: "engine-grid" }, isDemo && /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "mono",
@@ -31018,11 +31018,10 @@ def signal_sell(pos, bar, ind):
         return { key: s.key, d, color: s.color };
       });
     }, [nums, xMax, normalize, ranges]);
-    const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+    const xStep = Math.max(1, Math.ceil(xMax / 12));
     const xTicks = [];
-    for (let g = 0; g < xMax; g++) {
-      if (g === 0 || g === xMax - 1 || g % xStep === 0) xTicks.push(g);
-    }
+    for (let g = 0; g < xMax; g += xStep) xTicks.push(g);
+    if (xMax - 1 - xTicks[xTicks.length - 1] > xStep / 2) xTicks.push(xMax - 1);
     const [hover, setHover] = useState_ea(null);
     const svgRef = useRef_ea(null);
     const onMove = (e) => {
@@ -31322,7 +31321,7 @@ def signal_sell(pos, bar, ind):
         value: summary ? _fMoney(summary.bestProfit.profit) : "\u2014",
         sub: summary ? `gen_${summary.bestProfit.gen_no}` : ""
       }
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", margin: "6px 0 8px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, EA_SERIES.map((s) => /* @__PURE__ */ React.createElement(LegendDot, { key: s.key, color: s.color, label: s.label }))), /* @__PURE__ */ React.createElement("label", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: normalize, onChange: (e) => setNormalize(e.target.checked) }), "\uC815\uADDC\uD654(0~1)")), /* @__PURE__ */ React.createElement(EaMultiMetricChart, { gens, normalize }), !normalize && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginTop: 4 } }, "\uC815\uADDC\uD654 OFF \u2014 \uC2A4\uCF00\uC77C\uC774 \uB2E4\uB978 \uACC4\uC5F4\uC740 \uACB9\uCCD0 \uBE44\uAD50\uAC00 \uC5B4\uB824\uC6CC score \uB9CC \uC6D0\uCD95\uC73C\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", margin: "16px 0 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC138\uB300 \uC0B0\uC810\uB3C4 \u2014 MDD \xD7 \uC190\uC775(\uB2C8\uCE58 \uC9C0\uB3C4)"), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC", filled: "ring" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--ink-3)", label: "\uAC8C\uC774\uD2B8 \uD0C8\uB77D(\uD750\uB9B0 \uC810)" })), /* @__PURE__ */ React.createElement(EaScatterChart, { gens }), /* @__PURE__ */ React.createElement("div", { style: { margin: "16px 0 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC0C1\uC704 \uC138\uB300 \u2014 score \uB0B4\uB9BC\uCC28\uC21C(\uC6CC\uD06C\uBCA4\uCE58 \uBD84\uC11D\uC73C\uB85C \uBC31\uD14C \uD0ED \uC5F0\uB3D9)")), /* @__PURE__ */ React.createElement(EaTopTable, { runId: effRun, gens, topN: 8, onOpenWorkbench }), loading && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 8 } }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"))));
+    )), /* @__PURE__ */ React.createElement("div", { className: "v54-ea-grid" }, /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 8px", flexWrap: "wrap", gap: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, EA_SERIES.map((s) => /* @__PURE__ */ React.createElement(LegendDot, { key: s.key, color: s.color, label: s.label }))), /* @__PURE__ */ React.createElement("label", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: normalize, onChange: (e) => setNormalize(e.target.checked) }), "\uC815\uADDC\uD654(0~1)")), /* @__PURE__ */ React.createElement(EaMultiMetricChart, { gens, normalize }), !normalize && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginTop: 4 } }, "\uC815\uADDC\uD654 OFF \u2014 \uC2A4\uCF00\uC77C\uC774 \uB2E4\uB978 \uACC4\uC5F4\uC740 \uACB9\uCCD0 \uBE44\uAD50\uAC00 \uC5B4\uB824\uC6CC score \uB9CC \uC6D0\uCD95\uC73C\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", margin: "0 0 8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC138\uB300 \uC0B0\uC810\uB3C4 \u2014 MDD \xD7 \uC190\uC775(\uB2C8\uCE58 \uC9C0\uB3C4)"), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC", filled: "ring" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--ink-3)", label: "\uAC8C\uC774\uD2B8 \uD0C8\uB77D(\uD750\uB9B0 \uC810)" })), /* @__PURE__ */ React.createElement(EaScatterChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell wide" }, /* @__PURE__ */ React.createElement("div", { style: { margin: "0 0 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC0C1\uC704 \uC138\uB300 \u2014 score \uB0B4\uB9BC\uCC28\uC21C(\uC6CC\uD06C\uBCA4\uCE58 \uBD84\uC11D\uC73C\uB85C \uBC31\uD14C \uD0ED \uC5F0\uB3D9)")), /* @__PURE__ */ React.createElement(EaTopTable, { runId: effRun, gens, topN: 8, onOpenWorkbench }))), loading && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 8 } }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"))));
   }
   Object.assign(window, { EvolutionAnalysisPanel });
 
@@ -33839,7 +33838,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         if (window.location) window.location.href = "/ui/evolution/workbench";
       }
     }, [onOpenWorkbench]);
-    return /* @__PURE__ */ React.createElement("div", { className: "research-lab-shell" }, /* @__PURE__ */ React.createElement("div", { className: "research-section-filter", "aria-label": "\uC5F0\uAD6C\uC2E4 \uC139\uC158 \uD544\uD130" }, RESEARCH_TABS.map((item) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "research-lab-shell" }, /* @__PURE__ */ React.createElement("div", { className: "research-section-filter", "aria-label": "\uC5F0\uAD6C\uC2E4 \uBCF4\uAE30 \uC120\uD0DD" }, !viewAll && RESEARCH_TABS.map((item) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: item.id,
@@ -33858,10 +33857,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         type: "button",
         className: "research-filter-chip" + (viewAll ? " active" : ""),
         "aria-pressed": viewAll,
-        title: "5\uAC1C \uBD84\uC11D(\uD788\uD2B8\uB9F5\xB7\uC911\uC694\uB3C4\xB7\uC0C1\uAD00\xB7\uC870\uD569\xB7\uAC80\uC99D)\uC744 \uAC1C\uBCC4 \uADF8\uB798\uD504 \uADF8\uB9AC\uB4DC\uB85C \uB3D9\uC2DC\uC5D0 \uBD05\uB2C8\uB2E4.",
+        title: viewAll ? "\uAC1C\uBCC4 \uBD84\uC11D\uC744 \uD558\uB098\uC529 \uD06C\uAC8C \uBCF4\uB294 \uBAA8\uB4DC\uB85C \uC804\uD658" : "5\uAC1C \uBD84\uC11D\uC744 \uB9E4\uD2B8\uB9AD\uC2A4\uB85C \uB3D9\uC2DC\uC5D0 \uBCF4\uB294 \uAE30\uBCF8 \uBAA8\uB4DC\uB85C \uBCF5\uADC0",
         onClick: () => setViewAllPersist(!viewAll)
       },
-      "\u25A6 \uD55C\uB208\uC5D0 \uBCF4\uAE30"
+      viewAll ? "\uAC1C\uBCC4 \uBCF4\uAE30 \uC804\uD658" : "\u25A6 \uB9E4\uD2B8\uB9AD\uC2A4 \uBCF4\uAE30(\uAE30\uBCF8)"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -34538,7 +34537,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       },
       /* @__PURE__ */ React.createElement("span", { className: "v4-runbar-livedot" }),
       /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uC5F0\uAD6C \uC9C4\uD589 ", cur != null ? cur : "\u2014", "/", max || "\u2014", " \xB7 Live \u2197")
-    ), /* @__PURE__ */ React.createElement(
+    ), isLive && /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "v4-runsel" + (selectedRun ? " is-archive" : ""),
@@ -34554,7 +34553,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onChange: (e) => onSelectRun(e.target.value)
         },
         /* @__PURE__ */ React.createElement("option", { value: "" }, "\u25CF LIVE (\uD604\uC7AC \uC9C4\uD589)"),
-        (runList || []).map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.gate_passed_count > 0 ? "\u2713 " : "", r.run_id, r.label ? " \xB7 " + r.label : ""))
+        (runList || []).map((r) => {
+          const d = typeof r.started_at === "number" && r.started_at > 1e9 ? new Date(r.started_at * 1e3).toISOString().slice(0, 10) : "";
+          const gens = r.gen_count != null ? ` \xB7 ${r.gen_count}\uC138\uB300` : "";
+          const gate = r.gate_passed_count > 0 ? ` \xB7 \u2713${r.gate_passed_count}` : "";
+          return /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, d ? d + " \xB7 " : "", r.run_id, gens, gate, r.label ? " \xB7 " + r.label : "");
+        })
       ),
       /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + (selectedRun ? "warn" : "ok") }, selectedRun ? "\uC544\uCE74\uC774\uBE0C" : "LIVE"),
       selectedRun && /* @__PURE__ */ React.createElement(
@@ -35030,8 +35034,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-live": "polite"
       },
       activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
-      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 }), /* @__PURE__ */ React.createElement("div", { className: "v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })),
-      activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null)), /* @__PURE__ */ React.createElement(
+      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v54-col2" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 })), /* @__PURE__ */ React.createElement("div", { className: "v54-col2 v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement("section", { className: "v54-span-all v54-btdetail", "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC0C1\uC138 \uADF8\uB798\uD504(\uAC00\uB85C \uB9E4\uD2B8\uB9AD\uC2A4)" }, /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement("details", { className: "evo-group v54-span-all" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 \uB300\uC0AC (\uD074\uB9AD \uD3BC\uCE68)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })))),
+      activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null))), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD0D0\uC0C9\xB7\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uD1B5\uD569 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 \uC5E3\uC9C0 \xB7 \uC0C1\uAD00 \xB7 \uC548\uC815\uC131 \uAC80\uC99D (\uD1B5\uD569 \uBD84\uC11D \uB9E4\uD2B8\uB9AD\uC2A4)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(
         GenerationsTable,
         {
           state: s,
@@ -35040,7 +35044,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
           onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
         }
-      ), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD0D0\uC0C9\xB7\uC5E3\uC9C0\xB7\uC0C1\uAD00\xB7\uC548\uC815\uC131 \uD1B5\uD569 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 \uC5E3\uC9C0 \xB7 \uC0C1\uAD00 \xB7 \uC548\uC815\uC131 \uAC80\uC99D (\uD1B5\uD569 \uBD84\uC11D)"), /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })),
+      ))),
       activeStage === 3 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid" }, merged ? /* @__PURE__ */ React.createElement(
         MergedBestWinnerCard,
         {
@@ -35656,9 +35660,109 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Catalog });
 
+  // ai_strategy_loop/dashboard/frontend/v4-settings.jsx
+  var { useState: useState_v4s, useEffect: useEffect_v4s } = React;
+  function _v4sGet(key, dflt) {
+    try {
+      const v = window.localStorage.getItem(key);
+      return v === null ? dflt : v;
+    } catch (e) {
+      return dflt;
+    }
+  }
+  function _v4sSet(key, val) {
+    try {
+      window.localStorage.setItem(key, val);
+    } catch (e) {
+    }
+  }
+  function _V4sRow({ label, hint, children: children2 }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4s-row" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-row-lbl" }, /* @__PURE__ */ React.createElement("b", null, label), hint && /* @__PURE__ */ React.createElement("small", null, hint)), /* @__PURE__ */ React.createElement("div", { className: "v4s-row-ctl" }, children2));
+  }
+  function V4SettingsTab({ baseUrl, dashVersion }) {
+    const [stageCols, setStageCols] = useState_v4s(() => _v4sGet("stom_v6_stage_cols", "4"));
+    const [labAll, setLabAll] = useState_v4s(() => _v4sGet("stom_v54_lab_all", "1") !== "0");
+    const [manifest, setManifest] = useState_v4s(null);
+    const [health, setHealth] = useState_v4s(null);
+    const [cleared, setCleared] = useState_v4s(0);
+    const [dirty, setDirty] = useState_v4s(false);
+    useEffect_v4s(() => {
+      let alive = true;
+      fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => {
+        if (alive) setManifest(j);
+      }).catch(() => {
+      });
+      fetch((baseUrl || "") + "/health", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => {
+        if (alive) setHealth(j);
+      }).catch(() => {
+      });
+      return () => {
+        alive = false;
+      };
+    }, [baseUrl]);
+    const stomKeys = (() => {
+      try {
+        return Object.keys(window.localStorage).filter((k) => k.startsWith("stom_"));
+      } catch (e) {
+        return [];
+      }
+    })();
+    const cssPin = (() => {
+      const link = [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute("href") || "").find((h) => h.includes("v4.css"));
+      const m = link && link.match(/v=([\w-]+)/);
+      return m ? m[1] : "\u2014";
+    })();
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-settings", "aria-labelledby": "v4-settings-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-settings-heading", className: "panel-hd-title" }, "\uC124\uC815 \xB7 \uB300\uC2DC\uBCF4\uB4DC \uAD00\uB9AC"), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uD654\uBA74 \uBC30\uCE58")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_V4sRow, { label: "Live \uC2A4\uD14C\uC774\uC9C0 \uC5F4 \uC218", hint: "\uC2A4\uD14C\uC774\uC9C0(\uC0DD\uC131\xB7\uBC31\uD14C\xB7\uCC44\uC810\xB7\uBC18\uBCF5) \uB0B4\uC6A9 \uADF8\uB9AC\uB4DC \uC5F4 \uC218" }, ["2", "4"].map((c) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: c,
+        type: "button",
+        className: "btn ghost sm" + (stageCols === c ? " on" : ""),
+        "aria-pressed": stageCols === c,
+        onClick: () => {
+          setStageCols(c);
+          _v4sSet("stom_v6_stage_cols", c);
+          setDirty(true);
+        }
+      },
+      c,
+      "\uC5F4"
+    ))), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uC5F0\uAD6C\uC2E4 \uB9E4\uD2B8\uB9AD\uC2A4 \uBCF4\uAE30", hint: "\uCC44\uC810\xB7\uBD80\uAC80\uC758 5\uAC1C \uBD84\uC11D(\uD788\uD2B8\uB9F5\xB7\uC911\uC694\uB3C4\xB7\uC0C1\uAD00\xB7\uC870\uD569\xB7\uAC80\uC99D) \uB3D9\uC2DC \uD45C\uC2DC" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm" + (labAll ? " on" : ""),
+        "aria-pressed": labAll,
+        onClick: () => {
+          const v = !labAll;
+          setLabAll(v);
+          _v4sSet("stom_v54_lab_all", v ? "1" : "0");
+          setDirty(true);
+        }
+      },
+      labAll ? "\uB9E4\uD2B8\uB9AD\uC2A4(\uAE30\uBCF8)" : "\uAC1C\uBCC4 \uBCF4\uAE30"
+    )), dirty && /* @__PURE__ */ React.createElement("div", { className: "v4s-note", role: "status" }, "\uBCC0\uACBD\uC740 \uC800\uC7A5\uB418\uC5C8\uC2B5\uB2C8\uB2E4 \u2014 Live \uD0ED\uC5D0 \uC801\uC6A9\uD558\uB824\uBA74 ", /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: () => window.location.reload() }, "\uC0C8\uB85C\uACE0\uCE68")))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "UI \uC800\uC7A5\uC0C1\uD0DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_V4sRow, { label: `\uC800\uC7A5\uB41C UI \uC0C1\uD0DC ${stomKeys.length}\uAC1C`, hint: "\uBC30\uCE58\xB7\uD3F4\uB4DC\xB7\uC120\uD0DD \uD0ED \uB4F1 \uBE0C\uB77C\uC6B0\uC800 \uC800\uC7A5\uAC12(\uC5F0\uAD6C \uB370\uC774\uD130 \uC544\uB2D8)" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm",
+        onClick: () => {
+          try {
+            stomKeys.forEach((k) => window.localStorage.removeItem(k));
+          } catch (e) {
+          }
+          setCleared(stomKeys.length);
+          setDirty(true);
+        }
+      },
+      "\uACF5\uC7A5\uAC12\uC73C\uB85C \uCD08\uAE30\uD654"
+    ), cleared > 0 && /* @__PURE__ */ React.createElement("span", { className: "mono v4s-ok" }, cleared, "\uAC1C \uCD08\uAE30\uD654\uB428 \u2014 \uC0C8\uB85C\uACE0\uCE68 \uC2DC \uC801\uC6A9")), /* @__PURE__ */ React.createElement("div", { className: "v4s-keys mono" }, stomKeys.join(" \xB7 ") || "(\uC5C6\uC74C)"))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC815\uBCF4 (\uC77D\uAE30 \uC804\uC6A9)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uB300\uC2DC\uBCF4\uB4DC \uBC84\uC804", hint: "STOM \uBCF8\uCCB4 \uBC84\uC804\uACFC \uBD84\uB9AC \uAD00\uB9AC \u2014 \uD0DC\uADF8 V2UC-Dashboard-v*" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, dashVersion || "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uBC88\uB4E4 \uBE4C\uB4DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, manifest && manifest.appJs ? String(manifest.appJs).slice(0, 12) : manifest && manifest.v ? manifest.v : "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "CSS \uD540" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, cssPin)), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uC11C\uBC84 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, health ? (health.status || "ok") + (health.version ? " \xB7 " + health.version : "") : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, '\uC5F0\uAD6C \uC2DC\uC791\xB7\uAC8C\uC774\uD2B8\xB7export \uC124\uC815\uC740 \uC5EC\uAE30\uC11C \uB2E4\uB8E8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 Live \uD0ED "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"(\uC5F0\uAD6C \uC124\uC815)\uACFC human \uC2B9\uC778 \uACC4\uC57D\uC740 \uBD88\uBCC0.'))));
+  }
+  Object.assign(window, { V4SettingsTab });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.4.0";
+  var V4_DASH_VERSION = "v5.5.0";
   var V4_TABS = [
     { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2A4\uD14C\uC774\uC9C0 \uAD6C\uB3D9 \uC2E4\uC2DC\uAC04 \uAD00\uCC30", group: "primary" },
     { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9", group: "primary" },
@@ -35666,7 +35770,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "reports", label: "Reports", full: "Reports \xB7 \uB9AC\uD3EC\uD2B8 \uBDF0\uC5B4", badge: "DOC", hint: "\uB9AC\uD3EC\uD2B8 HTML \uC548\uC804 \uBDF0\uC5B4 \xB7 \uC77D\uAE30 \uC804\uC6A9(sandbox)", group: "primary" },
     { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8", group: "primary" },
     { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D", group: "primary" },
-    { key: "catalog", label: "\uC5F0\uAD6C \uC790\uC0B0", full: "\uC5F0\uAD6C \uC790\uC0B0 (P4 \uBE44\uC815\uBCF8 preview prototype + \uC9C4\uD589 \uAD00\uCC30)", badge: "\uC790\uC0B0", hint: "\uC5F0\uD601\uC2E4\xB7\uD568\uC815\uC9C0\uB3C4\xB7\uC808\uC2E4\uD5D8\uC2E4\xB7\uCD9C\uAD6C\uC740\uD589\xB7\uC9C4\uD589 \uAD00\uCC30(\uAD6C Alpha)\xB7B1 \u2014 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uBE44\uC815\uBCF8 preview", group: "secondary" }
+    { key: "catalog", label: "\uC5F0\uAD6C \uC790\uC0B0", full: "\uC5F0\uAD6C \uC790\uC0B0 (P4 \uBE44\uC815\uBCF8 preview prototype + \uC9C4\uD589 \uAD00\uCC30)", badge: "\uC790\uC0B0", hint: "\uC5F0\uD601\uC2E4\xB7\uD568\uC815\uC9C0\uB3C4\xB7\uC808\uC2E4\uD5D8\uC2E4\xB7\uCD9C\uAD6C\uC740\uD589\xB7\uC9C4\uD589 \uAD00\uCC30(\uAD6C Alpha)\xB7B1 \u2014 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uBE44\uC815\uBCF8 preview", group: "secondary" },
+    { key: "settings", label: "\uC124\uC815", full: "\uC124\uC815 \xB7 \uB300\uC2DC\uBCF4\uB4DC \uAD00\uB9AC", badge: "CFG", hint: "\uD654\uBA74 \uBC30\uCE58\xB7UI \uC800\uC7A5\uC0C1\uD0DC\xB7\uBC84\uC804 \uC815\uBCF4 \u2014 \uD074\uB77C\uC774\uC5B8\uD2B8 \uD45C\uC2DC \uC124\uC815 \uC804\uC6A9", group: "secondary" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
   var V4_PATH_TAB_MAP = {
@@ -36035,7 +36140,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : activeTab === "settings" ? /* @__PURE__ */ React.createElement(V4SettingsTab, { baseUrl, dashVersion: V4_DASH_VERSION }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {

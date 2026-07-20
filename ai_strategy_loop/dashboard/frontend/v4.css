@@ -827,3 +827,59 @@
 
 /* v5.4 R2 — 결과 리포트 그룹(자동 생성) 강조 구분 */
 .v6-report-group.run { color: var(--teal); border-color: rgba(76,214,179,.35); background: rgba(76,214,179,.07); }
+
+/* ═══════════ v5.5 기하 보정(F1·F2·F3·F4·F5·F7) ═══════════ */
+/* F2 — 상황판 4그래프 높이 완전 통일(고정 356px, 내부 flex, 넘침 은닉) */
+.v6-graphs .panel { display: flex; flex-direction: column; height: 356px; overflow: hidden; }
+.v6-graphs .panel .panel-hd { flex: 0 0 auto; min-height: 34px; }
+.v6-graphs .panel .panel-hd + * { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.v6-graphs .v6-hero-compact { height: auto; max-height: none; }
+.v6-graphs .panel canvas, .v6-graphs .panel .chart-wrap svg { height: 100%; max-height: 100%; }
+.v6-graphs .v4-canvas-legend { flex: 0 0 auto; }
+/* F1 — 상황판 모듈 균일 카드 정렬 */
+.v6-board-top--belt > div { background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 10px; padding: 10px 12px; min-height: 216px; min-width: 0; }
+.v6-board-curgen .panel { border: 0; background: transparent; margin: 0; }
+.v6-board-strip { display: grid; grid-template-columns: 1.4fr 1fr 1.4fr; gap: 10px; align-items: stretch; margin-top: 8px; }
+.v6-board-strip > * { background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 10px; padding: 8px 12px; min-height: 60px; min-width: 0; overflow: auto; }
+/* F3 — 백테 스테이지 매트릭스: 2칸 셀 */
+.v6-stage-panel .v54-col2 { grid-column: span 2; min-width: 0; }
+@media (max-width: 1500px) { .v6-stage-panel .v54-col2 { grid-column: auto; } }
+.v54-btdetail .panel { margin: 0; }
+/* F4 — 연구실 매트릭스 셀 균일 높이(넘침은 셀 내부 스크롤) */
+.v54-lab-cell { height: 480px; overflow: auto; }
+.v54-lab-cell.wide { height: 480px; }
+/* F5 — EA 셀 그리드(전폭 스트레치 금지 · 4열 기준 사이즈) */
+.v54-ea-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 1500px) { .v54-ea-grid { grid-template-columns: 1fr; } }
+.v54-ea-cell { min-width: 0; border: 1px solid var(--line-1); border-radius: 8px; padding: 10px 12px; }
+.v54-ea-cell.wide { grid-column: 1 / -1; }
+.v54-ea-cell .chart-wrap svg { max-height: 340px; }
+/* F7 — 리포트 TOC 버튼 겹침(압축) 금지 */
+.v4-reports-toc { flex-direction: column; }
+.v4-toc-item { flex: 0 0 auto; }
+
+/* v5.5 F6 — RUN 셀렉터 폭 확장(제목 전부 보이게) */
+.v4-runsel-select { min-width: 380px; max-width: 620px; }
+
+/* v5.5 F8 — 설정 탭 */
+.v4-settings { display: flex; flex-direction: column; gap: 12px; max-width: 1100px; }
+.v4s-row { display: flex; align-items: center; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--line-1); }
+.v4s-row:last-child { border-bottom: 0; }
+.v4s-row-lbl { flex: 0 0 320px; display: flex; flex-direction: column; gap: 2px; }
+.v4s-row-lbl b { font-size: 13.5px; }
+.v4s-row-lbl small { font-size: 11px; color: var(--ink-3); }
+.v4s-row-ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.v4s-row-ctl .btn.on { border-color: var(--teal); color: var(--teal); font-weight: 700; }
+.v4s-note { font-size: 11.5px; color: var(--ink-2); padding: 8px 0 0; display: flex; gap: 8px; align-items: center; }
+.v4s-keys { font-size: 10.5px; color: var(--ink-3); padding-top: 8px; line-height: 1.7; word-break: break-all; }
+.v4s-ok { font-size: 11px; color: var(--teal); }
+/* v5.5 G1 — 엔진 대형 진행 바 + 스트립 구분 */
+.v55-eng-progress { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.v55-eng-progress .bar { flex: 1; height: 18px; background: var(--bg-2); border: 1px solid var(--line-1); border-radius: 9px; overflow: hidden; }
+.v55-eng-progress .bar i { display: block; height: 100%; background: var(--ink-3); border-radius: 9px; transition: width .6s ease; }
+.v55-eng-progress.running .bar i { background: linear-gradient(90deg, var(--teal), var(--violet)); }
+.v55-eng-progress-txt { flex: 0 0 auto; font-size: 12.5px; color: var(--ink-1); }
+.engine-summary-strip, .engine-config-strip, .engine-log-strip { display: flex; flex-wrap: wrap; gap: 6px 14px; background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.engine-summary-strip { border-left: 3px solid var(--teal); }
+.engine-config-strip { border-left: 3px solid var(--violet); }
+.engine-log-strip { border-left: 3px solid var(--amber); }

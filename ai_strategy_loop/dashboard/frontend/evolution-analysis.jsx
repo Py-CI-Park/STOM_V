@@ -106,11 +106,11 @@ function EaMultiMetricChart({ gens, normalize }) {
   }, [nums, xMax, normalize, ranges]);
 
   // X 눈금(chart.jsx 규칙).
-  const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+  // v5.5 F5 — 적응형 눈금(라벨 ≤14개, 겹침 방지). 마지막 라벨은 직전 눈금과 반 스텝 이상일 때만.
+  const xStep = Math.max(1, Math.ceil(xMax / 12));
   const xTicks = [];
-  for (let g = 0; g < xMax; g++) {
-    if (g === 0 || g === xMax - 1 || g % xStep === 0) xTicks.push(g);
-  }
+  for (let g = 0; g < xMax; g += xStep) xTicks.push(g);
+  if (xMax - 1 - xTicks[xTicks.length - 1] > xStep / 2) xTicks.push(xMax - 1);
 
   const [hover, setHover] = useState_ea(null);
   const svgRef = useRef_ea(null);
@@ -496,39 +496,44 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
             </div>
 
             {/* 다중지표 차트 + 정규화 토글 */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "6px 0 8px" }}>
-              <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-                {EA_SERIES.map(s => <LegendDot key={s.key} color={s.color} label={s.label} />)}
-              </div>
-              <label className="mono" style={{ fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                <input type="checkbox" checked={normalize} onChange={e => setNormalize(e.target.checked)} />
-                정규화(0~1)
-              </label>
+            {/* v5.5 F5 — 4열 기준 사이즈 셀 분할: 멀티지표 | 산점도 (반폭) + 상위표(전폭) */}
+            <div className="v54-ea-grid">
+              <section className="v54-ea-cell">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 8px", flexWrap: "wrap", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                    {EA_SERIES.map(s => <LegendDot key={s.key} color={s.color} label={s.label} />)}
+                  </div>
+                  <label className="mono" style={{ fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                    <input type="checkbox" checked={normalize} onChange={e => setNormalize(e.target.checked)} />
+                    정규화(0~1)
+                  </label>
+                </div>
+                <EaMultiMetricChart gens={gens} normalize={normalize} />
+                {!normalize && (
+                  <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 4 }}>
+                    정규화 OFF — 스케일이 다른 계열은 겹쳐 비교가 어려워 score 만 원축으로 표시합니다.
+                  </div>
+                )}
+              </section>
+              <section className="v54-ea-cell">
+                <div style={{ display: "flex", gap: 14, alignItems: "center", margin: "0 0 8px", flexWrap: "wrap" }}>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" }}>
+                    세대 산점도 — MDD × 손익(니치 지도)
+                  </span>
+                  <LegendDot color="var(--teal)" label="게이트 통과" filled="ring" />
+                  <LegendDot color="var(--ink-3)" label="게이트 탈락(흐린 점)" />
+                </div>
+                <EaScatterChart gens={gens} />
+              </section>
+              <section className="v54-ea-cell wide">
+                <div style={{ margin: "0 0 8px" }}>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" }}>
+                    상위 세대 — score 내림차순(워크벤치 분석으로 백테 탭 연동)
+                  </span>
+                </div>
+                <EaTopTable runId={effRun} gens={gens} topN={8} onOpenWorkbench={onOpenWorkbench} />
+              </section>
             </div>
-            <EaMultiMetricChart gens={gens} normalize={normalize} />
-            {!normalize && (
-              <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 4 }}>
-                정규화 OFF — 스케일이 다른 계열은 겹쳐 비교가 어려워 score 만 원축으로 표시합니다.
-              </div>
-            )}
-
-            {/* 산점도 */}
-            <div style={{ display: "flex", gap: 14, alignItems: "center", margin: "16px 0 8px" }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" }}>
-                세대 산점도 — MDD × 손익(니치 지도)
-              </span>
-              <LegendDot color="var(--teal)" label="게이트 통과" filled="ring" />
-              <LegendDot color="var(--ink-3)" label="게이트 탈락(흐린 점)" />
-            </div>
-            <EaScatterChart gens={gens} />
-
-            {/* 상위 세대 테이블 */}
-            <div style={{ margin: "16px 0 8px" }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" }}>
-                상위 세대 — score 내림차순(워크벤치 분석으로 백테 탭 연동)
-              </span>
-            </div>
-            <EaTopTable runId={effRun} gens={gens} topN={8} onOpenWorkbench={onOpenWorkbench} />
 
             {loading && (
               <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 8 }}>

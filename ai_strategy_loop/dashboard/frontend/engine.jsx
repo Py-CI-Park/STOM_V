@@ -121,6 +121,13 @@ function EnginePanel({ state, wsStatus }) {
         </div>
       </div>
       <div className="panel-bd">
+        {/* v5.5 G1 — 엔진 시각화: 대형 전체 진행 바(한눈 상태) */}
+        <div className={"v55-eng-progress" + (running ? " running" : "")} aria-label="전체 진행률">
+          <div className="bar"><i style={{ width: Math.max(0, Math.min(100, overallPct)) + "%" }}></i></div>
+          <span className="mono v55-eng-progress-txt">
+            {overallPct.toFixed(1)}% · gen {currentGen}/{maxGens || "—"} · {running ? "실행 중" : (state.status || "대기")}
+          </span>
+        </div>
         <div className="engine-summary-strip">
           <span><b>Overall Progress</b> {overallPct.toFixed(1)}%</span>
           <span><b>Elapsed</b> {fmtElapsed(elapsedMs)}</span>
