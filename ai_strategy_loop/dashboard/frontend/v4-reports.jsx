@@ -85,12 +85,13 @@ function V4Reports({ baseUrl }) {
 
   const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
   const frameSrc = viewUrl ? (anchor ? viewUrl + "#" + anchor : viewUrl) : "";
-  // V6.4(S5): 스텝 자동 리포트(generated_reports/)와 일반 문서를 구분 + 결과 보고서 예시 바로가기.
-  // v5.3.7: run 종합 보고서를 스텝 그룹 최상단에 고정 + 배지 구분.
-  const stepReportsRaw = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
-  const stepReports = [...stepReportsRaw].sort((a, b) => (/run_report_/.test(b.path) ? 1 : 0) - (/run_report_/.test(a.path) ? 1 : 0));
+  // v5.4 R2 — 결과 분석 시스템: 목록을 3그룹으로 구분해 "결과 리포트(자동)"와 "연구 문서"를 분리.
+  //   ① run 종합 보고서(사이클 전체 결과) ② 스텝 자동 리포트 ③ 일반 연구 문서.
+  const generated = (list || []).filter(rp => String(rp.path).startsWith("generated_reports/"));
+  const runReports = generated.filter(rp => /run_report_/.test(rp.path));
+  const stepReports = generated.filter(rp => !/run_report_/.test(rp.path));
   const otherReports = (list || []).filter(rp => !String(rp.path).startsWith("generated_reports/"));
-  const exampleReport = stepReports.find(rp => /run_report_/.test(rp.path)) || stepReports.find(rp => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
+  const exampleReport = runReports[0] || stepReports.find(rp => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
   const wikiFiltered = (wiki || []).filter(d => {
     const q = wikiQuery.trim().toLowerCase();
     if (!q) return true;
@@ -115,7 +116,7 @@ function V4Reports({ baseUrl }) {
                     onClick={() => { setMode("reports"); setSel(exampleReport.path); }}>결과 보고서 예시</button>
           )}
           {(() => { // v5.3.9: 이전/다음 문서 순회(보는 순서).
-            const flat = [...stepReports, ...otherReports];
+            const flat = [...runReports, ...stepReports, ...otherReports];
             const idx = flat.findIndex(rp => rp.path === sel);
             if (idx < 0 || flat.length < 2) return null;
             return (
@@ -137,12 +138,16 @@ function V4Reports({ baseUrl }) {
               {list !== null && list.length === 0 && (
                 <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>
               )}
+              {list !== null && runReports.length > 0 && (
+                <div className="v6-report-group run mono">결과 리포트 · run 종합 {runReports.length}건 (사이클 전체 자동 생성)</div>
+              )}
+              {list !== null && runReports.map(renderReportItem)}
               {list !== null && stepReports.length > 0 && (
                 <div className="v6-report-group mono">스텝 자동 리포트 · {stepReports.length}건 (build_step_reports.py)</div>
               )}
               {list !== null && stepReports.map(renderReportItem)}
               {list !== null && otherReports.length > 0 && (
-                <div className="v6-report-group mono">일반 문서 리포트 · {otherReports.length}건</div>
+                <div className="v6-report-group mono">연구 문서(사람 작성) · {otherReports.length}건</div>
               )}
               {list !== null && otherReports.map(renderReportItem)}
             </aside>
