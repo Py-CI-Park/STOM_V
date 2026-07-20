@@ -88,7 +88,7 @@ function _rixDetailText(detail) {
   return "";
 }
 
-function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
+function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, initialQuery = "", preferredResearchId = "" }) {
   const base = _rixBase(baseUrl);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -101,8 +101,8 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
   const [loading, setLoading] = useState_rix(false);
   const [elapsed, setElapsed] = useState_rix(0);
   const [err, setErr] = useState_rix("");
-  const [queryInput, setQueryInput] = useState_rix("");
-  const [query, setQuery] = useState_rix("");
+  const [queryInput, setQueryInput] = useState_rix(initialQuery);
+  const [query, setQuery] = useState_rix(initialQuery.trim().toLowerCase());
   const [kind, setKind] = useState_rix("all");
   const [canonicality, setCanonicality] = useState_rix("all");
   const [traceStatus, setTraceStatus] = useState_rix("all");
@@ -114,6 +114,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
     const timer = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
     return () => clearTimeout(timer);
   }, [queryInput]);
+  useEffect_rix(() => {
+    const normalized = initialQuery.trim().toLowerCase();
+    setQueryInput(initialQuery);
+    setQuery(normalized);
+  }, [initialQuery]);
 
   // 로딩 경과 초 — /research_index 는 대용량(수천 건, 실측 ~11초)이라 '멈춤'으로 오해되기 쉽다.
   //   로딩 중 매초 경과를 갱신해 진행 중임을 명확히 알린다(C5).
@@ -147,6 +152,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
     const cancel = loadIndex();
     return () => { if (typeof cancel === "function") cancel(); };
   }, [loadIndex]);
+  useEffect_rix(() => {
+    if (preferredResearchId && records.some(row => row.id === preferredResearchId)) {
+      setSelectedId(preferredResearchId);
+    }
+  }, [preferredResearchId, records]);
 
   const filtered = useMemo_rix(() => {
     const q = query;

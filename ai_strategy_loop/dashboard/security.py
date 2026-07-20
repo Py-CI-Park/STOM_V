@@ -104,6 +104,11 @@ class DashboardSecurity:
     def capability_enabled(self, capability: Capability) -> bool:
         return capability in self._enabled
 
+    def session_valid(self, request: Request) -> bool:
+        """Return whether a request carries the current process-local dashboard session."""
+
+        return self._valid_session(request.cookies.get(SESSION_COOKIE_NAME))
+
     def authorize_http(self, request: Request) -> SecurityFailure | None:
         expected_origin = _request_origin(request)
         if expected_origin is None:

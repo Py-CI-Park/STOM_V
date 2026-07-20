@@ -7,8 +7,10 @@ from datetime import datetime, timezone
 import json
 import os
 import sqlite3
+import time
 from pathlib import Path
-from typing import Final, TypedDict
+from threading import RLock
+from typing import Final, NotRequired, TypedDict
 
 from fastapi import APIRouter
 
@@ -29,6 +31,9 @@ class ResearchDocSummary(TypedDict):
 class ResearchDocsResponse(TypedDict):
     docs: list[ResearchDocSummary]
     count: int
+    total: NotRequired[int]
+    next_offset: NotRequired[int | None]
+    q: NotRequired[str]
 
 
 class ResearchDocResponse(TypedDict, total=False):
@@ -71,6 +76,12 @@ _SELECTED_UPDATE_LOGS: Final[tuple[str, ...]] = (
 router = APIRouter()
 router.include_router(analysis_router)
 router.include_router(history_router)
+_DOC_INDEX_LOCK = RLock()
+_DOC_INDEX_CACHE: tuple[tuple[tuple[str, int, int], ...], dict[str, tuple[Path, ResearchDocSummary]]] | None = None
+_DOC_INDEX_CHECKED_AT = 0.0
+_DOC_INDEX_SIGNATURE_TTL_SECONDS = 30.0
+_DOC_INDEX_SIDECAR = REPO_ROOT / "docs" / "generated_reports" / "research_docs_index.json"
+_DOC_INDEX_SIDECAR_SCHEMA = "stom-research-doc-index-v1"
 
 
 def _repo_path(rel_path: str) -> Path:
@@ -79,6 +90,42 @@ def _repo_path(rel_path: str) -> Path:
 
 def _relative_id(path: Path) -> str:
     return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+
+
+def _doc_id_allowed(doc_id: str) -> bool:
+    if not doc_id or "\\" in doc_id or doc_id.startswith("/") or ".." in doc_id.split("/"):
+        return False
+    return (
+        any(doc_id.startswith(root.rel_path.rstrip("/") + "/") for root in _DOC_ROOTS)
+        or doc_id in _SELECTED_UPDATE_LOGS
+    )
+
+
+def _doc_sidecar_snapshot() -> tuple[tuple[tuple[str, int, int], ...], dict[str, tuple[Path, ResearchDocSummary]]] | None:
+    try:
+        stat = _DOC_INDEX_SIDECAR.stat()
+        payload = json.loads(_DOC_INDEX_SIDECAR.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return None
+    if not isinstance(payload, dict) or payload.get("schema_version") != _DOC_INDEX_SIDECAR_SCHEMA:
+        return None
+    rows: dict[str, tuple[Path, ResearchDocSummary]] = {}
+    for item in payload.get("docs", []):
+        if not isinstance(item, dict):
+            continue
+        doc_id = item.get("id")
+        if not isinstance(doc_id, str) or not _doc_id_allowed(doc_id):
+            continue
+        summary: ResearchDocSummary = {
+            "id": doc_id,
+            "title": str(item.get("title") or Path(doc_id).stem.replace("_", " ")),
+            "category": str(item.get("category") or "condition_research"),
+            "updated_at": str(item.get("updated_at") or ""),
+            "size": int(item.get("size") or 0),
+        }
+        rows[doc_id] = (REPO_ROOT / Path(doc_id), summary)
+    signature = ((str(_DOC_INDEX_SIDECAR), stat.st_mtime_ns, stat.st_size),)
+    return signature, rows
 
 
 def _title_from_markdown(markdown: str, fallback: str) -> str:
@@ -101,13 +148,19 @@ def _category_for(path: Path, default: str) -> str:
 
 
 def _summary_for(path: Path, category: str) -> ResearchDocSummary:
-    markdown = path.read_text(encoding="utf-8", errors="replace")
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as handle:
+            markdown_head = handle.read(16 * 1024)
+        size = path.stat().st_size
+    except OSError:
+        markdown_head = ""
+        size = 0
     return {
         "id": _relative_id(path),
-        "title": _title_from_markdown(markdown, path.stem.replace("_", " ")),
+        "title": _title_from_markdown(markdown_head, path.stem.replace("_", " ")),
         "category": _category_for(path, category),
         "updated_at": _updated_at(path),
-        "size": len(markdown),
+        "size": size,
     }
 
 
@@ -122,29 +175,87 @@ def _iter_allowed_docs() -> list[tuple[Path, str]]:
         if path.is_file():
             docs.append((path, "update_log"))
     return docs
+def _doc_source_snapshot() -> tuple[list[tuple[Path, str]], tuple[tuple[str, int, int], ...]]:
+    docs = _iter_allowed_docs()
+    signature: list[tuple[str, int, int]] = []
+    for path, _ in docs:
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        signature.append((_relative_id(path), stat.st_mtime_ns, stat.st_size))
+    return docs, tuple(sorted(signature))
+
+
 
 
 def _doc_index() -> dict[str, tuple[Path, ResearchDocSummary]]:
-    rows: dict[str, tuple[Path, ResearchDocSummary]] = {}
-    for path, category in _iter_allowed_docs():
-        summary = _summary_for(path, category)
-        rows[summary["id"]] = (path, summary)
-    return rows
+    """Return the metadata index, revalidating its source signature once per TTL."""
+
+    global _DOC_INDEX_CACHE, _DOC_INDEX_CHECKED_AT
+    with _DOC_INDEX_LOCK:
+        now = time.monotonic()
+        if _DOC_INDEX_CACHE is not None and now - _DOC_INDEX_CHECKED_AT < _DOC_INDEX_SIGNATURE_TTL_SECONDS:
+            return _DOC_INDEX_CACHE[1]
+        sidecar = _doc_sidecar_snapshot()
+        if sidecar is not None:
+            signature, rows = sidecar
+            _DOC_INDEX_CHECKED_AT = now
+            if _DOC_INDEX_CACHE is not None and _DOC_INDEX_CACHE[0] == signature:
+                return _DOC_INDEX_CACHE[1]
+            _DOC_INDEX_CACHE = (signature, rows)
+            return rows
+
+        docs, signature = _doc_source_snapshot()
+        _DOC_INDEX_CHECKED_AT = now
+        if _DOC_INDEX_CACHE is not None and _DOC_INDEX_CACHE[0] == signature:
+            return _DOC_INDEX_CACHE[1]
+        rows = {}
+        for path, category in docs:
+            rows[_relative_id(path)] = (path, _summary_for(path, category))
+        _DOC_INDEX_CACHE = (signature, rows)
+        return rows
 
 
 @router.get("/research_docs")
-def research_docs() -> ResearchDocsResponse:
+def research_docs(
+    q: str = "",
+    limit: int = 100,
+    offset: int = 0,
+) -> ResearchDocsResponse:
+    limit = max(1, min(250, int(limit)))
+    offset = max(0, int(offset))
     docs = [item[1] for item in _doc_index().values()]
     docs.sort(key=lambda row: (row["category"], row["id"]))
-    return {"docs": docs, "count": len(docs)}
+    needle = q.strip().casefold()
+    if needle:
+        docs = [
+            row for row in docs
+            if needle in " ".join((
+                str(row.get("title") or ""),
+                str(row.get("id") or ""),
+                str(row.get("category") or ""),
+            )).casefold()
+        ]
+    total = len(docs)
+    page = docs[offset:offset + limit]
+    next_offset = offset + len(page) if offset + len(page) < total else None
+    return {
+        "docs": page,
+        "count": len(page),
+        "total": total,
+        "next_offset": next_offset,
+        "q": q,
+    }
 
 
 @router.get("/research_doc")
 def research_doc(id: str = "") -> ResearchDocResponse:
     found = _doc_index().get(id)
-    if found is None:
+    path = _repo_path(id)
+    if found is None or path is None or not path.is_file():
         return {"available": False, "error": "doc_not_allowed", "id": id}
-    path, summary = found
+    _, summary = found
     markdown = path.read_text(encoding="utf-8", errors="replace")
     return {
         **summary,

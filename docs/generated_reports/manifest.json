@@ -1,20 +1,350 @@
 {
-  "generated_at": "2026-07-19T03:48:06Z",
-  "count": 1,
+  "schema_version": "stom-research-report-v1",
+  "status": "complete",
+  "generator": "ai_strategy_loop.dashboard.report_writer",
+  "generated_at": "2026-07-20T14:41:00Z",
+  "count": 4,
   "limits": {
     "max_reports": 1000,
     "max_bytes_each": 2097152
   },
   "reports": [
     {
+      "schema_version": "stom-research-report-v1",
+      "report_id": "run:lat_smoke_tick_full_sanitized_20260704:run",
+      "report_type": "run",
+      "research_id": "lat_smoke_tick_full_sanitized_20260704",
+      "run_id": "lat_smoke_tick_full_sanitized_20260704",
+      "generation": null,
+      "cycle": null,
+      "status": "aborted_wrong_profile",
+      "publication_status": "complete",
+      "generator": "ai_strategy_loop.dashboard.report_writer",
+      "path": "run_report_lat_smoke_tick_full_sanitized_20260704.html",
+      "content_sha256": "5a168fcafea750f041fad33db676caebd95fe51576fa6de2634401269b9cbde1",
+      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
+      "bytes": 185454,
+      "generated_at": "2026-07-20T14:41:00Z",
+      "trust": "derived",
+      "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
+      "toc": [
+        {
+          "id": "sec-profile",
+          "label": "실행 프로파일"
+        },
+        {
+          "id": "sec-evidence",
+          "label": "근거·비용·검증 자산"
+        },
+        {
+          "id": "sec-flow",
+          "label": "개선 흐름도"
+        },
+        {
+          "id": "sec-viz",
+          "label": "성과 시각화"
+        },
+        {
+          "id": "sec-gens",
+          "label": "세대별 스텝 기록"
+        },
+        {
+          "id": "sec-conclusion",
+          "label": "결론·다음 행동"
+        },
+        {
+          "id": "sec-safety",
+          "label": "안전·한계"
+        }
+      ],
+      "profile": {
+        "adaptive_timing_enabled": false,
+        "adaptive_timing_lookback": 2,
+        "autopsy_enabled": false,
+        "base_url": null,
+        "bt_avg_time": 30,
+        "bt_betting": "5",
+        "bt_end": null,
+        "bt_engine_count": 1,
+        "bt_engine_mode": "warm",
+        "bt_full_end": 20250331,
+        "bt_full_start": 20250101,
+        "bt_min_universe_end_time": 151900,
+        "bt_one_code": null,
+        "bt_refine_from_best": true,
+        "bt_scope": "single_stock",
+        "bt_start": null,
+        "bt_subset_db": null,
+        "bt_timeframe": "tick",
+        "bt_timeout": 900,
+        "bt_universe_cap": 1,
+        "bt_universe_end_time": 92800,
+        "bt_universe_size": 12,
+        "bt_universe_start_time": 90000,
+        "bt_warm_engine_count": 8
+      },
+      "evidence": {
+        "prompts": 0,
+        "total_tokens": 0,
+        "evaluation_manifests": 0,
+        "candidate_passports": 0,
+        "run_receipts": 0,
+        "generations": 170,
+        "lineage_links": 0,
+        "gate_passed": 0
+      },
+      "decision": "run 상태가 aborted_wrong_profile이므로 승격·성과 결론을 금지하고 원인 검토가 필요합니다.",
+      "limitations": [
+        "표본 내 지표이며 성능 증명이 아님",
+        "human review와 운영 export는 별도 경계",
+        "profile hash가 다른 run의 단순 delta 비교 금지"
+      ],
+      "step_id": "run",
+      "sha256": "5a168fcafea750f041fad33db676caebd95fe51576fa6de2634401269b9cbde1"
+    },
+    {
+      "schema_version": "stom-research-report-v1",
+      "report_id": "run:tmap_llmg19_fullsweep_q1_20260614:run",
+      "report_type": "run",
+      "research_id": "tmap_llmg19_fullsweep_q1_20260614",
+      "run_id": "tmap_llmg19_fullsweep_q1_20260614",
+      "generation": null,
+      "cycle": null,
+      "status": "complete",
+      "publication_status": "complete",
+      "generator": "ai_strategy_loop.dashboard.report_writer",
+      "path": "run_report_tmap_llmg19_fullsweep_q1_20260614.html",
+      "content_sha256": "87ebbec9a3b4e7c86d6ee742c7b194a31fd45c9f87f1f3d930ec34414fcf51f3",
+      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
+      "bytes": 74367,
+      "generated_at": "2026-07-20T14:40:59Z",
+      "trust": "derived",
+      "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
+      "toc": [
+        {
+          "id": "sec-profile",
+          "label": "실행 프로파일"
+        },
+        {
+          "id": "sec-evidence",
+          "label": "근거·비용·검증 자산"
+        },
+        {
+          "id": "sec-flow",
+          "label": "개선 흐름도"
+        },
+        {
+          "id": "sec-viz",
+          "label": "성과 시각화"
+        },
+        {
+          "id": "sec-gens",
+          "label": "세대별 스텝 기록"
+        },
+        {
+          "id": "sec-conclusion",
+          "label": "결론·다음 행동"
+        },
+        {
+          "id": "sec-safety",
+          "label": "안전·한계"
+        }
+      ],
+      "profile": {
+        "adaptive_timing_enabled": false,
+        "adaptive_timing_lookback": 2,
+        "autopsy_enabled": false,
+        "base_url": null,
+        "bt_avg_time": 30,
+        "bt_betting": "5",
+        "bt_end": null,
+        "bt_engine_count": 1,
+        "bt_engine_mode": "warm",
+        "bt_full_end": 20250331,
+        "bt_full_start": 20250101,
+        "bt_min_universe_end_time": 151900,
+        "bt_one_code": null,
+        "bt_refine_from_best": true,
+        "bt_scope": "single_stock",
+        "bt_start": null,
+        "bt_subset_db": null,
+        "bt_timeframe": "tick",
+        "bt_timeout": 900,
+        "bt_universe_cap": 1,
+        "bt_universe_end_time": 93000,
+        "bt_universe_size": 12,
+        "bt_universe_start_time": 90000,
+        "bt_warm_engine_count": 32
+      },
+      "evidence": {
+        "prompts": 0,
+        "total_tokens": 0,
+        "evaluation_manifests": 0,
+        "candidate_passports": 0,
+        "run_receipts": 0,
+        "generations": 66,
+        "lineage_links": 0,
+        "gate_passed": 5
+      },
+      "decision": "gate 통과 5건이 있으나 표본 내 결과입니다. human review와 OOS 검증 전 승격할 수 없습니다.",
+      "limitations": [
+        "표본 내 지표이며 성능 증명이 아님",
+        "human review와 운영 export는 별도 경계",
+        "profile hash가 다른 run의 단순 delta 비교 금지"
+      ],
+      "step_id": "run",
+      "sha256": "87ebbec9a3b4e7c86d6ee742c7b194a31fd45c9f87f1f3d930ec34414fcf51f3"
+    },
+    {
+      "schema_version": "stom-research-report-v1",
+      "report_id": "run:tmap_seed_full_train_20260611:run",
+      "report_type": "run",
+      "research_id": "tmap_seed_full_train_20260611",
+      "run_id": "tmap_seed_full_train_20260611",
+      "generation": null,
+      "cycle": null,
+      "status": "complete",
+      "publication_status": "complete",
+      "generator": "ai_strategy_loop.dashboard.report_writer",
+      "path": "run_report_tmap_seed_full_train_20260611.html",
+      "content_sha256": "1293832d2deb2bab1ec1bda523d16c0370f75ed44272a4334d2055686583af1c",
+      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
+      "bytes": 62072,
+      "generated_at": "2026-07-20T14:40:58Z",
+      "trust": "derived",
+      "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
+      "toc": [
+        {
+          "id": "sec-profile",
+          "label": "실행 프로파일"
+        },
+        {
+          "id": "sec-evidence",
+          "label": "근거·비용·검증 자산"
+        },
+        {
+          "id": "sec-flow",
+          "label": "개선 흐름도"
+        },
+        {
+          "id": "sec-viz",
+          "label": "성과 시각화"
+        },
+        {
+          "id": "sec-gens",
+          "label": "세대별 스텝 기록"
+        },
+        {
+          "id": "sec-conclusion",
+          "label": "결론·다음 행동"
+        },
+        {
+          "id": "sec-safety",
+          "label": "안전·한계"
+        }
+      ],
+      "profile": {
+        "adaptive_timing_enabled": false,
+        "adaptive_timing_lookback": 2,
+        "autopsy_enabled": false,
+        "base_url": null,
+        "bt_avg_time": 30,
+        "bt_betting": "5",
+        "bt_end": null,
+        "bt_engine_count": 1,
+        "bt_engine_mode": "warm",
+        "bt_full_end": 20251231,
+        "bt_full_start": 20230101,
+        "bt_min_universe_end_time": 151900,
+        "bt_one_code": null,
+        "bt_refine_from_best": true,
+        "bt_scope": "single_stock",
+        "bt_start": null,
+        "bt_subset_db": null,
+        "bt_timeframe": "tick",
+        "bt_timeout": 7200,
+        "bt_universe_cap": 1,
+        "bt_universe_end_time": 93000,
+        "bt_universe_size": 12,
+        "bt_universe_start_time": 90000,
+        "bt_warm_engine_count": 16
+      },
+      "evidence": {
+        "prompts": 0,
+        "total_tokens": 0,
+        "evaluation_manifests": 0,
+        "candidate_passports": 0,
+        "run_receipts": 0,
+        "generations": 56,
+        "lineage_links": 0,
+        "gate_passed": 49
+      },
+      "decision": "gate 통과 49건이 있으나 표본 내 결과입니다. human review와 OOS 검증 전 승격할 수 없습니다.",
+      "limitations": [
+        "표본 내 지표이며 성능 증명이 아님",
+        "human review와 운영 export는 별도 경계",
+        "profile hash가 다른 run의 단순 delta 비교 금지"
+      ],
+      "step_id": "run",
+      "sha256": "1293832d2deb2bab1ec1bda523d16c0370f75ed44272a4334d2055686583af1c"
+    },
+    {
+      "schema_version": "stom-research-report-v1",
+      "report_id": "step:v5_reporting_demo:stage1",
+      "report_type": "step",
       "research_id": "v5_reporting_demo",
-      "step_id": "stage1",
+      "run_id": "v5_reporting_demo",
+      "generation": null,
+      "cycle": null,
+      "status": "complete",
+      "generator": "ai_strategy_loop.dashboard.report_writer",
       "path": "v5_reporting_demo__stage1.html",
-      "sha256": "d0724ec5bc445d69a4b58f07d3eb76c30f240bc3cb0e935ef5350d45e986920a",
-      "bytes": 2222,
+      "content_sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf",
+      "source_sha256": "6e94e6018e736186bf6f1d1b85ec8cfd3b79f3687b446085320804c9b625141c",
+      "bytes": 2223,
       "generated_at": "2026-07-19T03:48:06Z",
       "trust": "derived",
-      "provenance": "docs/web_dashboard_expansion/2026-07-18_v5_series_dashboard_overhaul_master_plan.md"
+      "provenance": "docs/web_dashboard_expansion/2026-07-18_v5_series_dashboard_overhaul_master_plan.md",
+      "toc": [
+        {
+          "id": "sec-hypothesis",
+          "label": "가설 / 원인"
+        },
+        {
+          "id": "sec-method",
+          "label": "방법"
+        },
+        {
+          "id": "sec-results",
+          "label": "결과 (데이터·차트)"
+        },
+        {
+          "id": "sec-analysis",
+          "label": "분석"
+        },
+        {
+          "id": "sec-conclusion",
+          "label": "결론"
+        },
+        {
+          "id": "sec-limits",
+          "label": "한계"
+        },
+        {
+          "id": "sec-history",
+          "label": "히스토리 (변경 이력)"
+        },
+        {
+          "id": "sec-related_docs",
+          "label": "관련 문서"
+        },
+        {
+          "id": "sec-related_commits",
+          "label": "관련 커밋 / 작업"
+        }
+      ],
+      "step_id": "stage1",
+      "sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf"
     }
   ]
 }

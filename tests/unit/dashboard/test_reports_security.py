@@ -13,6 +13,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -25,6 +26,11 @@ from ai_strategy_loop.dashboard.app import create_app
 
 ORIGIN = "http://127.0.0.1:8770"
 ORIGIN_HEADER = {"Origin": ORIGIN}
+FRONTEND = Path(__file__).resolve().parents[3] / "ai_strategy_loop" / "dashboard" / "frontend"
+
+
+def _frontend_source(name: str) -> str:
+    return (FRONTEND / name).read_text(encoding="utf-8")
 
 
 def _client(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> TestClient:
@@ -46,6 +52,65 @@ def test_reports_lists_docs_html_including_process_flow(monkeypatch, tmp_path: P
         assert item["path"].lower().endswith(".html")
         assert ".." not in item["path"]
 
+
+
+def test_reports_catalog_exposes_manifest_metadata_without_reading_html_for_toc(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    reports_root = tmp_path / "docs"
+    generated = reports_root / "generated_reports"
+    generated.mkdir(parents=True)
+    html = '<!doctype html><h2 id="sec-flow">Flow</h2>'
+    report_path = generated / "run_report_demo.html"
+    report_path.write_text(html, encoding="utf-8")
+    digest = hashlib.sha256(html.encode("utf-8")).hexdigest()
+    (generated / "manifest.json").write_text(json.dumps({
+        "schema_version": "stom-research-report-v1",
+        "reports": [{
+            "path": report_path.name,
+            "registered": True,
+            "report_id": "run:demo",
+            "report_type": "run",
+            "research_id": "demo",
+            "run_id": "demo",
+            "status": "complete",
+            "trust": "derived",
+            "content_sha256": digest,
+            "source_sha256": "1" * 64,
+            "toc": [{"id": "sec-flow", "label": "Flow"}],
+        }],
+    }), encoding="utf-8")
+    monkeypatch.setattr(app_module, "_REPORTS_ROOT", str(reports_root))
+    app_module._REPORT_CATALOG_CACHE.clear()
+
+    response = _client(monkeypatch, tmp_path).get("/reports", headers=ORIGIN_HEADER)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["registered_count"] == 1
+    item = body["reports"][0]
+    assert item["registered"] is True
+    assert item["report_type"] == "run"
+    assert item["run_id"] == "demo"
+    assert item["content_sha256"] == digest
+    assert item["toc"] == [{"id": "sec-flow", "label": "Flow"}]
+
+
+def test_debug_logs_require_session_and_redact_sensitive_values(monkeypatch, tmp_path: Path) -> None:
+    client = _client(monkeypatch, tmp_path)
+    denied = client.get("/debug/logs", headers=ORIGIN_HEADER)
+    assert denied.status_code == 401
+
+    bootstrap = client.get("/ui/", headers=ORIGIN_HEADER)
+    assert bootstrap.status_code == 200
+    logging.getLogger("dashboard-test").warning(
+        "token=secret-value path=C:\\Users\\parkc\\private"
+    )
+    allowed = client.get("/debug/logs", headers=ORIGIN_HEADER)
+    assert allowed.status_code == 200
+    messages = [row["msg"] for row in allowed.json()["logs"]]
+    assert any("token=<redacted>" in message for message in messages)
+    assert all("secret-value" not in message and "C:\\Users\\parkc" not in message for message in messages)
 
 def test_report_view_serves_with_script_blocking_csp(monkeypatch, tmp_path: Path) -> None:
     client = _client(monkeypatch, tmp_path)
@@ -109,3 +174,40 @@ def test_safe_report_path_unit_boundary() -> None:
     assert app_module._safe_report_path("") is None
     assert app_module._safe_report_path("nope.html") is None
     assert app_module._safe_report_path("a\x00b.html") is None
+def test_reports_frontend_uses_metadata_toc_without_duplicate_html_fetch() -> None:
+    source = _frontend_source("v4-reports.jsx")
+
+    assert "function _reportToc(report)" in source
+    assert "Array.isArray(report && report.toc)" in source
+    assert 'fetch(baseUrl + "/reports/view?path="' not in source
+    assert 'iframe key={sel}' in source
+    assert "목차 없음 · 레거시 리포트 메타데이터 미제공" in source
+
+
+def test_reports_mode_tabs_link_panels_and_roving_keys() -> None:
+    source = _frontend_source("v4-reports.jsx")
+
+    assert 'id="v4-reports-mode-tab-reports"' in source
+    assert 'aria-controls="v4-reports-panel-reports"' in source
+    assert 'id="v4-reports-mode-tab-wiki"' in source
+    assert 'aria-controls="v4-reports-panel-wiki"' in source
+    assert 'tabIndex={mode === "reports" ? 0 : -1}' in source
+    assert 'tabIndex={mode === "wiki" ? 0 : -1}' in source
+    assert 'event.key === "Home"' in source
+    assert 'event.key === "End"' in source
+def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregistered_boundary() -> None:
+    source = _frontend_source("v4-reports.jsx")
+    css = _frontend_source("v4.css")
+
+    assert 'report.registered !== true' in source
+    assert '["run", "step", "legacy"].includes(report.report_type)' in source
+    assert "미등록·검증 불가" in source
+    assert "rp.research_id" in source or "selectedReport.research_id" in source
+    assert "rp.run_id" in source or "selectedReport.run_id" in source
+    assert "rp.status" in source and "selectedReport.status" in source
+    assert "rp.trust" in source and "selectedReport.trust" in source
+    assert "content_sha256" in source and "source_sha256" in source
+    assert "v4-reports-toc-toggle" in source
+    assert "v4-reports-toc-slot.open" in css
+    assert "@media (max-width: 1200px)" in css
+    assert "run_report_" not in source

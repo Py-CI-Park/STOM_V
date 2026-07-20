@@ -428,6 +428,26 @@ function _SegRows({ title, rows }) {
   );
 }
 
+function _derivedFallbackAllowed(data) {
+  return !data || data.status === "missing" || data.status === "pending";
+}
+
+function _authorityDetail(data) {
+  const reason = data.reason || data.error || data.message || "사유 미발행";
+  const lastNormal = data.last_normal || data.last_known_good || data.last_success_at || data.last_ok_at || "마지막 정상 정보 미발행";
+  return { reason: String(reason), lastNormal: String(lastNormal) };
+}
+
+function _AuthorityStatus({ data }) {
+  if (!data || data.status === "ok") return null;
+  const detail = _authorityDetail(data);
+  return (
+    <div className="mono" role="status" style={{ fontSize: 10.5, color: "var(--amber)", marginBottom: 8, lineHeight: 1.55 }}>
+      정본 상태: {String(data.status)} · 사유: {detail.reason} · 마지막 정상 정보: {detail.lastNormal}
+    </div>
+  );
+}
+
 function AutopsyPanel({ state, wsStatus }) {
   const autopsy = state.page_data?.autopsy;
   const isDemo = typeof window.isDemoSource === "function"
@@ -445,7 +465,7 @@ function AutopsyPanel({ state, wsStatus }) {
         </span>
       </div>
       <div className="panel-bd">
-        {!autopsy || autopsy.status !== "ok" ? (
+        {_derivedFallbackAllowed(autopsy) ? (
           // v5.6.1 — 폴백: 발행 전에도 세대별 부검/게이트 사유를 파생 표시(빈 화면 금지).
           (() => {
             const gens = Array.isArray(state.generations) ? state.generations : [];
@@ -476,6 +496,7 @@ function AutopsyPanel({ state, wsStatus }) {
           })()
         ) : (
           <div>
+            <_AuthorityStatus data={autopsy} />
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 10 }}>
               거래 {autopsy.trade_count}건 · 전체 승률 {_pct(autopsy.overall_win_rate)} · 평균 {_num(autopsy.overall_avg_return)}%
             </div>
@@ -532,7 +553,7 @@ function LineagePanel({ state, wsStatus }) {
         </span>
       </div>
       <div className="panel-bd">
-        {!lineage || lineage.status !== "ok" || ordered.length === 0 ? (
+        {_derivedFallbackAllowed(lineage) ? (
           // v5.6.1 — 폴백: lineage 미발행 시 세대 흐름(파생 계보)을 표시(빈 화면 금지).
           (() => {
             const gens = (Array.isArray(state.generations) ? state.generations : []).filter(g => g.gen_no >= 0);
@@ -567,6 +588,7 @@ function LineagePanel({ state, wsStatus }) {
           })()
         ) : (
           <div>
+            <_AuthorityStatus data={lineage} />
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 8 }}>
               best 세대 = gen_{String(lineage.best_gen).padStart(2, "0")} · 경로 {bestPath.map(g => `g${g}`).join(" → ")}
             </div>

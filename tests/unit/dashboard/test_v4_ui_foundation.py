@@ -156,3 +156,21 @@ def test_v5p0_catalog_marked_non_authoritative_prototype() -> None:
     source = _read("dashboard-v4-shell.jsx")
     catalog_line = next(l for l in source.splitlines() if 'key: "catalog"' in l)
     assert "비정본" in catalog_line and "prototype" in catalog_line
+def test_v4_console_error_wrapper_preserves_original_and_handles_cycles() -> None:
+    source = _read("dashboard-v4-shell.jsx")
+
+    assert "const describeConsoleValue" in source
+    assert "unserializable console.error argument" in source
+    assert "finally {" in source
+    assert "origErr(...args);" in source
+
+
+def test_v4_reports_layout_uses_defined_tokens_and_narrow_single_columns() -> None:
+    css = _read("v4.css")
+
+    assert "var(--line)" not in css
+    assert ".v6-graphs { grid-template-columns: minmax(0, 1fr); }" in css
+    assert ".v55-board-main.v56-unified { grid-template-columns: minmax(0, 1fr); }" in css
+    assert ".v6-stage-panel.cols-3 .v6-stage-grid, .v6-stage-panel.cols-4 .v6-stage-grid { grid-template-columns: minmax(0, 1fr); }" in css
+    assert ".v4-reports-meta { font-size: 10px; color: var(--ink-2); }" in css
+    assert ".v4-toc-item.lvl3 { padding-left: 22px; font-size: 11.5px; color: var(--ink-2); }" in css

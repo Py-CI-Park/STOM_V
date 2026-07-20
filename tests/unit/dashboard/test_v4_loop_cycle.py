@@ -65,6 +65,36 @@ def test_v4_research_places_pipeline_belt_in_status_board() -> None:
     # 벨트 8노드가 4스테이지 매핑을 가진다(클릭 pin).
     assert '{ key: "loop", label: "환류 ↩", ai: false, stage: 3 }' in source
     assert "STAGE_FROM_PHASE = [0, 1, 2, 2]" in source
+def test_v4_research_status_helper_makes_complete_the_terminal_stage() -> None:
+    source = _read(FRONTEND / "v4-research.jsx")
+
+    assert "function _v4RunStatus(status, phase)" in source
+    for status in ["idle", "running", "stopping", "complete", "error", "blocked"]:
+        assert f"{status}: {{ stage:" in source
+    assert 'complete: { stage: 3, engineLabel: "완료"' in source
+    assert "const liveStage = runStatus.stage;" in source
+    assert 'status === "done"' not in source
+    assert "runStatus.engineLabel" in source
+
+
+def test_analysis_fallback_only_derives_missing_or_pending_authority() -> None:
+    analysis = _read(FRONTEND / "panels-analysis.jsx")
+    config = _read(FRONTEND / "panels-config.jsx")
+
+    assert 'return !data || data.status === "missing" || data.status === "pending";' in analysis
+    assert "_derivedFallbackAllowed(autopsy)" in analysis
+    assert "_derivedFallbackAllowed(lineage)" in analysis
+    assert 'autopsy.status !== "ok"' not in analysis
+    assert 'lineage.status !== "ok"' not in analysis
+    assert "정본 상태:" in analysis
+    assert "마지막 정상 정보:" in analysis
+
+    assert 'return !meta || meta.status === "missing" || meta.status === "pending";' in config
+    assert "_metaDerivedFallbackAllowed(meta)" in config
+    assert 'meta.status !== "ok"' not in config
+    assert "정본 상태:" in config
+    assert "마지막 정상 정보:" in config
+
 
 
 def test_v4_css_declares_loop_cycle_pulse_animation_with_reduced_motion_guard() -> None:

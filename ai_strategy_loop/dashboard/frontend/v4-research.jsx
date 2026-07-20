@@ -39,6 +39,28 @@ function _v4ApprovalBindingProblem(binding, state) {
   const invalidHash = _V4_APPROVAL_HASH_KEYS.find(key => !/^[0-9a-f]{64}$/.test(String(binding[key])));
   return invalidHash ? `승인 근거 해시 형식이 올바르지 않습니다 (${invalidHash}).` : "";
 }
+const _V4_RUN_STATUS = Object.freeze({
+  idle: { stage: -1, engineLabel: "대기", engineTone: "idle" },
+  running: { stage: null, engineLabel: "실행 중", engineTone: "run" },
+  stopping: { stage: null, engineLabel: "정지 중", engineTone: "run" },
+  complete: { stage: 3, engineLabel: "완료", engineTone: "complete" },
+  error: { stage: -1, engineLabel: "오류", engineTone: "error" },
+  blocked: { stage: -1, engineLabel: "차단", engineTone: "blocked" },
+});
+
+function _v4RunStatus(status, phase) {
+  const rawStatus = status === "failed" ? "error" : status;
+  const key = Object.prototype.hasOwnProperty.call(_V4_RUN_STATUS, rawStatus) ? rawStatus : "idle";
+  const mapped = _V4_RUN_STATUS[key];
+  const phaseIdx = phaseIndex(phase);
+  return {
+    key,
+    stage: mapped.stage === null ? (phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1) : mapped.stage,
+    engineLabel: mapped.engineLabel,
+    engineTone: mapped.engineTone,
+  };
+}
+
 
 // 접이식 섹션(app.jsx _EvoSection 패턴 — styles.css .evo-group 재사용, V4 전용 storage key)
 function _V4Fold({ storageKey, label, children, defaultOpen = false, forceOpen = false }) {
@@ -74,17 +96,17 @@ function _V4Onboarding({ onOpenSettings }) {
 function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
   const s = state || {};
   const prog = (s.latest || {}).backtest_progress || {};
-  const running = s.status === "running" || s.status === "stopping";
+  const runStatus = _v4RunStatus(s.status, s.latest && s.latest.phase);
   const pct = typeof prog.percent === "number" ? Math.max(0, Math.min(100, prog.percent)) : null;
   const curGen = typeof prog.current_gen === "number" ? prog.current_gen : (s.current_gen || 0);
   const maxGens = prog.max_generations || s.max_generations || 0;
-  const engineLabel = running ? "실행 중" : (s.status === "done" ? "완료" : s.status === "error" ? "오류" : "대기");
+  const engineLabel = runStatus.engineLabel;
   const fmt = (v, d = 2) => (v == null || v === "" ? "—" : Number(v).toFixed(d));
   return (
     <div className="v4-enggate-bar" aria-label="엔진·게이트 상황판">
       <div className="v4-eg-group">
         <span className="v4-eg-lbl">엔진</span>
-        <span className={"v4-eg-chip " + (running ? "run" : "idle")}>{engineLabel}</span>
+        <span className={"v4-eg-chip " + runStatus.engineTone}>{engineLabel}</span>
         {pct != null && <span className="v4-eg-v">{pct.toFixed(0)}%</span>}
         <span className="v4-eg-v mono">gen {curGen >= 0 ? curGen : "—"}{maxGens ? "/" + maxGens : ""}</span>
       </div>
@@ -133,7 +155,7 @@ function _V4Stats({ state, hideCurrent }) {
 }
 
 // v5.3.2 스테이지 정의 — 4탭(N6: 채점+부검 통합). phaseIndex(0생성·1백테·2채점·3부검)
-//   → 스테이지 [0,1,2,2]. run 완료(done)는 반복·성과(3).
+//   → 스테이지 [0,1,2,2]. run 완료(complete)는 반복·성과(3).
 const V6_STAGES = [
   { key: "generate", label: "생성", sub: "조건식 생성" },
   { key: "backtest", label: "백테스트", sub: "엔진 검증·결과" },
@@ -297,9 +319,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const hasData = gens.length > 0;
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
-  const running = s.status === "running" || s.status === "stopping";
-  const phaseIdx = running ? phaseIndex(latest.phase) : -1;
-  const liveStage = s.status === "done" ? 3 : (phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1);
+  const runStatus = _v4RunStatus(s.status, latest.phase);
+  const liveStage = runStatus.stage;
   // v5.6 U6 — 초기 스테이지: 연구 중이면 해당 단계, 아니면 항상 1. 생성.
   const activeStage = stagePin != null ? stagePin : (liveStage >= 0 ? liveStage : 0);
   const onStagePin = (i) => setStagePin(prev => (prev === i ? null : i));

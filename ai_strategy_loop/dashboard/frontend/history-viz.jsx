@@ -289,7 +289,7 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
 }
 
 /* ── B-3: CellHeatmap — campaign evaluations의 시간창×시총 셀 히트맵. ── */
-function CellHeatmap({ baseUrl, wsStatus }) {
+function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -311,16 +311,25 @@ function CellHeatmap({ baseUrl, wsStatus }) {
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
-        setSelected(prev => prev || (items.length ? items[0].research_id : ""));
+        setSelected(prev => (
+          preferredResearchId && preferredResearchId.startsWith("campaign:") && items.some(item => item.research_id === preferredResearchId)
+            ? preferredResearchId
+            : (prev || (items.length ? items[0].research_id : ""))
+        ));
       })
       .catch(e => { setCampaignsErr(String(e)); setCampaigns([]); })
       .finally(() => setCampaignsLoading(false));
-  }, [baseUrl, isDemo]);
+  }, [baseUrl, isDemo, preferredResearchId]);
 
   useEffect_hv(() => {
     loadCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect_hv(() => {
+    if (preferredResearchId && preferredResearchId.startsWith("campaign:") && campaigns.some(c => c.research_id === preferredResearchId)) {
+      setSelected(preferredResearchId);
+    }
+  }, [preferredResearchId, campaigns]);
 
   const loadRows = useCallback_hv(() => {
     if (isDemo || !baseUrl || !selected) {
@@ -388,6 +397,9 @@ function CellHeatmap({ baseUrl, wsStatus }) {
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 히트맵이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
+            {preferredResearchId && !preferredResearchId.startsWith("campaign:") && (
+              <_HvEmpty>선택 연구 {preferredResearchId}는 campaign 히트맵과 호환되지 않습니다. 이 패널은 독립 campaign 분석입니다.</_HvEmpty>
+            )}
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <select
                 className="mono"
@@ -460,7 +472,7 @@ function CellHeatmap({ baseUrl, wsStatus }) {
 }
 
 /* ── B-3: HoldoutFunnel — run 선택 후 평가수 → gate 통과수 → 홀드아웃 3단 퍼널. ── */
-function HoldoutFunnel({ baseUrl, wsStatus }) {
+function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -481,16 +493,25 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);
-        setSelected(prev => prev || (items.length ? items[0].research_id : ""));
+        setSelected(prev => (
+          preferredResearchId && preferredResearchId.startsWith("loop_run:") && items.some(item => item.research_id === preferredResearchId)
+            ? preferredResearchId
+            : (prev || (items.length ? items[0].research_id : ""))
+        ));
       })
       .catch(e => { setRunsErr(String(e)); setRuns([]); })
       .finally(() => setRunsLoading(false));
-  }, [baseUrl, isDemo]);
+  }, [baseUrl, isDemo, preferredResearchId]);
 
   useEffect_hv(() => {
     loadRuns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect_hv(() => {
+    if (preferredResearchId && preferredResearchId.startsWith("loop_run:") && runs.some(r => r.research_id === preferredResearchId)) {
+      setSelected(preferredResearchId);
+    }
+  }, [preferredResearchId, runs]);
 
   const loadRows = useCallback_hv(() => {
     if (isDemo || !baseUrl || !selected) {
@@ -561,6 +582,9 @@ function HoldoutFunnel({ baseUrl, wsStatus }) {
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 홀드아웃 퍼널이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
+            {preferredResearchId && !preferredResearchId.startsWith("loop_run:") && (
+              <_HvEmpty>선택 연구 {preferredResearchId}는 loop_run 퍼널과 호환되지 않습니다. 이 패널은 독립 run 분석입니다.</_HvEmpty>
+            )}
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <select
                 className="mono"

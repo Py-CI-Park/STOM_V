@@ -1242,7 +1242,6 @@ function ProcessFlowPanel({ state }) {
 
 Object.assign(window, {
   PhaseTimeline,
-  phaseIndex,
   PhaseDetailPanel,
   ProcessFlowPanel,
   ProcessFlowDiagram,

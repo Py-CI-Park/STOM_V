@@ -48,6 +48,7 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "요약 확인" in source
     assert "Compare" in source
     assert "마지막 응답일 수 있습니다" in source
-    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />" in source
-    assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} />" in source
+    assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} onSelectCampaign={onSelectCampaign} />" in source
+    assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate}" in source
+    assert "preferredResearchId={selResearch && selResearch.researchId}" in source
     assert "style={{" not in source

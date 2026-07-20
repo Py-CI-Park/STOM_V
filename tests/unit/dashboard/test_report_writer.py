@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ai_strategy_loop.dashboard.report_writer import (
     STANDARD_SECTIONS,
+    normalize_manifest,
     render_report_html,
     write_report,
     write_reports,
@@ -67,14 +68,44 @@ def test_write_report_atomic_and_manifest_entry(tmp_path: Path) -> None:
     assert entry["provenance"] == ".omo/evidence/tmap-walkforward"
 
 
-def test_write_reports_manifest_shape(tmp_path: Path) -> None:
+def test_write_reports_manifest_shape_and_typed_envelope(tmp_path: Path) -> None:
     manifest_path = tmp_path / "manifest.json"
-    manifest = write_reports([_spec(), _spec()], str(tmp_path), str(manifest_path))
+    second = _spec()
+    second["step_id"] = "stage3"
+    manifest = write_reports([_spec(), second], str(tmp_path), str(manifest_path))
+    assert manifest["schema_version"] == "stom-research-report-v1"
+    assert manifest["status"] == "complete"
+    assert manifest["generator"] == "ai_strategy_loop.dashboard.report_writer"
     assert manifest["count"] == 2
     assert set(manifest["limits"]) == {"max_reports", "max_bytes_each"}
     on_disk = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert on_disk["count"] == 2 and len(on_disk["reports"]) == 2
-    assert all(len(r["sha256"]) == 64 for r in on_disk["reports"])
+    for report in on_disk["reports"]:
+        assert report["report_type"] == "step"
+        assert report["run_id"] == "r8_exclude_cap"
+        assert report["generation"] is None and report["cycle"] is None
+        assert report["status"] == "complete"
+        assert len(report["content_sha256"]) == len(report["source_sha256"]) == 64
+        assert report["sha256"] == report["content_sha256"]  # legacy alias
+        assert report["toc"][0] == {"id": "sec-hypothesis", "label": "가설 / 원인"}
+        assert report["content_sha256"] == __import__("hashlib").sha256(
+            (tmp_path / report["path"]).read_bytes()
+        ).hexdigest()
+def test_normalize_manifest_reads_legacy_shape() -> None:
+    legacy = {
+        "generated_at": "2026-07-19T00:00:00Z",
+        "count": 1,
+        "reports": [{
+            "research_id": "legacy-run", "step_id": "gen7", "path": "legacy-run__gen7.html",
+            "sha256": "a" * 64, "bytes": 1, "trust": "derived",
+        }],
+    }
+    normalized = normalize_manifest(legacy)
+    report = normalized["reports"][0]
+    assert normalized["schema_version"] == "stom-research-report-v1"
+    assert report["generation"] == 7 and report["content_sha256"] == "a" * 64
+    assert report["sha256"] == "a" * 64  # legacy consumer remains supported
+
 
 def test_specs_from_loop_runs_builds_standard_specs(tmp_path: Path) -> None:
     # V6.4(S5): loop_runs.db → 세대별 스텝 spec 자동 구성(SELECT-only·오프라인).
@@ -135,4 +166,46 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     assert 'id="sec-flow"' in html and 'id="gen-1"' in html  # TOC 앵커
     assert "gate 통과 ✓" in html  # gen3 통과 마커
     assert "performance_proved=false" in html  # 안전 문구
-    assert "/reports/view?path=generated_reports/runB__gen1.html" in html  # 스텝 리포트 링크
+    assert "/reports/view?path=generated_reports/runB__gen1.html" not in html  # 생성하지 않은 상세 리포트 링크 금지
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["reports"][0]["report_type"] == "run"
+    assert manifest["reports"][0]["status"] == "done"
+    assert manifest["reports"][0]["publication_status"] == "complete"
+    assert manifest["reports"][0]["content_sha256"] == written[0]["content_sha256"]
+    assert "누적 profit" not in html
+    assert "profit 중앙값" in html and "best−중앙값" in html
+    assert "좌상단=저위험·고성과" in html and "표본 n=3" in html
+
+
+def test_publish_manifest_preserves_valid_siblings_and_drops_tampered_entries(tmp_path: Path) -> None:
+    first = _spec()
+    first["research_id"] = "first"
+    first["step_id"] = "stage1"
+    second = _spec()
+    second["research_id"] = "second"
+    second["step_id"] = "stage2"
+
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    merged = write_reports([second], str(tmp_path), str(manifest_path))
+
+    assert {entry["research_id"] for entry in merged["reports"]} == {"first", "second"}
+    assert (tmp_path / "first__stage1.html").exists()
+    assert (tmp_path / "second__stage2.html").exists()
+
+    (tmp_path / "first__stage1.html").write_text("tampered", encoding="utf-8")
+    third = _spec()
+    third["research_id"] = "third"
+    third["step_id"] = "stage3"
+    repaired = write_reports([third], str(tmp_path), str(manifest_path))
+    assert {entry["research_id"] for entry in repaired["reports"]} == {"second", "third"}
+
+
+def test_standard_report_has_scriptless_internal_navigation_and_print_contract() -> None:
+    html = render_report_html(_spec())
+
+    assert '<meta name="viewport"' in html
+    assert '<nav class="tabs" aria-label="보고서 섹션">' in html
+    assert 'href="#sec-hypothesis"' in html
+    assert "@media print" in html
+    assert "<script" not in html

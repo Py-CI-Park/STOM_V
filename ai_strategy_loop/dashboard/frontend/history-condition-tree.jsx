@@ -6,6 +6,7 @@ const {
   useState: useState_hct,
   useEffect: useEffect_hct,
   useCallback: useCallback_hct,
+  useRef: useRef_hct,
 } = React;
 
 const HCT_SOURCE_KINDS = [
@@ -116,14 +117,14 @@ function _hctSortedEvaluations(rows, sortKey, sortDir) {
   });
 }
 
-function _hctFetchSection(baseUrl, researchId, section, cursor) {
+function _hctFetchSection(baseUrl, researchId, section, cursor, signal) {
   let url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=" + section;
   if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
-  return fetch(url, { signal: AbortSignal.timeout(8000) })
+  return fetch(url, { signal })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
+function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -142,6 +143,8 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
 
   const [sortKey, setSortKey] = useState_hct("");
   const [sortDir, setSortDir] = useState_hct("desc");
+  const selectionGeneration = useRef_hct(0);
+  const selectionController = useRef_hct(null);
 
   const loadIndex = useCallback_hct((cursor) => {
     if (isDemo || !baseUrl) return;
@@ -171,6 +174,11 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
   }, [loadIndex]);
 
   const selectResearch = useCallback_hct((researchId) => {
+    const generation = selectionGeneration.current + 1;
+    selectionGeneration.current = generation;
+    if (selectionController.current) selectionController.current.abort();
+    const controller = new AbortController();
+    selectionController.current = controller;
     setSelectedId(researchId);
     setExpandedStages({});
     setExpandedConditions({});
@@ -179,19 +187,36 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
       return;
     }
     setSections({ research: { loading: true, err: "", node: null } });
-    _hctFetchSection(baseUrl, researchId, "research")
-      .then(j => setSections(prev => ({ ...prev, research: { loading: false, err: "", node: j } })))
-      .catch(e => setSections(prev => ({ ...prev, research: { loading: false, err: String(e), node: null } })));
+    _hctFetchSection(baseUrl, researchId, "research", null, controller.signal)
+      .then(j => {
+        if (selectionGeneration.current === generation) {
+          setSections({ research: { loading: false, err: "", node: j } });
+        }
+      })
+      .catch(e => {
+        if (e.name !== "AbortError" && selectionGeneration.current === generation) {
+          setSections({ research: { loading: false, err: String(e), node: null } });
+        }
+      });
   }, [baseUrl, isDemo]);
+  useEffect_hct(() => {
+    if (preferredResearchId && preferredResearchId !== selectedId) selectResearch(preferredResearchId);
+  }, [preferredResearchId, selectedId, selectResearch]);
+  useEffect_hct(() => () => {
+    if (selectionController.current) selectionController.current.abort();
+  }, []);
 
   const loadSection = useCallback_hct((section, cursor) => {
     if (isDemo || !baseUrl || !selectedId) return;
+    const generation = selectionGeneration.current;
+    const controller = selectionController.current;
     setSections(prev => ({
       ...prev,
       [section]: { ...(prev[section] || {}), loading: true, err: prev[section] ? prev[section].err : "" },
     }));
-    _hctFetchSection(baseUrl, selectedId, section, cursor)
+    _hctFetchSection(baseUrl, selectedId, section, cursor, controller && controller.signal)
       .then(j => {
+        if (selectionGeneration.current !== generation) return;
         const rows = Array.isArray(j && j.rows) ? j.rows : [];
         setSections(prev => ({
           ...prev,
@@ -203,10 +228,13 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
           },
         }));
       })
-      .catch(e => setSections(prev => ({
-        ...prev,
-        [section]: { loading: false, err: String(e), rows: (prev[section] && prev[section].rows) || [], next_cursor: null },
-      })));
+      .catch(e => {
+        if (e.name === "AbortError" || selectionGeneration.current !== generation) return;
+        setSections(prev => ({
+          ...prev,
+          [section]: { loading: false, err: String(e), rows: (prev[section] && prev[section].rows) || [], next_cursor: null },
+        }));
+      });
   }, [baseUrl, isDemo, selectedId]);
 
   const toggleStage = useCallback_hct((stageId) => {
