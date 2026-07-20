@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -763,6 +764,41 @@ def _sanitize_public_payload(value: JsonValue) -> JsonValue:
             sanitized[sanitized_key] = _sanitize_public_payload(item)
         return sanitized
     return value
+
+
+# v5.4 H1 — 공개 응답(새니타이즈 완료본) 캐시. 근본 원인 2가지를 함께 제거한다:
+#   (1) _sanitize_public_payload(수 MB 재귀 regex)가 매 요청 재실행 → 새니타이즈 결과 캐시.
+#   (2) 서명 계산 자체(rglob+stat 수천 파일, ~10s) → 30초 TTL 신선도 창 내에서는 서명
+#       재계산 없이 캐시를 즉시 반환(연구 문서는 저빈도 변경·읽기 전용 뷰).
+_PUBLIC_CACHE: dict[str, tuple[float, tuple, ResearchIndexResponse]] = {}
+_PUBLIC_TTL_SECONDS = 30.0
+
+
+def public_research_index_response(
+    repo_root: Path | None = None, evidence_root: Path | None = None, limit: int = 0
+) -> ResearchIndexResponse:
+    root = (repo_root or REPO_ROOT).resolve()
+    evidence = (evidence_root or (root / ".omo" / "evidence" / "tmap-walkforward")).resolve()
+    cache_key = f"{root}|{evidence}"
+    now = time.monotonic()
+    hit = _PUBLIC_CACHE.get(cache_key)
+    if hit is not None and (now - hit[0]) < _PUBLIC_TTL_SECONDS:
+        response = hit[2]
+    else:
+        signature = _source_signature(_collect_sources(root, evidence))
+        if hit is not None and hit[1] == signature:
+            response = hit[2]
+        else:
+            response = serialize_research_index_response(list_research_index(repo_root, evidence_root))
+        _PUBLIC_CACHE[cache_key] = (time.monotonic(), signature, response)
+    if limit and limit > 0:
+        records = response.get("records") or []
+        if len(records) > limit:
+            trimmed = dict(response)
+            trimmed["records"] = records[:limit]
+            trimmed["truncated"] = True
+            return cast(ResearchIndexResponse, trimmed)
+    return response
 
 
 def serialize_research_index_response(response: ResearchIndexResponse) -> ResearchIndexResponse:

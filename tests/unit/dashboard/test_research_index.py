@@ -182,7 +182,8 @@ def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tm
         "route": "/research_docs",
     }
 
-    monkeypatch.setattr(research_api.research_index, "list_research_index", lambda: raw_response)
+    monkeypatch.setattr(research_api.research_index, "list_research_index", lambda *a, **k: raw_response)
+    research_index._PUBLIC_CACHE.clear()
     route_response = research_api.research_index_route()
     serialized = json.dumps(route_response, ensure_ascii=False)
     assert "C:/private" not in serialized

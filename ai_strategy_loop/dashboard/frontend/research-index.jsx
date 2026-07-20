@@ -129,7 +129,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
     const controller = new AbortController();
     setLoading(true);
     setErr("");
-    fetch(base + "/research_index", { signal: controller.signal })
+    fetch(base + "/research_index?limit=200", { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
         const rows = Array.isArray(j && j.records) ? j.records : [];
