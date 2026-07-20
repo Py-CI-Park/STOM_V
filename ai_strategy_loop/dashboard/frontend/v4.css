@@ -802,3 +802,20 @@
 .v54-lab-cell { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg-1); min-width: 0; overflow: auto; }
 .v54-lab-cell.wide { grid-column: span 2; }
 @media (max-width: 1500px) { .v54-lab-all { grid-template-columns: 1fr; } .v54-lab-cell.wide { grid-column: auto; } }
+
+/* ===== v5.4 B1 — BT 결과 4열 그리드 + 퀀트 인사이트 패널 ===== */
+@media (min-width: 3000px) {
+  .bt-result-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .bt-result-flow > .v54-quant { grid-column: span 2; }
+}
+.v54-quant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1500px) { .v54-quant-grid { grid-template-columns: 1fr; } }
+.v54-quant-grid section { min-width: 0; border: 1px solid var(--line-1); border-radius: 8px; padding: 8px 10px; }
+.v54-beta-row { display: grid; grid-template-columns: 110px 1fr 130px; gap: 8px; align-items: center; padding: 3px 0; }
+.v54-beta-row .k { font-size: 12px; color: var(--ink-2); }
+.v54-beta-row .bar { height: 12px; background: var(--bg-2); border-radius: 6px; overflow: hidden; display: block; }
+.v54-beta-row .bar i { display: block; height: 100%; border-radius: 6px; }
+.v54-beta-row .bar i.pos { background: var(--teal); }
+.v54-beta-row .bar i.neg { background: #e05561; }
+.v54-beta-row .v { font-size: 12px; text-align: right; }
+.v54-quant-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.55; margin: 6px 0 0; }
