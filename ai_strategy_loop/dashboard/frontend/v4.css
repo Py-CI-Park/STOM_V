@@ -883,3 +883,52 @@
 .engine-summary-strip { border-left: 3px solid var(--teal); }
 .engine-config-strip { border-left: 3px solid var(--violet); }
 .engine-log-strip { border-left: 3px solid var(--amber); }
+
+/* ═══════════ v5.5.1 검수 보정 (그래프 잘림·상황판 콤팩트·매트릭스 강제·게이트 4열) ═══════════ */
+/* A — 그래프 잘림 근본수정: 클리핑 폐지 → 플롯 존 고정 236px + 보조존(범례·칩) 스크롤 */
+.v6-graphs .panel .panel-hd + * { flex: 0 0 auto; height: auto; overflow: visible; }
+.v6-graphs .panel { height: 356px; display: flex; flex-direction: column; overflow: hidden; }
+.v6-graphs .panel .panel-hd { flex: 0 0 auto; min-height: 34px; max-height: 56px; overflow: hidden; }
+.v6-graphs .panel .v4-hero-primary, .v6-graphs .panel .v6-hero-compact { flex: 0 0 236px; height: 236px; max-height: 236px; }
+.v6-graphs .panel .v4-canvas-wrap { height: 100%; }
+.v6-graphs .panel .chart-wrap { flex: 0 0 236px; height: 236px; max-height: 236px; position: relative; }
+.v6-graphs .panel .chart-wrap svg { width: 100%; height: 100%; max-height: none; display: block; }
+.v6-graphs .panel canvas { max-height: none; }
+.v6-graphs .panel .v4-canvas-legend { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.v6-graphs .panel > div:not(.panel-hd):not(.chart-wrap):not(.v4-hero-primary):not(.v6-hero-compact) { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* B — 상황판 콤팩트: 칩 한 줄 + [현재세대 | KPI 4열] (빈 카드·공간 낭비 제거) */
+.v55-board-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+.v55-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 8px; padding: 5px 10px; font-size: 12px; }
+.v55-chip .k { font-size: 10.5px; color: var(--ink-3); letter-spacing: .06em; }
+.v55-chip.grow { flex: 1 1 260px; min-width: 0; }
+.v55-chip.grow b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v55-board-chips .v4-enggate-bar { margin: 0; flex: 0 1 auto; }
+.v55-board-main { display: grid; grid-template-columns: 460px 1fr; gap: 10px; align-items: stretch; margin-bottom: 4px; }
+@media (max-width: 1500px) { .v55-board-main { grid-template-columns: 1fr; } }
+.v55-board-main > div { background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 10px; padding: 8px 12px; min-width: 0; min-height: 0; }
+.v55-board-main .v4-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; height: 100%; align-items: center; }
+/* 게이트·엔진 칩 콤팩트 */
+.v55-board-chips .v4-enggate-bar { background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 8px; padding: 5px 10px; }
+/* E — 게이트 fold 내부 4열 */
+.v55-gatefold-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 2200px) { .v55-gatefold-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1500px) { .v55-gatefold-grid { grid-template-columns: 1fr; } }
+.v55-gatefold-grid > * { min-width: 0; margin: 0; }
+/* F — BT 상세 액션 행 */
+.v55-btd-actions { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+
+/* v5.5.1-b — 그래프 잘림 잔여 근본수정: 기저 min-height(400/460/520) 무력화 + panel-bd 플롯 충전 */
+.v6-graphs .panel .v4-hero-primary .chart-wrap,
+.v6-graphs .panel .v4-hero-primary .v4-canvas-wrap { height: 100%; min-height: 0; max-height: 100%; }
+.v6-graphs .panel .chart-wrap { min-height: 0; }
+.v6-graphs .panel .panel-bd { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.v6-graphs .panel .panel-bd > * { flex: 0 0 auto; min-height: 0; }
+.v6-graphs .panel .panel-bd .chart-wrap { flex: 1 1 auto; height: auto; max-height: none; min-height: 100px; }
+.v6-graphs .panel .panel-bd .chart-wrap svg { width: 100%; height: 100%; display: block; }
+
+/* v5.5.1-c — 패널 직속 chart-wrap(수익·품질 추이)도 잔여 공간 충전(고정치 폐지 → fits 보장) */
+.v6-graphs .panel > .chart-wrap { flex: 1 1 auto; height: auto; max-height: none; }
+
+/* v5.5.1-d — 기저 svg min-height(240) 무력화: 플롯은 항상 랩 높이에 맞춤(fits 보장) */
+.v6-graphs .panel .chart-wrap svg { min-height: 0; }
+.v6-graphs .panel .panel-bd { overflow: hidden; }

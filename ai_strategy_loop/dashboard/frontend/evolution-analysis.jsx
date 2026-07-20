@@ -218,9 +218,11 @@ function EaScatterChart({ gens }) {
   const x = (mdd) => padL + (mdd / mddMax) * innerW;
   const y = (p) => padT + innerH - ((p - profMin) / profSpan) * innerH;
 
-  // 눈금.
+  // 눈금 — v5.5.1: 적응형(라벨 ≤8개, MDD 도메인이 커도 겹치지 않는 nice step).
   const xTicks = useMemo_ea(() => {
-    const out = []; const step = mddMax <= 10 ? 2 : mddMax <= 30 ? 5 : 10;
+    const cands = [1, 2, 5, 10, 20, 25, 50, 100, 200];
+    const step = cands.find(c => mddMax / c <= 8) || 200;
+    const out = [];
     for (let v = 0; v <= mddMax + 1e-9; v += step) out.push(+v.toFixed(1));
     return out;
   }, [mddMax]);

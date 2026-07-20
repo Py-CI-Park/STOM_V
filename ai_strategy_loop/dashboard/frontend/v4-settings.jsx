@@ -28,7 +28,7 @@ function _V4sRow({ label, hint, children }) {
 
 function V4SettingsTab({ baseUrl, dashVersion }) {
   const [stageCols, setStageCols] = useState_v4s(() => _v4sGet("stom_v6_stage_cols", "4"));
-  const [labAll, setLabAll] = useState_v4s(() => _v4sGet("stom_v54_lab_all", "1") !== "0");
+  const [labAll, setLabAll] = useState_v4s(() => _v4sGet("stom_v55_lab_view", "matrix") !== "single");
   const [manifest, setManifest] = useState_v4s(null);
   const [health, setHealth] = useState_v4s(null);
   const [cleared, setCleared] = useState_v4s(0);
@@ -69,7 +69,7 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
           <_V4sRow label="연구실 매트릭스 보기" hint="채점·부검의 5개 분석(히트맵·중요도·상관·조합·검증) 동시 표시">
             <button type="button" className={"btn ghost sm" + (labAll ? " on" : "")}
                     aria-pressed={labAll}
-                    onClick={() => { const v = !labAll; setLabAll(v); _v4sSet("stom_v54_lab_all", v ? "1" : "0"); setDirty(true); }}>
+                    onClick={() => { const v = !labAll; setLabAll(v); _v4sSet("stom_v55_lab_view", v ? "matrix" : "single"); setDirty(true); }}>
               {labAll ? "매트릭스(기본)" : "개별 보기"}
             </button>
           </_V4sRow>

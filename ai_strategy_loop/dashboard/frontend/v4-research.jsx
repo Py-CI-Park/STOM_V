@@ -231,15 +231,14 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
     <section className="v6-board" aria-labelledby="v6-board-heading">
       <h2 id="v6-board-heading" className="panel-hd-title">실시간 연구 상황판</h2>
       <_V6PipelineBelt liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin} />
-      <div className="v6-board-top v6-board-top--belt">
-        <div className="v6-board-timeline">
-          <div className="v4-wf-next">
-            <div><span className="k">process</span><b className="mono" style={{ color: "var(--ink-0)" }}>{procLabel}</b></div>
-            <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
-            <div><span className="k">다음 행동</span><b>{nextMsg}</b></div>
-          </div>
-          <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
-        </div>
+      {/* v5.5.1 — 상황판 재설계: 넓은 빈 카드 대신 ①콤팩트 상태 칩 한 줄 ②[현재세대 | KPI 4열] */}
+      <div className="v55-board-chips" aria-label="프로세스·권한·다음 행동·엔진·게이트 상태">
+        <span className="v55-chip"><span className="k">process</span><b className="mono">{procLabel}</b></span>
+        <span className={"v4-chip " + authCls} title={authKnown ? "mode_authority.generation_allowed" : "관찰성 발행 대기(폴백)"}>{authLabel}</span>
+        <span className="v55-chip grow" title="다음 행동"><span className="k">다음 행동</span><b>{nextMsg}</b></span>
+        <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
+      </div>
+      <div className="v55-board-main">
         <div className="v6-board-curgen">
           <CurrentGenPanel state={s} />
         </div>
@@ -419,17 +418,35 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         )}
         {activeStage === 1 && (
           <div className="v6-stage-grid">
-            {/* v5.5 F3 — 매트릭스 재배치: 1행[페이즈 상세|엔진(각 2칸)] → 2행 BT 상세그래프 전폭 → 3행 패리티 전폭 fold */}
+            {/* v5.5.1 F3' — 매트릭스: 1행[페이즈 상세|엔진] → 2행[BT 상세(2칸)|패리티 fold(2칸)].
+                전폭 독점 금지(다른 결과 가림) + 백테스트 탭 상세 분석 딥링크. */}
             <div className="v54-col2">
               <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} pinnedIdx={1} />
             </div>
             <div className="v54-col2 v6-engine-xl">
               <EnginePanel state={s} wsStatus={wsStatus} />
             </div>
-            <section className="v54-span-all v54-btdetail" aria-label="백테스트 상세 그래프(가로 매트릭스)">
+            <section className="v54-col2 v54-btdetail" aria-label="백테스트 상세 그래프">
+              <div className="v55-btd-actions">
+                <button className="btn ghost sm"
+                        title="선택 세대(미선택 시 best)를 백테스트 탭에서 결과·퀀트 분석으로 상세 확인"
+                        onClick={() => {
+                          const genNo = selectedDetailGen != null ? selectedDetailGen : (s.best && s.best.gen);
+                          if (runId && genNo != null) {
+                            try {
+                              const detail = { run_id: runId, gen_no: genNo };
+                              window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
+                              window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
+                            } catch (e) {}
+                          }
+                          window.location.href = "/ui/evolution/backtest";
+                        }}>
+                  ⇲ 백테스트 탭에서 상세 분석
+                </button>
+              </div>
               <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
             </section>
-            <details className="evo-group v54-span-all">
+            <details className="evo-group v54-col2">
               <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사 (클릭 펼침)</div></summary>
               <div className="evo-group-body">
                 <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
@@ -442,10 +459,12 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             {/* v5.5 F4 — 분석 매트릭스가 본문: 게이트 fold → 연구실 매트릭스(전폭) → 부검·계보·메타·홀드아웃·피드백 → 세대 이력(하단 전폭) */}
             <div className="v54-span-all">
               <_V4Fold storageKey="stom_v6_gate" label="게이트·채점 기준 · 현재 run 유효값 (클릭 상세)">
-                <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
-                <ActiveConfigPanel state={s} />
-                <CostPanel state={s} cap={50000} />
-                <ResearchGlossaryPanel />
+                <div className="v55-gatefold-grid">
+                  <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
+                  <ActiveConfigPanel state={s} />
+                  <CostPanel state={s} cap={50000} />
+                  <ResearchGlossaryPanel />
+                </div>
               </_V4Fold>
             </div>
             <section className="v6-stage-lab v54-span-all" aria-label="탐색·엣지·상관·안정성 통합 분석">
