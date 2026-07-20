@@ -25311,6 +25311,185 @@ def signal_sell(pos, bar, ind):
     return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
   }
 
+  // ai_strategy_loop/dashboard/frontend/bt-quant.jsx
+  var { useMemo: useMemo_btq } = React;
+  function _btqOls(xs, ys) {
+    const n = Math.min(xs.length, ys.length);
+    if (n < 3) return null;
+    let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    for (let i = 0; i < n; i++) {
+      const x = xs[i], y = ys[i];
+      sx += x;
+      sy += y;
+      sxx += x * x;
+      sxy += x * y;
+      syy += y * y;
+    }
+    const den = n * sxx - sx * sx;
+    if (!den) return null;
+    const b = (n * sxy - sx * sy) / den;
+    const a = (sy - b * sx) / n;
+    const my = sy / n;
+    let ssTot = 0, ssRes = 0;
+    for (let i = 0; i < n; i++) {
+      const f = a + b * xs[i];
+      ssTot += (ys[i] - my) ** 2;
+      ssRes += (ys[i] - f) ** 2;
+    }
+    const r2 = ssTot ? Math.max(0, 1 - ssRes / ssTot) : 0;
+    return { a, b, r2, n };
+  }
+  function _btqMultiOls(X, y) {
+    const n = y.length, k = X.length;
+    if (n < k + 3) return null;
+    const std = (arr) => {
+      const m = arr.reduce((s, v) => s + v, 0) / arr.length;
+      const sd = Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length) || 1;
+      return arr.map((v) => (v - m) / sd);
+    };
+    const Z = X.map(std), yz = std(y);
+    const A = [], B = [];
+    for (let i = 0; i < k; i++) {
+      A.push([]);
+      for (let j = 0; j < k; j++) A[i].push(Z[i].reduce((s, v, t) => s + v * Z[j][t], 0));
+      B.push(Z[i].reduce((s, v, t) => s + v * yz[t], 0));
+    }
+    for (let c = 0; c < k; c++) {
+      let piv = c;
+      for (let r = c + 1; r < k; r++) if (Math.abs(A[r][c]) > Math.abs(A[piv][c])) piv = r;
+      if (Math.abs(A[piv][c]) < 1e-9) return null;
+      [A[c], A[piv]] = [A[piv], A[c]];
+      [B[c], B[piv]] = [B[piv], B[c]];
+      for (let r = 0; r < k; r++) {
+        if (r === c) continue;
+        const f = A[r][c] / A[c][c];
+        for (let j = 0; j < k; j++) A[r][j] -= f * A[c][j];
+        B[r] -= f * B[c];
+      }
+    }
+    const beta = B.map((v, i) => v / A[i][i]);
+    let ssRes = 0, ssTot = 0;
+    for (let t = 0; t < n; t++) {
+      let f = 0;
+      for (let i = 0; i < k; i++) f += beta[i] * Z[i][t];
+      ssRes += (yz[t] - f) ** 2;
+      ssTot += yz[t] ** 2;
+    }
+    const r2 = ssTot ? Math.max(0, 1 - ssRes / ssTot) : 0;
+    return { beta, r2, n };
+  }
+  function _btqParseDow(dateVal) {
+    if (dateVal == null) return null;
+    let d = null;
+    const s = String(dateVal);
+    if (/^\d{8}$/.test(s)) d = new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8));
+    else if (/^\d{4}-\d{2}-\d{2}/.test(s)) d = new Date(s.slice(0, 10));
+    else if (Number.isFinite(Number(dateVal)) && Number(dateVal) > 1e9) d = new Date(Number(dateVal) * (Number(dateVal) > 1e12 ? 1 : 1e3));
+    return d && !isNaN(d.getTime()) ? d.getDay() : null;
+  }
+  function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
+    const W = 560, H = 260, padL = 46, padR = 14, padT = 12, padB = 30;
+    const iw = W - padL - padR, ih = H - padT - padB;
+    const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    const yMin = Math.min(...ys), yMax = Math.max(...ys);
+    const xr = xMax - xMin || 1, yr = yMax - yMin || 1;
+    const sx = (v) => padL + (v - xMin) / xr * iw;
+    const sy = (v) => padT + ih - (v - yMin) / yr * ih;
+    return /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, style: { width: "100%", height: "auto" }, role: "img", "aria-label": `${xLab} \uB300 ${yLab} \uC0B0\uC810\uB3C4` }, /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }), /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }), yMin < 0 && yMax > 0 && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: sy(0), x2: padL + iw, y2: sy(0), stroke: "var(--line-2)", strokeDasharray: "3 3" }), pts.map((p, i) => /* @__PURE__ */ React.createElement(
+      "circle",
+      {
+        key: i,
+        cx: sx(p.x),
+        cy: sy(p.y),
+        r: 2.6,
+        fill: colorFn ? colorFn(p) : p.y >= 0 ? "var(--teal)" : "var(--red)",
+        fillOpacity: 0.65
+      }
+    )), ols && /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: sx(xMin),
+        y1: sy(ols.a + ols.b * xMin),
+        x2: sx(xMax),
+        y2: sy(ols.a + ols.b * xMax),
+        stroke: "var(--violet)",
+        strokeWidth: 2,
+        strokeDasharray: "6 3"
+      }
+    ), /* @__PURE__ */ React.createElement("text", { x: padL + iw / 2, y: H - 6, textAnchor: "middle", fontSize: "10.5", fill: "var(--ink-3)" }, xLab), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        x: 12,
+        y: padT + ih / 2,
+        textAnchor: "middle",
+        fontSize: "10.5",
+        fill: "var(--ink-3)",
+        transform: `rotate(-90 12 ${padT + ih / 2})`
+      },
+      yLab
+    ));
+  }
+  var _BTQ_DOW = ["\uC77C", "\uC6D4", "\uD654", "\uC218", "\uBAA9", "\uAE08", "\uD1A0"];
+  function BtQuantPanel({ analysis }) {
+    const a = analysis || {};
+    const trades = Array.isArray(a.mae_mfe) ? a.mae_mfe.filter((p) => p && Number.isFinite(Number(p.pnl_pct))) : [];
+    const daily = Array.isArray((a.equity || {}).daily) ? a.equity.daily : [];
+    const model = useMemo_btq(() => {
+      const ok = trades.filter((p) => Number.isFinite(Number(p.mae)) && Number.isFinite(Number(p.mfe)));
+      const multi2 = ok.length >= 8 ? _btqMultiOls(
+        [ok.map((p) => Number(p.mae)), ok.map((p) => Number(p.mfe)), ok.map((p) => Number(p.hold_sec) || 0)],
+        ok.map((p) => Number(p.pnl_pct))
+      ) : null;
+      const holdPts2 = ok.filter((p) => Number(p.hold_sec) > 0).map((p) => ({ x: Number(p.hold_sec) / 60, y: Number(p.pnl_pct) }));
+      const holdOls2 = holdPts2.length >= 3 ? _btqOls(holdPts2.map((p) => p.x), holdPts2.map((p) => p.y)) : null;
+      const pnl = daily.map((d) => Number(d.pnl) || 0);
+      const lagPts2 = [];
+      for (let i = 1; i < pnl.length; i++) lagPts2.push({ x: pnl[i - 1], y: pnl[i] });
+      const lagOls2 = lagPts2.length >= 3 ? _btqOls(lagPts2.map((p) => p.x), lagPts2.map((p) => p.y)) : null;
+      const dow2 = /* @__PURE__ */ new Map();
+      for (const d of daily) {
+        const w = _btqParseDow(d.date != null ? d.date : d.dt);
+        if (w == null) continue;
+        const cur = dow2.get(w) || { sum: 0, n: 0, win: 0 };
+        const v = Number(d.pnl) || 0;
+        cur.sum += v;
+        cur.n += 1;
+        if (v > 0) cur.win += 1;
+        dow2.set(w, cur);
+      }
+      return { multi: multi2, holdPts: holdPts2, holdOls: holdOls2, lagPts: lagPts2, lagOls: lagOls2, dow: dow2, nTrades: ok.length };
+    }, [a]);
+    const { multi, holdPts, holdOls, lagPts, lagOls, dow } = model;
+    if (!trades.length && !daily.length) return null;
+    const betaRows = multi ? [
+      { k: "MAE(\uCD5C\uB300 \uC5ED\uD589)", v: multi.beta[0] },
+      { k: "MFE(\uCD5C\uB300 \uC21C\uD589)", v: multi.beta[1] },
+      { k: "\uBCF4\uC720\uC2DC\uAC04", v: multi.beta[2] }
+    ] : [];
+    const maxAbsBeta = betaRows.reduce((m, r) => Math.max(m, Math.abs(r.v)), 0) || 1;
+    const lagWord = lagOls ? lagOls.b > 0.15 ? "\uCD94\uC138 \uC9C0\uC18D(\uC804\uC77C \uC218\uC775\uC774 \uB2E4\uC74C\uB0A0\uB85C \uC774\uC5B4\uC9C0\uB294 \uACBD\uD5A5)" : lagOls.b < -0.15 ? "\uD3C9\uADE0 \uD68C\uADC0(\uC804\uC77C \uC218\uC775\uC774 \uB2E4\uC74C\uB0A0 \uBC18\uB300\uB85C \uC6C0\uC9C1\uC774\uB294 \uACBD\uD5A5)" : "\uC790\uAE30\uC0C1\uAD00 \uBBF8\uC57D(\uC77C\uBCC4 \uC218\uC775 \uB3C5\uB9BD\uC801)" : null;
+    const dowRows = [1, 2, 3, 4, 5].map((w) => ({ w, ...dow.get(w) || { sum: 0, n: 0, win: 0 } }));
+    const dowMaxAbs = dowRows.reduce((m, r) => Math.max(m, Math.abs(r.n ? r.sum / r.n : 0)), 0) || 1;
+    return /* @__PURE__ */ React.createElement("div", { className: "panel v54-quant", "aria-label": "\uD000\uD2B8 \uC778\uC0AC\uC774\uD2B8 \xB7 \uD68C\uADC0 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD000\uD2B8 \uC778\uC0AC\uC774\uD2B8 \xB7 \uD68C\uADC0 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uD45C\uBCF8 \uB0B4 \uD45C\uC2DC\uC6A9 \uD1B5\uACC4 \xB7 \uAC70\uB798 ", model.nTrades, "\uAC74 \xB7 advisory-only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd v54-quant-grid" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uB2E4\uCC28\uC6D0 \uD68C\uADC0 \u2014 \uBB34\uC5C7\uC774 \uC218\uC775\uB960\uC744 \uC124\uBA85\uD558\uB098"), multi ? /* @__PURE__ */ React.createElement("div", null, betaRows.map((r) => /* @__PURE__ */ React.createElement("div", { key: r.k, className: "v54-beta-row" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, r.k), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement(
+      "i",
+      {
+        className: r.v >= 0 ? "pos" : "neg",
+        style: { width: Math.max(4, Math.round(Math.abs(r.v) / maxAbsBeta * 100)) + "%" }
+      }
+    )), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, r.v >= 0 ? "+" : "", r.v.toFixed(2)))), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uD45C\uC900\uD654 \u03B2(\uC0C1\uB300 \uAE30\uC5EC). R\xB2 ", (multi.r2 * 100).toFixed(0), "% \xB7 n=", multi.n, ".", Math.abs(multi.beta[0]) > Math.abs(multi.beta[1]) ? " \uC190\uC2E4 \uD1B5\uC81C(MAE)\uAC00 \uC218\uC775\uB960\uC744 \uB354 \uD06C\uAC8C \uC88C\uC6B0 \u2014 \uC190\uC808 \uADDC\uCE59 \uAC1C\uC120\uC774 \uC6B0\uC120\uC21C\uC704." : " \uC774\uC775 \uC2E4\uD604(MFE) \uD3EC\uCC29\uC774 \uC218\uC775\uB960\uC744 \uB354 \uD06C\uAC8C \uC88C\uC6B0 \u2014 \uCCAD\uC0B0 \uD0C0\uC774\uBC0D \uAC1C\uC120\uC774 \uC6B0\uC120\uC21C\uC704.")) : /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uAC70\uB798 \uD45C\uBCF8 \uBD80\uC871(8\uAC74 \uBBF8\uB9CC) \u2014 \uB2E4\uCC28\uC6D0 \uD68C\uADC0 \uC0DD\uB7B5.")), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uBCF4\uC720\uC2DC\uAC04 \u2192 \uC218\uC775\uB960 (\uD68C\uADC0\uC120)"), holdPts.length >= 3 ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_BtqScatter, { pts: holdPts, xLab: "\uBCF4\uC720\uC2DC\uAC04(\uBD84)", yLab: "\uC218\uC775\uB960(%)", ols: holdOls }), holdOls && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uAE30\uC6B8\uAE30 ", holdOls.b >= 0 ? "+" : "", holdOls.b.toFixed(3), "%/\uBD84 \xB7 R\xB2 ", (holdOls.r2 * 100).toFixed(0), "% \u2014 ", holdOls.b < 0 ? "\uC624\uB798 \uB4E4\uACE0 \uC788\uC744\uC218\uB85D \uBD88\uB9AC: \uC2DC\uAC04 \uC190\uC808 \uAC80\uD1A0." : "\uBCF4\uC720 \uC2DC\uAC04\uC774 \uAE38\uC218\uB85D \uC720\uB9AC: \uC870\uAE30 \uCCAD\uC0B0 \uC644\uD654 \uAC80\uD1A0.")) : /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uBCF4\uC720\uC2DC\uAC04 \uD45C\uBCF8 \uBD80\uC871.")), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uC77C\uBCC4 \uC218\uC775 \uC790\uAE30\uC0C1\uAD00 (lag-1)"), lagPts.length >= 3 ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_BtqScatter, { pts: lagPts, xLab: "\uC804\uC77C \uC218\uC775(\uC6D0)", yLab: "\uB2F9\uC77C \uC218\uC775(\uC6D0)", ols: lagOls }), lagOls && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\u03B2 ", lagOls.b >= 0 ? "+" : "", lagOls.b.toFixed(2), " \xB7 R\xB2 ", (lagOls.r2 * 100).toFixed(0), "% \u2014 ", lagWord, ".")) : /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC77C\uBCC4 \uC218\uC775 \uD45C\uBCF8 \uBD80\uC871.")), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uC694\uC77C \uAD6C\uC870 \u2014 \uD3C9\uADE0 \uC218\uC775\xB7\uC2B9\uC77C\uB960"), dowRows.some((r) => r.n > 0) ? /* @__PURE__ */ React.createElement("div", null, dowRows.map((r) => {
+      const avg = r.n ? r.sum / r.n : 0;
+      return /* @__PURE__ */ React.createElement("div", { key: r.w, className: "v54-beta-row" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, _BTQ_DOW[r.w]), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement(
+        "i",
+        {
+          className: avg >= 0 ? "pos" : "neg",
+          style: { width: Math.max(3, Math.round(Math.abs(avg) / dowMaxAbs * 100)) + "%" }
+        }
+      )), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, r.n ? Math.round(avg).toLocaleString() + "\uC6D0 \xB7 " + Math.round(r.win / r.n * 100) + "%" : "\u2014"));
+    }), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC694\uC77C\uBCC4 \uD3C9\uADE0 \uC77C\uC218\uC775\uACFC \uC218\uC775\uC77C \uBE44\uC728. \uD2B9\uC815 \uC694\uC77C \uC5F4\uC138\uAC00 \uB69C\uB837\uD558\uBA74 \uC694\uC77C \uD544\uD130 \uAC00\uC124\uB85C \uD658\uB958.")) : /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uB0A0\uC9DC \uC815\uBCF4\uAC00 \uC5C6\uC5B4 \uC694\uC77C \uAD6C\uC870 \uC0DD\uB7B5."))));
+  }
+  Object.assign(window, { BtQuantPanel });
+
   // ai_strategy_loop/dashboard/frontend/bt-result-area.jsx
   var _BT_METRIC_CARDS = [
     { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
@@ -25559,7 +25738,7 @@ def signal_sell(pos, bar, ind):
         brushActive: !!range,
         onBrushClear
       }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement("details", { className: "evo-group bt-flow-full", open: false }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 \uB300\uC0AC(\uD074\uB9AD \uD3BC\uCE68)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }))), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement("details", { className: "evo-group bt-flow-full", open: false }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 \uB300\uC0AC(\uD074\uB9AD \uD3BC\uCE68)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }))), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
       _BtFullscreenAnalysis,
       {
         analysis,
@@ -25625,7 +25804,7 @@ def signal_sell(pos, bar, ind):
         brushActive: !!range,
         onBrushClear
       }
-    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
+    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
   }
   function _BtMetricCard({ meta, num, dailyPnl }) {
     const animated = _useCountUp(num != null ? num : 0, 600);
