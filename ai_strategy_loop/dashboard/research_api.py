@@ -165,8 +165,9 @@ def research_record_detail(campaign: str = ""):
 
 
 @router.get("/research_index")
-def research_index_route():
-    return research_index.serialize_research_index_response(research_index.list_research_index())
+def research_index_route(limit: int = 0):
+    # v5.4 H1 — 새니타이즈 캐시 + limit(기본 무제한 유지, UI는 limit 사용).
+    return research_index.public_research_index_response(limit=limit)
 
 @router.get("/research_index/detail")
 def research_index_detail(id: str = ""):

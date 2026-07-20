@@ -21,6 +21,10 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
   const onSelectCampaign = (name, meta) => setSelResearch(prev =>
     (prev && prev.name === name && !meta) ? prev : { name, meta: meta || (prev && prev.name === name ? prev.meta : null) });
   // L10: 재연결 문구 깜빡임 디바운스 — reconnecting 이 2초 지속될 때만 경고 문구 표시.
+  // v5.4 H1 — 무거운 하위 섹션 lazy-mount: 접힘 상태에서는 fetch/렌더 자체를 하지 않는다.
+  //   (색인 /research_index 는 대용량 — 탭 진입 즉시 로드가 히스토리 렌더 정지의 원인이었다)
+  const [indexOpen, setIndexOpen] = useState_v4h(false);
+  const [govOpen, setGovOpen] = useState_v4h(false);
   const [stableWs, setStableWs] = useState_v4h(wsStatus);
   useEffect_v4h(() => {
     if (wsStatus !== "reconnecting") { setStableWs(wsStatus); return undefined; }
@@ -98,15 +102,19 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       </section>
       {/* v5.3.1: 엣지 섹션 제거 — 채점·부검 스테이지(Live)가 정위치. 중복 mount 해소. */}
 
-      <section aria-labelledby="v4-history-index-title" aria-busy={historyLoading}>
-        <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거</h2>
-        <div data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역">
-          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} />
+      <details className="evo-group" aria-labelledby="v4-history-index-title"
+               onToggle={(e) => setIndexOpen(e.currentTarget.open)}>
+        <summary className="evo-group-summary">
+          <h2 className="stom-section-label" id="v4-history-index-title" style={{ margin: 0 }}>연구 기록 색인 · 상세 근거 (클릭 시 로드)</h2>
+        </summary>
+        <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역" aria-busy={historyLoading}>
+          {indexOpen && <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} />}
         </div>
-      </section>
+      </details>
 
       {/* v5.3.1(U3 추천 채택): 거버넌스 UI 는 기본닫힘 fold 로 격하 — export human 승인 계약은 백엔드 불변. */}
-      <details className="evo-group" aria-labelledby="v4-history-gov-title">
+      <details className="evo-group" aria-labelledby="v4-history-gov-title"
+               onToggle={(e) => setGovOpen(e.currentTarget.open)}>
         <summary className="evo-group-summary">
           <div className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 (기본 접힘 · export 승인 경계는 불변)</div>
         </summary>
@@ -115,8 +123,8 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
             append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
           </p>
           <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-            <AuditDecisionTrace baseUrl={baseUrl} />
-            <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />
+            {govOpen && <AuditDecisionTrace baseUrl={baseUrl} />}
+            {govOpen && <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />}
           </div>
         </div>
       </details>
