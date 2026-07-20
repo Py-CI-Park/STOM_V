@@ -932,3 +932,29 @@
 /* v5.5.1-d — 기저 svg min-height(240) 무력화: 플롯은 항상 랩 높이에 맞춤(fits 보장) */
 .v6-graphs .panel .chart-wrap svg { min-height: 0; }
 .v6-graphs .panel .panel-bd { overflow: hidden; }
+
+/* ═══════════ v5.6 UX Lift (U2·U3·U4·U5·U9) ═══════════ */
+/* U3 — 상황판 4그래프 높이 증대(가독성): 356→460, 플롯은 flex 충전 */
+.v6-graphs .panel { height: 460px; }
+.v6-graphs .panel .v4-hero-primary, .v6-graphs .panel .v6-hero-compact { flex: 1 1 auto; height: auto; max-height: none; min-height: 0; }
+/* U2 — 현재세대+KPI 통합 단일 카드 */
+.v55-board-main.v56-unified { grid-template-columns: 1fr; background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 10px; padding: 4px 8px; display: grid; grid-template-columns: 460px 1fr; gap: 0; }
+.v55-board-main.v56-unified > div { background: transparent; border: 0; }
+.v55-board-main.v56-unified > .v6-board-curgen { border-right: 1px solid var(--line-1); border-radius: 0; }
+.v55-board-main.v56-unified .v4-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* U4 — 3열 옵션 + 매트릭스 셀 높이 증대 */
+.v6-stage-panel.cols-3 .v6-stage-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 2000px) { .v6-stage-panel.cols-3 .v6-stage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.v54-lab-cell, .v54-lab-cell.wide { height: 560px; }
+.v54-ea-cell .chart-wrap svg { max-height: 460px; }
+/* U5 — 백테 스테이지 셀(스팬 없음: 선택한 열 수 그대로) */
+.v56-cell { min-width: 0; }
+/* U9 — 로그 뷰어 */
+.v4s-logs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 1500px) { .v4s-logs { grid-template-columns: 1fr; } }
+.v4s-logbox { max-height: 420px; overflow: auto; border: 1px solid var(--line-1); border-radius: 8px; padding: 6px 8px; background: var(--bg-0); }
+.v4s-logline { display: flex; gap: 8px; font-size: 11px; padding: 2px 0; border-bottom: 1px solid var(--line-1); }
+.v4s-logline .t { color: var(--ink-3); flex: 0 0 auto; }
+.v4s-logline .lv { color: var(--ink-2); flex: 0 0 62px; }
+.v4s-logline.lv-error .lv, .v4s-logline.lv-console .lv { color: #e05561; }
+.v4s-logline .m { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

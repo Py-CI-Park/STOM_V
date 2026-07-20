@@ -136,7 +136,8 @@ def test_v6_primary_owner_map_order() -> None:
     import re
     source = _read("dashboard-v4-shell.jsx")
     primary = re.findall(r'key:\s*"([^"]+)"[^\n]*?group:\s*"primary"', source)
-    assert primary == ["research", "history", "workbench", "reports", "backtest", "replay"], primary
+    # v5.6 U11 — Reports 를 History 뒤로(연구 결과 열람 흐름), 성과는 그 다음.
+    assert primary == ["research", "history", "reports", "workbench", "backtest", "replay"], primary
     # audit·lab 는 더 이상 탭이 아니다(거버넌스→History, Lab→Live 스테이지).
     assert 'key: "audit"' not in source
     assert 'key: "lab"' not in source

@@ -99,7 +99,7 @@ function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
   );
 }
 
-function _V4Stats({ state }) {
+function _V4Stats({ state, hideCurrent }) {
   const curRaw = Number(state.current_gen);
   const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : "시작 전";
   const max = Number(state.max_generations) || 0;
@@ -111,10 +111,12 @@ function _V4Stats({ state }) {
   const cost = (state.cumulative && state.cumulative.cost_or_count) ?? "—";
   return (
     <div className="v4-stats">
+      {!hideCurrent && (
       <div className="v4-stat">
         <span className="v">{cur}<span className="dim"> / {max || "—"}</span></span>
         <span className="s">현재 세대 · {state.status || "idle"}</span>
       </div>
+      )}
       <div className="v4-stat">
         <span className={"v" + (bestScore != null ? " pos" : "")}>{bestScore != null ? bestScore.toFixed(2) : "—"}</span>
         <span className="s">best fitness{best && best.gate_passed ? " · gate ✓" : ""}</span>
@@ -229,7 +231,7 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
   const errorText = s.error || latest.error || "";
   return (
     <section className="v6-board" aria-labelledby="v6-board-heading">
-      <h2 id="v6-board-heading" className="panel-hd-title">실시간 연구 상황판</h2>
+      <h2 id="v6-board-heading" className="panel-hd-title">LIVE RESEARCH BOARD</h2>
       <_V6PipelineBelt liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin} />
       {/* v5.5.1 — 상황판 재설계: 넓은 빈 카드 대신 ①콤팩트 상태 칩 한 줄 ②[현재세대 | KPI 4열] */}
       <div className="v55-board-chips" aria-label="프로세스·권한·다음 행동·엔진·게이트 상태">
@@ -238,12 +240,13 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
         <span className="v55-chip grow" title="다음 행동"><span className="k">다음 행동</span><b>{nextMsg}</b></span>
         <_V4EngineGateBar state={s} targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
       </div>
-      <div className="v55-board-main">
+      {/* v5.6 U2 — 현재세대+KPI 통합 단일 카드(중복 '현재 세대' 표기 제거) */}
+      <div className="v55-board-main v56-unified">
         <div className="v6-board-curgen">
           <CurrentGenPanel state={s} />
         </div>
         <div className="v6-board-kpi">
-          <_V4Stats state={s} />
+          <_V4Stats state={s} hideCurrent={true} />
         </div>
       </div>
       <div className="v6-board-strip">
@@ -281,7 +284,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [stagePin, setStagePin] = useState_v4r(null);
   // v5.4 L2 — 스테이지 그리드 열 수 선택(2열/4열, localStorage 유지).
   const [stageCols, setStageCols] = useState_v4r(() => {
-    try { const v = window.localStorage.getItem("stom_v6_stage_cols"); return v === "2" || v === "4" ? v : "4"; }
+    try { const v = window.localStorage.getItem("stom_v6_stage_cols"); return ["2", "3", "4"].includes(v) ? v : "4"; }
     catch (e) { return "4"; }
   });
   const setStageColsPersist = (c) => {
@@ -298,8 +301,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const running = s.status === "running" || s.status === "stopping";
   const phaseIdx = running ? phaseIndex(latest.phase) : -1;
   const liveStage = s.status === "done" ? 3 : (phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1);
-  // 활성 스테이지: pin > 라이브 단계 > (데이터 있으면 반복·성과, 없으면 생성).
-  const activeStage = stagePin != null ? stagePin : (liveStage >= 0 ? liveStage : (hasData ? 3 : 0));
+  // v5.6 U6 — 초기 스테이지: 연구 중이면 해당 단계, 아니면 항상 1. 생성.
+  const activeStage = stagePin != null ? stagePin : (liveStage >= 0 ? liveStage : 0);
   const onStagePin = (i) => setStagePin(prev => (prev === i ? null : i));
   const onStageKey = (e) => {
     const n = V6_STAGES.length;
@@ -399,7 +402,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
         )}
         <span className="v6-cols-pick" role="group" aria-label="스테이지 배치 열 수 선택">
           <span className="lbl">배치</span>
-          {["2", "4"].map(c => (
+          {["2", "3", "4"].map(c => (
             <button key={c} type="button" className={"btn ghost sm" + (stageCols === c ? " on" : "")}
                     aria-pressed={stageCols === c} onClick={() => setStageColsPersist(c)}>{c}열</button>
           ))}
@@ -420,13 +423,13 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           <div className="v6-stage-grid">
             {/* v5.5.1 F3' — 매트릭스: 1행[페이즈 상세|엔진] → 2행[BT 상세(2칸)|패리티 fold(2칸)].
                 전폭 독점 금지(다른 결과 가림) + 백테스트 탭 상세 분석 딥링크. */}
-            <div className="v54-col2">
+            <div className="v56-cell">
               <PhaseDetailPanel state={s} wsStatus={wsStatus} onViewLatestCode={viewCode} pinnedIdx={1} />
             </div>
-            <div className="v54-col2 v6-engine-xl">
+            <div className="v56-cell v6-engine-xl">
               <EnginePanel state={s} wsStatus={wsStatus} />
             </div>
-            <section className="v54-col2 v54-btdetail" aria-label="백테스트 상세 그래프">
+            <section className="v56-cell v54-btdetail" aria-label="백테스트 상세 그래프">
               <div className="v55-btd-actions">
                 <button className="btn ghost sm"
                         title="선택 세대(미선택 시 best)를 백테스트 탭에서 결과·퀀트 분석으로 상세 확인"
@@ -446,7 +449,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
               </div>
               <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
             </section>
-            <details className="evo-group v54-col2">
+            <details className="evo-group v56-cell">
               <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사 (클릭 펼침)</div></summary>
               <div className="evo-group-body">
                 <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />

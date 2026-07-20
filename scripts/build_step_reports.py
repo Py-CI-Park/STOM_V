@@ -207,25 +207,46 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None) -> l
                     f'<p><a href="/reports/view?path=generated_reports/{_esc(rid)}__gen{g["gen_no"]}.html">세대 상세 스텝 리포트</a></p>'
                     "</section>")
             gate_n = sum(1 for g in gens if g["gate_passed"])
+            # v5.6 U12 — run-comprehensive-v3: design.md §7 계약(네이비/골드 리포트 톤·마스트헤드·KPI 카드).
             html_text = (
                 '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
                 f"<title>Run 종합 보고서 — {_esc(rid)}</title>"
-                "<style>body{font-family:system-ui,'Malgun Gothic',sans-serif;max-width:980px;margin:0 auto;padding:24px;color:#1a2028;line-height:1.6}"
-                "h1{font-size:22px;border-bottom:2px solid #2a3441;padding-bottom:8px}h2{font-size:16px;margin-top:26px;color:#0b5}"
-                "dl{background:#f4f6f8;border:1px solid #dde;border-radius:8px;padding:12px 16px}dt{font-weight:600;color:#556}dd{margin:0 0 6px}"
-                "footer{margin-top:30px;padding-top:12px;border-top:1px solid #dde;font-size:12px;color:#889}a{color:#06c}</style></head><body>"
+                "<style>"
+                ":root{--navy:#122036;--navy2:#1b3050;--gold:#c8a14a;--ink:#1a2028;--mut:#66738a;--line:#dfe4ec;--bg:#f4f5f7;--card:#ffffff}"
+                "*{box-sizing:border-box}body{font-family:system-ui,'Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);margin:0;line-height:1.65}"
+                ".wrap{max-width:1020px;margin:0 auto;padding:0 24px 40px}"
+                "header.mast{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#f2f5fa;padding:34px 28px 26px;border-radius:0 0 14px 14px}"
+                "header.mast .kicker{font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}"
+                "header.mast h1{font-size:26px;margin:6px 0 4px}"
+                "header.mast .sub{font-size:12.5px;color:#b9c4d6}"
+                ".mastkpi{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}"
+                ".mastkpi div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 16px;min-width:130px}"
+                ".mastkpi .k{font-size:10.5px;color:#9fb0c8;letter-spacing:.08em}.mastkpi .v{font-size:19px;font-weight:700;color:#fff}"
+                "h2{font-size:17px;margin:34px 0 12px;color:var(--navy);border-left:4px solid var(--gold);padding-left:10px}"
+                "section.gen{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}"
+                "section.gen h3{margin:0 0 8px;font-size:14.5px;color:var(--navy)}"
+                "table{border-collapse:collapse;width:100%}td{background:var(--card)}"
+                "a{color:#155acb;text-decoration:none}a:hover{text-decoration:underline}"
+                "footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut)}"
+                "@media print{header.mast{border-radius:0}}"
+                "</style></head><body>"
+                '<header class="mast"><div class="kicker">V2UC DASHBOARD · RUN COMPREHENSIVE REPORT</div>'
                 f"<h1>Run 종합 보고서 — {_esc(rid)}</h1>"
-                f"<dl><dt>기간</dt><dd>{fmt_ts(started)} ~ {fmt_ts(finished)}</dd>"
-                f"<dt>상태</dt><dd>{_esc(status)}</dd>"
-                f"<dt>세대</dt><dd>{len(gens)}세대 · gate 통과 {gate_n}</dd>"
-                f"<dt>best</dt><dd>gen {_esc(best_gen)} · score {_esc(best_score)}</dd></dl>"
+                f'<div class="sub">기간 {fmt_ts(started)} ~ {fmt_ts(finished)} · 상태 {_esc(status)}</div>'
+                '<div class="mastkpi">'
+                f'<div><div class="k">세대</div><div class="v">{len(gens)}</div></div>'
+                f'<div><div class="k">GATE 통과</div><div class="v">{gate_n}</div></div>'
+                f'<div><div class="k">BEST GEN</div><div class="v">{_esc(best_gen)}</div></div>'
+                f'<div><div class="k">BEST SCORE</div><div class="v">{_esc(best_score)}</div></div>'
+                "</div></header>"
+                '<div class="wrap">'
                 '<h2 id="sec-flow">1. 개선 흐름도</h2>' + _flow_svg(gens) +
                 '<h2 id="sec-viz">2. 성과 시각화 (KPI · score 바차트 · 위험-성과 산점도)</h2>' + _viz_section(gens) +
                 '<h2 id="sec-gens">3. 세대별 스텝 기록 (생성→백테스트→채점→부검→반영)</h2>' + ("".join(blocks) or "<p>(세대 없음)</p>") +
                 '<h2 id="sec-safety">4. 안전·한계</h2><p>표본 내 지표 요약이며 성능 증명이 아닙니다(performance_proved=false). '
                 "우승 후보의 운영 export 는 human 승인 절차와 분리되어 있으며 이 보고서는 어떤 승격 권한도 없습니다.</p>"
-                f"<footer>생성 {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} · 포맷 run-comprehensive-v2 · 원천 loop_runs.db(SELECT-only) · 읽기 전용(sandbox·CSP 서빙)</footer>"
-                "</body></html>")
+                f"<footer>생성 {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} · 포맷 run-comprehensive-v3(design.md §7) · 원천 loop_runs.db(SELECT-only) · 읽기 전용(sandbox·CSP 서빙)</footer>"
+                "</div></body></html>")
             fname = f"run_report_{rid}.html"
             full = os.path.join(out_dir, fname)
             _atomic_write(full, html_text)

@@ -3364,6 +3364,41 @@ def create_app(
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+    # v5.6 U9 — 백엔드 로그 링버퍼(읽기 전용 관찰성, Newsletter_AI debug_logger 벤치마크).
+    #   파일 쓰기 없음 · 최근 400건만 메모리 유지 · 민감정보 없는 표준 logging 레코드 표면.
+    import collections as _collections
+    import logging as _logging
+
+    class _RingLogHandler(_logging.Handler):
+        def __init__(self, capacity: int = 400) -> None:
+            super().__init__(level=_logging.INFO)
+            self.buf: "_collections.deque" = _collections.deque(maxlen=capacity)
+
+        def emit(self, record: _logging.LogRecord) -> None:
+            try:
+                self.buf.append({
+                    "ts": record.created,
+                    "level": record.levelname,
+                    "logger": record.name,
+                    "msg": self.format(record)[:500],
+                })
+            except Exception:
+                pass
+
+    _ring = _RingLogHandler()
+    _ring.setFormatter(_logging.Formatter("%(message)s"))
+    for _name in ("", "uvicorn", "uvicorn.access", "uvicorn.error", "ai_strategy_loop"):
+        try:
+            _logging.getLogger(_name).addHandler(_ring)
+        except Exception:
+            pass
+
+    @app.get("/debug/logs")
+    def debug_logs(lines: int = 200) -> Dict[str, Any]:
+        """최근 백엔드 로그 tail(읽기 전용) — 설정 탭 로그 뷰어 소비. 파일/쓰기 없음."""
+        n = max(1, min(400, lines))
+        rows = list(_ring.buf)[-n:]
+        return {"count": len(rows), "logs": rows}
 
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon() -> Response:
@@ -3556,14 +3591,28 @@ def create_app(
         return {"screenshots": files, "count": len(files)}
 
     @app.get("/runs")
-    def runs() -> Dict[str, Any]:
+    def runs(fields: str = "") -> Dict[str, Any]:
         """loop_runs.db의 모든 run 요약을 반환한다(run 비교 콘솔 목록).
 
         lineage.compare_runs(run_ids=None)로 전 run을 요약한다. DB가 없거나
         조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
         2026-06-11부터 최신 우선 정렬(running 최상단) — _runs_payload 참조.
+        v5.6 U7 — ?fields=slim: 목록 UI가 쓰는 필드만 남겨 3MB→수십KB(히스토리/셀렉터 성능).
         """
-        return _runs_payload(None)
+        payload = _runs_payload(None)
+        if fields == "slim":
+            # 목록/비교 표 UI 소비 필드만 유지 + 대형 generation_rows(2.8MB) 제외
+            # (세대 상세 정본 경로는 /runs/compare?ids=).
+            keep = ("run_id", "label", "status", "started_at", "finished_at", "elapsed_sec",
+                    "period", "timeframe", "gen_count", "gate_passed_count", "best_gen", "best_score",
+                    "has_csv", "final_profit", "total_profit_pct", "max_hold_count", "trade_count",
+                    "years", "start_year", "end_year", "bt_universe_start_time", "bt_universe_end_time")
+            rs = payload.get("runs") or []
+            payload = {k: v for k, v in payload.items() if k != "generation_rows"}
+            payload["runs"] = [{k: r.get(k) for k in keep if k in r} for r in rs]
+            payload["fields"] = "slim"
+            payload["generation_rows_omitted"] = True
+        return payload
 
     @app.get("/ops_status")
     def ops_status(window_hours: int = 24) -> Dict[str, Any]:
