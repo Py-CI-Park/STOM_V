@@ -13,12 +13,20 @@ function CostPanel({ state, cap = 50000 }) {
   const tokens = state.cumulative?.tokens ?? 0;
   const cost = state.cumulative?.cost_or_count ?? 0;
   const pct = Math.min(100, (tokens / cap) * 100);
+  // v5.6.1 — 상세화: 세대당 평균·예상 완주 비용(풍부한 누적 정보).
+  const gens = Array.isArray(state.generations) ? state.generations : [];
+  const nGen = gens.length;
+  const maxGen = Number(state.max_generations) || 0;
+  const avgTok = nGen ? tokens / nGen : 0;
+  const avgCost = nGen && typeof cost === "number" ? cost / nGen : 0;
+  const projCost = maxGen && nGen && typeof cost === "number" ? (cost / nGen) * maxGen : null;
   return (
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title"><span className="dot"></span>비용 · 누적</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>{nGen}세대 누적</span>
       </div>
-      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div className="row-2" style={{ gap: 10 }}>
           <div className="stat">
             <span className="stat-label">누적 토큰</span>
@@ -26,7 +34,27 @@ function CostPanel({ state, cap = 50000 }) {
           </div>
           <div className="stat">
             <span className="stat-label">비용 / Count</span>
-            <span className="stat-value mono">${(cost).toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+            <span className="stat-value mono">${(typeof cost === "number" ? cost : 0).toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+          </div>
+        </div>
+        <div className="row-2" style={{ gap: 10 }}>
+          <div className="stat">
+            <span className="stat-label">세대당 평균 토큰</span>
+            <span className="stat-value mono">{nGen ? fmtInt(Math.round(avgTok)) : "—"}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">세대당 평균 비용</span>
+            <span className="stat-value mono">{nGen ? "$" + avgCost.toFixed(4) : "—"}</span>
+          </div>
+        </div>
+        <div className="row-2" style={{ gap: 10 }}>
+          <div className="stat">
+            <span className="stat-label">예상 완주 비용({maxGen || "—"}세대)</span>
+            <span className="stat-value mono">{projCost != null ? "$" + projCost.toFixed(4) : "—"}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">토큰 추세</span>
+            <span className="stat-value mono">{nGen >= 2 ? (avgTok >= 1000 ? (avgTok / 1000).toFixed(1) + "k" : Math.round(avgTok)) + "/gen" : "—"}</span>
           </div>
         </div>
         <div>
@@ -50,19 +78,18 @@ function CostPanel({ state, cap = 50000 }) {
 // ---- Feedback / autopsy panel ----
 function FeedbackPanel({ state }) {
   // We surface latest.message + last few gate_reasons as a "loop reasoning" view
+  // v5.6.1 — 상세화: 최근 10세대 부검/게이트 사유 전체 + LIVE 메시지.
   const history = useMemo_pan(() => {
     const items = [];
     if (state.latest?.message) {
       items.push({ kind: "latest", text: state.latest.message, gen: state.current_gen });
     }
-    // Take last 3 gens with a meaningful reason
-    const lastGens = [...state.generations].slice(-4).reverse();
+    const lastGens = [...state.generations].slice(-10).reverse();
     for (const g of lastGens) {
-      if (g.gate_reason && g.gate_reason !== "조건 충족") {
-        items.push({ kind: "gen", text: `gen_${g.gen_no}: ${g.gate_reason}`, gen: g.gen_no });
-      }
+      const reason = g.gate_reason && g.gate_reason !== "조건 충족" ? g.gate_reason : (g.reason || "");
+      if (reason) items.push({ kind: "gen", text: `gen_${g.gen_no}: ${reason}`, gen: g.gen_no });
     }
-    return items.slice(0, 5);
+    return items.slice(0, 12);
   }, [state.latest, state.generations, state.current_gen]);
 
   return (
@@ -419,11 +446,34 @@ function AutopsyPanel({ state, wsStatus }) {
       </div>
       <div className="panel-bd">
         {!autopsy || autopsy.status !== "ok" ? (
-          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
-            {isDemo
-              ? "데모 모드 — 세그먼트 부검은 라이브 실행에서 발행됩니다."
-              : "실시간 데이터 대기 — 세대 완료 시 세그먼트 부검이 발행됩니다."}
-          </div>
+          // v5.6.1 — 폴백: 발행 전에도 세대별 부검/게이트 사유를 파생 표시(빈 화면 금지).
+          (() => {
+            const gens = Array.isArray(state.generations) ? state.generations : [];
+            const rows = gens.filter(g => (g.gate_reason && g.gate_reason !== "조건 충족") || g.reason).slice(-8).reverse();
+            if (!rows.length) {
+              return (
+                <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+                  {isDemo ? "데모 모드 — 세그먼트 부검은 라이브 실행에서 발행됩니다."
+                          : "부검 데이터 대기 — 운영 run 진행 시 세그먼트(시간대·시총) 부검이 발행됩니다."}
+                </div>
+              );
+            }
+            return (
+              <div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 }}>
+                  세그먼트 부검 발행 전 — 세대별 부검 사유(파생)
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {rows.map((g, i) => (
+                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-1)", padding: "4px 0", borderBottom: "1px solid var(--line-1)", lineHeight: 1.55 }}>
+                      <b style={{ color: g.gate_passed ? "var(--teal)" : "var(--ink-2)" }}>gen_{String(g.gen_no).padStart(2, "0")}</b>
+                      {" "}{String(g.gate_reason && g.gate_reason !== "조건 충족" ? g.gate_reason : g.reason)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()
         ) : (
           <div>
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 10 }}>
@@ -483,11 +533,38 @@ function LineagePanel({ state, wsStatus }) {
       </div>
       <div className="panel-bd">
         {!lineage || lineage.status !== "ok" || ordered.length === 0 ? (
-          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
-            {isDemo
-              ? "데모 모드 — 전략 계보는 라이브 실행에서 발행됩니다."
-              : "실시간 데이터 대기 — 세대 완료 시 계보가 발행됩니다."}
-          </div>
+          // v5.6.1 — 폴백: lineage 미발행 시 세대 흐름(파생 계보)을 표시(빈 화면 금지).
+          (() => {
+            const gens = (Array.isArray(state.generations) ? state.generations : []).filter(g => g.gen_no >= 0);
+            if (!gens.length) {
+              return (
+                <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+                  {isDemo ? "데모 모드 — 전략 계보는 라이브 실행에서 발행됩니다." : "세대 데이터 대기 — run 시작 시 계보가 표시됩니다."}
+                </div>
+              );
+            }
+            const bestGen = state.best && state.best.gen;
+            return (
+              <div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 }}>
+                  계보 발행 전 — 세대 흐름(파생) · best gen_{bestGen != null ? bestGen : "—"}
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {gens.slice(-10).map((g, i) => (
+                    <li key={i} className="mono" style={{ padding: "4px 0", borderBottom: "1px solid var(--line-1)", fontSize: 11.5, display: "flex", gap: 10 }}>
+                      <b style={{ color: g.gen_no === bestGen ? "var(--violet)" : (g.gate_passed ? "var(--teal)" : "var(--ink-2)"), flex: "0 0 58px" }}>
+                        gen_{String(g.gen_no).padStart(2, "0")}{g.gen_no === bestGen ? " ★" : g.gate_passed ? " ✓" : ""}
+                      </b>
+                      <span style={{ color: "var(--ink-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{g.buy_name || "—"}</span>
+                      <span style={{ marginLeft: "auto", color: (g.graded_score ?? 0) > 0 ? "var(--teal)" : "var(--ink-3)" }}>
+                        {typeof g.graded_score === "number" ? g.graded_score.toFixed(2) : "—"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()
         ) : (
           <div>
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 8 }}>

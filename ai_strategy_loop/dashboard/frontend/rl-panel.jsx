@@ -254,7 +254,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
             ? (<div><_RangeSummaryList rows={rangeRows} /><_SegmentSummaryList summary={segmentSummary} axis={axis} /></div>)
             : <_ResearchEmptyState message="구간 요약 데이터 대기" />}
         </section>
-        <section className="v54-lab-cell">
+        <section className="v54-lab-cell v56-val-cell">
           <h4 className="stom-section-label">검증 · 안정성</h4>
           <_ValidationPanel baseUrl={baseUrl} runId={runId} isDemo={isDemo} />
         </section>
@@ -299,12 +299,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
                 onClick={() => setViewAllPersist(!viewAll)}>
           {viewAll ? "개별 보기 전환" : "▦ 매트릭스 보기(기본)"}
         </button>
-        {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
-        <button type="button" className="research-filter-action"
-                title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
-                onClick={openWorkbench}>
-          🔬 상세 워크벤치
-        </button>
+        {/* v5.6.1 — '상세 워크벤치' 버튼 제거(사장님 지시: 라이브 탭에 불필요). */}
       </div>
       {/* E1 — 평문 대신 라벨+값+툴팁 상태 배지 바. */}
       <div className="research-statusbar mono">
@@ -337,20 +332,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
         </div>
       )}
       {body}
-      <div className="lab-glossary" aria-label="연구실 용어 설명">
-        <span><b>엣지</b> 조건이 실제로 유리한 구간</span>
-        <span><b>변수 중요도</b> 성과 차이를 크게 만든 입력 변수</span>
-        <span><b>상관관계</b> 변수와 결과가 같이 움직인 정도</span>
-        <span><b>검증</b> 후보를 다른 기간·조건으로 다시 확인하는 단계</span>
-      </div>
-      <details className="lab-example">
-        <summary>예시 보기: 연구실에서 결과를 해석하는 순서</summary>
-        <ol>
-          <li>엣지에서 시간·시총·회전율별 승률/기대값을 봅니다.</li>
-          <li>변수 중요도와 상관관계로 왜 좋아졌는지 확인합니다.</li>
-          <li>검증 섹션에서 다른 기간에서도 유지되는지 확인합니다.</li>
-        </ol>
-      </details>
+      {/* v5.6.1 — lab 용어/예시 섹션 제거(사장님 지시) → 종합 '용어' 탭으로 이동. */}
     </div>
   );
 }

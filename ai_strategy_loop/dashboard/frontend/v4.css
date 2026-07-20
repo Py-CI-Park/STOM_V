@@ -958,3 +958,31 @@
 .v4s-logline .lv { color: var(--ink-2); flex: 0 0 62px; }
 .v4s-logline.lv-error .lv, .v4s-logline.lv-console .lv { color: #e05561; }
 .v4s-logline .m { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ═══════════ v5.6.1 검수 라운드4 ═══════════ */
+/* 구간 요약 등 combo-row 글자 겹침 방지(좁은 셀 줄바꿈) */
+.v54-lab-cell .research-combo-row { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; line-height: 1.5; }
+.v54-lab-cell .research-combo-row > * { white-space: normal; overflow-wrap: anywhere; }
+/* 검증·안정성: 전폭 + 내용 전부 표시(자체 높이, 상한 내 스크롤) */
+.v54-lab-all .v54-lab-cell.v56-val-cell { grid-column: 1 / -1; height: auto; max-height: 860px; }
+/* 통합 카드(현재세대+KPI) 세련화 */
+.v55-board-main.v56-unified { padding: 8px 12px; }
+.v56-unified .v4-stats .v { font-size: 24px; }
+.v56-unified .v6-board-curgen .panel-bd { max-height: 150px; }
+/* BT 스테이지 셀 균일(제목·그래프 높이 정렬): 고정 720px + 내부 스크롤 */
+.v6-stage-panel .v6-stage-grid > .v56-cell { display: flex; flex-direction: column; height: 720px; overflow: hidden; background: var(--bg-1); border: 1px solid var(--line-1); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.v6-stage-panel .v6-stage-grid > .v56-cell > h3, .v6-stage-panel .v6-stage-grid > .v56-cell > .v55-btd-actions { flex: 0 0 auto; }
+.v6-stage-panel .v6-stage-grid > .v56-cell > .panel, .v6-stage-panel .v6-stage-grid > .v56-cell > div:not(.v55-btd-actions) { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 0; }
+.v56-cell > .panel { border: 0; background: transparent; }
+/* GUI 패리티 강화: 이미지 폭 맞춤 */
+.v56-parity img, .v56-parity canvas, .v56-parity svg { max-width: 100%; height: auto; }
+/* 활성 설정·토글 세로 캡(게이트 fold 내부) */
+.v55-gatefold-grid .panel .panel-bd { max-height: 380px; overflow: auto; }
+/* 용어 탭 */
+.v4-glossary { display: flex; flex-direction: column; gap: 12px; max-width: 1500px; }
+.v4g-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 1500px) { .v4g-grid { grid-template-columns: 1fr; } }
+.v4g-row { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line-1); font-size: 12.5px; }
+.v4g-row:last-child { border-bottom: 0; }
+.v4g-term { flex: 0 0 190px; color: var(--teal); }
+.v4g-desc { color: var(--ink-1); line-height: 1.6; }

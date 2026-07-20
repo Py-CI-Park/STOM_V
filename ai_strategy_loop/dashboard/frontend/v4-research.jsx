@@ -13,7 +13,6 @@ import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
-import { ResearchGlossaryPanel } from "./glossary.jsx";
 import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
@@ -449,12 +448,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
               </div>
               <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
             </section>
-            <details className="evo-group v56-cell">
-              <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사 (클릭 펼침)</div></summary>
-              <div className="evo-group-body">
-                <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
-              </div>
-            </details>
+            {/* v5.6.1 — GUI 패리티: fold 폐지, 매트릭스 셀 직접 노출(사장님 지시) + 내부 그리드 강화 */}
+            <section className="v56-cell v56-parity" aria-label="GUI 패리티 — STOM 백테스트 결과 이미지 대사">
+              <h3 className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사</h3>
+              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+            </section>
           </div>
         )}
         {activeStage === 2 && (
@@ -466,7 +464,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                   <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
                   <ActiveConfigPanel state={s} />
                   <CostPanel state={s} cap={50000} />
-                  <ResearchGlossaryPanel />
+                  {/* v5.6.1 — 용어집은 '용어' 탭으로 이동(사장님 지시) */}
                 </div>
               </_V4Fold>
             </div>
