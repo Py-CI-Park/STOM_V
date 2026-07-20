@@ -33,6 +33,18 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
   const [health, setHealth] = useState_v4s(null);
   const [cleared, setCleared] = useState_v4s(0);
   const [dirty, setDirty] = useState_v4s(false);
+  // v5.6 U9 — 로그 뷰어 상태: 백엔드 tail(fetch) + 프론트 버퍼(window.__stomFeLog).
+  const [logTick, setLogTick] = useState_v4s(0);
+  const [beLogs, setBeLogs] = useState_v4s([]);
+  const feLogs = Array.isArray(window.__stomFeLog) ? window.__stomFeLog : [];
+  useEffect_v4s(() => {
+    let alive = true;
+    fetch((baseUrl || "") + "/debug/logs?lines=120", { signal: AbortSignal.timeout(8000) })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (alive) setBeLogs((j && j.logs) || []); })
+      .catch(() => { if (alive) setBeLogs([]); });
+    return () => { alive = false; };
+  }, [baseUrl, logTick]);
 
   useEffect_v4s(() => {
     let alive = true;
@@ -106,6 +118,39 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
           <_V4sRow label="CSS 핀"><span className="mono">{cssPin}</span></_V4sRow>
           <_V4sRow label="서버 상태"><span className="mono">{health ? (health.status || "ok") + (health.version ? " · " + health.version : "") : "—"}</span></_V4sRow>
           <div className="v4s-note">연구 시작·게이트·export 설정은 여기서 다루지 않습니다 — Live 탭 "▸ 설정·시작"(연구 설정)과 human 승인 계약은 불변.</div>
+        </div>
+      </div>
+      {/* v5.6 U9 — 로그 뷰어(읽기 전용): 백엔드 링버퍼 tail + 프론트 에러 버퍼 */}
+      <div className="panel">
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>로그 · 백엔드/프론트엔드 (읽기 전용)</div>
+          <button className="btn ghost sm" onClick={() => setLogTick(t => t + 1)}>↻ 새로고침</button>
+        </div>
+        <div className="panel-bd v4s-logs">
+          <section>
+            <h4 className="stom-section-label">백엔드 (서버 최근 {beLogs.length}건)</h4>
+            <div className="v4s-logbox mono">
+              {beLogs.length ? beLogs.slice().reverse().map((l, i) => (
+                <div key={i} className={"v4s-logline lv-" + String(l.level || "").toLowerCase()}>
+                  <span className="t">{new Date((l.ts || 0) * 1000).toTimeString().slice(0, 8)}</span>
+                  <span className="lv">{l.level}</span>
+                  <span className="m">{l.msg}</span>
+                </div>
+              )) : <div className="v4s-note">로그 없음(서버 재기동 후 수집)</div>}
+            </div>
+          </section>
+          <section>
+            <h4 className="stom-section-label">프론트엔드 (오류/콘솔 최근 {feLogs.length}건)</h4>
+            <div className="v4s-logbox mono">
+              {feLogs.length ? feLogs.slice().reverse().map((l, i) => (
+                <div key={i} className="v4s-logline lv-error">
+                  <span className="t">{new Date((l.ts || 0) * 1000).toTimeString().slice(0, 8)}</span>
+                  <span className="lv">{l.level}</span>
+                  <span className="m">{l.msg}</span>
+                </div>
+              )) : <div className="v4s-note">기록된 프론트 오류 없음</div>}
+            </div>
+          </section>
         </div>
       </div>
     </section>

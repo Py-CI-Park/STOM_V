@@ -28,16 +28,27 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.5.1";
+const V4_DASH_VERSION = "v5.6.0";
+// v5.6 U9 — 프론트엔드 로그 버퍼(설정 탭 로그 뷰어 소비): onerror + console.error 최근 200건.
+(function _initFeLogBuffer() {
+  if (window.__stomFeLog) return;
+  const buf = [];
+  const push = (level, msg) => { try { buf.push({ ts: Date.now() / 1000, level, msg: String(msg).slice(0, 400) }); if (buf.length > 200) buf.shift(); } catch (e) {} };
+  window.__stomFeLog = buf;
+  window.addEventListener("error", e => push("ERROR", e.message || e.type));
+  window.addEventListener("unhandledrejection", e => push("REJECT", (e.reason && e.reason.message) || e.reason || "unhandled rejection"));
+  const origErr = console.error.bind(console);
+  console.error = (...a) => { push("CONSOLE", a.map(x => (typeof x === "string" ? x : (x && x.message) || JSON.stringify(x))).join(" ")); origErr(...a); };
+})();
 
 // V4 IA(UXR-P3): primary 6뷰(연구 워크스페이스) + secondary 보조도구를 레일에서 구획한다.
 //   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
-// V6.1(R1): 연구 흐름 순서 — Live → History → 성과 → Reports → Backtest → Replay.
+// v5.6 U11 — 연구 흐름 순서: Live → History → Reports(결과 열람) → 성과 → Backtest → Replay.
 const V4_TABS = [
   { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 스테이지 구동 실시간 관찰", group: "primary" },
   { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
-  { key: "workbench", label: "성과", full: "명예의 전당 · 인간+AI 성과", badge: "HALL", hint: "명예의 전당 전용 — 인간 벤치마크와 AI 연구 성과 비교", group: "primary" },
   { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
+  { key: "workbench", label: "성과", full: "명예의 전당 · 인간+AI 성과", badge: "HALL", hint: "명예의 전당 전용 — 인간 벤치마크와 AI 연구 성과 비교", group: "primary" },
   { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
   { key: "catalog", label: "연구 자산", full: "연구 자산 (P4 비정본 preview prototype + 진행 관찰)", badge: "자산", hint: "연혁실·함정지도·절실험실·출구은행·진행 관찰(구 Alpha)·B1 — 읽기 전용 · 비정본 preview", group: "secondary" },

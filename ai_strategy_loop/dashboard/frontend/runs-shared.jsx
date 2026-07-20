@@ -29,7 +29,7 @@ function fetchRunsShared(baseUrl, opts) {
     if (entry.promise) return entry.promise.then(_cloneRuns);                      // 진행 중 우선 합류
     if (entry.data && (now - entry.ts) < _RUNS_TTL_MS) return Promise.resolve(_cloneRuns(entry.data));
   }
-  const promise = fetch(key + "/runs", { signal: AbortSignal.timeout(_RUNS_TRANSPORT_TIMEOUT_MS) })
+  const promise = fetch(key + "/runs?fields=slim", { signal: AbortSignal.timeout(_RUNS_TRANSPORT_TIMEOUT_MS) })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
     .then(j => { _runsCache.set(key, { ts: Date.now(), promise: null, data: j }); return j; })
     .catch(err => {

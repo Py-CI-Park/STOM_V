@@ -304,6 +304,23 @@ def _matches_query(item: HistoryIndexItem, q: str) -> bool:
     return needle in item["research_id"].casefold() or needle in item["label"].casefold()
 
 
+# v5.6 U7 — 인덱스 빌드 TTL 캐시(30s): 항목당 트리 빌드가 3~6s 로 히스토리 진입을 지연시키던
+#   핫스팟. 빌드 결과(item list)만 캐시하고 q 필터·정렬·페이지네이션은 요청마다 수행한다.
+_INDEX_TTL_SECONDS = 30.0
+_INDEX_CACHE: dict[str, tuple[float, tuple[list, bool]]] = {}
+
+
+def _cached_index_items(kind: str) -> tuple[list, bool]:
+    import time as _time
+    now = _time.monotonic()
+    hit = _INDEX_CACHE.get(kind)
+    if hit is not None and (now - hit[0]) < _INDEX_TTL_SECONDS:
+        return hit[1]
+    built = _campaign_index_items() if kind == "campaign" else _loop_run_index_items()
+    _INDEX_CACHE[kind] = (now, built)
+    return built
+
+
 @history_router.get("/history/index", response_model=None)
 def history_index(
     cursor: Optional[str] = Query(None),
@@ -315,14 +332,14 @@ def history_index(
     # source_kind 필터가 지정되면 반대편 소스의 트리 빌드를 아예 생략한다
     # (전체 인덱스는 항목당 트리 빌드 비용이 커서, 필터형 소비자는 단락 경로 사용).
     if source_kind == "campaign":
-        campaign_items, campaign_available = _campaign_index_items()
+        campaign_items, campaign_available = _cached_index_items("campaign")
         loop_run_items, loop_run_available = [], True
     elif source_kind == "loop_run":
         campaign_items, campaign_available = [], True
-        loop_run_items, loop_run_available = _loop_run_index_items()
+        loop_run_items, loop_run_available = _cached_index_items("loop_run")
     else:
-        campaign_items, campaign_available = _campaign_index_items()
-        loop_run_items, loop_run_available = _loop_run_index_items()
+        campaign_items, campaign_available = _cached_index_items("campaign")
+        loop_run_items, loop_run_available = _cached_index_items("loop_run")
 
     all_items = campaign_items + loop_run_items
     all_items = [item for item in all_items if _matches_query(item, q)]
