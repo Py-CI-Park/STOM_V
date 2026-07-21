@@ -245,14 +245,12 @@ def _preserved_manifest_entries(manifest_path: str, out_dir: str, replacing: set
 
 
 def publish_reports(rendered_reports: list[tuple[dict, str, str, str]], out_dir: str, manifest_path: str | None = None) -> dict:
-    """Publish reports as a manifest-last snapshot without replacing unrelated files.
+    """Publish reports as a manifest-last snapshot, rolling back live replacements on failure.
 
     ``rendered_reports`` items are ``(spec, relative_path, html, report_type)``.
-    Files are fully rendered in a sibling staging directory, moved into place with
-    ``os.replace``, and only then exposed by atomically replacing the manifest.  A
-    failure can leave an unreferenced new file, but never a manifest that points to
-    a partial file set.  This also works on Windows when ``out_dir`` contains an
-    open loop-runs database or other unmanaged evidence.
+    All files are rendered before publication.  Existing live files and manifests
+    are copied to a private rollback directory before replacement, so an error
+    after any replacement restores the prior manifest/file snapshot.
     """
     if len(rendered_reports) > MAX_REPORTS:
         raise ValueError(f"too many reports ({len(rendered_reports)} > {MAX_REPORTS})")
@@ -271,6 +269,32 @@ def publish_reports(rendered_reports: list[tuple[dict, str, str, str]], out_dir:
     parent = os.path.dirname(out_dir)
     os.makedirs(parent, exist_ok=True)
     staging = tempfile.mkdtemp(prefix=f".{os.path.basename(out_dir)}.staging.", dir=parent)
+    rollback = tempfile.mkdtemp(prefix=f".{os.path.basename(out_dir)}.rollback.", dir=parent)
+    replacements: list[tuple[str, str | None]] = []
+    manifest_backups: dict[str, str | None] = {}
+
+    def backup(path: str, name: str) -> str | None:
+        if not os.path.exists(path):
+            return None
+        saved = os.path.join(rollback, name)
+        os.makedirs(os.path.dirname(saved), exist_ok=True)
+        shutil.copy2(path, saved)
+        return saved
+
+    def restore(replaced: list[tuple[str, str | None]]) -> list[Exception]:
+        errors: list[Exception] = []
+        for destination, saved in reversed(replaced):
+            try:
+                if saved is None:
+                    if os.path.exists(destination):
+                        os.remove(destination)
+                else:
+                    os.makedirs(os.path.dirname(destination), exist_ok=True)
+                    os.replace(saved, destination)
+            except OSError as error:
+                errors.append(error)
+        return errors
+
     try:
         for _spec, path, text, _type in rendered_reports:
             destination = os.path.abspath(os.path.join(staging, path))
@@ -279,21 +303,32 @@ def publish_reports(rendered_reports: list[tuple[dict, str, str, str]], out_dir:
             _atomic_write(destination, text)
 
         os.makedirs(out_dir, exist_ok=True)
-        for path in relative_paths:
+        manifest_backups = {
+            path: backup(path, f"manifests/{index}.json")
+            for index, path in enumerate(dict.fromkeys((canonical_manifest, requested_manifest)))
+        }
+        for index, path in enumerate(relative_paths):
             source = os.path.join(staging, path)
             destination = os.path.abspath(os.path.join(out_dir, path))
             if os.path.commonpath((out_dir, destination)) != out_dir:
                 raise ValueError(f"report path escapes output directory: {path}")
+            saved = backup(destination, f"reports/{index}")
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             os.replace(source, destination)
+            replacements.append((destination, saved))
 
         manifest_text = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
         _atomic_write(canonical_manifest, manifest_text)
         if requested_manifest != canonical_manifest:
             _atomic_write(requested_manifest, manifest_text)
+    except Exception as error:
+        rollback_errors = restore(list((path, saved) for path, saved in manifest_backups.items())) + restore(replacements)
+        if rollback_errors:
+            raise RuntimeError("report publication failed and rollback could not restore the prior snapshot") from error
+        raise
     finally:
-        if os.path.exists(staging):
-            shutil.rmtree(staging)
+        shutil.rmtree(staging, ignore_errors=True)
+        shutil.rmtree(rollback, ignore_errors=True)
     return manifest
 
 

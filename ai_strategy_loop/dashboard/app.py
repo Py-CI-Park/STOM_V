@@ -35,6 +35,7 @@ import sqlite3  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
+import threading  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 import re  # noqa: E402
 from urllib.parse import parse_qs  # noqa: E402
@@ -119,78 +120,156 @@ def _safe_report_path(rel: str) -> Optional[str]:
 
 _REPORT_CATALOG_TTL_SECONDS = 30.0
 _REPORT_CATALOG_CACHE: Dict[str, tuple[float, list[Dict[str, Any]]]] = {}
+_REPORT_CATALOG_CACHE_LOCK = threading.RLock()
+_REPORT_MANIFEST_SCHEMA_VERSION = "stom-research-report-v1"
+_REPORT_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _report_manifest_relative_path(prefix: str, report: Dict[str, Any]) -> Optional[str]:
+    report_path = report.get("path")
+    if not isinstance(report_path, str) or not report_path.lower().endswith(".html"):
+        return None
+    normalized = report_path.replace("\\", "/")
+    if (
+        not normalized
+        or normalized.startswith("/")
+        or os.path.isabs(report_path)
+        or any(part in ("", ".", "..") for part in normalized.split("/"))
+    ):
+        return None
+    return f"{prefix}/{normalized}".replace("//", "/")
+
+
+def _failed_report_metadata(reason: str) -> Dict[str, Any]:
+    return {
+        "registered": False,
+        "integrity_status": "failed",
+        "integrity_error": reason,
+    }
 
 
 def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
-    """Return manifest metadata keyed by docs-relative HTML path."""
-
+    """Return only manifest metadata whose declared file bytes and digest verify."""
     rows: Dict[str, Dict[str, Any]] = {}
     for rel_manifest in (
         "generated_reports/manifest.json",
         "research/condition_research/reports/research_report_manifest.json",
     ):
         manifest_path = os.path.join(root, *rel_manifest.split("/"))
+        prefix = os.path.dirname(rel_manifest).replace("\\", "/")
         try:
             with open(manifest_path, "r", encoding="utf-8") as handle:
                 payload = json.load(handle)
         except (OSError, ValueError, TypeError):
             continue
-        prefix = os.path.dirname(rel_manifest).replace("\\", "/")
-        for report in payload.get("reports", []) if isinstance(payload, dict) else []:
+
+        reports = payload.get("reports") if isinstance(payload, dict) else None
+        manifest_valid = (
+            isinstance(payload, dict)
+            and payload.get("schema_version") == _REPORT_MANIFEST_SCHEMA_VERSION
+            and isinstance(reports, list)
+            and isinstance(payload.get("count"), int)
+            and not isinstance(payload.get("count"), bool)
+            and payload["count"] == len(reports)
+        )
+        if not isinstance(reports, list):
+            continue
+
+        for report in reports:
             if not isinstance(report, dict):
                 continue
-            report_path = report.get("path")
-            if not isinstance(report_path, str) or not report_path.lower().endswith(".html"):
+            rel_path = _report_manifest_relative_path(prefix, report)
+            if rel_path is None:
                 continue
-            rel_path = f"{prefix}/{report_path}".replace("//", "/")
+            if not manifest_valid:
+                rows[rel_path] = _failed_report_metadata("manifest_schema_invalid")
+                continue
+
+            expected_hash = report.get("content_sha256")
+            expected_bytes = report.get("bytes")
+            if (
+                report.get("schema_version") != _REPORT_MANIFEST_SCHEMA_VERSION
+                or not isinstance(expected_hash, str)
+                or _REPORT_SHA256_RE.fullmatch(expected_hash.lower()) is None
+                or not isinstance(expected_bytes, int)
+                or isinstance(expected_bytes, bool)
+                or expected_bytes < 0
+            ):
+                rows[rel_path] = _failed_report_metadata("report_schema_invalid")
+                continue
+
+            full = _safe_report_path(rel_path)
+            if full is None:
+                continue
+            digest = hashlib.sha256()
+            actual_bytes = 0
+            try:
+                with open(full, "rb") as handle:
+                    for chunk in iter(lambda: handle.read(64 * 1024), b""):
+                        actual_bytes += len(chunk)
+                        digest.update(chunk)
+            except OSError:
+                rows[rel_path] = _failed_report_metadata("report_unreadable")
+                continue
+            if actual_bytes != expected_bytes:
+                rows[rel_path] = _failed_report_metadata("bytes_mismatch")
+                continue
+            if digest.hexdigest() != expected_hash.lower():
+                rows[rel_path] = _failed_report_metadata("content_sha256_mismatch")
+                continue
+
             rows[rel_path] = {
-                key: report.get(key)
-                for key in (
-                    "schema_version", "report_id", "report_type", "research_id",
-                    "run_id", "generation", "cycle", "status", "publication_status", "generator",
-                    "content_sha256", "source_sha256", "trust", "provenance", "toc",
-                    "profile", "evidence", "decision", "limitations",
-                )
-                if report.get(key) is not None
+                "registered": True,
+                "integrity_status": "verified",
+                **{
+                    key: report.get(key)
+                    for key in (
+                        "schema_version", "report_id", "report_type", "research_id",
+                        "run_id", "generation", "cycle", "status", "publication_status", "generator",
+                        "content_sha256", "source_sha256", "trust", "provenance", "toc",
+                        "profile", "evidence", "decision", "limitations",
+                    )
+                    if report.get(key) is not None
+                },
             }
     return rows
 
 
 def _report_catalog() -> list[Dict[str, Any]]:
-    """Build a bounded cached catalog and enrich registered reports from manifests."""
-
+    """Build a bounded cached catalog and enrich verified registered reports from manifests."""
     root = _reports_root_abs()
     now = time.monotonic()
-    cached = _REPORT_CATALOG_CACHE.get(root)
-    if cached is not None and now - cached[0] < _REPORT_CATALOG_TTL_SECONDS:
-        return [dict(item) for item in cached[1]]
+    with _REPORT_CATALOG_CACHE_LOCK:
+        cached = _REPORT_CATALOG_CACHE.get(root)
+        if cached is not None and now - cached[0] < _REPORT_CATALOG_TTL_SECONDS:
+            return [dict(item) for item in cached[1]]
 
-    metadata = _report_manifest_rows(root)
-    items: list[Dict[str, Any]] = []
-    for base, _dirs, files in os.walk(root):
-        for filename in files:
-            if not filename.lower().endswith(".html"):
-                continue
-            rel = os.path.relpath(os.path.join(base, filename), root).replace(os.sep, "/")
-            full = _safe_report_path(rel)
-            if full is None:
-                continue
-            try:
-                stat = os.stat(full)
-            except OSError:
-                continue
-            item: Dict[str, Any] = {
-                "path": rel,
-                "name": filename,
-                "bytes": stat.st_size,
-                "mtime": int(stat.st_mtime),
-                "registered": rel in metadata,
-            }
-            item.update(metadata.get(rel, {}))
-            items.append(item)
-    items.sort(key=lambda item: item["path"])
-    _REPORT_CATALOG_CACHE[root] = (now, items)
-    return [dict(item) for item in items]
+        metadata = _report_manifest_rows(root)
+        items: list[Dict[str, Any]] = []
+        for base, _dirs, files in os.walk(root):
+            for filename in files:
+                if not filename.lower().endswith(".html"):
+                    continue
+                rel = os.path.relpath(os.path.join(base, filename), root).replace(os.sep, "/")
+                full = _safe_report_path(rel)
+                if full is None:
+                    continue
+                try:
+                    stat = os.stat(full)
+                except OSError:
+                    continue
+                item: Dict[str, Any] = {
+                    "path": rel,
+                    "name": filename,
+                    "bytes": stat.st_size,
+                    "mtime": int(stat.st_mtime),
+                    "registered": False,
+                }
+                item.update(metadata.get(rel, {}))
+                items.append(item)
+        items.sort(key=lambda item: item["path"])
+        _REPORT_CATALOG_CACHE[root] = (now, items)
+        return [dict(item) for item in items]
 
 _DASHBOARD_FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
@@ -3529,10 +3608,13 @@ def create_app(
     import logging as _logging
 
     _log_secret = re.compile(
-        r"(?i)(authorization|api[_-]?key|token|secret|password|cookie)"
+        r"(?i)(api[_-]?key|token|secret|password|cookie)"
         r"(\s*[:=]\s*)([^\s,;]+)"
     )
-    _log_user_path = re.compile(r"(?i)[A-Z]:\\Users\\[^\\\s]+")
+    _log_bearer = re.compile(r"(?i)\bauthorization\s*[:=]?\s*bearer\s+[^\s,;]+")
+    _log_absolute_path = re.compile(
+        r"(?i)(?:[a-z]:[\\/][^\s,;]*|\\\\[^\s,;]+|(?<![a-z0-9:])/[^\s,;]+)"
+    )
     _ring_marker = "_stom_dashboard_ring_handler"
 
     class _RingLogHandler(_logging.Handler):
@@ -3544,8 +3626,9 @@ def create_app(
         def emit(self, record: _logging.LogRecord) -> None:
             try:
                 message = self.format(record)
+                message = _log_bearer.sub("Authorization: Bearer <redacted>", message)
                 message = _log_secret.sub(r"\1\2<redacted>", message)
-                message = _log_user_path.sub("<user-path>", message)
+                message = _log_absolute_path.sub("<absolute-path>", message)
                 self.buf.append({
                     "ts": record.created,
                     "level": record.levelname,
@@ -3584,7 +3667,10 @@ def create_app(
             )
         n = max(1, min(400, lines))
         rows = list(_ring.buf)[-n:]
-        return JSONResponse({"count": len(rows), "logs": rows})
+        return JSONResponse(
+            {"count": len(rows), "logs": rows},
+            headers={"Cache-Control": "no-store, private"},
+        )
 
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon() -> Response:

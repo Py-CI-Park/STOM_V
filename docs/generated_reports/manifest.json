@@ -2,7 +2,7 @@
   "schema_version": "stom-research-report-v1",
   "status": "complete",
   "generator": "ai_strategy_loop.dashboard.report_writer",
-  "generated_at": "2026-07-20T14:41:00Z",
+  "generated_at": "2026-07-21T12:49:53Z",
   "count": 4,
   "limits": {
     "max_reports": 1000,
@@ -21,10 +21,10 @@
       "publication_status": "complete",
       "generator": "ai_strategy_loop.dashboard.report_writer",
       "path": "run_report_lat_smoke_tick_full_sanitized_20260704.html",
-      "content_sha256": "5a168fcafea750f041fad33db676caebd95fe51576fa6de2634401269b9cbde1",
-      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
-      "bytes": 185454,
-      "generated_at": "2026-07-20T14:41:00Z",
+      "content_sha256": "c340ba915cf46ef37e80a01ae1854f649cbe7315b6219150b47212aba69e538f",
+      "source_sha256": "20cb54890982eb4bbd02ee035e57259db49ed81a6721e99718613386f4b05001",
+      "bytes": 180109,
+      "generated_at": "2026-07-21T12:49:52Z",
       "trust": "derived",
       "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
       "toc": [
@@ -89,6 +89,12 @@
         "evaluation_manifests": 0,
         "candidate_passports": 0,
         "run_receipts": 0,
+        "availability": {
+          "prompts": "available",
+          "evaluation_manifests": "available",
+          "candidate_passports": "available",
+          "run_receipts": "available"
+        },
         "generations": 170,
         "lineage_links": 0,
         "gate_passed": 0
@@ -100,7 +106,7 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "5a168fcafea750f041fad33db676caebd95fe51576fa6de2634401269b9cbde1"
+      "sha256": "c340ba915cf46ef37e80a01ae1854f649cbe7315b6219150b47212aba69e538f"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -114,10 +120,10 @@
       "publication_status": "complete",
       "generator": "ai_strategy_loop.dashboard.report_writer",
       "path": "run_report_tmap_llmg19_fullsweep_q1_20260614.html",
-      "content_sha256": "87ebbec9a3b4e7c86d6ee742c7b194a31fd45c9f87f1f3d930ec34414fcf51f3",
-      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
-      "bytes": 74367,
-      "generated_at": "2026-07-20T14:40:59Z",
+      "content_sha256": "e9bbaa4d30ac7516e1439f67b7c1a041b9ae53448438c92229b9f904c43b9d76",
+      "source_sha256": "0af5cc75e1a61105f38a24342bc61bcf7b2d64f323d7dad7d336f330c87e8e9d",
+      "bytes": 74116,
+      "generated_at": "2026-07-21T12:49:53Z",
       "trust": "derived",
       "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
       "toc": [
@@ -182,6 +188,12 @@
         "evaluation_manifests": 0,
         "candidate_passports": 0,
         "run_receipts": 0,
+        "availability": {
+          "prompts": "available",
+          "evaluation_manifests": "available",
+          "candidate_passports": "available",
+          "run_receipts": "available"
+        },
         "generations": 66,
         "lineage_links": 0,
         "gate_passed": 5
@@ -193,7 +205,7 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "87ebbec9a3b4e7c86d6ee742c7b194a31fd45c9f87f1f3d930ec34414fcf51f3"
+      "sha256": "e9bbaa4d30ac7516e1439f67b7c1a041b9ae53448438c92229b9f904c43b9d76"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -207,10 +219,10 @@
       "publication_status": "complete",
       "generator": "ai_strategy_loop.dashboard.report_writer",
       "path": "run_report_tmap_seed_full_train_20260611.html",
-      "content_sha256": "1293832d2deb2bab1ec1bda523d16c0370f75ed44272a4334d2055686583af1c",
-      "source_sha256": "945ef32ab3b1d4471d1f89fc0ac0babf7e8192a2b337a9ee73aeaf3d566de04d",
+      "content_sha256": "6066c2022b1be1aa0f833b487c96ac38356e745e39553d62da5e14e6e8d45aa3",
+      "source_sha256": "151dd730887cb7aed5a3c2032dad5353f75a01b68fa1806304e9a6c3c241d580",
       "bytes": 62072,
-      "generated_at": "2026-07-20T14:40:58Z",
+      "generated_at": "2026-07-21T12:49:53Z",
       "trust": "derived",
       "provenance": "ai_strategy_loop/state/loop_runs.db (SELECT-only)",
       "toc": [
@@ -275,6 +287,12 @@
         "evaluation_manifests": 0,
         "candidate_passports": 0,
         "run_receipts": 0,
+        "availability": {
+          "prompts": "available",
+          "evaluation_manifests": "available",
+          "candidate_passports": "available",
+          "run_receipts": "available"
+        },
         "generations": 56,
         "lineage_links": 0,
         "gate_passed": 49
@@ -286,7 +304,7 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "1293832d2deb2bab1ec1bda523d16c0370f75ed44272a4334d2055686583af1c"
+      "sha256": "6066c2022b1be1aa0f833b487c96ac38356e745e39553d62da5e14e6e8d45aa3"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -297,6 +315,7 @@
       "generation": null,
       "cycle": null,
       "status": "complete",
+      "publication_status": "complete",
       "generator": "ai_strategy_loop.dashboard.report_writer",
       "path": "v5_reporting_demo__stage1.html",
       "content_sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf",

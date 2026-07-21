@@ -205,7 +205,9 @@ def test_research_index_list_and_route_use_the_public_serializer(monkeypatch, tm
 
 
 def test_research_doc_route_sanitizes_markdown_without_changing_source(monkeypatch, tmp_path: Path) -> None:
-    document = tmp_path / "report.md"
+    repo = tmp_path / "repo"
+    document = repo / "docs" / "research" / "condition_research" / "report.md"
+    document.parent.mkdir(parents=True)
     raw_markdown = (
         "# Report\n"
         "source:C:/private/evidence/report.json\n"
@@ -215,14 +217,13 @@ def test_research_doc_route_sanitizes_markdown_without_changing_source(monkeypat
     )
     document.write_text(raw_markdown, encoding="utf-8")
     summary = {
-        "id": "condition_research:report.md",
+        "id": "docs/research/condition_research/report.md",
         "title": "Report",
         "category": "condition_research",
         "updated_at": "2026-07-19T00:00:00Z",
     }
+    monkeypatch.setattr(research_api, "REPO_ROOT", repo)
     monkeypatch.setattr(research_api, "_doc_index", lambda: {summary["id"]: (document, summary)})
-    monkeypatch.setattr(research_api, "_repo_path", lambda _doc_id: document)
-
     response = research_api.research_doc(summary["id"])
 
     assert response["available"] is True
@@ -238,13 +239,15 @@ def test_research_doc_route_sanitizes_markdown_without_changing_source(monkeypat
 def test_research_doc_metadata_index_invalidates_on_path_mtime_or_size_change(
     monkeypatch, tmp_path: Path,
 ) -> None:
-    document = tmp_path / "cached.md"
+    repo = tmp_path / "repo"
+    document = repo / "docs" / "research" / "condition_research" / "cached.md"
+    document.parent.mkdir(parents=True)
     document.write_text("# Initial\n", encoding="utf-8")
+    monkeypatch.setattr(research_api, "REPO_ROOT", repo)
     monkeypatch.setattr(research_api, "_iter_allowed_docs", lambda: [(document, "condition_research")])
-    monkeypatch.setattr(research_api, "_relative_id", lambda path: f"docs/{path.name}")
+    monkeypatch.setattr(research_api, "_relative_id", lambda path: f"docs/research/condition_research/{path.name}")
     research_api._DOC_INDEX_CACHE = None
     monkeypatch.setattr(research_api, "_DOC_INDEX_SIDECAR", tmp_path / "missing-sidecar.json")
-    monkeypatch.setattr(research_api, "_repo_path", lambda _doc_id: document)
     research_api._DOC_INDEX_CHECKED_AT = 0.0
 
     calls = 0
@@ -257,7 +260,7 @@ def test_research_doc_metadata_index_invalidates_on_path_mtime_or_size_change(
 
     monkeypatch.setattr(research_api, "_summary_for", counted_summary)
     assert research_api.research_docs()["docs"][0]["title"] == "Initial"
-    assert research_api.research_doc("docs/cached.md")["available"] is True
+    assert research_api.research_doc("docs/research/condition_research/cached.md")["available"] is True
     assert calls == 1
 
     document.write_text("# Changed title\n", encoding="utf-8")

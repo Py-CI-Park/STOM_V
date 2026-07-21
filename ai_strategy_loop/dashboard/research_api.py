@@ -21,6 +21,7 @@ from ai_strategy_loop.dashboard.history_api import history_router
 
 
 class ResearchDocSummary(TypedDict):
+    """``size`` is the UTF-8-decoded character count, matching ``research_doc``."""
     id: str
     title: str
     category: str
@@ -37,6 +38,7 @@ class ResearchDocsResponse(TypedDict):
 
 
 class ResearchDocResponse(TypedDict, total=False):
+    """``size`` is the UTF-8-decoded character count of ``markdown`` before sanitization."""
     id: str
     title: str
     category: str
@@ -45,7 +47,6 @@ class ResearchDocResponse(TypedDict, total=False):
     available: bool
     markdown: str
     error: str
-
 
 class IndexCompareResponse(TypedDict):
     available: bool
@@ -88,6 +89,31 @@ def _repo_path(rel_path: str) -> Path:
     return (REPO_ROOT / rel_path).resolve()
 
 
+def _resolved_allowed_doc_path(path: Path) -> Path | None:
+    """Resolve a document and prove its final target is in an allowlisted root."""
+    try:
+        repo_root = REPO_ROOT.resolve(strict=True)
+        resolved = path.resolve(strict=True)
+    except OSError:
+        return None
+    for root in _DOC_ROOTS:
+        try:
+            allowed_root = _repo_path(root.rel_path)
+            allowed_root.relative_to(repo_root)
+            resolved.relative_to(allowed_root)
+            return resolved
+        except ValueError:
+            continue
+    for rel_path in _SELECTED_UPDATE_LOGS:
+        try:
+            allowed_file = _repo_path(rel_path)
+            allowed_file.relative_to(repo_root)
+        except ValueError:
+            continue
+        if resolved == allowed_file:
+            return resolved
+    return None
+
 def _relative_id(path: Path) -> str:
     return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
 
@@ -116,6 +142,7 @@ def _doc_sidecar_snapshot() -> tuple[tuple[tuple[str, int, int], ...], dict[str,
         doc_id = item.get("id")
         if not isinstance(doc_id, str) or not _doc_id_allowed(doc_id):
             continue
+        path = REPO_ROOT / Path(doc_id)
         summary: ResearchDocSummary = {
             "id": doc_id,
             "title": str(item.get("title") or Path(doc_id).stem.replace("_", " ")),
@@ -123,7 +150,7 @@ def _doc_sidecar_snapshot() -> tuple[tuple[tuple[str, int, int], ...], dict[str,
             "updated_at": str(item.get("updated_at") or ""),
             "size": int(item.get("size") or 0),
         }
-        rows[doc_id] = (REPO_ROOT / Path(doc_id), summary)
+        rows[doc_id] = (path, summary)
     signature = ((str(_DOC_INDEX_SIDECAR), stat.st_mtime_ns, stat.st_size),)
     return signature, rows
 
@@ -149,18 +176,17 @@ def _category_for(path: Path, default: str) -> str:
 
 def _summary_for(path: Path, category: str) -> ResearchDocSummary:
     try:
-        with path.open("r", encoding="utf-8", errors="replace") as handle:
-            markdown_head = handle.read(16 * 1024)
-        size = path.stat().st_size
+        markdown = path.read_text(encoding="utf-8", errors="replace")
+        updated_at = _updated_at(path)
     except OSError:
-        markdown_head = ""
-        size = 0
+        markdown = ""
+        updated_at = ""
     return {
         "id": _relative_id(path),
-        "title": _title_from_markdown(markdown_head, path.stem.replace("_", " ")),
+        "title": _title_from_markdown(markdown, path.stem.replace("_", " ")),
         "category": _category_for(path, category),
-        "updated_at": _updated_at(path),
-        "size": size,
+        "updated_at": updated_at,
+        "size": len(markdown),
     }
 
 
@@ -169,10 +195,14 @@ def _iter_allowed_docs() -> list[tuple[Path, str]]:
     for root in _DOC_ROOTS:
         root_path = _repo_path(root.rel_path)
         if root_path.is_dir():
-            docs.extend((path, root.category) for path in root_path.rglob("*.md") if path.is_file())
+            docs.extend(
+                (path, root.category)
+                for path in root_path.rglob("*.md")
+                if path.is_file() and _resolved_allowed_doc_path(path) is not None
+            )
     for rel_path in _SELECTED_UPDATE_LOGS:
         path = _repo_path(rel_path)
-        if path.is_file():
+        if path.is_file() and _resolved_allowed_doc_path(path) is not None:
             docs.append((path, "update_log"))
     return docs
 def _doc_source_snapshot() -> tuple[list[tuple[Path, str]], tuple[tuple[str, int, int], ...]]:
@@ -220,10 +250,10 @@ def _doc_index() -> dict[str, tuple[Path, ResearchDocSummary]]:
 @router.get("/research_docs")
 def research_docs(
     q: str = "",
-    limit: int = 100,
+    limit: int | None = None,
     offset: int = 0,
 ) -> ResearchDocsResponse:
-    limit = max(1, min(250, int(limit)))
+    """List all matching docs when ``limit`` is omitted; paginate only explicit limits."""
     offset = max(0, int(offset))
     docs = [item[1] for item in _doc_index().values()]
     docs.sort(key=lambda row: (row["category"], row["id"]))
@@ -238,8 +268,13 @@ def research_docs(
             )).casefold()
         ]
     total = len(docs)
-    page = docs[offset:offset + limit]
-    next_offset = offset + len(page) if offset + len(page) < total else None
+    if limit is None:
+        page = docs[offset:]
+        next_offset = None
+    else:
+        page_limit = max(1, min(250, int(limit)))
+        page = docs[offset:offset + page_limit]
+        next_offset = offset + len(page) if offset + len(page) < total else None
     return {
         "docs": page,
         "count": len(page),
@@ -252,11 +287,16 @@ def research_docs(
 @router.get("/research_doc")
 def research_doc(id: str = "") -> ResearchDocResponse:
     found = _doc_index().get(id)
-    path = _repo_path(id)
-    if found is None or path is None or not path.is_file():
+    if found is None or not _doc_id_allowed(id):
         return {"available": False, "error": "doc_not_allowed", "id": id}
-    _, summary = found
-    markdown = path.read_text(encoding="utf-8", errors="replace")
+    path, summary = found
+    resolved = _resolved_allowed_doc_path(path)
+    if resolved is None or not resolved.is_file():
+        return {"available": False, "error": "doc_not_allowed", "id": id}
+    try:
+        markdown = resolved.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return {"available": False, "error": "doc_not_allowed", "id": id}
     return {
         **summary,
         "available": True,

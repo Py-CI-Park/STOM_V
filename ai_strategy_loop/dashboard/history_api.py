@@ -177,10 +177,10 @@ def _apply_ab_derivation(item: HistoryIndexItem, name: str) -> None:
 
 
 def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
-    """Build campaign index metadata without parsing every condition tree."""
-
+    """Build campaign index metadata without parsing every synthesized condition tree."""
     listing = research_records.list_research_records(root=EVIDENCE_ROOT)
     companion_names = set(list_companion_campaigns(EVIDENCE_ROOT))
+    adapter = CampaignAdapter(evidence_root=EVIDENCE_ROOT)
     items: list[HistoryIndexItem] = []
     seen: set[str] = set()
     for campaign in listing["campaigns"]:
@@ -188,20 +188,35 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
         seen.add(name)
         if series_filter is not None and derive_series(name) != series_filter:
             continue
-        candidate_count = int(campaign.get("candidate_count") or 0)
-        has_summary = bool(campaign.get("summary"))
-        has_companion = name in companion_names
+        if name in companion_names:
+            result = adapter.build_research_node(name)
+            counts, status = _counts_and_status(result["research"])
+        else:
+            candidates = campaign.get("candidates") or []
+            statuses = [
+                "missing" if not any(key in candidate for key in ("profit", "mdd", "trades"))
+                else "no_trades" if candidate.get("trades") == 0
+                else "failed" if candidate.get("gate") is False
+                else "success"
+                for candidate in candidates
+            ]
+            status = next(
+                (
+                    candidate
+                    for candidate in ("success", "no_trades", "failed", "timeout", "unavailable", "not_run", "missing")
+                    if candidate in statuses
+                ),
+                "missing",
+            )
+            candidate_count = int(campaign.get("candidate_count") or 0)
+            counts = {"stages": 1, "conditions": candidate_count, "evaluations": candidate_count}
         item: HistoryIndexItem = {
             "research_id": f"campaign:{name}",
             "source_kind": "campaign",
             "label": name,
             "updated_at": _iso(campaign.get("updated_at")),
-            "counts": {
-                "stages": 1 if (candidate_count or has_summary or has_companion) else 0,
-                "conditions": candidate_count,
-                "evaluations": candidate_count,
-            },
-            "condition_tree_status": "available" if has_companion else "summary_only",
+            "counts": counts,
+            "condition_tree_status": status,
         }
         _apply_ab_derivation(item, name)
         items.append(item)
@@ -212,17 +227,19 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
             continue
         if series_filter is not None and derive_series(name) != series_filter:
             continue
+        result = adapter.build_research_node(name)
+        counts, status = _counts_and_status(result["research"])
         try:
             mtime = (EVIDENCE_ROOT / f"{name}_condition_history_v1.json").stat().st_mtime
         except OSError:
             mtime = 0.0
-        item: HistoryIndexItem = {
+        item = {
             "research_id": f"campaign:{name}",
             "source_kind": "campaign",
             "label": name,
             "updated_at": _iso(mtime),
-            "counts": {"stages": 1, "conditions": 0, "evaluations": 0},
-            "condition_tree_status": "available",
+            "counts": counts,
+            "condition_tree_status": status,
         }
         _apply_ab_derivation(item, name)
         items.append(item)
@@ -231,7 +248,6 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
 
 def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
     """Build loop-run index metadata with one bounded aggregate query."""
-
     try:
         state = LoopState(db_path=str(LOOP_RUNS_DB), readonly=True)
     except Exception:  # noqa: BLE001 -- DB absence/corruption is typed unavailable.
@@ -240,11 +256,20 @@ def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[His
         runs = state.list_runs()
         rows = state._con.execute(
             "SELECT run_id, COUNT(*) AS generation_count, "
-            "COALESCE(SUM(gate_passed), 0) AS gate_passed_sum "
+            "COALESCE(SUM(gate_passed), 0) AS gate_passed_sum, "
+            "COALESCE(SUM(CASE WHEN status = 'ok' AND COALESCE(trade_count, -1) != 0 THEN 1 ELSE 0 END), 0) AS success_count, "
+            "COALESCE(SUM(CASE WHEN status = 'ok' AND trade_count = 0 THEN 1 ELSE 0 END), 0) AS no_trades_count, "
+            "COALESCE(SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END), 0) AS failed_count "
             "FROM generations GROUP BY run_id"
         ).fetchall()
         stats = {
-            row["run_id"]: (int(row["generation_count"] or 0), int(row["gate_passed_sum"] or 0))
+            row["run_id"]: (
+                int(row["generation_count"] or 0),
+                int(row["gate_passed_sum"] or 0),
+                int(row["success_count"] or 0),
+                int(row["no_trades_count"] or 0),
+                int(row["failed_count"] or 0),
+            )
             for row in rows
         }
         items: list[HistoryIndexItem] = []
@@ -252,7 +277,13 @@ def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[His
             run_id = run["run_id"]
             if series_filter is not None and derive_series(run_id) != series_filter:
                 continue
-            generation_count, gate_passed = stats.get(run_id, (0, 0))
+            generation_count, gate_passed, success_count, no_trades_count, failed_count = stats.get(
+                run_id, (0, 0, 0, 0, 0)
+            )
+            status = (
+                "success" if success_count else "no_trades" if no_trades_count
+                else "failed" if failed_count else "unavailable" if generation_count else "missing"
+            )
             updated_at = run.get("finished_at") or run.get("started_at")
             item: HistoryIndexItem = {
                 "research_id": f"loop_run:{run_id}",
@@ -260,11 +291,11 @@ def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[His
                 "label": run_id,
                 "updated_at": _iso(updated_at),
                 "counts": {
-                    "stages": generation_count,
+                    "stages": 1,
                     "conditions": generation_count,
                     "evaluations": generation_count,
                 },
-                "condition_tree_status": "available" if generation_count else "empty",
+                "condition_tree_status": status,
                 "gate_passed_count": gate_passed,
             }
             _apply_ab_derivation(item, run_id)
@@ -283,21 +314,26 @@ def _matches_query(item: HistoryIndexItem, q: str) -> bool:
     return needle in item["research_id"].casefold() or needle in item["label"].casefold()
 
 
-# Cache metadata and revalidate its bounded source signature at most once per
-# freshness window. Detail endpoints still validate and load their exact source.
+# Probe sources cheaply on every request. Campaign directory changes invalidate
+# immediately; a bounded full signature refresh catches in-place metadata edits.
 _INDEX_CACHE_LOCK = RLock()
 _INDEX_CACHE: dict[str, tuple[tuple[tuple[str, int, int], ...], tuple[list, bool]]] = {}
+_INDEX_CACHE_PROBE: dict[str, tuple[tuple[str, int, int], ...]] = {}
 _INDEX_CACHE_CHECKED_AT: dict[str, float] = {}
 _INDEX_SIGNATURE_TTL_SECONDS = 30.0
+_INDEX_UNAVAILABLE_RETRY_SECONDS = 1.0
 
 
 def _history_source_signature(kind: str) -> tuple[tuple[str, int, int], ...]:
     if kind == "loop_run":
-        try:
-            stat = LOOP_RUNS_DB.stat()
-        except OSError:
-            return ()
-        return ((LOOP_RUNS_DB.name, stat.st_mtime_ns, stat.st_size),)
+        signature: list[tuple[str, int, int]] = []
+        for path in (LOOP_RUNS_DB, Path(f"{LOOP_RUNS_DB}-wal")):
+            try:
+                stat = path.stat()
+            except OSError:
+                continue
+            signature.append((path.name, stat.st_mtime_ns, stat.st_size))
+        return tuple(signature)
     if not EVIDENCE_ROOT.is_dir():
         return ()
     signature: list[tuple[str, int, int]] = []
@@ -312,15 +348,33 @@ def _history_source_signature(kind: str) -> tuple[tuple[str, int, int], ...]:
     return tuple(signature)
 
 
+def _history_source_probe(kind: str) -> tuple[tuple[str, int, int], ...]:
+    if kind == "loop_run":
+        return _history_source_signature(kind)
+    try:
+        stat = EVIDENCE_ROOT.stat()
+    except OSError:
+        return ()
+    return ((EVIDENCE_ROOT.name, stat.st_mtime_ns, stat.st_size),)
+
+
 def _cached_index_items(kind: str) -> tuple[list, bool]:
     with _INDEX_CACHE_LOCK:
         now = time.monotonic()
         cached = _INDEX_CACHE.get(kind)
-        if cached is not None and now - _INDEX_CACHE_CHECKED_AT.get(kind, 0.0) < _INDEX_SIGNATURE_TTL_SECONDS:
-            return cached[1]
+        checked_at = _INDEX_CACHE_CHECKED_AT.get(kind, 0.0)
+        probe = _history_source_probe(kind)
+        probe_unchanged = _INDEX_CACHE_PROBE.get(kind) == probe
+        if cached is not None and probe_unchanged:
+            if not cached[1][1] and now - checked_at < _INDEX_UNAVAILABLE_RETRY_SECONDS:
+                return cached[1]
+            if cached[1][1] and now - checked_at < _INDEX_SIGNATURE_TTL_SECONDS:
+                return cached[1]
+
         signature = _history_source_signature(kind)
         _INDEX_CACHE_CHECKED_AT[kind] = now
-        if cached is not None and cached[0] == signature:
+        _INDEX_CACHE_PROBE[kind] = probe
+        if cached is not None and cached[0] == signature and cached[1][1]:
             return cached[1]
         built = _campaign_index_items() if kind == "campaign" else _loop_run_index_items()
         _INDEX_CACHE[kind] = (signature, built)

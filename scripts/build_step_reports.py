@@ -30,12 +30,10 @@ from ai_strategy_loop.dashboard.report_writer import write_reports  # noqa: E402
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DEFAULT_OUT = os.path.join(_REPO_ROOT, "docs", "generated_reports")
-def _file_sha256(path: str) -> str:
-    digest = hashlib.sha256()
-    with open(path, "rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _source_sha256(rows: object) -> str:
+    """Hash the canonical rows read from one readonly SQLite snapshot."""
+    payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 
@@ -43,18 +41,32 @@ def _file_sha256(path: str) -> str:
 def specs_from_loop_runs(db_path: str) -> list:
     """loop_runs.db(runs·generations)에서 세대별 스텝 리포트 spec 을 자동 구성한다.
     읽기 전용(SELECT-only)·오프라인. 0 runs 면 빈 리스트(정직 메시지는 호출부)."""
-    source_sha256 = _file_sha256(db_path)
     import sqlite3
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
     try:
-        runs = {r[0]: {"status": r[1], "best_gen": r[2], "best_score": r[3]}
-                for r in conn.execute("SELECT run_id, status, best_gen, best_score FROM runs")}
-        specs: list = []
-        cur = conn.execute(
+        conn.execute("BEGIN")
+        run_rows = conn.execute(
+            "SELECT run_id, status, best_gen, best_score FROM runs ORDER BY run_id"
+        ).fetchall()
+        runs = {
+            row["run_id"]: {
+                "status": row["status"], "best_gen": row["best_gen"], "best_score": row["best_score"],
+            }
+            for row in run_rows
+        }
+        generation_rows = conn.execute(
             "SELECT run_id, gen_no, buy_name, sell_name, status, score, mdd, profit, trade_count, "
-            "gate_passed, reason, strategy_gist, created_at FROM generations ORDER BY run_id, gen_no")
+            "gate_passed, reason, strategy_gist, created_at FROM generations ORDER BY run_id, gen_no"
+        ).fetchall()
+        source_sha256 = _source_sha256({
+            "runs": [dict(row) for row in run_rows],
+            "generations": [dict(row) for row in generation_rows],
+        })
+        specs: list = []
         from datetime import datetime, timezone
-        for (run_id, gen_no, buy, sell, status, score, mdd, profit, trades, gate, reason, gist, created) in cur.fetchall():
+        for row in generation_rows:
+            run_id, gen_no, buy, sell, status, score, mdd, profit, trades, gate, reason, gist, created = row
             date = (datetime.fromtimestamp(created, tz=timezone.utc).strftime("%Y-%m-%d")
                     if isinstance(created, (int, float)) and created and created > 1e9 else "")
             run_meta = runs.get(run_id, {})
@@ -92,10 +104,26 @@ def _esc(v) -> str:
     return _h.escape("" if v is None else str(v), quote=True)
 
 
+def _successful_measurements(gens: list) -> tuple[list[dict], list[dict]]:
+    """Keep only canonical successful rows with a numeric score for performance summaries."""
+    successful_statuses = {"ok", "success", "done", "complete"}  # Canonical plus legacy aliases.
+    measured: list[dict] = []
+    excluded: list[dict] = []
+    for generation in gens:
+        status = str(generation.get("status") or "").lower()
+        if status not in successful_statuses:
+            excluded.append({"gen_no": generation.get("gen_no"), "reason": f"status={status or 'missing'}"})
+        elif not isinstance(generation.get("score"), (int, float)):
+            excluded.append({"gen_no": generation.get("gen_no"), "reason": "score unavailable"})
+        else:
+            measured.append(generation)
+    return measured, excluded
+
 def _flow_svg(gens: list) -> str:
     """세대별 score 개선 흐름도 — 인라인 SVG(무script). gate 통과=teal 원, best=보라 큰 원."""
     W, H, PAD = 760, 220, 34
-    scores = [(g["gen_no"], g["score"]) for g in gens if isinstance(g.get("score"), (int, float))]
+    gens, _excluded = _successful_measurements(gens)
+    scores = [(g["gen_no"], g["score"]) for g in gens]
     if len(scores) < 1:
         return "<p>(score 데이터 없음)</p>"
     xs = [s[0] for s in scores]; ys = [s[1] for s in scores]
@@ -127,9 +155,9 @@ def _flow_svg(gens: list) -> str:
 
 def _viz_section(gens: list) -> str:
     """v5.4 R2 — 표준 포맷 v2 성과 시각화: KPI 표 + score 바차트 + MDD×score 산점도(무script SVG)."""
-    scored = [g for g in gens if isinstance(g.get("score"), (int, float))]
+    scored, excluded = _successful_measurements(gens)
     if not scored:
-        return "<p>(시각화할 score 데이터 없음)</p>"
+        return "<p>(성공한 score 데이터 없음; 실패/측정 누락 세대는 성과 집계에서 제외)</p>"
     n = len(scored)
     avg = lambda arr: (sum(arr) / len(arr)) if arr else 0.0
     scores = [g["score"] for g in scored]
@@ -194,7 +222,11 @@ def _viz_section(gens: list) -> str:
             f'style="width:100%;max-width:{W}px;background:#f7f9fb;border:1px solid #dde;border-radius:8px;margin-top:10px">'
             f'<text x="{PAD}" y="18" font-size="12" fill="#556">x축 MDD(%, 오른쪽일수록 위험) · y축 score(높을수록 성과) · 표본 n={len(pts_src)} · threshold: gate 통과 · 좌상단=저위험·고성과</text>'
             + dots + "</svg>")
-    return kpi + bar_svg + scatter_svg
+    excluded_note = (
+        f"<p class='muted'>성과 집계 제외: {len(excluded)}건 (실패 또는 score 측정 누락)</p>"
+        if excluded else ""
+    )
+    return excluded_note + kpi + bar_svg + scatter_svg
 
 
 def _table_columns(conn, table: str) -> set[str]:
@@ -231,21 +263,26 @@ def _run_evidence_counts(conn, run_id: str) -> dict:
         "candidate_passports": ("candidate_passports", "COUNT(*), 0"),
         "run_receipts": ("run_receipts", "COUNT(*), 0"),
     }
-    result = {}
+    result: dict = {}
+    availability: dict[str, str] = {}
     for key, (table, expression) in specs.items():
-        if not _table_columns(conn, table):
-            result[key] = 0
-            continue
         try:
+            if not _table_columns(conn, table):
+                raise RuntimeError("table unavailable")
             row = conn.execute(
                 f"SELECT {expression} FROM {table} WHERE run_id = ?", (run_id,)
             ).fetchone()
             result[key] = int(row[0] or 0)
             if key == "prompts":
                 result["total_tokens"] = int(row[1] or 0)
-        except Exception:
-            result[key] = 0
+            availability[key] = "available"
+        except Exception as error:
+            result[key] = None
+            if key == "prompts":
+                result["total_tokens"] = None
+            availability[key] = f"unavailable: {type(error).__name__}"
     result.setdefault("total_tokens", 0)
+    result["availability"] = availability
     return result
 
 
@@ -266,7 +303,6 @@ def _hypothesis_summary(raw) -> str:
 def build_run_report(db_path: str, out_dir: str, run_id: str | None = None, manifest_path: str | None = None) -> list:
     """run 1개당 종합 HTML 1개(U4): 표지·개선 흐름도·세대별 스텝 블록·최종 후보·안전 문구.
     loop_runs.db SELECT-only · 오프라인 · 무script(인라인 SVG). 생성 파일 경로 리스트 반환."""
-    source_sha256 = _file_sha256(db_path)
     import sqlite3
     from datetime import datetime, timezone
     from ai_strategy_loop.dashboard.report_writer import publish_reports  # noqa: PLC0415
@@ -274,6 +310,7 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None, mani
     conn.row_factory = sqlite3.Row
     rendered: list = []
     try:
+        conn.execute("BEGIN")
         runs = conn.execute(
             "SELECT run_id, started_at, config_json, status, best_gen, best_score, finished_at FROM runs"
             + (" WHERE run_id = ?" if run_id else ""),
@@ -308,6 +345,11 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None, mani
                 (rid,),
             ).fetchall()
             gens = [dict(row) for row in rows]
+            source_sha256 = _source_sha256({
+                "run": dict(run),
+                "generations": gens,
+                "evidence": evidence,
+            })
             fmt_ts = lambda t: (datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d %H:%M") if isinstance(t, (int, float)) and t and t > 1e9 else "—")
             blocks = []
             for g in gens:
@@ -336,9 +378,10 @@ def build_run_report(db_path: str, out_dir: str, run_id: str | None = None, mani
                 f"<tr><th>{_esc(key)}</th><td>{_esc(value)}</td></tr>"
                 for key, value in profile.items()
             ) or '<tr><td colspan="2">(공개 가능한 실행 설정 없음)</td></tr>'
+            availability = evidence.get("availability", {})
             evidence_rows = "".join(
-                f'<div><span class="k">{_esc(key)}</span><b>{_esc(value)}</b></div>'
-                for key, value in evidence.items()
+                f'<div><span class="k">{_esc(key)}</span><b>{_esc(availability.get(key, "unavailable") if value is None else value)}</b></div>'
+                for key, value in evidence.items() if key != "availability"
             )
             if status != "complete":
                 decision = f"run 상태가 {status or 'unknown'}이므로 승격·성과 결론을 금지하고 원인 검토가 필요합니다."

@@ -28,12 +28,12 @@ def build_index(output: Path) -> dict:
     signature = []
     for path, category in research_api._iter_allowed_docs():
         try:
-            stat = path.stat()
+            content_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
         except OSError:
             continue
         summary = research_api._summary_for(path, category)
         documents.append(summary)
-        signature.append((summary["id"], stat.st_mtime_ns, stat.st_size))
+        signature.append((summary["id"], content_sha256))
     documents.sort(key=lambda row: (row["category"], row["id"]))
     signature.sort()
     fingerprint = hashlib.sha256(
@@ -46,6 +46,27 @@ def build_index(output: Path) -> dict:
         "count": len(documents),
         "docs": documents,
     }
+
+
+def index_matches(output: Path, payload: dict) -> bool:
+    try:
+        current = json.loads(output.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return False
+
+    def stable_docs(value: dict) -> list[dict]:
+        return [
+            {key: item[key] for key in sorted(item) if key != "updated_at"}
+            for item in value.get("docs", [])
+            if isinstance(item, dict)
+        ]
+
+    return (
+        current.get("schema_version") == payload.get("schema_version")
+        and current.get("source_fingerprint") == payload.get("source_fingerprint")
+        and current.get("count") == payload.get("count")
+        and stable_docs(current) == stable_docs(payload)
+    )
 
 
 def write_atomic(output: Path, payload: dict) -> None:
@@ -68,9 +89,20 @@ def main(argv: list[str] | None = None) -> int:
         default=str(research_api._DOC_INDEX_SIDECAR),
         help="output JSON path (default: docs/generated_reports/research_docs_index.json)",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail without writing when the tracked sidecar differs from current sources",
+    )
     args = parser.parse_args(argv)
     output = Path(args.output).resolve()
     payload = build_index(output)
+    if args.check:
+        if not index_matches(output, payload):
+            print(f"research docs index is stale: {output}")
+            return 1
+        print(f"research docs index check: PASS ({payload['count']} docs)")
+        return 0
     write_atomic(output, payload)
     print(f"research docs index: {payload['count']} docs -> {output}")
     print(f"source fingerprint: {payload['source_fingerprint']}")

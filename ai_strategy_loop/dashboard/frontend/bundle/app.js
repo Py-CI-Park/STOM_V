@@ -35566,6 +35566,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [wikiTotal, setWikiTotal] = useState_rp7(0);
     const [anchor, setAnchor] = useState_rp7("");
     const [wikiDoc, setWikiDoc] = useState_rp7(null);
+    const [wikiIndexState, setWikiIndexState] = useState_rp7("idle");
+    const [wikiError, setWikiError] = useState_rp7("");
+    const wikiDetailControllerRef = useRef_rp7(null);
+    const wikiSelRef = useRef_rp7("");
     const wikiReqRef = React.useRef(0);
     const modeTabRefs = useRef_rp7({});
     const [reportQuery, setReportQuery] = useState_rp7("");
@@ -35599,6 +35603,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       let cancelled = false;
       const controller = new AbortController();
       setWiki(null);
+      setWikiIndexState("loading");
+      setWikiError("");
       const timer2 = setTimeout(() => {
         const query = wikiQuery.trim();
         const url = baseUrl + "/research_docs?limit=150" + (query ? "&q=" + encodeURIComponent(query) : "");
@@ -35607,11 +35613,20 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           const docs = Array.isArray(j && j.docs) ? j.docs : [];
           setWiki(docs);
           setWikiTotal(Number(j && j.total) || docs.length);
-          setWikiSel((prev) => docs.some((doc) => doc.id === prev) ? prev : docs.length ? docs[0].id : "");
+          setWikiIndexState("ready");
+          const nextWikiSel = docs.some((doc) => doc.id === wikiSelRef.current) ? wikiSelRef.current : docs.length ? docs[0].id : "";
+          if (nextWikiSel !== wikiSelRef.current) {
+            if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+            setWikiDoc(null);
+            wikiSelRef.current = nextWikiSel;
+            setWikiSel(nextWikiSel);
+          }
         }).catch((e) => {
           if (!cancelled && e.name !== "AbortError") {
             setWiki([]);
             setWikiTotal(0);
+            setWikiIndexState("error");
+            setWikiError(String(e && e.message ? e.message : e));
           }
         });
       }, 180);
@@ -35623,18 +35638,26 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }, [baseUrl, mode, wikiQuery]);
     useEffect_rp7(() => {
       if (!baseUrl || mode !== "wiki" || !wikiSel) {
+        if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+        wikiDetailControllerRef.current = null;
         setWikiDoc(null);
-        return;
+        return void 0;
       }
       const reqId = ++wikiReqRef.current;
-      let cancelled = false;
-      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j);
+      const controller = new AbortController();
+      if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+      wikiDetailControllerRef.current = controller;
+      setWikiDoc(null);
+      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) setWikiDoc(j);
       }).catch((e) => {
-        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) {
+          setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+        }
       });
       return () => {
-        cancelled = true;
+        controller.abort();
+        if (wikiDetailControllerRef.current === controller) wikiDetailControllerRef.current = null;
       };
     }, [baseUrl, mode, wikiSel]);
     useEffect_rp7(() => {
@@ -35666,6 +35689,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const selectReport = (path) => {
       setSel(path);
       setAnchor("");
+    };
+    const selectWiki = (id2) => {
+      if (id2 !== wikiSelRef.current) {
+        if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+        setWikiDoc(null);
+        wikiSelRef.current = id2;
+        setWikiSel(id2);
+      }
     };
     const selectMode = (nextMode) => {
       setMode(nextMode);
@@ -35720,7 +35751,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onChange: (e) => setWikiQuery(e.target.value),
         "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uAC80\uC0C9"
       }
-    ), wiki === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wiki !== null && wikiFiltered.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C \xB7 " + wikiQuery : "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wiki !== null && wikiFiltered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC" : "\uBB38\uC11C", " ", wikiFiltered.length, "\uAC74 / \uC804\uCCB4 ", wikiTotal, "\uAC74 \xB7 \uCD5C\uB300 150\uAC74 \uD45C\uC2DC"), wiki !== null && wikiFiltered.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => setWikiSel(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
+    ), wikiIndexState === "loading" && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wikiIndexState === "error" && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uC0C9\uC778 \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiError), wikiIndexState === "ready" && wikiFiltered.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C \xB7 " + wikiQuery : "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wikiIndexState === "ready" && wikiFiltered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC" : "\uBB38\uC11C", " ", wikiFiltered.length, "\uAC74 / \uC804\uCCB4 ", wikiTotal, "\uAC74 \xB7 \uCD5C\uB300 150\uAC74 \uD45C\uC2DC"), wikiIndexState === "ready" && wikiFiltered.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => selectWiki(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
   }
   Object.assign(window, { V4Reports });
 

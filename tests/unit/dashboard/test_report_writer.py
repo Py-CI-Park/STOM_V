@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import pytest
 
 from ai_strategy_loop.dashboard.report_writer import (
     STANDARD_SECTIONS,
@@ -12,6 +13,7 @@ from ai_strategy_loop.dashboard.report_writer import (
     write_report,
     write_reports,
 )
+import ai_strategy_loop.dashboard.report_writer as report_writer
 
 
 def _spec() -> dict:
@@ -199,6 +201,79 @@ def test_publish_manifest_preserves_valid_siblings_and_drops_tampered_entries(tm
     third["step_id"] = "stage3"
     repaired = write_reports([third], str(tmp_path), str(manifest_path))
     assert {entry["research_id"] for entry in repaired["reports"]} == {"second", "third"}
+def test_publish_reports_rolls_back_replaced_files_when_later_replacement_fails(tmp_path: Path, monkeypatch) -> None:
+    first = _spec()
+    first["research_id"] = "first"
+    first["step_id"] = "stage1"
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    old_manifest = manifest_path.read_bytes()
+    old_first = (tmp_path / "first__stage1.html").read_bytes()
+
+    updated = dict(first, analysis="new bytes must not survive a failed publication")
+    second = dict(_spec(), research_id="second", step_id="stage2")
+    real_replace = report_writer.os.replace
+
+    def fail_second_replace(source: str, destination: str) -> None:
+        if Path(destination) == tmp_path / "second__stage2.html":
+            raise OSError("injected replacement failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(report_writer.os, "replace", fail_second_replace)
+    with pytest.raises(OSError, match="injected replacement failure"):
+        write_reports([updated, second], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == old_manifest
+    assert (tmp_path / "first__stage1.html").read_bytes() == old_first
+    assert not (tmp_path / "second__stage2.html").exists()
+
+
+def test_loop_runs_source_digest_includes_committed_wal_rows(tmp_path: Path) -> None:
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import specs_from_loop_runs
+
+    db = tmp_path / "loop_runs.db"
+    writer = sqlite3.connect(db)
+    writer.execute("PRAGMA journal_mode=WAL")
+    writer.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, status TEXT, best_gen INTEGER, best_score REAL)")
+    writer.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, mdd REAL, profit REAL, trade_count INTEGER, gate_passed INTEGER, reason TEXT, strategy_gist TEXT, created_at REAL)")
+    writer.execute("INSERT INTO runs VALUES ('wal-run', 'complete', 1, 1.0)")
+    writer.execute("INSERT INTO generations VALUES ('wal-run', 1, 'b', 's', 'success', 1.0, 2, 3, 4, 1, '', '', 1752900000)")
+    writer.commit()
+    before = specs_from_loop_runs(str(db))[0]["source_sha256"]
+    writer.execute("UPDATE generations SET score = 2.0 WHERE run_id = 'wal-run'")
+    writer.commit()
+    after = specs_from_loop_runs(str(db))[0]["source_sha256"]
+    writer.close()
+
+    assert before != after
+
+
+def test_run_report_excludes_failed_measurements_and_preserves_unavailable_evidence(tmp_path: Path) -> None:
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import build_run_report
+
+    db = tmp_path / "loop_runs.db"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT, status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL)")
+    conn.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, mdd REAL, profit REAL, trade_count INTEGER, gate_passed INTEGER, reason TEXT, strategy_gist TEXT)")
+    conn.execute("INSERT INTO runs VALUES ('runC', 1, '{}', 'complete', 1, 10, 2)")
+    conn.execute("INSERT INTO generations VALUES ('runC', 1, 'b', 's', 'ok', 10, 2, 100, 5, 1, '', '')")
+    conn.execute("INSERT INTO generations VALUES ('runC', 2, 'b', 's', 'error', 0, 0, 0, 0, 0, 'failed', '')")
+    conn.commit()
+    conn.close()
+
+    written = build_run_report(str(db), str(tmp_path))
+    html = (tmp_path / "run_report_runC.html").read_text(encoding="utf-8")
+    assert "평균 score</div><div style=\"font-size:18px;font-weight:700\">10.00" in html
+    assert "성과 집계 제외: 1건" in html
+    assert "unavailable: RuntimeError" in html
+    assert written[0]["evidence"]["prompts"] is None
+    assert written[0]["evidence"]["availability"]["prompts"] == "unavailable: RuntimeError"
 
 
 def test_standard_report_has_scriptless_internal_navigation_and_print_contract() -> None:

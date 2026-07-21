@@ -111,3 +111,32 @@ Chromium, bundle `80bc17cb`:
 5. 신규 실제 연구 실행 기반 운영 성과 A/B 증명(사용자 승인·비용 필요)
 
 이 미달 항목은 현재 90점 완료를 막지 않지만, 95점 또는 `performance_proved=true`의 근거로 사용할 수 없다.
+
+
+## 8. 2026-07-21 부모 통합 전 독립 재감사
+
+두 개의 독립 Architect 리뷰가 최초 `BLOCK`으로 판정한 항목을 모두 원인 수정했다.
+
+- History의 기존 stage/count/status 계약 복원과 DB+WAL freshness
+- `/research_docs` 무제한 기본 계약과 문자 단위 `size` 복원
+- Markdown symlink/junction allowlist 탈출 차단
+- report catalog schema/bytes/content SHA-256 검증과 single-flight
+- Bearer credential/path redaction 및 `Cache-Control: no-store, private`
+- 다중 보고서 출판 실패 시 파일·manifest 전체 rollback
+- canonical SQLite read-transaction source digest
+- canonical 성공 상태 `ok`만 포함하는 성과 집계와 실패 건수 분리
+- Wiki loading/error/empty·abort·stale response 분리
+- checkout mtime과 무관한 상대 ID+content SHA-256 Wiki sidecar drift gate
+
+대표 run 보고서 3건을 다시 생성했으며 각 `source_sha256`은 서로 다른 canonical snapshot digest다. 최종 독립 재검토는 백엔드와 보고서 모두 `CLEAR`, `merge_safe=true`다.
+
+검증 증거:
+
+- `app.js v=09415e55`, runtime JSX 90/538 PASS
+- dashboard + History/Wiki API: **818 passed**
+- release-blocker focused suite: **108 passed**
+- tracked Wiki sidecar parity: **7 passed**, `--check` 930문서 PASS
+- report writer: **13 passed**, 등록 보고서 4건 bytes/content SHA-256 PASS
+- History cold/warm: 642.3ms / 14.3~48.0ms
+- Wiki cold/warm: 28.3ms / 9.5~24.3ms
+- `performance_proved=false` 유지

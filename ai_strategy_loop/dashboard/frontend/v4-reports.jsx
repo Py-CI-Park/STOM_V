@@ -46,6 +46,10 @@ function V4Reports({ baseUrl }) {
   const [wikiTotal, setWikiTotal] = useState_rp7(0);
   const [anchor, setAnchor] = useState_rp7("");
   const [wikiDoc, setWikiDoc] = useState_rp7(null);
+  const [wikiIndexState, setWikiIndexState] = useState_rp7("idle"); // idle | loading | ready | error
+  const [wikiError, setWikiError] = useState_rp7("");
+  const wikiDetailControllerRef = useRef_rp7(null);
+  const wikiSelRef = useRef_rp7("");
   const wikiReqRef = React.useRef(0);
   const modeTabRefs = useRef_rp7({});
   const [reportQuery, setReportQuery] = useState_rp7("");
@@ -74,6 +78,8 @@ function V4Reports({ baseUrl }) {
     let cancelled = false;
     const controller = new AbortController();
     setWiki(null);
+    setWikiIndexState("loading");
+    setWikiError("");
     const timer = setTimeout(() => {
       const query = wikiQuery.trim();
       const url = baseUrl + "/research_docs?limit=150" + (query ? "&q=" + encodeURIComponent(query) : "");
@@ -84,22 +90,55 @@ function V4Reports({ baseUrl }) {
           const docs = Array.isArray(j && j.docs) ? j.docs : [];
           setWiki(docs);
           setWikiTotal(Number(j && j.total) || docs.length);
-          setWikiSel(prev => docs.some(doc => doc.id === prev) ? prev : (docs.length ? docs[0].id : ""));
+          setWikiIndexState("ready");
+          const nextWikiSel = docs.some(doc => doc.id === wikiSelRef.current)
+            ? wikiSelRef.current
+            : (docs.length ? docs[0].id : "");
+          if (nextWikiSel !== wikiSelRef.current) {
+            if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+            setWikiDoc(null);
+            wikiSelRef.current = nextWikiSel;
+            setWikiSel(nextWikiSel);
+          }
         })
-        .catch(e => { if (!cancelled && e.name !== "AbortError") { setWiki([]); setWikiTotal(0); } });
+        .catch(e => {
+          if (!cancelled && e.name !== "AbortError") {
+            setWiki([]);
+            setWikiTotal(0);
+            setWikiIndexState("error");
+            setWikiError(String(e && e.message ? e.message : e));
+          }
+        });
     }, 180);
     return () => { cancelled = true; clearTimeout(timer); controller.abort(); };
   }, [baseUrl, mode, wikiQuery]);
 
-  useEffect_rp7(() => { // 선택 문서 마크다운(원문 그대로 <pre> 표시, 세대 가드).
-    if (!baseUrl || mode !== "wiki" || !wikiSel) { setWikiDoc(null); return; }
+  useEffect_rp7(() => { // 선택 문서 마크다운(원문 그대로 <pre> 표시, 세대·취소 가드).
+    if (!baseUrl || mode !== "wiki" || !wikiSel) {
+      if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+      wikiDetailControllerRef.current = null;
+      setWikiDoc(null);
+      return undefined;
+    }
     const reqId = ++wikiReqRef.current;
-    let cancelled = false;
-    fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(12000) })
+    const controller = new AbortController();
+    if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+    wikiDetailControllerRef.current = controller;
+    setWikiDoc(null);
+    fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j); })
-      .catch(e => { if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) }); });
-    return () => { cancelled = true; };
+      .then(j => {
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) setWikiDoc(j);
+      })
+      .catch(e => {
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) {
+          setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+        }
+      });
+    return () => {
+      controller.abort();
+      if (wikiDetailControllerRef.current === controller) wikiDetailControllerRef.current = null;
+    };
   }, [baseUrl, mode, wikiSel]);
   useEffect_rp7(() => { setAnchor(""); }, [sel]);
 
@@ -130,6 +169,14 @@ function V4Reports({ baseUrl }) {
     return ((d.title || "") + " " + (d.id || "") + " " + (d.category || "")).toLowerCase().includes(q);
   });
   const selectReport = (path) => { setSel(path); setAnchor(""); };
+  const selectWiki = (id) => {
+    if (id !== wikiSelRef.current) {
+      if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+      setWikiDoc(null);
+      wikiSelRef.current = id;
+      setWikiSel(id);
+    }
+  };
   const selectMode = (nextMode) => { setMode(nextMode); };
   const onModeKeyDown = (event) => {
     const modes = ["reports", "wiki"];
@@ -244,13 +291,14 @@ function V4Reports({ baseUrl }) {
               <input className="toolbar-input v6-wiki-search" type="search" placeholder="검색 (제목·경로·분류)"
                      value={wikiQuery} onChange={e => setWikiQuery(e.target.value)}
                      aria-label="연구 문서 검색" />
-              {wiki === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
-              {wiki !== null && wikiFiltered.length === 0 && <div className="v4-reports-empty mono">{wikiQuery ? "검색 결과 없음 · " + wikiQuery : "연구 문서 없음"}</div>}
-              {wiki !== null && wikiFiltered.length > 0 && (
+              {wikiIndexState === "loading" && <div className="v4-reports-empty mono">불러오는 중…</div>}
+              {wikiIndexState === "error" && <div className="v4-reports-empty mono">문서 색인 로드 실패 · {wikiError}</div>}
+              {wikiIndexState === "ready" && wikiFiltered.length === 0 && <div className="v4-reports-empty mono">{wikiQuery ? "검색 결과 없음 · " + wikiQuery : "연구 문서 없음"}</div>}
+              {wikiIndexState === "ready" && wikiFiltered.length > 0 && (
                 <div className="v6-report-group mono">{wikiQuery ? "검색 결과" : "문서"} {wikiFiltered.length}건 / 전체 {wikiTotal}건 · 최대 150건 표시</div>
               )}
-              {wiki !== null && wikiFiltered.map(d => (
-                <button key={d.id} className={"v4-reports-item" + (wikiSel === d.id ? " active" : "")} onClick={() => setWikiSel(d.id)} title={d.id}>
+              {wikiIndexState === "ready" && wikiFiltered.map(d => (
+                <button key={d.id} className={"v4-reports-item" + (wikiSel === d.id ? " active" : "")} onClick={() => selectWiki(d.id)} title={d.id}>
                   <span className="v4-reports-name">{d.title || d.id}</span>
                   <span className="v4-reports-meta mono">{d.category || ""}</span>
                 </button>
