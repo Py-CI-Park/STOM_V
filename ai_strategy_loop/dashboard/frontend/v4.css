@@ -67,7 +67,7 @@
 /* UXR-P3 IA: 보조 도구 구획 — primary 6뷰와 시각 분리(사용자 IA 정리) */
 .v4-rail-div { width: 46px; margin: 7px auto 3px; display: flex; align-items: center; justify-content: center; }
 .v4-rail-div span { font-family: var(--mono); font-size: 8px; letter-spacing: .12em; color: var(--ink-2); text-transform: uppercase; border-top: 1px solid var(--line-1); width: 100%; text-align: center; padding-top: 4px; }
-.v4-rail-item.secondary { opacity: .68; }
+.v4-rail-item.secondary { opacity: 1; color: var(--ink-2); }
 .v4-rail-item.secondary:hover, .v4-rail-item.secondary.active { opacity: 1; }
 .v4-rail-spacer { flex: 1; }
 
@@ -319,7 +319,7 @@
 .v4-onboarding-steps span { font-size: 11.5px; color: var(--ink-2); line-height: 1.5; }
 
 /* 접근성: 키보드 포커스 가시화 + 모션 최소화 존중 */
-.v4-root :focus-visible { outline: var(--focus-width) solid var(--blue); outline-offset: 2px; border-radius: var(--radius-sm); }
+.v4-root :focus-visible { outline: var(--focus-width) solid var(--blue); outline-color: var(--blue); outline-offset: 2px; border-radius: var(--radius-sm); }
 @media (prefers-reduced-motion: reduce) {
   .v4-root *, .v4-root *::before, .v4-root *::after { animation: none !important; transition: none !important; }
 }
@@ -511,7 +511,7 @@
 .v4-reports-name { font-size: 12.5px; word-break: break-all; }
 .v4-reports-meta { font-size: 10px; color: var(--ink-2); }
 .v4-reports-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-.v4-reports-filters input, .v4-reports-filters select { min-width: 0; width: 100%; }
+.v4-reports-filters input, .v4-reports-filters select { min-width: 0; width: 100%; background: var(--bg-1); color: var(--ink-0); border: 1px solid var(--line-2); }
 .v4-report-kind, .v4-report-badge { display: inline-block; margin-right: 6px; padding: 1px 5px; border: 1px solid var(--line-1); border-radius: 4px; font: 10px var(--mono); color: var(--ink-2); }
 .v4-report-kind.run, .v4-report-badge.registered { color: var(--teal); border-color: rgba(76,214,179,.4); }
 .v4-report-kind.unregistered, .v4-report-badge.unregistered, .v6-report-group.unregistered { color: var(--amber); border-color: rgba(240,179,90,.4); }
@@ -543,6 +543,7 @@
 .v4-catalog-jhead b { font-size: 12.5px; }
 .v4-catalog-jmeta { font-size: 10px; color: var(--ink-3); margin-top: 5px; }
 .v4-catalog-assets-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--line-1); border-radius: 8px; }
+.v4-catalog .v4-chip { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .v4-catalog-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 720px; }
 .v4-catalog-table th { text-align: left; padding: 7px 9px; color: var(--ink-3); border-bottom: 1px solid var(--line-1); position: sticky; top: 0; background: var(--bg-1); }
 .v4-catalog-table td { padding: 6px 9px; border-top: 1px solid var(--line-1); color: var(--ink-1); vertical-align: top; }
@@ -662,6 +663,7 @@
 .v6-graphs canvas { max-height: 240px; }
 /* 스테이지 탭 */
 .v6-stage-tabs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0 10px; }
+.v6-stage-tablist { display: contents; }
 .v6-stage-tab { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 18px; min-width: 150px; background: var(--bg-2); border: 1px solid var(--line-1); border-radius: 10px; color: var(--ink-2); cursor: pointer; text-align: left; }
 .v6-stage-tab b { font-size: 15px; color: var(--ink-1); }
 .v6-stage-tab span { font-size: 11.5px; color: var(--ink-3); }
@@ -892,7 +894,7 @@
 .v4-toc-item { flex: 0 0 auto; }
 
 /* v5.5 F6 — RUN 셀렉터 폭 확장(제목 전부 보이게) */
-.v4-runsel-select { min-width: 380px; max-width: 620px; }
+.v4-runsel-select { width: min(620px, 100%); min-width: min(380px, 100%); max-width: 100%; }
 
 /* v5.5 F8 — 설정 탭 */
 .v4-settings { display: flex; flex-direction: column; gap: 12px; max-width: 1100px; }
@@ -1025,3 +1027,24 @@
 .v4g-row:last-child { border-bottom: 0; }
 .v4g-term { flex: 0 0 190px; color: var(--teal); }
 .v4g-desc { color: var(--ink-1); line-height: 1.6; }
+/* v5.8 chart contract: visible provenance plus keyboard-accessible source values. */
+.chart-frame { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.chart-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; font: 10px/1.35 var(--mono); color: var(--ink-2); }
+.chart-meta-item { display: inline-flex; gap: 4px; min-width: 0; }
+.chart-meta dt { color: var(--ink-3); }
+.chart-meta dd { margin: 0; color: var(--ink-1); overflow-wrap: anywhere; }
+.chart-frame-state { margin: 0; padding: 7px 9px; border: 1px solid var(--line-1); border-radius: 5px; color: var(--ink-2); font: 11px/1.45 var(--mono); }
+.chart-frame-malformed .chart-frame-state { border-color: rgba(240,179,90,.5); color: var(--amber); }
+.chart-frame-stale .chart-frame-state { border-color: rgba(240,179,90,.5); }
+.chart-frame-fallback { color: var(--ink-2); font: 11px/1.45 var(--mono); }
+.chart-frame-fallback summary { cursor: pointer; width: fit-content; color: var(--ink-2); }
+.chart-frame-table-wrap { max-width: 100%; overflow: auto; margin-top: 6px; border: 1px solid var(--line-1); border-radius: 5px; }
+.chart-frame-fallback table { width: 100%; border-collapse: collapse; }
+.chart-frame-fallback th, .chart-frame-fallback td { padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--line-1); white-space: nowrap; }
+.chart-frame-fallback th { color: var(--ink-3); font-weight: 500; }
+.chart-frame-fallback p { margin: 6px 0 0; }
+.v6-graphs .panel .panel-bd > .chart-frame { flex: 1 1 auto; min-height: 0; overflow: auto; }
+@media (max-width: 760px) {
+  .chart-meta { gap: 4px 8px; }
+  .chart-meta-item { flex: 1 1 120px; }
+}

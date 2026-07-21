@@ -61,8 +61,8 @@ def test_sim_viewbar_labels_use_legible_ink1_not_ink3():
     assert "엔진" in src and "지표" in src and "보기" in src
 
 
-def test_ink1_passes_wcag_aa_and_ink3_failed():
-    """토큰 hex 로 대비비를 직접 계산 — ink-1 은 AA(4.5:1) 통과, ink-3 은 미달(수정 정당성)."""
+def test_ink1_and_ink3_pass_wcag_aa():
+    """대시보드 본문·보조 텍스트 토큰이 모두 WCAG AA(4.5:1) 대비를 충족한다."""
     css = (FRONTEND / "styles.css").read_text(encoding="utf-8")
     bg1 = _token_hex(css, "--bg-1")
     ink1 = _token_hex(css, "--ink-1")
@@ -70,5 +70,4 @@ def test_ink1_passes_wcag_aa_and_ink3_failed():
     c_ink1 = _contrast(ink1, bg1)
     c_ink3 = _contrast(ink3, bg1)
     assert c_ink1 >= 4.5, f"--ink-1 대비비 {c_ink1:.2f} < 4.5 (AA 미달)"
-    # 신고 원인 박제 — 옛 라벨 색(ink-3)은 본문 대비 기준 미달이었다.
-    assert c_ink3 < 4.5, f"--ink-3 대비비 {c_ink3:.2f} — 회귀 가드"
+    assert c_ink3 >= 4.5, f"--ink-3 대비비 {c_ink3:.2f} < 4.5 (AA 미달)"

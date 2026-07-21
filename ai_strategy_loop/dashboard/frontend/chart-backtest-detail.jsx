@@ -9,6 +9,7 @@
      제공하므로 babel 스코프 별칭만 둔다(NEVER import-convert).
 */
 import { LegendDot, Mini, MetricHelpStrip } from "./chart-primitives.jsx";
+import { ChartFrame } from "./chart-frame.jsx";
 
 // 축 눈금 값 배열 — Phase14.3 de-dup: 구현은 빌드 번들(bundle/stom-ui.js, 소스 format.mjs)이
 //   window._axisTicks 로 제공(ESM 모듈이라 babel 실행보다 먼저 로드). 여기서는 babel 스코프
@@ -25,6 +26,17 @@ const _bdAxisTicks = window._axisTicks;
    - hover 시 run/gen·final_pct 툴팁. */
 const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
 
+function _validEquityCurves(payload, runId) {
+  return !!payload && Array.isArray(payload.curves) && payload.curves.every(curve =>
+    curve && Array.isArray(curve.equity) && curve.equity.length >= 2
+    && curve.equity.every(value => typeof value === "number" && Number.isFinite(value))
+    && typeof curve.run_id === "string" && (!runId || curve.run_id === runId)
+    && Number.isFinite(curve.gen_no)
+    && typeof curve.final_pct === "number" && Number.isFinite(curve.final_pct)
+    && typeof curve.gate_passed === "boolean"
+  );
+}
+
 // 우승 곡선 색 팔레트 (최대 12개).
 const _EQ_WINNER_COLORS = [
   "#4cd6b3", "#a594ff", "#f0b35a", "#6aa6ff",
@@ -37,22 +49,41 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
   const [loading, setLoading] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
   const [hover, setHover] = useState_eq(null); // {x_frac, curves_at_x:[{run_id,gen_no,gate_passed,final_pct,y}]}
-  const [periodInfo, setPeriodInfo] = useState_eq(null); // {period:"YYYY-MM-DD ~ YYYY-MM-DD", timeframe}
+  const [periodInfo, setPeriodInfo] = useState_eq(null); // {runId, period:"YYYY-MM-DD ~ YYYY-MM-DD", timeframe}
   const svgRef = useRef_eq(null);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
+  const overlayRequestRef = useRef_eq({ key: "", controller: null });
+  const durationRequestRef = useRef_eq({ key: "", controller: null });
   const refresh = useCallback_eq(() => {
-    if (isDemo || !baseUrl) return;
+    if (overlayRequestRef.current.controller) overlayRequestRef.current.controller.abort();
+    if (isDemo || !baseUrl) {
+      overlayRequestRef.current = { key: "", controller: null };
+      setData(null); setErr(null); setHover(null); setLoading(false);
+      return;
+    }
+    const key = runId || "__all__";
+    const controller = new AbortController();
+    overlayRequestRef.current = { key, controller };
+    setData(null); setErr(null); setHover(null);
     setLoading(true);
     // 현재 run만 조회 — 전체 이력의 과발화 폭망 곡선(±수십억)이 y스케일을 장악해
     //   정상 곡선이 0선에 압착되는 문제 회피. runId 없으면 전체(하위호환).
     const url = baseUrl + "/equity_curves" + (runId ? "?run_id=" + encodeURIComponent(runId) : "");
-    fetch(url, { signal: AbortSignal.timeout(4000) })
+    fetch(url, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4000)]) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(j => {
+        if (overlayRequestRef.current.key !== key || controller.signal.aborted) return;
+        if (!_validEquityCurves(j, runId)) throw new Error("Malformed equity curves response");
+        setData({ ...j, _requestKey: key }); setErr(null);
+      })
+      .catch(e => {
+        if (overlayRequestRef.current.key === key && !controller.signal.aborted) setErr(String(e));
+      })
+      .finally(() => {
+        if (overlayRequestRef.current.key === key && !controller.signal.aborted) setLoading(false);
+      });
   }, [baseUrl, isDemo, runId]);
 
   // 최초 + 30초 자동 새로고침.
@@ -63,25 +94,37 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
   }, [refresh]);
 
   // 백테 기간(연도 포함) — /generation_durations 가 run config 의 bt_full_start/end 를
-  //   "YYYY-MM-DD ~ YYYY-MM-DD" 로 이미 제공한다. run 당 1회만 조회(무예외).
+  //   "YYYY-MM-DD ~ YYYY-MM-DD" 로 이미 제공한다. 응답은 현재 run에만 귀속한다.
   useEffect_eq(() => {
-    if (isDemo || !baseUrl || !runId) { setPeriodInfo(null); return; }
-    let alive = true;
+    if (durationRequestRef.current.controller) durationRequestRef.current.controller.abort();
+    const key = runId || "";
+    setPeriodInfo(null);
+    if (isDemo || !baseUrl || !runId) {
+      durationRequestRef.current = { key: "", controller: null };
+      return;
+    }
+    const controller = new AbortController();
+    durationRequestRef.current = { key, controller };
     fetch(baseUrl + "/generation_durations?run_id=" + encodeURIComponent(runId),
-          { signal: AbortSignal.timeout(4000) })
+          { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4000)]) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
-        if (!alive) return;
+        if (durationRequestRef.current.key !== key || controller.signal.aborted) return;
         const first = ((j && j.durations) || []).find(d => d.period) || null;
-        setPeriodInfo(first ? { period: first.period, timeframe: first.timeframe } : null);
+        setPeriodInfo(first ? { runId, period: first.period, timeframe: first.timeframe } : null);
       })
-      .catch(() => { if (alive) setPeriodInfo(null); });
-    return () => { alive = false; };
+      .catch(() => {
+        if (durationRequestRef.current.key === key && !controller.signal.aborted) setPeriodInfo(null);
+      });
+    return () => {
+      if (durationRequestRef.current.key === key) controller.abort();
+    };
   }, [baseUrl, isDemo, runId]);
 
-  const curves = (data && data.curves) || [];
-  const winners = curves.filter(c => c.gate_passed);
-  const nonWinners = curves.filter(c => !c.gate_passed);
+  const curves = data && data._requestKey === (runId || "__all__") ? data.curves : [];
+  const periodMatchesRun = periodInfo && periodInfo.runId === runId;
+  const winners = curves.filter(c => c.gate_passed === true);
+  const nonWinners = curves.filter(c => c.gate_passed !== true);
 
   const W = 880, H = 320;
   const padL = 52, padR = 24, padT = 18, padB = 30;
@@ -173,7 +216,14 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
           </button>
         </div>
       </div>
-      <div className="panel-bd">
+      <div className="panel-bd" tabIndex="0" aria-label="세대별 Equity 곡선 상세">
+        <ChartFrame title="전 전략 누적 수익곡선" unit="누적 수익금(원)"
+          period={periodMatchesRun && periodInfo.period ? periodInfo.period : "기간 미발행"} sampleCount={curves.length}
+          freshness={loading ? "새로고침 중" : "30초 주기 조회"}
+          threshold="gate_passed 우승 곡선 · 손익분기 0원"
+          source="/equity_curves · /generation_durations"
+          rows={curves.flatMap(c => c.equity.map((equity, point_index) => ({ run_id: c.run_id, gen_no: c.gen_no, gate_passed: c.gate_passed, final_pct: c.final_pct, point_index, equity })))}
+          status={isDemo ? "stale" : err ? "malformed" : curves.length ? "ready" : "empty"}>
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="전체 곡선" value={totalCount > 0 ? String(totalCount) : "—"} />
           <Mini label="우승 곡선" value={winnerCount > 0 ? String(winnerCount) : "—"}
@@ -182,8 +232,8 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
                 value={maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "—"}
                 color={maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : undefined} />
           <Mini label="백테 기간"
-                value={periodInfo && periodInfo.period ? periodInfo.period : "기간 정보 없음"}
-                sub={periodInfo && periodInfo.timeframe ? String(periodInfo.timeframe) : ""} />
+                value={periodMatchesRun && periodInfo.period ? periodInfo.period : "기간 정보 없음"}
+                sub={periodMatchesRun && periodInfo.timeframe ? String(periodInfo.timeframe) : ""} />
         </div>
         <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 }}>
           X축 = 거래 진행률 0~100%(전략마다 거래 수가 달라 정규화) · Y축 = 누적 수익금(원) · 회색 = 비우승 · 색 = 우승(gate 통과)
@@ -273,10 +323,10 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
 
           {/* Hover 툴팁 */}
           {hover && hover.tips.length > 0 && (() => {
-            const winTips = hover.tips.filter(t => t.gate_passed);
+            const winTips = hover.tips.filter(t => t.gate_passed === true);
             const topTips = [
               ...winTips,
-              ...hover.tips.filter(t => !t.gate_passed).slice(0, Math.max(0, 5 - winTips.length)),
+              ...hover.tips.filter(t => t.gate_passed !== true).slice(0, Math.max(0, 5 - winTips.length)),
             ];
             return (
               <div style={{
@@ -295,7 +345,7 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
                 {topTips.map((t, i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between",
                                         gap: 8, padding: "2px 0",
-                                        color: t.gate_passed ? "var(--teal)" : "var(--ink-2)" }}>
+                                        color: t.gate_passed === true ? "var(--teal)" : "var(--ink-2)" }}>
                     <span>{t.run_id.slice(-6)}/g{t.gen_no}</span>
                     <span>{t.y >= 0 ? "+" : ""}{Math.round(t.y).toLocaleString()}</span>
                   </div>
@@ -309,6 +359,7 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
             );
           })()}
         </div>
+        </ChartFrame>
       </div>
     </div>
   );
@@ -329,8 +380,60 @@ const {
   useCallback: useCallback_bd, useRef: useRef_bd, useMemo: useMemo_bd,
 } = React;
 
+function _finiteChartNumber(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function _validChartDate(value) {
+  if (!/^\d{8}$/.test(value)) return false;
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(4, 6));
+  const day = Number(value.slice(6, 8));
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function _backtestDetailRows(payload, runId, genNo) {
+  if (!payload || payload.run_id !== runId || payload.gen_no !== genNo
+      || !Array.isArray(payload.daily) || !Array.isArray(payload.cumulative)
+      || payload.daily.length !== payload.cumulative.length
+      || (payload.drawdown != null && (!Array.isArray(payload.drawdown)
+        || payload.drawdown.length !== payload.daily.length))
+      || (payload.holdings != null && !Array.isArray(payload.holdings))
+      || (payload.summary != null && (typeof payload.summary !== "object" || Array.isArray(payload.summary)))) {
+    return null;
+  }
+  const rows = [];
+  for (let index = 0; index < payload.daily.length; index += 1) {
+    const daily = payload.daily[index];
+    const cumulative = payload.cumulative[index];
+    const drawdown = payload.drawdown ? payload.drawdown[index] : null;
+    const date = daily && daily.date != null ? String(daily.date) : "";
+    const cumulativeDate = cumulative && cumulative.date != null ? String(cumulative.date) : "";
+    const drawdownDate = drawdown && drawdown.date != null ? String(drawdown.date) : "";
+    if (!daily || !cumulative || !date || !_validChartDate(date)
+        || (index > 0 && date <= rows[index - 1].date) || date !== cumulativeDate
+        || !_finiteChartNumber(daily.daily_pnl) || !_finiteChartNumber(cumulative.cum_profit)
+        || (drawdown && (!_finiteChartNumber(drawdown.drawdown) || drawdownDate !== date))) {
+      return null;
+    }
+    rows.push({
+      date, daily_pnl: daily.daily_pnl, cum_profit: cumulative.cum_profit,
+      drawdown: drawdown ? drawdown.drawdown : "—",
+    });
+  }
+  if (payload.holdings && !payload.holdings.every(h => h && _finiteChartNumber(h.count))) return null;
+  const numericSummary = ["trade_count", "n_days", "peak_holdings", "final_profit", "max_drawdown"];
+  if (payload.summary && !numericSummary.every(key => payload.summary[key] == null || _finiteChartNumber(payload.summary[key]))) return null;
+  return rows;
+}
+
 function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
-  const gens = (state && state.generations) || [];
+  const rawGens = state && state.generations;
+  const gens = Array.isArray(rawGens) && rawGens.every(g => g && typeof g === "object"
+    && _finiteChartNumber(g.gen_no) && typeof g.gate_passed === "boolean"
+    && (g.graded_score == null || _finiteChartNumber(g.graded_score))
+    && (g.max_hold_count == null || _finiteChartNumber(g.max_hold_count))) ? rawGens : [];
   const runId = (state && state.run_id) || "";
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -338,17 +441,17 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   // 기본 선택 gen: gate_passed(우승) 중 점수 최고 → 없으면 최신 세대.
   const defaultGen = useMemo_bd(() => {
     if (!gens.length) return null;
-    const winners = gens.filter(g => g.gate_passed);
+    const winners = gens.filter(g => g.gate_passed === true);
     if (winners.length) {
       return winners.reduce((a, b) =>
-        ((b.graded_score || 0) > (a.graded_score || 0) ? b : a)).gen_no;
+        ((b.graded_score ?? 0) > (a.graded_score ?? 0) ? b : a)).gen_no;
     }
     return gens[gens.length - 1].gen_no;
   }, [gens]);
 
   const [selGen, setSelGen] = useState_bd(null);
   // run/세대 목록이 바뀌면 선택을 기본값으로 재동기화(수동 선택 후 새 run 시작 대비).
-  useEffect_bd(() => { setSelGen(defaultGen); }, [defaultGen, runId]);
+  useEffect_bd(() => { setSelGen(defaultGen); }, [defaultGen, runId, gens]);
   // #65 P1 — 외부(세대표 '백테상세' 클릭)에서 선택 세대를 내려주면 내부 선택을 동기화한다.
   //   externalSelGen이 null이면(미선택) 내부 선택/기본값을 그대로 쓴다(하위호환).
   useEffect_bd(() => {
@@ -361,43 +464,69 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const [err, setErr] = useState_bd(null);
   const [hover, setHover] = useState_bd(null);  // 거래일 인덱스
   const svgRef = useRef_bd(null);
+  const requestRef = useRef_bd({ key: "", controller: null });
 
   const refresh = useCallback_bd(() => {
-    if (isDemo || !baseUrl || !runId || genNo == null) return;
+    if (requestRef.current.controller) requestRef.current.controller.abort();
+    if (isDemo || !baseUrl || !runId || genNo == null) {
+      requestRef.current = { key: "", controller: null };
+      setData(null); setErr(null); setHover(null); setLoading(false);
+      return;
+    }
+    const key = `${runId}:${genNo}`;
+    const controller = new AbortController();
+    requestRef.current = { key, controller };
+    setData(null); setErr(null); setHover(null);
     setLoading(true);
     const url = baseUrl + "/backtest_detail?run_id=" + encodeURIComponent(runId)
       + "&gen_no=" + encodeURIComponent(genNo);
-    fetch(url, { signal: AbortSignal.timeout(4000) })
+    fetch(url, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4000)]) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(j => {
+        const rows = _backtestDetailRows(j, runId, genNo);
+        if (requestRef.current.key !== key || controller.signal.aborted) return;
+        if (!rows) throw new Error("Malformed backtest detail response");
+        setData({ ...j, _chartRows: rows });
+        setErr(null);
+      })
+      .catch(e => {
+        if (requestRef.current.key === key && !controller.signal.aborted) setErr(String(e));
+      })
+      .finally(() => {
+        if (requestRef.current.key === key && !controller.signal.aborted) setLoading(false);
+      });
   }, [baseUrl, isDemo, runId, genNo]);
 
   // 최초 + gen 변경 + 30초 자동 새로고침.
   useEffect_bd(() => {
     refresh();
     const id = setInterval(refresh, 30000);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      if (requestRef.current.controller) requestRef.current.controller.abort();
+    };
   }, [refresh]);
 
-  const daily = (data && data.daily) || [];
-  const cumulative = (data && data.cumulative) || [];
-  const drawdown = (data && data.drawdown) || [];
-  const holdings = (data && data.holdings) || [];
-  const summary = (data && data.summary) || {};
+  const responseMatchesSelection = data && data.run_id === runId && data.gen_no === genNo;
+  const chartRows = responseMatchesSelection ? data._chartRows : null;
+  const daily = chartRows ? data.daily : [];
+  const cumulative = chartRows ? data.cumulative : [];
+  const drawdown = chartRows ? (data.drawdown || []) : [];
+  const holdings = chartRows ? (data.holdings || []) : [];
+  const summary = chartRows ? (data.summary || {}) : {};
+  const detailStatus = err ? "malformed" : chartRows ? (chartRows.length ? "ready" : "empty") : (loading ? "stale" : "empty");
   const hasSeries = daily.length > 0;
   const hasHoldings = holdings.length > 0;
   const peakHoldings = summary.peak_holdings != null ? summary.peak_holdings : 0;
   const selectedGeneration = gens.find(g => g.gen_no === genNo) || null;
-  const dbMaxHold = selectedGeneration && typeof selectedGeneration.max_hold_count === "number"
+  const dbMaxHold = selectedGeneration && _finiteChartNumber(selectedGeneration.max_hold_count)
     ? selectedGeneration.max_hold_count : null;
-  const sparseHoldSuspicious = (summary.trade_count || 0) >= 50
+  const sparseHoldSuspicious = _finiteChartNumber(summary.trade_count) && summary.trade_count >= 50
     && dbMaxHold != null
     && dbMaxHold <= 1
     && peakHoldings > dbMaxHold;
-  // 무거래 세대 판정: 시계열 없음 또는 trade_count가 명시적으로 0.
-  const noTrades = !hasSeries || (summary.trade_count != null && summary.trade_count === 0);
+  // 무거래는 명시적으로 검증된 trade_count=0일 때만 판정한다.
+  const noTrades = _finiteChartNumber(summary.trade_count) && summary.trade_count === 0;
 
   const W = 880, H = 320;
   const padL = 56, padR = 60, padT = 18, padB = 30;
@@ -530,7 +659,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
               data-tip="세대 선택">
               {gens.map(g => (
                 <option key={g.gen_no} value={g.gen_no}>
-                  gen_{g.gen_no}{g.gate_passed ? " ✓" : ""}
+                  gen_{g.gen_no}{g.gate_passed === true ? " ✓" : ""}
                 </option>
               ))}
             </select>
@@ -542,6 +671,12 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
         </div>
       </div>
       <div className="panel-bd">
+        <ChartFrame title="백테 상세" unit="일별 손익·누적 수익(원)"
+          period={chartRows && chartRows.length ? `${chartRows[0].date} ~ ${chartRows[chartRows.length - 1].date}` : "기간 미발행"}
+          sampleCount={chartRows ? chartRows.length : 0} freshness={loading ? "새로고침 중" : "선택 시 조회"}
+          threshold="손익분기 0원 · 일자 정렬된 원본 행" source="/backtest_detail"
+          rows={(chartRows || []).map(row => ({ evidence: "daily", ...row })).concat(holdings.map((holding, index) => ({ evidence: "holding", point_index: index, count: holding.count })))}
+          status={detailStatus}>
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="거래수" value={summary.trade_count != null ? String(summary.trade_count) : "—"} />
           <Mini label="거래일" value={summary.n_days != null ? String(summary.n_days) : "—"} />
@@ -745,6 +880,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
             </div>
           )}
         </div>
+        </ChartFrame>
       </div>
     </div>
   );

@@ -9,8 +9,8 @@
 
   --ink-0: #e8edf2;         /* primary text */
   --ink-1: #a8b3c0;         /* secondary */
-  --ink-2: #778496;         /* tertiary — P6(2026-06-15) WCAG AA: #6a7686→#778496, 모든 bg에서 정상텍스트 ≥4.5:1 */
-  --ink-3: #45505e;         /* faint — 장식/대형(AA-large ≥3:1)용, 정상 본문 미사용 */
+  --ink-2: #8b98a8;         /* tertiary — normal text WCAG AA on bg-0..bg-3 */
+  --ink-3: #8794a5;         /* muted text — normal text WCAG AA; never decorative-only */
 
   --teal:    #4cd6b3;       /* gains / success */
   --teal-dim:#1f6e5d;
@@ -63,17 +63,17 @@
 
   --ink-0: #0e131a;
   --ink-1: #3c4655;
-  --ink-2: #5f6a79;         /* P6(2026-06-15) WCAG AA: #6a7686→#5f6a79, 모든 bg에서 정상텍스트 ≥4.5:1 */
-  --ink-3: #a4adba;         /* faint — 장식/대형(AA-large ≥3:1)용, 정상 본문 미사용 */
+  --ink-2: #566170;         /* tertiary — normal text WCAG AA on light surfaces */
+  --ink-3: #566170;         /* muted text — normal text WCAG AA on light surfaces */
 
-  --teal:    #0d9b78;
+  --teal:    #08765b;
   --teal-dim:#a9e7d4;
   --green:   #128a55;
-  --amber:   #b27200;
+  --amber:   #875500;
   --amber-dim:#f0d399;
-  --red:     #d63d3d;
+  --red:     #b72b2b;
   --red-dim: #f3c0c0;
-  --violet:  #6a55d6;
+  --violet:  #5d47c5;
   --blue:    #2c6ed4;
 
   --bg-radial-a: rgba(13,155,120,0.05);

@@ -129,7 +129,7 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
         <div className="panel-bd v4s-logs">
           <section>
             <h4 className="stom-section-label">백엔드 (서버 최근 {beLogs.length}건)</h4>
-            <div className="v4s-logbox mono">
+            <div className="v4s-logbox mono" tabIndex="0" aria-label="백엔드 최근 로그">
               {beLogs.length ? beLogs.slice().reverse().map((l, i) => (
                 <div key={i} className={"v4s-logline lv-" + String(l.level || "").toLowerCase()}>
                   <span className="t">{new Date((l.ts || 0) * 1000).toTimeString().slice(0, 8)}</span>
@@ -141,7 +141,7 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
           </section>
           <section>
             <h4 className="stom-section-label">프론트엔드 (오류/콘솔 최근 {feLogs.length}건)</h4>
-            <div className="v4s-logbox mono">
+            <div className="v4s-logbox mono" tabIndex="0" aria-label="프론트엔드 최근 오류 로그">
               {feLogs.length ? feLogs.slice().reverse().map((l, i) => (
                 <div key={i} className="v4s-logline lv-error">
                   <span className="t">{new Date((l.ts || 0) * 1000).toTimeString().slice(0, 8)}</span>

@@ -51,7 +51,7 @@ function SimControlBar({
           </div>
           <div className="field">
             <label>날짜 ({days.length}일)</label>
-            <select className="select" value={date || ""} onChange={e => onDate(e.target.value)} disabled={isDemo}>
+            <select className="select" value={date || ""} onChange={e => onDate(e.target.value)} disabled={isDemo} aria-label="리플레이 날짜 선택">
               <option value="">— 선택 —</option>
               {days.map(d => <option key={d} value={d}>{_simFmtDate(d)}</option>)}
             </select>
@@ -69,14 +69,14 @@ function SimControlBar({
         <div className="field-row">
           <div className="field">
             <label>매수 조건식 (신호 오버레이)</label>
-            <select className="select" value={buy} onChange={e => onBuy(e.target.value)} disabled={isDemo}>
+            <select className="select" value={buy} onChange={e => onBuy(e.target.value)} disabled={isDemo} aria-label="리플레이 매수 조건식 선택">
               <option value="">— 없음 —</option>
               {strategies.buy.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div className="field">
             <label>매도 조건식</label>
-            <select className="select" value={sell} onChange={e => onSell(e.target.value)} disabled={isDemo}>
+            <select className="select" value={sell} onChange={e => onSell(e.target.value)} disabled={isDemo} aria-label="리플레이 매도 조건식 선택">
               <option value="">— 없음 —</option>
               {strategies.sell.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -305,7 +305,7 @@ function SimPlaybackBar({
         {/* 진행 슬라이더(seek) */}
         <input type="range" min="0" max={Math.max(0, total - 1)} value={cursor}
                disabled={!total} onChange={e => onSeek(parseInt(e.target.value, 10))}
-               style={{ width: "100%", accentColor: "var(--teal)", cursor: total ? "pointer" : "default" }} />
+               aria-label="리플레이 프레임 위치" style={{ width: "100%", accentColor: "var(--teal)", cursor: total ? "pointer" : "default" }} />
         <div className="progress-track">
           <div className={"progress-fill " + (playing ? "running" : "")} style={{ width: pct + "%" }}></div>
         </div>

@@ -44,9 +44,9 @@ function V4RunControls({
       {isLive && (
       <div className={"v4-runsel" + (selectedRun ? " is-archive" : "")}
            title="볼 연구 run 선택 — LIVE(현재 진행) 또는 과거 실 run 아카이브">
-        <span className="mono v4-runsel-lbl">연구 RUN</span>
+        <span id="v4-runsel-label" className="mono v4-runsel-lbl">연구 RUN</span>
         <select className="mono v4-runsel-select" value={selectedRun} disabled={isDemo}
-                onChange={e => onSelectRun(e.target.value)}>
+                aria-labelledby="v4-runsel-label" onChange={e => onSelectRun(e.target.value)}>
           <option value="">● LIVE (현재 진행)</option>
           {(runList || []).map(r => {
             // v5.5 F6 — 가독 라벨: 날짜 · run_id · 세대수 · 게이트(제목 잘림은 폭 확장 CSS 로 해소).

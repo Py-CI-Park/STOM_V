@@ -9466,6 +9466,7 @@ def signal_sell(pos, bar, ind):
       "select",
       {
         className: "mono rp-select",
+        "aria-label": "\uBE44\uAD50\uC5D0 \uCD94\uAC00\uD560 run \uC120\uD0DD",
         value: addRun,
         onChange: (e) => setAddRun(e.target.value),
         disabled: isDemo
@@ -9550,6 +9551,7 @@ def signal_sell(pos, bar, ind):
       "select",
       {
         className: "mono rp-select",
+        "aria-label": "\uACFC\uAC70 run \uC120\uD0DD",
         value: selRun,
         onChange: (e) => setSelRun(e.target.value),
         disabled: isDemo
@@ -10659,7 +10661,7 @@ def signal_sell(pos, bar, ind):
       "complete": "var(--teal)",
       "stopping": "var(--ink-1)"
     }[phase] || "var(--ink-1)";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uD604\uC7AC \uC138\uB300 \u2014 Live"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, fmtTime(state.updated_at))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "flex-end", gap: 22 } }, /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uC138\uB300"), /* @__PURE__ */ React.createElement("span", { className: "stat-value lg mono" }, "gen_", String(activeGen).padStart(2, "0"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 16 } }, " / ", state.max_generations))), /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uD398\uC774\uC988"), /* @__PURE__ */ React.createElement("span", { className: "stat-value mono", style: { color: phaseColor, fontSize: 20 } }, phase)), /* @__PURE__ */ React.createElement("div", { className: "stat", style: { marginLeft: "auto", textAlign: "right" } }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uCCB4\uD06C\uD3EC\uC778\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "stat-sub", style: { color: "var(--ink-1)" } }, checkpoint))), running && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "scanbar" })), /* @__PURE__ */ React.createElement("div", { style: {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uD604\uC7AC \uC138\uB300 \u2014 Live"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, fmtTime(state.updated_at))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", tabIndex: "0", "aria-label": "\uD604\uC7AC \uC138\uB300 \uC0C1\uC138" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "flex-end", gap: 22 } }, /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uC138\uB300"), /* @__PURE__ */ React.createElement("span", { className: "stat-value lg mono" }, "gen_", String(activeGen).padStart(2, "0"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 16 } }, " / ", state.max_generations))), /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uD398\uC774\uC988"), /* @__PURE__ */ React.createElement("span", { className: "stat-value mono", style: { color: phaseColor, fontSize: 20 } }, phase)), /* @__PURE__ */ React.createElement("div", { className: "stat", style: { marginLeft: "auto", textAlign: "right" } }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uCCB4\uD06C\uD3EC\uC778\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "stat-sub", style: { color: "var(--ink-1)" } }, checkpoint))), running && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "scanbar" })), /* @__PURE__ */ React.createElement("div", { style: {
       marginTop: 14,
       padding: "10px 12px",
       background: "var(--bg-0)",
@@ -21042,15 +21044,65 @@ def signal_sell(pos, bar, ind):
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color2 || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
   }
 
+  // ai_strategy_loop/dashboard/frontend/chart-frame.jsx
+  function _chartText(value, missing = "\uBBF8\uBC1C\uD589") {
+    return value == null || value === "" ? missing : String(value);
+  }
+  function ChartMeta({ title, unit, period, sampleCount, freshness, threshold, source }) {
+    const fields = [
+      ["\uB2E8\uC704", unit],
+      ["\uAE30\uAC04", period],
+      ["\uD45C\uBCF8", typeof sampleCount === "number" ? `${sampleCount}\uAC74` : sampleCount],
+      ["\uC2E0\uC120\uB3C4", freshness],
+      ["\uAE30\uC900", threshold],
+      ["\uCD9C\uCC98", source]
+    ];
+    return /* @__PURE__ */ React.createElement("dl", { className: "chart-meta", "aria-label": `${title} \uCC28\uD2B8 \uBA54\uD0C0\uB370\uC774\uD130` }, fields.map(([label, value]) => /* @__PURE__ */ React.createElement("div", { className: "chart-meta-item", key: label }, /* @__PURE__ */ React.createElement("dt", null, label), /* @__PURE__ */ React.createElement("dd", null, _chartText(value)))));
+  }
+  function ChartFrame({ title, unit, period, sampleCount, freshness, threshold, source, rows = [], status, maxRows = 200, children: children2 }) {
+    const validRows = Array.isArray(rows) ? rows.filter((row) => row && typeof row === "object") : [];
+    const displayRows = validRows.slice(0, Math.max(1, maxRows));
+    const state = status || (validRows.length ? "ready" : "empty");
+    const message = state === "malformed" ? "\uCC28\uD2B8 \uC6D0\uBCF8 \uB370\uC774\uD130 \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC544 \uAC12\uC744 \uD45C\uC2DC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : state === "stale" ? "\uCC28\uD2B8 \uB370\uC774\uD130\uAC00 \uCD5C\uC2E0 \uC0C1\uD0DC\uC778\uC9C0 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD45C\uC2DC\uB41C \uAC12\uC740 \uB9C8\uC9C0\uB9C9 \uC218\uC2E0\uAC12\uC785\uB2C8\uB2E4." : "\uD45C\uC2DC\uD560 \uC6D0\uBCF8 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.";
+    const columns = Array.from(new Set(validRows.flatMap((row) => Object.keys(row))));
+    return /* @__PURE__ */ React.createElement("div", { className: `chart-frame chart-frame-${state}` }, /* @__PURE__ */ React.createElement(
+      ChartMeta,
+      {
+        title,
+        unit,
+        period,
+        sampleCount,
+        freshness,
+        threshold,
+        source
+      }
+    ), state !== "ready" && /* @__PURE__ */ React.createElement("p", { className: "chart-frame-state", role: "status" }, message), state !== "malformed" && children2, /* @__PURE__ */ React.createElement("details", { className: "chart-frame-fallback" }, /* @__PURE__ */ React.createElement("summary", null, title, " \uC6D0\uBCF8\uAC12 \uD45C \xB7 ", validRows.length, "\uAC74", displayRows.length < validRows.length ? ` \uC911 ${displayRows.length}\uAC74 \uD45C\uC2DC` : ""), validRows.length && columns.length ? /* @__PURE__ */ React.createElement("div", { className: "chart-frame-table-wrap" }, /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, columns.map((key) => /* @__PURE__ */ React.createElement("th", { key, scope: "col" }, key)))), /* @__PURE__ */ React.createElement("tbody", null, displayRows.map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: row.id || row.gen_no || row.evaluation_id || index2 }, columns.map((key) => /* @__PURE__ */ React.createElement("td", { key }, _chartText(row[key], "\u2014")))))))) : /* @__PURE__ */ React.createElement("p", null, message)));
+  }
+
   // ai_strategy_loop/dashboard/frontend/chart-equity.jsx
   var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
   var _axisTicks = window._axisTicks;
+  function _chartFreshness(state) {
+    return state && (state.updated_at || state.last_updated || state.received_at) || "\uC218\uC2E0 \uC2DC\uAC01 \uBBF8\uBC1C\uD589";
+  }
+  function _chartStatus(rawRows, rows, state) {
+    if (rawRows != null && !Array.isArray(rawRows)) return "malformed";
+    if (Array.isArray(rawRows) && rawRows.length > 0 && !rows.length) return "malformed";
+    if (!rows.length) return "empty";
+    return state && state.is_stale ? "stale" : "ready";
+  }
+  function _finiteChartValue(value) {
+    return typeof value === "number" && Number.isFinite(value);
+  }
   function FitnessChart({ state, target = 1 }) {
-    const gens = state.generations || [];
+    const rawGens = state && state.generations;
+    const gens = Array.isArray(rawGens) ? rawGens.filter((g) => g && typeof g === "object") : [];
+    let chartStatus = _chartStatus(rawGens, gens, state);
+    if (chartStatus === "ready" && !rawGens.every((g) => g && typeof g === "object" && _finiteChartValue(g.gen_no) && _finiteChartValue(g.graded_score) && typeof g.gate_passed === "boolean")) chartStatus = "malformed";
     const bestSoFar = useMemo_c(() => {
       let bs = 0;
       return gens.map((g) => {
-        bs = Math.max(bs, g.graded_score || 0);
+        bs = Math.max(bs, g.graded_score);
         return bs;
       });
     }, [gens]);
@@ -21058,8 +21110,8 @@ def signal_sell(pos, bar, ind):
     const padL = 44, padR = 24, padT = 18, padB = 30;
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
-    const xMax = Math.max(state.max_generations, 8);
-    const yMax = Math.max(1.15, ...gens.map((g) => g.graded_score || 0).concat([target + 0.1]));
+    const xMax = Math.max(state && _finiteChartValue(state.max_generations) ? state.max_generations : 0, 8);
+    const yMax = Math.max(1.15, ...gens.map((g) => g.graded_score).concat([target + 0.1]));
     const x = (g) => padL + (g - 0.5) / xMax * innerW;
     const y = (v) => padT + innerH - v / yMax * innerH;
     const yTicks = [];
@@ -21073,13 +21125,13 @@ def signal_sell(pos, bar, ind):
     const linePath = useMemo_c(() => {
       if (!gens.length) return "";
       return gens.map(
-        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${y(g.graded_score || 0).toFixed(2)}`
+        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${y(g.graded_score).toFixed(2)}`
       ).join(" ");
     }, [gens, xMax, yMax]);
     const areaPath = useMemo_c(() => {
       if (!gens.length) return "";
       const start2 = `M ${x(gens[0].gen_no).toFixed(2)} ${y(0).toFixed(2)}`;
-      const mid = gens.map((g) => `L ${x(g.gen_no).toFixed(2)} ${y(g.graded_score || 0).toFixed(2)}`).join(" ");
+      const mid = gens.map((g) => `L ${x(g.gen_no).toFixed(2)} ${y(g.graded_score).toFixed(2)}`).join(" ");
       const end = `L ${x(gens[gens.length - 1].gen_no).toFixed(2)} ${y(0).toFixed(2)} Z`;
       return `${start2} ${mid} ${end}`;
     }, [gens, xMax, yMax]);
@@ -21110,7 +21162,7 @@ def signal_sell(pos, bar, ind):
     const onLeave = () => setHover(null);
     const latest = gens[gens.length - 1];
     const peak = gens.reduce((a, b) => b.graded_score > ((a == null ? void 0 : a.graded_score) || 0) ? b : a, null);
-    const gatePassedCount = gens.filter((g) => g.gate_passed).length;
+    const gatePassedCount = gens.filter((g) => g.gate_passed === true).length;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC801\uD569\uB3C4 \uCD94\uC774", /* @__PURE__ */ React.createElement(
       "span",
       {
@@ -21130,181 +21182,200 @@ def signal_sell(pos, bar, ind):
         }
       },
       "?"
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "graded_score" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--violet)", label: "best-so-far", dashed: true }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "gate-passed", filled: "ring" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
-      Mini,
+    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "graded_score" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--violet)", label: "best-so-far", dashed: true }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "gate-passed", filled: "ring" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        label: "\uCD5C\uC2E0 \uC810\uC218",
-        value: latest ? fmtScore(latest.graded_score) : "\u2014",
-        color: latest && latest.graded_score >= target ? "var(--teal)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uACE0 \uC810\uC218",
-        value: peak ? fmtScore(peak.graded_score) : "\u2014",
-        sub: peak ? `gen_${peak.gen_no}` : ""
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC",
-        value: `${gatePassedCount} / ${gens.length}`,
-        color: gatePassedCount > 0 ? "var(--teal)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(Mini, { label: "\uBAA9\uD45C", value: target.toFixed(3), sub: "target_score" })), /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "graded_score = weighted fitness",
-      "hard gate = target score plus MDD/trade rules",
-      "Calmar = return divided by MDD",
-      "uptrend_r2 = cumulative equity trend fit"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: onLeave
+        title: "\uC801\uD569\uB3C4 \uCD94\uC774",
+        unit: "graded_score (0\u2013100)",
+        period: "\uC138\uB300\uBCC4",
+        sampleCount: gens.length,
+        freshness: _chartFreshness(state),
+        threshold: `\uBAA9\uD45C ${target.toFixed(3)}`,
+        source: "state.generations",
+        rows: gens.map((g) => ({ gen_no: g.gen_no, graded_score: g.graded_score, gate_passed: g.gate_passed })),
+        status: chartStatus
       },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "chart-area-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#4cd6b3", stopOpacity: "0.45" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#4cd6b3", stopOpacity: "0" }))),
-      yTicks.map((t, i) => /* @__PURE__ */ React.createElement("g", { key: `y${i}` }, /* @__PURE__ */ React.createElement(
-        "line",
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          className: "chart-grid-line",
-          x1: padL,
-          x2: W - padR,
-          y1: y(t),
-          y2: y(t)
+          label: "\uCD5C\uC2E0 \uC810\uC218",
+          value: latest ? fmtScore(latest.graded_score) : "\u2014",
+          color: latest && latest.graded_score >= target ? "var(--teal)" : void 0
         }
       ), /* @__PURE__ */ React.createElement(
-        "text",
+        Mini,
         {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: y(t) + 3,
-          textAnchor: "end"
+          label: "\uCD5C\uACE0 \uC810\uC218",
+          value: peak ? fmtScore(peak.graded_score) : "\u2014",
+          sub: peak ? `gen_${peak.gen_no}` : ""
+        }
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
+        {
+          label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC",
+          value: `${gatePassedCount} / ${gens.length}`,
+          color: gatePassedCount > 0 ? "var(--teal)" : void 0
+        }
+      ), /* @__PURE__ */ React.createElement(Mini, { label: "\uBAA9\uD45C", value: target.toFixed(3), sub: "target_score" })),
+      /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+        "graded_score = weighted fitness",
+        "hard gate = target score plus MDD/trade rules",
+        "Calmar = return divided by MDD",
+        "uptrend_r2 = cumulative equity trend fit"
+      ] }),
+      /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          ref: svgRef,
+          viewBox: `0 0 ${W} ${H}`,
+          preserveAspectRatio: "none",
+          onMouseMove: onMove,
+          onMouseLeave: onLeave
         },
-        t.toFixed(t < 10 ? 2 : 0)
-      ))),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: y(target),
-          y2: y(target),
-          stroke: "rgba(106,166,255,0.4)",
-          strokeWidth: "1",
-          strokeDasharray: "6 4"
-        }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: W - padR - 4,
-          y: y(target) - 4,
-          textAnchor: "end",
-          fill: "var(--blue)"
-        },
-        "target ",
-        target.toFixed(2)
-      ),
-      xTicks.map((g, i) => /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          key: `x${i}`,
-          className: "chart-axis-text",
-          x: x(g),
-          y: H - 10,
-          textAnchor: "middle"
-        },
-        "gen_",
-        g
-      )),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: padT + innerH,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
-        }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: padL,
-          y1: padT,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
-        }
-      ),
-      gens.length > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, className: "chart-area" }), /* @__PURE__ */ React.createElement("path", { d: linePath, className: "chart-line" }), /* @__PURE__ */ React.createElement("path", { d: bestPath, className: "chart-best-line" })),
-      gens.map((g, i) => {
-        const cx = x(g.gen_no), cy = y(g.graded_score || 0);
-        if (g.gate_passed) {
-          return /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "7", fill: "rgba(165,148,255,0.16)" }), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "4", className: "chart-pt-gate" }));
-        }
-        if (g.status === "error") {
-          return /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("line", { x1: cx - 3, y1: cy - 3, x2: cx + 3, y2: cy + 3, stroke: "var(--red)", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: cx + 3, y1: cy - 3, x2: cx - 3, y2: cy + 3, stroke: "var(--red)", strokeWidth: "1.4" }));
-        }
-        return /* @__PURE__ */ React.createElement("circle", { key: i, cx, cy, r: "2.6", className: "chart-pt" });
-      }),
-      hover && (() => {
-        const cx = x(hover.gen_no), cy = y(hover.graded_score || 0);
-        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "chart-area-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#4cd6b3", stopOpacity: "0.45" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#4cd6b3", stopOpacity: "0" }))),
+        yTicks.map((t, i) => /* @__PURE__ */ React.createElement("g", { key: `y${i}` }, /* @__PURE__ */ React.createElement(
           "line",
           {
-            x1: cx,
-            x2: cx,
-            y1: padT,
+            className: "chart-grid-line",
+            x1: padL,
+            x2: W - padR,
+            y1: y(t),
+            y2: y(t)
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: y(t) + 3,
+            textAnchor: "end"
+          },
+          t.toFixed(t < 10 ? 2 : 0)
+        ))),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: y(target),
+            y2: y(target),
+            stroke: "rgba(106,166,255,0.4)",
+            strokeWidth: "1",
+            strokeDasharray: "6 4"
+          }
+        ),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: W - padR - 4,
+            y: y(target) - 4,
+            textAnchor: "end",
+            fill: "var(--blue)"
+          },
+          "target ",
+          target.toFixed(2)
+        ),
+        xTicks.map((g, i) => /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            key: `x${i}`,
+            className: "chart-axis-text",
+            x: x(g),
+            y: H - 10,
+            textAnchor: "middle"
+          },
+          "gen_",
+          g
+        )),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: padT + innerH,
             y2: padT + innerH,
-            stroke: "rgba(255,255,255,0.12)",
+            stroke: "var(--line-2)",
             strokeWidth: "1"
           }
-        ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "6", fill: "none", stroke: "var(--ink-0)", strokeWidth: "1" }));
-      })()
-    ), hover && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 200,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC810\uC218"), /* @__PURE__ */ React.createElement("span", { style: { color: hover.graded_score >= target ? "var(--teal)" : "var(--ink-0)" } }, fmtScore(hover.graded_score)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { style: { color: hover.gate_passed ? "var(--teal)" : "var(--ink-2)" } }, hover.gate_passed ? "\u2713 \uD1B5\uACFC" : "\u2717 \uD0C8\uB77D"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("span", null, hover.trade_count), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC77C\uD3C9\uADE0\uAC70\uB798"), /* @__PURE__ */ React.createElement("span", null, (typeof hover.daily_avg_trades === "number" ? hover.daily_avg_trades : 0).toFixed(2)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "MDD"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, fmtPct(hover.mdd)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC190\uC775"), /* @__PURE__ */ React.createElement("span", { className: hover.profit > 0 ? "num-pos" : hover.profit < 0 ? "num-neg" : "" }, fmtMoney(hover.profit)))), gens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
+        ),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: padL,
+            y1: padT,
+            y2: padT + innerH,
+            stroke: "var(--line-2)",
+            strokeWidth: "1"
+          }
+        ),
+        gens.length > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, className: "chart-area" }), /* @__PURE__ */ React.createElement("path", { d: linePath, className: "chart-line" }), /* @__PURE__ */ React.createElement("path", { d: bestPath, className: "chart-best-line" })),
+        gens.map((g, i) => {
+          const cx = x(g.gen_no), cy = y(g.graded_score);
+          if (g.gate_passed === true) {
+            return /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "7", fill: "rgba(165,148,255,0.16)" }), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "4", className: "chart-pt-gate" }));
+          }
+          if (g.status === "error") {
+            return /* @__PURE__ */ React.createElement("g", { key: i }, /* @__PURE__ */ React.createElement("line", { x1: cx - 3, y1: cy - 3, x2: cx + 3, y2: cy + 3, stroke: "var(--red)", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: cx + 3, y1: cy - 3, x2: cx - 3, y2: cy + 3, stroke: "var(--red)", strokeWidth: "1.4" }));
+          }
+          return /* @__PURE__ */ React.createElement("circle", { key: i, cx, cy, r: "2.6", className: "chart-pt" });
+        }),
+        hover && (() => {
+          const cx = x(hover.gen_no), cy = y(hover.graded_score);
+          return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+            "line",
+            {
+              x1: cx,
+              x2: cx,
+              y1: padT,
+              y2: padT + innerH,
+              stroke: "rgba(255,255,255,0.12)",
+              strokeWidth: "1"
+            }
+          ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "6", fill: "none", stroke: "var(--ink-0)", strokeWidth: "1" }));
+        })()
+      ), hover && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        background: "var(--bg-0)",
+        border: "1px solid var(--line-2)",
+        borderRadius: 6,
+        padding: "8px 10px",
+        fontFamily: "var(--mono)",
+        fontSize: 11,
+        minWidth: 200,
+        boxShadow: "0 6px 16px rgba(0,0,0,0.4)"
+      } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC810\uC218"), /* @__PURE__ */ React.createElement("span", { style: { color: hover.graded_score >= target ? "var(--teal)" : "var(--ink-0)" } }, fmtScore(hover.graded_score)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { style: { color: hover.gate_passed === true ? "var(--teal)" : "var(--ink-2)" } }, hover.gate_passed === true ? "\u2713 \uD1B5\uACFC" : "\u2717 \uD0C8\uB77D"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("span", null, hover.trade_count), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC77C\uD3C9\uADE0\uAC70\uB798"), /* @__PURE__ */ React.createElement("span", null, (typeof hover.daily_avg_trades === "number" ? hover.daily_avg_trades : 0).toFixed(2)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "MDD"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, fmtPct(hover.mdd)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC190\uC775"), /* @__PURE__ */ React.createElement("span", { className: hover.profit > 0 ? "num-pos" : hover.profit < 0 ? "num-neg" : "" }, fmtMoney(hover.profit)))), gens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))
+    )));
   }
   function ProfitChart({ state, targetPct = 0 }) {
-    const gens = state.generations || [];
+    const rawGens = state && state.generations;
+    const gens = Array.isArray(rawGens) ? rawGens.filter((g) => g && typeof g === "object") : [];
+    let chartStatus = _chartStatus(rawGens, gens, state);
+    if (chartStatus === "ready" && !rawGens.every((g) => g && typeof g === "object" && _finiteChartValue(g.gen_no) && _finiteChartValue(g.total_profit_pct) && _finiteChartValue(g.profit))) chartStatus = "malformed";
     const W = 880, H = 300;
     const padL = 52, padR = 56, padT = 18, padB = 30;
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
-    const xMax = Math.max(state.max_generations, 8);
+    const xMax = Math.max(state && _finiteChartValue(state.max_generations) ? state.max_generations : 0, 8);
     const x = (g) => padL + (g - 0.5) / xMax * innerW;
-    const pctVals = gens.map((g) => typeof g.total_profit_pct === "number" ? g.total_profit_pct : 0);
+    const pctVals = gens.map((g) => g.total_profit_pct);
     const pctMax = Math.max(targetPct + 1, 1, ...pctVals);
     const pctMin = Math.min(0, ...pctVals);
     const pctRange = pctMax - pctMin || 1;
     const yPct = (v) => padT + innerH - (v - pctMin) / pctRange * innerH;
-    const moneyVals = gens.map((g) => typeof g.profit === "number" ? g.profit : 0);
+    const moneyVals = gens.map((g) => g.profit);
     const moneyMax = Math.max(0, ...moneyVals);
     const moneyMin = Math.min(0, ...moneyVals);
     const moneyRange = moneyMax - moneyMin || 1;
@@ -21317,187 +21388,203 @@ def signal_sell(pos, bar, ind):
     const pctPath = useMemo_c(() => {
       if (!gens.length) return "";
       return gens.map(
-        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yPct(g.total_profit_pct || 0).toFixed(2)}`
+        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yPct(g.total_profit_pct).toFixed(2)}`
       ).join(" ");
     }, [gens, xMax, pctMin, pctRange]);
     const moneyPath = useMemo_c(() => {
       if (!gens.length) return "";
       return gens.map(
-        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yMoney(g.profit || 0).toFixed(2)}`
+        (g, i) => `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yMoney(g.profit).toFixed(2)}`
       ).join(" ");
     }, [gens, xMax, moneyMin, moneyRange]);
     const latest = gens[gens.length - 1];
     const peakPct = gens.reduce((a, b) => {
       var _a;
-      return (b.total_profit_pct || 0) > ((_a = a == null ? void 0 : a.total_profit_pct) != null ? _a : -Infinity) ? b : a;
+      return b.total_profit_pct > ((_a = a == null ? void 0 : a.total_profit_pct) != null ? _a : -Infinity) ? b : a;
     }, null);
     const zeroY = yPct(0);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uC218\uC775 \uCD94\uC774"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uC218\uC775\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uC218\uC775\uAE08 \u20A9", dashed: true }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
-      Mini,
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uC218\uC775 \uCD94\uC774"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uC218\uC775\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uC218\uC775\uAE08 \u20A9", dashed: true }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        label: "\uCD5C\uC2E0 \uC218\uC775\uB960",
-        value: latest ? fmtPct(latest.total_profit_pct) : "\u2014",
-        color: latest && latest.total_profit_pct > 0 ? "var(--teal)" : latest && latest.total_profit_pct < 0 ? "var(--red)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uACE0 \uC218\uC775\uB960",
-        value: peakPct ? fmtPct(peakPct.total_profit_pct) : "\u2014",
-        sub: peakPct ? `gen_${peakPct.gen_no}` : ""
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uC2E0 \uC218\uC775\uAE08",
-        value: latest ? fmtMoney(latest.profit) : "\u2014",
-        color: latest && latest.profit > 0 ? "var(--teal)" : latest && latest.profit < 0 ? "var(--red)" : void 0
-      }
-    )), /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "payoff_ratio = avg win / abs(avg loss)",
-      "total_profit_pct = operating-capital return",
-      "profit line uses right-axis money scale"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: W - padR,
-        y1: zeroY,
-        y2: zeroY,
-        stroke: "rgba(255,255,255,0.28)",
-        strokeWidth: "1",
-        strokeDasharray: "2 3"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: padL - 8,
-        y: zeroY + 3,
-        textAnchor: "end",
-        fill: "var(--ink-2)"
+        title: "\uC218\uC775 \uCD94\uC774",
+        unit: "\uC218\uC775\uB960 % / \uC218\uC775\uAE08 \u20A9",
+        period: "\uC138\uB300\uBCC4",
+        sampleCount: gens.length,
+        freshness: _chartFreshness(state),
+        threshold: targetPct > 0 ? `\uBAA9\uD45C ${targetPct.toFixed(1)}%` : "\uC190\uC775\uBD84\uAE30 0%",
+        source: "state.generations",
+        rows: gens.map((g) => ({ gen_no: g.gen_no, total_profit_pct: g.total_profit_pct, profit: g.profit })),
+        status: chartStatus
       },
-      "0%"
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: padL - 8,
-        y: yPct(pctMax) + 3,
-        textAnchor: "end",
-        fill: "var(--amber)"
-      },
-      pctMax.toFixed(1),
-      "%"
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: padL - 8,
-        y: yPct(pctMin) + 3,
-        textAnchor: "end",
-        fill: "var(--amber)"
-      },
-      pctMin.toFixed(1),
-      "%"
-    ), _axisTicks(pctMin, pctMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pctMax) < 1e-9 || Math.abs(tv - pctMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `pyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPct(tv), y2: yPct(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPct(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, tv.toFixed(1), "%"))), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: W - padR + 6,
-        y: yMoney(moneyMax) + 3,
-        textAnchor: "start",
-        fill: "var(--blue)"
-      },
-      fmtMoney(moneyMax)
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: W - padR + 6,
-        y: yMoney(moneyMin) + 3,
-        textAnchor: "start",
-        fill: "var(--blue)"
-      },
-      fmtMoney(moneyMin)
-    ), _axisTicks(moneyMin, moneyMax, 5).map((tv, i) => Math.abs(tv - moneyMax) < 1e-9 || Math.abs(tv - moneyMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `pyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yMoney(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoney(tv))), targetPct > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: W - padR,
-        y1: yPct(targetPct),
-        y2: yPct(targetPct),
-        stroke: "rgba(76,214,179,0.4)",
-        strokeWidth: "1",
-        strokeDasharray: "6 4"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        className: "chart-axis-text",
-        x: W - padR - 4,
-        y: yPct(targetPct) - 4,
-        textAnchor: "end",
-        fill: "var(--teal)"
-      },
-      "target ",
-      targetPct.toFixed(1),
-      "%"
-    )), xTicks.map((g, i) => /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        key: `px${i}`,
-        className: "chart-axis-text",
-        x: x(g),
-        y: H - 10,
-        textAnchor: "middle"
-      },
-      "gen_",
-      g
-    )), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: W - padR,
-        y1: padT + innerH,
-        y2: padT + innerH,
-        stroke: "var(--line-2)",
-        strokeWidth: "1"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: padL,
-        y1: padT,
-        y2: padT + innerH,
-        stroke: "var(--line-2)",
-        strokeWidth: "1"
-      }
-    ), gens.length > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-      "path",
-      {
-        d: moneyPath,
-        fill: "none",
-        stroke: "var(--blue)",
-        strokeWidth: "1.5",
-        strokeDasharray: "5 4",
-        opacity: "0.85"
-      }
-    ), /* @__PURE__ */ React.createElement("path", { d: pctPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" })), gens.map((g, i) => {
-      const cx = x(g.gen_no), cy = yPct(g.total_profit_pct || 0);
-      const col = (g.total_profit_pct || 0) > 0 ? "var(--teal)" : (g.total_profit_pct || 0) < 0 ? "var(--red)" : "var(--ink-2)";
-      return /* @__PURE__ */ React.createElement("circle", { key: `pp${i}`, cx, cy, r: "2.6", fill: col });
-    })), gens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+        Mini,
+        {
+          label: "\uCD5C\uC2E0 \uC218\uC775\uB960",
+          value: latest ? fmtPct(latest.total_profit_pct) : "\u2014",
+          color: latest && latest.total_profit_pct > 0 ? "var(--teal)" : latest && latest.total_profit_pct < 0 ? "var(--red)" : void 0
+        }
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
+        {
+          label: "\uCD5C\uACE0 \uC218\uC775\uB960",
+          value: peakPct ? fmtPct(peakPct.total_profit_pct) : "\u2014",
+          sub: peakPct ? `gen_${peakPct.gen_no}` : ""
+        }
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
+        {
+          label: "\uCD5C\uC2E0 \uC218\uC775\uAE08",
+          value: latest ? fmtMoney(latest.profit) : "\u2014",
+          color: latest && latest.profit > 0 ? "var(--teal)" : latest && latest.profit < 0 ? "var(--red)" : void 0
+        }
+      )),
+      /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+        "payoff_ratio = avg win / abs(avg loss)",
+        "total_profit_pct = operating-capital return",
+        "profit line uses right-axis money scale"
+      ] }),
+      /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: padL,
+          x2: W - padR,
+          y1: zeroY,
+          y2: zeroY,
+          stroke: "rgba(255,255,255,0.28)",
+          strokeWidth: "1",
+          strokeDasharray: "2 3"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: padL - 8,
+          y: zeroY + 3,
+          textAnchor: "end",
+          fill: "var(--ink-2)"
+        },
+        "0%"
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: padL - 8,
+          y: yPct(pctMax) + 3,
+          textAnchor: "end",
+          fill: "var(--amber)"
+        },
+        pctMax.toFixed(1),
+        "%"
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: padL - 8,
+          y: yPct(pctMin) + 3,
+          textAnchor: "end",
+          fill: "var(--amber)"
+        },
+        pctMin.toFixed(1),
+        "%"
+      ), _axisTicks(pctMin, pctMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pctMax) < 1e-9 || Math.abs(tv - pctMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `pyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPct(tv), y2: yPct(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPct(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, tv.toFixed(1), "%"))), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: W - padR + 6,
+          y: yMoney(moneyMax) + 3,
+          textAnchor: "start",
+          fill: "var(--blue)"
+        },
+        fmtMoney(moneyMax)
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: W - padR + 6,
+          y: yMoney(moneyMin) + 3,
+          textAnchor: "start",
+          fill: "var(--blue)"
+        },
+        fmtMoney(moneyMin)
+      ), _axisTicks(moneyMin, moneyMax, 5).map((tv, i) => Math.abs(tv - moneyMax) < 1e-9 || Math.abs(tv - moneyMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `pyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yMoney(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoney(tv))), targetPct > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: padL,
+          x2: W - padR,
+          y1: yPct(targetPct),
+          y2: yPct(targetPct),
+          stroke: "rgba(76,214,179,0.4)",
+          strokeWidth: "1",
+          strokeDasharray: "6 4"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: W - padR - 4,
+          y: yPct(targetPct) - 4,
+          textAnchor: "end",
+          fill: "var(--teal)"
+        },
+        "target ",
+        targetPct.toFixed(1),
+        "%"
+      )), xTicks.map((g, i) => /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          key: `px${i}`,
+          className: "chart-axis-text",
+          x: x(g),
+          y: H - 10,
+          textAnchor: "middle"
+        },
+        "gen_",
+        g
+      )), /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: padL,
+          x2: W - padR,
+          y1: padT + innerH,
+          y2: padT + innerH,
+          stroke: "var(--line-2)",
+          strokeWidth: "1"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: padL,
+          x2: padL,
+          y1: padT,
+          y2: padT + innerH,
+          stroke: "var(--line-2)",
+          strokeWidth: "1"
+        }
+      ), gens.length > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        "path",
+        {
+          d: moneyPath,
+          fill: "none",
+          stroke: "var(--blue)",
+          strokeWidth: "1.5",
+          strokeDasharray: "5 4",
+          opacity: "0.85"
+        }
+      ), /* @__PURE__ */ React.createElement("path", { d: pctPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" })), gens.map((g, i) => {
+        const cx = x(g.gen_no), cy = yPct(g.total_profit_pct);
+        const col = g.total_profit_pct > 0 ? "var(--teal)" : g.total_profit_pct < 0 ? "var(--red)" : "var(--ink-2)";
+        return /* @__PURE__ */ React.createElement("circle", { key: `pp${i}`, cx, cy, r: "2.6", fill: col });
+      })), gens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))
+    )));
   }
   var _QUALITY_METRICS = [
     { key: "calmar", label: "Calmar", color: "var(--teal)", fmt: (v) => v.toFixed(2), hint: "CAGR/MDD \uC704\uD5D8\uC870\uC815\uC218\uC775(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
@@ -21508,7 +21595,10 @@ def signal_sell(pos, bar, ind):
     { key: "payoff_ratio", label: "\uC190\uC775\uBE44", color: "#73d673", fmt: (v) => v.toFixed(2), hint: "\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4(\uBCF4\uACE0\uC11C 1.15~1.47)" }
   ];
   function QualityTrendChart({ state }) {
-    const gens = state.generations || [];
+    const rawGens = state && state.generations;
+    const gens = Array.isArray(rawGens) ? rawGens.filter((g) => g && typeof g === "object") : [];
+    let chartStatus = _chartStatus(rawGens, gens, state);
+    if (chartStatus === "ready" && (!rawGens.every((g) => g && typeof g === "object" && _finiteChartValue(g.gen_no) && _QUALITY_METRICS.every((m) => g[m.key] == null || _finiteChartValue(g[m.key]))) || !gens.some((g) => _QUALITY_METRICS.some((m) => _finiteChartValue(g[m.key]))))) chartStatus = "malformed";
     const [enabled, setEnabled] = useState_c(() => ({
       calmar: true,
       uptrend_r2: true,
@@ -21522,13 +21612,13 @@ def signal_sell(pos, bar, ind):
     const padL = 44, padR = 24, padT = 18, padB = 30;
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
-    const xMax = Math.max(state.max_generations, 8);
+    const xMax = Math.max(state && _finiteChartValue(state.max_generations) ? state.max_generations : 0, 8);
     const x = (g) => padL + (g - 0.5) / xMax * innerW;
     const okGens = useMemo_c(() => gens.filter((g) => g.status !== "error"), [gens]);
     const ranges = useMemo_c(() => {
       const r = {};
       for (const m of _QUALITY_METRICS) {
-        const vals = okGens.map((g) => typeof g[m.key] === "number" ? g[m.key] : null).filter((v) => v != null);
+        const vals = okGens.map((g) => _finiteChartValue(g[m.key]) ? g[m.key] : null).filter((v) => v != null);
         if (!vals.length) {
           r[m.key] = null;
           continue;
@@ -21541,7 +21631,7 @@ def signal_sell(pos, bar, ind):
     }, [okGens]);
     const ny = (m, g) => {
       const rg = ranges[m.key];
-      if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
+      if (!rg || !_finiteChartValue(g[m.key]) || g.status === "error") return null;
       const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
       return padT + innerH - t * innerH;
     };
@@ -21621,72 +21711,93 @@ def signal_sell(pos, bar, ind):
         background: enabled[m.key] ? m.color : "var(--line-2)"
       } }),
       m.label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, okGens.length > 0 && (() => {
-      const last = okGens[okGens.length - 1];
-      return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 6, fontFamily: "var(--mono)", fontSize: 11.5 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uCD5C\uC2E0 gen_", String(last.gen_no).padStart(2, "0")), _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement("span", { key: m.key, style: { color: enabled[m.key] ? m.color : "var(--ink-3)" } }, m.label, " ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-0)" } }, typeof last[m.key] === "number" ? Number(last[m.key]).toFixed(2) : "\u2014"))));
-    })(), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
+    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
+        title: "\uD488\uC9C8\uC9C0\uD45C \uCD94\uC774",
+        unit: "\uC9C0\uD45C\uBCC4 \uC6D0\uBCF8 \uB2E8\uC704",
+        period: "\uC138\uB300\uBCC4",
+        sampleCount: okGens.length,
+        freshness: _chartFreshness(state),
+        threshold: "\uBCF4\uACE0\uC11C \uD488\uC9C8 \uAE30\uC900",
+        source: "state.generations",
+        rows: okGens.map((g) => ({ gen_no: g.gen_no, calmar: g.calmar, uptrend_r2: g.uptrend_r2, mdd: g.mdd, daily_avg_trades: g.daily_avg_trades, max_hold_count: g.max_hold_count, payoff_ratio: g.payoff_ratio })),
+        status: chartStatus
       },
-      [0, 0.5, 1].map((t, i) => {
-        const yy = padT + innerH - t * innerH;
-        return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
-      }),
-      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      activeMetrics.map((m) => {
-        const d = pathFor(m);
-        if (!d) return null;
-        return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
-          const yy = ny(m, g);
-          if (yy == null) return null;
-          return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
-        }));
-      }),
-      hover && (() => {
-        const hx = x(hover.gen_no);
-        return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
-      })()
-    ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 170,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      fontSize: 10.5,
-      color: "var(--ink-2)",
-      letterSpacing: ".12em",
-      textTransform: "uppercase",
-      marginBottom: 4
-    } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
+      okGens.length > 0 && (() => {
+        const last = okGens[okGens.length - 1];
+        return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 6, fontFamily: "var(--mono)", fontSize: 11.5 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uCD5C\uC2E0 gen_", String(last.gen_no).padStart(2, "0")), _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement("span", { key: m.key, style: { color: enabled[m.key] ? m.color : "var(--ink-3)" } }, m.label, " ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-0)" } }, typeof last[m.key] === "number" ? Number(last[m.key]).toFixed(2) : "\u2014"))));
+      })(),
+      /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"),
+      /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          ref: svgRef,
+          viewBox: `0 0 ${W} ${H}`,
+          preserveAspectRatio: "none",
+          onMouseMove: onMove,
+          onMouseLeave: () => setHover(null)
+        },
+        [0, 0.5, 1].map((t, i) => {
+          const yy = padT + innerH - t * innerH;
+          return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
+        }),
+        xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
+        /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+        /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+        activeMetrics.map((m) => {
+          const d = pathFor(m);
+          if (!d) return null;
+          return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
+            const yy = ny(m, g);
+            if (yy == null) return null;
+            return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
+          }));
+        }),
+        hover && (() => {
+          const hx = x(hover.gen_no);
+          return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
+        })()
+      ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        background: "var(--bg-0)",
+        border: "1px solid var(--line-2)",
+        borderRadius: 6,
+        padding: "8px 10px",
+        fontFamily: "var(--mono)",
+        fontSize: 11,
+        minWidth: 170,
+        boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+        pointerEvents: "none"
+      } }, /* @__PURE__ */ React.createElement("div", { style: {
+        fontSize: 10.5,
+        color: "var(--ink-2)",
+        letterSpacing: ".12em",
+        textTransform: "uppercase",
+        marginBottom: 4
+      } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))
+    )));
   }
 
   // ai_strategy_loop/dashboard/frontend/chart-backtest-detail.jsx
   var _bdAxisTicks = window._axisTicks;
   var { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
+  function _validEquityCurves(payload, runId) {
+    return !!payload && Array.isArray(payload.curves) && payload.curves.every(
+      (curve) => curve && Array.isArray(curve.equity) && curve.equity.length >= 2 && curve.equity.every((value) => typeof value === "number" && Number.isFinite(value)) && typeof curve.run_id === "string" && (!runId || curve.run_id === runId) && Number.isFinite(curve.gen_no) && typeof curve.final_pct === "number" && Number.isFinite(curve.final_pct) && typeof curve.gate_passed === "boolean"
+    );
+  }
   var _EQ_WINNER_COLORS = [
     "#4cd6b3",
     "#a594ff",
@@ -21709,14 +21820,36 @@ def signal_sell(pos, bar, ind):
     const [periodInfo, setPeriodInfo] = useState_eq(null);
     const svgRef = useRef_eq(null);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const overlayRequestRef = useRef_eq({ key: "", controller: null });
+    const durationRequestRef = useRef_eq({ key: "", controller: null });
     const refresh = useCallback_eq(() => {
-      if (isDemo || !baseUrl) return;
+      if (overlayRequestRef.current.controller) overlayRequestRef.current.controller.abort();
+      if (isDemo || !baseUrl) {
+        overlayRequestRef.current = { key: "", controller: null };
+        setData(null);
+        setErr(null);
+        setHover(null);
+        setLoading(false);
+        return;
+      }
+      const key = runId || "__all__";
+      const controller = new AbortController();
+      overlayRequestRef.current = { key, controller };
+      setData(null);
+      setErr(null);
+      setHover(null);
       setLoading(true);
       const url = baseUrl + "/equity_curves" + (runId ? "?run_id=" + encodeURIComponent(runId) : "");
-      fetch(url, { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
+      fetch(url, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4e3)]) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (overlayRequestRef.current.key !== key || controller.signal.aborted) return;
+        if (!_validEquityCurves(j, runId)) throw new Error("Malformed equity curves response");
+        setData({ ...j, _requestKey: key });
         setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+      }).catch((e) => {
+        if (overlayRequestRef.current.key === key && !controller.signal.aborted) setErr(String(e));
+      }).finally(() => {
+        if (overlayRequestRef.current.key === key && !controller.signal.aborted) setLoading(false);
+      });
     }, [baseUrl, isDemo, runId]);
     useEffect_eq(() => {
       refresh();
@@ -21724,28 +21857,33 @@ def signal_sell(pos, bar, ind):
       return () => clearInterval(id2);
     }, [refresh]);
     useEffect_eq(() => {
+      if (durationRequestRef.current.controller) durationRequestRef.current.controller.abort();
+      const key = runId || "";
+      setPeriodInfo(null);
       if (isDemo || !baseUrl || !runId) {
-        setPeriodInfo(null);
+        durationRequestRef.current = { key: "", controller: null };
         return;
       }
-      let alive = true;
+      const controller = new AbortController();
+      durationRequestRef.current = { key, controller };
       fetch(
         baseUrl + "/generation_durations?run_id=" + encodeURIComponent(runId),
-        { signal: AbortSignal.timeout(4e3) }
+        { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4e3)]) }
       ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!alive) return;
+        if (durationRequestRef.current.key !== key || controller.signal.aborted) return;
         const first = (j && j.durations || []).find((d) => d.period) || null;
-        setPeriodInfo(first ? { period: first.period, timeframe: first.timeframe } : null);
+        setPeriodInfo(first ? { runId, period: first.period, timeframe: first.timeframe } : null);
       }).catch(() => {
-        if (alive) setPeriodInfo(null);
+        if (durationRequestRef.current.key === key && !controller.signal.aborted) setPeriodInfo(null);
       });
       return () => {
-        alive = false;
+        if (durationRequestRef.current.key === key) controller.abort();
       };
     }, [baseUrl, isDemo, runId]);
-    const curves = data && data.curves || [];
-    const winners = curves.filter((c) => c.gate_passed);
-    const nonWinners = curves.filter((c) => !c.gate_passed);
+    const curves = data && data._requestKey === (runId || "__all__") ? data.curves : [];
+    const periodMatchesRun = periodInfo && periodInfo.runId === runId;
+    const winners = curves.filter((c) => c.gate_passed === true);
+    const nonWinners = curves.filter((c) => c.gate_passed !== true);
     const W = 880, H = 320;
     const padL = 52, padR = 24, padT = 18, padB = 30;
     const innerW = W - padL - padR;
@@ -21826,221 +21964,238 @@ def signal_sell(pos, bar, ind):
         "data-tip": "equity curves \uC0C8\uB85C\uACE0\uCE68"
       },
       loading ? "\uB85C\uB529\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uC804\uCCB4 \uACE1\uC120", value: totalCount > 0 ? String(totalCount) : "\u2014" }), /* @__PURE__ */ React.createElement(
-      Mini,
+    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", tabIndex: "0", "aria-label": "\uC138\uB300\uBCC4 Equity \uACE1\uC120 \uC0C1\uC138" }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        label: "\uC6B0\uC2B9 \uACE1\uC120",
-        value: winnerCount > 0 ? String(winnerCount) : "\u2014",
-        color: winnerCount > 0 ? "var(--teal)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uACE0 \uC218\uC775\uB960",
-        value: maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "\u2014",
-        color: maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uBC31\uD14C \uAE30\uAC04",
-        value: periodInfo && periodInfo.period ? periodInfo.period : "\uAE30\uAC04 \uC815\uBCF4 \uC5C6\uC74C",
-        sub: periodInfo && periodInfo.timeframe ? String(periodInfo.timeframe) : ""
-      }
-    )), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "X\uCD95 = \uAC70\uB798 \uC9C4\uD589\uB960 0~100%(\uC804\uB7B5\uB9C8\uB2E4 \uAC70\uB798 \uC218\uAC00 \uB2EC\uB77C \uC815\uADDC\uD654) \xB7 Y\uCD95 = \uB204\uC801 \uC218\uC775\uAE08(\uC6D0) \xB7 \uD68C\uC0C9 = \uBE44\uC6B0\uC2B9 \xB7 \uC0C9 = \uC6B0\uC2B9(gate \uD1B5\uACFC)"), /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "edge_ratio = segment edge density",
-      "winner curves use a 12-color palette",
-      "non-winner curves stay subdued for comparison"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, isDemo ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC equity curves\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--red)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC870\uD68C \uC2E4\uD328: ", err) : curves.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775\uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: onLeave
+        title: "\uC804 \uC804\uB7B5 \uB204\uC801 \uC218\uC775\uACE1\uC120",
+        unit: "\uB204\uC801 \uC218\uC775\uAE08(\uC6D0)",
+        period: periodMatchesRun && periodInfo.period ? periodInfo.period : "\uAE30\uAC04 \uBBF8\uBC1C\uD589",
+        sampleCount: curves.length,
+        freshness: loading ? "\uC0C8\uB85C\uACE0\uCE68 \uC911" : "30\uCD08 \uC8FC\uAE30 \uC870\uD68C",
+        threshold: "gate_passed \uC6B0\uC2B9 \uACE1\uC120 \xB7 \uC190\uC775\uBD84\uAE30 0\uC6D0",
+        source: "/equity_curves \xB7 /generation_durations",
+        rows: curves.flatMap((c) => c.equity.map((equity, point_index) => ({ run_id: c.run_id, gen_no: c.gen_no, gate_passed: c.gate_passed, final_pct: c.final_pct, point_index, equity }))),
+        status: isDemo ? "stale" : err ? "malformed" : curves.length ? "ready" : "empty"
       },
-      yTicks.map((t, i) => /* @__PURE__ */ React.createElement("g", { key: `ey${i}` }, /* @__PURE__ */ React.createElement(
-        "line",
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uC804\uCCB4 \uACE1\uC120", value: totalCount > 0 ? String(totalCount) : "\u2014" }), /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          className: "chart-grid-line",
-          x1: padL,
-          x2: W - padR,
-          y1: ySvg(t),
-          y2: ySvg(t)
+          label: "\uC6B0\uC2B9 \uACE1\uC120",
+          value: winnerCount > 0 ? String(winnerCount) : "\u2014",
+          color: winnerCount > 0 ? "var(--teal)" : void 0
         }
       ), /* @__PURE__ */ React.createElement(
-        "text",
+        Mini,
         {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: ySvg(t) + 3,
-          textAnchor: "end"
-        },
-        Math.abs(t) >= 1e8 ? (t / 1e8).toFixed(1) + "\uC5B5" : Math.abs(t) >= 1e4 ? (t / 1e4).toFixed(0) + "\uB9CC" : t.toLocaleString()
-      ))),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: zeroY,
-          y2: zeroY,
-          stroke: "rgba(255,255,255,0.28)",
-          strokeWidth: "1",
-          strokeDasharray: "2 3"
+          label: "\uCD5C\uACE0 \uC218\uC775\uB960",
+          value: maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "\u2014",
+          color: maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : void 0
         }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "text",
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: zeroY + 3,
-          textAnchor: "end",
-          fill: "var(--ink-2)"
-        },
-        "0"
-      ),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: padT + innerH,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
+          label: "\uBC31\uD14C \uAE30\uAC04",
+          value: periodMatchesRun && periodInfo.period ? periodInfo.period : "\uAE30\uAC04 \uC815\uBCF4 \uC5C6\uC74C",
+          sub: periodMatchesRun && periodInfo.timeframe ? String(periodInfo.timeframe) : ""
         }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: padL,
-          y1: padT,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
-        }
-      ),
-      [0, 0.25, 0.5, 0.75, 1].map((f, i) => /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          key: `ex${i}`,
-          className: "chart-axis-text",
-          x: xSvg(f),
-          y: H - 10,
-          textAnchor: "middle"
-        },
-        Math.round(f * 100),
-        "%"
       )),
-      nonWinners.map((c, i) => {
-        const d = toPath(c.equity);
-        if (!d) return null;
-        return /* @__PURE__ */ React.createElement(
-          "path",
-          {
-            key: `nw${i}`,
-            d,
-            fill: "none",
-            stroke: "rgba(255,255,255,0.10)",
-            strokeWidth: "0.8"
-          }
-        );
-      }),
-      winners.map((c, i) => {
-        const d = toPath(c.equity);
-        if (!d) return null;
-        const col = _EQ_WINNER_COLORS[i % _EQ_WINNER_COLORS.length];
-        return /* @__PURE__ */ React.createElement(
-          "path",
-          {
-            key: `w${i}`,
-            d,
-            fill: "none",
-            stroke: col,
-            strokeWidth: "2.0",
-            opacity: "0.9"
-          }
-        );
-      }),
-      hover && (() => {
-        const hx = xSvg(hover.frac);
-        return /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "X\uCD95 = \uAC70\uB798 \uC9C4\uD589\uB960 0~100%(\uC804\uB7B5\uB9C8\uB2E4 \uAC70\uB798 \uC218\uAC00 \uB2EC\uB77C \uC815\uADDC\uD654) \xB7 Y\uCD95 = \uB204\uC801 \uC218\uC775\uAE08(\uC6D0) \xB7 \uD68C\uC0C9 = \uBE44\uC6B0\uC2B9 \xB7 \uC0C9 = \uC6B0\uC2B9(gate \uD1B5\uACFC)"),
+      /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+        "edge_ratio = segment edge density",
+        "winner curves use a 12-color palette",
+        "non-winner curves stay subdued for comparison"
+      ] }),
+      /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, isDemo ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC equity curves\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--red)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC870\uD68C \uC2E4\uD328: ", err) : curves.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775\uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          ref: svgRef,
+          viewBox: `0 0 ${W} ${H}`,
+          preserveAspectRatio: "none",
+          onMouseMove: onMove,
+          onMouseLeave: onLeave
+        },
+        yTicks.map((t, i) => /* @__PURE__ */ React.createElement("g", { key: `ey${i}` }, /* @__PURE__ */ React.createElement(
           "line",
           {
-            x1: hx,
-            x2: hx,
-            y1: padT,
+            className: "chart-grid-line",
+            x1: padL,
+            x2: W - padR,
+            y1: ySvg(t),
+            y2: ySvg(t)
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: ySvg(t) + 3,
+            textAnchor: "end"
+          },
+          Math.abs(t) >= 1e8 ? (t / 1e8).toFixed(1) + "\uC5B5" : Math.abs(t) >= 1e4 ? (t / 1e4).toFixed(0) + "\uB9CC" : t.toLocaleString()
+        ))),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: zeroY,
+            y2: zeroY,
+            stroke: "rgba(255,255,255,0.28)",
+            strokeWidth: "1",
+            strokeDasharray: "2 3"
+          }
+        ),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: zeroY + 3,
+            textAnchor: "end",
+            fill: "var(--ink-2)"
+          },
+          "0"
+        ),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: padT + innerH,
             y2: padT + innerH,
-            stroke: "rgba(255,255,255,0.15)",
+            stroke: "var(--line-2)",
             strokeWidth: "1"
           }
-        );
-      })()
-    ), hover && hover.tips.length > 0 && (() => {
-      const winTips = hover.tips.filter((t) => t.gate_passed);
-      const topTips = [
-        ...winTips,
-        ...hover.tips.filter((t) => !t.gate_passed).slice(0, Math.max(0, 5 - winTips.length))
-      ];
-      return /* @__PURE__ */ React.createElement("div", { style: {
-        position: "absolute",
-        top: 16,
-        right: 16,
-        background: "var(--bg-0)",
-        border: "1px solid var(--line-2)",
-        borderRadius: 6,
-        padding: "8px 10px",
-        fontFamily: "var(--mono)",
-        fontSize: 11,
-        minWidth: 200,
-        maxWidth: 260,
-        boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-        pointerEvents: "none"
-      } }, /* @__PURE__ */ React.createElement("div", { style: {
-        fontSize: 10,
-        color: "var(--ink-2)",
-        letterSpacing: ".12em",
-        textTransform: "uppercase",
-        marginBottom: 4
-      } }, "\uC9C4\uD589 ", Math.round(hover.frac * 100), "%"), topTips.map((t, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: {
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 8,
-        padding: "2px 0",
-        color: t.gate_passed ? "var(--teal)" : "var(--ink-2)"
-      } }, /* @__PURE__ */ React.createElement("span", null, t.run_id.slice(-6), "/g", t.gen_no), /* @__PURE__ */ React.createElement("span", null, t.y >= 0 ? "+" : "", Math.round(t.y).toLocaleString()))), hover.tips.length > topTips.length && /* @__PURE__ */ React.createElement("div", { style: { color: "var(--ink-3)", fontSize: 10, marginTop: 3 } }, "\uC678 ", hover.tips.length - topTips.length, "\uAC1C\u2026"));
-    })())));
+        ),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: padL,
+            y1: padT,
+            y2: padT + innerH,
+            stroke: "var(--line-2)",
+            strokeWidth: "1"
+          }
+        ),
+        [0, 0.25, 0.5, 0.75, 1].map((f, i) => /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            key: `ex${i}`,
+            className: "chart-axis-text",
+            x: xSvg(f),
+            y: H - 10,
+            textAnchor: "middle"
+          },
+          Math.round(f * 100),
+          "%"
+        )),
+        nonWinners.map((c, i) => {
+          const d = toPath(c.equity);
+          if (!d) return null;
+          return /* @__PURE__ */ React.createElement(
+            "path",
+            {
+              key: `nw${i}`,
+              d,
+              fill: "none",
+              stroke: "rgba(255,255,255,0.10)",
+              strokeWidth: "0.8"
+            }
+          );
+        }),
+        winners.map((c, i) => {
+          const d = toPath(c.equity);
+          if (!d) return null;
+          const col = _EQ_WINNER_COLORS[i % _EQ_WINNER_COLORS.length];
+          return /* @__PURE__ */ React.createElement(
+            "path",
+            {
+              key: `w${i}`,
+              d,
+              fill: "none",
+              stroke: col,
+              strokeWidth: "2.0",
+              opacity: "0.9"
+            }
+          );
+        }),
+        hover && (() => {
+          const hx = xSvg(hover.frac);
+          return /* @__PURE__ */ React.createElement(
+            "line",
+            {
+              x1: hx,
+              x2: hx,
+              y1: padT,
+              y2: padT + innerH,
+              stroke: "rgba(255,255,255,0.15)",
+              strokeWidth: "1"
+            }
+          );
+        })()
+      ), hover && hover.tips.length > 0 && (() => {
+        const winTips = hover.tips.filter((t) => t.gate_passed === true);
+        const topTips = [
+          ...winTips,
+          ...hover.tips.filter((t) => t.gate_passed !== true).slice(0, Math.max(0, 5 - winTips.length))
+        ];
+        return /* @__PURE__ */ React.createElement("div", { style: {
+          position: "absolute",
+          top: 16,
+          right: 16,
+          background: "var(--bg-0)",
+          border: "1px solid var(--line-2)",
+          borderRadius: 6,
+          padding: "8px 10px",
+          fontFamily: "var(--mono)",
+          fontSize: 11,
+          minWidth: 200,
+          maxWidth: 260,
+          boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+          pointerEvents: "none"
+        } }, /* @__PURE__ */ React.createElement("div", { style: {
+          fontSize: 10,
+          color: "var(--ink-2)",
+          letterSpacing: ".12em",
+          textTransform: "uppercase",
+          marginBottom: 4
+        } }, "\uC9C4\uD589 ", Math.round(hover.frac * 100), "%"), topTips.map((t, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: {
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 8,
+          padding: "2px 0",
+          color: t.gate_passed === true ? "var(--teal)" : "var(--ink-2)"
+        } }, /* @__PURE__ */ React.createElement("span", null, t.run_id.slice(-6), "/g", t.gen_no), /* @__PURE__ */ React.createElement("span", null, t.y >= 0 ? "+" : "", Math.round(t.y).toLocaleString()))), hover.tips.length > topTips.length && /* @__PURE__ */ React.createElement("div", { style: { color: "var(--ink-3)", fontSize: 10, marginTop: 3 } }, "\uC678 ", hover.tips.length - topTips.length, "\uAC1C\u2026"));
+      })())
+    )));
   }
   var {
     useState: useState_bd,
@@ -22049,22 +22204,64 @@ def signal_sell(pos, bar, ind):
     useRef: useRef_bd,
     useMemo: useMemo_bd
   } = React;
+  function _finiteChartNumber(value) {
+    return typeof value === "number" && Number.isFinite(value);
+  }
+  function _validChartDate(value) {
+    if (!/^\d{8}$/.test(value)) return false;
+    const year = Number(value.slice(0, 4));
+    const month = Number(value.slice(4, 6));
+    const day = Number(value.slice(6, 8));
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  }
+  function _backtestDetailRows(payload, runId, genNo) {
+    if (!payload || payload.run_id !== runId || payload.gen_no !== genNo || !Array.isArray(payload.daily) || !Array.isArray(payload.cumulative) || payload.daily.length !== payload.cumulative.length || payload.drawdown != null && (!Array.isArray(payload.drawdown) || payload.drawdown.length !== payload.daily.length) || payload.holdings != null && !Array.isArray(payload.holdings) || payload.summary != null && (typeof payload.summary !== "object" || Array.isArray(payload.summary))) {
+      return null;
+    }
+    const rows = [];
+    for (let index2 = 0; index2 < payload.daily.length; index2 += 1) {
+      const daily = payload.daily[index2];
+      const cumulative = payload.cumulative[index2];
+      const drawdown = payload.drawdown ? payload.drawdown[index2] : null;
+      const date = daily && daily.date != null ? String(daily.date) : "";
+      const cumulativeDate = cumulative && cumulative.date != null ? String(cumulative.date) : "";
+      const drawdownDate = drawdown && drawdown.date != null ? String(drawdown.date) : "";
+      if (!daily || !cumulative || !date || !_validChartDate(date) || index2 > 0 && date <= rows[index2 - 1].date || date !== cumulativeDate || !_finiteChartNumber(daily.daily_pnl) || !_finiteChartNumber(cumulative.cum_profit) || drawdown && (!_finiteChartNumber(drawdown.drawdown) || drawdownDate !== date)) {
+        return null;
+      }
+      rows.push({
+        date,
+        daily_pnl: daily.daily_pnl,
+        cum_profit: cumulative.cum_profit,
+        drawdown: drawdown ? drawdown.drawdown : "\u2014"
+      });
+    }
+    if (payload.holdings && !payload.holdings.every((h) => h && _finiteChartNumber(h.count))) return null;
+    const numericSummary = ["trade_count", "n_days", "peak_holdings", "final_profit", "max_drawdown"];
+    if (payload.summary && !numericSummary.every((key) => payload.summary[key] == null || _finiteChartNumber(payload.summary[key]))) return null;
+    return rows;
+  }
   function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
-    const gens = state && state.generations || [];
+    const rawGens = state && state.generations;
+    const gens = Array.isArray(rawGens) && rawGens.every((g) => g && typeof g === "object" && _finiteChartNumber(g.gen_no) && typeof g.gate_passed === "boolean" && (g.graded_score == null || _finiteChartNumber(g.graded_score)) && (g.max_hold_count == null || _finiteChartNumber(g.max_hold_count))) ? rawGens : [];
     const runId = state && state.run_id || "";
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const defaultGen = useMemo_bd(() => {
       if (!gens.length) return null;
-      const winners = gens.filter((g) => g.gate_passed);
+      const winners = gens.filter((g) => g.gate_passed === true);
       if (winners.length) {
-        return winners.reduce((a, b) => (b.graded_score || 0) > (a.graded_score || 0) ? b : a).gen_no;
+        return winners.reduce((a, b) => {
+          var _a, _b;
+          return ((_a = b.graded_score) != null ? _a : 0) > ((_b = a.graded_score) != null ? _b : 0) ? b : a;
+        }).gen_no;
       }
       return gens[gens.length - 1].gen_no;
     }, [gens]);
     const [selGen, setSelGen] = useState_bd(null);
     useEffect_bd(() => {
       setSelGen(defaultGen);
-    }, [defaultGen, runId]);
+    }, [defaultGen, runId, gens]);
     useEffect_bd(() => {
       if (externalSelGen != null) setSelGen(externalSelGen);
     }, [externalSelGen]);
@@ -22074,32 +22271,60 @@ def signal_sell(pos, bar, ind):
     const [err, setErr] = useState_bd(null);
     const [hover, setHover] = useState_bd(null);
     const svgRef = useRef_bd(null);
+    const requestRef = useRef_bd({ key: "", controller: null });
     const refresh = useCallback_bd(() => {
-      if (isDemo || !baseUrl || !runId || genNo == null) return;
+      if (requestRef.current.controller) requestRef.current.controller.abort();
+      if (isDemo || !baseUrl || !runId || genNo == null) {
+        requestRef.current = { key: "", controller: null };
+        setData(null);
+        setErr(null);
+        setHover(null);
+        setLoading(false);
+        return;
+      }
+      const key = `${runId}:${genNo}`;
+      const controller = new AbortController();
+      requestRef.current = { key, controller };
+      setData(null);
+      setErr(null);
+      setHover(null);
       setLoading(true);
       const url = baseUrl + "/backtest_detail?run_id=" + encodeURIComponent(runId) + "&gen_no=" + encodeURIComponent(genNo);
-      fetch(url, { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        setData(j);
+      fetch(url, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4e3)]) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const rows = _backtestDetailRows(j, runId, genNo);
+        if (requestRef.current.key !== key || controller.signal.aborted) return;
+        if (!rows) throw new Error("Malformed backtest detail response");
+        setData({ ...j, _chartRows: rows });
         setErr(null);
-      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+      }).catch((e) => {
+        if (requestRef.current.key === key && !controller.signal.aborted) setErr(String(e));
+      }).finally(() => {
+        if (requestRef.current.key === key && !controller.signal.aborted) setLoading(false);
+      });
     }, [baseUrl, isDemo, runId, genNo]);
     useEffect_bd(() => {
       refresh();
       const id2 = setInterval(refresh, 3e4);
-      return () => clearInterval(id2);
+      return () => {
+        clearInterval(id2);
+        if (requestRef.current.controller) requestRef.current.controller.abort();
+      };
     }, [refresh]);
-    const daily = data && data.daily || [];
-    const cumulative = data && data.cumulative || [];
-    const drawdown = data && data.drawdown || [];
-    const holdings = data && data.holdings || [];
-    const summary = data && data.summary || {};
+    const responseMatchesSelection = data && data.run_id === runId && data.gen_no === genNo;
+    const chartRows = responseMatchesSelection ? data._chartRows : null;
+    const daily = chartRows ? data.daily : [];
+    const cumulative = chartRows ? data.cumulative : [];
+    const drawdown = chartRows ? data.drawdown || [] : [];
+    const holdings = chartRows ? data.holdings || [] : [];
+    const summary = chartRows ? data.summary || {} : {};
+    const detailStatus = err ? "malformed" : chartRows ? chartRows.length ? "ready" : "empty" : loading ? "stale" : "empty";
     const hasSeries = daily.length > 0;
     const hasHoldings = holdings.length > 0;
     const peakHoldings = summary.peak_holdings != null ? summary.peak_holdings : 0;
     const selectedGeneration = gens.find((g) => g.gen_no === genNo) || null;
-    const dbMaxHold = selectedGeneration && typeof selectedGeneration.max_hold_count === "number" ? selectedGeneration.max_hold_count : null;
-    const sparseHoldSuspicious = (summary.trade_count || 0) >= 50 && dbMaxHold != null && dbMaxHold <= 1 && peakHoldings > dbMaxHold;
-    const noTrades = !hasSeries || summary.trade_count != null && summary.trade_count === 0;
+    const dbMaxHold = selectedGeneration && _finiteChartNumber(selectedGeneration.max_hold_count) ? selectedGeneration.max_hold_count : null;
+    const sparseHoldSuspicious = _finiteChartNumber(summary.trade_count) && summary.trade_count >= 50 && dbMaxHold != null && dbMaxHold <= 1 && peakHoldings > dbMaxHold;
+    const noTrades = _finiteChartNumber(summary.trade_count) && summary.trade_count === 0;
     const W = 880, H = 320;
     const padL = 56, padR = 60, padT = 18, padB = 30;
     const innerW = W - padL - padR;
@@ -22198,7 +22423,7 @@ def signal_sell(pos, bar, ind):
         },
         "data-tip": "\uC138\uB300 \uC120\uD0DD"
       },
-      gens.map((g) => /* @__PURE__ */ React.createElement("option", { key: g.gen_no, value: g.gen_no }, "gen_", g.gen_no, g.gate_passed ? " \u2713" : ""))
+      gens.map((g) => /* @__PURE__ */ React.createElement("option", { key: g.gen_no, value: g.gen_no }, "gen_", g.gen_no, g.gate_passed === true ? " \u2713" : ""))
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -22208,331 +22433,349 @@ def signal_sell(pos, bar, ind):
         "data-tip": "\uBC31\uD14C \uC0C1\uC138 \uC0C8\uB85C\uACE0\uCE68"
       },
       loading ? "\uB85C\uB529\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC218", value: summary.trade_count != null ? String(summary.trade_count) : "\u2014" }), /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC77C", value: summary.n_days != null ? String(summary.n_days) : "\u2014" }), /* @__PURE__ */ React.createElement(
-      Mini,
+    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        label: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720",
-        value: noTrades ? "\uAC70\uB798\uC5C6\uC74C" : summary.peak_holdings != null ? String(summary.peak_holdings) : "\u2014",
-        color: !noTrades && peakHoldings > 0 ? "var(--teal)" : "var(--ink-3)",
-        sub: "\uC885\uBAA9\uC218"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "DB max_hold_count",
-        value: dbMaxHold != null ? String(dbMaxHold) : "\u2014",
-        color: sparseHoldSuspicious ? "var(--red)" : void 0,
-        sub: "\uC800\uC7A5\uAC12"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uC885 \uB204\uC801\uC218\uC775",
-        value: summary.final_profit != null ? fmtMoney(summary.final_profit) : "\u2014",
-        color: summary.final_profit > 0 ? "var(--teal)" : summary.final_profit < 0 ? "var(--red)" : void 0
-      }
-    ), /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uCD5C\uB300 \uBC18\uB0A9\uC561",
-        value: summary.max_drawdown != null ? fmtMoney(summary.max_drawdown) : "\u2014",
-        color: summary.max_drawdown > 0 ? "var(--red)" : void 0,
-        sub: "\uACE0\uC810 \uB300\uBE44(\uC6D0)"
-      }
-    )), /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      `run_id=${runId || "-"}`,
-      `gen_no=${genNo != null ? genNo : "-"}`,
-      "peak_holdings=0 can mean no overlap buy/sell timing data",
-      `DB max_hold_count=${dbMaxHold != null ? dbMaxHold : "-"}`,
-      "period/timeframe are inherited from the selected run"
-    ] }), sparseHoldSuspicious && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger", title: "Sparse hold warning" }, "Sparse hold warning: DB max_hold_count ", dbMaxHold, " differs from CSV peak_holdings ", peakHoldings, ". human corridor 6-12; treat this as an audit signal, not promotion proof."), !isDemo && !err && hasHoldings && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 6 } }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        viewBox: `0 0 ${W} ${HpH}`,
-        preserveAspectRatio: "none",
-        style: { width: "100%", height: HpH, display: "block" }
+        title: "\uBC31\uD14C \uC0C1\uC138",
+        unit: "\uC77C\uBCC4 \uC190\uC775\xB7\uB204\uC801 \uC218\uC775(\uC6D0)",
+        period: chartRows && chartRows.length ? `${chartRows[0].date} ~ ${chartRows[chartRows.length - 1].date}` : "\uAE30\uAC04 \uBBF8\uBC1C\uD589",
+        sampleCount: chartRows ? chartRows.length : 0,
+        freshness: loading ? "\uC0C8\uB85C\uACE0\uCE68 \uC911" : "\uC120\uD0DD \uC2DC \uC870\uD68C",
+        threshold: "\uC190\uC775\uBD84\uAE30 0\uC6D0 \xB7 \uC77C\uC790 \uC815\uB82C\uB41C \uC6D0\uBCF8 \uD589",
+        source: "/backtest_detail",
+        rows: (chartRows || []).map((row) => ({ evidence: "daily", ...row })).concat(holdings.map((holding, index2) => ({ evidence: "holding", point_index: index2, count: holding.count }))),
+        status: detailStatus
       },
-      /* @__PURE__ */ React.createElement(
-        "line",
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC218", value: summary.trade_count != null ? String(summary.trade_count) : "\u2014" }), /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC77C", value: summary.n_days != null ? String(summary.n_days) : "\u2014" }), /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          x1: padL,
-          x2: W - padR,
-          y1: hpPadT + hpInnerH,
-          y2: hpPadT + hpInnerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
-        }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: padL,
-          y1: hpPadT,
-          y2: hpPadT + hpInnerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
-        }
-      ),
-      holdYTicks.map((tk) => /* @__PURE__ */ React.createElement("g", { key: `hyt${tk}` }, /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: yHold(tk),
-          y2: yHold(tk),
-          stroke: "rgba(255,255,255,0.08)",
-          strokeWidth: "1"
+          label: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720",
+          value: noTrades ? "\uAC70\uB798\uC5C6\uC74C" : summary.peak_holdings != null ? String(summary.peak_holdings) : "\u2014",
+          color: !noTrades && peakHoldings > 0 ? "var(--teal)" : "var(--ink-3)",
+          sub: "\uC885\uBAA9\uC218"
         }
       ), /* @__PURE__ */ React.createElement(
-        "text",
+        Mini,
         {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: yHold(tk) + 3,
-          textAnchor: "end",
-          fill: "var(--ink-2)"
-        },
-        tk
-      ))),
-      noTrades ? /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: W - padR + 6,
-          y: hpPadT + hpInnerH / 2 + 3,
-          textAnchor: "start",
-          fill: "var(--ink-3)"
-        },
-        "\uAC70\uB798\uC5C6\uC74C"
-      ) : peakHoldings > 0 && /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: W - padR + 6,
-          y: yHold(peakHoldings) + 3,
-          textAnchor: "start",
-          fill: "var(--teal)"
-        },
-        "peak ",
-        peakHoldings
-      ),
-      /* @__PURE__ */ React.createElement("path", { d: holdPath, fill: "none", stroke: "var(--teal)", strokeWidth: "1.8", opacity: "0.95" })
-    ), /* @__PURE__ */ React.createElement("div", { style: {
-      fontSize: 10.5,
-      color: "var(--ink-3)",
-      fontFamily: "var(--mono)",
-      marginTop: 2,
-      paddingLeft: padL * (100 / W) + "%"
-    } }, "\uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uB9E4\uC218~\uB9E4\uB3C4 \uAD6C\uAC04 \uC911\uCCA9). \uBCF4\uC720\uAE08\uC561(\uC6D0)\uC740 \uC5D4\uC9C4 \uC804\uC6A9\uC774\uB77C \uBBF8\uD45C\uC2DC \u2014 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218\uB85C \uB300\uCCB4.")), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, isDemo ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBC31\uD14C \uC0C1\uC138\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--red)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC870\uD68C \uC2E4\uD328: ", err) : !hasSeries ? /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, summary.trade_count != null && summary.trade_count === 0 ? "\uC774 \uC138\uB300\uB294 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uD0C0\uC784\uC544\uC6C3/\uBB34\uAC70\uB798)" : "\uBC31\uD14C \uACB0\uACFC \uC2DC\uACC4\uC5F4\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(CSV \uC5C6\uC74C/\uD1A0\uAE00)") : /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: onLeave
-      },
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: zeroY,
-          y2: zeroY,
-          stroke: "rgba(255,255,255,0.28)",
-          strokeWidth: "1",
-          strokeDasharray: "2 3"
+          label: "DB max_hold_count",
+          value: dbMaxHold != null ? String(dbMaxHold) : "\u2014",
+          color: sparseHoldSuspicious ? "var(--red)" : void 0,
+          sub: "\uC800\uC7A5\uAC12"
         }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "text",
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: zeroY + 3,
-          textAnchor: "end",
-          fill: "var(--ink-2)"
-        },
-        "0"
-      ),
-      /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: yPnl(pnlMax) + 3,
-          textAnchor: "end",
-          fill: "var(--ink-2)"
-        },
-        fmtMoneyShort(pnlMax)
-      ),
-      pnlMin < 0 && /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: padL - 8,
-          y: yPnl(pnlMin) + 3,
-          textAnchor: "end",
-          fill: "var(--ink-2)"
-        },
-        fmtMoneyShort(pnlMin)
-      ),
-      _bdAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
-      /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: W - padR + 6,
-          y: yCum(cumMax) + 3,
-          textAnchor: "start",
-          fill: "var(--amber)"
-        },
-        fmtMoneyShort(cumMax)
-      ),
-      /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          className: "chart-axis-text",
-          x: W - padR + 6,
-          y: yCum(cumMin) + 3,
-          textAnchor: "start",
-          fill: "var(--amber)"
-        },
-        fmtMoneyShort(cumMin)
-      ),
-      _bdAxisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: padL,
-          x2: W - padR,
-          y1: padT + innerH,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
+          label: "\uCD5C\uC885 \uB204\uC801\uC218\uC775",
+          value: summary.final_profit != null ? fmtMoney(summary.final_profit) : "\u2014",
+          color: summary.final_profit > 0 ? "var(--teal)" : summary.final_profit < 0 ? "var(--red)" : void 0
         }
-      ),
-      /* @__PURE__ */ React.createElement(
-        "line",
+      ), /* @__PURE__ */ React.createElement(
+        Mini,
         {
-          x1: padL,
-          x2: padL,
-          y1: padT,
-          y2: padT + innerH,
-          stroke: "var(--line-2)",
-          strokeWidth: "1"
+          label: "\uCD5C\uB300 \uBC18\uB0A9\uC561",
+          value: summary.max_drawdown != null ? fmtMoney(summary.max_drawdown) : "\u2014",
+          color: summary.max_drawdown > 0 ? "var(--red)" : void 0,
+          sub: "\uACE0\uC810 \uB300\uBE44(\uC6D0)"
         }
-      ),
-      xLabelIdxs.map((i, k) => /* @__PURE__ */ React.createElement(
-        "text",
-        {
-          key: `bx${i}`,
-          className: "chart-axis-text",
-          x: xBar(i),
-          y: H - 10,
-          textAnchor: "middle"
-        },
-        fmtDateY(daily[i].date, k > 0 && daily[xLabelIdxs[k - 1]] ? daily[xLabelIdxs[k - 1]].date : null)
       )),
-      daily.map((d, i) => {
-        const v = d.daily_pnl || 0;
-        const yTop = v >= 0 ? yPnl(v) : zeroY;
-        const yBot = v >= 0 ? zeroY : yPnl(v);
-        const h = Math.max(0.5, yBot - yTop);
-        const col = v >= 0 ? "var(--red)" : "var(--blue)";
-        return /* @__PURE__ */ React.createElement(
-          "rect",
-          {
-            key: `bar${i}`,
-            x: xBar(i) - barW / 2,
-            y: yTop,
-            width: barW,
-            height: h,
-            fill: col,
-            opacity: "0.78"
-          }
-        );
-      }),
-      cumulative.length > 1 && /* @__PURE__ */ React.createElement("path", { d: cumPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2.2", opacity: "0.95" }),
-      hover != null && (() => {
-        const hx = xBar(hover);
-        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+        `run_id=${runId || "-"}`,
+        `gen_no=${genNo != null ? genNo : "-"}`,
+        "peak_holdings=0 can mean no overlap buy/sell timing data",
+        `DB max_hold_count=${dbMaxHold != null ? dbMaxHold : "-"}`,
+        "period/timeframe are inherited from the selected run"
+      ] }),
+      sparseHoldSuspicious && /* @__PURE__ */ React.createElement("div", { className: "research-empty danger", title: "Sparse hold warning" }, "Sparse hold warning: DB max_hold_count ", dbMaxHold, " differs from CSV peak_holdings ", peakHoldings, ". human corridor 6-12; treat this as an audit signal, not promotion proof."),
+      !isDemo && !err && hasHoldings && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 6 } }, /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          viewBox: `0 0 ${W} ${HpH}`,
+          preserveAspectRatio: "none",
+          style: { width: "100%", height: HpH, display: "block" }
+        },
+        /* @__PURE__ */ React.createElement(
           "line",
           {
-            x1: hx,
-            x2: hx,
-            y1: padT,
-            y2: padT + innerH,
-            stroke: "rgba(255,255,255,0.15)",
+            x1: padL,
+            x2: W - padR,
+            y1: hpPadT + hpInnerH,
+            y2: hpPadT + hpInnerH,
+            stroke: "var(--line-2)",
             strokeWidth: "1"
           }
-        ), cumulative[hover] && /* @__PURE__ */ React.createElement(
-          "circle",
+        ),
+        /* @__PURE__ */ React.createElement(
+          "line",
           {
-            cx: hx,
-            cy: yCum(cumulative[hover].cum_profit || 0),
-            r: "3.5",
-            fill: "none",
-            stroke: "var(--amber)",
-            strokeWidth: "1.5"
+            x1: padL,
+            x2: padL,
+            y1: hpPadT,
+            y2: hpPadT + hpInnerH,
+            stroke: "var(--line-2)",
+            strokeWidth: "1"
           }
-        ));
-      })()
-    ), hover != null && hasSeries && daily[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 190,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      fontSize: 10.5,
-      color: "var(--ink-2)",
-      letterSpacing: ".12em",
-      textTransform: "uppercase",
-      marginBottom: 4
-    } }, fmtDate(daily[hover].date), " \xB7 ", String(daily[hover].date)), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC77C\uC190\uC775"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: daily[hover].daily_pnl > 0 ? "num-pos" : daily[hover].daily_pnl < 0 ? "num-neg" : "",
-        style: { textAlign: "right" }
-      },
-      fmtMoney(daily[hover].daily_pnl)
-    ), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "\u2014"), cumulative[hover] && cumulative[hover].cum_pct != null && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801%"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, fmtPct(cumulative[hover].cum_pct))), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBC18\uB0A9\uC561"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "\u2014"))))));
+        ),
+        holdYTicks.map((tk) => /* @__PURE__ */ React.createElement("g", { key: `hyt${tk}` }, /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: yHold(tk),
+            y2: yHold(tk),
+            stroke: "rgba(255,255,255,0.08)",
+            strokeWidth: "1"
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: yHold(tk) + 3,
+            textAnchor: "end",
+            fill: "var(--ink-2)"
+          },
+          tk
+        ))),
+        noTrades ? /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: W - padR + 6,
+            y: hpPadT + hpInnerH / 2 + 3,
+            textAnchor: "start",
+            fill: "var(--ink-3)"
+          },
+          "\uAC70\uB798\uC5C6\uC74C"
+        ) : peakHoldings > 0 && /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: W - padR + 6,
+            y: yHold(peakHoldings) + 3,
+            textAnchor: "start",
+            fill: "var(--teal)"
+          },
+          "peak ",
+          peakHoldings
+        ),
+        /* @__PURE__ */ React.createElement("path", { d: holdPath, fill: "none", stroke: "var(--teal)", strokeWidth: "1.8", opacity: "0.95" })
+      ), /* @__PURE__ */ React.createElement("div", { style: {
+        fontSize: 10.5,
+        color: "var(--ink-3)",
+        fontFamily: "var(--mono)",
+        marginTop: 2,
+        paddingLeft: padL * (100 / W) + "%"
+      } }, "\uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uB9E4\uC218~\uB9E4\uB3C4 \uAD6C\uAC04 \uC911\uCCA9). \uBCF4\uC720\uAE08\uC561(\uC6D0)\uC740 \uC5D4\uC9C4 \uC804\uC6A9\uC774\uB77C \uBBF8\uD45C\uC2DC \u2014 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218\uB85C \uB300\uCCB4.")),
+      /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, isDemo ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBC31\uD14C \uC0C1\uC138\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--red)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, "\uC870\uD68C \uC2E4\uD328: ", err) : !hasSeries ? /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--ink-3)",
+        fontSize: 12,
+        fontFamily: "var(--mono)"
+      } }, summary.trade_count != null && summary.trade_count === 0 ? "\uC774 \uC138\uB300\uB294 \uAC70\uB798\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uD0C0\uC784\uC544\uC6C3/\uBB34\uAC70\uB798)" : "\uBC31\uD14C \uACB0\uACFC \uC2DC\uACC4\uC5F4\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(CSV \uC5C6\uC74C/\uD1A0\uAE00)") : /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          ref: svgRef,
+          viewBox: `0 0 ${W} ${H}`,
+          preserveAspectRatio: "none",
+          onMouseMove: onMove,
+          onMouseLeave: onLeave
+        },
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: zeroY,
+            y2: zeroY,
+            stroke: "rgba(255,255,255,0.28)",
+            strokeWidth: "1",
+            strokeDasharray: "2 3"
+          }
+        ),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: zeroY + 3,
+            textAnchor: "end",
+            fill: "var(--ink-2)"
+          },
+          "0"
+        ),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: yPnl(pnlMax) + 3,
+            textAnchor: "end",
+            fill: "var(--ink-2)"
+          },
+          fmtMoneyShort(pnlMax)
+        ),
+        pnlMin < 0 && /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: padL - 8,
+            y: yPnl(pnlMin) + 3,
+            textAnchor: "end",
+            fill: "var(--ink-2)"
+          },
+          fmtMoneyShort(pnlMin)
+        ),
+        _bdAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: W - padR + 6,
+            y: yCum(cumMax) + 3,
+            textAnchor: "start",
+            fill: "var(--amber)"
+          },
+          fmtMoneyShort(cumMax)
+        ),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: W - padR + 6,
+            y: yCum(cumMin) + 3,
+            textAnchor: "start",
+            fill: "var(--amber)"
+          },
+          fmtMoneyShort(cumMin)
+        ),
+        _bdAxisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: W - padR,
+            y1: padT + innerH,
+            y2: padT + innerH,
+            stroke: "var(--line-2)",
+            strokeWidth: "1"
+          }
+        ),
+        /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: padL,
+            x2: padL,
+            y1: padT,
+            y2: padT + innerH,
+            stroke: "var(--line-2)",
+            strokeWidth: "1"
+          }
+        ),
+        xLabelIdxs.map((i, k) => /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            key: `bx${i}`,
+            className: "chart-axis-text",
+            x: xBar(i),
+            y: H - 10,
+            textAnchor: "middle"
+          },
+          fmtDateY(daily[i].date, k > 0 && daily[xLabelIdxs[k - 1]] ? daily[xLabelIdxs[k - 1]].date : null)
+        )),
+        daily.map((d, i) => {
+          const v = d.daily_pnl || 0;
+          const yTop = v >= 0 ? yPnl(v) : zeroY;
+          const yBot = v >= 0 ? zeroY : yPnl(v);
+          const h = Math.max(0.5, yBot - yTop);
+          const col = v >= 0 ? "var(--red)" : "var(--blue)";
+          return /* @__PURE__ */ React.createElement(
+            "rect",
+            {
+              key: `bar${i}`,
+              x: xBar(i) - barW / 2,
+              y: yTop,
+              width: barW,
+              height: h,
+              fill: col,
+              opacity: "0.78"
+            }
+          );
+        }),
+        cumulative.length > 1 && /* @__PURE__ */ React.createElement("path", { d: cumPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2.2", opacity: "0.95" }),
+        hover != null && (() => {
+          const hx = xBar(hover);
+          return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+            "line",
+            {
+              x1: hx,
+              x2: hx,
+              y1: padT,
+              y2: padT + innerH,
+              stroke: "rgba(255,255,255,0.15)",
+              strokeWidth: "1"
+            }
+          ), cumulative[hover] && /* @__PURE__ */ React.createElement(
+            "circle",
+            {
+              cx: hx,
+              cy: yCum(cumulative[hover].cum_profit || 0),
+              r: "3.5",
+              fill: "none",
+              stroke: "var(--amber)",
+              strokeWidth: "1.5"
+            }
+          ));
+        })()
+      ), hover != null && hasSeries && daily[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        background: "var(--bg-0)",
+        border: "1px solid var(--line-2)",
+        borderRadius: 6,
+        padding: "8px 10px",
+        fontFamily: "var(--mono)",
+        fontSize: 11,
+        minWidth: 190,
+        boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+        pointerEvents: "none"
+      } }, /* @__PURE__ */ React.createElement("div", { style: {
+        fontSize: 10.5,
+        color: "var(--ink-2)",
+        letterSpacing: ".12em",
+        textTransform: "uppercase",
+        marginBottom: 4
+      } }, fmtDate(daily[hover].date), " \xB7 ", String(daily[hover].date)), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC77C\uC190\uC775"), /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          className: daily[hover].daily_pnl > 0 ? "num-pos" : daily[hover].daily_pnl < 0 ? "num-neg" : "",
+          style: { textAlign: "right" }
+        },
+        fmtMoney(daily[hover].daily_pnl)
+      ), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "\u2014"), cumulative[hover] && cumulative[hover].cum_pct != null && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801%"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, fmtPct(cumulative[hover].cum_pct))), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBC18\uB0A9\uC561"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "\u2014"))))
+    )));
   }
 
   // ai_strategy_loop/dashboard/frontend/hof-inventory.jsx
@@ -22692,7 +22935,7 @@ def signal_sell(pos, bar, ind):
       color: "var(--ink-3)",
       fontSize: 12,
       fontFamily: "var(--mono)"
-    } }, "\uD45C\uC2DC\uD560 \uC804\uB7B5\uC774 \uC5C6\uC2B5\uB2C8\uB2E4 (\uC778\uAC04 \uBCA4\uCE58\uB9C8\uD06C JSON / AI \uD751\uC790 \uC138\uB300 \uB204\uC801 \uC2DC \uD45C\uC2DC).") : /* @__PURE__ */ React.createElement("div", { className: "hof-scroll", style: { overflowX: "auto", width: "100%" } }, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: {
+    } }, "\uD45C\uC2DC\uD560 \uC804\uB7B5\uC774 \uC5C6\uC2B5\uB2C8\uB2E4 (\uC778\uAC04 \uBCA4\uCE58\uB9C8\uD06C JSON / AI \uD751\uC790 \uC138\uB300 \uB204\uC801 \uC2DC \uD45C\uC2DC).") : /* @__PURE__ */ React.createElement("div", { className: "hof-scroll", style: { overflowX: "auto", width: "100%" }, tabIndex: "0", "aria-label": "\uBA85\uC608\uC758 \uC804\uB2F9 \uC804\uB7B5 \uD45C" }, /* @__PURE__ */ React.createElement("table", { className: "data-table", style: {
       width: "100%",
       borderCollapse: "collapse",
       fontFamily: "var(--mono)",
@@ -26686,7 +26929,7 @@ def signal_sell(pos, bar, ind):
         }
       },
       lbl
-    )))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 160 } }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: buy, onChange: (e) => onBuy(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), libNames.buy.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 160 } }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: sell, onChange: (e) => onSell(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), libNames.sell.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uC791 (YYYYMMDD)"), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 160 } }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: buy, onChange: (e) => onBuy(e.target.value), disabled: isDemo, "aria-label": "\uB9E4\uC218 \uC870\uAC74\uC2DD \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), libNames.buy.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 160 } }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: sell, onChange: (e) => onSell(e.target.value), disabled: isDemo, "aria-label": "\uB9E4\uB3C4 \uC870\uAC74\uC2DD \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), libNames.sell.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uC791 (YYYYMMDD)"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -26706,7 +26949,7 @@ def signal_sell(pos, bar, ind):
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 100 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uAC04\uB2E8\uC704"), /* @__PURE__ */ React.createElement("select", { className: "select", value: timeframe, onChange: (e) => setTimeframe(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "min" }, "\uBD84\uBD09 (min)"), /* @__PURE__ */ React.createElement("option", { value: "tick" }, "\uD2F1 (tick)"))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", null, "\uC5D4\uC9C4 \uC218"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 100 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uAC04\uB2E8\uC704"), /* @__PURE__ */ React.createElement("select", { className: "select", value: timeframe, onChange: (e) => setTimeframe(e.target.value), disabled: isDemo, "aria-label": "\uC2DC\uAC04\uB2E8\uC704 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "min" }, "\uBD84\uBD09 (min)"), /* @__PURE__ */ React.createElement("option", { value: "tick" }, "\uD2F1 (tick)"))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", null, "\uC5D4\uC9C4 \uC218"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -26714,10 +26957,11 @@ def signal_sell(pos, bar, ind):
         min: "1",
         max: "16",
         value: engines,
+        "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC218",
         onChange: (e) => setEngines(e.target.value),
         disabled: isDemo
       }
-    )), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
+    )), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo, "aria-label": "\uB370\uC774\uD130 \uBD84\uB958 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input mono",
@@ -29898,7 +30142,7 @@ def signal_sell(pos, bar, ind):
         }
       },
       lbl
-    )))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB0A0\uC9DC (", days.length, "\uC77C)"), /* @__PURE__ */ React.createElement("select", { className: "select", value: date || "", onChange: (e) => onDate(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), days.map((d) => /* @__PURE__ */ React.createElement("option", { key: d, value: d }, _simFmtDate(d))))), src === "tick" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { maxWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC9D1\uACC4(\uCD08)"), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB0A0\uC9DC (", days.length, "\uC77C)"), /* @__PURE__ */ React.createElement("select", { className: "select", value: date || "", onChange: (e) => onDate(e.target.value), disabled: isDemo, "aria-label": "\uB9AC\uD50C\uB808\uC774 \uB0A0\uC9DC \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC120\uD0DD \u2014"), days.map((d) => /* @__PURE__ */ React.createElement("option", { key: d, value: d }, _simFmtDate(d))))), src === "tick" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { maxWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC9D1\uACC4(\uCD08)"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -29909,7 +30153,7 @@ def signal_sell(pos, bar, ind):
         onChange: (e) => onAggSec(e.target.value),
         disabled: isDemo
       }
-    ))), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD (\uC2E0\uD638 \uC624\uBC84\uB808\uC774)"), /* @__PURE__ */ React.createElement("select", { className: "select", value: buy, onChange: (e) => onBuy(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC5C6\uC74C \u2014"), strategies.buy.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: sell, onChange: (e) => onSell(e.target.value), disabled: isDemo }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC5C6\uC74C \u2014"), strategies.sell.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9 \uC120\uD0DD (\uCD5C\uB300 ", _SIM_MAX_CODES, " \xB7 \uB4F1\uB77D\uC21C)", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", marginLeft: 8 } }, selected2.length, "/", _SIM_MAX_CODES, " \uC120\uD0DD")), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC870\uAC74\uC2DD (\uC2E0\uD638 \uC624\uBC84\uB808\uC774)"), /* @__PURE__ */ React.createElement("select", { className: "select", value: buy, onChange: (e) => onBuy(e.target.value), disabled: isDemo, "aria-label": "\uB9AC\uD50C\uB808\uC774 \uB9E4\uC218 \uC870\uAC74\uC2DD \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC5C6\uC74C \u2014"), strategies.buy.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("select", { className: "select", value: sell, onChange: (e) => onSell(e.target.value), disabled: isDemo, "aria-label": "\uB9AC\uD50C\uB808\uC774 \uB9E4\uB3C4 \uC870\uAC74\uC2DD \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 \uC5C6\uC74C \u2014"), strategies.sell.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9 \uC120\uD0DD (\uCD5C\uB300 ", _SIM_MAX_CODES, " \xB7 \uB4F1\uB77D\uC21C)", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)", marginLeft: 8 } }, selected2.length, "/", _SIM_MAX_CODES, " \uC120\uD0DD")), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -30102,6 +30346,7 @@ def signal_sell(pos, bar, ind):
         value: cursor,
         disabled: !total,
         onChange: (e) => onSeek(parseInt(e.target.value, 10)),
+        "aria-label": "\uB9AC\uD50C\uB808\uC774 \uD504\uB808\uC784 \uC704\uCE58",
         style: { width: "100%", accentColor: "var(--teal)", cursor: total ? "pointer" : "default" }
       }
     ), /* @__PURE__ */ React.createElement("div", { className: "progress-track" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill " + (playing ? "running" : ""), style: { width: pct + "%" } }))));
@@ -30395,6 +30640,7 @@ def signal_sell(pos, bar, ind):
         className: "select",
         value: watchCode,
         onChange: (e) => setWatchCode(e.target.value),
+        "aria-label": "\uAD00\uCC30 \uC885\uBAA9 \uC120\uD0DD",
         style: { fontSize: 10.5, padding: "2px 6px", height: "auto" }
       },
       codes.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, nameByCode[c] || c))
@@ -31381,6 +31627,7 @@ def signal_sell(pos, bar, ind):
         disabled: isDemo,
         className: "mono",
         "data-tip": "\uBD84\uC11D\uD560 run \uC120\uD0DD(\uAE30\uBCF8 \uD604\uC7AC run)",
+        "aria-label": "\uBD84\uC11D\uD560 \uC5F0\uAD6C run \uC120\uD0DD",
         style: {
           fontSize: 11,
           background: "var(--bg-1)",
@@ -31873,58 +32120,79 @@ def signal_sell(pos, bar, ind):
   var {
     useState: useState_hv,
     useEffect: useEffect_hv,
-    useCallback: useCallback_hv
+    useCallback: useCallback_hv,
+    useRef: useRef_hv
   } = React;
   function _hvNum(value) {
-    if (value == null || Number.isNaN(Number(value))) return "\u2014";
-    return Number(value).toLocaleString();
+    return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString() : "\u2014";
   }
   function _hvMoney(value) {
-    if (value == null || Number.isNaN(Number(value))) return "\u2014";
-    const n = Number(value);
-    const sign = n > 0 ? "+" : "";
-    return sign + Math.round(n).toLocaleString();
+    if (typeof value !== "number" || !Number.isFinite(value)) return "\u2014";
+    const sign = value > 0 ? "+" : "";
+    return sign + Math.round(value).toLocaleString();
   }
   function _hvPct(value) {
-    if (value == null || Number.isNaN(Number(value))) return "\u2014";
-    return Number(value).toFixed(2) + "%";
+    return typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) + "%" : "\u2014";
   }
   function _hvNegColor(value) {
-    if (value == null || Number.isNaN(Number(value))) return "var(--ink-2)";
-    return Number(value) < 0 ? "var(--red)" : "var(--ink-0)";
+    if (typeof value !== "number" || !Number.isFinite(value)) return "var(--ink-2)";
+    return value < 0 ? "var(--red)" : "var(--ink-0)";
   }
   function _hvMetric(row, key) {
-    const m = row && row.metrics || {};
-    return m[key] != null ? m[key] : null;
+    const m = row && row.metrics;
+    return m && typeof m === "object" && !Array.isArray(m) && m[key] != null ? m[key] : null;
   }
   function _hvMetricAny(row, keys) {
-    const m = row && row.metrics || {};
+    const m = row && row.metrics;
+    if (!m || typeof m !== "object" || Array.isArray(m)) return null;
     for (const k of keys) {
       if (m[k] != null) return m[k];
     }
     return null;
   }
-  function _hvFetchJson(url, timeoutMs) {
-    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 3e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  function _hvFetchJson(url, timeoutMs, signal) {
+    const timeout2 = AbortSignal.timeout(timeoutMs || 3e4);
+    return fetch(url, { signal: signal ? AbortSignal.any([signal, timeout2]) : timeout2 }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
-  function _hvFetchAllPages(url, timeoutMs) {
+  function _hvFetchAllPages(url, timeoutMs, signal) {
     const MAX_PAGES = 50;
     const sep = url.includes("?") ? "&" : "?";
     const base = url + sep + "limit=100";
-    const step = (cursor, acc, page) => {
+    const numericMetrics = /* @__PURE__ */ new Set(["trade_count", "trades", "mdd", "profit", "net_profit", "win_rate", "total_profit_pct"]);
+    const validRows = (rows) => rows.every((row) => {
+      if (!row || typeof row !== "object" || Array.isArray(row) || row.gate_passed != null && typeof row.gate_passed !== "boolean" || row.holdout_passed != null && typeof row.holdout_passed !== "boolean") return false;
+      const metrics = row.metrics;
+      return metrics == null || typeof metrics === "object" && !Array.isArray(metrics) && Object.keys(metrics).every((key) => !numericMetrics.has(key) || metrics[key] == null || typeof metrics[key] === "number" && Number.isFinite(metrics[key]));
+    });
+    const step = (cursor, acc, page, seen) => {
       const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
-      return _hvFetchJson(pageUrl, timeoutMs).then((j) => {
-        const rows = Array.isArray(j && j.rows) ? j.rows : [];
-        const merged = acc.concat(rows);
-        const next = j && j.next_cursor ? j.next_cursor : null;
-        if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+      return _hvFetchJson(pageUrl, timeoutMs, signal).then((j) => {
+        const hasMore = j && j.has_more;
+        const hasValidMore = typeof hasMore === "boolean";
+        const hasValidCursor = j && (j.next_cursor == null || typeof j.next_cursor === "string");
+        if (!j || !Array.isArray(j.rows) || !validRows(j.rows) || j.truncated === true || !hasValidMore || !hasValidCursor || hasMore && (typeof j.next_cursor !== "string" || !j.next_cursor) || !hasMore && j.next_cursor != null) {
+          throw new Error("Malformed or incomplete history page");
+        }
+        const next = j.next_cursor;
+        if (next && (page >= MAX_PAGES || seen.has(next))) {
+          throw new Error("Truncated history page sequence");
+        }
+        const merged = acc.concat(j.rows);
+        if (hasMore) {
+          const nextSeen = new Set(seen);
+          nextSeen.add(next);
+          return step(next, merged, page + 1, nextSeen);
+        }
         return merged;
       });
     };
-    return step(null, [], 1);
+    return step(null, [], 1, /* @__PURE__ */ new Set());
   }
   function _hvGatePassed(row) {
     return row && typeof row.gate_passed === "boolean" ? row.gate_passed : null;
+  }
+  function _hvHoldoutEvidence(row) {
+    return row && typeof row.holdout_passed === "boolean" ? [`holdout_passed=${row.holdout_passed}`] : [];
   }
   function _hvGateBadge(row) {
     const passed = _hvGatePassed(row);
@@ -31961,45 +32229,89 @@ def signal_sell(pos, bar, ind):
     const [selectedPair, setSelectedPair] = useState_hv("");
     const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
     const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+    const sideRequestRef = useRef_hv({});
+    const pairsRequestRef = useRef_hv({ key: "", controller: null });
     const loadPairs = useCallback_hv(() => {
-      if (isDemo || !baseUrl || !series.trim()) return;
+      if (pairsRequestRef.current.controller) pairsRequestRef.current.controller.abort();
+      Object.values(sideRequestRef.current).forEach((request) => request.controller.abort());
+      sideRequestRef.current = {};
+      if (isDemo || !baseUrl || !series.trim()) {
+        pairsRequestRef.current = { key: "", controller: null };
+        setPairsAvailable(null);
+        setPairs([]);
+        setSelectedPair("");
+        setLegacyRows({ loading: false, err: "", rows: [] });
+        setTypedRows({ loading: false, err: "", rows: [] });
+        setPairsLoading(false);
+        setPairsErr("");
+        return;
+      }
+      const key = series.trim();
+      const controller = new AbortController();
+      pairsRequestRef.current = { key, controller };
       setPairsLoading(true);
       setPairsErr("");
-      _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), 8e3).then((j) => {
+      setPairsAvailable(null);
+      setPairs([]);
+      setSelectedPair("");
+      setLegacyRows({ loading: false, err: "", rows: [] });
+      setTypedRows({ loading: false, err: "", rows: [] });
+      _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(key), 8e3, controller.signal).then((j) => {
+        if (pairsRequestRef.current.key !== key || controller.signal.aborted) return;
         const items = Array.isArray(j && j.items) ? j.items : [];
         setPairsAvailable(!!(j && j.available));
         setPairs(items);
         setSelectedPair(items.length ? items[0].pair : "");
       }).catch((e) => {
+        if (pairsRequestRef.current.key !== key || controller.signal.aborted) return;
         setPairsErr(String(e));
         setPairsAvailable(false);
         setPairs([]);
         setSelectedPair("");
-      }).finally(() => setPairsLoading(false));
+      }).finally(() => {
+        if (pairsRequestRef.current.key === key && !controller.signal.aborted) setPairsLoading(false);
+      });
     }, [baseUrl, isDemo, series]);
     useEffect_hv(() => {
       loadPairs();
     }, []);
     const current = pairs.find((p) => p.pair === selectedPair) || null;
-    const loadSide = useCallback_hv((researchId, setter) => {
+    const loadSide = useCallback_hv((researchId, setter, lane) => {
+      const previous = sideRequestRef.current[lane];
+      if (previous) previous.controller.abort();
       if (isDemo || !baseUrl || !researchId) {
         setter({ loading: false, err: "", rows: [] });
         return;
       }
-      setter((prev) => ({ ...prev, loading: true, err: "" }));
+      const key = `${selectedPair}:${researchId}`;
+      const controller = new AbortController();
+      sideRequestRef.current[lane] = { key, controller };
+      setter({ loading: true, err: "", rows: [] });
       _hvFetchAllPages(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
-      ).then((rows) => setter({ loading: false, err: "", rows })).catch((e) => setter({ loading: false, err: String(e), rows: [] }));
-    }, [baseUrl, isDemo]);
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations",
+        3e4,
+        controller.signal
+      ).then((rows) => {
+        var _a;
+        if (((_a = sideRequestRef.current[lane]) == null ? void 0 : _a.key) === key && !controller.signal.aborted) {
+          setter({ loading: false, err: "", rows });
+        }
+      }).catch((e) => {
+        var _a;
+        if (((_a = sideRequestRef.current[lane]) == null ? void 0 : _a.key) === key && !controller.signal.aborted) {
+          setter({ loading: false, err: String(e), rows: [] });
+        }
+      });
+    }, [baseUrl, isDemo, selectedPair]);
     useEffect_hv(() => {
       if (!current) {
         setLegacyRows({ loading: false, err: "", rows: [] });
         setTypedRows({ loading: false, err: "", rows: [] });
         return;
       }
-      loadSide(current.legacy_research_id, setLegacyRows);
-      loadSide(current.typed_research_id, setTypedRows);
-    }, [current && current.pair]);
+      loadSide(current.legacy_research_id, setLegacyRows, "legacy");
+      loadSide(current.typed_research_id, setTypedRows, "typed");
+    }, [current, loadSide]);
     const renderSide = (title, gatePassedFlag, side) => /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px", minWidth: 260 } }, /* @__PURE__ */ React.createElement("div", { className: "stat-label", style: { marginBottom: 6 } }, title, typeof gatePassedFlag === "boolean" && /* @__PURE__ */ React.createElement("span", { className: "badge " + (gatePassedFlag ? "ok" : "err"), style: { marginLeft: 6 } }, "gate ", gatePassedFlag ? "pass" : "reject")), side.err && /* @__PURE__ */ React.createElement(_HvError, { err: side.err }), !side.err && side.rows.length === 0 && !side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), side.loading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC870\uD68C\uC911\u2026"), side.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "#"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px 8px" } }, "gate"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uAC70\uB798\uC218"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "6px 8px" } }, "\uC190\uC775"))), /* @__PURE__ */ React.createElement("tbody", null, side.rows.map((row, idx) => /* @__PURE__ */ React.createElement("tr", { key: row.evaluation_id || idx, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, idx + 1), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px" } }, _hvGateBadge(row)), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvNum(_hvMetricAny(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right" } }, _hvPct(_hvMetric(row, "mdd"))), /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", textAlign: "right", color: _hvNegColor(_hvMetric(row, "profit")) } }, _hvMoney(_hvMetric(row, "profit")))))))));
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "A/B \uC30D\uB300\uBE44\uAD50 (legacy \xB7 typed)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: isDemo || pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC A/B \uC30D\uB300\uBE44\uAD50\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "input",
@@ -32034,6 +32346,7 @@ def signal_sell(pos, bar, ind):
     const [rowsLoading, setRowsLoading] = useState_hv(false);
     const [rowsErr, setRowsErr] = useState_hv("");
     const [metricMode, setMetricMode] = useState_hv("profit");
+    const rowsRequestRef = useRef_hv({ key: "", controller: null });
     const loadCampaigns = useCallback_hv(() => {
       if (isDemo || !baseUrl) return;
       setCampaignsLoading(true);
@@ -32041,10 +32354,15 @@ def signal_sell(pos, bar, ind):
       _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
-        setSelected((prev) => preferredResearchId && preferredResearchId.startsWith("campaign:") && items.some((item) => item.research_id === preferredResearchId) ? preferredResearchId : prev || (items.length ? items[0].research_id : ""));
+        setSelected((prev) => {
+          if (preferredResearchId && preferredResearchId.startsWith("campaign:") && items.some((item) => item.research_id === preferredResearchId)) return preferredResearchId;
+          if (prev && items.some((item) => item.research_id === prev)) return prev;
+          return items.length ? items[0].research_id : "";
+        });
       }).catch((e) => {
         setCampaignsErr(String(e));
         setCampaigns([]);
+        setSelected("");
       }).finally(() => setCampaignsLoading(false));
     }, [baseUrl, isDemo, preferredResearchId]);
     useEffect_hv(() => {
@@ -32056,31 +32374,49 @@ def signal_sell(pos, bar, ind):
       }
     }, [preferredResearchId, campaigns]);
     const loadRows = useCallback_hv(() => {
+      if (rowsRequestRef.current.controller) rowsRequestRef.current.controller.abort();
       if (isDemo || !baseUrl || !selected2) {
+        rowsRequestRef.current = { key: "", controller: null };
         setRows([]);
+        setRowsErr("");
+        setRowsLoading(false);
         return;
       }
+      const key = selected2;
+      const controller = new AbortController();
+      rowsRequestRef.current = { key, controller };
       setRowsLoading(true);
+      setRows([]);
       setRowsErr("");
       _hvFetchAllPages(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
-      ).then((rows2) => setRows(rows2)).catch((e) => {
-        setRowsErr(String(e));
-        setRows([]);
-      }).finally(() => setRowsLoading(false));
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations",
+        3e4,
+        controller.signal
+      ).then((nextRows) => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRows(nextRows);
+      }).catch((e) => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) {
+          setRowsErr(String(e));
+          setRows([]);
+        }
+      }).finally(() => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRowsLoading(false);
+      });
     }, [baseUrl, isDemo, selected2]);
     useEffect_hv(() => {
       loadRows();
-    }, [selected2]);
-    const hasProfit = rows.some((r) => _hvMetricAny(r, ["net_profit", "profit"]) != null);
-    const hasPct = rows.some((r) => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
+    }, [loadRows]);
+    const rowsMatchSelection = rowsRequestRef.current.key === selected2;
+    const selectedRows = rowsMatchSelection ? rows : [];
+    const hasProfit = selectedRows.some((r) => _hvMetricAny(r, ["net_profit", "profit"]) != null);
+    const hasPct = selectedRows.some((r) => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
     const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
-    const pctIsWinRate = rows.some((r) => (r && r.metrics || {}).win_rate != null);
+    const pctIsWinRate = selectedRows.some((r) => (r && r.metrics || {}).win_rate != null);
     const grid = (() => {
       const timeLabels = [];
       const capLabels = [];
       const cellMap = {};
-      for (const row of rows) {
+      for (const row of selectedRows) {
         const axis = _hvSplitAxisLabel(row.label);
         if (!axis) continue;
         const [t, c] = axis;
@@ -32091,40 +32427,55 @@ def signal_sell(pos, bar, ind):
         const cell = cellMap[key];
         cell.count += 1;
         const profit = _hvMetricAny(row, ["net_profit", "profit"]);
-        if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
+        if (typeof profit === "number" && Number.isFinite(profit)) cell.profitSum += profit;
         const pct = _hvMetricAny(row, ["win_rate", "total_profit_pct"]);
-        if (pct != null && !Number.isNaN(Number(pct))) {
-          cell.pctSum += Number(pct);
+        if (typeof pct === "number" && Number.isFinite(pct)) {
+          cell.pctSum += pct;
           cell.pctN += 1;
         }
       }
       if (!capLabels.length || !timeLabels.length) return null;
       return { timeLabels, capLabels, cellMap };
     })();
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("campaign:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 campaign \uD788\uD2B8\uB9F5\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD campaign \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
-      "select",
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        className: "mono",
-        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
-        value: selected2,
-        onChange: (e) => setSelected(e.target.value),
-        disabled: campaignsLoading || campaigns.length === 0
+        title: "12\uC140 \uD788\uD2B8\uB9F5",
+        unit: effectiveMode === "profit" ? "\uC190\uC775 \u20A9" : pctIsWinRate ? "\uC2B9\uB960 %" : "\uC218\uC775\uB960 %",
+        period: "\uC120\uD0DD campaign \uD3C9\uAC00",
+        sampleCount: selectedRows.length,
+        freshness: "\uC870\uD68C \uC2DC\uAC01 \uBBF8\uBC1C\uD589",
+        threshold: "\uC190\uC775\uBD84\uAE30 0",
+        source: "/history/detail?section=evaluations",
+        rows: selectedRows.map((row) => ({ label: row.label, net_profit: _hvMetricAny(row, ["net_profit", "profit"]), percent: _hvMetricAny(row, ["win_rate", "total_profit_pct"]) })),
+        status: rowsMatchSelection && rowsErr ? "malformed" : rowsMatchSelection && rowsLoading ? "stale" : selectedRows.length ? "ready" : "empty"
       },
-      campaigns.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uCEA0\uD398\uC778 \uC5C6\uC74C"),
-      campaigns.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.research_id, value: c.research_id }, c.label || c.research_id))
-    ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
-      const cell = grid.cellMap[t + "\xD7" + c];
-      const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
-      return /* @__PURE__ */ React.createElement(
-        "td",
+      isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."),
+      !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("campaign:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 campaign \uD788\uD2B8\uB9F5\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD campaign \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+        "select",
         {
-          key: c,
-          style: { padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) },
-          title: cell ? `${t} \xD7 ${c} \xB7 ${cell.count}\uAC74` : `${t} \xD7 ${c} \xB7 \uB370\uC774\uD130 \uC5C6\uC74C`
+          className: "mono",
+          style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
+          value: selected2,
+          onChange: (e) => setSelected(e.target.value),
+          disabled: campaignsLoading || campaigns.length === 0
         },
-        value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(pctIsWinRate ? value * 100 : value) : _hvMoney(value)
-      );
-    })))))))));
+        campaigns.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uCEA0\uD398\uC778 \uC5C6\uC74C"),
+        campaigns.map((c) => /* @__PURE__ */ React.createElement("option", { key: c.research_id, value: c.research_id }, c.label || c.research_id))
+      ), hasProfit && hasPct && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setMetricMode((m) => m === "profit" ? "total_profit_pct" : "profit") }, "\uAC12: ", effectiveMode === "profit" ? "\uC190\uC775" : pctIsWinRate ? "\uC2B9\uB960" : "\uC218\uC775\uB960%")), /* @__PURE__ */ React.createElement(_HvError, { err: campaignsErr, onRetry: loadCampaigns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !campaignsErr && campaigns.length === 0 && !campaignsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && campaigns.length > 0 && !grid && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uCEA0\uD398\uC778 companion \uBC1C\uD589 \uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4"), grid && /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { padding: "6px 8px", textAlign: "left", color: "var(--ink-3)" } }, "\uC2DC\uAC04\uCC3D \\ \uC2DC\uCD1D"), grid.capLabels.map((c) => /* @__PURE__ */ React.createElement("th", { key: c, style: { padding: "6px 8px", textAlign: "center", color: "var(--ink-3)" }, title: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, grid.timeLabels.map((t) => /* @__PURE__ */ React.createElement("tr", { key: t, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px 8px", color: "var(--ink-2)" }, title: t }, t), grid.capLabels.map((c) => {
+        const cell = grid.cellMap[t + "\xD7" + c];
+        const value = !cell ? null : effectiveMode === "total_profit_pct" ? cell.pctN ? cell.pctSum / cell.pctN : null : cell.profitSum;
+        return /* @__PURE__ */ React.createElement(
+          "td",
+          {
+            key: c,
+            style: { padding: "6px 10px", textAlign: "center", color: _hvNegColor(value) },
+            title: cell ? `${t} \xD7 ${c} \xB7 ${cell.count}\uAC74` : `${t} \xD7 ${c} \xB7 \uB370\uC774\uD130 \uC5C6\uC74C`
+          },
+          value == null ? "\u2014" : effectiveMode === "total_profit_pct" ? _hvPct(pctIsWinRate ? value * 100 : value) : _hvMoney(value)
+        );
+      })))))))
+    )));
   }
   function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
@@ -32135,6 +32486,7 @@ def signal_sell(pos, bar, ind):
     const [rows, setRows] = useState_hv([]);
     const [rowsLoading, setRowsLoading] = useState_hv(false);
     const [rowsErr, setRowsErr] = useState_hv("");
+    const rowsRequestRef = useRef_hv({ key: "", controller: null });
     const loadRuns = useCallback_hv(() => {
       if (isDemo || !baseUrl) return;
       setRunsLoading(true);
@@ -32142,10 +32494,15 @@ def signal_sell(pos, bar, ind):
       _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);
-        setSelected((prev) => preferredResearchId && preferredResearchId.startsWith("loop_run:") && items.some((item) => item.research_id === preferredResearchId) ? preferredResearchId : prev || (items.length ? items[0].research_id : ""));
+        setSelected((prev) => {
+          if (preferredResearchId && preferredResearchId.startsWith("loop_run:") && items.some((item) => item.research_id === preferredResearchId)) return preferredResearchId;
+          if (prev && items.some((item) => item.research_id === prev)) return prev;
+          return items.length ? items[0].research_id : "";
+        });
       }).catch((e) => {
         setRunsErr(String(e));
         setRuns([]);
+        setSelected("");
       }).finally(() => setRunsLoading(false));
     }, [baseUrl, isDemo, preferredResearchId]);
     useEffect_hv(() => {
@@ -32157,36 +32514,52 @@ def signal_sell(pos, bar, ind):
       }
     }, [preferredResearchId, runs]);
     const loadRows = useCallback_hv(() => {
+      if (rowsRequestRef.current.controller) rowsRequestRef.current.controller.abort();
       if (isDemo || !baseUrl || !selected2) {
+        rowsRequestRef.current = { key: "", controller: null };
         setRows([]);
+        setRowsErr("");
+        setRowsLoading(false);
         return;
       }
+      const key = selected2;
+      const controller = new AbortController();
+      rowsRequestRef.current = { key, controller };
       setRowsLoading(true);
+      setRows([]);
       setRowsErr("");
       _hvFetchAllPages(
-        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations"
-      ).then((rows2) => setRows(rows2)).catch((e) => {
-        setRowsErr(String(e));
-        setRows([]);
-      }).finally(() => setRowsLoading(false));
+        baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected2) + "&section=evaluations",
+        3e4,
+        controller.signal
+      ).then((nextRows) => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRows(nextRows);
+      }).catch((e) => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) {
+          setRowsErr(String(e));
+          setRows([]);
+        }
+      }).finally(() => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRowsLoading(false);
+      });
     }, [baseUrl, isDemo, selected2]);
     useEffect_hv(() => {
       loadRows();
-    }, [selected2]);
-    const evaluatedCount = rows.length;
-    const gateSignalSeen = rows.some((r) => r && typeof r.gate_passed === "boolean");
-    const gatePassedCount = rows.filter((r) => r && r.gate_passed === true).length;
+    }, [loadRows]);
+    const rowsMatchSelection = rowsRequestRef.current.key === selected2;
+    const selectedRows = rowsMatchSelection ? rows : [];
+    const evaluatedCount = selectedRows.length;
+    const gateSignalSeen = selectedRows.some((r) => r && typeof r.gate_passed === "boolean");
+    const gatePassedCount = selectedRows.filter((r) => r && r.gate_passed === true).length;
     let holdoutTotal = 0;
     let holdoutPassed = 0;
     let holdoutSignalSeen = false;
-    for (const row of rows) {
-      const metrics = row && row.metrics || {};
-      const metricKeys = Object.keys(metrics).filter((k) => k.toLowerCase().includes("holdout"));
-      if (metricKeys.length === 0) continue;
+    for (const row of selectedRows) {
+      const evidence = _hvHoldoutEvidence(row);
+      if (evidence.length === 0) continue;
       holdoutSignalSeen = true;
       holdoutTotal += 1;
-      const truthy = metricKeys.some((k) => !!metrics[k]);
-      if (truthy) holdoutPassed += 1;
+      if (row.holdout_passed === true && evidence.includes("holdout_passed=true")) holdoutPassed += 1;
     }
     const maxCount = Math.max(evaluatedCount, 1);
     const barStyle = (count) => ({
@@ -32201,18 +32574,33 @@ def signal_sell(pos, bar, ind):
       fontWeight: 600,
       fontSize: 11
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("loop_run:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 loop_run \uD37C\uB110\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD run \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
-      "select",
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, /* @__PURE__ */ React.createElement(
+      ChartFrame,
       {
-        className: "mono",
-        style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
-        value: selected2,
-        onChange: (e) => setSelected(e.target.value),
-        disabled: runsLoading || runs.length === 0
+        title: "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110",
+        unit: "\uD3C9\uAC00 \uAC74\uC218",
+        period: "\uC120\uD0DD loop run \uD3C9\uAC00",
+        sampleCount: evaluatedCount,
+        freshness: "\uC870\uD68C \uC2DC\uAC01 \uBBF8\uBC1C\uD589",
+        threshold: "gate_passed / holdout \uC6D0\uBCF8 \uC2E0\uD638",
+        source: "/history/detail?section=evaluations",
+        rows: selectedRows.map((row) => ({ evaluation_id: row.evaluation_id, gate_passed: _hvGatePassed(row), holdout_evidence: _hvHoldoutEvidence(row).join(", ") || "\u2014" })),
+        status: rowsMatchSelection && rowsErr ? "malformed" : rowsMatchSelection && rowsLoading ? "stale" : evaluatedCount ? "ready" : "empty"
       },
-      runs.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "run \uC5C6\uC74C"),
-      runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.research_id, value: r.research_id }, r.label || r.research_id))
-    )), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uC2E0\uD638 \uBBF8\uBC1C\uD589(\uD5A5\uD6C4 \uC81C\uACF5)"))))));
+      isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."),
+      !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("loop_run:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 loop_run \uD37C\uB110\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD run \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          className: "mono",
+          style: { padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)", minWidth: 220 },
+          value: selected2,
+          onChange: (e) => setSelected(e.target.value),
+          disabled: runsLoading || runs.length === 0
+        },
+        runs.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "run \uC5C6\uC74C"),
+        runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.research_id, value: r.research_id }, r.label || r.research_id))
+      )), /* @__PURE__ */ React.createElement(_HvError, { err: runsErr, onRetry: loadRuns }), /* @__PURE__ */ React.createElement(_HvError, { err: rowsErr, onRetry: loadRows }), !runsErr && runs.length === 0 && !runsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "run\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4"), !rowsErr && runs.length > 0 && evaluatedCount === 0 && !rowsLoading && /* @__PURE__ */ React.createElement(_HvEmpty, null, "evaluation \uB370\uC774\uD130 \uC5C6\uC74C"), evaluatedCount > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD3C9\uAC00\uC218"), /* @__PURE__ */ React.createElement("div", { style: barStyle(evaluatedCount) }, _hvNum(evaluatedCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "gate \uD1B5\uACFC\uC218"), gateSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(gatePassedCount) }, _hvNum(gatePassedCount)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD640\uB4DC\uC544\uC6C3"), holdoutSignalSeen ? /* @__PURE__ */ React.createElement("div", { style: barStyle(holdoutPassed) }, _hvNum(holdoutPassed), " / ", _hvNum(holdoutTotal)) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uD640\uB4DC\uC544\uC6C3 \uC2E0\uD638 \uBBF8\uBC1C\uD589(\uD5A5\uD6C4 \uC81C\uACF5)"))))
+    )));
   }
   Object.assign(window, { AbPairCompareView, CellHeatmap, HoldoutFunnel });
 
@@ -34675,13 +35063,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         className: "v4-runsel" + (selectedRun ? " is-archive" : ""),
         title: "\uBCFC \uC5F0\uAD6C run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC \uC9C4\uD589) \uB610\uB294 \uACFC\uAC70 \uC2E4 run \uC544\uCE74\uC774\uBE0C"
       },
-      /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "\uC5F0\uAD6C RUN"),
+      /* @__PURE__ */ React.createElement("span", { id: "v4-runsel-label", className: "mono v4-runsel-lbl" }, "\uC5F0\uAD6C RUN"),
       /* @__PURE__ */ React.createElement(
         "select",
         {
           className: "mono v4-runsel-select",
           value: selectedRun,
           disabled: isDemo,
+          "aria-labelledby": "v4-runsel-label",
           onChange: (e) => onSelectRun(e.target.value)
         },
         /* @__PURE__ */ React.createElement("option", { value: "" }, "\u25CF LIVE (\uD604\uC7AC \uC9C4\uD589)"),
@@ -34865,7 +35254,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function V4HeroChart({ state, target }) {
     const ref = useRef_v4c(null);
-    const gens = Array.isArray(state && state.generations) ? state.generations : [];
+    const rawGens = state && state.generations;
+    const malformed = rawGens != null && !Array.isArray(rawGens);
+    const gens = Array.isArray(rawGens) ? rawGens : [];
     const series = gens.filter((g) => g && g.graded_score != null && isFinite(Number(g.graded_score))).map((g) => ({ x: "g" + g.gen_no, v: Number(g.graded_score) }));
     let bestIdx = null, bestV = -Infinity;
     for (let i = 0; i < series.length; i++) if (series[i].v > bestV) {
@@ -34873,6 +35264,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       bestIdx = i;
     }
     const key = series.map((s) => s.v.toFixed(4)).join(",") + "|" + (target != null ? target : "");
+    const status = malformed || gens.length > 0 && !series.length ? "malformed" : !series.length ? "empty" : state && state.is_stale ? "stale" : "ready";
+    const freshness = state && (state.updated_at || state.last_updated || state.received_at) || "\uC218\uC2E0 \uC2DC\uAC01 \uBBF8\uBC1C\uD589";
     useEffect_v4c(() => {
       const draw = () => _v4DrawHero(ref.current, series, { target, bestIdx });
       draw();
@@ -34890,7 +35283,21 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         if (mo) mo.disconnect();
       };
     }, [key]);
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-wrap v4-hero-canvas", role: "img", "aria-label": "\uC801\uD569\uB3C4 \uACE1\uC120(\uC138\uB300\uBCC4 graded score)" }, /* @__PURE__ */ React.createElement("canvas", { ref }));
+    return /* @__PURE__ */ React.createElement(
+      ChartFrame,
+      {
+        title: "Research Live \uC801\uD569\uB3C4",
+        unit: "graded_score",
+        period: "\uC138\uB300\uBCC4",
+        sampleCount: series.length,
+        freshness,
+        threshold: target != null ? `gate ${Number(target).toFixed(2)}` : "gate \uBBF8\uBC1C\uD589",
+        source: "state.generations",
+        rows: gens.filter((g) => g && g.graded_score != null && isFinite(Number(g.graded_score))).map((g) => ({ generation: g.gen_no, graded_score: Number(g.graded_score) })),
+        status
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-wrap v4-hero-canvas", role: "img", "aria-label": "\uC801\uD569\uB3C4 \uACE1\uC120(\uC138\uB300\uBCC4 graded score)" }, /* @__PURE__ */ React.createElement("canvas", { ref }))
+    );
   }
   Object.assign(window, { V4HeroChart });
 
@@ -35036,7 +35443,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
     const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30";
     const errorText = s.error || latest.error || "";
-    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "LIVE RESEARCH BOARD"), /* @__PURE__ */ React.createElement(_V6PipelineBelt, { liveStage, activeStage, onStagePin }), /* @__PURE__ */ React.createElement("div", { className: "v55-board-chips", "aria-label": "\uD504\uB85C\uC138\uC2A4\xB7\uAD8C\uD55C\xB7\uB2E4\uC74C \uD589\uB3D9\xB7\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("span", { className: "v55-chip" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("span", { className: "v55-chip grow", title: "\uB2E4\uC74C \uD589\uB3D9" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg)), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v55-board-main v56-unified" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-curgen" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s, hideCurrent: true }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), hasData && /* @__PURE__ */ React.createElement(_V6GraphBand, { state: s, baseUrl, wsStatus, runId, targetScore }), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
+    return /* @__PURE__ */ React.createElement("section", { className: "v6-board", "aria-labelledby": "v6-board-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v6-board-heading", className: "panel-hd-title" }, "LIVE RESEARCH BOARD"), /* @__PURE__ */ React.createElement(_V6PipelineBelt, { liveStage, activeStage, onStagePin }), /* @__PURE__ */ React.createElement("div", { className: "v55-board-chips", "aria-label": "\uD504\uB85C\uC138\uC2A4\xB7\uAD8C\uD55C\xB7\uB2E4\uC74C \uD589\uB3D9\xB7\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("span", { className: "v55-chip" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("span", { className: "v55-chip grow", title: "\uB2E4\uC74C \uD589\uB3D9" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg)), /* @__PURE__ */ React.createElement(_V4EngineGateBar, { state: s, targetScore, mddCap, minDailyTrades })), /* @__PURE__ */ React.createElement("div", { className: "v55-board-main v56-unified" }, /* @__PURE__ */ React.createElement("div", { className: "v6-board-curgen" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s })), /* @__PURE__ */ React.createElement("div", { className: "v6-board-kpi" }, /* @__PURE__ */ React.createElement(_V4Stats, { state: s, hideCurrent: true }))), /* @__PURE__ */ React.createElement("div", { className: "v6-board-strip" }, /* @__PURE__ */ React.createElement("div", { className: "v6-timing", "aria-label": "\uB2E8\uACC4\uBCC4 \uC2E4\uC81C \uC2DC\uAC04", tabIndex: "0" }, timings.length ? timings.map(([step, sec]) => /* @__PURE__ */ React.createElement("div", { key: step, className: "v6-timing-item", title: `${step} ${sec.toFixed(1)}\uCD08` }, /* @__PURE__ */ React.createElement("span", { className: "k mono" }, step), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement("i", { style: { width: Math.max(4, Math.round(sec / maxT * 100)) + "%" } })), /* @__PURE__ */ React.createElement("span", { className: "v mono" }, sec.toFixed(1), "s"))) : /* @__PURE__ */ React.createElement("span", { className: "mono v6-dim" }, "\uC644\uB8CC \uB2E8\uACC4 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "v6-blockers", "aria-label": "\uCC28\uB2E8 \uC0AC\uC720", tabIndex: "0" }, blockers.length ? blockers.map((b) => /* @__PURE__ */ React.createElement("span", { key: String(b), className: "v4-chip warn", title: "promotion blocker" }, String(b))) : /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok" }, "\uBC1C\uD589\uB41C \uCC28\uB2E8 \uC0AC\uC720 \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("details", { className: "v6-log" }, /* @__PURE__ */ React.createElement("summary", { className: "mono", title: "\uCD5C\uC2E0 \uB85C\uADF8 \xB7 \uD074\uB9AD\uD558\uBA74 \uCD5C\uADFC \uB85C\uADF8 \uD3BC\uCE68" }, String(lastLog)), /* @__PURE__ */ React.createElement("div", { className: "v6-log-list mono" }, logs.slice(-8).map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i }, String(l)))))), hasData && /* @__PURE__ */ React.createElement(_V6GraphBand, { state: s, baseUrl, wsStatus, runId, targetScore }), errorText && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ", String(errorText)));
   }
   function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, onOpenSettings, targetScore, mddCap, minDailyTrades }) {
     var _a;
@@ -35147,7 +35554,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         hasData
       }
     ), !hasData && (s.status === "idle" || !s.status) && /* @__PURE__ */ React.createElement(_V4Onboarding, { onOpenSettings: typeof onOpenSettings === "function" ? onOpenSettings : () => {
-    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), /* @__PURE__ */ React.createElement("div", { className: "v6-stage-tabs", role: "tablist", "aria-label": "\uC5F0\uAD6C \uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4", onKeyDown: onStageKey }, V6_STAGES.map((st, i) => /* @__PURE__ */ React.createElement(
+    } }), !hasData && s.status && s.status !== "idle" && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip v4-state-panel " + (s.status === "error" || s.status === "failed" ? "danger" : "pending"), role: s.status === "error" || s.status === "failed" ? "alert" : "status" }, s.status === "error" || s.status === "failed" ? `\uC5F0\uAD6C \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(s.error || s.latest && s.latest.error || "\uC11C\uBC84 \uB85C\uADF8\uB97C \uD655\uC778\uD558\uC138\uC694")}` : `\uC5F0\uAD6C ${s.status === "blocked" ? "\uCC28\uB2E8" : "\uC9C4\uD589"} \xB7 \uD604\uC7AC \uB2E8\uACC4 ${(_a = s.latest && s.latest.current_step) != null ? _a : "\uBC1C\uD589 \uB300\uAE30"} \xB7 \uC138\uB300 \uB370\uC774\uD130 \uB300\uAE30`), /* @__PURE__ */ React.createElement("div", { className: "v6-stage-tabs", role: "group", "aria-label": "\uC5F0\uAD6C \uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4\uC640 \uBC30\uCE58" }, /* @__PURE__ */ React.createElement("span", { className: "v6-stage-tablist", role: "tablist", "aria-label": "\uC5F0\uAD6C \uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4", onKeyDown: onStageKey }, V6_STAGES.map((st, i) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: st.key,
@@ -35164,7 +35571,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement("b", null, i + 1, ". ", st.label),
       /* @__PURE__ */ React.createElement("span", null, st.sub),
       liveStage === i && /* @__PURE__ */ React.createElement("i", { className: "v6-live-dot", "aria-label": "\uC9C4\uD589 \uC911" })
-    )), stagePin != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setStagePin(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30"), /* @__PURE__ */ React.createElement("span", { className: "v6-cols-pick", role: "group", "aria-label": "\uC2A4\uD14C\uC774\uC9C0 \uBC30\uCE58 \uC5F4 \uC218 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("span", { className: "lbl" }, "\uBC30\uCE58"), ["2", "3", "4"].map((c) => /* @__PURE__ */ React.createElement(
+    ))), stagePin != null && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v5-pin-reset", onClick: () => setStagePin(null) }, "\uB2E8\uACC4 \uACE0\uC815 \uD574\uC81C \xB7 \uB77C\uC774\uBE0C \uB530\uB77C\uAC00\uAE30"), /* @__PURE__ */ React.createElement("span", { className: "v6-cols-pick", role: "group", "aria-label": "\uC2A4\uD14C\uC774\uC9C0 \uBC30\uCE58 \uC5F4 \uC218 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("span", { className: "lbl" }, "\uBC30\uCE58"), ["2", "3", "4"].map((c) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: c,
@@ -36029,7 +36436,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         }
       },
       "\uACF5\uC7A5\uAC12\uC73C\uB85C \uCD08\uAE30\uD654"
-    ), cleared > 0 && /* @__PURE__ */ React.createElement("span", { className: "mono v4s-ok" }, cleared, "\uAC1C \uCD08\uAE30\uD654\uB428 \u2014 \uC0C8\uB85C\uACE0\uCE68 \uC2DC \uC801\uC6A9")), /* @__PURE__ */ React.createElement("div", { className: "v4s-keys mono" }, stomKeys.join(" \xB7 ") || "(\uC5C6\uC74C)"))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC815\uBCF4 (\uC77D\uAE30 \uC804\uC6A9)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uB300\uC2DC\uBCF4\uB4DC \uBC84\uC804", hint: "STOM \uBCF8\uCCB4 \uBC84\uC804\uACFC \uBD84\uB9AC \uAD00\uB9AC \u2014 \uD0DC\uADF8 V2UC-Dashboard-v*" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, dashVersion || "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uBC88\uB4E4 \uBE4C\uB4DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, manifest && manifest.appJs ? String(manifest.appJs).slice(0, 12) : manifest && manifest.v ? manifest.v : "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "CSS \uD540" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, cssPin)), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uC11C\uBC84 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, health ? (health.status || "ok") + (health.version ? " \xB7 " + health.version : "") : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, '\uC5F0\uAD6C \uC2DC\uC791\xB7\uAC8C\uC774\uD2B8\xB7export \uC124\uC815\uC740 \uC5EC\uAE30\uC11C \uB2E4\uB8E8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 Live \uD0ED "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"(\uC5F0\uAD6C \uC124\uC815)\uACFC human \uC2B9\uC778 \uACC4\uC57D\uC740 \uBD88\uBCC0.'))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB85C\uADF8 \xB7 \uBC31\uC5D4\uB4DC/\uD504\uB860\uD2B8\uC5D4\uB4DC (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setLogTick((t) => t + 1) }, "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4s-logs" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uBC31\uC5D4\uB4DC (\uC11C\uBC84 \uCD5C\uADFC ", beLogs.length, "\uAC74)"), /* @__PURE__ */ React.createElement("div", { className: "v4s-logbox mono" }, beLogs.length ? beLogs.slice().reverse().map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "v4s-logline lv-" + String(l.level || "").toLowerCase() }, /* @__PURE__ */ React.createElement("span", { className: "t" }, new Date((l.ts || 0) * 1e3).toTimeString().slice(0, 8)), /* @__PURE__ */ React.createElement("span", { className: "lv" }, l.level), /* @__PURE__ */ React.createElement("span", { className: "m" }, l.msg))) : /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, "\uB85C\uADF8 \uC5C6\uC74C(\uC11C\uBC84 \uC7AC\uAE30\uB3D9 \uD6C4 \uC218\uC9D1)"))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uD504\uB860\uD2B8\uC5D4\uB4DC (\uC624\uB958/\uCF58\uC194 \uCD5C\uADFC ", feLogs.length, "\uAC74)"), /* @__PURE__ */ React.createElement("div", { className: "v4s-logbox mono" }, feLogs.length ? feLogs.slice().reverse().map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "v4s-logline lv-error" }, /* @__PURE__ */ React.createElement("span", { className: "t" }, new Date((l.ts || 0) * 1e3).toTimeString().slice(0, 8)), /* @__PURE__ */ React.createElement("span", { className: "lv" }, l.level), /* @__PURE__ */ React.createElement("span", { className: "m" }, l.msg))) : /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, "\uAE30\uB85D\uB41C \uD504\uB860\uD2B8 \uC624\uB958 \uC5C6\uC74C"))))));
+    ), cleared > 0 && /* @__PURE__ */ React.createElement("span", { className: "mono v4s-ok" }, cleared, "\uAC1C \uCD08\uAE30\uD654\uB428 \u2014 \uC0C8\uB85C\uACE0\uCE68 \uC2DC \uC801\uC6A9")), /* @__PURE__ */ React.createElement("div", { className: "v4s-keys mono" }, stomKeys.join(" \xB7 ") || "(\uC5C6\uC74C)"))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC815\uBCF4 (\uC77D\uAE30 \uC804\uC6A9)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uB300\uC2DC\uBCF4\uB4DC \uBC84\uC804", hint: "STOM \uBCF8\uCCB4 \uBC84\uC804\uACFC \uBD84\uB9AC \uAD00\uB9AC \u2014 \uD0DC\uADF8 V2UC-Dashboard-v*" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, dashVersion || "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uBC88\uB4E4 \uBE4C\uB4DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, manifest && manifest.appJs ? String(manifest.appJs).slice(0, 12) : manifest && manifest.v ? manifest.v : "\u2014")), /* @__PURE__ */ React.createElement(_V4sRow, { label: "CSS \uD540" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, cssPin)), /* @__PURE__ */ React.createElement(_V4sRow, { label: "\uC11C\uBC84 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, health ? (health.status || "ok") + (health.version ? " \xB7 " + health.version : "") : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, '\uC5F0\uAD6C \uC2DC\uC791\xB7\uAC8C\uC774\uD2B8\xB7export \uC124\uC815\uC740 \uC5EC\uAE30\uC11C \uB2E4\uB8E8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \u2014 Live \uD0ED "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"(\uC5F0\uAD6C \uC124\uC815)\uACFC human \uC2B9\uC778 \uACC4\uC57D\uC740 \uBD88\uBCC0.'))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB85C\uADF8 \xB7 \uBC31\uC5D4\uB4DC/\uD504\uB860\uD2B8\uC5D4\uB4DC (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setLogTick((t) => t + 1) }, "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4s-logs" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uBC31\uC5D4\uB4DC (\uC11C\uBC84 \uCD5C\uADFC ", beLogs.length, "\uAC74)"), /* @__PURE__ */ React.createElement("div", { className: "v4s-logbox mono", tabIndex: "0", "aria-label": "\uBC31\uC5D4\uB4DC \uCD5C\uADFC \uB85C\uADF8" }, beLogs.length ? beLogs.slice().reverse().map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "v4s-logline lv-" + String(l.level || "").toLowerCase() }, /* @__PURE__ */ React.createElement("span", { className: "t" }, new Date((l.ts || 0) * 1e3).toTimeString().slice(0, 8)), /* @__PURE__ */ React.createElement("span", { className: "lv" }, l.level), /* @__PURE__ */ React.createElement("span", { className: "m" }, l.msg))) : /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, "\uB85C\uADF8 \uC5C6\uC74C(\uC11C\uBC84 \uC7AC\uAE30\uB3D9 \uD6C4 \uC218\uC9D1)"))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", { className: "stom-section-label" }, "\uD504\uB860\uD2B8\uC5D4\uB4DC (\uC624\uB958/\uCF58\uC194 \uCD5C\uADFC ", feLogs.length, "\uAC74)"), /* @__PURE__ */ React.createElement("div", { className: "v4s-logbox mono", tabIndex: "0", "aria-label": "\uD504\uB860\uD2B8\uC5D4\uB4DC \uCD5C\uADFC \uC624\uB958 \uB85C\uADF8" }, feLogs.length ? feLogs.slice().reverse().map((l, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "v4s-logline lv-error" }, /* @__PURE__ */ React.createElement("span", { className: "t" }, new Date((l.ts || 0) * 1e3).toTimeString().slice(0, 8)), /* @__PURE__ */ React.createElement("span", { className: "lv" }, l.level), /* @__PURE__ */ React.createElement("span", { className: "m" }, l.msg))) : /* @__PURE__ */ React.createElement("div", { className: "v4s-note" }, "\uAE30\uB85D\uB41C \uD504\uB860\uD2B8 \uC624\uB958 \uC5C6\uC74C"))))));
   }
   Object.assign(window, { V4SettingsTab });
 
@@ -36078,7 +36485,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.7.0";
+  var V4_DASH_VERSION = "v5.8.0";
   (function _initFeLogBuffer() {
     if (window.__stomFeLog) return;
     const buf = [];
@@ -36158,13 +36565,27 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     return "research";
   }
-  function _nextV4TabKey(keys, current, key) {
+  function _nextV4TabKey(keys, current, key, orientation) {
     const index2 = Math.max(0, keys.indexOf(current));
     if (key === "Home") return keys[0];
     if (key === "End") return keys[keys.length - 1];
-    if (key === "ArrowRight") return keys[(index2 + 1) % keys.length];
-    if (key === "ArrowLeft") return keys[(index2 - 1 + keys.length) % keys.length];
+    if (orientation === "vertical" && key === "ArrowDown") return keys[(index2 + 1) % keys.length];
+    if (orientation === "vertical" && key === "ArrowUp") return keys[(index2 - 1 + keys.length) % keys.length];
+    if (orientation === "horizontal" && key === "ArrowRight") return keys[(index2 + 1) % keys.length];
+    if (orientation === "horizontal" && key === "ArrowLeft") return keys[(index2 - 1 + keys.length) % keys.length];
     return current;
+  }
+  function useV4TabOrientation() {
+    const query = "(max-width: 768px)";
+    const [orientation, setOrientation] = useState_v4(() => window.matchMedia(query).matches ? "horizontal" : "vertical");
+    useEffect_v4(() => {
+      const media = window.matchMedia(query);
+      const update = () => setOrientation(media.matches ? "horizontal" : "vertical");
+      update();
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }, []);
+    return orientation;
   }
   function v4InitialBase(propBase) {
     try {
@@ -36205,7 +36626,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" }));
   }
   function V4ThemeToggle({ theme, onChange }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { className: theme === "dark" ? "active" : "", onClick: () => onChange("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { className: theme === "light" ? "active" : "", onClick: () => onChange("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light"));
+    return /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: theme === "dark" ? "active" : "", "aria-pressed": theme === "dark", onClick: () => onChange("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { type: "button", className: theme === "light" ? "active" : "", "aria-pressed": theme === "light", onClick: () => onChange("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light"));
   }
   function V4BaseControl({ value, onChange, onApply, onReconnect }) {
     return /* @__PURE__ */ React.createElement("div", { className: "v4-base" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-base-lbl" }, "BASE"), /* @__PURE__ */ React.createElement(
@@ -36214,6 +36635,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         className: "toolbar-input",
         value,
         spellCheck: false,
+        "aria-label": "\uB300\uC2DC\uBCF4\uB4DC API Base URL",
         onChange: (e) => onChange(e.target.value),
         onKeyDown: (e) => {
           if (e.key === "Enter") onApply();
@@ -36228,6 +36650,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
     const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
     const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
+    const tabOrientation = useV4TabOrientation();
     const pendingTabFocusRef = useRef_v4("");
     const [buildVer] = useState_v4(() => v4BundleVersion());
     const [newVer, setNewVer] = useState_v4("");
@@ -36378,13 +36801,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
     };
     const onTabKeyDown = (event, key) => {
-      const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key);
+      const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key, tabOrientation);
       if (next === key && !["Home", "End"].includes(event.key)) return;
       event.preventDefault();
       selectTab(next);
     };
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4" }, V4_TABS.map((tab, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: tab.key }, tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && /* @__PURE__ */ React.createElement("div", { className: "v4-rail-div", role: "separator", "aria-label": "\uBCF4\uC870 \uB3C4\uAD6C", title: "\uBCF4\uC870 \uB3C4\uAD6C(\uBD84\uC11D\xB7\uAC10\uC0AC\xB7\uCEE8\uD14D\uC2A4\uD2B8)" }, /* @__PURE__ */ React.createElement("span", null, "\uBCF4\uC870")), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4", "aria-orientation": tabOrientation }, V4_TABS.map((tab, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: tab.key }, tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && /* @__PURE__ */ React.createElement("div", { className: "v4-rail-div", role: "presentation", "aria-hidden": "true", title: "\uBCF4\uC870 \uB3C4\uAD6C(\uBD84\uC11D\xB7\uAC10\uC0AC\xB7\uCEE8\uD14D\uC2A4\uD2B8)" }, /* @__PURE__ */ React.createElement("span", null, "\uBCF4\uC870")), /* @__PURE__ */ React.createElement(
       "button",
       {
         id: "v4-tab-" + tab.key,

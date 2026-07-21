@@ -6,6 +6,7 @@
  *   data-theme 변경·리사이즈에 재도장. devicePixelRatio 대응.
  *   jsdom(하네스)에는 canvas 2D 가 없으므로 ctx 부재 시 조용히 스킵(렌더는 유지).
  */
+import { ChartFrame } from "./chart-frame.jsx";
 const { useEffect: useEffect_v4c, useRef: useRef_v4c } = React;
 
 function _v4Tok(name) {
@@ -134,13 +135,17 @@ function _v4DrawHero(canvas, series, { target, bestIdx }) {
 // V4HeroChart — Research Live 주인공 차트. state.generations 기반, 컨테이너 크기로 스케일.
 function V4HeroChart({ state, target }) {
   const ref = useRef_v4c(null);
-  const gens = Array.isArray(state && state.generations) ? state.generations : [];
+  const rawGens = state && state.generations;
+  const malformed = rawGens != null && !Array.isArray(rawGens);
+  const gens = Array.isArray(rawGens) ? rawGens : [];
   const series = gens
     .filter(g => g && g.graded_score != null && isFinite(Number(g.graded_score)))
     .map(g => ({ x: "g" + g.gen_no, v: Number(g.graded_score) }));
   let bestIdx = null, bestV = -Infinity;
   for (let i = 0; i < series.length; i++) if (series[i].v > bestV) { bestV = series[i].v; bestIdx = i; }
   const key = series.map(s => s.v.toFixed(4)).join(",") + "|" + (target ?? "");
+  const status = malformed || (gens.length > 0 && !series.length) ? "malformed" : !series.length ? "empty" : state && state.is_stale ? "stale" : "ready";
+  const freshness = (state && (state.updated_at || state.last_updated || state.received_at)) || "수신 시각 미발행";
 
   useEffect_v4c(() => {
     const draw = () => _v4DrawHero(ref.current, series, { target, bestIdx });
@@ -162,9 +167,15 @@ function V4HeroChart({ state, target }) {
   }, [key]);
 
   return (
-    <div className="v4-canvas-wrap v4-hero-canvas" role="img" aria-label="적합도 곡선(세대별 graded score)">
-      <canvas ref={ref}></canvas>
-    </div>
+    <ChartFrame title="Research Live 적합도" unit="graded_score" period="세대별"
+      sampleCount={series.length} freshness={freshness}
+      threshold={target != null ? `gate ${Number(target).toFixed(2)}` : "gate 미발행"}
+      source="state.generations" rows={gens.filter(g => g && g.graded_score != null && isFinite(Number(g.graded_score))).map(g => ({ generation: g.gen_no, graded_score: Number(g.graded_score) }))}
+      status={status}>
+      <div className="v4-canvas-wrap v4-hero-canvas" role="img" aria-label="적합도 곡선(세대별 graded score)">
+        <canvas ref={ref}></canvas>
+      </div>
+    </ChartFrame>
   );
 }
 

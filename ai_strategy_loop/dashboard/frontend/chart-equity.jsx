@@ -9,6 +9,7 @@
    - fetch 기반 백테 상세/오버랩(EquityOverlayChart · BacktestDetailChart)은 chart-backtest-detail 로 분리.
 */
 import { LegendDot, Mini, MetricHelpStrip } from "./chart-primitives.jsx";
+import { ChartFrame } from "./chart-frame.jsx";
 
 const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
 
@@ -16,13 +17,28 @@ const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
 //   window._axisTicks 로 제공(ESM 모듈이라 babel 실행보다 먼저 로드). 여기서는 babel 스코프
 //   별칭만 둬서 기존 bare 호출(_axisTicks(...))이 계속 해소되게 한다.
 const _axisTicks = window._axisTicks;
+function _chartFreshness(state) {
+  return (state && (state.updated_at || state.last_updated || state.received_at)) || "수신 시각 미발행";
+}
+function _chartStatus(rawRows, rows, state) {
+  if (rawRows != null && !Array.isArray(rawRows)) return "malformed";
+  if (Array.isArray(rawRows) && rawRows.length > 0 && !rows.length) return "malformed";
+  if (!rows.length) return "empty";
+  return state && state.is_stale ? "stale" : "ready";
+}
+function _finiteChartValue(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
 
 function FitnessChart({ state, target = 1.0 }) {
-  const gens = state.generations || [];
+  const rawGens = state && state.generations;
+  const gens = Array.isArray(rawGens) ? rawGens.filter(g => g && typeof g === "object") : [];
+  let chartStatus = _chartStatus(rawGens, gens, state);
+  if (chartStatus === "ready" && !rawGens.every(g => g && typeof g === "object" && _finiteChartValue(g.gen_no) && _finiteChartValue(g.graded_score) && typeof g.gate_passed === "boolean")) chartStatus = "malformed";
   const bestSoFar = useMemo_c(() => {
     let bs = 0;
     return gens.map(g => {
-      bs = Math.max(bs, g.graded_score || 0);
+      bs = Math.max(bs, g.graded_score);
       return bs;
     });
   }, [gens]);
@@ -32,8 +48,8 @@ function FitnessChart({ state, target = 1.0 }) {
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
-  const xMax = Math.max(state.max_generations, 8);
-  const yMax = Math.max(1.15, ...gens.map(g => g.graded_score || 0).concat([target + 0.1]));
+  const xMax = Math.max((state && _finiteChartValue(state.max_generations) ? state.max_generations : 0), 8);
+  const yMax = Math.max(1.15, ...gens.map(g => g.graded_score).concat([target + 0.1]));
 
   const x = (g) => padL + (g - 0.5) / xMax * innerW; // gen 1 starts a bit in
   const y = (v) => padT + innerH - (v / yMax) * innerH;
@@ -53,14 +69,14 @@ function FitnessChart({ state, target = 1.0 }) {
   const linePath = useMemo_c(() => {
     if (!gens.length) return "";
     return gens.map((g, i) =>
-      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${y(g.graded_score || 0).toFixed(2)}`
+      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${y(g.graded_score).toFixed(2)}`
     ).join(" ");
   }, [gens, xMax, yMax]);
 
   const areaPath = useMemo_c(() => {
     if (!gens.length) return "";
     const start = `M ${x(gens[0].gen_no).toFixed(2)} ${y(0).toFixed(2)}`;
-    const mid = gens.map(g => `L ${x(g.gen_no).toFixed(2)} ${y(g.graded_score || 0).toFixed(2)}`).join(" ");
+    const mid = gens.map(g => `L ${x(g.gen_no).toFixed(2)} ${y(g.graded_score).toFixed(2)}`).join(" ");
     const end = `L ${x(gens[gens.length - 1].gen_no).toFixed(2)} ${y(0).toFixed(2)} Z`;
     return `${start} ${mid} ${end}`;
   }, [gens, xMax, yMax]);
@@ -96,7 +112,7 @@ function FitnessChart({ state, target = 1.0 }) {
   // Stats summary
   const latest = gens[gens.length - 1];
   const peak = gens.reduce((a, b) => (b.graded_score > (a?.graded_score || 0) ? b : a), null);
-  const gatePassedCount = gens.filter(g => g.gate_passed).length;
+  const gatePassedCount = gens.filter(g => g.gate_passed === true).length;
 
   return (
     <div className="panel">
@@ -116,6 +132,11 @@ function FitnessChart({ state, target = 1.0 }) {
         </div>
       </div>
       <div className="panel-bd">
+        <ChartFrame title="적합도 추이" unit="graded_score (0–100)" period="세대별"
+          sampleCount={gens.length} freshness={_chartFreshness(state)}
+          threshold={`목표 ${target.toFixed(3)}`} source="state.generations"
+          rows={gens.map(g => ({ gen_no: g.gen_no, graded_score: g.graded_score, gate_passed: g.gate_passed }))}
+          status={chartStatus}>
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="최신 점수" value={latest ? fmtScore(latest.graded_score) : "—"}
                 color={latest && latest.graded_score >= target ? "var(--teal)" : undefined} />
@@ -188,8 +209,8 @@ function FitnessChart({ state, target = 1.0 }) {
             )}
             {/* Points */}
             {gens.map((g, i) => {
-              const cx = x(g.gen_no), cy = y(g.graded_score || 0);
-              if (g.gate_passed) {
+              const cx = x(g.gen_no), cy = y(g.graded_score);
+              if (g.gate_passed === true) {
                 return <g key={i}>
                   <circle cx={cx} cy={cy} r="7" fill="rgba(165,148,255,0.16)" />
                   <circle cx={cx} cy={cy} r="4" className="chart-pt-gate" />
@@ -206,7 +227,7 @@ function FitnessChart({ state, target = 1.0 }) {
 
             {/* Hover */}
             {hover && (() => {
-              const cx = x(hover.gen_no), cy = y(hover.graded_score || 0);
+              const cx = x(hover.gen_no), cy = y(hover.graded_score);
               return <g>
                 <line x1={cx} x2={cx} y1={padT} y2={padT + innerH}
                       stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
@@ -238,8 +259,8 @@ function FitnessChart({ state, target = 1.0 }) {
                   {fmtScore(hover.graded_score)}
                 </span>
                 <span style={{ color: "var(--ink-2)" }}>게이트</span>
-                <span style={{ color: hover.gate_passed ? "var(--teal)" : "var(--ink-2)" }}>
-                  {hover.gate_passed ? "✓ 통과" : "✗ 탈락"}
+                <span style={{ color: hover.gate_passed === true ? "var(--teal)" : "var(--ink-2)" }}>
+                  {hover.gate_passed === true ? "✓ 통과" : "✗ 탈락"}
                 </span>
                 <span style={{ color: "var(--ink-2)" }}>거래</span>
                 <span>{hover.trade_count}</span>
@@ -265,6 +286,7 @@ function FitnessChart({ state, target = 1.0 }) {
             </div>
           )}
         </div>
+        </ChartFrame>
       </div>
     </div>
   );
@@ -275,25 +297,28 @@ function FitnessChart({ state, target = 1.0 }) {
    강조하고, 수익률 라인(좌축, %)과 수익금 라인(우축, 원)을 함께 그린다. 두 지표의
    스케일이 다르므로 각자 자기 min/max로 정규화해 같은 패널에 겹쳐 그린다. */
 function ProfitChart({ state, targetPct = 0 }) {
-  const gens = state.generations || [];
+  const rawGens = state && state.generations;
+  const gens = Array.isArray(rawGens) ? rawGens.filter(g => g && typeof g === "object") : [];
+  let chartStatus = _chartStatus(rawGens, gens, state);
+  if (chartStatus === "ready" && !rawGens.every(g => g && typeof g === "object" && _finiteChartValue(g.gen_no) && _finiteChartValue(g.total_profit_pct) && _finiteChartValue(g.profit))) chartStatus = "malformed";
 
   const W = 880, H = 300;
   const padL = 52, padR = 56, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
-  const xMax = Math.max(state.max_generations, 8);
+  const xMax = Math.max((state && _finiteChartValue(state.max_generations) ? state.max_generations : 0), 8);
   const x = (g) => padL + (g - 0.5) / xMax * innerW;
 
   // 수익률(%) 스케일: 0을 항상 포함하고, ±여유를 둔다.
-  const pctVals = gens.map(g => (typeof g.total_profit_pct === "number" ? g.total_profit_pct : 0));
+  const pctVals = gens.map(g => g.total_profit_pct);
   const pctMax = Math.max(targetPct + 1, 1, ...pctVals);
   const pctMin = Math.min(0, ...pctVals);
   const pctRange = (pctMax - pctMin) || 1;
   const yPct = (v) => padT + innerH - ((v - pctMin) / pctRange) * innerH;
 
   // 수익금(원) 스케일: 자체 min/max(0 포함)로 정규화(우축).
-  const moneyVals = gens.map(g => (typeof g.profit === "number" ? g.profit : 0));
+  const moneyVals = gens.map(g => g.profit);
   const moneyMax = Math.max(0, ...moneyVals);
   const moneyMin = Math.min(0, ...moneyVals);
   const moneyRange = (moneyMax - moneyMin) || 1;
@@ -309,21 +334,21 @@ function ProfitChart({ state, targetPct = 0 }) {
   const pctPath = useMemo_c(() => {
     if (!gens.length) return "";
     return gens.map((g, i) =>
-      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yPct(g.total_profit_pct || 0).toFixed(2)}`
+      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yPct(g.total_profit_pct).toFixed(2)}`
     ).join(" ");
   }, [gens, xMax, pctMin, pctRange]);
 
   const moneyPath = useMemo_c(() => {
     if (!gens.length) return "";
     return gens.map((g, i) =>
-      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yMoney(g.profit || 0).toFixed(2)}`
+      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yMoney(g.profit).toFixed(2)}`
     ).join(" ");
   }, [gens, xMax, moneyMin, moneyRange]);
 
   // 통계 요약.
   const latest = gens[gens.length - 1];
   const peakPct = gens.reduce((a, b) =>
-    ((b.total_profit_pct || 0) > (a?.total_profit_pct ?? -Infinity) ? b : a), null);
+    (b.total_profit_pct > (a?.total_profit_pct ?? -Infinity) ? b : a), null);
 
   const zeroY = yPct(0);  // 손익분기(0%) 기준선(좌축 기준).
 
@@ -340,6 +365,12 @@ function ProfitChart({ state, targetPct = 0 }) {
         </div>
       </div>
       <div className="panel-bd">
+        <ChartFrame title="수익 추이" unit="수익률 % / 수익금 ₩" period="세대별"
+          sampleCount={gens.length} freshness={_chartFreshness(state)}
+          threshold={targetPct > 0 ? `목표 ${targetPct.toFixed(1)}%` : "손익분기 0%"}
+          source="state.generations"
+          rows={gens.map(g => ({ gen_no: g.gen_no, total_profit_pct: g.total_profit_pct, profit: g.profit }))}
+          status={chartStatus}>
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="최신 수익률" value={latest ? fmtPct(latest.total_profit_pct) : "—"}
                 color={latest && latest.total_profit_pct > 0 ? "var(--teal)"
@@ -420,9 +451,9 @@ function ProfitChart({ state, targetPct = 0 }) {
             )}
             {/* 수익률 포인트(부호별 색) */}
             {gens.map((g, i) => {
-              const cx = x(g.gen_no), cy = yPct(g.total_profit_pct || 0);
-              const col = (g.total_profit_pct || 0) > 0 ? "var(--teal)"
-                        : (g.total_profit_pct || 0) < 0 ? "var(--red)" : "var(--ink-2)";
+              const cx = x(g.gen_no), cy = yPct(g.total_profit_pct);
+              const col = g.total_profit_pct > 0 ? "var(--teal)"
+                        : g.total_profit_pct < 0 ? "var(--red)" : "var(--ink-2)";
               return <circle key={`pp${i}`} cx={cx} cy={cy} r="2.6" fill={col} />;
             })}
           </svg>
@@ -437,6 +468,7 @@ function ProfitChart({ state, targetPct = 0 }) {
             </div>
           )}
         </div>
+        </ChartFrame>
       </div>
     </div>
   );
@@ -459,7 +491,13 @@ const _QUALITY_METRICS = [
 ];
 
 function QualityTrendChart({ state }) {
-  const gens = state.generations || [];
+  const rawGens = state && state.generations;
+  const gens = Array.isArray(rawGens) ? rawGens.filter(g => g && typeof g === "object") : [];
+  let chartStatus = _chartStatus(rawGens, gens, state);
+  if (chartStatus === "ready" && (!rawGens.every(g => g && typeof g === "object"
+    && _finiteChartValue(g.gen_no)
+    && _QUALITY_METRICS.every(m => g[m.key] == null || _finiteChartValue(g[m.key])))
+    || !gens.some(g => _QUALITY_METRICS.some(m => _finiteChartValue(g[m.key]))))) chartStatus = "malformed";
   const [enabled, setEnabled] = useState_c(() => ({
     calmar: true, uptrend_r2: true, mdd: true,
     daily_avg_trades: false, max_hold_count: false, payoff_ratio: false,
@@ -471,7 +509,7 @@ function QualityTrendChart({ state }) {
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
-  const xMax = Math.max(state.max_generations, 8);
+  const xMax = Math.max((state && _finiteChartValue(state.max_generations) ? state.max_generations : 0), 8);
   const x = (g) => padL + (g - 0.5) / xMax * innerW;
 
   // status==error(전 지표 0)는 스케일 왜곡 방지를 위해 제외.
@@ -482,7 +520,7 @@ function QualityTrendChart({ state }) {
   const ranges = useMemo_c(() => {
     const r = {};
     for (const m of _QUALITY_METRICS) {
-      const vals = okGens.map(g => (typeof g[m.key] === "number" ? g[m.key] : null)).filter(v => v != null);
+      const vals = okGens.map(g => (_finiteChartValue(g[m.key]) ? g[m.key] : null)).filter(v => v != null);
       if (!vals.length) { r[m.key] = null; continue; }
       let lo = Math.min(...vals), hi = Math.max(...vals);
       if (hi === lo) hi = lo + 1;  // 평탄선 방지(단일/동일값).
@@ -494,7 +532,7 @@ function QualityTrendChart({ state }) {
   // 정규화 y: 지표값 → [0,1] → svg y. 값 없으면 null(선 끊김).
   const ny = (m, g) => {
     const rg = ranges[m.key];
-    if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
+    if (!rg || !_finiteChartValue(g[m.key]) || g.status === "error") return null;
     const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
     return padT + innerH - t * innerH;
   };
@@ -557,6 +595,11 @@ function QualityTrendChart({ state }) {
         </div>
       </div>
       <div className="panel-bd">
+        <ChartFrame title="품질지표 추이" unit="지표별 원본 단위" period="세대별"
+          sampleCount={okGens.length} freshness={_chartFreshness(state)}
+          threshold="보고서 품질 기준" source="state.generations"
+          rows={okGens.map(g => ({ gen_no: g.gen_no, calmar: g.calmar, uptrend_r2: g.uptrend_r2, mdd: g.mdd, daily_avg_trades: g.daily_avg_trades, max_hold_count: g.max_hold_count, payoff_ratio: g.payoff_ratio }))}
+          status={chartStatus}>
         {/* v5.6.1 — 테마 통일: 수익 추이처럼 최신 수치를 상단에 숫자로 명시 */}
         {okGens.length > 0 && (() => {
           const last = okGens[okGens.length - 1];
@@ -643,6 +686,7 @@ function QualityTrendChart({ state }) {
             </div>
           )}
         </div>
+        </ChartFrame>
       </div>
     </div>
   );

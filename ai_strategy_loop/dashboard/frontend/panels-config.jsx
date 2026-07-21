@@ -53,7 +53,7 @@ function CurrentGenPanel({ state }) {
           {fmtTime(state.updated_at)}
         </span>
       </div>
-      <div className="panel-bd">
+      <div className="panel-bd" tabIndex="0" aria-label="현재 세대 상세">
         <div style={{ display: "flex", alignItems: "flex-end", gap: 22 }}>
           <div className="stat">
             <span className="stat-label">세대</span>

@@ -29,7 +29,7 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.7.0";
+const V4_DASH_VERSION = "v5.8.0";
 // v5.6 U9 — 프론트엔드 로그 버퍼(설정 탭 로그 뷰어 소비): onerror + console.error 최근 200건.
 (function _initFeLogBuffer() {
   if (window.__stomFeLog) return;
@@ -113,13 +113,29 @@ function v4InitialTab() {
   return "research";
 }
 
-function _nextV4TabKey(keys, current, key) {
+function _nextV4TabKey(keys, current, key, orientation) {
   const index = Math.max(0, keys.indexOf(current));
   if (key === "Home") return keys[0];
   if (key === "End") return keys[keys.length - 1];
-  if (key === "ArrowRight") return keys[(index + 1) % keys.length];
-  if (key === "ArrowLeft") return keys[(index - 1 + keys.length) % keys.length];
+  if (orientation === "vertical" && key === "ArrowDown") return keys[(index + 1) % keys.length];
+  if (orientation === "vertical" && key === "ArrowUp") return keys[(index - 1 + keys.length) % keys.length];
+  if (orientation === "horizontal" && key === "ArrowRight") return keys[(index + 1) % keys.length];
+  if (orientation === "horizontal" && key === "ArrowLeft") return keys[(index - 1 + keys.length) % keys.length];
   return current;
+}
+
+function useV4TabOrientation() {
+  const query = "(max-width: 768px)";
+  const [orientation, setOrientation] = useState_v4(() =>
+    window.matchMedia(query).matches ? "horizontal" : "vertical");
+  useEffect_v4(() => {
+    const media = window.matchMedia(query);
+    const update = () => setOrientation(media.matches ? "horizontal" : "vertical");
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return orientation;
 }
 
 // BASE 결정: ?base= 1회 오버라이드(wt-dev 실데이터 연동) → localStorage(cross-origin
@@ -165,8 +181,8 @@ function V4RailIcon({ name }) {
 function V4ThemeToggle({ theme, onChange }) {
   return (
     <div className="theme-toggle" role="group" aria-label="테마">
-      <button className={theme === "dark" ? "active" : ""} onClick={() => onChange("dark")} data-tip="다크 모드">Dark</button>
-      <button className={theme === "light" ? "active" : ""} onClick={() => onChange("light")} data-tip="라이트 모드">Light</button>
+      <button type="button" className={theme === "dark" ? "active" : ""} aria-pressed={theme === "dark"} onClick={() => onChange("dark")} data-tip="다크 모드">Dark</button>
+      <button type="button" className={theme === "light" ? "active" : ""} aria-pressed={theme === "light"} onClick={() => onChange("light")} data-tip="라이트 모드">Light</button>
     </div>
   );
 }
@@ -175,7 +191,7 @@ function V4BaseControl({ value, onChange, onApply, onReconnect }) {
   return (
     <div className="v4-base">
       <span className="mono v4-base-lbl">BASE</span>
-      <input className="toolbar-input" value={value} spellCheck={false}
+      <input className="toolbar-input" value={value} spellCheck={false} aria-label="대시보드 API Base URL"
              onChange={e => onChange(e.target.value)}
              onKeyDown={e => { if (e.key === "Enter") onApply(); }} />
       <button className="btn ghost sm" onClick={onApply} data-tip="Base URL 적용 후 재연결">적용</button>
@@ -190,6 +206,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
   const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
   const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
+  const tabOrientation = useV4TabOrientation();
   const pendingTabFocusRef = useRef_v4("");
   const [buildVer] = useState_v4(() => v4BundleVersion());
   // v5.3.8: 구버전 탭 감지 — 열린 탭이 옛 JS 를 들고 있으면 배너로 새로고침 유도(검수 불일치 재발 방지).
@@ -345,7 +362,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     } catch (e) {}
   };
   const onTabKeyDown = (event, key) => {
-    const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key);
+    const next = _nextV4TabKey(V4_TAB_KEYS, key, event.key, tabOrientation);
     if (next === key && !["Home", "End"].includes(event.key)) return;
     event.preventDefault();
     selectTab(next);
@@ -359,11 +376,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         <div className="v4-rail-logo" title="STOM V4">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 15 L6 12 L9 13 L13 7 L18 3" stroke="var(--teal)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /><circle cx="18" cy="3" r="1.8" fill="var(--violet)" /></svg>
         </div>
-        <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스">
+        <div className="v4-rail-tabs" role="tablist" aria-label="V4 연구 워크스페이스" aria-orientation={tabOrientation}>
           {V4_TABS.map((tab, i) => (
             <React.Fragment key={tab.key}>
               {tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && (
-                <div className="v4-rail-div" role="separator" aria-label="보조 도구" title="보조 도구(분석·감사·컨텍스트)"><span>보조</span></div>
+                <div className="v4-rail-div" role="presentation" aria-hidden="true" title="보조 도구(분석·감사·컨텍스트)"><span>보조</span></div>
               )}
               <button id={"v4-tab-" + tab.key} role="tab"
                       aria-controls={"v4-panel-" + tab.key} aria-selected={activeTab === tab.key}

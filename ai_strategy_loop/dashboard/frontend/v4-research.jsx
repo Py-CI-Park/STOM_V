@@ -271,7 +271,7 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
         </div>
       </div>
       <div className="v6-board-strip">
-        <div className="v6-timing" aria-label="단계별 실제 시간">
+        <div className="v6-timing" aria-label="단계별 실제 시간" tabIndex="0">
           {timings.length ? timings.map(([step, sec]) => (
             <div key={step} className="v6-timing-item" title={`${step} ${sec.toFixed(1)}초`}>
               <span className="k mono">{step}</span>
@@ -280,7 +280,7 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
             </div>
           )) : <span className="mono v6-dim">완료 단계 없음</span>}
         </div>
-        <div className="v6-blockers" aria-label="차단 사유">
+        <div className="v6-blockers" aria-label="차단 사유" tabIndex="0">
           {blockers.length
             ? blockers.map(b => <span key={String(b)} className="v4-chip warn" title="promotion blocker">{String(b)}</span>)
             : <span className="v4-chip ok">발행된 차단 사유 없음</span>}
@@ -402,19 +402,21 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
 
       {/* ===== 스테이지 탭(4) — 라이브 자동전환·pin ===== */}
       {/* v5.4 L2: 스테이지 탭 우측 배치(열 수) 선택 */}
-      <div className="v6-stage-tabs" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
-        {V6_STAGES.map((st, i) => (
-          <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
-                  aria-selected={activeStage === i} aria-controls="v6-stage-panel"
-                  tabIndex={activeStage === i ? 0 : -1}
-                  className={"v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : "")}
-                  onClick={() => onStagePin(i)}
-                  title={st.sub + (liveStage === i ? " · 진행 중" : "")}>
-            <b>{i + 1}. {st.label}</b>
-            <span>{st.sub}</span>
-            {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
-          </button>
-        ))}
+      <div className="v6-stage-tabs" role="group" aria-label="연구 프로세스 단계와 배치">
+        <span className="v6-stage-tablist" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
+          {V6_STAGES.map((st, i) => (
+            <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
+                    aria-selected={activeStage === i} aria-controls="v6-stage-panel"
+                    tabIndex={activeStage === i ? 0 : -1}
+                    className={"v6-stage-tab" + (activeStage === i ? " active" : "") + (liveStage === i ? " live" : "")}
+                    onClick={() => onStagePin(i)}
+                    title={st.sub + (liveStage === i ? " · 진행 중" : "")}>
+              <b>{i + 1}. {st.label}</b>
+              <span>{st.sub}</span>
+              {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
+            </button>
+          ))}
+        </span>
         {stagePin != null && (
           <button className="btn ghost sm v5-pin-reset" onClick={() => setStagePin(null)}>
             단계 고정 해제 · 라이브 따라가기

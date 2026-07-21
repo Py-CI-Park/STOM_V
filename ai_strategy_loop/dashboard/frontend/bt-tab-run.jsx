@@ -374,14 +374,14 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           </div>
           <div className="field" style={{ minWidth: 160 }}>
             <label>매수 조건식</label>
-            <select className="select" value={buy} onChange={e => onBuy(e.target.value)} disabled={isDemo}>
+            <select className="select" value={buy} onChange={e => onBuy(e.target.value)} disabled={isDemo} aria-label="매수 조건식 선택">
               <option value="">— 선택 —</option>
               {libNames.buy.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div className="field" style={{ minWidth: 160 }}>
             <label>매도 조건식</label>
-            <select className="select" value={sell} onChange={e => onSell(e.target.value)} disabled={isDemo}>
+            <select className="select" value={sell} onChange={e => onSell(e.target.value)} disabled={isDemo} aria-label="매도 조건식 선택">
               <option value="">— 선택 —</option>
               {libNames.sell.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -398,20 +398,20 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           </div>
           <div className="field" style={{ minWidth: 100 }}>
             <label>시간단위</label>
-            <select className="select" value={timeframe} onChange={e => setTimeframe(e.target.value)} disabled={isDemo}>
+            <select className="select" value={timeframe} onChange={e => setTimeframe(e.target.value)} disabled={isDemo} aria-label="시간단위 선택">
               <option value="min">분봉 (min)</option>
               <option value="tick">틱 (tick)</option>
             </select>
           </div>
           <div className="field" style={{ minWidth: 76 }}>
             <label>엔진 수</label>
-            <input className="input" type="number" min="1" max="16" value={engines}
+            <input className="input" type="number" min="1" max="16" value={engines} aria-label="백테스트 엔진 수"
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
           </div>
           {mode === "backtest" && (
             <div className="field" style={{ minWidth: 130 }}>
               <label>데이터 분류</label>
-              <select className="select" value={dividMode} onChange={e => setDividMode(e.target.value)} disabled={isDemo}>
+              <select className="select" value={dividMode} onChange={e => setDividMode(e.target.value)} disabled={isDemo} aria-label="데이터 분류 선택">
                 <option value="종목코드별 분류">종목코드별 분류</option>
                 <option value="일자별 분류">일자별 분류</option>
                 <option value="한종목 로딩">한종목 로딩</option>
