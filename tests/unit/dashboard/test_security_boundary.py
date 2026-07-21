@@ -61,6 +61,16 @@ def test_public_reads_never_issue_session_cookie(monkeypatch, tmp_path: Path) ->
     assert status.headers.get("set-cookie") is None
     assert client.cookies.get(SESSION_COOKIE_NAME) is None
 
+def test_session_bound_debug_logs_are_not_cacheable(monkeypatch, tmp_path: Path) -> None:
+    client = _client(monkeypatch, tmp_path)
+    _bootstrap(client)
+
+    response = client.get("/debug/logs", headers=ORIGIN_HEADER)
+
+    assert response.status_code == 200
+    assert response.headers.get("cache-control") == "no-store, private"
+
+
 
 @pytest.mark.parametrize("path", ["/ui/v4", "/ui/v4/"])
 def test_exact_v4_bootstrap_issues_bounded_strict_cookie(

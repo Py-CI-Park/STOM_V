@@ -55,3 +55,20 @@ def test_app_mounts_new_evolution_panels() -> None:
     assert detail != -1 and parity != -1
     assert detail < parity
     assert "externalSelGen={selectedDetailGen}" in src[parity: parity + 240]
+
+
+def test_history_master_detail_propagates_typed_research_context() -> None:
+    history = _front("v4-history.jsx")
+    tree = _front("history-condition-tree.jsx")
+    viz = _front("history-viz.jsx")
+    compare = _front("run-compare.jsx")
+    index = _front("research-index.jsx")
+
+    assert '"campaign:" + name' in history
+    assert history.count("preferredResearchId={selResearch && selResearch.researchId}") >= 4
+    assert "function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId" in tree
+    assert "selectionGeneration" in tree and "selectionController" in tree and "AbortController" in tree
+    assert 'preferredResearchId.startsWith("campaign:")' in viz
+    assert 'preferredResearchId.startsWith("loop_run:")' in viz
+    assert 'preferredResearchId.startsWith("loop_run:")' in compare
+    assert "initialQuery" in index and "preferredResearchId" in index

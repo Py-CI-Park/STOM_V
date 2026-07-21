@@ -408,6 +408,26 @@ function PopulationPanel({ state, wsStatus }) {
 // ---- Meta-analysis panel (P4 메타분석 엔진) ----
 // page_data.meta(누적 메타 인사이트: 통과 전략 공통 변수/개선 변경/실패 패턴)을
 //   LIVE로 렌더한다. 없으면(데모 또는 미발행) 출처를 명시한다. M1 규약 준수.
+function _metaDerivedFallbackAllowed(meta) {
+  return !meta || meta.status === "missing" || meta.status === "pending";
+}
+
+function _metaAuthorityDetail(meta) {
+  const reason = meta.reason || meta.error || meta.message || "사유 미발행";
+  const lastNormal = meta.last_normal || meta.last_known_good || meta.last_success_at || meta.last_ok_at || "마지막 정상 정보 미발행";
+  return { reason: String(reason), lastNormal: String(lastNormal) };
+}
+
+function _MetaAuthorityStatus({ meta }) {
+  if (!meta || meta.status === "ok") return null;
+  const detail = _metaAuthorityDetail(meta);
+  return (
+    <div className="mono" role="status" style={{ fontSize: 10.5, color: "var(--amber)", marginBottom: 8, lineHeight: 1.55 }}>
+      정본 상태: {String(meta.status)} · 사유: {detail.reason} · 마지막 정상 정보: {detail.lastNormal}
+    </div>
+  );
+}
+
 function MetaPanel({ state, wsStatus }) {
   const meta = state.page_data?.meta;
   const isDemo = typeof window.isDemoSource === "function"
@@ -431,7 +451,7 @@ function MetaPanel({ state, wsStatus }) {
         </span>
       </div>
       <div className="panel-bd">
-        {!meta || meta.status !== "ok" ? (
+        {_metaDerivedFallbackAllowed(meta) ? (
           // v5.6.1 — 폴백: 메타 미발행 시 세대 데이터에서 누적 학습 요약을 파생(빈 화면 금지).
           (() => {
             const gens = (Array.isArray(state.generations) ? state.generations : []).filter(g => g.gen_no >= 0);
@@ -466,6 +486,7 @@ function MetaPanel({ state, wsStatus }) {
           })()
         ) : (
           <div>
+            <_MetaAuthorityStatus meta={meta} />
             {commonVars.length > 0 && (
               <div style={{ marginBottom: 10 }}>
                 <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>

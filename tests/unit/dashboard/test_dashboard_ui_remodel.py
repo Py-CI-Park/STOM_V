@@ -184,8 +184,8 @@ def test_g006_removes_duplicate_inner_tabs_and_pins_readability() -> None:
     assert 'role="tablist" aria-label="Research Lab"' not in lab
     assert "research-section-filter" in lab
     assert "research-filter-chip" in lab
-    assert "lab-glossary" in lab
-    assert "lab-example" in lab
+    assert "lab-glossary" not in lab
+    assert "lab-example" not in lab
     assert "/ui/pro.html" not in lab
     assert "onOpenWorkbench" in lab
     assert "/ui/evolution/workbench" in lab

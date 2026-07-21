@@ -22,9 +22,10 @@ import base64
 import hashlib
 import json
 import re
-import sqlite3
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import RLock
 from typing import Any, Literal, Optional, TypedDict
 
 from fastapi import APIRouter, HTTPException, Query
@@ -176,13 +177,9 @@ def _apply_ab_derivation(item: HistoryIndexItem, name: str) -> None:
 
 
 def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
-    """캠페인 인덱스 항목을 빌드한다.
-
-    ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
-    이름에서 파생한 series가 일치하는 캠페인만 어댑터로 트리를 빌드한다 --
-    비매칭 캠페인은 ``build_research_node``(파일 읽기)를 아예 건너뛴다.
-    """
+    """Build campaign index metadata without parsing every synthesized condition tree."""
     listing = research_records.list_research_records(root=EVIDENCE_ROOT)
+    companion_names = set(list_companion_campaigns(EVIDENCE_ROOT))
     adapter = CampaignAdapter(evidence_root=EVIDENCE_ROOT)
     items: list[HistoryIndexItem] = []
     seen: set[str] = set()
@@ -191,8 +188,28 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
         seen.add(name)
         if series_filter is not None and derive_series(name) != series_filter:
             continue
-        result = adapter.build_research_node(name)
-        counts, status = _counts_and_status(result["research"])
+        if name in companion_names:
+            result = adapter.build_research_node(name)
+            counts, status = _counts_and_status(result["research"])
+        else:
+            candidates = campaign.get("candidates") or []
+            statuses = [
+                "missing" if not any(key in candidate for key in ("profit", "mdd", "trades"))
+                else "no_trades" if candidate.get("trades") == 0
+                else "failed" if candidate.get("gate") is False
+                else "success"
+                for candidate in candidates
+            ]
+            status = next(
+                (
+                    candidate
+                    for candidate in ("success", "no_trades", "failed", "timeout", "unavailable", "not_run", "missing")
+                    if candidate in statuses
+                ),
+                "missing",
+            )
+            candidate_count = int(campaign.get("candidate_count") or 0)
+            counts = {"stages": 1, "conditions": candidate_count, "evaluations": candidate_count}
         item: HistoryIndexItem = {
             "research_id": f"campaign:{name}",
             "source_kind": "campaign",
@@ -203,9 +220,9 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
         }
         _apply_ab_derivation(item, name)
         items.append(item)
-    # 발행 companion(<campaign>_condition_history_v1.json)은 summary/JSONL 없이도
-    # 존재할 수 있다(예: Stage-1 발행). records 목록에 없으면 여기서 합류시킨다.
-    for name in list_companion_campaigns(EVIDENCE_ROOT):
+
+    # A companion may be published without a summary/JSONL record.
+    for name in companion_names:
         if name in seen:
             continue
         if series_filter is not None and derive_series(name) != series_filter:
@@ -229,72 +246,65 @@ def _campaign_index_items(series_filter: Optional[str] = None) -> tuple[list[His
     return items, True
 
 
-def _loop_run_gate_passed_counts(state: LoopState) -> dict[str, int]:
-    """run별 ``generations.gate_passed`` 합계를 단일 GROUP BY 쿼리로 집계한다(G002).
-
-    이전 구현은 run마다 ``get_generations``(개별 SELECT)를 호출해 N+1 쿼리를
-    냈다. 이미 열려 있는 readonly 커넥션(``state._con``)을 재사용해 쿼리 1번
-    (``SELECT run_id, SUM(gate_passed) ... GROUP BY run_id``)으로 모든 run의
-    합계를 얻는다. 집계 자체가 실패해도(예: 컬럼 부재 legacy DB) 옵션 필드이므로
-    빈 dict로 흡수한다(예외 없음).
-    """
-    try:
-        rows = state._con.execute(
-            "SELECT run_id, SUM(gate_passed) AS gate_passed_sum FROM generations GROUP BY run_id"
-        ).fetchall()
-    except sqlite3.Error:
-        return {}
-    counts: dict[str, int] = {}
-    for row in rows:
-        value = row["gate_passed_sum"]
-        if value is not None:
-            counts[row["run_id"]] = int(value)
-    return counts
-
-
 def _loop_run_index_items(series_filter: Optional[str] = None) -> tuple[list[HistoryIndexItem], bool]:
-    """루프런 인덱스 항목을 빌드한다.
-
-    ``series_filter``가 주어지면(``/history/ab-pairs`` 전용 최소 비용 경로)
-    이름에서 파생한 series가 일치하는 run만 어댑터로 트리를 빌드한다 --
-    비매칭 run은 ``build_research_node``(세대 SELECT)를 아예 건너뛴다.
-    """
+    """Build loop-run index metadata with one bounded aggregate query."""
     try:
         state = LoopState(db_path=str(LOOP_RUNS_DB), readonly=True)
-    except Exception:  # noqa: BLE001 -- DB 부재/손상은 typed unavailable.
+    except Exception:  # noqa: BLE001 -- DB absence/corruption is typed unavailable.
         return [], False
     try:
         runs = state.list_runs()
-    except Exception:  # noqa: BLE001
-        state.close()
-        return [], False
-
-    adapter = LoopRunAdapter(db_path=str(LOOP_RUNS_DB))
-    items: list[HistoryIndexItem] = []
-    try:
-        gate_passed_counts = _loop_run_gate_passed_counts(state)
+        rows = state._con.execute(
+            "SELECT run_id, COUNT(*) AS generation_count, "
+            "COALESCE(SUM(gate_passed), 0) AS gate_passed_sum, "
+            "COALESCE(SUM(CASE WHEN status = 'ok' AND COALESCE(trade_count, -1) != 0 THEN 1 ELSE 0 END), 0) AS success_count, "
+            "COALESCE(SUM(CASE WHEN status = 'ok' AND trade_count = 0 THEN 1 ELSE 0 END), 0) AS no_trades_count, "
+            "COALESCE(SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END), 0) AS failed_count "
+            "FROM generations GROUP BY run_id"
+        ).fetchall()
+        stats = {
+            row["run_id"]: (
+                int(row["generation_count"] or 0),
+                int(row["gate_passed_sum"] or 0),
+                int(row["success_count"] or 0),
+                int(row["no_trades_count"] or 0),
+                int(row["failed_count"] or 0),
+            )
+            for row in rows
+        }
+        items: list[HistoryIndexItem] = []
         for run in runs:
             run_id = run["run_id"]
             if series_filter is not None and derive_series(run_id) != series_filter:
                 continue
-            result = adapter.build_research_node(run_id)
-            counts, status = _counts_and_status(result["research"])
+            generation_count, gate_passed, success_count, no_trades_count, failed_count = stats.get(
+                run_id, (0, 0, 0, 0, 0)
+            )
+            status = (
+                "success" if success_count else "no_trades" if no_trades_count
+                else "failed" if failed_count else "unavailable" if generation_count else "missing"
+            )
             updated_at = run.get("finished_at") or run.get("started_at")
             item: HistoryIndexItem = {
                 "research_id": f"loop_run:{run_id}",
                 "source_kind": "loop_run",
                 "label": run_id,
                 "updated_at": _iso(updated_at),
-                "counts": counts,
+                "counts": {
+                    "stages": 1,
+                    "conditions": generation_count,
+                    "evaluations": generation_count,
+                },
                 "condition_tree_status": status,
+                "gate_passed_count": gate_passed,
             }
             _apply_ab_derivation(item, run_id)
-            if run_id in gate_passed_counts:
-                item["gate_passed_count"] = gate_passed_counts[run_id]
             items.append(item)
+        return items, True
+    except Exception:  # noqa: BLE001
+        return [], False
     finally:
         state.close()
-    return items, True
 
 
 def _matches_query(item: HistoryIndexItem, q: str) -> bool:
@@ -304,21 +314,71 @@ def _matches_query(item: HistoryIndexItem, q: str) -> bool:
     return needle in item["research_id"].casefold() or needle in item["label"].casefold()
 
 
-# v5.6 U7 — 인덱스 빌드 TTL 캐시(30s): 항목당 트리 빌드가 3~6s 로 히스토리 진입을 지연시키던
-#   핫스팟. 빌드 결과(item list)만 캐시하고 q 필터·정렬·페이지네이션은 요청마다 수행한다.
-_INDEX_TTL_SECONDS = 30.0
-_INDEX_CACHE: dict[str, tuple[float, tuple[list, bool]]] = {}
+# Probe sources cheaply on every request. Campaign directory changes invalidate
+# immediately; a bounded full signature refresh catches in-place metadata edits.
+_INDEX_CACHE_LOCK = RLock()
+_INDEX_CACHE: dict[str, tuple[tuple[tuple[str, int, int], ...], tuple[list, bool]]] = {}
+_INDEX_CACHE_PROBE: dict[str, tuple[tuple[str, int, int], ...]] = {}
+_INDEX_CACHE_CHECKED_AT: dict[str, float] = {}
+_INDEX_SIGNATURE_TTL_SECONDS = 30.0
+_INDEX_UNAVAILABLE_RETRY_SECONDS = 1.0
+
+
+def _history_source_signature(kind: str) -> tuple[tuple[str, int, int], ...]:
+    if kind == "loop_run":
+        signature: list[tuple[str, int, int]] = []
+        for path in (LOOP_RUNS_DB, Path(f"{LOOP_RUNS_DB}-wal")):
+            try:
+                stat = path.stat()
+            except OSError:
+                continue
+            signature.append((path.name, stat.st_mtime_ns, stat.st_size))
+        return tuple(signature)
+    if not EVIDENCE_ROOT.is_dir():
+        return ()
+    signature: list[tuple[str, int, int]] = []
+    for path in sorted(EVIDENCE_ROOT.iterdir()):
+        if not path.is_file():
+            continue
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+        signature.append((path.name, stat.st_mtime_ns, stat.st_size))
+    return tuple(signature)
+
+
+def _history_source_probe(kind: str) -> tuple[tuple[str, int, int], ...]:
+    if kind == "loop_run":
+        return _history_source_signature(kind)
+    try:
+        stat = EVIDENCE_ROOT.stat()
+    except OSError:
+        return ()
+    return ((EVIDENCE_ROOT.name, stat.st_mtime_ns, stat.st_size),)
 
 
 def _cached_index_items(kind: str) -> tuple[list, bool]:
-    import time as _time
-    now = _time.monotonic()
-    hit = _INDEX_CACHE.get(kind)
-    if hit is not None and (now - hit[0]) < _INDEX_TTL_SECONDS:
-        return hit[1]
-    built = _campaign_index_items() if kind == "campaign" else _loop_run_index_items()
-    _INDEX_CACHE[kind] = (now, built)
-    return built
+    with _INDEX_CACHE_LOCK:
+        now = time.monotonic()
+        cached = _INDEX_CACHE.get(kind)
+        checked_at = _INDEX_CACHE_CHECKED_AT.get(kind, 0.0)
+        probe = _history_source_probe(kind)
+        probe_unchanged = _INDEX_CACHE_PROBE.get(kind) == probe
+        if cached is not None and probe_unchanged:
+            if not cached[1][1] and now - checked_at < _INDEX_UNAVAILABLE_RETRY_SECONDS:
+                return cached[1]
+            if cached[1][1] and now - checked_at < _INDEX_SIGNATURE_TTL_SECONDS:
+                return cached[1]
+
+        signature = _history_source_signature(kind)
+        _INDEX_CACHE_CHECKED_AT[kind] = now
+        _INDEX_CACHE_PROBE[kind] = probe
+        if cached is not None and cached[0] == signature and cached[1][1]:
+            return cached[1]
+        built = _campaign_index_items() if kind == "campaign" else _loop_run_index_items()
+        _INDEX_CACHE[kind] = (signature, built)
+        return built
 
 
 @history_router.get("/history/index", response_model=None)

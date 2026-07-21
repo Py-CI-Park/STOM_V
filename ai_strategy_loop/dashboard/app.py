@@ -35,6 +35,7 @@ import sqlite3  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
+import threading  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 import re  # noqa: E402
 from urllib.parse import parse_qs  # noqa: E402
@@ -115,6 +116,160 @@ def _safe_report_path(rel: str) -> Optional[str]:
     if not candidate.lower().endswith(".html") or not os.path.isfile(candidate):
         return None
     return candidate
+
+
+_REPORT_CATALOG_TTL_SECONDS = 30.0
+_REPORT_CATALOG_CACHE: Dict[str, tuple[float, list[Dict[str, Any]]]] = {}
+_REPORT_CATALOG_CACHE_LOCK = threading.RLock()
+_REPORT_MANIFEST_SCHEMA_VERSION = "stom-research-report-v1"
+_REPORT_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _report_manifest_relative_path(prefix: str, report: Dict[str, Any]) -> Optional[str]:
+    report_path = report.get("path")
+    if not isinstance(report_path, str) or not report_path.lower().endswith(".html"):
+        return None
+    normalized = report_path.replace("\\", "/")
+    if (
+        not normalized
+        or normalized.startswith("/")
+        or os.path.isabs(report_path)
+        or any(part in ("", ".", "..") for part in normalized.split("/"))
+    ):
+        return None
+    return f"{prefix}/{normalized}".replace("//", "/")
+
+
+def _failed_report_metadata(reason: str) -> Dict[str, Any]:
+    return {
+        "registered": False,
+        "integrity_status": "failed",
+        "integrity_error": reason,
+    }
+
+
+def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
+    """Return only manifest metadata whose declared file bytes and digest verify."""
+    rows: Dict[str, Dict[str, Any]] = {}
+    for rel_manifest in (
+        "generated_reports/manifest.json",
+        "research/condition_research/reports/research_report_manifest.json",
+    ):
+        manifest_path = os.path.join(root, *rel_manifest.split("/"))
+        prefix = os.path.dirname(rel_manifest).replace("\\", "/")
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except (OSError, ValueError, TypeError):
+            continue
+
+        reports = payload.get("reports") if isinstance(payload, dict) else None
+        manifest_valid = (
+            isinstance(payload, dict)
+            and payload.get("schema_version") == _REPORT_MANIFEST_SCHEMA_VERSION
+            and isinstance(reports, list)
+            and isinstance(payload.get("count"), int)
+            and not isinstance(payload.get("count"), bool)
+            and payload["count"] == len(reports)
+        )
+        if not isinstance(reports, list):
+            continue
+
+        for report in reports:
+            if not isinstance(report, dict):
+                continue
+            rel_path = _report_manifest_relative_path(prefix, report)
+            if rel_path is None:
+                continue
+            if not manifest_valid:
+                rows[rel_path] = _failed_report_metadata("manifest_schema_invalid")
+                continue
+
+            expected_hash = report.get("content_sha256")
+            expected_bytes = report.get("bytes")
+            if (
+                report.get("schema_version") != _REPORT_MANIFEST_SCHEMA_VERSION
+                or not isinstance(expected_hash, str)
+                or _REPORT_SHA256_RE.fullmatch(expected_hash.lower()) is None
+                or not isinstance(expected_bytes, int)
+                or isinstance(expected_bytes, bool)
+                or expected_bytes < 0
+            ):
+                rows[rel_path] = _failed_report_metadata("report_schema_invalid")
+                continue
+
+            full = _safe_report_path(rel_path)
+            if full is None:
+                continue
+            digest = hashlib.sha256()
+            actual_bytes = 0
+            try:
+                with open(full, "rb") as handle:
+                    for chunk in iter(lambda: handle.read(64 * 1024), b""):
+                        actual_bytes += len(chunk)
+                        digest.update(chunk)
+            except OSError:
+                rows[rel_path] = _failed_report_metadata("report_unreadable")
+                continue
+            if actual_bytes != expected_bytes:
+                rows[rel_path] = _failed_report_metadata("bytes_mismatch")
+                continue
+            if digest.hexdigest() != expected_hash.lower():
+                rows[rel_path] = _failed_report_metadata("content_sha256_mismatch")
+                continue
+
+            rows[rel_path] = {
+                "registered": True,
+                "integrity_status": "verified",
+                **{
+                    key: report.get(key)
+                    for key in (
+                        "schema_version", "report_id", "report_type", "research_id",
+                        "run_id", "generation", "cycle", "status", "publication_status", "generator",
+                        "content_sha256", "source_sha256", "trust", "provenance", "toc",
+                        "profile", "evidence", "decision", "limitations",
+                    )
+                    if report.get(key) is not None
+                },
+            }
+    return rows
+
+
+def _report_catalog() -> list[Dict[str, Any]]:
+    """Build a bounded cached catalog and enrich verified registered reports from manifests."""
+    root = _reports_root_abs()
+    now = time.monotonic()
+    with _REPORT_CATALOG_CACHE_LOCK:
+        cached = _REPORT_CATALOG_CACHE.get(root)
+        if cached is not None and now - cached[0] < _REPORT_CATALOG_TTL_SECONDS:
+            return [dict(item) for item in cached[1]]
+
+        metadata = _report_manifest_rows(root)
+        items: list[Dict[str, Any]] = []
+        for base, _dirs, files in os.walk(root):
+            for filename in files:
+                if not filename.lower().endswith(".html"):
+                    continue
+                rel = os.path.relpath(os.path.join(base, filename), root).replace(os.sep, "/")
+                full = _safe_report_path(rel)
+                if full is None:
+                    continue
+                try:
+                    stat = os.stat(full)
+                except OSError:
+                    continue
+                item: Dict[str, Any] = {
+                    "path": rel,
+                    "name": filename,
+                    "bytes": stat.st_size,
+                    "mtime": int(stat.st_mtime),
+                    "registered": False,
+                }
+                item.update(metadata.get(rel, {}))
+                items.append(item)
+        items.sort(key=lambda item: item["path"])
+        _REPORT_CATALOG_CACHE[root] = (now, items)
+        return [dict(item) for item in items]
 
 _DASHBOARD_FAVICON_SVG = (
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
@@ -366,6 +521,90 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 st.close()
             except Exception:  # noqa: BLE001
                 pass
+
+def _runs_slim_payload() -> Dict[str, Any]:
+    """Return run summaries with two readonly queries and no full comparison payload."""
+
+    from collections import defaultdict
+    from ai_strategy_loop.controller import lineage  # noqa: PLC0415
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState(readonly=True)
+        runs = st.list_runs()
+        generation_columns = _slim_generation_columns(st)
+        grouped: Dict[str, list[Dict[str, Any]]] = defaultdict(list)
+        if generation_columns:
+            sql = (
+                "SELECT run_id, " + ", ".join(generation_columns)
+                + " FROM generations ORDER BY run_id, gen_no"
+            )
+            for row in st._con.execute(sql).fetchall():
+                data = dict(row)
+                grouped[str(data.pop("run_id"))].append(data)
+
+        summaries: list[Dict[str, Any]] = []
+        generation_count = 0
+        for run in runs:
+            run_id = run["run_id"]
+            generations = grouped.get(run_id, [])
+            generation_count += len(generations)
+            summary = lineage._summarize_run(run_id, run, generations)
+            labels: list[str] = []
+            for generation in generations:
+                gist = generation.get("strategy_gist")
+                if isinstance(gist, str) and gist and gist not in labels:
+                    labels.append(gist)
+            if labels:
+                summary["label"] = labels[0]
+                summary["labels"] = labels[:8]
+            summaries.append(summary)
+        result: Dict[str, Any] = {
+            "runs": summaries,
+            "count": len(summaries),
+            "generation_count": generation_count,
+        }
+        _sort_runs_by_recency(result)
+        return result
+    except Exception as exc:  # noqa: BLE001 - preserve the full endpoint's unavailable envelope.
+        return {"runs": [], "count": 0, "error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+
+def _slim_generation_columns(state: Any) -> list[str] | None:
+    connection = getattr(state, "_con", None)
+    if connection is None:
+        return None
+    wanted = (
+        "gen_no", "score", "gate_passed", "buy_name", "sell_name", "mdd", "profit",
+        "trade_count", "total_profit_pct", "daily_avg_trades", "max_hold_count",
+        "payoff_ratio", "created_at", "strategy_gist",
+    )
+    available = {
+        row["name"] for row in connection.execute("PRAGMA table_info(generations)").fetchall()
+    }
+    return [column for column in wanted if column in available]
+
+
+
+def _sort_runs_by_recency(result: Dict[str, Any]) -> None:
+    runs = result.get("runs")
+    if not isinstance(runs, list):
+        return
+    now = time.time()
+    runs.sort(
+        key=lambda row: (
+            0 if (row.get("status") == "running"
+                  and (row.get("started_at") or 0) > now - 48 * 3600) else 1,
+            -(row.get("started_at") or 0.0),
+        )
+    )
 
 
 def _attach_run_labels(result: Dict[str, Any]) -> None:
@@ -3364,41 +3603,74 @@ def create_app(
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
-    # v5.6 U9 — 백엔드 로그 링버퍼(읽기 전용 관찰성, Newsletter_AI debug_logger 벤치마크).
-    #   파일 쓰기 없음 · 최근 400건만 메모리 유지 · 민감정보 없는 표준 logging 레코드 표면.
+    # Backend diagnostic ring: process-local, bounded, redacted and session-protected.
     import collections as _collections
     import logging as _logging
+
+    _log_secret = re.compile(
+        r"(?i)(api[_-]?key|token|secret|password|cookie)"
+        r"(\s*[:=]\s*)([^\s,;]+)"
+    )
+    _log_bearer = re.compile(r"(?i)\bauthorization\s*[:=]?\s*bearer\s+[^\s,;]+")
+    _log_absolute_path = re.compile(
+        r"(?i)(?:[a-z]:[\\/][^\s,;]*|\\\\[^\s,;]+|(?<![a-z0-9:])/[^\s,;]+)"
+    )
+    _ring_marker = "_stom_dashboard_ring_handler"
 
     class _RingLogHandler(_logging.Handler):
         def __init__(self, capacity: int = 400) -> None:
             super().__init__(level=_logging.INFO)
             self.buf: "_collections.deque" = _collections.deque(maxlen=capacity)
+            setattr(self, _ring_marker, True)
 
         def emit(self, record: _logging.LogRecord) -> None:
             try:
+                message = self.format(record)
+                message = _log_bearer.sub("Authorization: Bearer <redacted>", message)
+                message = _log_secret.sub(r"\1\2<redacted>", message)
+                message = _log_absolute_path.sub("<absolute-path>", message)
                 self.buf.append({
                     "ts": record.created,
                     "level": record.levelname,
                     "logger": record.name,
-                    "msg": self.format(record)[:500],
+                    "msg": message[:500],
                 })
             except Exception:
-                pass
+                self.handleError(record)
 
     _ring = _RingLogHandler()
     _ring.setFormatter(_logging.Formatter("%(message)s"))
-    for _name in ("", "uvicorn", "uvicorn.access", "uvicorn.error", "ai_strategy_loop"):
-        try:
-            _logging.getLogger(_name).addHandler(_ring)
-        except Exception:
-            pass
+    _loggers = [_logging.getLogger()]
+    for _name in ("uvicorn", "uvicorn.access", "uvicorn.error", "ai_strategy_loop"):
+        _logger = _logging.getLogger(_name)
+        if not _logger.propagate:
+            _loggers.append(_logger)
+    for _logger in _loggers:
+        for _old in tuple(_logger.handlers):
+            if getattr(_old, _ring_marker, False):
+                _logger.removeHandler(_old)
+        _logger.addHandler(_ring)
 
     @app.get("/debug/logs")
-    def debug_logs(lines: int = 200) -> Dict[str, Any]:
-        """최근 백엔드 로그 tail(읽기 전용) — 설정 탭 로그 뷰어 소비. 파일/쓰기 없음."""
+    def debug_logs(request: Request, lines: int = 200) -> Response:
+        """Return a redacted diagnostic tail only to a bootstrapped dashboard session."""
+
+        if not security.session_valid(request):
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "status": "error",
+                    "code": "session_required",
+                    "message": "valid dashboard session required",
+                },
+                headers={"WWW-Authenticate": "Session"},
+            )
         n = max(1, min(400, lines))
         rows = list(_ring.buf)[-n:]
-        return {"count": len(rows), "logs": rows}
+        return JSONResponse(
+            {"count": len(rows), "logs": rows},
+            headers={"Cache-Control": "no-store, private"},
+        )
 
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon() -> Response:
@@ -3427,24 +3699,15 @@ def create_app(
 
     @app.get("/reports")
     def reports() -> Dict[str, Any]:
-        """docs/ 하위 *.html 리포트 목록(읽기 전용·무예외). 루트 하위만 walk — traversal 무관."""
-        root = _reports_root_abs()
-        items: list = []
-        for base, _dirs, files in os.walk(root):
-            for fn in files:
-                if not fn.lower().endswith(".html"):
-                    continue
-                rel = os.path.relpath(os.path.join(base, fn), root).replace(os.sep, "/")
-                full = _safe_report_path(rel)
-                if full is None:
-                    continue
-                try:
-                    st = os.stat(full)
-                    items.append({"path": rel, "name": fn, "bytes": st.st_size, "mtime": int(st.st_mtime)})
-                except OSError:
-                    continue
-        items.sort(key=lambda x: x["path"])
-        return {"root": "docs", "count": len(items), "reports": items}
+        """Return a cached HTML catalog enriched by canonical report manifests."""
+
+        items = _report_catalog()
+        return {
+            "root": "docs",
+            "count": len(items),
+            "registered_count": sum(1 for item in items if item.get("registered")),
+            "reports": items,
+        }
 
     @app.get("/reports/view")
     def reports_view(path: str = "") -> Response:
@@ -3599,19 +3862,20 @@ def create_app(
         2026-06-11부터 최신 우선 정렬(running 최상단) — _runs_payload 참조.
         v5.6 U7 — ?fields=slim: 목록 UI가 쓰는 필드만 남겨 3MB→수십KB(히스토리/셀렉터 성능).
         """
-        payload = _runs_payload(None)
         if fields == "slim":
-            # 목록/비교 표 UI 소비 필드만 유지 + 대형 generation_rows(2.8MB) 제외
-            # (세대 상세 정본 경로는 /runs/compare?ids=).
+            # This summary path deliberately never calls compare_runs(): that function
+            # emits every generation row before callers can project it away.
+            payload = _runs_slim_payload()
             keep = ("run_id", "label", "status", "started_at", "finished_at", "elapsed_sec",
                     "period", "timeframe", "gen_count", "gate_passed_count", "best_gen", "best_score",
                     "has_csv", "final_profit", "total_profit_pct", "max_hold_count", "trade_count",
                     "years", "start_year", "end_year", "bt_universe_start_time", "bt_universe_end_time")
             rs = payload.get("runs") or []
-            payload = {k: v for k, v in payload.items() if k != "generation_rows"}
             payload["runs"] = [{k: r.get(k) for k in keep if k in r} for r in rs]
             payload["fields"] = "slim"
             payload["generation_rows_omitted"] = True
+        else:
+            payload = _runs_payload(None)
         return payload
 
     @app.get("/ops_status")

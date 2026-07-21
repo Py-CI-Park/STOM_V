@@ -1,7 +1,7 @@
 # STOM 웹 대시보드 설계 문서 (design.md)
 
-> 2026-06-13 · Phase 6 (사용자 요청 S6: "이런 대시보드들이 가지고 있는 특징들, 잘 개발하기 위한 design.md").
-> 적용 대상: V4 8탭([Research|Backtest|Replay|History|Lab|Workbench|Audit|Context])과 공통 셸.
+> 2026-07-20 · Dashboard v5.6+ 정본 설계 계약.
+> 적용 대상: V4 정본 셸 9탭([Live|History|Reports|성과|Backtest|Replay|연구 자산|설정|용어])과 Context drawer.
 
 ## 1. 이 대시보드의 정체성
 
@@ -76,18 +76,18 @@
 
 ## 4. 아키텍처 제약 (이 환경의 사실)
 
-- 프런트는 **in-browser Babel JSX**: import/export·TS 불가, 컴포넌트는 window 전역,
-  파일별 훅 별칭. 외부 CDN 금지 — 벤더는 저장소에 동봉(lightweight-charts 등).
-- `index.html`의 `?v=` 캐시 버전은 계약 테스트(`test_index_html_cache_bumped`)와 동기 —
-  jsx 수정 시 반드시 버전 범프.
+- 프런트 JSX는 `dashboard/webui-build/build-app.mjs`의 **esbuild 단일 번들**로 컴파일한다.
+  window 전역은 legacy 호환 경계일 뿐 신규 모듈 소유권이 아니다. 외부 CDN은 금지하고 벤더는 저장소에 동봉한다.
+- `npm run build`가 JSX runtime gate, Vite library, `app.js` content hash와 모든 HTML `?v=`를 함께 갱신한다.
+  JSX/CSS 수정 후 번들과 HTML pin을 반드시 커밋한다.
 - **React 참조 규약**: 스트림 누적 데이터는 immutable append(새 배열 생성)로 갱신한다.
   같은 배열을 push로 mutate하면 `useEffect` deps가 변화를 감지하지 못해 차트가 동결된다
   (Phase 6 봉 1개 버그의 실제 원인 — 회귀 금지).
 - 차트 렌더 경로는 3종: ① Canvas `SimLiveChart`(라이브 리플레이 기본 — 성장 캔들·플래시),
   ② lightweight-charts(정밀 탐색·줌), ③ SVG(의존성 zero 보장 경로). 데이터 공급 인터페이스(bars 배열)는 동일하게 유지한다.
 - 파일 분리: 탭당 로직 jsx + 차트 jsx, 800줄 초과 시 분할(예: sim-live-chart.jsx).
-- 부모 핫파일(`app.py`·`app.jsx`·`research-lab.jsx`)은 외과수술적 최소 수정 —
-  새 기능은 신규 파일 + 등록 줄 패턴(evolution-analysis.jsx·research-pro.jsx 선례).
+- 부모 핫파일(`app.py`, `dashboard-v4-shell.jsx`, `styles.css`, `v4.css`)은 공용 계약만 소유한다.
+  신규 기능은 owner feature 파일에 구현하고, 같은 selector를 파일 끝에서 다시 덮는 버전별 CSS patch를 금지한다.
 
 ## 5. 데이터 흐름 요약
 
@@ -136,18 +136,20 @@ ai_strategy_loop state ─ app.py 읽기 라우트 ─ 진화 탭·리서치랩(
 아직 데이터가 없음을, `error`는 요청 실패와 재시도를, `blocked`는 정책·gate·capability로
 진행할 수 없음과 해제 조건을 뜻한다. 이 네 상태를 같은 "데이터 없음" 문구로 합치지 않는다.
 
-## 7. 8개 탭 화면 계약
+## 7. 현재 9개 탭과 Context drawer 화면 계약
 
-| 탭 | 사용자 목표와 primary journey | 첫 화면의 필수 데이터/그래프 | 상태·위험 동작 | 375px collapse 순서 | 키보드/ARIA |
-|---|---|---|---|---|---|
-| **Research** | 연구 시작 → 실제 단계/세대/시간/로그 관찰 → 승자 검토 → 서버가 허용할 때만 승인 | 적합도/수익 추이 hero chart, `ProcessTimeline`, 단계별 시간, blocker, 최신 로그, winner 근거 | empty는 시작 안내, loading은 현재 단계만, error는 재연결, blocked는 gate 사유. start/stop/final approval는 danger이며 final approval default-OFF | authority/run → timeline → hero chart → metrics → blockers/log → winner/action | 단계 변경은 polite live region, 실패는 alert. 차트에는 텍스트 요약과 동일 데이터 표 제공 |
-| **Backtest** | 전략 선택 → 실행 → queue/진행 확인 → 취소 또는 결과 분석 | equity+MDD chart, status/queue, 핵심 성과, trades, 실행 로그 | 전략 없음/queued/running/error/cancelled/blocked를 구분. run/cancel 및 strategy write는 확인·서버 capability 필요 | selector/action → status → equity/MDD → metrics → trades → log | 실행/취소 결과를 live region에 알리고, trades 표의 헤더·정렬 상태를 노출 |
-| **Replay** | 세션 선택 → play/pause → 정확한 index seek → speed 변경 → 특정 frame 검토 | timestamp candle canvas, frame index/전체, 실제 경과시간, speed, 주문흐름/제공 데이터 한계 | source empty/loading/error/ended/blocked. start/seek/stop은 활성 Replay에서만 동작 | session/status → canvas → transport → timestamp/metrics → tape/detail | transport 이름·현재값 노출. 단축키는 활성 panel에서 비편집 focus일 때만; 숨은 Replay는 inert |
-| **History** | archive 선택 → 로드 → 세대/성과 탐색 → 두 run 비교 또는 관련 탭 이동 | run 목록, fitness/equity summary, generation table, 비교 delta | archive empty/loading/error/stale. 로드 실패 시 live 데이터로 대체 금지; 삭제·승인은 제공하지 않음 | selector/error → summary → chart → generation list → compare/actions | 선택 행과 비교 대상을 명시하고, 표 캡션·헤더·정렬 상태 제공 |
-| **Lab** | factor/edge view 선택 → 분포·상관·안정성 검사 → 근거를 후보와 연결 | factor importance/distribution, edge decay, correlation heatmap, sample/OOS 범위 | 표본 부족/계산 중/error/blocked를 구분. 분석 결과는 연구 근거이며 승인 권한이 아님 | scope/filter → primary factor chart → edge/correlation → sample caveat → detail | Canvas/SVG마다 요약·범례·data table, 필터 label과 선택 상태 제공 |
-| **Workbench** | 후보 선택 → 나란히 비교 → 차이/constraint 확인 → Backtest/Context로 이동 | candidate comparison chart/table, 조건식 diff, hard-gate/score breakdown | 후보 부족/loading/error/stale. 선택/이동은 안전, export/approval은 여기서 수행 금지 | candidate selector → comparison summary → chart → diff → gates → actions | 비교 대상 수와 기준을 announce, diff는 줄 번호·추가/삭제를 텍스트로도 전달 |
-| **Audit** | 기간/actor/action 필터 → decision 추적 → evidence 펼침 → ID 복사 | append-only timeline/table, capability·run/gen·hash linkage | empty/loading/error/tamper-warning/blocked. 기록 수정·삭제 UI 금지, decision write default-OFF | filters → warning/summary → trace list → expanded evidence → copy | 필터 fieldset/legend, 행 expand 상태, copy 결과 live region; 색만으로 outcome 구분 금지 |
-| **Context** | run/gen 선택 → exact context pack 읽기 → 섹션 탐색 → 전체/부분 복사 | source IDs/hashes, prompt/rules/strategy/evidence sections, truncation 여부 | pack empty/loading/error/stale/blocked. 민감값은 서버가 제외; copy는 원문과 해시를 바꾸지 않음 | identity/hash → section nav → context body → truncation note → copy actions | heading outline, labelled code region, copy 대상/결과 announce, 가로 긴 코드는 owned region에서만 scroll |
+| 탭 | 사용자 목표와 primary journey | 첫 화면의 필수 데이터/그래프 | 상태·위험 동작 | 키보드/ARIA |
+|---|---|---|---|---|
+| **Live** | 연구 시작 → 단계/세대/시간/로그 관찰 → 승자 검토 | 통합 상황판, 적합도·수익·MDD·품질, blocker, 조건식, 단계 matrix | 정본 `complete` 포함 상태를 명시하고 error/partial/stale을 derived 값으로 가리지 않음 | 단계 변경 polite live region, 차트 텍스트 요약 |
+| **History** | campaign/run 선택 → 동일 research ID의 계보·비교·근거 탐색 | archive table, selected context, tree/A-B/heatmap/funnel, governance | archive 실패를 live로 대체하지 않으며 source-kind 비호환 패널은 독립 상태로 표시 | 선택 ID·행·정렬·접힘 상태 노출 |
+| **Reports** | 연구→run→stage 보고서 검색 → 결론/근거 확인 → 원문 열람 | typed catalog, status/trust/hash/provenance, decision/evidence, metadata TOC, sandbox iframe | 미등록 HTML은 `미등록·검증 불가` 격리; broken/stale/hash mismatch는 정상 보고서로 표시 금지 | mode tabs roving focus, TOC anchor, iframe title |
+| **성과** | 비교 가능한 인간/AI 성과 benchmark 탐색 | Hall of Fame, profile/기간, baseline, OOS 근거 | profile이 다르면 delta 금지; 표본 내 성과를 운영 증명으로 승격 금지 | 표 caption·정렬·필터 상태 |
+| **Backtest** | 전략 선택 → 실행 → queue/진행 → 결과·민감도 분석 | equity+MDD, status, trades, GUI parity, quant matrix | queued/running/error/cancelled/blocked 구분, capability 경계 유지 | 실행 결과 live region, table headers |
+| **Replay** | 세션 선택 → play/pause/seek/speed → frame 검토 | timestamp candle, frame index, 실제 경과시간, 주문흐름 | 활성 Replay에서만 제어; hidden keep-alive panel은 inert | transport 이름·현재값·단축키 scope |
+| **연구 자산** | 비정본 연구 자산과 판정 연혁 탐색 | catalog counts, provenance, preview 상태 | 비정본 prototype을 정본 결과처럼 표시 금지 | view tabs와 table headers |
+| **설정** | density/theme/layout/log 등 대시보드 표시 관리 | 현재 값, 적용 범위, reset, redacted logs | 로그는 session 보호·redaction, 위험 설정은 disabled reason | label/control 연결, focus 순서 |
+| **용어** | 지표·분석·거버넌스 용어 검색과 문맥 이동 | 검색, anchor, 현재 패널 관련 용어 | 정적 설명을 판정 근거로 오인 금지 | heading outline·anchor |
+| **Context drawer** | 선택 research/run/gen의 exact context pack 열람·복사 | source IDs/hashes, prompt/rules/strategy/evidence | 민감값 제외, truncation/stale 표시 | dialog focus trap/restore, labelled code region |
 
 ### 7.1 Research graph-first viewport의 고정 위계
 
@@ -160,12 +162,12 @@ LIVE/archive와 authority, 실제 `current_step`/`current_gen`이 있고, 옆 �
 
 ## 8. 탭 내비게이션 exact ARIA 계약
 
-1. 8개 탭을 포함하는 단일 요소는 `role="tablist"`와 접근 가능한 이름을 가진다.
+1. 9개 탭을 포함하는 단일 요소는 `role="tablist"`와 접근 가능한 이름을 가진다.
 2. 각 tab의 안정 ID는 `v4-tab-{key}`, panel은 `v4-panel-{key}`다. tab은
    `aria-controls`, `aria-selected`; panel은 `role="tabpanel"`, `aria-labelledby`로
    양방향 연결한다.
 3. 선택 tab만 `tabIndex=0`, 나머지는 `-1`이다. `ArrowRight`/`ArrowLeft`는 순환,
-   `Home`/`End`는 첫/마지막 tab으로 이동하고 즉시 선택한다. 이 자동 활성화 모델은 8개
+   `Home`/`End`는 첫/마지막 tab으로 이동하고 즉시 선택한다. 이 자동 활성화 모델은 현재 9개
    panel이 로컬이며 전환이 지연되지 않는다는 전제다.
 4. 키 이동 후 focus는 선택 tab에 남고 panel로 강제 이동하지 않는다. 포인터 전환으로
    숨을 panel 안에 focus가 있었다면 새 선택 tab으로 회수한다.
@@ -228,13 +230,13 @@ keyboard/accessibility 15, visual hierarchy/feedback 15, automated+real-browser 
 계산한다. P0/P1, console/page error, 미검증 primary journey, global overflow, 오해를 부르는
 상태, stale capture 중 하나라도 있으면 최대 94점이다.
 
-- fresh installed Chrome에서 8탭 × 375/768/1280 × dark/light = 48개 기본 surface를
+- fresh installed Chrome에서 9탭 × 375/768/1280/1920/2560/3440 × dark/light를
   캡처하고, 별도로 200% zoom, reduced motion, 긴 CJK, empty/large dataset을 검증한다.
 - 모든 화면에서 `document.documentElement.scrollWidth <= clientWidth`; 넘침은 이름 붙은
   owned `DataRegion` 안에서만 허용한다.
-- tablist는 tab 8, `aria-selected=true` 1, `tabIndex=0` 1, 노출 tabpanel 1이다.
+- tablist는 tab 9, `aria-selected=true` 1, `tabIndex=0` 1, 노출 tabpanel 1이다.
   좌/우/Home/End, focus retention, hidden Replay inert를 실제 키보드로 검증한다.
-- 8탭의 empty/loading/error/blocked와 danger action denied/pending/success/error를 fixture로
+- 9탭의 empty/loading/error/partial/stale/blocked와 danger action denied/pending/success/error를 fixture로
   렌더한다. Canvas는 non-empty pixels와 예상 draw/interaction event를 함께 증명한다.
 - dark/light의 본문 AA, focus/비텍스트 상태 3:1, 375px touch 44×44, console/page/request
   error 0을 확인한다. 새 raw color·spacing bypass·중복 primitive는 0이어야 한다.
@@ -243,6 +245,6 @@ keyboard/accessibility 15, visual hierarchy/feedback 15, automated+real-browser 
 
 ### 12.1 저장소 품질 게이트 (모든 Phase 공통)
 
-전체 pytest 신규 실패 0(pre-existing 제외) · verifier · vendor-babel 구문 검사 ·
-실데이터 스모크 · **Playwright 스크린샷**(육안 회귀 — 특히 차트 렌더) · 캐시 계약 동기 ·
-부모 사전 동기화 후 PR → 머지 → wt-dev 8770 재기동.
+전체 pytest 신규 실패 0 · nonrelease verifier · runtime JSX/esbuild build ·
+실데이터 스모크 · 실제 Chromium 스크린샷/geometry/network/console 검사 · cache/manifest/hash 계약 동기 ·
+부모 사전 동기화 후 page branch → integration branch → wt-dev 8770 재기동.

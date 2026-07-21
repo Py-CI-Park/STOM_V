@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import pytest
 
 from ai_strategy_loop.dashboard.report_writer import (
     STANDARD_SECTIONS,
+    normalize_manifest,
     render_report_html,
     write_report,
     write_reports,
 )
+import ai_strategy_loop.dashboard.report_writer as report_writer
 
 
 def _spec() -> dict:
@@ -67,14 +70,44 @@ def test_write_report_atomic_and_manifest_entry(tmp_path: Path) -> None:
     assert entry["provenance"] == ".omo/evidence/tmap-walkforward"
 
 
-def test_write_reports_manifest_shape(tmp_path: Path) -> None:
+def test_write_reports_manifest_shape_and_typed_envelope(tmp_path: Path) -> None:
     manifest_path = tmp_path / "manifest.json"
-    manifest = write_reports([_spec(), _spec()], str(tmp_path), str(manifest_path))
+    second = _spec()
+    second["step_id"] = "stage3"
+    manifest = write_reports([_spec(), second], str(tmp_path), str(manifest_path))
+    assert manifest["schema_version"] == "stom-research-report-v1"
+    assert manifest["status"] == "complete"
+    assert manifest["generator"] == "ai_strategy_loop.dashboard.report_writer"
     assert manifest["count"] == 2
     assert set(manifest["limits"]) == {"max_reports", "max_bytes_each"}
     on_disk = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert on_disk["count"] == 2 and len(on_disk["reports"]) == 2
-    assert all(len(r["sha256"]) == 64 for r in on_disk["reports"])
+    for report in on_disk["reports"]:
+        assert report["report_type"] == "step"
+        assert report["run_id"] == "r8_exclude_cap"
+        assert report["generation"] is None and report["cycle"] is None
+        assert report["status"] == "complete"
+        assert len(report["content_sha256"]) == len(report["source_sha256"]) == 64
+        assert report["sha256"] == report["content_sha256"]  # legacy alias
+        assert report["toc"][0] == {"id": "sec-hypothesis", "label": "가설 / 원인"}
+        assert report["content_sha256"] == __import__("hashlib").sha256(
+            (tmp_path / report["path"]).read_bytes()
+        ).hexdigest()
+def test_normalize_manifest_reads_legacy_shape() -> None:
+    legacy = {
+        "generated_at": "2026-07-19T00:00:00Z",
+        "count": 1,
+        "reports": [{
+            "research_id": "legacy-run", "step_id": "gen7", "path": "legacy-run__gen7.html",
+            "sha256": "a" * 64, "bytes": 1, "trust": "derived",
+        }],
+    }
+    normalized = normalize_manifest(legacy)
+    report = normalized["reports"][0]
+    assert normalized["schema_version"] == "stom-research-report-v1"
+    assert report["generation"] == 7 and report["content_sha256"] == "a" * 64
+    assert report["sha256"] == "a" * 64  # legacy consumer remains supported
+
 
 def test_specs_from_loop_runs_builds_standard_specs(tmp_path: Path) -> None:
     # V6.4(S5): loop_runs.db → 세대별 스텝 spec 자동 구성(SELECT-only·오프라인).
@@ -135,4 +168,119 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     assert 'id="sec-flow"' in html and 'id="gen-1"' in html  # TOC 앵커
     assert "gate 통과 ✓" in html  # gen3 통과 마커
     assert "performance_proved=false" in html  # 안전 문구
-    assert "/reports/view?path=generated_reports/runB__gen1.html" in html  # 스텝 리포트 링크
+    assert "/reports/view?path=generated_reports/runB__gen1.html" not in html  # 생성하지 않은 상세 리포트 링크 금지
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["reports"][0]["report_type"] == "run"
+    assert manifest["reports"][0]["status"] == "done"
+    assert manifest["reports"][0]["publication_status"] == "complete"
+    assert manifest["reports"][0]["content_sha256"] == written[0]["content_sha256"]
+    assert "누적 profit" not in html
+    assert "profit 중앙값" in html and "best−중앙값" in html
+    assert "좌상단=저위험·고성과" in html and "표본 n=3" in html
+
+
+def test_publish_manifest_preserves_valid_siblings_and_drops_tampered_entries(tmp_path: Path) -> None:
+    first = _spec()
+    first["research_id"] = "first"
+    first["step_id"] = "stage1"
+    second = _spec()
+    second["research_id"] = "second"
+    second["step_id"] = "stage2"
+
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    merged = write_reports([second], str(tmp_path), str(manifest_path))
+
+    assert {entry["research_id"] for entry in merged["reports"]} == {"first", "second"}
+    assert (tmp_path / "first__stage1.html").exists()
+    assert (tmp_path / "second__stage2.html").exists()
+
+    (tmp_path / "first__stage1.html").write_text("tampered", encoding="utf-8")
+    third = _spec()
+    third["research_id"] = "third"
+    third["step_id"] = "stage3"
+    repaired = write_reports([third], str(tmp_path), str(manifest_path))
+    assert {entry["research_id"] for entry in repaired["reports"]} == {"second", "third"}
+def test_publish_reports_rolls_back_replaced_files_when_later_replacement_fails(tmp_path: Path, monkeypatch) -> None:
+    first = _spec()
+    first["research_id"] = "first"
+    first["step_id"] = "stage1"
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    old_manifest = manifest_path.read_bytes()
+    old_first = (tmp_path / "first__stage1.html").read_bytes()
+
+    updated = dict(first, analysis="new bytes must not survive a failed publication")
+    second = dict(_spec(), research_id="second", step_id="stage2")
+    real_replace = report_writer.os.replace
+
+    def fail_second_replace(source: str, destination: str) -> None:
+        if Path(destination) == tmp_path / "second__stage2.html":
+            raise OSError("injected replacement failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(report_writer.os, "replace", fail_second_replace)
+    with pytest.raises(OSError, match="injected replacement failure"):
+        write_reports([updated, second], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == old_manifest
+    assert (tmp_path / "first__stage1.html").read_bytes() == old_first
+    assert not (tmp_path / "second__stage2.html").exists()
+
+
+def test_loop_runs_source_digest_includes_committed_wal_rows(tmp_path: Path) -> None:
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import specs_from_loop_runs
+
+    db = tmp_path / "loop_runs.db"
+    writer = sqlite3.connect(db)
+    writer.execute("PRAGMA journal_mode=WAL")
+    writer.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, status TEXT, best_gen INTEGER, best_score REAL)")
+    writer.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, mdd REAL, profit REAL, trade_count INTEGER, gate_passed INTEGER, reason TEXT, strategy_gist TEXT, created_at REAL)")
+    writer.execute("INSERT INTO runs VALUES ('wal-run', 'complete', 1, 1.0)")
+    writer.execute("INSERT INTO generations VALUES ('wal-run', 1, 'b', 's', 'success', 1.0, 2, 3, 4, 1, '', '', 1752900000)")
+    writer.commit()
+    before = specs_from_loop_runs(str(db))[0]["source_sha256"]
+    writer.execute("UPDATE generations SET score = 2.0 WHERE run_id = 'wal-run'")
+    writer.commit()
+    after = specs_from_loop_runs(str(db))[0]["source_sha256"]
+    writer.close()
+
+    assert before != after
+
+
+def test_run_report_excludes_failed_measurements_and_preserves_unavailable_evidence(tmp_path: Path) -> None:
+    import sqlite3
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    from build_step_reports import build_run_report
+
+    db = tmp_path / "loop_runs.db"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE runs (run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT, status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL)")
+    conn.execute("CREATE TABLE generations (run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT, status TEXT, score REAL, mdd REAL, profit REAL, trade_count INTEGER, gate_passed INTEGER, reason TEXT, strategy_gist TEXT)")
+    conn.execute("INSERT INTO runs VALUES ('runC', 1, '{}', 'complete', 1, 10, 2)")
+    conn.execute("INSERT INTO generations VALUES ('runC', 1, 'b', 's', 'ok', 10, 2, 100, 5, 1, '', '')")
+    conn.execute("INSERT INTO generations VALUES ('runC', 2, 'b', 's', 'error', 0, 0, 0, 0, 0, 'failed', '')")
+    conn.commit()
+    conn.close()
+
+    written = build_run_report(str(db), str(tmp_path))
+    html = (tmp_path / "run_report_runC.html").read_text(encoding="utf-8")
+    assert "평균 score</div><div style=\"font-size:18px;font-weight:700\">10.00" in html
+    assert "성과 집계 제외: 1건" in html
+    assert "unavailable: RuntimeError" in html
+    assert written[0]["evidence"]["prompts"] is None
+    assert written[0]["evidence"]["availability"]["prompts"] == "unavailable: RuntimeError"
+
+
+def test_standard_report_has_scriptless_internal_navigation_and_print_contract() -> None:
+    html = render_report_html(_spec())
+
+    assert '<meta name="viewport"' in html
+    assert '<nav class="tabs" aria-label="보고서 섹션">' in html
+    assert 'href="#sec-hypothesis"' in html
+    assert "@media print" in html
+    assert "<script" not in html

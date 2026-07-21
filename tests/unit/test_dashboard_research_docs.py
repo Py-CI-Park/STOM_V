@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import os
+import json
 import sys
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
@@ -71,3 +73,81 @@ def test_research_doc_rejects_traversal(monkeypatch, tmp_path: Path) -> None:
     assert body["available"] is False
     assert body["error"] == "doc_not_allowed"
     assert "markdown" not in body
+def test_research_docs_without_limit_returns_full_set(monkeypatch, tmp_path: Path) -> None:
+    from ai_strategy_loop.dashboard import research_api
+
+    rows = {
+        f"docs/research/condition_research/doc_{index}.md": (
+            tmp_path / f"doc_{index}.md",
+            {
+                "id": f"docs/research/condition_research/doc_{index}.md",
+                "title": f"Doc {index}",
+                "category": "condition_research",
+                "updated_at": "",
+                "size": index,
+            },
+        )
+        for index in range(3)
+    }
+    monkeypatch.setattr(research_api, "_doc_index", lambda: rows)
+
+    full = research_api.research_docs()
+    paged = research_api.research_docs(limit=2)
+
+    assert full["count"] == full["total"] == 3
+    assert full["next_offset"] is None
+    assert paged["count"] == 2
+    assert paged["total"] == 3
+    assert paged["next_offset"] == 2
+
+
+def test_research_doc_rejects_symlink_outside_allowlisted_root(monkeypatch, tmp_path: Path) -> None:
+    from ai_strategy_loop.dashboard import research_api
+
+    repo = tmp_path / "repo"
+    document = repo / "docs" / "research" / "condition_research" / "linked.md"
+    document.parent.mkdir(parents=True)
+    secret = tmp_path / "secret.md"
+    secret.write_text("# Secret\n", encoding="utf-8")
+    try:
+        document.symlink_to(secret)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    doc_id = "docs/research/condition_research/linked.md"
+    summary = {"id": doc_id, "title": "Linked", "category": "condition_research", "updated_at": "", "size": 0}
+    monkeypatch.setattr(research_api, "REPO_ROOT", repo)
+    monkeypatch.setattr(research_api, "_doc_index", lambda: {doc_id: (document, summary)})
+
+    response = research_api.research_doc(doc_id)
+
+    assert response == {"available": False, "error": "doc_not_allowed", "id": doc_id}
+
+
+def test_tracked_research_docs_sidecar_matches_allowlisted_sources() -> None:
+    from ai_strategy_loop.dashboard import research_api
+    from scripts import build_research_docs_index
+
+    sidecar = research_api._DOC_INDEX_SIDECAR
+    payload = build_research_docs_index.build_index(sidecar)
+
+    assert build_research_docs_index.index_matches(sidecar, payload)
+
+
+def test_research_docs_sidecar_parity_ignores_checkout_mtime(tmp_path: Path) -> None:
+    from scripts import build_research_docs_index
+
+    payload = {
+        "schema_version": "stom-research-doc-index-v1",
+        "source_fingerprint": "content-hash",
+        "count": 1,
+        "docs": [{"id": "docs/a.md", "title": "A", "size": 1, "updated_at": "new"}],
+    }
+    tracked = {
+        **payload,
+        "docs": [{**payload["docs"][0], "updated_at": "old"}],
+    }
+    sidecar = tmp_path / "research_docs_index.json"
+    sidecar.write_text(json.dumps(tracked), encoding="utf-8")
+
+    assert build_research_docs_index.index_matches(sidecar, payload)

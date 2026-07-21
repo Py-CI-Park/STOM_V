@@ -591,7 +591,7 @@ V4_RUNNING_STATE.page_data = {
 const V4_DASHBOARD_PAGES = [
   { page: "v4shell", global: "DashboardV4Shell" }, // Research Live (default tab), idle
   { page: "v4shell-running", global: "DashboardV4Shell", state: V4_RUNNING_STATE,
-    needles: ["research-observability-grid", "research allowed"] }, // Research Live + observability grid
+    needles: ["v6-board", "research allowed"] }, // Research Live board + authoritative status
   { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // BacktestTab
   { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // SimulationTab (keep-alive shell)
   { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // ResearchHeatmap + ResearchLab
@@ -635,7 +635,7 @@ async function runPageOnce({ page, global: globalName, state, path, needles }) {
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
   const missingNeedles = (needles || []).filter((n) => !rootHtml.includes(n));
   const canvasDrawEvents = window.__HARNESS_CANVAS_EVENTS__.length;
-  const canvasRequired = page === "v4shell" || page === "v4shell-running";
+  const canvasRequired = page === "v4shell-running";
   const pass = componentIsFn && !mountError && errs.length === 0 && rootNonEmpty
     && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0
     && (!canvasRequired || canvasDrawEvents > 0);

@@ -48,7 +48,7 @@ function rcDefaultCompareIds(runs) {
   return matched.length >= 2 ? matched : runs.slice(0, 2).map(r => r.run_id);
 }
 
-function RunComparePanel({ baseUrl, wsStatus }) {
+function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
   const [runs, setRuns] = useState_rc([]);
   const [selected, setSelected] = useState_rc([]);
   const [compareRows, setCompareRows] = useState_rc([]);
@@ -78,6 +78,11 @@ function RunComparePanel({ baseUrl, wsStatus }) {
   }, [baseUrl, isDemo, selected.length]);
 
   useEffect_rc(() => { refresh(); }, [refresh]);
+  useEffect_rc(() => {
+    if (!preferredResearchId || !preferredResearchId.startsWith("loop_run:")) return;
+    const runId = preferredResearchId.slice("loop_run:".length);
+    if (runs.some(run => run.run_id === runId)) setSelected([runId]);
+  }, [preferredResearchId, runs]);
 
   useEffect_rc(() => {
     if (isDemo || !baseUrl || !selected.length) {
@@ -122,6 +127,9 @@ function RunComparePanel({ baseUrl, wsStatus }) {
           <div className="run-compare-empty">No recorded runs.</div>
         ) : (
           <div className="run-compare-shell">
+            {preferredResearchId && !preferredResearchId.startsWith("loop_run:") && (
+              <div className="run-compare-empty">선택 연구 {preferredResearchId}는 Run Compare와 호환되지 않습니다. 이 패널은 독립 run 비교입니다.</div>
+            )}
             <div className="run-compare-kpis">
               <span>runs={runs.length}</span>
               <span>selected={selected.length}</span>

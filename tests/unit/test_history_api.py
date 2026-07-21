@@ -254,6 +254,20 @@ class TestHistoryIndex:
         assert "ab_role" not in item
         # loop_run_env는 gate_passed=True인 세대 2개를 심는다.
         assert item["gate_passed_count"] == 2
+        assert item["condition_tree_status"] == "success"
+
+    def test_loop_run_signature_changes_when_wal_changes(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        db_path = tmp_path / "loop_runs.db"
+        db_path.write_bytes(b"database")
+        monkeypatch.setattr(history_api, "LOOP_RUNS_DB", db_path)
+        before = history_api._history_source_signature("loop_run")
+        wal_path = Path(f"{db_path}-wal")
+        wal_path.write_bytes(b"new transaction")
+        after = history_api._history_source_signature("loop_run")
+        assert before != after
+        assert wal_path.name in {name for name, _, _ in after}
 
     def test_campaign_item_carries_series_without_gate_passed_count(
         self, client: TestClient, campaign_env: Path

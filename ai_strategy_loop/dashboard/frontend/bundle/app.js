@@ -120,9 +120,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js
   var require_use_sync_external_store_shim_development = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js"(exports) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js"(exports) {
       "use strict";
       (function() {
         function is(x, y) {
@@ -184,9 +184,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js
   var require_shim = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -196,9 +196,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js
   var require_with_selector_development = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js"(exports) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js"(exports) {
       "use strict";
       (function() {
         function is(x, y) {
@@ -263,9 +263,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js
   var require_with_selector = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/use-sync-external-store/shim/with-selector.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -275,9 +275,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js
   var require_listCacheClear = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheClear.js"(exports, module) {
       function listCacheClear() {
         this.__data__ = [];
         this.size = 0;
@@ -286,9 +286,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js
   var require_eq = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/eq.js"(exports, module) {
       function eq(value, other) {
         return value === other || value !== value && other !== other;
       }
@@ -296,9 +296,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js
   var require_assocIndexOf = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assocIndexOf.js"(exports, module) {
       var eq = require_eq();
       function assocIndexOf(array2, key) {
         var length = array2.length;
@@ -313,9 +313,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js
   var require_listCacheDelete = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheDelete.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       var arrayProto = Array.prototype;
       var splice = arrayProto.splice;
@@ -337,9 +337,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js
   var require_listCacheGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheGet.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheGet(key) {
         var data = this.__data__, index2 = assocIndexOf(data, key);
@@ -349,9 +349,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js
   var require_listCacheHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheHas.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheHas(key) {
         return assocIndexOf(this.__data__, key) > -1;
@@ -360,9 +360,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js
   var require_listCacheSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_listCacheSet.js"(exports, module) {
       var assocIndexOf = require_assocIndexOf();
       function listCacheSet(key, value) {
         var data = this.__data__, index2 = assocIndexOf(data, key);
@@ -378,9 +378,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js
   var require_ListCache = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_ListCache.js"(exports, module) {
       var listCacheClear = require_listCacheClear();
       var listCacheDelete = require_listCacheDelete();
       var listCacheGet = require_listCacheGet();
@@ -403,9 +403,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js
   var require_stackClear = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackClear.js"(exports, module) {
       var ListCache = require_ListCache();
       function stackClear() {
         this.__data__ = new ListCache();
@@ -415,9 +415,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js
   var require_stackDelete = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackDelete.js"(exports, module) {
       function stackDelete(key) {
         var data = this.__data__, result = data["delete"](key);
         this.size = data.size;
@@ -427,9 +427,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js
   var require_stackGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackGet.js"(exports, module) {
       function stackGet(key) {
         return this.__data__.get(key);
       }
@@ -437,9 +437,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js
   var require_stackHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackHas.js"(exports, module) {
       function stackHas(key) {
         return this.__data__.has(key);
       }
@@ -447,17 +447,17 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js
   var require_freeGlobal = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_freeGlobal.js"(exports, module) {
       var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
       module.exports = freeGlobal;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js
   var require_root = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_root.js"(exports, module) {
       var freeGlobal = require_freeGlobal();
       var freeSelf = typeof self == "object" && self && self.Object === Object && self;
       var root2 = freeGlobal || freeSelf || Function("return this")();
@@ -465,18 +465,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js
   var require_Symbol = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Symbol.js"(exports, module) {
       var root2 = require_root();
       var Symbol2 = root2.Symbol;
       module.exports = Symbol2;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js
   var require_getRawTag = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getRawTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
@@ -503,9 +503,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js
   var require_objectToString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_objectToString.js"(exports, module) {
       var objectProto = Object.prototype;
       var nativeObjectToString = objectProto.toString;
       function objectToString(value) {
@@ -515,9 +515,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js
   var require_baseGetTag = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var getRawTag = require_getRawTag();
       var objectToString = require_objectToString();
@@ -534,9 +534,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js
   var require_isObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObject.js"(exports, module) {
       function isObject(value) {
         var type = typeof value;
         return value != null && (type == "object" || type == "function");
@@ -545,9 +545,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js
   var require_isFunction = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isFunction.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObject = require_isObject();
       var asyncTag = "[object AsyncFunction]";
@@ -565,18 +565,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js
   var require_coreJsData = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_coreJsData.js"(exports, module) {
       var root2 = require_root();
       var coreJsData = root2["__core-js_shared__"];
       module.exports = coreJsData;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js
   var require_isMasked = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isMasked.js"(exports, module) {
       var coreJsData = require_coreJsData();
       var maskSrcKey = function() {
         var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
@@ -589,9 +589,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js
   var require_toSource = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toSource.js"(exports, module) {
       var funcProto = Function.prototype;
       var funcToString = funcProto.toString;
       function toSource(func) {
@@ -611,9 +611,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js
   var require_baseIsNative = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNative.js"(exports, module) {
       var isFunction = require_isFunction();
       var isMasked = require_isMasked();
       var isObject = require_isObject();
@@ -638,9 +638,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js
   var require_getValue = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getValue.js"(exports, module) {
       function getValue(object, key) {
         return object == null ? void 0 : object[key];
       }
@@ -648,9 +648,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js
   var require_getNative = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getNative.js"(exports, module) {
       var baseIsNative = require_baseIsNative();
       var getValue = require_getValue();
       function getNative(object, key) {
@@ -661,9 +661,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js
   var require_Map = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Map.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Map2 = getNative(root2, "Map");
@@ -671,18 +671,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js
   var require_nativeCreate = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeCreate.js"(exports, module) {
       var getNative = require_getNative();
       var nativeCreate = getNative(Object, "create");
       module.exports = nativeCreate;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js
   var require_hashClear = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashClear.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       function hashClear() {
         this.__data__ = nativeCreate ? nativeCreate(null) : {};
@@ -692,9 +692,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js
   var require_hashDelete = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashDelete.js"(exports, module) {
       function hashDelete(key) {
         var result = this.has(key) && delete this.__data__[key];
         this.size -= result ? 1 : 0;
@@ -704,9 +704,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js
   var require_hashGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashGet.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       var objectProto = Object.prototype;
@@ -723,9 +723,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js
   var require_hashHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashHas.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
@@ -737,9 +737,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js
   var require_hashSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hashSet.js"(exports, module) {
       var nativeCreate = require_nativeCreate();
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       function hashSet(key, value) {
@@ -752,9 +752,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js
   var require_Hash = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Hash.js"(exports, module) {
       var hashClear = require_hashClear();
       var hashDelete = require_hashDelete();
       var hashGet = require_hashGet();
@@ -777,9 +777,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js
   var require_mapCacheClear = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheClear.js"(exports, module) {
       var Hash = require_Hash();
       var ListCache = require_ListCache();
       var Map2 = require_Map();
@@ -795,9 +795,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js
   var require_isKeyable = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKeyable.js"(exports, module) {
       function isKeyable(value) {
         var type = typeof value;
         return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
@@ -806,9 +806,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js
   var require_getMapData = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMapData.js"(exports, module) {
       var isKeyable = require_isKeyable();
       function getMapData(map, key) {
         var data = map.__data__;
@@ -818,9 +818,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js
   var require_mapCacheDelete = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheDelete.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheDelete(key) {
         var result = getMapData(this, key)["delete"](key);
@@ -831,9 +831,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js
   var require_mapCacheGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheGet.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheGet(key) {
         return getMapData(this, key).get(key);
@@ -842,9 +842,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js
   var require_mapCacheHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheHas.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheHas(key) {
         return getMapData(this, key).has(key);
@@ -853,9 +853,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js
   var require_mapCacheSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapCacheSet.js"(exports, module) {
       var getMapData = require_getMapData();
       function mapCacheSet(key, value) {
         var data = getMapData(this, key), size = data.size;
@@ -867,9 +867,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js
   var require_MapCache = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_MapCache.js"(exports, module) {
       var mapCacheClear = require_mapCacheClear();
       var mapCacheDelete = require_mapCacheDelete();
       var mapCacheGet = require_mapCacheGet();
@@ -892,9 +892,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js
   var require_stackSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stackSet.js"(exports, module) {
       var ListCache = require_ListCache();
       var Map2 = require_Map();
       var MapCache = require_MapCache();
@@ -918,9 +918,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js
   var require_Stack = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Stack.js"(exports, module) {
       var ListCache = require_ListCache();
       var stackClear = require_stackClear();
       var stackDelete = require_stackDelete();
@@ -940,9 +940,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js
   var require_arrayEach = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayEach.js"(exports, module) {
       function arrayEach(array2, iteratee) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -956,9 +956,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js
   var require_defineProperty = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_defineProperty.js"(exports, module) {
       var getNative = require_getNative();
       var defineProperty = function() {
         try {
@@ -972,9 +972,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js
   var require_baseAssignValue = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignValue.js"(exports, module) {
       var defineProperty = require_defineProperty();
       function baseAssignValue(object, key, value) {
         if (key == "__proto__" && defineProperty) {
@@ -992,9 +992,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js
   var require_assignValue = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignValue.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var eq = require_eq();
       var objectProto = Object.prototype;
@@ -1009,9 +1009,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js
   var require_copyObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyObject.js"(exports, module) {
       var assignValue = require_assignValue();
       var baseAssignValue = require_baseAssignValue();
       function copyObject(source, props, object, customizer) {
@@ -1036,9 +1036,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js
   var require_baseTimes = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTimes.js"(exports, module) {
       function baseTimes(n, iteratee) {
         var index2 = -1, result = Array(n);
         while (++index2 < n) {
@@ -1050,9 +1050,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js
   var require_isObjectLike = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isObjectLike.js"(exports, module) {
       function isObjectLike(value) {
         return value != null && typeof value == "object";
       }
@@ -1060,9 +1060,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js
   var require_baseIsArguments = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsArguments.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObjectLike = require_isObjectLike();
       var argsTag = "[object Arguments]";
@@ -1073,9 +1073,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js
   var require_isArguments = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArguments.js"(exports, module) {
       var baseIsArguments = require_baseIsArguments();
       var isObjectLike = require_isObjectLike();
       var objectProto = Object.prototype;
@@ -1090,17 +1090,17 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js
   var require_isArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArray.js"(exports, module) {
       var isArray = Array.isArray;
       module.exports = isArray;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js
   var require_stubFalse = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubFalse.js"(exports, module) {
       function stubFalse() {
         return false;
       }
@@ -1108,9 +1108,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js
   var require_isBuffer = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isBuffer.js"(exports, module) {
       var root2 = require_root();
       var stubFalse = require_stubFalse();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
@@ -1123,9 +1123,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js
   var require_isIndex = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIndex.js"(exports, module) {
       var MAX_SAFE_INTEGER = 9007199254740991;
       var reIsUint = /^(?:0|[1-9]\d*)$/;
       function isIndex(value, length) {
@@ -1137,9 +1137,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js
   var require_isLength = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isLength.js"(exports, module) {
       var MAX_SAFE_INTEGER = 9007199254740991;
       function isLength(value) {
         return typeof value == "number" && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
@@ -1148,9 +1148,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js
   var require_baseIsTypedArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsTypedArray.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isLength = require_isLength();
       var isObjectLike = require_isObjectLike();
@@ -1188,9 +1188,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js
   var require_baseUnary = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUnary.js"(exports, module) {
       function baseUnary(func) {
         return function(value) {
           return func(value);
@@ -1200,9 +1200,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js
   var require_nodeUtil = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nodeUtil.js"(exports, module) {
       var freeGlobal = require_freeGlobal();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
       var freeModule = freeExports && typeof module == "object" && module && !module.nodeType && module;
@@ -1222,9 +1222,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js
   var require_isTypedArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isTypedArray.js"(exports, module) {
       var baseIsTypedArray = require_baseIsTypedArray();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1234,9 +1234,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js
   var require_arrayLikeKeys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayLikeKeys.js"(exports, module) {
       var baseTimes = require_baseTimes();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -1262,9 +1262,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js
   var require_isPrototype = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isPrototype.js"(exports, module) {
       var objectProto = Object.prototype;
       function isPrototype(value) {
         var Ctor = value && value.constructor, proto = typeof Ctor == "function" && Ctor.prototype || objectProto;
@@ -1274,9 +1274,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js
   var require_overArg = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overArg.js"(exports, module) {
       function overArg(func, transform2) {
         return function(arg) {
           return func(transform2(arg));
@@ -1286,18 +1286,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js
   var require_nativeKeys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeys.js"(exports, module) {
       var overArg = require_overArg();
       var nativeKeys = overArg(Object.keys, Object);
       module.exports = nativeKeys;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js
   var require_baseKeys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeys.js"(exports, module) {
       var isPrototype = require_isPrototype();
       var nativeKeys = require_nativeKeys();
       var objectProto = Object.prototype;
@@ -1318,9 +1318,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js
   var require_isArrayLike = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLike.js"(exports, module) {
       var isFunction = require_isFunction();
       var isLength = require_isLength();
       function isArrayLike(value) {
@@ -1330,9 +1330,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js
   var require_keys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keys.js"(exports, module) {
       var arrayLikeKeys = require_arrayLikeKeys();
       var baseKeys = require_baseKeys();
       var isArrayLike = require_isArrayLike();
@@ -1343,9 +1343,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js
   var require_baseAssign = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssign.js"(exports, module) {
       var copyObject = require_copyObject();
       var keys = require_keys();
       function baseAssign(object, source) {
@@ -1355,9 +1355,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js
   var require_nativeKeysIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_nativeKeysIn.js"(exports, module) {
       function nativeKeysIn(object) {
         var result = [];
         if (object != null) {
@@ -1371,9 +1371,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js
   var require_baseKeysIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseKeysIn.js"(exports, module) {
       var isObject = require_isObject();
       var isPrototype = require_isPrototype();
       var nativeKeysIn = require_nativeKeysIn();
@@ -1395,9 +1395,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js
   var require_keysIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/keysIn.js"(exports, module) {
       var arrayLikeKeys = require_arrayLikeKeys();
       var baseKeysIn = require_baseKeysIn();
       var isArrayLike = require_isArrayLike();
@@ -1408,9 +1408,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js
   var require_baseAssignIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseAssignIn.js"(exports, module) {
       var copyObject = require_copyObject();
       var keysIn = require_keysIn();
       function baseAssignIn(object, source) {
@@ -1420,9 +1420,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js
   var require_cloneBuffer = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneBuffer.js"(exports, module) {
       var root2 = require_root();
       var freeExports = typeof exports == "object" && exports && !exports.nodeType && exports;
       var freeModule = freeExports && typeof module == "object" && module && !module.nodeType && module;
@@ -1441,9 +1441,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js
   var require_copyArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copyArray.js"(exports, module) {
       function copyArray(source, array2) {
         var index2 = -1, length = source.length;
         array2 || (array2 = Array(length));
@@ -1456,9 +1456,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js
   var require_arrayFilter = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayFilter.js"(exports, module) {
       function arrayFilter(array2, predicate) {
         var index2 = -1, length = array2 == null ? 0 : array2.length, resIndex = 0, result = [];
         while (++index2 < length) {
@@ -1473,9 +1473,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js
   var require_stubArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/stubArray.js"(exports, module) {
       function stubArray() {
         return [];
       }
@@ -1483,9 +1483,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js
   var require_getSymbols = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbols.js"(exports, module) {
       var arrayFilter = require_arrayFilter();
       var stubArray = require_stubArray();
       var objectProto = Object.prototype;
@@ -1504,9 +1504,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js
   var require_copySymbols = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbols.js"(exports, module) {
       var copyObject = require_copyObject();
       var getSymbols = require_getSymbols();
       function copySymbols(source, object) {
@@ -1516,9 +1516,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js
   var require_arrayPush = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayPush.js"(exports, module) {
       function arrayPush(array2, values) {
         var index2 = -1, length = values.length, offset = array2.length;
         while (++index2 < length) {
@@ -1530,18 +1530,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js
   var require_getPrototype = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getPrototype.js"(exports, module) {
       var overArg = require_overArg();
       var getPrototype = overArg(Object.getPrototypeOf, Object);
       module.exports = getPrototype;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js
   var require_getSymbolsIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getSymbolsIn.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var getPrototype = require_getPrototype();
       var getSymbols = require_getSymbols();
@@ -1559,9 +1559,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js
   var require_copySymbolsIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_copySymbolsIn.js"(exports, module) {
       var copyObject = require_copyObject();
       var getSymbolsIn = require_getSymbolsIn();
       function copySymbolsIn(source, object) {
@@ -1571,9 +1571,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js
   var require_baseGetAllKeys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGetAllKeys.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var isArray = require_isArray();
       function baseGetAllKeys(object, keysFunc, symbolsFunc) {
@@ -1584,9 +1584,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js
   var require_getAllKeys = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeys.js"(exports, module) {
       var baseGetAllKeys = require_baseGetAllKeys();
       var getSymbols = require_getSymbols();
       var keys = require_keys();
@@ -1597,9 +1597,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js
   var require_getAllKeysIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getAllKeysIn.js"(exports, module) {
       var baseGetAllKeys = require_baseGetAllKeys();
       var getSymbolsIn = require_getSymbolsIn();
       var keysIn = require_keysIn();
@@ -1610,9 +1610,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js
   var require_DataView = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_DataView.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var DataView2 = getNative(root2, "DataView");
@@ -1620,9 +1620,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js
   var require_Promise = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Promise.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Promise2 = getNative(root2, "Promise");
@@ -1630,9 +1630,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js
   var require_Set = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Set.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var Set2 = getNative(root2, "Set");
@@ -1640,9 +1640,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js
   var require_WeakMap = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_WeakMap.js"(exports, module) {
       var getNative = require_getNative();
       var root2 = require_root();
       var WeakMap = getNative(root2, "WeakMap");
@@ -1650,9 +1650,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js
   var require_getTag = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getTag.js"(exports, module) {
       var DataView2 = require_DataView();
       var Map2 = require_Map();
       var Promise2 = require_Promise();
@@ -1696,9 +1696,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js
   var require_initCloneArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneArray.js"(exports, module) {
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
       function initCloneArray(array2) {
@@ -1713,18 +1713,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js
   var require_Uint8Array = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_Uint8Array.js"(exports, module) {
       var root2 = require_root();
       var Uint8Array2 = root2.Uint8Array;
       module.exports = Uint8Array2;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js
   var require_cloneArrayBuffer = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneArrayBuffer.js"(exports, module) {
       var Uint8Array2 = require_Uint8Array();
       function cloneArrayBuffer(arrayBuffer) {
         var result = new arrayBuffer.constructor(arrayBuffer.byteLength);
@@ -1735,9 +1735,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js
   var require_cloneDataView = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneDataView.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       function cloneDataView(dataView, isDeep) {
         var buffer = isDeep ? cloneArrayBuffer(dataView.buffer) : dataView.buffer;
@@ -1747,9 +1747,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js
   var require_cloneRegExp = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneRegExp.js"(exports, module) {
       var reFlags = /\w*$/;
       function cloneRegExp(regexp) {
         var result = new regexp.constructor(regexp.source, reFlags.exec(regexp));
@@ -1760,9 +1760,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js
   var require_cloneSymbol = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneSymbol.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var symbolProto = Symbol2 ? Symbol2.prototype : void 0;
       var symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
@@ -1773,9 +1773,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js
   var require_cloneTypedArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cloneTypedArray.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       function cloneTypedArray(typedArray, isDeep) {
         var buffer = isDeep ? cloneArrayBuffer(typedArray.buffer) : typedArray.buffer;
@@ -1785,9 +1785,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js
   var require_initCloneByTag = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneByTag.js"(exports, module) {
       var cloneArrayBuffer = require_cloneArrayBuffer();
       var cloneDataView = require_cloneDataView();
       var cloneRegExp = require_cloneRegExp();
@@ -1849,9 +1849,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js
   var require_baseCreate = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseCreate.js"(exports, module) {
       var isObject = require_isObject();
       var objectCreate = Object.create;
       var baseCreate = /* @__PURE__ */ function() {
@@ -1874,9 +1874,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js
   var require_initCloneObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_initCloneObject.js"(exports, module) {
       var baseCreate = require_baseCreate();
       var getPrototype = require_getPrototype();
       var isPrototype = require_isPrototype();
@@ -1887,9 +1887,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js
   var require_baseIsMap = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMap.js"(exports, module) {
       var getTag = require_getTag();
       var isObjectLike = require_isObjectLike();
       var mapTag = "[object Map]";
@@ -1900,9 +1900,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js
   var require_isMap = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isMap.js"(exports, module) {
       var baseIsMap = require_baseIsMap();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1912,9 +1912,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js
   var require_baseIsSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsSet.js"(exports, module) {
       var getTag = require_getTag();
       var isObjectLike = require_isObjectLike();
       var setTag = "[object Set]";
@@ -1925,9 +1925,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js
   var require_isSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSet.js"(exports, module) {
       var baseIsSet = require_baseIsSet();
       var baseUnary = require_baseUnary();
       var nodeUtil = require_nodeUtil();
@@ -1937,9 +1937,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js
   var require_baseClone = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseClone.js"(exports, module) {
       var Stack = require_Stack();
       var arrayEach = require_arrayEach();
       var assignValue = require_assignValue();
@@ -2058,9 +2058,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js
   var require_clone = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/clone.js"(exports, module) {
       var baseClone = require_baseClone();
       var CLONE_SYMBOLS_FLAG = 4;
       function clone(value) {
@@ -2070,9 +2070,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js
   var require_constant = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/constant.js"(exports, module) {
       function constant(value) {
         return function() {
           return value;
@@ -2082,9 +2082,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js
   var require_createBaseFor = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseFor.js"(exports, module) {
       function createBaseFor(fromRight) {
         return function(object, iteratee, keysFunc) {
           var index2 = -1, iterable = Object(object), props = keysFunc(object), length = props.length;
@@ -2101,18 +2101,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js
   var require_baseFor = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFor.js"(exports, module) {
       var createBaseFor = require_createBaseFor();
       var baseFor = createBaseFor();
       module.exports = baseFor;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js
   var require_baseForOwn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseForOwn.js"(exports, module) {
       var baseFor = require_baseFor();
       var keys = require_keys();
       function baseForOwn(object, iteratee) {
@@ -2122,9 +2122,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js
   var require_createBaseEach = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createBaseEach.js"(exports, module) {
       var isArrayLike = require_isArrayLike();
       function createBaseEach(eachFunc, fromRight) {
         return function(collection, iteratee) {
@@ -2147,9 +2147,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js
   var require_baseEach = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseEach.js"(exports, module) {
       var baseForOwn = require_baseForOwn();
       var createBaseEach = require_createBaseEach();
       var baseEach = createBaseEach(baseForOwn);
@@ -2157,9 +2157,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js
   var require_identity = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/identity.js"(exports, module) {
       function identity4(value) {
         return value;
       }
@@ -2167,9 +2167,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js
   var require_castFunction = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castFunction.js"(exports, module) {
       var identity4 = require_identity();
       function castFunction(value) {
         return typeof value == "function" ? value : identity4;
@@ -2178,9 +2178,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js
   var require_forEach = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forEach.js"(exports, module) {
       var arrayEach = require_arrayEach();
       var baseEach = require_baseEach();
       var castFunction = require_castFunction();
@@ -2193,16 +2193,16 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js
   var require_each = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/each.js"(exports, module) {
       module.exports = require_forEach();
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js
   var require_baseFilter = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFilter.js"(exports, module) {
       var baseEach = require_baseEach();
       function baseFilter(collection, predicate) {
         var result = [];
@@ -2217,9 +2217,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js
   var require_setCacheAdd = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheAdd.js"(exports, module) {
       var HASH_UNDEFINED = "__lodash_hash_undefined__";
       function setCacheAdd(value) {
         this.__data__.set(value, HASH_UNDEFINED);
@@ -2229,9 +2229,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js
   var require_setCacheHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setCacheHas.js"(exports, module) {
       function setCacheHas(value) {
         return this.__data__.has(value);
       }
@@ -2239,9 +2239,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js
   var require_SetCache = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_SetCache.js"(exports, module) {
       var MapCache = require_MapCache();
       var setCacheAdd = require_setCacheAdd();
       var setCacheHas = require_setCacheHas();
@@ -2258,9 +2258,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js
   var require_arraySome = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arraySome.js"(exports, module) {
       function arraySome(array2, predicate) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -2274,9 +2274,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js
   var require_cacheHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_cacheHas.js"(exports, module) {
       function cacheHas(cache, key) {
         return cache.has(key);
       }
@@ -2284,9 +2284,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js
   var require_equalArrays = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalArrays.js"(exports, module) {
       var SetCache = require_SetCache();
       var arraySome = require_arraySome();
       var cacheHas = require_cacheHas();
@@ -2339,9 +2339,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js
   var require_mapToArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_mapToArray.js"(exports, module) {
       function mapToArray(map) {
         var index2 = -1, result = Array(map.size);
         map.forEach(function(value, key) {
@@ -2353,9 +2353,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js
   var require_setToArray = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToArray.js"(exports, module) {
       function setToArray(set3) {
         var index2 = -1, result = Array(set3.size);
         set3.forEach(function(value) {
@@ -2367,9 +2367,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js
   var require_equalByTag = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalByTag.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var Uint8Array2 = require_Uint8Array();
       var eq = require_eq();
@@ -2441,9 +2441,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js
   var require_equalObjects = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_equalObjects.js"(exports, module) {
       var getAllKeys = require_getAllKeys();
       var COMPARE_PARTIAL_FLAG = 1;
       var objectProto = Object.prototype;
@@ -2495,9 +2495,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js
   var require_baseIsEqualDeep = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqualDeep.js"(exports, module) {
       var Stack = require_Stack();
       var equalArrays = require_equalArrays();
       var equalByTag = require_equalByTag();
@@ -2546,9 +2546,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js
   var require_baseIsEqual = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsEqual.js"(exports, module) {
       var baseIsEqualDeep = require_baseIsEqualDeep();
       var isObjectLike = require_isObjectLike();
       function baseIsEqual(value, other, bitmask, customizer, stack) {
@@ -2564,9 +2564,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js
   var require_baseIsMatch = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsMatch.js"(exports, module) {
       var Stack = require_Stack();
       var baseIsEqual = require_baseIsEqual();
       var COMPARE_PARTIAL_FLAG = 1;
@@ -2606,9 +2606,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js
   var require_isStrictComparable = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isStrictComparable.js"(exports, module) {
       var isObject = require_isObject();
       function isStrictComparable(value) {
         return value === value && !isObject(value);
@@ -2617,9 +2617,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js
   var require_getMatchData = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_getMatchData.js"(exports, module) {
       var isStrictComparable = require_isStrictComparable();
       var keys = require_keys();
       function getMatchData(object) {
@@ -2634,9 +2634,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js
   var require_matchesStrictComparable = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_matchesStrictComparable.js"(exports, module) {
       function matchesStrictComparable(key, srcValue) {
         return function(object) {
           if (object == null) {
@@ -2649,9 +2649,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js
   var require_baseMatches = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatches.js"(exports, module) {
       var baseIsMatch = require_baseIsMatch();
       var getMatchData = require_getMatchData();
       var matchesStrictComparable = require_matchesStrictComparable();
@@ -2668,9 +2668,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js
   var require_isSymbol = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isSymbol.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isObjectLike = require_isObjectLike();
       var symbolTag = "[object Symbol]";
@@ -2681,9 +2681,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js
   var require_isKey = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isKey.js"(exports, module) {
       var isArray = require_isArray();
       var isSymbol = require_isSymbol();
       var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/;
@@ -2702,9 +2702,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js
   var require_memoize = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/memoize.js"(exports, module) {
       var MapCache = require_MapCache();
       var FUNC_ERROR_TEXT = "Expected a function";
       function memoize(func, resolver) {
@@ -2728,9 +2728,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js
   var require_memoizeCapped = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_memoizeCapped.js"(exports, module) {
       var memoize = require_memoize();
       var MAX_MEMOIZE_SIZE = 500;
       function memoizeCapped(func) {
@@ -2747,9 +2747,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js
   var require_stringToPath = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringToPath.js"(exports, module) {
       var memoizeCapped = require_memoizeCapped();
       var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
       var reEscapeChar = /\\(\\)?/g;
@@ -2767,9 +2767,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js
   var require_arrayMap = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayMap.js"(exports, module) {
       function arrayMap(array2, iteratee) {
         var index2 = -1, length = array2 == null ? 0 : array2.length, result = Array(length);
         while (++index2 < length) {
@@ -2781,9 +2781,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js
   var require_baseToString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseToString.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var arrayMap = require_arrayMap();
       var isArray = require_isArray();
@@ -2808,9 +2808,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js
   var require_toString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toString.js"(exports, module) {
       var baseToString = require_baseToString();
       function toString(value) {
         return value == null ? "" : baseToString(value);
@@ -2819,9 +2819,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js
   var require_castPath = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_castPath.js"(exports, module) {
       var isArray = require_isArray();
       var isKey = require_isKey();
       var stringToPath = require_stringToPath();
@@ -2836,9 +2836,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js
   var require_toKey = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_toKey.js"(exports, module) {
       var isSymbol = require_isSymbol();
       var INFINITY = 1 / 0;
       function toKey(value) {
@@ -2852,9 +2852,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js
   var require_baseGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGet.js"(exports, module) {
       var castPath = require_castPath();
       var toKey = require_toKey();
       function baseGet(object, path) {
@@ -2869,9 +2869,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js
   var require_get = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/get.js"(exports, module) {
       var baseGet = require_baseGet();
       function get3(object, path, defaultValue) {
         var result = object == null ? void 0 : baseGet(object, path);
@@ -2881,9 +2881,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js
   var require_baseHasIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHasIn.js"(exports, module) {
       function baseHasIn(object, key) {
         return object != null && key in Object(object);
       }
@@ -2891,9 +2891,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js
   var require_hasPath = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasPath.js"(exports, module) {
       var castPath = require_castPath();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -2920,9 +2920,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js
   var require_hasIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/hasIn.js"(exports, module) {
       var baseHasIn = require_baseHasIn();
       var hasPath = require_hasPath();
       function hasIn(object, path) {
@@ -2932,9 +2932,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js
   var require_baseMatchesProperty = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMatchesProperty.js"(exports, module) {
       var baseIsEqual = require_baseIsEqual();
       var get3 = require_get();
       var hasIn = require_hasIn();
@@ -2957,9 +2957,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js
   var require_baseProperty = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseProperty.js"(exports, module) {
       function baseProperty(key) {
         return function(object) {
           return object == null ? void 0 : object[key];
@@ -2969,9 +2969,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js
   var require_basePropertyDeep = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePropertyDeep.js"(exports, module) {
       var baseGet = require_baseGet();
       function basePropertyDeep(path) {
         return function(object) {
@@ -2982,9 +2982,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js
   var require_property = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/property.js"(exports, module) {
       var baseProperty = require_baseProperty();
       var basePropertyDeep = require_basePropertyDeep();
       var isKey = require_isKey();
@@ -2996,9 +2996,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js
   var require_baseIteratee = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIteratee.js"(exports, module) {
       var baseMatches = require_baseMatches();
       var baseMatchesProperty = require_baseMatchesProperty();
       var identity4 = require_identity();
@@ -3020,9 +3020,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js
   var require_filter = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/filter.js"(exports, module) {
       var arrayFilter = require_arrayFilter();
       var baseFilter = require_baseFilter();
       var baseIteratee = require_baseIteratee();
@@ -3035,9 +3035,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js
   var require_baseHas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseHas.js"(exports, module) {
       var objectProto = Object.prototype;
       var hasOwnProperty = objectProto.hasOwnProperty;
       function baseHas(object, key) {
@@ -3047,9 +3047,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js
   var require_has = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/has.js"(exports, module) {
       var baseHas = require_baseHas();
       var hasPath = require_hasPath();
       function has(object, path) {
@@ -3059,9 +3059,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js
   var require_isEmpty = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isEmpty.js"(exports, module) {
       var baseKeys = require_baseKeys();
       var getTag = require_getTag();
       var isArguments = require_isArguments();
@@ -3099,9 +3099,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js
   var require_isUndefined = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isUndefined.js"(exports, module) {
       function isUndefined(value) {
         return value === void 0;
       }
@@ -3109,9 +3109,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js
   var require_baseMap = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMap.js"(exports, module) {
       var baseEach = require_baseEach();
       var isArrayLike = require_isArrayLike();
       function baseMap(collection, iteratee) {
@@ -3125,9 +3125,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js
   var require_map = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/map.js"(exports, module) {
       var arrayMap = require_arrayMap();
       var baseIteratee = require_baseIteratee();
       var baseMap = require_baseMap();
@@ -3140,9 +3140,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js
   var require_arrayReduce = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayReduce.js"(exports, module) {
       function arrayReduce(array2, iteratee, accumulator, initAccum) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         if (initAccum && length) {
@@ -3157,9 +3157,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js
   var require_baseReduce = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseReduce.js"(exports, module) {
       function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
         eachFunc(collection, function(value, index2, collection2) {
           accumulator = initAccum ? (initAccum = false, value) : iteratee(accumulator, value, index2, collection2);
@@ -3170,9 +3170,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js
   var require_reduce = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/reduce.js"(exports, module) {
       var arrayReduce = require_arrayReduce();
       var baseEach = require_baseEach();
       var baseIteratee = require_baseIteratee();
@@ -3186,9 +3186,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js
   var require_isString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isString.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var isArray = require_isArray();
       var isObjectLike = require_isObjectLike();
@@ -3200,18 +3200,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js
   var require_asciiSize = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_asciiSize.js"(exports, module) {
       var baseProperty = require_baseProperty();
       var asciiSize = baseProperty("length");
       module.exports = asciiSize;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js
   var require_hasUnicode = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_hasUnicode.js"(exports, module) {
       var rsAstralRange = "\\ud800-\\udfff";
       var rsComboMarksRange = "\\u0300-\\u036f";
       var reComboHalfMarksRange = "\\ufe20-\\ufe2f";
@@ -3227,9 +3227,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js
   var require_unicodeSize = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_unicodeSize.js"(exports, module) {
       var rsAstralRange = "\\ud800-\\udfff";
       var rsComboMarksRange = "\\u0300-\\u036f";
       var reComboHalfMarksRange = "\\ufe20-\\ufe2f";
@@ -3261,9 +3261,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js
   var require_stringSize = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_stringSize.js"(exports, module) {
       var asciiSize = require_asciiSize();
       var hasUnicode = require_hasUnicode();
       var unicodeSize = require_unicodeSize();
@@ -3274,9 +3274,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js
   var require_size = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/size.js"(exports, module) {
       var baseKeys = require_baseKeys();
       var getTag = require_getTag();
       var isArrayLike = require_isArrayLike();
@@ -3301,9 +3301,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js
   var require_transform = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/transform.js"(exports, module) {
       var arrayEach = require_arrayEach();
       var baseCreate = require_baseCreate();
       var baseForOwn = require_baseForOwn();
@@ -3336,9 +3336,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js
   var require_isFlattenable = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isFlattenable.js"(exports, module) {
       var Symbol2 = require_Symbol();
       var isArguments = require_isArguments();
       var isArray = require_isArray();
@@ -3350,9 +3350,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js
   var require_baseFlatten = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFlatten.js"(exports, module) {
       var arrayPush = require_arrayPush();
       var isFlattenable = require_isFlattenable();
       function baseFlatten(array2, depth, predicate, isStrict, result) {
@@ -3377,9 +3377,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js
   var require_apply = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_apply.js"(exports, module) {
       function apply(func, thisArg, args) {
         switch (args.length) {
           case 0:
@@ -3397,9 +3397,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js
   var require_overRest = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_overRest.js"(exports, module) {
       var apply = require_apply();
       var nativeMax = Math.max;
       function overRest(func, start2, transform2) {
@@ -3422,9 +3422,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js
   var require_baseSetToString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSetToString.js"(exports, module) {
       var constant = require_constant();
       var defineProperty = require_defineProperty();
       var identity4 = require_identity();
@@ -3440,9 +3440,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js
   var require_shortOut = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_shortOut.js"(exports, module) {
       var HOT_COUNT = 800;
       var HOT_SPAN = 16;
       var nativeNow = Date.now;
@@ -3465,9 +3465,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js
   var require_setToString = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_setToString.js"(exports, module) {
       var baseSetToString = require_baseSetToString();
       var shortOut = require_shortOut();
       var setToString = shortOut(baseSetToString);
@@ -3475,9 +3475,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js
   var require_baseRest = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRest.js"(exports, module) {
       var identity4 = require_identity();
       var overRest = require_overRest();
       var setToString = require_setToString();
@@ -3488,9 +3488,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js
   var require_baseFindIndex = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseFindIndex.js"(exports, module) {
       function baseFindIndex(array2, predicate, fromIndex, fromRight) {
         var length = array2.length, index2 = fromIndex + (fromRight ? 1 : -1);
         while (fromRight ? index2-- : ++index2 < length) {
@@ -3504,9 +3504,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js
   var require_baseIsNaN = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIsNaN.js"(exports, module) {
       function baseIsNaN(value) {
         return value !== value;
       }
@@ -3514,9 +3514,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js
   var require_strictIndexOf = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_strictIndexOf.js"(exports, module) {
       function strictIndexOf(array2, value, fromIndex) {
         var index2 = fromIndex - 1, length = array2.length;
         while (++index2 < length) {
@@ -3530,9 +3530,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js
   var require_baseIndexOf = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseIndexOf.js"(exports, module) {
       var baseFindIndex = require_baseFindIndex();
       var baseIsNaN = require_baseIsNaN();
       var strictIndexOf = require_strictIndexOf();
@@ -3543,9 +3543,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js
   var require_arrayIncludes = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludes.js"(exports, module) {
       var baseIndexOf = require_baseIndexOf();
       function arrayIncludes(array2, value) {
         var length = array2 == null ? 0 : array2.length;
@@ -3555,9 +3555,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js
   var require_arrayIncludesWith = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_arrayIncludesWith.js"(exports, module) {
       function arrayIncludesWith(array2, value, comparator) {
         var index2 = -1, length = array2 == null ? 0 : array2.length;
         while (++index2 < length) {
@@ -3571,18 +3571,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js
   var require_noop = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/noop.js"(exports, module) {
       function noop2() {
       }
       module.exports = noop2;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js
   var require_createSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createSet.js"(exports, module) {
       var Set2 = require_Set();
       var noop2 = require_noop();
       var setToArray = require_setToArray();
@@ -3594,9 +3594,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js
   var require_baseUniq = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseUniq.js"(exports, module) {
       var SetCache = require_SetCache();
       var arrayIncludes = require_arrayIncludes();
       var arrayIncludesWith = require_arrayIncludesWith();
@@ -3648,9 +3648,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js
   var require_isArrayLikeObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isArrayLikeObject.js"(exports, module) {
       var isArrayLike = require_isArrayLike();
       var isObjectLike = require_isObjectLike();
       function isArrayLikeObject(value) {
@@ -3660,9 +3660,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js
   var require_union = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/union.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       var baseRest = require_baseRest();
       var baseUniq = require_baseUniq();
@@ -3674,9 +3674,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js
   var require_baseValues = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseValues.js"(exports, module) {
       var arrayMap = require_arrayMap();
       function baseValues(object, props) {
         return arrayMap(props, function(key) {
@@ -3687,9 +3687,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js
   var require_values = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/values.js"(exports, module) {
       var baseValues = require_baseValues();
       var keys = require_keys();
       function values(object) {
@@ -3699,9 +3699,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js
   var require_lodash = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/lodash.js"(exports, module) {
       var lodash;
       if (typeof __require === "function") {
         try {
@@ -3733,9 +3733,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js
   var require_graph = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/graph.js"(exports, module) {
       "use strict";
       var _ = require_lodash();
       module.exports = Graph;
@@ -4152,16 +4152,16 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js
   var require_version = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/version.js"(exports, module) {
       module.exports = "2.1.8";
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js
   var require_lib = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/index.js"(exports, module) {
       module.exports = {
         Graph: require_graph(),
         version: require_version()
@@ -4169,9 +4169,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js
   var require_json = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/json.js"(exports, module) {
       var _ = require_lodash();
       var Graph = require_graph();
       module.exports = {
@@ -4236,9 +4236,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js
   var require_components = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/components.js"(exports, module) {
       var _ = require_lodash();
       module.exports = components;
       function components(g) {
@@ -4264,9 +4264,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js
   var require_priority_queue = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/data/priority-queue.js"(exports, module) {
       var _ = require_lodash();
       module.exports = PriorityQueue;
       function PriorityQueue() {
@@ -4366,9 +4366,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js
   var require_dijkstra = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra.js"(exports, module) {
       var _ = require_lodash();
       var PriorityQueue = require_priority_queue();
       module.exports = dijkstra;
@@ -4419,9 +4419,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js
   var require_dijkstra_all = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dijkstra-all.js"(exports, module) {
       var dijkstra = require_dijkstra();
       var _ = require_lodash();
       module.exports = dijkstraAll;
@@ -4433,9 +4433,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js
   var require_tarjan = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/tarjan.js"(exports, module) {
       var _ = require_lodash();
       module.exports = tarjan;
       function tarjan(g) {
@@ -4479,9 +4479,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js
   var require_find_cycles = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/find-cycles.js"(exports, module) {
       var _ = require_lodash();
       var tarjan = require_tarjan();
       module.exports = findCycles;
@@ -4493,9 +4493,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js
   var require_floyd_warshall = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/floyd-warshall.js"(exports, module) {
       var _ = require_lodash();
       module.exports = floydWarshall;
       var DEFAULT_WEIGHT_FUNC = _.constant(1);
@@ -4546,9 +4546,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js
   var require_topsort = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/topsort.js"(exports, module) {
       var _ = require_lodash();
       module.exports = topsort;
       topsort.CycleException = CycleException;
@@ -4580,9 +4580,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js
   var require_is_acyclic = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/is-acyclic.js"(exports, module) {
       var topsort = require_topsort();
       module.exports = isAcyclic;
       function isAcyclic(g) {
@@ -4599,9 +4599,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js
   var require_dfs = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/dfs.js"(exports, module) {
       var _ = require_lodash();
       module.exports = dfs;
       function dfs(g, vs, order) {
@@ -4636,9 +4636,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js
   var require_postorder = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/postorder.js"(exports, module) {
       var dfs = require_dfs();
       module.exports = postorder;
       function postorder(g, vs) {
@@ -4647,9 +4647,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js
   var require_preorder = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/preorder.js"(exports, module) {
       var dfs = require_dfs();
       module.exports = preorder;
       function preorder(g, vs) {
@@ -4658,9 +4658,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js
   var require_prim = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/prim.js"(exports, module) {
       var _ = require_lodash();
       var Graph = require_graph();
       var PriorityQueue = require_priority_queue();
@@ -4706,9 +4706,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js
   var require_alg = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/lib/alg/index.js"(exports, module) {
       module.exports = {
         components: require_components(),
         dijkstra: require_dijkstra(),
@@ -4725,9 +4725,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js
   var require_graphlib = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/graphlib/index.js"(exports, module) {
       var lib = require_lib();
       module.exports = {
         Graph: lib.Graph,
@@ -4738,9 +4738,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js
   var require_graphlib2 = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/graphlib.js"(exports, module) {
       var graphlib;
       if (typeof __require === "function") {
         try {
@@ -4755,9 +4755,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js
   var require_cloneDeep = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/cloneDeep.js"(exports, module) {
       var baseClone = require_baseClone();
       var CLONE_DEEP_FLAG = 1;
       var CLONE_SYMBOLS_FLAG = 4;
@@ -4768,9 +4768,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js
   var require_isIterateeCall = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_isIterateeCall.js"(exports, module) {
       var eq = require_eq();
       var isArrayLike = require_isArrayLike();
       var isIndex = require_isIndex();
@@ -4789,9 +4789,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js
   var require_defaults = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/defaults.js"(exports, module) {
       var baseRest = require_baseRest();
       var eq = require_eq();
       var isIterateeCall = require_isIterateeCall();
@@ -4825,9 +4825,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js
   var require_createFind = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createFind.js"(exports, module) {
       var baseIteratee = require_baseIteratee();
       var isArrayLike = require_isArrayLike();
       var keys = require_keys();
@@ -4849,9 +4849,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js
   var require_trimmedEndIndex = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_trimmedEndIndex.js"(exports, module) {
       var reWhitespace = /\s/;
       function trimmedEndIndex(string) {
         var index2 = string.length;
@@ -4863,9 +4863,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js
   var require_baseTrim = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseTrim.js"(exports, module) {
       var trimmedEndIndex = require_trimmedEndIndex();
       var reTrimStart = /^\s+/;
       function baseTrim(string) {
@@ -4875,9 +4875,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js
   var require_toNumber = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toNumber.js"(exports, module) {
       var baseTrim = require_baseTrim();
       var isObject = require_isObject();
       var isSymbol = require_isSymbol();
@@ -4908,9 +4908,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js
   var require_toFinite = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toFinite.js"(exports, module) {
       var toNumber = require_toNumber();
       var INFINITY = 1 / 0;
       var MAX_INTEGER = 17976931348623157e292;
@@ -4929,9 +4929,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js
   var require_toInteger = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toInteger.js"(exports, module) {
       var toFinite = require_toFinite();
       function toInteger(value) {
         var result = toFinite(value), remainder = result % 1;
@@ -4941,9 +4941,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js
   var require_findIndex = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/findIndex.js"(exports, module) {
       var baseFindIndex = require_baseFindIndex();
       var baseIteratee = require_baseIteratee();
       var toInteger = require_toInteger();
@@ -4963,9 +4963,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js
   var require_find = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/find.js"(exports, module) {
       var createFind = require_createFind();
       var findIndex = require_findIndex();
       var find2 = createFind(findIndex);
@@ -4973,9 +4973,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js
   var require_flatten = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/flatten.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       function flatten(array2) {
         var length = array2 == null ? 0 : array2.length;
@@ -4985,9 +4985,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js
   var require_forIn = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/forIn.js"(exports, module) {
       var baseFor = require_baseFor();
       var castFunction = require_castFunction();
       var keysIn = require_keysIn();
@@ -4998,9 +4998,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js
   var require_last = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/last.js"(exports, module) {
       function last(array2) {
         var length = array2 == null ? 0 : array2.length;
         return length ? array2[length - 1] : void 0;
@@ -5009,9 +5009,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js
   var require_mapValues = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/mapValues.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var baseForOwn = require_baseForOwn();
       var baseIteratee = require_baseIteratee();
@@ -5027,9 +5027,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js
   var require_baseExtremum = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseExtremum.js"(exports, module) {
       var isSymbol = require_isSymbol();
       function baseExtremum(array2, iteratee, comparator) {
         var index2 = -1, length = array2.length;
@@ -5045,9 +5045,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js
   var require_baseGt = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseGt.js"(exports, module) {
       function baseGt(value, other) {
         return value > other;
       }
@@ -5055,9 +5055,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js
   var require_max = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/max.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseGt = require_baseGt();
       var identity4 = require_identity();
@@ -5068,9 +5068,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js
   var require_assignMergeValue = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_assignMergeValue.js"(exports, module) {
       var baseAssignValue = require_baseAssignValue();
       var eq = require_eq();
       function assignMergeValue(object, key, value) {
@@ -5082,9 +5082,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js
   var require_isPlainObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/isPlainObject.js"(exports, module) {
       var baseGetTag = require_baseGetTag();
       var getPrototype = require_getPrototype();
       var isObjectLike = require_isObjectLike();
@@ -5109,9 +5109,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js
   var require_safeGet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_safeGet.js"(exports, module) {
       function safeGet(object, key) {
         if (key === "constructor" && typeof object[key] === "function") {
           return;
@@ -5125,9 +5125,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js
   var require_toPlainObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/toPlainObject.js"(exports, module) {
       var copyObject = require_copyObject();
       var keysIn = require_keysIn();
       function toPlainObject(value) {
@@ -5137,9 +5137,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js
   var require_baseMergeDeep = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMergeDeep.js"(exports, module) {
       var assignMergeValue = require_assignMergeValue();
       var cloneBuffer = require_cloneBuffer();
       var cloneTypedArray = require_cloneTypedArray();
@@ -5202,9 +5202,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js
   var require_baseMerge = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseMerge.js"(exports, module) {
       var Stack = require_Stack();
       var assignMergeValue = require_assignMergeValue();
       var baseFor = require_baseFor();
@@ -5233,9 +5233,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js
   var require_createAssigner = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createAssigner.js"(exports, module) {
       var baseRest = require_baseRest();
       var isIterateeCall = require_isIterateeCall();
       function createAssigner(assigner) {
@@ -5260,9 +5260,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js
   var require_merge = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/merge.js"(exports, module) {
       var baseMerge = require_baseMerge();
       var createAssigner = require_createAssigner();
       var merge = createAssigner(function(object, source, srcIndex) {
@@ -5272,9 +5272,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js
   var require_baseLt = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseLt.js"(exports, module) {
       function baseLt(value, other) {
         return value < other;
       }
@@ -5282,9 +5282,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js
   var require_min = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/min.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseLt = require_baseLt();
       var identity4 = require_identity();
@@ -5295,9 +5295,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js
   var require_minBy = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/minBy.js"(exports, module) {
       var baseExtremum = require_baseExtremum();
       var baseIteratee = require_baseIteratee();
       var baseLt = require_baseLt();
@@ -5308,9 +5308,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js
   var require_now = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/now.js"(exports, module) {
       var root2 = require_root();
       var now2 = function() {
         return root2.Date.now();
@@ -5319,9 +5319,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js
   var require_baseSet = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSet.js"(exports, module) {
       var assignValue = require_assignValue();
       var castPath = require_castPath();
       var isIndex = require_isIndex();
@@ -5354,9 +5354,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js
   var require_basePickBy = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePickBy.js"(exports, module) {
       var baseGet = require_baseGet();
       var baseSet = require_baseSet();
       var castPath = require_castPath();
@@ -5374,9 +5374,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js
   var require_basePick = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_basePick.js"(exports, module) {
       var basePickBy = require_basePickBy();
       var hasIn = require_hasIn();
       function basePick(object, paths) {
@@ -5388,9 +5388,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js
   var require_flatRest = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_flatRest.js"(exports, module) {
       var flatten = require_flatten();
       var overRest = require_overRest();
       var setToString = require_setToString();
@@ -5401,9 +5401,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js
   var require_pick = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/pick.js"(exports, module) {
       var basePick = require_basePick();
       var flatRest = require_flatRest();
       var pick = flatRest(function(object, paths) {
@@ -5413,9 +5413,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js
   var require_baseRange = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseRange.js"(exports, module) {
       var nativeCeil = Math.ceil;
       var nativeMax = Math.max;
       function baseRange(start2, end, step, fromRight) {
@@ -5430,9 +5430,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js
   var require_createRange = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_createRange.js"(exports, module) {
       var baseRange = require_baseRange();
       var isIterateeCall = require_isIterateeCall();
       var toFinite = require_toFinite();
@@ -5456,18 +5456,18 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js
   var require_range = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/range.js"(exports, module) {
       var createRange = require_createRange();
       var range = createRange();
       module.exports = range;
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js
   var require_baseSortBy = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseSortBy.js"(exports, module) {
       function baseSortBy(array2, comparer) {
         var length = array2.length;
         array2.sort(comparer);
@@ -5480,9 +5480,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js
   var require_compareAscending = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareAscending.js"(exports, module) {
       var isSymbol = require_isSymbol();
       function compareAscending(value, other) {
         if (value !== other) {
@@ -5501,9 +5501,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js
   var require_compareMultiple = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_compareMultiple.js"(exports, module) {
       var compareAscending = require_compareAscending();
       function compareMultiple(object, other, orders) {
         var index2 = -1, objCriteria = object.criteria, othCriteria = other.criteria, length = objCriteria.length, ordersLength = orders.length;
@@ -5523,9 +5523,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js
   var require_baseOrderBy = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseOrderBy.js"(exports, module) {
       var arrayMap = require_arrayMap();
       var baseGet = require_baseGet();
       var baseIteratee = require_baseIteratee();
@@ -5564,9 +5564,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js
   var require_sortBy = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/sortBy.js"(exports, module) {
       var baseFlatten = require_baseFlatten();
       var baseOrderBy = require_baseOrderBy();
       var baseRest = require_baseRest();
@@ -5587,9 +5587,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js
   var require_uniqueId = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/uniqueId.js"(exports, module) {
       var toString = require_toString();
       var idCounter = 0;
       function uniqueId(prefix) {
@@ -5600,9 +5600,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js
   var require_baseZipObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/_baseZipObject.js"(exports, module) {
       function baseZipObject(props, values, assignFunc) {
         var index2 = -1, length = props.length, valsLength = values.length, result = {};
         while (++index2 < length) {
@@ -5615,9 +5615,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js
   var require_zipObject = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/lodash/zipObject.js"(exports, module) {
       var assignValue = require_assignValue();
       var baseZipObject = require_baseZipObject();
       function zipObject(props, values) {
@@ -5627,9 +5627,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js
   var require_lodash2 = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/lodash.js"(exports, module) {
       var lodash;
       if (typeof __require === "function") {
         try {
@@ -5671,9 +5671,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js
   var require_list = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/data/list.js"(exports, module) {
       module.exports = List;
       function List() {
         var sentinel = {};
@@ -5722,9 +5722,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js
   var require_greedy_fas = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/greedy-fas.js"(exports, module) {
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
       var List = require_list();
@@ -5821,9 +5821,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js
   var require_acyclic = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/acyclic.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var greedyFAS = require_greedy_fas();
@@ -5883,9 +5883,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js
   var require_util = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/util.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -6079,9 +6079,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js
   var require_normalize = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/normalize.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var util = require_util();
@@ -6154,9 +6154,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js
   var require_util2 = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/util.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = {
@@ -6189,9 +6189,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js
   var require_feasible_tree = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/feasible-tree.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -6239,9 +6239,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js
   var require_network_simplex = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/network-simplex.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var feasibleTree = require_feasible_tree();
@@ -6389,9 +6389,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js
   var require_rank = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/rank/index.js"(exports, module) {
       "use strict";
       var rankUtil = require_util2();
       var longestPath = rankUtil.longestPath;
@@ -6424,9 +6424,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js
   var require_parent_dummy_chains = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/parent-dummy-chains.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = parentDummyChains;
       function parentDummyChains(g) {
@@ -6494,9 +6494,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js
   var require_nesting_graph = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/nesting-graph.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = {
@@ -6590,9 +6590,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js
   var require_add_border_segments = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/add-border-segments.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = addBorderSegments;
@@ -6627,9 +6627,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js
   var require_coordinate_system = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/coordinate-system.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = {
@@ -6700,9 +6700,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js
   var require_init_order = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/init-order.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = initOrder;
@@ -6733,9 +6733,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js
   var require_cross_count = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/cross-count.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = crossCount;
@@ -6784,9 +6784,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js
   var require_barycenter = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/barycenter.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = barycenter;
       function barycenter(g, movable) {
@@ -6813,9 +6813,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js
   var require_resolve_conflicts = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/resolve-conflicts.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       module.exports = resolveConflicts;
@@ -6902,9 +6902,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js
   var require_sort = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       module.exports = sort;
@@ -6953,9 +6953,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js
   var require_sort_subgraph = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/sort-subgraph.js"(exports, module) {
       var _ = require_lodash2();
       var barycenter = require_barycenter();
       var resolveConflicts = require_resolve_conflicts();
@@ -7021,9 +7021,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js
   var require_build_layer_graph = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/build-layer-graph.js"(exports, module) {
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
       module.exports = buildLayerGraph;
@@ -7058,9 +7058,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js
   var require_add_subgraph_constraints = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/add-subgraph-constraints.js"(exports, module) {
       var _ = require_lodash2();
       module.exports = addSubgraphConstraints;
       function addSubgraphConstraints(g, cg, vs) {
@@ -7087,9 +7087,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js
   var require_order = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/order/index.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var initOrder = require_init_order();
@@ -7143,9 +7143,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js
   var require_bk = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/bk.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var Graph = require_graphlib2().Graph;
@@ -7455,9 +7455,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js
   var require_position = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/position/index.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var util = require_util();
@@ -7487,9 +7487,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js
   var require_layout = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/layout.js"(exports, module) {
       "use strict";
       var _ = require_lodash2();
       var acyclic = require_acyclic();
@@ -7898,9 +7898,9 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js
   var require_debug = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/debug.js"(exports, module) {
       var _ = require_lodash2();
       var util = require_util();
       var Graph = require_graphlib2().Graph;
@@ -7930,16 +7930,16 @@
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js
   var require_version2 = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/lib/version.js"(exports, module) {
       module.exports = "0.8.5";
     }
   });
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js
   var require_dagre = __commonJS({
-    "../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js"(exports, module) {
+    "ai_strategy_loop/dashboard/webui-build/node_modules/dagre/index.js"(exports, module) {
       module.exports = {
         graphlib: require_graphlib2(),
         layout: require_layout(),
@@ -10839,6 +10839,19 @@ def signal_sell(pos, bar, ind):
       return /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "6px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between", marginBottom: 3 } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: m.gate_passed ? "var(--green)" : "var(--ink-2)" } }, "\u25CF"), ` graded ${((_a2 = m.graded) != null ? _a2 : 0).toFixed(3)}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, ` [${m.origin}]`)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, `${m.trade_count}\uAC74 \xB7 MDD ${((_b = m.mdd) != null ? _b : 0).toFixed(1)} \xB7 ${((_c = m.profit) != null ? _c : 0).toLocaleString()}`)), /* @__PURE__ */ React.createElement(_PopBar, { frac: (m.graded || 0) / maxGraded }));
     }))));
   }
+  function _metaDerivedFallbackAllowed(meta) {
+    return !meta || meta.status === "missing" || meta.status === "pending";
+  }
+  function _metaAuthorityDetail(meta) {
+    const reason = meta.reason || meta.error || meta.message || "\uC0AC\uC720 \uBBF8\uBC1C\uD589";
+    const lastNormal = meta.last_normal || meta.last_known_good || meta.last_success_at || meta.last_ok_at || "\uB9C8\uC9C0\uB9C9 \uC815\uC0C1 \uC815\uBCF4 \uBBF8\uBC1C\uD589";
+    return { reason: String(reason), lastNormal: String(lastNormal) };
+  }
+  function _MetaAuthorityStatus({ meta }) {
+    if (!meta || meta.status === "ok") return null;
+    const detail = _metaAuthorityDetail(meta);
+    return /* @__PURE__ */ React.createElement("div", { className: "mono", role: "status", style: { fontSize: 10.5, color: "var(--amber)", marginBottom: 8, lineHeight: 1.55 } }, "\uC815\uBCF8 \uC0C1\uD0DC: ", String(meta.status), " \xB7 \uC0AC\uC720: ", detail.reason, " \xB7 \uB9C8\uC9C0\uB9C9 \uC815\uC0C1 \uC815\uBCF4: ", detail.lastNormal);
+  }
   function MetaPanel({ state, wsStatus }) {
     var _a, _b, _c, _d;
     const meta = (_a = state.page_data) == null ? void 0 : _a.meta;
@@ -10846,7 +10859,7 @@ def signal_sell(pos, bar, ind):
     const commonVars = meta && meta.common_pass_vars || [];
     const changes = meta && meta.improving_changes || [];
     const fp = meta && meta.failure_patterns || {};
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBA54\uD0C0\uBD84\uC11D \xB7 \uB204\uC801 \uD559\uC2B5", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, meta && meta.status === "ok" ? `\uB204\uC801 ${meta.total_generations}\uC138\uB300 \xB7 \uD1B5\uACFC ${meta.passing_count}` : "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uC870\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !meta || meta.status !== "ok" ? (
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBA54\uD0C0\uBD84\uC11D \xB7 \uB204\uC801 \uD559\uC2B5", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, meta && meta.status === "ok" ? `\uB204\uC801 ${meta.total_generations}\uC138\uB300 \xB7 \uD1B5\uACFC ${meta.passing_count}` : "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uC870\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, _metaDerivedFallbackAllowed(meta) ? (
       // v5.6.1 — 폴백: 메타 미발행 시 세대 데이터에서 누적 학습 요약을 파생(빈 화면 금지).
       (() => {
         const gens = (Array.isArray(state.generations) ? state.generations : []).filter((g) => g.gen_no >= 0);
@@ -10866,7 +10879,7 @@ def signal_sell(pos, bar, ind):
         ];
         return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 } }, "\uBA54\uD0C0 \uBC1C\uD589 \uC804 \u2014 \uC138\uB300 \uB204\uC801 \uC694\uC57D(\uD30C\uC0DD)"), rows.map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "mono", style: { display: "flex", justifyContent: "space-between", fontSize: 11.5, padding: "4px 0", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, k), /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-0)" } }, v))));
       })()
-    ) : /* @__PURE__ */ React.createElement("div", null, commonVars.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, commonVars.map((v, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "mono", style: {
+    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_MetaAuthorityStatus, { meta }), commonVars.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, commonVars.map((v, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "mono", style: {
       fontSize: 11,
       color: "var(--ink-0)",
       background: "var(--bg-2)",
@@ -10995,11 +11008,24 @@ def signal_sell(pos, bar, ind):
     if (!rows || rows.length === 0) return null;
     return /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, title), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, rows.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { color: s.return_diff < 0 ? "var(--red)" : "var(--ink-1)" } }, s.label), ` \xB7 ${s.count}\uAC74 \xB7 \uC2B9\uB960 ${_pct(s.win_rate)} \xB7 \uD3C9\uADE0 ${_num(s.avg_return)}% \xB7 \uB300\uBE44 ${s.return_diff >= 0 ? "+" : ""}${_num(s.return_diff)}%p`))));
   }
+  function _derivedFallbackAllowed(data) {
+    return !data || data.status === "missing" || data.status === "pending";
+  }
+  function _authorityDetail(data) {
+    const reason = data.reason || data.error || data.message || "\uC0AC\uC720 \uBBF8\uBC1C\uD589";
+    const lastNormal = data.last_normal || data.last_known_good || data.last_success_at || data.last_ok_at || "\uB9C8\uC9C0\uB9C9 \uC815\uC0C1 \uC815\uBCF4 \uBBF8\uBC1C\uD589";
+    return { reason: String(reason), lastNormal: String(lastNormal) };
+  }
+  function _AuthorityStatus({ data }) {
+    if (!data || data.status === "ok") return null;
+    const detail = _authorityDetail(data);
+    return /* @__PURE__ */ React.createElement("div", { className: "mono", role: "status", style: { fontSize: 10.5, color: "var(--amber)", marginBottom: 8, lineHeight: 1.55 } }, "\uC815\uBCF8 \uC0C1\uD0DC: ", String(data.status), " \xB7 \uC0AC\uC720: ", detail.reason, " \xB7 \uB9C8\uC9C0\uB9C9 \uC815\uC0C1 \uC815\uBCF4: ", detail.lastNormal);
+  }
   function AutopsyPanel({ state, wsStatus }) {
     var _a;
     const autopsy = (_a = state.page_data) == null ? void 0 : _a.autopsy;
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \xB7 \uAD6C\uCCB4 \uC784\uACC4\uAC12")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !autopsy || autopsy.status !== "ok" ? (
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \xB7 \uAD6C\uCCB4 \uC784\uACC4\uAC12")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, _derivedFallbackAllowed(autopsy) ? (
       // v5.6.1 — 폴백: 발행 전에도 세대별 부검/게이트 사유를 파생 표시(빈 화면 금지).
       (() => {
         const gens = Array.isArray(state.generations) ? state.generations : [];
@@ -11009,7 +11035,7 @@ def signal_sell(pos, bar, ind):
         }
         return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 } }, "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80 \uBC1C\uD589 \uC804 \u2014 \uC138\uB300\uBCC4 \uBD80\uAC80 \uC0AC\uC720(\uD30C\uC0DD)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, rows.map((g, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-1)", padding: "4px 0", borderBottom: "1px solid var(--line-1)", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("b", { style: { color: g.gate_passed ? "var(--teal)" : "var(--ink-2)" } }, "gen_", String(g.gen_no).padStart(2, "0")), " ", String(g.gate_reason && g.gate_reason !== "\uC870\uAC74 \uCDA9\uC871" ? g.gate_reason : g.reason)))));
       })()
-    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 10 } }, "\uAC70\uB798 ", autopsy.trade_count, "\uAC74 \xB7 \uC804\uCCB4 \uC2B9\uB960 ", _pct(autopsy.overall_win_rate), " \xB7 \uD3C9\uADE0 ", _num(autopsy.overall_avg_return), "%"), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300 \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.time_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uCD1D \uBC34\uB4DC \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.market_cap_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uAD50\uCC28(\uC2DC\uAC04\uB300\xD7\uC2DC\uCD1D)", rows: autopsy.cross_segments }), autopsy.thresholds && autopsy.thresholds.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uAD6C\uCCB4 \uC784\uACC4\uAC12(\uC190\uC2E4 \uAD6C\uAC04)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, autopsy.thresholds.map((t, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, `${_ThresholdCond(t)} \xB7 ${t.count}\uAC74 \xB7 \uC2B9\uB960 ${_pct(t.win_rate)} \xB7 \uD3C9\uADE0 ${_num(t.mean_return)}%`)))))));
+    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_AuthorityStatus, { data: autopsy }), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 10 } }, "\uAC70\uB798 ", autopsy.trade_count, "\uAC74 \xB7 \uC804\uCCB4 \uC2B9\uB960 ", _pct(autopsy.overall_win_rate), " \xB7 \uD3C9\uADE0 ", _num(autopsy.overall_avg_return), "%"), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300 \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.time_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uCD1D \uBC34\uB4DC \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.market_cap_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uAD50\uCC28(\uC2DC\uAC04\uB300\xD7\uC2DC\uCD1D)", rows: autopsy.cross_segments }), autopsy.thresholds && autopsy.thresholds.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uAD6C\uCCB4 \uC784\uACC4\uAC12(\uC190\uC2E4 \uAD6C\uAC04)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, autopsy.thresholds.map((t, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, `${_ThresholdCond(t)} \xB7 ${t.count}\uAC74 \xB7 \uC2B9\uB960 ${_pct(t.win_rate)} \xB7 \uD3C9\uADE0 ${_num(t.mean_return)}%`)))))));
   }
   function _lnNum(x) {
     return typeof x === "number" ? x.toFixed(2) : "\u2014";
@@ -11022,7 +11048,7 @@ def signal_sell(pos, bar, ind):
     const bestPath = lineage && lineage.best_path || [];
     const bestSet = new Set(bestPath);
     const ordered = [...nodes].sort((a, b) => a.gen_no - b.gen_no);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC804\uB7B5 \uACC4\uBCF4 \xB7 \uBC84\uC804 \uACBD\uACFC", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, lineage && lineage.status === "ok" ? `\uC2DC\uB4DC\u2192best \uACBD\uB85C ${bestPath.length}\uC138\uB300 \xB7 \uCD1D ${lineage.node_count}\uC138\uB300` : "\uC138\uB300 \uACC4\uBCF4/\uCD94\uC774")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !lineage || lineage.status !== "ok" || ordered.length === 0 ? (
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC804\uB7B5 \uACC4\uBCF4 \xB7 \uBC84\uC804 \uACBD\uACFC", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, lineage && lineage.status === "ok" ? `\uC2DC\uB4DC\u2192best \uACBD\uB85C ${bestPath.length}\uC138\uB300 \xB7 \uCD1D ${lineage.node_count}\uC138\uB300` : "\uC138\uB300 \uACC4\uBCF4/\uCD94\uC774")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, _derivedFallbackAllowed(lineage) ? (
       // v5.6.1 — 폴백: lineage 미발행 시 세대 흐름(파생 계보)을 표시(빈 화면 금지).
       (() => {
         const gens = (Array.isArray(state.generations) ? state.generations : []).filter((g) => g.gen_no >= 0);
@@ -11035,7 +11061,7 @@ def signal_sell(pos, bar, ind):
           return /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { padding: "4px 0", borderBottom: "1px solid var(--line-1)", fontSize: 11.5, display: "flex", gap: 10 } }, /* @__PURE__ */ React.createElement("b", { style: { color: g.gen_no === bestGen ? "var(--violet)" : g.gate_passed ? "var(--teal)" : "var(--ink-2)", flex: "0 0 58px" } }, "gen_", String(g.gen_no).padStart(2, "0"), g.gen_no === bestGen ? " \u2605" : g.gate_passed ? " \u2713" : ""), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 } }, g.buy_name || "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: ((_a2 = g.graded_score) != null ? _a2 : 0) > 0 ? "var(--teal)" : "var(--ink-3)" } }, typeof g.graded_score === "number" ? g.graded_score.toFixed(2) : "\u2014"));
         })));
       })()
-    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 8 } }, "best \uC138\uB300 = gen_", String(lineage.best_gen).padStart(2, "0"), " \xB7 \uACBD\uB85C ", bestPath.map((g) => `g${g}`).join(" \u2192 ")), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, ordered.map((n, i) => /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "5px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: bestSet.has(n.gen_no) ? "var(--teal)" : "var(--ink-2)" } }, bestSet.has(n.gen_no) ? "\u2605" : "\xB7"), ` gen_${String(n.gen_no).padStart(2, "0")}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, n.parent_gen != null ? ` \u2190 gen_${String(n.parent_gen).padStart(2, "0")}` : " (\uB8E8\uD2B8)")), /* @__PURE__ */ React.createElement("span", { style: { color: n.gate_passed ? "var(--green)" : "var(--ink-3)" } }, `graded ${_lnNum(n.graded_score)} \xB7 ${n.trade_count}\uAC74 \xB7 MDD ${_lnNum(n.mdd)}`)), n.diff_from_parent && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, paddingLeft: 14 } }, n.diff_from_parent)))))));
+    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_AuthorityStatus, { data: lineage }), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 8 } }, "best \uC138\uB300 = gen_", String(lineage.best_gen).padStart(2, "0"), " \xB7 \uACBD\uB85C ", bestPath.map((g) => `g${g}`).join(" \u2192 ")), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, ordered.map((n, i) => /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "5px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: bestSet.has(n.gen_no) ? "var(--teal)" : "var(--ink-2)" } }, bestSet.has(n.gen_no) ? "\u2605" : "\xB7"), ` gen_${String(n.gen_no).padStart(2, "0")}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, n.parent_gen != null ? ` \u2190 gen_${String(n.parent_gen).padStart(2, "0")}` : " (\uB8E8\uD2B8)")), /* @__PURE__ */ React.createElement("span", { style: { color: n.gate_passed ? "var(--green)" : "var(--ink-3)" } }, `graded ${_lnNum(n.graded_score)} \xB7 ${n.trade_count}\uAC74 \xB7 MDD ${_lnNum(n.mdd)}`)), n.diff_from_parent && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, paddingLeft: 14 } }, n.diff_from_parent)))))));
   }
   function _hoNum(x) {
     return typeof x === "number" ? x.toFixed(2) : "\u2014";
@@ -11070,10 +11096,10 @@ def signal_sell(pos, bar, ind):
     return React2.createElement(type, withKey(props, key));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
   init_react_shim();
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/classcat/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/classcat/index.js
   function cc(names) {
     if (typeof names === "string" || typeof names === "number") return "" + names;
     let out = "";
@@ -11091,7 +11117,7 @@ def signal_sell(pos, bar, ind):
     return out;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-dispatch/src/dispatch.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-dispatch/src/dispatch.js
   var noop = { value: () => {
   } };
   function dispatch() {
@@ -11161,7 +11187,7 @@ def signal_sell(pos, bar, ind):
   }
   var dispatch_default = dispatch;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespaces.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespaces.js
   var xhtml = "http://www.w3.org/1999/xhtml";
   var namespaces_default = {
     svg: "http://www.w3.org/2000/svg",
@@ -11171,14 +11197,14 @@ def signal_sell(pos, bar, ind):
     xmlns: "http://www.w3.org/2000/xmlns/"
   };
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespace.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/namespace.js
   function namespace_default(name) {
     var prefix = name += "", i = prefix.indexOf(":");
     if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
     return namespaces_default.hasOwnProperty(prefix) ? { space: namespaces_default[prefix], local: name } : name;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/creator.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/creator.js
   function creatorInherit(name) {
     return function() {
       var document2 = this.ownerDocument, uri = this.namespaceURI;
@@ -11195,7 +11221,7 @@ def signal_sell(pos, bar, ind):
     return (fullname.local ? creatorFixed : creatorInherit)(fullname);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selector.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selector.js
   function none() {
   }
   function selector_default(selector) {
@@ -11204,7 +11230,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/select.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/select.js
   function select_default(select) {
     if (typeof select !== "function") select = selector_default(select);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -11218,12 +11244,12 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, this._parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/array.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/array.js
   function array(x) {
     return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selectorAll.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selectorAll.js
   function empty() {
     return [];
   }
@@ -11233,7 +11259,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectAll.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectAll.js
   function arrayAll(select) {
     return function() {
       return array(select.apply(this, arguments));
@@ -11253,7 +11279,7 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/matcher.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/matcher.js
   function matcher_default(selector) {
     return function() {
       return this.matches(selector);
@@ -11265,7 +11291,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChild.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChild.js
   var find = Array.prototype.find;
   function childFind(match) {
     return function() {
@@ -11279,7 +11305,7 @@ def signal_sell(pos, bar, ind):
     return this.select(match == null ? childFirst : childFind(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChildren.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/selectChildren.js
   var filter = Array.prototype.filter;
   function children() {
     return Array.from(this.children);
@@ -11293,7 +11319,7 @@ def signal_sell(pos, bar, ind):
     return this.selectAll(match == null ? children : childrenFilter(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/filter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/filter.js
   function filter_default(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -11306,12 +11332,12 @@ def signal_sell(pos, bar, ind):
     return new Selection(subgroups, this._parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sparse.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sparse.js
   function sparse_default(update) {
     return new Array(update.length);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/enter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/enter.js
   function enter_default() {
     return new Selection(this._enter || this._groups.map(sparse_default), this._parents);
   }
@@ -11338,14 +11364,14 @@ def signal_sell(pos, bar, ind):
     }
   };
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/constant.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/constant.js
   function constant_default(x) {
     return function() {
       return x;
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/data.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/data.js
   function bindIndex(parent, group, enter, update, exit, data) {
     var i = 0, node, groupLength = group.length, dataLength = data.length;
     for (; i < dataLength; ++i) {
@@ -11417,12 +11443,12 @@ def signal_sell(pos, bar, ind):
     return typeof data === "object" && "length" in data ? data : Array.from(data);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/exit.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/exit.js
   function exit_default() {
     return new Selection(this._exit || this._groups.map(sparse_default), this._parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/join.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/join.js
   function join_default(onenter, onupdate, onexit) {
     var enter = this.enter(), update = this, exit = this.exit();
     if (typeof onenter === "function") {
@@ -11440,7 +11466,7 @@ def signal_sell(pos, bar, ind):
     return enter && update ? enter.merge(update).order() : update;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/merge.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/merge.js
   function merge_default(context) {
     var selection2 = context.selection ? context.selection() : context;
     for (var groups0 = this._groups, groups1 = selection2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -11456,7 +11482,7 @@ def signal_sell(pos, bar, ind):
     return new Selection(merges, this._parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/order.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/order.js
   function order_default() {
     for (var groups = this._groups, j = -1, m = groups.length; ++j < m; ) {
       for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0; ) {
@@ -11469,7 +11495,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sort.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/sort.js
   function sort_default(compare) {
     if (!compare) compare = ascending;
     function compareNode(a, b) {
@@ -11489,7 +11515,7 @@ def signal_sell(pos, bar, ind):
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/call.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/call.js
   function call_default() {
     var callback = arguments[0];
     arguments[0] = this;
@@ -11497,12 +11523,12 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/nodes.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/nodes.js
   function nodes_default() {
     return Array.from(this);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/node.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/node.js
   function node_default() {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
@@ -11513,19 +11539,19 @@ def signal_sell(pos, bar, ind):
     return null;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/size.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/size.js
   function size_default() {
     let size = 0;
     for (const node of this) ++size;
     return size;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/empty.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/empty.js
   function empty_default() {
     return !this.node();
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/each.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/each.js
   function each_default(callback) {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -11535,7 +11561,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/attr.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/attr.js
   function attrRemove(name) {
     return function() {
       this.removeAttribute(name);
@@ -11579,12 +11605,12 @@ def signal_sell(pos, bar, ind):
     return this.each((value == null ? fullname.local ? attrRemoveNS : attrRemove : typeof value === "function" ? fullname.local ? attrFunctionNS : attrFunction : fullname.local ? attrConstantNS : attrConstant)(fullname, value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/window.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/window.js
   function window_default(node) {
     return node.ownerDocument && node.ownerDocument.defaultView || node.document && node || node.defaultView;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/style.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/style.js
   function styleRemove(name) {
     return function() {
       this.style.removeProperty(name);
@@ -11609,7 +11635,7 @@ def signal_sell(pos, bar, ind):
     return node.style.getPropertyValue(name) || window_default(node).getComputedStyle(node, null).getPropertyValue(name);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/property.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/property.js
   function propertyRemove(name) {
     return function() {
       delete this[name];
@@ -11631,7 +11657,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length > 1 ? this.each((value == null ? propertyRemove : typeof value === "function" ? propertyFunction : propertyConstant)(name, value)) : this.node()[name];
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/classed.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/classed.js
   function classArray(string) {
     return string.trim().split(/^|\s+/);
   }
@@ -11694,7 +11720,7 @@ def signal_sell(pos, bar, ind):
     return this.each((typeof value === "function" ? classedFunction : value ? classedTrue : classedFalse)(names, value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/text.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/text.js
   function textRemove() {
     this.textContent = "";
   }
@@ -11713,7 +11739,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(value == null ? textRemove : (typeof value === "function" ? textFunction : textConstant)(value)) : this.node().textContent;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/html.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/html.js
   function htmlRemove() {
     this.innerHTML = "";
   }
@@ -11732,7 +11758,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(value == null ? htmlRemove : (typeof value === "function" ? htmlFunction : htmlConstant)(value)) : this.node().innerHTML;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/raise.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/raise.js
   function raise() {
     if (this.nextSibling) this.parentNode.appendChild(this);
   }
@@ -11740,7 +11766,7 @@ def signal_sell(pos, bar, ind):
     return this.each(raise);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/lower.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/lower.js
   function lower() {
     if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
   }
@@ -11748,7 +11774,7 @@ def signal_sell(pos, bar, ind):
     return this.each(lower);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/append.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/append.js
   function append_default(name) {
     var create2 = typeof name === "function" ? name : creator_default(name);
     return this.select(function() {
@@ -11756,7 +11782,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/insert.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/insert.js
   function constantNull() {
     return null;
   }
@@ -11767,7 +11793,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/remove.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/remove.js
   function remove() {
     var parent = this.parentNode;
     if (parent) parent.removeChild(this);
@@ -11776,7 +11802,7 @@ def signal_sell(pos, bar, ind):
     return this.each(remove);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/clone.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/clone.js
   function selection_cloneShallow() {
     var clone = this.cloneNode(false), parent = this.parentNode;
     return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
@@ -11789,12 +11815,12 @@ def signal_sell(pos, bar, ind):
     return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/datum.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/datum.js
   function datum_default(value) {
     return arguments.length ? this.property("__data__", value) : this.node().__data__;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/on.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/on.js
   function contextListener(listener) {
     return function(event) {
       listener.call(this, event, this.__data__);
@@ -11857,7 +11883,7 @@ def signal_sell(pos, bar, ind):
     return this;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/dispatch.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/dispatch.js
   function dispatchEvent(node, type, params) {
     var window2 = window_default(node), event = window2.CustomEvent;
     if (typeof event === "function") {
@@ -11883,7 +11909,7 @@ def signal_sell(pos, bar, ind):
     return this.each((typeof params === "function" ? dispatchFunction : dispatchConstant)(type, params));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/iterator.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/iterator.js
   function* iterator_default() {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -11892,7 +11918,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/selection/index.js
   var root = [null];
   function Selection(groups, parents) {
     this._groups = groups;
@@ -11944,19 +11970,19 @@ def signal_sell(pos, bar, ind):
   };
   var selection_default = selection;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/select.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/select.js
   function select_default2(selector) {
     return typeof selector === "string" ? new Selection([[document.querySelector(selector)]], [document.documentElement]) : new Selection([[selector]], root);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/sourceEvent.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/sourceEvent.js
   function sourceEvent_default(event) {
     let sourceEvent;
     while (sourceEvent = event.sourceEvent) event = sourceEvent;
     return event;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/pointer.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-selection/src/pointer.js
   function pointer_default(event, node) {
     event = sourceEvent_default(event);
     if (node === void 0) node = event.currentTarget;
@@ -11976,7 +12002,7 @@ def signal_sell(pos, bar, ind):
     return [event.pageX, event.pageY];
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/noevent.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/noevent.js
   var nonpassive = { passive: false };
   var nonpassivecapture = { capture: true, passive: false };
   function nopropagation(event) {
@@ -11987,7 +12013,7 @@ def signal_sell(pos, bar, ind):
     event.stopImmediatePropagation();
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/nodrag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/nodrag.js
   function nodrag_default(view) {
     var root2 = view.document.documentElement, selection2 = select_default2(view).on("dragstart.drag", noevent_default, nonpassivecapture);
     if ("onselectstart" in root2) {
@@ -12013,10 +12039,10 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/constant.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/constant.js
   var constant_default2 = (x) => () => x;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/event.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/event.js
   function DragEvent(type, {
     sourceEvent,
     subject,
@@ -12048,7 +12074,7 @@ def signal_sell(pos, bar, ind):
     return value === this._ ? this : value;
   };
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/drag.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-drag/src/drag.js
   function defaultFilter(event) {
     return !event.ctrlKey && !event.button;
   }
@@ -12192,7 +12218,7 @@ def signal_sell(pos, bar, ind):
     return drag;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/define.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/define.js
   function define_default(constructor, factory, prototype) {
     constructor.prototype = factory.prototype = prototype;
     prototype.constructor = constructor;
@@ -12203,7 +12229,7 @@ def signal_sell(pos, bar, ind):
     return prototype;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/color.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-color/src/color.js
   function Color() {
   }
   var darker = 0.7;
@@ -12540,7 +12566,7 @@ def signal_sell(pos, bar, ind):
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basis.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basis.js
   function basis(t1, v0, v1, v2, v3) {
     var t2 = t1 * t1, t3 = t2 * t1;
     return ((1 - 3 * t1 + 3 * t2 - t3) * v0 + (4 - 6 * t2 + 3 * t3) * v1 + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2 + t3 * v3) / 6;
@@ -12553,7 +12579,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basisClosed.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/basisClosed.js
   function basisClosed_default(values) {
     var n = values.length;
     return function(t) {
@@ -12562,10 +12588,10 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/constant.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/constant.js
   var constant_default3 = (x) => () => x;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/color.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/color.js
   function linear(a, d) {
     return function(t) {
       return a + t * d;
@@ -12586,7 +12612,7 @@ def signal_sell(pos, bar, ind):
     return d ? linear(a, d) : constant_default3(isNaN(a) ? b : a);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/rgb.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/rgb.js
   var rgb_default = function rgbGamma(y) {
     var color2 = gamma(y);
     function rgb2(start2, end) {
@@ -12626,7 +12652,7 @@ def signal_sell(pos, bar, ind):
   var rgbBasis = rgbSpline(basis_default);
   var rgbBasisClosed = rgbSpline(basisClosed_default);
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/numberArray.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/numberArray.js
   function numberArray_default(a, b) {
     if (!b) b = [];
     var n = a ? Math.min(b.length, a.length) : 0, c = b.slice(), i;
@@ -12639,7 +12665,7 @@ def signal_sell(pos, bar, ind):
     return ArrayBuffer.isView(x) && !(x instanceof DataView);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/array.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/array.js
   function genericArray(a, b) {
     var nb = b ? b.length : 0, na = a ? Math.min(nb, a.length) : 0, x = new Array(na), c = new Array(nb), i;
     for (i = 0; i < na; ++i) x[i] = value_default(a[i], b[i]);
@@ -12650,7 +12676,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/date.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/date.js
   function date_default(a, b) {
     var d = /* @__PURE__ */ new Date();
     return a = +a, b = +b, function(t) {
@@ -12658,14 +12684,14 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/number.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/number.js
   function number_default(a, b) {
     return a = +a, b = +b, function(t) {
       return a * (1 - t) + b * t;
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/object.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/object.js
   function object_default(a, b) {
     var i = {}, c = {}, k;
     if (a === null || typeof a !== "object") a = {};
@@ -12683,7 +12709,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/string.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/string.js
   var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
   var reB = new RegExp(reA.source, "g");
   function zero(b) {
@@ -12725,13 +12751,13 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/value.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/value.js
   function value_default(a, b) {
     var t = typeof b, c;
     return b == null || t === "boolean" ? constant_default3(b) : (t === "number" ? number_default : t === "string" ? (c = color(b)) ? (b = c, rgb_default) : string_default : b instanceof color ? rgb_default : b instanceof Date ? date_default : isNumberArray(b) ? numberArray_default : Array.isArray(b) ? genericArray : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object_default : number_default)(a, b);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/decompose.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/decompose.js
   var degrees = 180 / Math.PI;
   var identity = {
     translateX: 0,
@@ -12757,7 +12783,7 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/parse.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/parse.js
   var svgNode;
   function parseCss(value) {
     const m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
@@ -12772,7 +12798,7 @@ def signal_sell(pos, bar, ind):
     return decompose_default(value.a, value.b, value.c, value.d, value.e, value.f);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/transform/index.js
   function interpolateTransform(parse, pxComma, pxParen, degParen) {
     function pop(s) {
       return s.length ? s.pop() + " " : "";
@@ -12827,7 +12853,7 @@ def signal_sell(pos, bar, ind):
   var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
   var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/zoom.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-interpolate/src/zoom.js
   var epsilon2 = 1e-12;
   function cosh(x) {
     return ((x = Math.exp(x)) + 1 / x) / 2;
@@ -12872,7 +12898,7 @@ def signal_sell(pos, bar, ind):
     return zoom;
   }(Math.SQRT2, 2, 4);
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timer.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timer.js
   var frame = 0;
   var timeout = 0;
   var interval = 0;
@@ -12974,7 +13000,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timeout.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-timer/src/timeout.js
   function timeout_default(callback, delay, time) {
     var t = new Timer();
     delay = delay == null ? 0 : +delay;
@@ -12985,7 +13011,7 @@ def signal_sell(pos, bar, ind):
     return t;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/schedule.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/schedule.js
   var emptyOn = dispatch_default("start", "end", "cancel", "interrupt");
   var emptyTween = [];
   var CREATED = 0;
@@ -13096,7 +13122,7 @@ def signal_sell(pos, bar, ind):
     }
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/interrupt.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/interrupt.js
   function interrupt_default(node, name) {
     var schedules = node.__transition, schedule, active, empty2 = true, i;
     if (!schedules) return;
@@ -13115,14 +13141,14 @@ def signal_sell(pos, bar, ind):
     if (empty2) delete node.__transition;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/interrupt.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/interrupt.js
   function interrupt_default2(name) {
     return this.each(function() {
       interrupt_default(this, name);
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/tween.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/tween.js
   function tweenRemove(id2, name) {
     var tween0, tween1;
     return function() {
@@ -13183,13 +13209,13 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/interpolate.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/interpolate.js
   function interpolate_default(a, b) {
     var c;
     return (typeof b === "number" ? number_default : b instanceof color ? rgb_default : (c = color(b)) ? (b = c, rgb_default) : string_default)(a, b);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attr.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attr.js
   function attrRemove2(name) {
     return function() {
       this.removeAttribute(name);
@@ -13239,7 +13265,7 @@ def signal_sell(pos, bar, ind):
     return this.attrTween(name, typeof value === "function" ? (fullname.local ? attrFunctionNS2 : attrFunction2)(fullname, i, tweenValue(this, "attr." + name, value)) : value == null ? (fullname.local ? attrRemoveNS2 : attrRemove2)(fullname) : (fullname.local ? attrConstantNS2 : attrConstant2)(fullname, i, value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attrTween.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/attrTween.js
   function attrInterpolate(name, i) {
     return function(t) {
       this.setAttribute(name, i.call(this, t));
@@ -13279,7 +13305,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/delay.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/delay.js
   function delayFunction(id2, value) {
     return function() {
       init(this, id2).delay = +value.apply(this, arguments);
@@ -13295,7 +13321,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each((typeof value === "function" ? delayFunction : delayConstant)(id2, value)) : get2(this.node(), id2).delay;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/duration.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/duration.js
   function durationFunction(id2, value) {
     return function() {
       set2(this, id2).duration = +value.apply(this, arguments);
@@ -13311,7 +13337,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each((typeof value === "function" ? durationFunction : durationConstant)(id2, value)) : get2(this.node(), id2).duration;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/ease.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/ease.js
   function easeConstant(id2, value) {
     if (typeof value !== "function") throw new Error();
     return function() {
@@ -13323,7 +13349,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length ? this.each(easeConstant(id2, value)) : get2(this.node(), id2).ease;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/easeVarying.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/easeVarying.js
   function easeVarying(id2, value) {
     return function() {
       var v = value.apply(this, arguments);
@@ -13336,7 +13362,7 @@ def signal_sell(pos, bar, ind):
     return this.each(easeVarying(this._id, value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/filter.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/filter.js
   function filter_default2(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -13349,7 +13375,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, this._parents, this._name, this._id);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/merge.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/merge.js
   function merge_default2(transition2) {
     if (transition2._id !== this._id) throw new Error();
     for (var groups0 = this._groups, groups1 = transition2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -13365,7 +13391,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(merges, this._parents, this._name, this._id);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/on.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/on.js
   function start(name) {
     return (name + "").trim().split(/^|\s+/).every(function(t) {
       var i = t.indexOf(".");
@@ -13386,7 +13412,7 @@ def signal_sell(pos, bar, ind):
     return arguments.length < 2 ? get2(this.node(), id2).on.on(name) : this.each(onFunction(id2, name, listener));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/remove.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/remove.js
   function removeFunction(id2) {
     return function() {
       var parent = this.parentNode;
@@ -13398,7 +13424,7 @@ def signal_sell(pos, bar, ind):
     return this.on("end.remove", removeFunction(this._id));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/select.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/select.js
   function select_default3(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selector_default(select);
@@ -13414,7 +13440,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, this._parents, name, id2);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selectAll.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selectAll.js
   function selectAll_default2(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selectorAll_default(select);
@@ -13434,13 +13460,13 @@ def signal_sell(pos, bar, ind):
     return new Transition(subgroups, parents, name, id2);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selection.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/selection.js
   var Selection2 = selection_default.prototype.constructor;
   function selection_default2() {
     return new Selection2(this._groups, this._parents);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/style.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/style.js
   function styleNull(name, interpolate) {
     var string00, string10, interpolate0;
     return function() {
@@ -13481,7 +13507,7 @@ def signal_sell(pos, bar, ind):
     return value == null ? this.styleTween(name, styleNull(name, i)).on("end.style." + name, styleRemove2(name)) : typeof value === "function" ? this.styleTween(name, styleFunction2(name, i, tweenValue(this, "style." + name, value))).each(styleMaybeRemove(this._id, name)) : this.styleTween(name, styleConstant2(name, i, value), priority).on("end.style." + name, null);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/styleTween.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/styleTween.js
   function styleInterpolate(name, i, priority) {
     return function(t) {
       this.style.setProperty(name, i.call(this, t), priority);
@@ -13505,7 +13531,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/text.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/text.js
   function textConstant2(value) {
     return function() {
       this.textContent = value;
@@ -13521,7 +13547,7 @@ def signal_sell(pos, bar, ind):
     return this.tween("text", typeof value === "function" ? textFunction2(tweenValue(this, "text", value)) : textConstant2(value == null ? "" : value + ""));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/textTween.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/textTween.js
   function textInterpolate(i) {
     return function(t) {
       this.textContent = i.call(this, t);
@@ -13545,7 +13571,7 @@ def signal_sell(pos, bar, ind):
     return this.tween(key, textTween(value));
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/transition.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/transition.js
   function transition_default() {
     var name = this._name, id0 = this._id, id1 = newId();
     for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
@@ -13564,7 +13590,7 @@ def signal_sell(pos, bar, ind):
     return new Transition(groups, this._parents, name, id1);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/end.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/end.js
   function end_default() {
     var on0, on1, that = this, id2 = that._id, size = that.size();
     return new Promise(function(resolve, reject) {
@@ -13585,7 +13611,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/transition/index.js
   var id = 0;
   function Transition(groups, parents, name, id2) {
     this._groups = groups;
@@ -13633,12 +13659,12 @@ def signal_sell(pos, bar, ind):
     [Symbol.iterator]: selection_prototype[Symbol.iterator]
   };
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-ease/src/cubic.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-ease/src/cubic.js
   function cubicInOut(t) {
     return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/transition.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/transition.js
   var defaultTiming = {
     time: null,
     // Set on use.
@@ -13672,14 +13698,14 @@ def signal_sell(pos, bar, ind):
     return new Transition(groups, this._parents, name, id2);
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-transition/src/selection/index.js
   selection_default.prototype.interrupt = interrupt_default2;
   selection_default.prototype.transition = transition_default2;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/constant.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/constant.js
   var constant_default4 = (x) => () => x;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/event.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/event.js
   function ZoomEvent(type, {
     sourceEvent,
     target,
@@ -13695,7 +13721,7 @@ def signal_sell(pos, bar, ind):
     });
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/transform.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/transform.js
   function Transform(k, x, y) {
     this.k = k;
     this.x = x;
@@ -13744,7 +13770,7 @@ def signal_sell(pos, bar, ind):
     return node.__zoom;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/noevent.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/noevent.js
   function nopropagation2(event) {
     event.stopImmediatePropagation();
   }
@@ -13753,7 +13779,7 @@ def signal_sell(pos, bar, ind):
     event.stopImmediatePropagation();
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/zoom.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/d3-zoom/src/zoom.js
   function defaultFilter2(event) {
     return (!event.ctrlKey || event.type === "wheel") && !event.button;
   }
@@ -14068,7 +14094,7 @@ def signal_sell(pos, bar, ind):
     return zoom;
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/system/dist/esm/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/system/dist/esm/index.js
   var errorMessages = {
     error001: (lib = "react") => `Seems like you have not used zustand provider as an ancestor. Help: https://${lib}flow.dev/error#001`,
     error002: () => "It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them.",
@@ -16719,11 +16745,11 @@ def signal_sell(pos, bar, ind):
     };
   }
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
+  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
   init_react_shim();
   var import_with_selector = __toESM(require_with_selector(), 1);
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/vanilla.mjs
+  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/vanilla.mjs
   var import_meta = {};
   var createStoreImpl = (createState) => {
     let state;
@@ -16756,7 +16782,7 @@ def signal_sell(pos, bar, ind):
   };
   var createStore = (createState) => createState ? createStoreImpl(createState) : createStoreImpl;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
+  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/traditional.mjs
   var { useDebugValue: useDebugValue2 } = react_shim_default;
   var { useSyncExternalStoreWithSelector } = import_with_selector.default;
   var identity3 = (arg) => arg;
@@ -16779,7 +16805,7 @@ def signal_sell(pos, bar, ind):
   };
   var createWithEqualityFn = (createState, defaultEqualityFn) => createState ? createWithEqualityFnImpl(createState, defaultEqualityFn) : createWithEqualityFnImpl;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/shallow.mjs
+  // ai_strategy_loop/dashboard/webui-build/node_modules/zustand/esm/shallow.mjs
   function shallow$1(objA, objB) {
     if (Object.is(objA, objB)) {
       return true;
@@ -16830,7 +16856,7 @@ def signal_sell(pos, bar, ind):
     version: version2
   } = ReactDOM2;
 
-  // ../STOM_V.wt-dev/ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
+  // ai_strategy_loop/dashboard/webui-build/node_modules/@xyflow/react/dist/esm/index.js
   var StoreContext = createContext(null);
   var Provider$1 = StoreContext.Provider;
   var zustandErrorMessage = errorMessages["error001"]("react");
@@ -20776,7 +20802,6 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, {
     PhaseTimeline,
-    phaseIndex,
     PhaseDetailPanel,
     ProcessFlowPanel,
     ProcessFlowDiagram,
@@ -31583,7 +31608,8 @@ def signal_sell(pos, bar, ind):
   var {
     useState: useState_hct,
     useEffect: useEffect_hct,
-    useCallback: useCallback_hct
+    useCallback: useCallback_hct,
+    useRef: useRef_hct
   } = React;
   var HCT_SOURCE_KINDS = [
     { value: "", label: "\uC804\uCCB4" },
@@ -31668,12 +31694,12 @@ def signal_sell(pos, bar, ind):
       return an < bn ? -dir : dir;
     });
   }
-  function _hctFetchSection(baseUrl, researchId, section, cursor) {
+  function _hctFetchSection(baseUrl, researchId, section, cursor, signal) {
     let url = baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=" + section;
     if (cursor) url += "&cursor=" + encodeURIComponent(cursor);
-    return fetch(url, { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+    return fetch(url, { signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
-  function HistoryConditionTreePanel({ baseUrl, wsStatus }) {
+  function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [q, setQ] = useState_hct("");
     const [sourceKind, setSourceKind] = useState_hct("");
@@ -31688,6 +31714,8 @@ def signal_sell(pos, bar, ind):
     const [expandedConditions, setExpandedConditions] = useState_hct({});
     const [sortKey, setSortKey] = useState_hct("");
     const [sortDir, setSortDir] = useState_hct("desc");
+    const selectionGeneration = useRef_hct(0);
+    const selectionController = useRef_hct(null);
     const loadIndex = useCallback_hct((cursor) => {
       if (isDemo || !baseUrl) return;
       setIndexLoading(true);
@@ -31710,6 +31738,11 @@ def signal_sell(pos, bar, ind):
       loadIndex(null);
     }, [loadIndex]);
     const selectResearch = useCallback_hct((researchId) => {
+      const generation = selectionGeneration.current + 1;
+      selectionGeneration.current = generation;
+      if (selectionController.current) selectionController.current.abort();
+      const controller = new AbortController();
+      selectionController.current = controller;
       setSelectedId(researchId);
       setExpandedStages({});
       setExpandedConditions({});
@@ -31718,15 +31751,32 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setSections({ research: { loading: true, err: "", node: null } });
-      _hctFetchSection(baseUrl, researchId, "research").then((j) => setSections((prev) => ({ ...prev, research: { loading: false, err: "", node: j } }))).catch((e) => setSections((prev) => ({ ...prev, research: { loading: false, err: String(e), node: null } })));
+      _hctFetchSection(baseUrl, researchId, "research", null, controller.signal).then((j) => {
+        if (selectionGeneration.current === generation) {
+          setSections({ research: { loading: false, err: "", node: j } });
+        }
+      }).catch((e) => {
+        if (e.name !== "AbortError" && selectionGeneration.current === generation) {
+          setSections({ research: { loading: false, err: String(e), node: null } });
+        }
+      });
     }, [baseUrl, isDemo]);
+    useEffect_hct(() => {
+      if (preferredResearchId && preferredResearchId !== selectedId) selectResearch(preferredResearchId);
+    }, [preferredResearchId, selectedId, selectResearch]);
+    useEffect_hct(() => () => {
+      if (selectionController.current) selectionController.current.abort();
+    }, []);
     const loadSection = useCallback_hct((section, cursor) => {
       if (isDemo || !baseUrl || !selectedId) return;
+      const generation = selectionGeneration.current;
+      const controller = selectionController.current;
       setSections((prev) => ({
         ...prev,
         [section]: { ...prev[section] || {}, loading: true, err: prev[section] ? prev[section].err : "" }
       }));
-      _hctFetchSection(baseUrl, selectedId, section, cursor).then((j) => {
+      _hctFetchSection(baseUrl, selectedId, section, cursor, controller && controller.signal).then((j) => {
+        if (selectionGeneration.current !== generation) return;
         const rows = Array.isArray(j && j.rows) ? j.rows : [];
         setSections((prev) => ({
           ...prev,
@@ -31737,10 +31787,13 @@ def signal_sell(pos, bar, ind):
             next_cursor: j && j.next_cursor ? j.next_cursor : null
           }
         }));
-      }).catch((e) => setSections((prev) => ({
-        ...prev,
-        [section]: { loading: false, err: String(e), rows: prev[section] && prev[section].rows || [], next_cursor: null }
-      })));
+      }).catch((e) => {
+        if (e.name === "AbortError" || selectionGeneration.current !== generation) return;
+        setSections((prev) => ({
+          ...prev,
+          [section]: { loading: false, err: String(e), rows: prev[section] && prev[section].rows || [], next_cursor: null }
+        }));
+      });
     }, [baseUrl, isDemo, selectedId]);
     const toggleStage = useCallback_hct((stageId) => {
       setExpandedStages((prev) => ({ ...prev, [stageId]: !prev[stageId] }));
@@ -31971,7 +32024,7 @@ def signal_sell(pos, bar, ind):
       pairs.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.pair, value: p.pair }, p.pair))
     ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadPairs, disabled: pairsLoading }, pairsLoading ? "\uC870\uD68C\uC911\u2026" : "\uC870\uD68C")), /* @__PURE__ */ React.createElement(_HvError, { err: pairsErr, onRetry: loadPairs }), !pairsErr && pairsAvailable === false && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC758 A/B \uC30D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4(\uBC1C\uD589\uAE30 \uBCD1\uB82C \uC2AC\uB77C\uC774\uC2A4 \uB300\uAE30 \uC911\uC77C \uC218 \uC788\uC74C)"), !pairsErr && pairsAvailable && pairs.length === 0 && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 series\uC5D0 \uBC1C\uD589\uB41C A/B \uC30D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4"), current && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, current.legacy_research_id ? renderSide("legacy \xB7 " + current.legacy_research_id, current.legacy_gate_passed, legacyRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 legacy \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(typed\uB9CC \uBC1C\uD589\uB428)"), current.typed_research_id ? renderSide("typed \xB7 " + current.typed_research_id, current.typed_gate_passed, typedRows) : /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC774 \uC30D\uC740 typed \uD310\uC774 \uC5C6\uC2B5\uB2C8\uB2E4(legacy\uB9CC \uBC1C\uD589\uB428)")))));
   }
-  function CellHeatmap({ baseUrl, wsStatus }) {
+  function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [campaigns, setCampaigns] = useState_hv([]);
     const [campaignsLoading, setCampaignsLoading] = useState_hv(false);
@@ -31988,15 +32041,20 @@ def signal_sell(pos, bar, ind):
       _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=campaign", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
-        setSelected((prev) => prev || (items.length ? items[0].research_id : ""));
+        setSelected((prev) => preferredResearchId && preferredResearchId.startsWith("campaign:") && items.some((item) => item.research_id === preferredResearchId) ? preferredResearchId : prev || (items.length ? items[0].research_id : ""));
       }).catch((e) => {
         setCampaignsErr(String(e));
         setCampaigns([]);
       }).finally(() => setCampaignsLoading(false));
-    }, [baseUrl, isDemo]);
+    }, [baseUrl, isDemo, preferredResearchId]);
     useEffect_hv(() => {
       loadCampaigns();
     }, []);
+    useEffect_hv(() => {
+      if (preferredResearchId && preferredResearchId.startsWith("campaign:") && campaigns.some((c) => c.research_id === preferredResearchId)) {
+        setSelected(preferredResearchId);
+      }
+    }, [preferredResearchId, campaigns]);
     const loadRows = useCallback_hv(() => {
       if (isDemo || !baseUrl || !selected2) {
         setRows([]);
@@ -32043,7 +32101,7 @@ def signal_sell(pos, bar, ind):
       if (!capLabels.length || !timeLabels.length) return null;
       return { timeLabels, capLabels, cellMap };
     })();
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "12\uC140 \uD788\uD2B8\uB9F5 (\uC2DC\uAC04\uCC3D \xD7 \uC2DC\uCD1D)"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("campaign:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 campaign \uD788\uD2B8\uB9F5\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD campaign \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "select",
       {
         className: "mono",
@@ -32068,7 +32126,7 @@ def signal_sell(pos, bar, ind):
       );
     })))))))));
   }
-  function HoldoutFunnel({ baseUrl, wsStatus }) {
+  function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [runs, setRuns] = useState_hv([]);
     const [runsLoading, setRunsLoading] = useState_hv(false);
@@ -32084,15 +32142,20 @@ def signal_sell(pos, bar, ind):
       _hvFetchJson(baseUrl + "/history/index?limit=50&source_kind=loop_run", 3e4).then((j) => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);
-        setSelected((prev) => prev || (items.length ? items[0].research_id : ""));
+        setSelected((prev) => preferredResearchId && preferredResearchId.startsWith("loop_run:") && items.some((item) => item.research_id === preferredResearchId) ? preferredResearchId : prev || (items.length ? items[0].research_id : ""));
       }).catch((e) => {
         setRunsErr(String(e));
         setRuns([]);
       }).finally(() => setRunsLoading(false));
-    }, [baseUrl, isDemo]);
+    }, [baseUrl, isDemo, preferredResearchId]);
     useEffect_hv(() => {
       loadRuns();
     }, []);
+    useEffect_hv(() => {
+      if (preferredResearchId && preferredResearchId.startsWith("loop_run:") && runs.some((r) => r.research_id === preferredResearchId)) {
+        setSelected(preferredResearchId);
+      }
+    }, [preferredResearchId, runs]);
     const loadRows = useCallback_hv(() => {
       if (isDemo || !baseUrl || !selected2) {
         setRows([]);
@@ -32138,7 +32201,7 @@ def signal_sell(pos, bar, ind):
       fontWeight: 600,
       fontSize: 11
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD640\uB4DC\uC544\uC6C3 \uD37C\uB110"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRows, disabled: isDemo || rowsLoading || !selected2 }, rowsLoading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 12 } }, isDemo && /* @__PURE__ */ React.createElement(_HvEmpty, null, "Demo mode \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."), !isDemo && /* @__PURE__ */ React.createElement(React.Fragment, null, preferredResearchId && !preferredResearchId.startsWith("loop_run:") && /* @__PURE__ */ React.createElement(_HvEmpty, null, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 loop_run \uD37C\uB110\uACFC \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD run \uBD84\uC11D\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "select",
       {
         className: "mono",
@@ -32318,7 +32381,7 @@ def signal_sell(pos, bar, ind):
     if (detail.campaign) return JSON.stringify(detail.campaign, null, 2);
     return "";
   }
-  function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
+  function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80, initialQuery = "", preferredResearchId = "" }) {
     const base = _rixBase(baseUrl);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [records, setRecords] = useState_rix([]);
@@ -32330,8 +32393,8 @@ def signal_sell(pos, bar, ind):
     const [loading, setLoading] = useState_rix(false);
     const [elapsed, setElapsed] = useState_rix(0);
     const [err, setErr] = useState_rix("");
-    const [queryInput, setQueryInput] = useState_rix("");
-    const [query, setQuery] = useState_rix("");
+    const [queryInput, setQueryInput] = useState_rix(initialQuery);
+    const [query, setQuery] = useState_rix(initialQuery.trim().toLowerCase());
     const [kind, setKind] = useState_rix("all");
     const [canonicality, setCanonicality] = useState_rix("all");
     const [traceStatus, setTraceStatus] = useState_rix("all");
@@ -32342,6 +32405,11 @@ def signal_sell(pos, bar, ind):
       const timer2 = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
       return () => clearTimeout(timer2);
     }, [queryInput]);
+    useEffect_rix(() => {
+      const normalized = initialQuery.trim().toLowerCase();
+      setQueryInput(initialQuery);
+      setQuery(normalized);
+    }, [initialQuery]);
     useEffect_rix(() => {
       if (!loading) return;
       setElapsed(0);
@@ -32370,6 +32438,11 @@ def signal_sell(pos, bar, ind):
         if (typeof cancel === "function") cancel();
       };
     }, [loadIndex]);
+    useEffect_rix(() => {
+      if (preferredResearchId && records.some((row) => row.id === preferredResearchId)) {
+        setSelectedId(preferredResearchId);
+      }
+    }, [preferredResearchId, records]);
     const filtered = useMemo_rix(() => {
       const q = query;
       const rows = records.filter((row) => {
@@ -32734,10 +32807,10 @@ def signal_sell(pos, bar, ind):
     const LabPanel = window.ResearchLabPanel;
     return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-lab", "data-legacy-lab-panel": LabPanel ? "mounted" : "missing" }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "lab" }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(_DpSidebar, { runs, runId, setRunId, ops, verdict }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "dashboard-page-title" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uC5F0\uAD6C\uC2E4"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "exploration \xB7 edge \xB7 variables \xB7 validation")), labErrors.length > 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "error", compact: true, title: "\uC5F0\uAD6C\uC2E4 \uB370\uC774\uD130 \uC77C\uBD80 \uB85C\uB4DC \uC2E4\uD328", detail: labErrors.join(" \xB7 ") }, "\uC2E4\uD328\uD55C endpoint\uB97C \uBE48 \uB370\uC774\uD130\uB85C \uC228\uAE30\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC5F0\uACB0 \uB610\uB294 \uBC31\uC5D4\uB4DC \uC0C1\uD0DC\uB97C \uD655\uC778\uD558\uC138\uC694."), LabPanel ? /* @__PURE__ */ React.createElement(LabPanel, { baseUrl: base, wsStatus: "na", runId, onOpenWorkbench: () => _dpNavigateToTab("workbench") }) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uC5F0\uAD6C\uC2E4 \uBD84\uC11D \uD328\uB110" }), /* @__PURE__ */ React.createElement("details", { className: "lab-example", style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement("summary", null, "\uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 \uBCF4\uAE30"), WikiPanel ? /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, WikiPanel === ResearchWikiPanel ? /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl: base, wsStatus: "na", runId }) : /* @__PURE__ */ React.createElement(WikiPanel, { baseUrl: base, wsStatus: "na", runId })) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uB9AC\uC11C\uCE58 \uC704\uD0A4 \uD328\uB110" }), ContextPanel ? /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, ContextPanel === AIContextPanel ? /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null }) : /* @__PURE__ */ React.createElement(ContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null })) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "AI \uCEE8\uD14D\uC2A4\uD2B8 \uD328\uB110" })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(VisualQualityPanel, { compact: true })))));
   }
-  function ResearchIndexPage({ baseUrl, onNavigate }) {
+  function ResearchIndexPage({ baseUrl, onNavigate, initialQuery = "", preferredResearchId = "" }) {
     const base = _dpBase(baseUrl);
     const Panel2 = window.ResearchIndexPanel || ResearchIndexPanel;
-    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-records", style: { padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "records", onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { className: "research-index-page-head" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uD788\uC2A4\uD1A0\uB9AC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "run/gen result archive \xB7 Compare \xB7 campaign/docs/update_log/registry lineage")), /* @__PURE__ */ React.createElement(Panel2, { baseUrl: base, wsStatus: "na" }));
+    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-records", style: { padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "records", onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { className: "research-index-page-head" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uD788\uC2A4\uD1A0\uB9AC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "run/gen result archive \xB7 Compare \xB7 campaign/docs/update_log/registry lineage")), /* @__PURE__ */ React.createElement(Panel2, { baseUrl: base, wsStatus: "na", initialQuery, preferredResearchId }));
   }
   function ProPage({ baseUrl, onNavigate }) {
     const base = _dpBase(baseUrl);
@@ -34837,6 +34910,26 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const invalidHash = _V4_APPROVAL_HASH_KEYS.find((key) => !/^[0-9a-f]{64}$/.test(String(binding[key])));
     return invalidHash ? `\uC2B9\uC778 \uADFC\uAC70 \uD574\uC2DC \uD615\uC2DD\uC774 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 (${invalidHash}).` : "";
   }
+  var _V4_RUN_STATUS = Object.freeze({
+    idle: { stage: -1, engineLabel: "\uB300\uAE30", engineTone: "idle" },
+    running: { stage: null, engineLabel: "\uC2E4\uD589 \uC911", engineTone: "run" },
+    stopping: { stage: null, engineLabel: "\uC815\uC9C0 \uC911", engineTone: "run" },
+    complete: { stage: 3, engineLabel: "\uC644\uB8CC", engineTone: "complete" },
+    error: { stage: -1, engineLabel: "\uC624\uB958", engineTone: "error" },
+    blocked: { stage: -1, engineLabel: "\uCC28\uB2E8", engineTone: "blocked" }
+  });
+  function _v4RunStatus(status, phase) {
+    const rawStatus = status === "failed" ? "error" : status;
+    const key = Object.prototype.hasOwnProperty.call(_V4_RUN_STATUS, rawStatus) ? rawStatus : "idle";
+    const mapped = _V4_RUN_STATUS[key];
+    const phaseIdx = phaseIndex(phase);
+    return {
+      key,
+      stage: mapped.stage === null ? phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1 : mapped.stage,
+      engineLabel: mapped.engineLabel,
+      engineTone: mapped.engineTone
+    };
+  }
   function _V4Fold({ storageKey, label, children: children2, defaultOpen = false, forceOpen = false }) {
     const [open, setOpen] = useState_v4r(() => {
       try {
@@ -34863,13 +34956,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   function _V4EngineGateBar({ state, targetScore, mddCap, minDailyTrades }) {
     const s = state || {};
     const prog = (s.latest || {}).backtest_progress || {};
-    const running = s.status === "running" || s.status === "stopping";
+    const runStatus = _v4RunStatus(s.status, s.latest && s.latest.phase);
     const pct = typeof prog.percent === "number" ? Math.max(0, Math.min(100, prog.percent)) : null;
     const curGen = typeof prog.current_gen === "number" ? prog.current_gen : s.current_gen || 0;
     const maxGens = prog.max_generations || s.max_generations || 0;
-    const engineLabel = running ? "\uC2E4\uD589 \uC911" : s.status === "done" ? "\uC644\uB8CC" : s.status === "error" ? "\uC624\uB958" : "\uB300\uAE30";
+    const engineLabel = runStatus.engineLabel;
     const fmt = (v, d = 2) => v == null || v === "" ? "\u2014" : Number(v).toFixed(d);
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-enggate-bar", "aria-label": "\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD669\uD310" }, /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uC5D4\uC9C4"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-chip " + (running ? "run" : "idle") }, engineLabel), pct != null && /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v" }, pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono" }, "gen ", curGen >= 0 ? curGen : "\u2014", maxGens ? "/" + maxGens : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uAC8C\uC774\uD2B8 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uBAA9\uD45C \uC801\uD569\uB3C4 \uC810\uC218" }, "score \u2265 ", fmt(targetScore)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "MDD \uC0C1\uD55C" }, "MDD \u2264 ", fmt(mddCap)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uCD5C\uC18C \uC77C\uAC70\uB798 \uC218" }, "trades \u2265 ", minDailyTrades != null ? minDailyTrades : "\u2014")));
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-enggate-bar", "aria-label": "\uC5D4\uC9C4\xB7\uAC8C\uC774\uD2B8 \uC0C1\uD669\uD310" }, /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uC5D4\uC9C4"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-chip " + runStatus.engineTone }, engineLabel), pct != null && /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v" }, pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono" }, "gen ", curGen >= 0 ? curGen : "\u2014", maxGens ? "/" + maxGens : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-eg-group" }, /* @__PURE__ */ React.createElement("span", { className: "v4-eg-lbl" }, "\uAC8C\uC774\uD2B8 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12"), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uBAA9\uD45C \uC801\uD569\uB3C4 \uC810\uC218" }, "score \u2265 ", fmt(targetScore)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "MDD \uC0C1\uD55C" }, "MDD \u2264 ", fmt(mddCap)), /* @__PURE__ */ React.createElement("span", { className: "v4-eg-v mono", title: "\uCD5C\uC18C \uC77C\uAC70\uB798 \uC218" }, "trades \u2265 ", minDailyTrades != null ? minDailyTrades : "\u2014")));
   }
   function _V4Stats({ state, hideCurrent }) {
     var _a;
@@ -34975,9 +35068,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
     const viewCode = typeof onViewCode === "function" ? onViewCode : () => {
     };
-    const running = s.status === "running" || s.status === "stopping";
-    const phaseIdx = running ? phaseIndex(latest.phase) : -1;
-    const liveStage = s.status === "done" ? 3 : phaseIdx >= 0 ? STAGE_FROM_PHASE[phaseIdx] : -1;
+    const runStatus = _v4RunStatus(s.status, latest.phase);
+    const liveStage = runStatus.stage;
     const activeStage = stagePin != null ? stagePin : liveStage >= 0 ? liveStage : 0;
     const onStagePin = (i) => setStagePin((prev) => prev === i ? null : i);
     const onStageKey = (e) => {
@@ -35287,7 +35379,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const matched = runs.filter((r) => /seed|ai/i.test(String(r.run_id || ""))).slice(0, 6).map((r) => r.run_id);
     return matched.length >= 2 ? matched : runs.slice(0, 2).map((r) => r.run_id);
   }
-  function RunComparePanel({ baseUrl, wsStatus }) {
+  function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
     const [runs, setRuns] = useState_rc([]);
     const [selected2, setSelected] = useState_rc([]);
     const [compareRows, setCompareRows] = useState_rc([]);
@@ -35313,6 +35405,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       refresh();
     }, [refresh]);
     useEffect_rc(() => {
+      if (!preferredResearchId || !preferredResearchId.startsWith("loop_run:")) return;
+      const runId = preferredResearchId.slice("loop_run:".length);
+      if (runs.some((run) => run.run_id === runId)) setSelected([runId]);
+    }, [preferredResearchId, runs]);
+    useEffect_rc(() => {
       if (isDemo || !baseUrl || !selected2.length) {
         setCompareRows([]);
         return;
@@ -35324,7 +35421,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setSelected((prev) => prev.includes(runId) ? prev.filter((x) => x !== runId) : [...prev, runId]);
     };
     const selectSeedAi = () => setSelected(rcDefaultCompareIds(runs));
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Run Compare Console", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("final_profit") }, "Sort: Total Profit"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("total_profit_pct") }, "Return %"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: selectSeedAi, disabled: !runs.length }, "Seed vs AI"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "loading" : "refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "Demo mode: run comparison is available with a backend connection.") : err ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty danger" }, "query failed: ", err) : runs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "No recorded runs.") : /* @__PURE__ */ React.createElement("div", { className: "run-compare-shell" }, /* @__PURE__ */ React.createElement("div", { className: "run-compare-kpis" }, /* @__PURE__ */ React.createElement("span", null, "runs=", runs.length), /* @__PURE__ */ React.createElement("span", null, "selected=", selected2.length), /* @__PURE__ */ React.createElement("span", null, "generation_rows=", compareRows.length), /* @__PURE__ */ React.createElement("span", null, "sort=", sortKey)), /* @__PURE__ */ React.createElement("div", { className: "run-compare-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "run-compare-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Pick"), /* @__PURE__ */ React.createElement("th", null, "run_id"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Period"), /* @__PURE__ */ React.createElement("th", null, "Years"), /* @__PURE__ */ React.createElement("th", null, "min/tick"), /* @__PURE__ */ React.createElement("th", null, "Universe Time"), /* @__PURE__ */ React.createElement("th", null, "Total Profit"), /* @__PURE__ */ React.createElement("th", null, "Return %"), /* @__PURE__ */ React.createElement("th", null, "Trades"), /* @__PURE__ */ React.createElement("th", null, "Daily"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "Payoff"), /* @__PURE__ */ React.createElement("th", null, "Max Hold"), /* @__PURE__ */ React.createElement("th", null, "Elapsed"), /* @__PURE__ */ React.createElement("th", null, "Cost/Count"), /* @__PURE__ */ React.createElement("th", null, "Winner"))), /* @__PURE__ */ React.createElement("tbody", null, sortedRuns.map((r) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Run Compare Console", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("final_profit") }, "Sort: Total Profit"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("total_profit_pct") }, "Return %"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: selectSeedAi, disabled: !runs.length }, "Seed vs AI"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "loading" : "refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "Demo mode: run comparison is available with a backend connection.") : err ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty danger" }, "query failed: ", err) : runs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "No recorded runs.") : /* @__PURE__ */ React.createElement("div", { className: "run-compare-shell" }, preferredResearchId && !preferredResearchId.startsWith("loop_run:") && /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "\uC120\uD0DD \uC5F0\uAD6C ", preferredResearchId, "\uB294 Run Compare\uC640 \uD638\uD658\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC774 \uD328\uB110\uC740 \uB3C5\uB9BD run \uBE44\uAD50\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "run-compare-kpis" }, /* @__PURE__ */ React.createElement("span", null, "runs=", runs.length), /* @__PURE__ */ React.createElement("span", null, "selected=", selected2.length), /* @__PURE__ */ React.createElement("span", null, "generation_rows=", compareRows.length), /* @__PURE__ */ React.createElement("span", null, "sort=", sortKey)), /* @__PURE__ */ React.createElement("div", { className: "run-compare-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "run-compare-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Pick"), /* @__PURE__ */ React.createElement("th", null, "run_id"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Period"), /* @__PURE__ */ React.createElement("th", null, "Years"), /* @__PURE__ */ React.createElement("th", null, "min/tick"), /* @__PURE__ */ React.createElement("th", null, "Universe Time"), /* @__PURE__ */ React.createElement("th", null, "Total Profit"), /* @__PURE__ */ React.createElement("th", null, "Return %"), /* @__PURE__ */ React.createElement("th", null, "Trades"), /* @__PURE__ */ React.createElement("th", null, "Daily"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "Payoff"), /* @__PURE__ */ React.createElement("th", null, "Max Hold"), /* @__PURE__ */ React.createElement("th", null, "Elapsed"), /* @__PURE__ */ React.createElement("th", null, "Cost/Count"), /* @__PURE__ */ React.createElement("th", null, "Winner"))), /* @__PURE__ */ React.createElement("tbody", null, sortedRuns.map((r) => {
       var _a;
       const sparseHoldSuspicious = typeof r.max_hold_count === "number" && r.max_hold_count <= 1 && (r.trade_count || 0) >= 50;
       return /* @__PURE__ */ React.createElement("tr", { key: r.run_id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected2.includes(r.run_id), onChange: () => toggleSelected(r.run_id) })), /* @__PURE__ */ React.createElement("td", null, r.run_id), /* @__PURE__ */ React.createElement("td", null, r.status || "-"), /* @__PURE__ */ React.createElement("td", null, r.period || "-"), /* @__PURE__ */ React.createElement("td", null, rcYears(r)), /* @__PURE__ */ React.createElement("td", null, r.timeframe || "-"), /* @__PURE__ */ React.createElement("td", null, rcWindow(r)), /* @__PURE__ */ React.createElement("td", { className: r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted" }, rcMoney(r.final_profit)), /* @__PURE__ */ React.createElement("td", { className: r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted" }, rcPct(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", null, (_a = r.trade_count) != null ? _a : 0), /* @__PURE__ */ React.createElement("td", null, rcNum(r.daily_avg_trades, 1)), /* @__PURE__ */ React.createElement("td", { className: r.mdd > 0 ? "num-neg" : "num-muted" }, rcPct(r.mdd)), /* @__PURE__ */ React.createElement("td", null, rcNum(r.payoff_ratio, 2)), /* @__PURE__ */ React.createElement(
@@ -35346,7 +35443,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     var _a;
     const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
     const [selResearch, setSelResearch] = useState_v4h(null);
-    const onSelectCampaign = (name, meta) => setSelResearch((prev) => prev && prev.name === name && !meta ? prev : { name, meta: meta || (prev && prev.name === name ? prev.meta : null) });
+    const onSelectCampaign = (name, meta) => {
+      const researchId = "campaign:" + name;
+      setSelResearch((prev) => prev && prev.researchId === researchId && !meta ? prev : { name, researchId, meta: meta || (prev && prev.researchId === researchId ? prev.meta : null) });
+    };
     const [indexOpen, setIndexOpen] = useState_v4h(false);
     const [govOpen, setGovOpen] = useState_v4h(false);
     const [cmpOpen, setCmpOpen] = useState_v4h(false);
@@ -35361,7 +35461,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => clearTimeout(t);
     }, [wsStatus]);
     const freshnessLabel = stableWs === "open" ? "\uC11C\uBC84 \uC5F0\uACB0\uB428 \xB7 \uC120\uD0DD\uD55C \uC544\uCE74\uC774\uBE0C \uC751\uB2F5\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4." : stableWs === "demo" ? "\uC608\uC2DC \uC544\uCE74\uC774\uBE0C \xB7 \uC6B4\uC601 \uAE30\uB85D\uACFC \uBD84\uB9AC\uB41C \uB370\uC774\uD130\uC785\uB2C8\uB2E4." : stableWs === "reconnecting" ? "\uC5F0\uACB0 \uB04A\uAE40 \xB7 \uD45C\uC2DC\uB41C \uAE30\uB85D\uC740 \uB9C8\uC9C0\uB9C9 \uC751\uB2F5\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8 \uC751\uB2F5 \uC804\uC5D0\uB294 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC544\uCE74\uC774\uBE0C \uC5F0\uACB0 \uC911 \xB7 \uB85C\uB529\uC774 \uB05D\uB0A0 \uB54C\uAE4C\uC9C0 \uC774\uC804 \uC751\uB2F5\uC744 \uCD5C\uC2E0\uC73C\uB85C \uAC04\uC8FC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), selResearch && /* @__PURE__ */ React.createElement("div", { className: "v6-selres", role: "note", "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uCEE8\uD14D\uC2A4\uD2B8" }, /* @__PURE__ */ React.createElement("span", { className: "v6-selres-id mono", title: "stable research ID" }, "campaign:", selResearch.name), selResearch.meta && /* @__PURE__ */ React.createElement("span", { className: "v6-selres-meta mono" }, "\uC218\uC815 ", (() => {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "v4-history-journey-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-journey-title" }, "History \uC791\uC5C5 \uD750\uB984"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uACFC\uAC70 run/gen\uC744 \uC120\uD0DD\uD558\uACE0 \uADFC\uAC70\uB97C \uBE44\uAD50\uD558\uB294 \uC77D\uAE30 \uC804\uC6A9 \uC5EC\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf", "aria-label": "History \uAE30\uBCF8 \uC791\uC5C5 \uC21C\uC11C" }, /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "1"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD"), /* @__PURE__ */ React.createElement("span", null, "run\uACFC \uC138\uB300\uB97C \uACE0\uC815"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "2"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "\uC694\uC57D \uD655\uC778"), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uAC04\xB7\uC131\uACFC\xB7\uADFC\uAC70\uB97C \uAC80\uD1A0"))), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-step" }, /* @__PURE__ */ React.createElement("span", { className: "v4-wf-num" }, "3"), /* @__PURE__ */ React.createElement("span", { className: "v4-wf-txt" }, /* @__PURE__ */ React.createElement("b", null, "Compare"), /* @__PURE__ */ React.createElement("span", null, "\uB3D9\uC77C \uAE30\uC900\uC73C\uB85C \uD6C4\uBCF4 \uBE44\uAD50")))), /* @__PURE__ */ React.createElement("p", { className: "mono", "aria-live": "polite" }, freshnessLabel))), selResearch && /* @__PURE__ */ React.createElement("div", { className: "v6-selres", role: "note", "aria-label": "\uC120\uD0DD \uC5F0\uAD6C \uCEE8\uD14D\uC2A4\uD2B8" }, /* @__PURE__ */ React.createElement("span", { className: "v6-selres-id mono", title: "stable research ID" }, selResearch.researchId), selResearch.meta && /* @__PURE__ */ React.createElement("span", { className: "v6-selres-meta mono" }, "\uC218\uC815 ", (() => {
       const u = selResearch.meta.updated_at;
       if (u == null) return "\u2014";
       const n = Number(u);
@@ -35373,7 +35473,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: "stable ID \uBCF5\uC0AC",
         onClick: () => {
           try {
-            navigator.clipboard.writeText("campaign:" + selResearch.name);
+            navigator.clipboard.writeText(selResearch.researchId);
           } catch (e) {
           }
         }
@@ -35390,15 +35490,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         }
       },
       "\uC0C9\uC778\uC5D0\uC11C \uAD00\uB828 \uAE30\uB85D"
-    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uC544\uB798 \uBAA8\uB4E0 \uC139\uC158\uC740 \uC774 \uC120\uD0DD \uC5F0\uAD6C\uC758 \uB9E5\uB77D\uC5D0\uC11C \uC77D\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", onToggle: (e) => setCmpOpen(e.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", style: { margin: 0 } }, "Run Compare \xB7 A/B \uBE44\uAD50 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0 }, cmpOpen && /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", onToggle: (e) => setVizOpen(e.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title", style: { margin: 0 } }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, vizOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus })))), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uD638\uD658 \uC139\uC158\uB9CC \uC774 \uC5F0\uAD6C ID\uB97C \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uB2E4\uB978 \uC720\uD615\uC758 \uBD84\uC11D\uC740 \uB3C5\uB9BD \uC120\uD0DD \uC0C1\uD0DC\uB85C \uC720\uC9C0\uB429\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D"), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", onToggle: (e) => setCmpOpen(e.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label" }, "Run Compare \xB7 A/B \uBE44\uAD50 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0 }, cmpOpen && /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", onToggle: (e) => setVizOpen(e.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC \xB7 A/B \xB7 \uC140 \uD788\uD2B8\uB9F5 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD37C\uB110 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC\uC640 \uC5F0\uAD6C \uC2DC\uAC01\uD654 \uC601\uC5ED" }, vizOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId }), /* @__PURE__ */ React.createElement(AbPairCompareView, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(CellHeatmap, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId }), /* @__PURE__ */ React.createElement(HoldoutFunnel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId })))), /* @__PURE__ */ React.createElement(
       "details",
       {
         className: "evo-group",
         "aria-labelledby": "v4-history-index-title",
         onToggle: (e) => setIndexOpen(e.currentTarget.open)
       },
-      /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title", style: { margin: 0 } }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")),
-      /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED", "aria-busy": historyLoading }, indexOpen && /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }))
+      /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")),
+      /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED", "aria-busy": historyLoading }, indexOpen && /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, initialQuery: selResearch ? selResearch.researchId : "", preferredResearchId: selResearch && selResearch.researchId }))
     ), /* @__PURE__ */ React.createElement(
       "details",
       {
@@ -35407,7 +35507,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onToggle: (e) => setGovOpen(e.currentTarget.open)
       },
       /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "v4-history-gov-title" }, "\uAC70\uBC84\uB10C\uC2A4 \xB7 \uACB0\uC815 \uC6D0\uC7A5 (\uAE30\uBCF8 \uC811\uD798 \xB7 export \uC2B9\uC778 \uACBD\uACC4\uB294 \uBD88\uBCC0)")),
-      /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement("p", { className: "mono", style: { color: "var(--ink-3)", fontSize: "10.5px", margin: "0 0 8px" } }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, govOpen && /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), govOpen && /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate })))
+      /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement("p", { className: "mono v4-history-governance-note" }, "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 freeze/verdict \xB7 human-approval/export \uACBD\uACC4(\uC774\uC804 Audit \uD0ED\uC5D0\uC11C \uC774\uC804)."), /* @__PURE__ */ React.createElement("div", { "data-region": "scroll", tabIndex: 0, "aria-label": "\uAC70\uBC84\uB10C\uC2A4 \uACB0\uC815 \uC6D0\uC7A5\uACFC \uAC80\uC99D \uACB0\uC0B0 \uC601\uC5ED" }, govOpen && /* @__PURE__ */ React.createElement(AuditDecisionTrace, { baseUrl }), govOpen && /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate })))
     ));
   }
   Object.assign(window, { V4History });
@@ -35431,12 +35531,29 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { V4Workbench });
 
   // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
-  var { useState: useState_rp7, useEffect: useEffect_rp7 } = React;
+  var { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
   function _fmtReportBytes(n) {
     if (!Number.isFinite(n)) return "";
     if (n < 1024) return n + " B";
     if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
     return (n / (1024 * 1024)).toFixed(1) + " MB";
+  }
+  function _reportToc(report) {
+    if (!Array.isArray(report && report.toc)) return null;
+    return report.toc.filter((item) => item && typeof item.id === "string" && typeof item.label === "string").slice(0, 60).map((item) => ({ id: item.id, label: item.label, lvl: item.level === 3 ? 3 : 2 }));
+  }
+  function _reportKind(report) {
+    if (!report || report.registered !== true) return "unregistered";
+    return ["run", "step", "legacy"].includes(report.report_type) ? report.report_type : "legacy";
+  }
+  function _reportHash(report) {
+    return report && (report.content_sha256 || report.source_sha256 || report.sha256 || "");
+  }
+  function _shortReportHash(value) {
+    return value ? String(value).slice(0, 12) : "\uC5C6\uC74C";
+  }
+  function _reportSearchText(report) {
+    return [report.name, report.path, report.title, report.research_id, report.run_id].filter(Boolean).join(" ").toLowerCase();
   }
   function V4Reports({ baseUrl }) {
     const [mode, setMode] = useState_rp7("reports");
@@ -35446,10 +35563,20 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [wiki, setWiki] = useState_rp7(null);
     const [wikiSel, setWikiSel] = useState_rp7("");
     const [wikiQuery, setWikiQuery] = useState_rp7("");
-    const [toc, setToc] = useState_rp7([]);
+    const [wikiTotal, setWikiTotal] = useState_rp7(0);
     const [anchor, setAnchor] = useState_rp7("");
     const [wikiDoc, setWikiDoc] = useState_rp7(null);
+    const [wikiIndexState, setWikiIndexState] = useState_rp7("idle");
+    const [wikiError, setWikiError] = useState_rp7("");
+    const wikiDetailControllerRef = useRef_rp7(null);
+    const wikiSelRef = useRef_rp7("");
     const wikiReqRef = React.useRef(0);
+    const modeTabRefs = useRef_rp7({});
+    const [reportQuery, setReportQuery] = useState_rp7("");
+    const [reportType, setReportType] = useState_rp7("all");
+    const [reportStatus, setReportStatus] = useState_rp7("all");
+    const [reportTrust, setReportTrust] = useState_rp7("all");
+    const [tocOpen, setTocOpen] = useState_rp7(false);
     useEffect_rp7(() => {
       if (!baseUrl) {
         setList([]);
@@ -35458,9 +35585,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       let cancelled = false;
       fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
         if (cancelled) return;
-        const reports = Array.isArray(j && j.reports) ? j.reports : [];
-        setList(reports);
-        setSel((prev) => prev || (reports.length ? reports[0].path : ""));
+        const reports2 = Array.isArray(j && j.reports) ? j.reports : [];
+        setList(reports2);
+        setSel((prev) => prev || (reports2.length ? reports2[0].path : ""));
       }).catch((e) => {
         if (!cancelled) {
           setList([]);
@@ -35472,97 +35599,149 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       };
     }, [baseUrl]);
     useEffect_rp7(() => {
-      if (!baseUrl || mode !== "wiki" || wiki !== null) return;
+      if (!baseUrl || mode !== "wiki") return void 0;
       let cancelled = false;
-      fetch(baseUrl + "/research_docs", { signal: AbortSignal.timeout(2e4) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled) {
+      const controller = new AbortController();
+      setWiki(null);
+      setWikiIndexState("loading");
+      setWikiError("");
+      const timer2 = setTimeout(() => {
+        const query = wikiQuery.trim();
+        const url = baseUrl + "/research_docs?limit=150" + (query ? "&q=" + encodeURIComponent(query) : "");
+        fetch(url, { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+          if (cancelled) return;
           const docs = Array.isArray(j && j.docs) ? j.docs : [];
           setWiki(docs);
-          setWikiSel((prev) => prev || (docs.length ? docs[0].id : ""));
-        }
-      }).catch(() => {
-        if (!cancelled) setWiki([]);
-      });
+          setWikiTotal(Number(j && j.total) || docs.length);
+          setWikiIndexState("ready");
+          const nextWikiSel = docs.some((doc) => doc.id === wikiSelRef.current) ? wikiSelRef.current : docs.length ? docs[0].id : "";
+          if (nextWikiSel !== wikiSelRef.current) {
+            if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+            setWikiDoc(null);
+            wikiSelRef.current = nextWikiSel;
+            setWikiSel(nextWikiSel);
+          }
+        }).catch((e) => {
+          if (!cancelled && e.name !== "AbortError") {
+            setWiki([]);
+            setWikiTotal(0);
+            setWikiIndexState("error");
+            setWikiError(String(e && e.message ? e.message : e));
+          }
+        });
+      }, 180);
       return () => {
         cancelled = true;
+        clearTimeout(timer2);
+        controller.abort();
       };
-    }, [baseUrl, mode, wiki]);
+    }, [baseUrl, mode, wikiQuery]);
     useEffect_rp7(() => {
       if (!baseUrl || mode !== "wiki" || !wikiSel) {
+        if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+        wikiDetailControllerRef.current = null;
         setWikiDoc(null);
-        return;
+        return void 0;
       }
       const reqId = ++wikiReqRef.current;
-      let cancelled = false;
-      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc(j);
+      const controller = new AbortController();
+      if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+      wikiDetailControllerRef.current = controller;
+      setWikiDoc(null);
+      fetch(baseUrl + "/research_doc?id=" + encodeURIComponent(wikiSel), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) setWikiDoc(j);
       }).catch((e) => {
-        if (!cancelled && reqId === wikiReqRef.current) setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+        if (reqId === wikiReqRef.current && !controller.signal.aborted) {
+          setWikiDoc({ available: false, reason: String(e && e.message ? e.message : e) });
+        }
       });
       return () => {
-        cancelled = true;
+        controller.abort();
+        if (wikiDetailControllerRef.current === controller) wikiDetailControllerRef.current = null;
       };
     }, [baseUrl, mode, wikiSel]);
     useEffect_rp7(() => {
-      setToc([]);
       setAnchor("");
-      if (!baseUrl || mode !== "reports" || !sel) return void 0;
-      let cancelled = false;
-      fetch(baseUrl + "/reports/view?path=" + encodeURIComponent(sel), { signal: AbortSignal.timeout(12e3) }).then((r) => r.ok ? r.text() : "").then((html) => {
-        if (cancelled) return;
-        const out = [];
-        const re = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
-        let m2;
-        while ((m2 = re.exec(html)) && out.length < 60) {
-          const txt = m2[3].replace(/<[^>]+>/g, "").trim().slice(0, 48);
-          if (txt) out.push({ lvl: Number(m2[1]), id: m2[2], txt });
-        }
-        setToc(out);
-      }).catch(() => {
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [baseUrl, mode, sel]);
+    }, [sel]);
+    const reports = list || [];
+    const selectedReport = reports.find((rp) => rp.path === sel) || null;
+    const toc = _reportToc(selectedReport);
     const viewUrl = sel ? baseUrl + "/reports/view?path=" + encodeURIComponent(sel) : "";
     const frameSrc = viewUrl ? anchor ? viewUrl + "#" + anchor : viewUrl : "";
-    const generated = (list || []).filter((rp) => String(rp.path).startsWith("generated_reports/"));
-    const runReports = generated.filter((rp) => /run_report_/.test(rp.path));
-    const stepReports = generated.filter((rp) => !/run_report_/.test(rp.path));
-    const otherReports = (list || []).filter((rp) => !String(rp.path).startsWith("generated_reports/"));
-    const exampleReport = runReports[0] || stepReports.find((rp) => /v5_reporting_demo/.test(rp.path)) || stepReports[0] || null;
+    const reportStatuses = [...new Set(reports.filter((rp) => rp.registered === true).map((rp) => rp.status).filter(Boolean))].sort();
+    const reportTrusts = [...new Set(reports.filter((rp) => rp.registered === true).map((rp) => rp.trust).filter(Boolean))].sort();
+    const filteredReports = reports.filter((rp) => {
+      const kind = _reportKind(rp);
+      const query = reportQuery.trim().toLowerCase();
+      return (!query || _reportSearchText(rp).includes(query)) && (reportType === "all" || kind === reportType) && (reportStatus === "all" || rp.status === reportStatus) && (reportTrust === "all" || rp.trust === reportTrust);
+    });
+    const runReports = filteredReports.filter((rp) => _reportKind(rp) === "run");
+    const stepReports = filteredReports.filter((rp) => _reportKind(rp) === "step");
+    const legacyReports = filteredReports.filter((rp) => _reportKind(rp) === "legacy");
+    const unregisteredReports = filteredReports.filter((rp) => _reportKind(rp) === "unregistered");
+    const catalogReports = [...runReports, ...stepReports, ...legacyReports, ...unregisteredReports];
+    const exampleReport = reports.find((rp) => _reportKind(rp) === "run") || reports.find((rp) => _reportKind(rp) === "step") || null;
     const wikiFiltered = (wiki || []).filter((d) => {
       const q = wikiQuery.trim().toLowerCase();
       if (!q) return true;
       return ((d.title || "") + " " + (d.id || "") + " " + (d.category || "")).toLowerCase().includes(q);
     });
-    const renderReportItem = (rp) => /* @__PURE__ */ React.createElement("button", { key: rp.path, className: "v4-reports-item" + (sel === rp.path ? " active" : ""), onClick: () => setSel(rp.path), title: rp.path }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, /run_report_/.test(rp.path) && /* @__PURE__ */ React.createElement("span", { className: "v4-chip ok", style: { marginRight: 6 } }, "run \uC885\uD569"), rp.name), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, _fmtReportBytes(rp.bytes)));
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-head" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8/\uBB38\uC11C \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-modes", role: "tablist", "aria-label": "\uBDF0 \uBAA8\uB4DC" }, /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "reports", className: "btn ghost sm" + (mode === "reports" ? " active" : ""), onClick: () => setMode("reports") }, "HTML \uB9AC\uD3EC\uD2B8"), /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": mode === "wiki", className: "btn ghost sm" + (mode === "wiki" ? " active" : ""), onClick: () => setMode("wiki") }, "\uC5F0\uAD6C \uBB38\uC11C(Wiki)"), exampleReport && /* @__PURE__ */ React.createElement(
+    const selectReport = (path) => {
+      setSel(path);
+      setAnchor("");
+    };
+    const selectWiki = (id2) => {
+      if (id2 !== wikiSelRef.current) {
+        if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
+        setWikiDoc(null);
+        wikiSelRef.current = id2;
+        setWikiSel(id2);
+      }
+    };
+    const selectMode = (nextMode) => {
+      setMode(nextMode);
+    };
+    const onModeKeyDown = (event) => {
+      const modes = ["reports", "wiki"];
+      const current = modes.indexOf(mode);
+      let next = "";
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") next = modes[(current + 1) % modes.length];
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = modes[(current + modes.length - 1) % modes.length];
+      if (event.key === "Home") next = modes[0];
+      if (event.key === "End") next = modes[modes.length - 1];
+      if (!next) return;
+      event.preventDefault();
+      selectMode(next);
+      requestAnimationFrame(() => {
+        const tab = modeTabRefs.current[next];
+        if (tab) tab.focus();
+      });
+    };
+    const renderReportItem = (rp) => {
+      const kind = _reportKind(rp);
+      return /* @__PURE__ */ React.createElement("button", { key: rp.path, className: "v4-reports-item" + (sel === rp.path ? " active" : ""), onClick: () => selectReport(rp.path), title: rp.path }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, /* @__PURE__ */ React.createElement("span", { className: "v4-report-kind " + kind }, kind === "run" ? "run \uC885\uD569" : kind === "step" ? "\uC2A4\uD15D" : kind === "legacy" ? "\uB808\uAC70\uC2DC" : "\uBBF8\uB4F1\uB85D"), rp.title || rp.name), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, rp.research_id || rp.run_id || _fmtReportBytes(rp.bytes)));
+    };
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-reports", "aria-labelledby": "v4-reports-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-head" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-reports-heading", className: "panel-hd-title" }, "Reports \xB7 \uB9AC\uD3EC\uD2B8/\uBB38\uC11C \uBDF0\uC5B4"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-head-actions" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-modes", role: "tablist", "aria-label": "\uBDF0 \uBAA8\uB4DC" }, /* @__PURE__ */ React.createElement("button", { id: "v4-reports-mode-tab-reports", role: "tab", "aria-controls": "v4-reports-panel-reports", "aria-selected": mode === "reports", tabIndex: mode === "reports" ? 0 : -1, ref: (node) => {
+      modeTabRefs.current.reports = node;
+    }, className: "btn ghost sm" + (mode === "reports" ? " active" : ""), onClick: () => selectMode("reports"), onKeyDown: onModeKeyDown }, "HTML \uB9AC\uD3EC\uD2B8"), /* @__PURE__ */ React.createElement("button", { id: "v4-reports-mode-tab-wiki", role: "tab", "aria-controls": "v4-reports-panel-wiki", "aria-selected": mode === "wiki", tabIndex: mode === "wiki" ? 0 : -1, ref: (node) => {
+      modeTabRefs.current.wiki = node;
+    }, className: "btn ghost sm" + (mode === "wiki" ? " active" : ""), onClick: () => selectMode("wiki"), onKeyDown: onModeKeyDown }, "\uC5F0\uAD6C \uBB38\uC11C(Wiki)")), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-actions" }, exampleReport && /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn ghost sm v6-report-example",
         title: "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \uD45C\uC900\uC591\uC2DD \uACB0\uACFC \uC608\uC2DC \uC5F4\uAE30",
         onClick: () => {
-          setMode("reports");
-          setSel(exampleReport.path);
+          selectMode("reports");
+          selectReport(exampleReport.path);
         }
       },
       "\uACB0\uACFC \uBCF4\uACE0\uC11C \uC608\uC2DC"
     ), (() => {
-      const flat = [...runReports, ...stepReports, ...otherReports];
+      const flat = catalogReports;
       const idx = flat.findIndex((rp) => rp.path === sel);
       if (idx < 0 || flat.length < 2) return null;
-      return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", gap: 4 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx <= 0, onClick: () => setSel(flat[idx - 1].path), title: "\uC774\uC804 \uBB38\uC11C" }, "\u25C0 \uC774\uC804"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { alignSelf: "center", fontSize: 11, color: "var(--ink-3)" } }, idx + 1, "/", flat.length), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx >= flat.length - 1, onClick: () => setSel(flat[idx + 1].path), title: "\uB2E4\uC74C \uBB38\uC11C" }, "\uB2E4\uC74C \u25B6"));
-    })())), mode === "reports" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && runReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group run mono" }, "\uACB0\uACFC \uB9AC\uD3EC\uD2B8 \xB7 run \uC885\uD569 ", runReports.length, "\uAC74 (\uC0AC\uC774\uD074 \uC804\uCCB4 \uC790\uB3D9 \uC0DD\uC131)"), list !== null && runReports.map(renderReportItem), list !== null && stepReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC2A4\uD15D \uC790\uB3D9 \uB9AC\uD3EC\uD2B8 \xB7 ", stepReports.length, "\uAC74 (build_step_reports.py)"), list !== null && stepReports.map(renderReportItem), list !== null && otherReports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uC5F0\uAD6C \uBB38\uC11C(\uC0AC\uB78C \uC791\uC131) \xB7 ", otherReports.length, "\uAC74"), list !== null && otherReports.map(renderReportItem)), toc.length > 0 && /* @__PURE__ */ React.createElement("nav", { className: "v4-reports-toc", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uCC28" }, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uBAA9\uCC28 \xB7 ", toc.length), toc.map((t) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: t.id,
-        className: "v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : ""),
-        onClick: () => setAnchor(t.id),
-        title: t.txt
-      },
-      t.txt
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: frameSrc, className: "v4-reports-frame", src: frameSrc, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", gap: 4 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx <= 0, onClick: () => selectReport(flat[idx - 1].path), title: "\uC774\uC804 \uBB38\uC11C" }, "\u25C0 \uC774\uC804"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { alignSelf: "center", fontSize: 11, color: "var(--ink-2)" } }, idx + 1, "/", flat.length), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", disabled: idx >= flat.length - 1, onClick: () => selectReport(flat[idx + 1].path), title: "\uB2E4\uC74C \uBB38\uC11C" }, "\uB2E4\uC74C \u25B6"));
+    })()))), mode === "reports" ? /* @__PURE__ */ React.createElement("div", { id: "v4-reports-panel-reports", role: "tabpanel", "aria-labelledby": "v4-reports-mode-tab-reports" }, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC2A4\uD06C\uB9BD\uD2B8 \uCC28\uB2E8(CSP default-src 'none' + sandbox iframe) \xB7 docs/ \uD558\uC704 HTML \uD55C\uC815"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement("div", { className: "v4-reports-filters" }, /* @__PURE__ */ React.createElement("input", { className: "toolbar-input", type: "search", placeholder: "\uC81C\uBAA9 \xB7 \uC5F0\uAD6C \xB7 run \uAC80\uC0C9", value: reportQuery, onChange: (e) => setReportQuery(e.target.value), "aria-label": "\uB9AC\uD3EC\uD2B8 \uAC80\uC0C9" }), /* @__PURE__ */ React.createElement("select", { value: reportType, onChange: (e) => setReportType(e.target.value), "aria-label": "\uB9AC\uD3EC\uD2B8 \uC885\uB958" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "\uBAA8\uB4E0 \uC885\uB958"), /* @__PURE__ */ React.createElement("option", { value: "run" }, "run"), /* @__PURE__ */ React.createElement("option", { value: "step" }, "step"), /* @__PURE__ */ React.createElement("option", { value: "legacy" }, "legacy"), /* @__PURE__ */ React.createElement("option", { value: "unregistered" }, "\uBBF8\uB4F1\uB85D")), /* @__PURE__ */ React.createElement("select", { value: reportStatus, onChange: (e) => setReportStatus(e.target.value), "aria-label": "\uB9AC\uD3EC\uD2B8 \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "\uBAA8\uB4E0 \uC0C1\uD0DC"), reportStatuses.map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value))), /* @__PURE__ */ React.createElement("select", { value: reportTrust, onChange: (e) => setReportTrust(e.target.value), "aria-label": "\uB9AC\uD3EC\uD2B8 \uC2E0\uB8B0\uB3C4" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "\uBAA8\uB4E0 \uC2E0\uB8B0\uB3C4"), reportTrusts.map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value)))), list === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), list !== null && list.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8 \uC5C6\uC74C", err ? " \xB7 " + err : "", /* @__PURE__ */ React.createElement("div", { className: "v4-reports-hint" }, "docs/ \uD558\uC704 *.html \uC0DD\uC131 \uC2DC \uC790\uB3D9 \uD45C\uC2DC")), list !== null && list.length > 0 && catalogReports.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C"), runReports.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group run mono" }, "\uB4F1\uB85D \uACB0\uACFC \uB9AC\uD3EC\uD2B8 \xB7 run \uC885\uD569 ", runReports.length, "\uAC74"), runReports.map(renderReportItem)), stepReports.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uB4F1\uB85D \uC2A4\uD15D \uB9AC\uD3EC\uD2B8 \xB7 ", stepReports.length, "\uAC74"), stepReports.map(renderReportItem)), legacyReports.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uB4F1\uB85D \uB808\uAC70\uC2DC \uB9AC\uD3EC\uD2B8 \xB7 ", legacyReports.length, "\uAC74"), legacyReports.map(renderReportItem)), unregisteredReports.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group unregistered mono" }, "\uBBF8\uB4F1\uB85D\xB7\uAC80\uC99D \uBD88\uAC00 \xB7 ", unregisteredReports.length, "\uAC74"), unregisteredReports.map(renderReportItem))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-main" }, selectedReport && /* @__PURE__ */ React.createElement("div", { className: "v4-report-provenance mono" }, /* @__PURE__ */ React.createElement("span", { className: selectedReport.registered === true ? "v4-report-badge registered" : "v4-report-badge unregistered" }, selectedReport.registered === true ? "\uB4F1\uB85D\uB428" : "\uBBF8\uB4F1\uB85D\xB7\uAC80\uC99D \uBD88\uAC00"), /* @__PURE__ */ React.createElement("span", null, "type ", _reportKind(selectedReport)), /* @__PURE__ */ React.createElement("span", null, "research ", selectedReport.research_id || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", null, "run ", selectedReport.run_id || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", null, "status ", selectedReport.status || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", null, "trust ", selectedReport.trust || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", null, "schema ", selectedReport.schema_version || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { title: _reportHash(selectedReport) }, "hash ", _shortReportHash(_reportHash(selectedReport))), /* @__PURE__ */ React.createElement("span", null, "source ", _shortReportHash(selectedReport.source_sha256))), selectedReport && selectedReport.registered === true && (selectedReport.decision || selectedReport.evidence) && /* @__PURE__ */ React.createElement("section", { className: "v4-report-insight", "aria-label": "\uBCF4\uACE0\uC11C \uACB0\uC815\uACFC \uADFC\uAC70 \uC694\uC57D" }, selectedReport.decision && /* @__PURE__ */ React.createElement("div", { className: "v4-report-decision" }, /* @__PURE__ */ React.createElement("b", null, "\uACB0\uB860\xB7\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("span", null, selectedReport.decision)), selectedReport.evidence && /* @__PURE__ */ React.createElement("div", { className: "v4-report-evidence" }, Object.entries(selectedReport.evidence).slice(0, 10).map(([key, value]) => /* @__PURE__ */ React.createElement("span", { key }, /* @__PURE__ */ React.createElement("i", null, key), /* @__PURE__ */ React.createElement("b", null, String(value)))))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view" }, viewUrl ? /* @__PURE__ */ React.createElement("iframe", { key: sel, className: "v4-reports-frame", src: frameSrc, sandbox: "", referrerPolicy: "no-referrer", title: "\uB9AC\uD3EC\uD2B8: " + sel, loading: "lazy" }) : /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uB9AC\uD3EC\uD2B8\uB97C \uC120\uD0DD\uD558\uC138\uC694"))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-toc-slot" + (tocOpen ? " open" : "") }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm v4-reports-toc-toggle", onClick: () => setTocOpen((open) => !open), "aria-expanded": tocOpen, "aria-controls": "v4-reports-toc" }, tocOpen ? "\uBAA9\uCC28 \uC811\uAE30" : "\uBAA9\uCC28 \uC5F4\uAE30"), tocOpen && (toc && toc.length > 0 ? /* @__PURE__ */ React.createElement("nav", { id: "v4-reports-toc", className: "v4-reports-toc", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uCC28" }, /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uBAA9\uCC28 \xB7 ", toc.length), toc.map((t) => /* @__PURE__ */ React.createElement("button", { key: t.id, className: "v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : ""), onClick: () => setAnchor(t.id), title: t.label }, t.label))) : selectedReport && /* @__PURE__ */ React.createElement("aside", { id: "v4-reports-toc", className: "v4-reports-toc v4-reports-toc-empty", "aria-label": "\uB9AC\uD3EC\uD2B8 \uBAA9\uCC28 \uC0C1\uD0DC" }, toc === null ? "\uBAA9\uCC28 \uC5C6\uC74C \xB7 \uB808\uAC70\uC2DC \uB9AC\uD3EC\uD2B8 \uBA54\uD0C0\uB370\uC774\uD130 \uBBF8\uC81C\uACF5" : "\uBAA9\uCC28 \uC5C6\uC74C \xB7 \uB9AC\uD3EC\uD2B8 \uBA54\uD0C0\uB370\uC774\uD130\uC5D0 \uC139\uC158 \uC5C6\uC74C"))))) : /* @__PURE__ */ React.createElement("div", { id: "v4-reports-panel-wiki", role: "tabpanel", "aria-labelledby": "v4-reports-mode-tab-wiki" }, /* @__PURE__ */ React.createElement("p", { className: "v4-reports-safe mono", role: "note" }, "\uC77D\uAE30 \uC804\uC6A9 \xB7 \uC6D0\uBB38 \uB9C8\uD06C\uB2E4\uC6B4 \uBD88\uBCC0(pre \uD14D\uC2A4\uD2B8 \uD45C\uC2DC) \xB7 /research_docs \uC0C9\uC778"), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-body" }, /* @__PURE__ */ React.createElement("aside", { className: "v4-reports-list", "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uBAA9\uB85D" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "toolbar-input v6-wiki-search",
@@ -35572,7 +35751,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onChange: (e) => setWikiQuery(e.target.value),
         "aria-label": "\uC5F0\uAD6C \uBB38\uC11C \uAC80\uC0C9"
       }
-    ), wiki === null && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wiki !== null && wikiFiltered.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C \xB7 " + wikiQuery : "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wiki !== null && wikiQuery && wikiFiltered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, "\uAC80\uC0C9 \uACB0\uACFC ", wikiFiltered.length, "\uAC74 / \uC804\uCCB4 ", wiki.length, "\uAC74"), wiki !== null && wikiFiltered.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => setWikiSel(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
+    ), wikiIndexState === "loading" && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"), wikiIndexState === "error" && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uC0C9\uC778 \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiError), wikiIndexState === "ready" && wikiFiltered.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC \uC5C6\uC74C \xB7 " + wikiQuery : "\uC5F0\uAD6C \uBB38\uC11C \uC5C6\uC74C"), wikiIndexState === "ready" && wikiFiltered.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-report-group mono" }, wikiQuery ? "\uAC80\uC0C9 \uACB0\uACFC" : "\uBB38\uC11C", " ", wikiFiltered.length, "\uAC74 / \uC804\uCCB4 ", wikiTotal, "\uAC74 \xB7 \uCD5C\uB300 150\uAC74 \uD45C\uC2DC"), wikiIndexState === "ready" && wikiFiltered.map((d) => /* @__PURE__ */ React.createElement("button", { key: d.id, className: "v4-reports-item" + (wikiSel === d.id ? " active" : ""), onClick: () => selectWiki(d.id), title: d.id }, /* @__PURE__ */ React.createElement("span", { className: "v4-reports-name" }, d.title || d.id), /* @__PURE__ */ React.createElement("span", { className: "v4-reports-meta mono" }, d.category || "")))), /* @__PURE__ */ React.createElement("div", { className: "v4-reports-view v4-wiki-view" }, wikiDoc == null ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C\uB97C \uC120\uD0DD\uD558\uC138\uC694") : wikiDoc.available === false ? /* @__PURE__ */ React.createElement("div", { className: "v4-reports-empty mono" }, "\uBB38\uC11C \uB85C\uB4DC \uC2E4\uD328 \xB7 ", wikiDoc.reason) : /* @__PURE__ */ React.createElement("pre", { className: "v4-wiki-md" }, wikiDoc.markdown || "")))));
   }
   Object.assign(window, { V4Reports });
 
@@ -35899,7 +36078,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.6.1";
+  var V4_DASH_VERSION = "v5.7.0";
   (function _initFeLogBuffer() {
     if (window.__stomFeLog) return;
     const buf = [];
@@ -35910,13 +36089,28 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       } catch (e) {
       }
     };
+    const describeConsoleValue = (value) => {
+      if (typeof value === "string") return value;
+      if (value && typeof value.message === "string") return value.message;
+      try {
+        const serialized = JSON.stringify(value);
+        return serialized === void 0 ? String(value) : serialized;
+      } catch (error) {
+        return "[unserializable console.error argument: " + (error && error.message || "unknown") + "]";
+      }
+    };
     window.__stomFeLog = buf;
     window.addEventListener("error", (e) => push("ERROR", e.message || e.type));
     window.addEventListener("unhandledrejection", (e) => push("REJECT", e.reason && e.reason.message || e.reason || "unhandled rejection"));
     const origErr = console.error.bind(console);
-    console.error = (...a) => {
-      push("CONSOLE", a.map((x) => typeof x === "string" ? x : x && x.message || JSON.stringify(x)).join(" "));
-      origErr(...a);
+    console.error = (...args) => {
+      try {
+        push("CONSOLE", args.map(describeConsoleValue).join(" "));
+      } catch (error) {
+        push("CONSOLE", "[console.error diagnostic unavailable]");
+      } finally {
+        origErr(...args);
+      }
     };
   })();
   var V4_TABS = [

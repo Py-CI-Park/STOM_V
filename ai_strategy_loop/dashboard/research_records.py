@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections import OrderedDict
 from pathlib import Path
+from threading import RLock
 from typing import NotRequired, TypedDict
 
 JsonScalar = str | int | float | bool | None
@@ -61,6 +63,9 @@ class ResearchRecordDetailResponse(TypedDict):
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_ROOT = REPO_ROOT / ".omo" / "evidence" / "tmap-walkforward"
 _SAFE_CAMPAIGN = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
+_RECORD_CACHE_LIMIT = 8
+_RECORD_CACHE_LOCK = RLock()
+_RECORD_CACHE: OrderedDict[str, tuple[tuple[tuple[str, int, int], ...], ResearchRecordsResponse, dict[str, CampaignRecord]]] = OrderedDict()
 
 
 def _empty_artifacts() -> CampaignArtifacts:
@@ -190,16 +195,34 @@ def _load_candidates(path: Path, errors: list[ResearchRecordError]) -> list[Cand
             rows.append(candidate)
     rows.sort(key=lambda row: float(row.get("profit", 0.0)), reverse=True)
     return rows
+def _record_source_paths(evidence: Path) -> dict[str, list[Path]]:
+    return {
+        "summaries": sorted(evidence.glob("*_summary.json")),
+        "jsonl": sorted(evidence.glob("*.jsonl")),
+        "pairs": sorted(evidence.glob("*_pairs.json")),
+        "logs": sorted(list(evidence.glob("*_run.log")) + list(evidence.glob("*_log.txt"))),
+    }
 
 
-def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
-    evidence = root if root is not None else EVIDENCE_ROOT
+def _record_source_signature(paths: dict[str, list[Path]]) -> tuple[tuple[str, int, int], ...]:
+    signature: list[tuple[str, int, int]] = []
+    for group in ("summaries", "jsonl", "pairs", "logs"):
+        for path in paths[group]:
+            try:
+                stat = path.stat()
+            except OSError:
+                continue
+            signature.append((path.name, stat.st_mtime_ns, stat.st_size))
+    return tuple(signature)
+
+
+def _build_research_records(
+    evidence: Path,
+    paths: dict[str, list[Path]],
+) -> tuple[ResearchRecordsResponse, dict[str, CampaignRecord]]:
     campaigns: dict[str, CampaignRecord] = {}
     errors: list[ResearchRecordError] = []
-    if not evidence.is_dir():
-        return {"root": str(evidence), "count": 0, "campaigns": [], "errors": []}
-
-    for summary_path in sorted(evidence.glob("*_summary.json")):
+    for summary_path in paths["summaries"]:
         name = summary_path.stem.removesuffix("_summary")
         data = _as_dict(_read_json(summary_path, errors))
         if not data:
@@ -210,7 +233,7 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
         campaign["artifacts"]["summary"] = summary_path.name
         campaign["updated_at"] = max(campaign["updated_at"], summary_path.stat().st_mtime)
 
-    for jsonl_path in sorted(evidence.glob("*.jsonl")):
+    for jsonl_path in paths["jsonl"]:
         name = jsonl_path.stem
         candidates = _load_candidates(jsonl_path, errors)
         if not candidates and name not in campaigns:
@@ -221,7 +244,7 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
         campaign["artifacts"]["jsonl"] = jsonl_path.name
         campaign["updated_at"] = max(campaign["updated_at"], jsonl_path.stat().st_mtime)
 
-    for pairs_path in sorted(evidence.glob("*_pairs.json")):
+    for pairs_path in paths["pairs"]:
         name = _campaign_from_pairs(pairs_path)
         campaign = campaigns.get(name)
         if campaign is None:
@@ -229,7 +252,7 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
         campaign["artifacts"]["pairs"].append(pairs_path.name)
         campaign["updated_at"] = max(campaign["updated_at"], pairs_path.stat().st_mtime)
 
-    for log_path in sorted(list(evidence.glob("*_run.log")) + list(evidence.glob("*_log.txt"))):
+    for log_path in paths["logs"]:
         name = _campaign_from_log(log_path)
         campaign = campaigns.get(name)
         if campaign is None:
@@ -239,14 +262,45 @@ def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
 
     items = list(campaigns.values())
     items.sort(key=lambda row: (row["updated_at"], row["name"]), reverse=True)
-    return {"root": str(evidence), "count": len(items), "campaigns": items, "errors": errors}
+    response: ResearchRecordsResponse = {
+        "root": str(evidence), "count": len(items), "campaigns": items, "errors": errors,
+    }
+    return response, {item["name"]: item for item in items}
+
+
+def _cached_research_records(
+    root: Path | None,
+) -> tuple[ResearchRecordsResponse, dict[str, CampaignRecord]]:
+    evidence = root if root is not None else EVIDENCE_ROOT
+    if not evidence.is_dir():
+        return {"root": str(evidence), "count": 0, "campaigns": [], "errors": []}, {}
+    cache_key = str(evidence.resolve())
+    with _RECORD_CACHE_LOCK:
+        paths = _record_source_paths(evidence)
+        signature = _record_source_signature(paths)
+        cached = _RECORD_CACHE.get(cache_key)
+        if cached is not None and cached[0] == signature:
+            _RECORD_CACHE.move_to_end(cache_key)
+            return cached[1], cached[2]
+        response, by_campaign = _build_research_records(evidence, paths)
+        _RECORD_CACHE[cache_key] = (signature, response, by_campaign)
+        _RECORD_CACHE.move_to_end(cache_key)
+        while len(_RECORD_CACHE) > _RECORD_CACHE_LIMIT:
+            _RECORD_CACHE.popitem(last=False)
+        return response, by_campaign
+
+
+
+
+def list_research_records(root: Path | None = None) -> ResearchRecordsResponse:
+    """Return a source-signature cached, read-only campaign listing."""
+    return _cached_research_records(root)[0]
 
 
 def research_record_detail(campaign: str, root: Path | None = None) -> ResearchRecordDetailResponse:
     if not _safe_campaign_name(campaign):
         return {"available": False, "reason": "invalid_campaign"}
-    records = list_research_records(root)
-    for item in records["campaigns"]:
-        if item["name"] == campaign:
-            return {"available": True, "campaign": item}
-    return {"available": False, "reason": "missing_campaign"}
+    item = _cached_research_records(root)[1].get(campaign)
+    if item is None:
+        return {"available": False, "reason": "missing_campaign"}
+    return {"available": True, "campaign": item}
