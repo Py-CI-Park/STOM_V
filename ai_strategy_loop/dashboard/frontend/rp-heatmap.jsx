@@ -352,6 +352,7 @@ function _RpRunCompare({ baseUrl, isDemo, runList, currentRunId, currentGenNo, o
           <span className="rp-compare-sep">또는</span>
           <select
             className="mono rp-select"
+            aria-label="비교에 추가할 run 선택"
             value={addRun}
             onChange={(e) => setAddRun(e.target.value)}
             disabled={isDemo}
@@ -512,6 +513,7 @@ function _RpHistory({ baseUrl, isDemo, runList, onOpenWorkbench }) {
         <div className="rp-history-bar">
           <select
             className="mono rp-select"
+            aria-label="과거 run 선택"
             value={selRun}
             onChange={(e) => setSelRun(e.target.value)}
             disabled={isDemo}

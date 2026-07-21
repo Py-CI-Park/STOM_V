@@ -226,7 +226,7 @@ function SimVariableWatch({ codes, barsByCode, nameByCode }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {codes && codes.length > 1 && (
             <select className="select" value={watchCode} onChange={e => setWatchCode(e.target.value)}
-                    style={{ fontSize: 10.5, padding: "2px 6px", height: "auto" }}>
+                    aria-label="관찰 종목 선택" style={{ fontSize: 10.5, padding: "2px 6px", height: "auto" }}>
               {codes.map(c => <option key={c} value={c}>{nameByCode[c] || c}</option>)}
             </select>
           )}

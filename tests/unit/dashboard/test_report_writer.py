@@ -2,7 +2,11 @@
 """V5.6 report_writer 계약 테스트 — 표준양식·escape·atomic·manifest·링크 재작성."""
 from __future__ import annotations
 
+import hashlib
+import importlib.util
 import json
+import sys
+import types
 from pathlib import Path
 import pytest
 
@@ -14,6 +18,16 @@ from ai_strategy_loop.dashboard.report_writer import (
     write_reports,
 )
 import ai_strategy_loop.dashboard.report_writer as report_writer
+
+
+_PDF_EXPORT_SPEC = importlib.util.spec_from_file_location(
+    "export_research_report_pdfs",
+    Path(__file__).resolve().parents[3] / "scripts" / "export_research_report_pdfs.py",
+)
+assert _PDF_EXPORT_SPEC and _PDF_EXPORT_SPEC.loader
+pdf_export = importlib.util.module_from_spec(_PDF_EXPORT_SPEC)
+sys.modules[_PDF_EXPORT_SPEC.name] = pdf_export
+_PDF_EXPORT_SPEC.loader.exec_module(pdf_export)
 
 
 def _spec() -> dict:
@@ -107,6 +121,26 @@ def test_normalize_manifest_reads_legacy_shape() -> None:
     assert normalized["schema_version"] == "stom-research-report-v1"
     assert report["generation"] == 7 and report["content_sha256"] == "a" * 64
     assert report["sha256"] == "a" * 64  # legacy consumer remains supported
+def test_normalize_manifest_rejects_unknown_version_and_unrecognized_legacy_shape() -> None:
+    with pytest.raises(ValueError, match="not recognized"):
+        normalize_manifest({"schema_version": "stom-research-report-v2"})
+    with pytest.raises(ValueError, match="recognized schema-less"):
+        normalize_manifest({"generated_at": "2026-07-19T00:00:00Z", "count": 0, "reports": [], "extra": True})
+
+
+def test_publish_reports_rejects_incomplete_v1_entry_before_mutation(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del payload["reports"][0]["report_id"]
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+    before = manifest_path.read_bytes()
+
+    with pytest.raises(ValueError, match="invalid"):
+        write_reports([dict(_spec(), step_id="stage3")], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == before
+    assert not (tmp_path / "r8_exclude_cap__stage3.html").exists()
 
 
 def test_specs_from_loop_runs_builds_standard_specs(tmp_path: Path) -> None:
@@ -179,28 +213,128 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     assert "좌상단=저위험·고성과" in html and "표본 n=3" in html
 
 
-def test_publish_manifest_preserves_valid_siblings_and_drops_tampered_entries(tmp_path: Path) -> None:
-    first = _spec()
-    first["research_id"] = "first"
-    first["step_id"] = "stage1"
-    second = _spec()
-    second["research_id"] = "second"
-    second["step_id"] = "stage2"
+def test_publish_reports_rejects_tampered_registered_entry_without_rewriting(tmp_path: Path) -> None:
+    first = dict(_spec(), research_id="first", step_id="stage1")
+    second = dict(_spec(), research_id="second", step_id="stage2")
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first, second], str(tmp_path), str(manifest_path))
+    (tmp_path / "first__stage1.html").write_text("tampered", encoding="utf-8")
+    before_manifest = manifest_path.read_bytes()
+    before_second = (tmp_path / "second__stage2.html").read_bytes()
 
+    third = dict(_spec(), research_id="third", step_id="stage3")
+    with pytest.raises(ValueError, match=r"(?:bytes|content_sha256) mismatch"):
+        write_reports([third], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == before_manifest
+    assert (tmp_path / "second__stage2.html").read_bytes() == before_second
+def test_publish_reports_rejects_corrupt_manifest_without_rewriting(tmp_path: Path) -> None:
+    first = dict(_spec(), research_id="first", step_id="stage1")
     manifest_path = tmp_path / "manifest.json"
     write_reports([first], str(tmp_path), str(manifest_path))
-    merged = write_reports([second], str(tmp_path), str(manifest_path))
+    before_report = (tmp_path / "first__stage1.html").read_bytes()
+    manifest_path.write_text("{corrupt", encoding="utf-8")
+    before_manifest = manifest_path.read_bytes()
 
-    assert {entry["research_id"] for entry in merged["reports"]} == {"first", "second"}
-    assert (tmp_path / "first__stage1.html").exists()
-    assert (tmp_path / "second__stage2.html").exists()
+    with pytest.raises(ValueError, match="corrupt"):
+        write_reports([dict(_spec(), research_id="second", step_id="stage2")], str(tmp_path), str(manifest_path))
 
-    (tmp_path / "first__stage1.html").write_text("tampered", encoding="utf-8")
-    third = _spec()
-    third["research_id"] = "third"
-    third["step_id"] = "stage3"
-    repaired = write_reports([third], str(tmp_path), str(manifest_path))
-    assert {entry["research_id"] for entry in repaired["reports"]} == {"second", "third"}
+    assert manifest_path.read_bytes() == before_manifest
+    assert (tmp_path / "first__stage1.html").read_bytes() == before_report
+    assert not (tmp_path / "second__stage2.html").exists()
+@pytest.mark.parametrize("raw", [
+    '{"schema_version":"stom-research-report-v1","schema_version":"stom-research-report-v1"}',
+    '{"schema_version":NaN}',
+])
+def test_publish_reports_rejects_non_strict_json_before_mutation(tmp_path: Path, raw: str) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    manifest_path.write_text(raw, encoding="utf-8")
+    before = manifest_path.read_bytes()
+
+    with pytest.raises(ValueError, match="unreadable or corrupt"):
+        write_reports([dict(_spec(), step_id="stage3")], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == before
+    assert not (tmp_path / "r8_exclude_cap__stage3.html").exists()
+
+
+def test_publish_reports_rejects_invalid_registered_entry_without_rewriting(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["reports"][0]["path"] = "not-html.txt"
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+    before_manifest = manifest_path.read_bytes()
+
+    with pytest.raises(ValueError, match="invalid"):
+        write_reports([dict(_spec(), step_id="stage3")], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == before_manifest
+    assert not (tmp_path / "r8_exclude_cap__stage3.html").exists()
+
+
+@pytest.mark.parametrize(
+    ("paths", "message"),
+    [
+        (["report.txt"], "HTML path"),
+        (["same.html", "nested/../same.html"], "canonical"),
+        (["manifest.json"], "HTML path"),
+    ],
+)
+def test_publish_reports_rejects_invalid_or_colliding_destinations(tmp_path: Path, paths: list[str], message: str) -> None:
+    rendered = [
+        (dict(_spec(), step_id=f"stage{index}"), path, render_report_html(_spec()), "step")
+        for index, path in enumerate(paths)
+    ]
+
+    with pytest.raises(ValueError, match=message):
+        report_writer.publish_reports(rendered, str(tmp_path))
+
+    assert not (tmp_path / "manifest.json").exists()
+    assert not (tmp_path / "same.html").exists()
+
+
+def test_publish_reports_rejects_custom_manifest_collision(tmp_path: Path) -> None:
+    rendered = [(_spec(), "custom-manifest.json.html", render_report_html(_spec()), "step")]
+
+    with pytest.raises(ValueError, match="collides"):
+        report_writer.publish_reports(rendered, str(tmp_path), str(tmp_path / "custom-manifest.json.html"))
+
+    assert not (tmp_path / "custom-manifest.json.html").exists()
+
+
+def test_publish_reports_rejects_linked_parent_escape(tmp_path: Path) -> None:
+    outside = tmp_path.parent / f"{tmp_path.name}-outside"
+    outside.mkdir()
+    linked = tmp_path / "linked"
+    try:
+        linked.symlink_to(outside, target_is_directory=True)
+    except OSError as error:
+        pytest.skip(f"directory links unavailable: {error}")
+
+    with pytest.raises(ValueError, match="escapes"):
+        report_writer.publish_reports([(_spec(), "linked/escape.html", render_report_html(_spec()), "step")], str(tmp_path))
+
+    assert not (outside / "escape.html").exists()
+
+
+def test_publish_reports_rolls_back_when_completed_snapshot_verification_fails(tmp_path: Path, monkeypatch) -> None:
+    first = dict(_spec(), research_id="first", step_id="stage1")
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    before_manifest = manifest_path.read_bytes()
+    before_report = (tmp_path / "first__stage1.html").read_bytes()
+
+    def fail_verification(*_args: object, **_kwargs: object) -> None:
+        raise ValueError("injected snapshot verification failure")
+
+    monkeypatch.setattr(report_writer, "_verify_published_snapshot", fail_verification)
+    with pytest.raises(ValueError, match="snapshot verification"):
+        write_reports([dict(first, analysis="replacement")], str(tmp_path), str(manifest_path))
+
+    assert manifest_path.read_bytes() == before_manifest
+    assert (tmp_path / "first__stage1.html").read_bytes() == before_report
 def test_publish_reports_rolls_back_replaced_files_when_later_replacement_fails(tmp_path: Path, monkeypatch) -> None:
     first = _spec()
     first["research_id"] = "first"
@@ -226,6 +360,31 @@ def test_publish_reports_rolls_back_replaced_files_when_later_replacement_fails(
     assert manifest_path.read_bytes() == old_manifest
     assert (tmp_path / "first__stage1.html").read_bytes() == old_first
     assert not (tmp_path / "second__stage2.html").exists()
+def test_publish_reports_retains_recovery_backups_when_rollback_fails(tmp_path: Path, monkeypatch) -> None:
+    first = dict(_spec(), research_id="first", step_id="stage1")
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([first], str(tmp_path), str(manifest_path))
+    second = dict(_spec(), research_id="second", step_id="stage2")
+    first_path = tmp_path / "first__stage1.html"
+    second_path = tmp_path / "second__stage2.html"
+    old_first = first_path.read_bytes()
+    real_replace = report_writer.os.replace
+
+    def fail_replacement_and_rollback(source: str, destination: str) -> None:
+        if Path(destination) == second_path:
+            raise OSError("injected replacement failure")
+        if Path(destination) == first_path and ".rollback." in str(source):
+            raise OSError("injected rollback failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(report_writer.os, "replace", fail_replacement_and_rollback)
+    with pytest.raises(RuntimeError, match=r"injected rollback failure.*recovery backups retained") as error:
+        write_reports([dict(first, analysis="replacement"), second], str(tmp_path), str(manifest_path))
+
+    recovery = str(error.value).split("recovery backups retained: ", 1)[1]
+    assert Path(recovery).exists()
+    assert Path(recovery).read_bytes() == old_first
+    assert list(tmp_path.parent.glob(f".{tmp_path.name}.rollback.*"))
 
 
 def test_loop_runs_source_digest_includes_committed_wal_rows(tmp_path: Path) -> None:
@@ -284,3 +443,385 @@ def test_standard_report_has_scriptless_internal_navigation_and_print_contract()
     assert 'href="#sec-hypothesis"' in html
     assert "@media print" in html
     assert "<script" not in html
+
+
+def _pdf_renderer(html_path: Path, pdf_path: Path) -> None:
+    assert html_path.read_bytes()
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    pdf_path.write_bytes(b"%PDF-1.4\noffline fixture\n")
+
+
+def test_pdf_publication_adds_html_provenance_parity_fields(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    original = write_reports([_spec()], str(tmp_path), str(manifest_path))
+
+    published = pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+
+    before = original["reports"][0]
+    entry = published["reports"][0]
+    pdf_path = tmp_path / entry["pdf_path"]
+    assert entry["path"] == before["path"]
+    assert entry["content_sha256"] == before["content_sha256"]
+    assert entry["pdf_path"] == before["path"].replace(".html", ".pdf")
+    assert entry["pdf_source_content_sha256"] == entry["content_sha256"]
+    assert entry["pdf_bytes"] == pdf_path.stat().st_size
+    assert entry["pdf_sha256"] == hashlib.sha256(pdf_path.read_bytes()).hexdigest()
+@pytest.mark.parametrize("damage", ["missing", "tampered"])
+def test_writer_rejects_missing_or_tampered_registered_pdf_before_rewriting(tmp_path: Path, damage: str) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    manifest_before = manifest_path.read_bytes()
+    entry = json.loads(manifest_before)["reports"][0]
+    pdf_path = tmp_path / entry["pdf_path"]
+    if damage == "missing":
+        pdf_path.unlink()
+    else:
+        pdf_path.write_bytes(b"tampered PDF")
+    damaged_pdf = pdf_path.read_bytes() if pdf_path.exists() else None
+
+    with pytest.raises(ValueError, match=r"PDF (?:is unreadable|bytes mismatch)"):
+        write_reports(
+            [dict(_spec(), research_id="replacement", step_id="stage3")],
+            str(tmp_path),
+            str(manifest_path),
+        )
+
+    assert manifest_path.read_bytes() == manifest_before
+    assert (pdf_path.read_bytes() if pdf_path.exists() else None) == damaged_pdf
+    assert not (tmp_path / "replacement__stage3.html").exists()
+
+
+
+
+def test_pdf_publication_rejects_tampered_registered_html(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest = write_reports([_spec()], str(tmp_path), str(manifest_path))
+    html_path = tmp_path / manifest["reports"][0]["path"]
+    html_path.write_text("tampered", encoding="utf-8")
+    original_manifest = manifest_path.read_bytes()
+    called = False
+
+    def renderer(_html: Path, _pdf: Path) -> None:
+        nonlocal called
+        called = True
+
+    with pytest.raises(ValueError, match=r"HTML (?:bytes|content_sha256) mismatch"):
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=renderer)
+
+    assert not called
+    assert manifest_path.read_bytes() == original_manifest
+
+
+def test_pdf_publication_rolls_back_pdfs_when_later_replacement_fails(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    second = dict(_spec(), research_id="second", step_id="stage2")
+    write_reports([_spec(), second], str(tmp_path), str(manifest_path))
+    pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    original_manifest = manifest_path.read_bytes()
+    original_pdfs = {
+        path.name: path.read_bytes()
+        for path in tmp_path.glob("*.pdf")
+    }
+    real_replace = pdf_export.os.replace
+
+    def fail_second_pdf_replace(source: str | Path, destination: str | Path) -> None:
+        if (
+            Path(source).suffix == ".tmp"
+            and Path(destination).suffix == ".pdf"
+            and Path(destination).name.startswith("second")
+        ):
+            raise OSError("injected PDF replacement failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(pdf_export.os, "replace", fail_second_pdf_replace)
+    with pytest.raises(OSError, match="injected PDF replacement failure"):
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+
+    assert manifest_path.read_bytes() == original_manifest
+    assert {path.name: path.read_bytes() for path in tmp_path.glob("*.pdf")} == original_pdfs
+@pytest.mark.parametrize("publish", [False, True])
+def test_pdf_validator_rejects_repeated_destination_identity_even_with_same_label(tmp_path: Path, publish: bool) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["reports"].append(dict(manifest["reports"][0]))
+    manifest["count"] = 2
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    before = manifest_path.read_bytes()
+
+    if publish:
+        with pytest.raises(ValueError, match="destinations collide"):
+            pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    else:
+        with pytest.raises(ValueError, match="destinations collide"):
+            pdf_export.validate_pdf_companions(tmp_path, manifest_path)
+
+    assert manifest_path.read_bytes() == before
+    assert not list(tmp_path.glob("*.pdf"))
+
+
+def test_pdf_postcommit_verification_failure_restores_manifest_and_pdfs(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    before_manifest = manifest_path.read_bytes()
+    before_pdfs = {path.name: path.read_bytes() for path in tmp_path.glob("*.pdf")}
+
+    def fail_verification(*_args: object, **_kwargs: object) -> None:
+        raise ValueError("injected PDF snapshot verification failure")
+
+    monkeypatch.setattr(pdf_export, "_verify_published_pdf_snapshot", fail_verification)
+    with pytest.raises(ValueError, match="snapshot verification"):
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+
+    assert manifest_path.read_bytes() == before_manifest
+    assert {path.name: path.read_bytes() for path in tmp_path.glob("*.pdf")} == before_pdfs
+
+
+def test_pdf_check_rejects_tampered_pdf_without_rewriting(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    published = pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    pdf_path = tmp_path / published["reports"][0]["pdf_path"]
+    pdf_path.write_bytes(b"tampered PDF")
+    before_manifest = manifest_path.read_bytes()
+
+    with pytest.raises(ValueError, match="PDF bytes mismatch"):
+        pdf_export.validate_pdf_companions(tmp_path, manifest_path)
+
+    assert manifest_path.read_bytes() == before_manifest
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda manifest: manifest.__setitem__("count", True), "strict"),
+        (lambda manifest: manifest.__setitem__("status", "done"), "strict"),
+        (lambda manifest: manifest["limits"].__setitem__("max_reports", 1), "strict"),
+        (lambda manifest: manifest["reports"][0].__setitem__("content_sha256", "A" * 64), "provenance"),
+        (lambda manifest: manifest["reports"][0].__setitem__("bytes", True), "provenance"),
+        (lambda manifest: manifest["reports"][0].__setitem__("path", "nested/../r8_exclude_cap__stage2.html"), "canonical"),
+    ],
+)
+def test_pdf_publication_rejects_strict_manifest_tampering_before_render(
+    tmp_path: Path, mutate, message: str,
+) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    mutate(manifest)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    before = manifest_path.read_bytes()
+    called = False
+
+    def renderer(_html: Path, _pdf: Path) -> None:
+        nonlocal called
+        called = True
+
+    with pytest.raises(ValueError, match=message):
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=renderer)
+
+    assert not called
+    assert manifest_path.read_bytes() == before
+    assert not list(tmp_path.glob("*.pdf"))
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda entry: entry.pop("report_id"),
+        lambda entry: entry.__setitem__("unexpected", "field"),
+        lambda entry: entry.__setitem__("publication_status", "draft"),
+    ],
+)
+@pytest.mark.parametrize("publish", [False, True])
+def test_pdf_check_and_publish_share_complete_v1_entry_validation(tmp_path: Path, mutate, publish: bool) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    if not publish:
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    mutate(manifest["reports"][0])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    before = manifest_path.read_bytes()
+    called = False
+
+    def renderer(_html: Path, _pdf: Path) -> None:
+        nonlocal called
+        called = True
+
+    if publish:
+        with pytest.raises(ValueError, match="strict"):
+            pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=renderer)
+        assert not called
+    else:
+        with pytest.raises(ValueError, match="strict"):
+            pdf_export.validate_pdf_companions(tmp_path, manifest_path)
+    assert manifest_path.read_bytes() == before
+
+
+def test_pdf_publication_replaces_existing_live_files_without_a_gap(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    published = pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    pdf_path = tmp_path / published["reports"][0]["pdf_path"]
+    real_replace = pdf_export.os.replace
+    observed: list[Path] = []
+
+    def assert_live_before_replace(source: str | Path, destination: str | Path) -> None:
+        target = Path(destination)
+        if target in {pdf_path, manifest_path} and Path(source).suffix == ".tmp":
+            assert target.exists()
+            observed.append(target)
+        real_replace(source, destination)
+
+    monkeypatch.setattr(pdf_export.os, "replace", assert_live_before_replace)
+    pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+
+    assert observed == [pdf_path, manifest_path]
+
+
+def test_pdf_rollback_failure_preserves_copy_backup_and_reports_path(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    write_reports([_spec()], str(tmp_path), str(manifest_path))
+    published = pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+    pdf_path = tmp_path / published["reports"][0]["pdf_path"]
+    original_pdf = pdf_path.read_bytes()
+    real_replace = pdf_export.os.replace
+
+    def fail_manifest_commit_and_pdf_restore(source: str | Path, destination: str | Path) -> None:
+        source_path = Path(source)
+        destination_path = Path(destination)
+        if source_path.parent.name.startswith(".report-pdf-rollback.") and destination_path == pdf_path:
+            raise OSError("injected PDF rollback failure")
+        if source_path.suffix == ".tmp" and destination_path == manifest_path:
+            raise OSError("injected manifest commit failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(pdf_export.os, "replace", fail_manifest_commit_and_pdf_restore)
+    with pytest.raises(RuntimeError, match="recovery backups retained:") as error:
+        pdf_export.publish_pdf_companions(tmp_path, manifest_path, renderer=_pdf_renderer)
+
+    recovery_dirs = list(tmp_path.parent.glob(".report-pdf-rollback.*"))
+    assert len(recovery_dirs) == 1
+    backup = recovery_dirs[0] / "0.backup"
+    assert backup.read_bytes() == original_pdf
+    assert str(backup) in str(error.value)
+
+
+
+def test_pdf_publication_rejects_manifest_destination_collision_before_render(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest = write_reports([_spec()], str(tmp_path), str(manifest_path))
+    colliding_manifest = tmp_path / manifest["reports"][0]["path"].replace(".html", ".pdf")
+    colliding_manifest.write_bytes(manifest_path.read_bytes())
+    called = False
+
+    def renderer(_html: Path, _pdf: Path) -> None:
+        nonlocal called
+        called = True
+
+    with pytest.raises(ValueError, match="manifest destination collides"):
+        pdf_export.publish_pdf_companions(tmp_path, colliding_manifest, renderer=renderer)
+
+    assert not called
+    assert colliding_manifest.read_bytes() == manifest_path.read_bytes()
+
+
+def test_pdf_rollback_attempts_every_restoration_and_aggregates_failures(tmp_path: Path, monkeypatch) -> None:
+    first = tmp_path / "first.pdf"
+    second = tmp_path / "second.pdf"
+    first_backup = tmp_path / "first.backup"
+    second_backup = tmp_path / "second.backup"
+    first.write_bytes(b"new-first")
+    second.write_bytes(b"new-second")
+    first_backup.write_bytes(b"old-first")
+    second_backup.write_bytes(b"old-second")
+    attempted: list[Path] = []
+    real_replace = pdf_export.os.replace
+
+    def fail_restores(source: str | Path, destination: str | Path) -> None:
+        attempted.append(Path(destination))
+        if Path(source).suffix == ".backup":
+            raise OSError(f"cannot restore {Path(destination).name}")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(pdf_export.os, "replace", fail_restores)
+    failures = pdf_export._rollback_replacements([(first, first_backup), (second, second_backup)])
+
+    assert [path.name for path in attempted] == ["second.pdf", "first.pdf"]
+    assert [str(error) for error in failures] == [
+        "cannot restore second.pdf",
+        "cannot restore first.pdf",
+    ]
+
+
+def test_local_pdf_renderer_blocks_unregistered_file_requests(tmp_path: Path, monkeypatch) -> None:
+    allowed = tmp_path / "allowed.html"
+    unrelated = tmp_path / "unrelated.html"
+    output = tmp_path / "output.pdf"
+    allowed.write_text("<html></html>", encoding="utf-8")
+    unrelated.write_text("<html></html>", encoding="utf-8")
+    routes: list[object] = []
+    context_options: dict[str, object] = {}
+
+    class Route:
+        def __init__(self, url: str) -> None:
+            self.request = types.SimpleNamespace(url=url)
+            self.result = ""
+
+        def continue_(self) -> None:
+            self.result = "continued"
+
+        def abort(self) -> None:
+            self.result = "aborted"
+
+    class Page:
+        def route(self, _pattern: str, handler) -> None:
+            self.handler = handler
+
+        def goto(self, url: str, **_kwargs) -> None:
+            route = Route(url)
+            routes.append(route)
+            self.handler(route)
+
+        def pdf(self, *, path: str, **_kwargs) -> None:
+            route = Route(unrelated.resolve().as_uri())
+            routes.append(route)
+            self.handler(route)
+            Path(path).write_bytes(b"%PDF-1.4\nfixture\n")
+
+    class Context:
+        def new_page(self) -> Page:
+            return Page()
+
+        def close(self) -> None:
+            pass
+
+    class Browser:
+        def new_context(self, **kwargs) -> Context:
+            context_options.update(kwargs)
+            return Context()
+
+        def close(self) -> None:
+            pass
+
+    class Playwright:
+        chromium = types.SimpleNamespace(launch=lambda: Browser())
+
+    class PlaywrightManager:
+        def __enter__(self) -> Playwright:
+            return Playwright()
+
+        def __exit__(self, *_args) -> None:
+            pass
+
+    sync_api = types.ModuleType("playwright.sync_api")
+    sync_api.sync_playwright = lambda: PlaywrightManager()
+    monkeypatch.setitem(sys.modules, "playwright", types.ModuleType("playwright"))
+    monkeypatch.setitem(sys.modules, "playwright.sync_api", sync_api)
+
+    pdf_export._render_pdf_locally(allowed, output, allowed_assets={allowed})
+
+    assert context_options == {"java_script_enabled": False, "service_workers": "block"}
+    assert [route.result for route in routes] == ["continued", "aborted"]
+    assert output.read_bytes()

@@ -4,72 +4,98 @@
  * 서버 슬라이스(ab-pairs, index의 series/ab_role/gate_passed_count)가 병렬 진행 중이므로
  * 모든 optional 필드는 방어적으로 소비한다 — 필드 부재 시 빈 상태로 흡수하고 절대 추측하지 않는다.
  * 승급/검증(promotion/validation) 신호를 절대 발신하지 않는다 — 탐색용 표시만 한다. */
+import { ChartFrame } from "./chart-frame.jsx";
 const {
   useState: useState_hv,
   useEffect: useEffect_hv,
   useCallback: useCallback_hv,
+  useRef: useRef_hv,
 } = React;
 
 function _hvNum(value) {
-  if (value == null || Number.isNaN(Number(value))) return "\u2014";
-  return Number(value).toLocaleString();
+  return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString() : "\u2014";
 }
 
 function _hvMoney(value) {
-  if (value == null || Number.isNaN(Number(value))) return "\u2014";
-  const n = Number(value);
-  const sign = n > 0 ? "+" : "";
-  return sign + Math.round(n).toLocaleString();
+  if (typeof value !== "number" || !Number.isFinite(value)) return "\u2014";
+  const sign = value > 0 ? "+" : "";
+  return sign + Math.round(value).toLocaleString();
 }
 
 function _hvPct(value) {
-  if (value == null || Number.isNaN(Number(value))) return "\u2014";
-  return Number(value).toFixed(2) + "%";
+  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) + "%" : "\u2014";
 }
 
 function _hvNegColor(value) {
-  if (value == null || Number.isNaN(Number(value))) return "var(--ink-2)";
-  return Number(value) < 0 ? "var(--red)" : "var(--ink-0)";
+  if (typeof value !== "number" || !Number.isFinite(value)) return "var(--ink-2)";
+  return value < 0 ? "var(--red)" : "var(--ink-0)";
 }
 
 function _hvMetric(row, key) {
-  const m = (row && row.metrics) || {};
-  return m[key] != null ? m[key] : null;
+  const m = row && row.metrics;
+  return m && typeof m === "object" && !Array.isArray(m) && m[key] != null ? m[key] : null;
 }
 
 // metrics 키 이름이 발행기 세대(campaign은 trades, loop_run은 trade_count)에 따라 달라지므로
 // 후보 키를 순서대로 시도한다 — 존재하는 키만 읽고 없는 키는 절대 만들어내지 않는다.
 function _hvMetricAny(row, keys) {
-  const m = (row && row.metrics) || {};
+  const m = row && row.metrics;
+  if (!m || typeof m !== "object" || Array.isArray(m)) return null;
   for (const k of keys) {
     if (m[k] != null) return m[k];
   }
   return null;
 }
 
-function _hvFetchJson(url, timeoutMs) {
+function _hvFetchJson(url, timeoutMs, signal) {
   // 전체 인덱스는 서버 측 트리 빌드로 수 초가 걸릴 수 있어 기본 30초로 잡는다.
-  return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 30000) })
+  const timeout = AbortSignal.timeout(timeoutMs || 30000);
+  return fetch(url, { signal: signal ? AbortSignal.any([signal, timeout]) : timeout })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-// cursor 기반 전체 수집: /history/detail을 limit=100으로 요청하고 next_cursor를 따라가며
-// 안전 상한(50페이지)까지 모든 행을 모은다. 서버가 next_cursor를 더는 주지 않으면 중단한다.
-function _hvFetchAllPages(url, timeoutMs) {
+// cursor 기반 전체 수집: 페이지 형식·cursor 연속성·명시적 절단을 확인한다.
+// 불완전한 표본은 정상 결과처럼 표시하지 않는다.
+function _hvFetchAllPages(url, timeoutMs, signal) {
   const MAX_PAGES = 50;
   const sep = url.includes("?") ? "&" : "?";
   const base = url + sep + "limit=100";
-  const step = (cursor, acc, page) => {
+  const numericMetrics = new Set(["trade_count", "trades", "mdd", "profit", "net_profit", "win_rate", "total_profit_pct"]);
+  const validRows = rows => rows.every(row => {
+    if (!row || typeof row !== "object" || Array.isArray(row)
+      || (row.gate_passed != null && typeof row.gate_passed !== "boolean")
+      || (row.holdout_passed != null && typeof row.holdout_passed !== "boolean")) return false;
+    const metrics = row.metrics;
+    return metrics == null || (typeof metrics === "object" && !Array.isArray(metrics)
+      && Object.keys(metrics).every(key => !numericMetrics.has(key)
+        || metrics[key] == null || (typeof metrics[key] === "number" && Number.isFinite(metrics[key]))));
+  });
+  const step = (cursor, acc, page, seen) => {
     const pageUrl = base + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
-    return _hvFetchJson(pageUrl, timeoutMs).then(j => {
-      const rows = Array.isArray(j && j.rows) ? j.rows : [];
-      const merged = acc.concat(rows);
-      const next = j && j.next_cursor ? j.next_cursor : null;
-      if (next && page < MAX_PAGES) return step(next, merged, page + 1);
+    return _hvFetchJson(pageUrl, timeoutMs, signal).then(j => {
+      const hasMore = j && j.has_more;
+      const hasValidMore = typeof hasMore === "boolean";
+      const hasValidCursor = j && (j.next_cursor == null || typeof j.next_cursor === "string");
+      if (!j || !Array.isArray(j.rows) || !validRows(j.rows) || j.truncated === true
+          || !hasValidMore || !hasValidCursor
+          || (hasMore && (typeof j.next_cursor !== "string" || !j.next_cursor))
+          || (!hasMore && j.next_cursor != null)) {
+        throw new Error("Malformed or incomplete history page");
+      }
+      const next = j.next_cursor;
+      if (next && (page >= MAX_PAGES || seen.has(next))) {
+        throw new Error("Truncated history page sequence");
+      }
+      const merged = acc.concat(j.rows);
+      if (hasMore) {
+        const nextSeen = new Set(seen);
+        nextSeen.add(next);
+        return step(next, merged, page + 1, nextSeen);
+      }
       return merged;
     });
   };
-  return step(null, [], 1);
+  return step(null, [], 1, new Set());
 }
 
 // 서버가 loop_run 평가 행에는 gate_passed(bool)를 additive로 내려준다(campaign 행은 원천 데이터가
@@ -77,6 +103,9 @@ function _hvFetchAllPages(url, timeoutMs) {
 // 반환한다 — 휴리스틱 추론 금지.
 function _hvGatePassed(row) {
   return row && typeof row.gate_passed === "boolean" ? row.gate_passed : null;
+}
+function _hvHoldoutEvidence(row) {
+  return row && typeof row.holdout_passed === "boolean" ? [`holdout_passed=${row.holdout_passed}`] : [];
 }
 
 function _hvGateBadge(row) {
@@ -129,25 +158,49 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
 
   const [legacyRows, setLegacyRows] = useState_hv({ loading: false, err: "", rows: [] });
   const [typedRows, setTypedRows] = useState_hv({ loading: false, err: "", rows: [] });
+  const sideRequestRef = useRef_hv({});
+  const pairsRequestRef = useRef_hv({ key: "", controller: null });
 
   const loadPairs = useCallback_hv(() => {
-    if (isDemo || !baseUrl || !series.trim()) return;
+    if (pairsRequestRef.current.controller) pairsRequestRef.current.controller.abort();
+    Object.values(sideRequestRef.current).forEach(request => request.controller.abort());
+    sideRequestRef.current = {};
+    if (isDemo || !baseUrl || !series.trim()) {
+      pairsRequestRef.current = { key: "", controller: null };
+      setPairsAvailable(null); setPairs([]); setSelectedPair("");
+      setLegacyRows({ loading: false, err: "", rows: [] });
+      setTypedRows({ loading: false, err: "", rows: [] });
+      setPairsLoading(false); setPairsErr("");
+      return;
+    }
+    const key = series.trim();
+    const controller = new AbortController();
+    pairsRequestRef.current = { key, controller };
     setPairsLoading(true);
     setPairsErr("");
-    _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(series.trim()), 8000)
+    setPairsAvailable(null);
+    setPairs([]);
+    setSelectedPair("");
+    setLegacyRows({ loading: false, err: "", rows: [] });
+    setTypedRows({ loading: false, err: "", rows: [] });
+    _hvFetchJson(baseUrl + "/history/ab-pairs?series=" + encodeURIComponent(key), 8000, controller.signal)
       .then(j => {
+        if (pairsRequestRef.current.key !== key || controller.signal.aborted) return;
         const items = Array.isArray(j && j.items) ? j.items : [];
         setPairsAvailable(!!(j && j.available));
         setPairs(items);
         setSelectedPair(items.length ? items[0].pair : "");
       })
       .catch(e => {
+        if (pairsRequestRef.current.key !== key || controller.signal.aborted) return;
         setPairsErr(String(e));
         setPairsAvailable(false);
         setPairs([]);
         setSelectedPair("");
       })
-      .finally(() => setPairsLoading(false));
+      .finally(() => {
+        if (pairsRequestRef.current.key === key && !controller.signal.aborted) setPairsLoading(false);
+      });
   }, [baseUrl, isDemo, series]);
 
   useEffect_hv(() => {
@@ -157,18 +210,32 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
 
   const current = pairs.find(p => p.pair === selectedPair) || null;
 
-  const loadSide = useCallback_hv((researchId, setter) => {
+  const loadSide = useCallback_hv((researchId, setter, lane) => {
+    const previous = sideRequestRef.current[lane];
+    if (previous) previous.controller.abort();
     if (isDemo || !baseUrl || !researchId) {
       setter({ loading: false, err: "", rows: [] });
       return;
     }
-    setter(prev => ({ ...prev, loading: true, err: "" }));
+    const key = `${selectedPair}:${researchId}`;
+    const controller = new AbortController();
+    sideRequestRef.current[lane] = { key, controller };
+    setter({ loading: true, err: "", rows: [] });
     _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations"
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(researchId) + "&section=evaluations",
+      30000, controller.signal
     )
-      .then(rows => setter({ loading: false, err: "", rows }))
-      .catch(e => setter({ loading: false, err: String(e), rows: [] }));
-  }, [baseUrl, isDemo]);
+      .then(rows => {
+        if (sideRequestRef.current[lane]?.key === key && !controller.signal.aborted) {
+          setter({ loading: false, err: "", rows });
+        }
+      })
+      .catch(e => {
+        if (sideRequestRef.current[lane]?.key === key && !controller.signal.aborted) {
+          setter({ loading: false, err: String(e), rows: [] });
+        }
+      });
+  }, [baseUrl, isDemo, selectedPair]);
 
   useEffect_hv(() => {
     if (!current) {
@@ -176,10 +243,9 @@ function AbPairCompareView({ baseUrl, wsStatus }) {
       setTypedRows({ loading: false, err: "", rows: [] });
       return;
     }
-    loadSide(current.legacy_research_id, setLegacyRows);
-    loadSide(current.typed_research_id, setTypedRows);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current && current.pair]);
+    loadSide(current.legacy_research_id, setLegacyRows, "legacy");
+    loadSide(current.typed_research_id, setTypedRows, "typed");
+  }, [current, loadSide]);
 
   const renderSide = (title, gatePassedFlag, side) => (
     <div style={{ flex: "1 1 260px", minWidth: 260 }}>
@@ -302,6 +368,7 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
   const [metricMode, setMetricMode] = useState_hv("profit");
+  const rowsRequestRef = useRef_hv({ key: "", controller: null });
 
   const loadCampaigns = useCallback_hv(() => {
     if (isDemo || !baseUrl) return;
@@ -311,13 +378,14 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setCampaigns(items);
-        setSelected(prev => (
-          preferredResearchId && preferredResearchId.startsWith("campaign:") && items.some(item => item.research_id === preferredResearchId)
-            ? preferredResearchId
-            : (prev || (items.length ? items[0].research_id : ""))
-        ));
+        setSelected(prev => {
+          if (preferredResearchId && preferredResearchId.startsWith("campaign:")
+              && items.some(item => item.research_id === preferredResearchId)) return preferredResearchId;
+          if (prev && items.some(item => item.research_id === prev)) return prev;
+          return items.length ? items[0].research_id : "";
+        });
       })
-      .catch(e => { setCampaignsErr(String(e)); setCampaigns([]); })
+      .catch(e => { setCampaignsErr(String(e)); setCampaigns([]); setSelected(""); })
       .finally(() => setCampaignsLoading(false));
   }, [baseUrl, isDemo, preferredResearchId]);
 
@@ -332,38 +400,54 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
   }, [preferredResearchId, campaigns]);
 
   const loadRows = useCallback_hv(() => {
+    if (rowsRequestRef.current.controller) rowsRequestRef.current.controller.abort();
     if (isDemo || !baseUrl || !selected) {
-      setRows([]);
+      rowsRequestRef.current = { key: "", controller: null };
+      setRows([]); setRowsErr(""); setRowsLoading(false);
       return;
     }
+    const key = selected;
+    const controller = new AbortController();
+    rowsRequestRef.current = { key, controller };
     setRowsLoading(true);
+    setRows([]);
     setRowsErr("");
     _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations",
+      30000, controller.signal
     )
-      .then(rows => setRows(rows))
-      .catch(e => { setRowsErr(String(e)); setRows([]); })
-      .finally(() => setRowsLoading(false));
+      .then(nextRows => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRows(nextRows);
+      })
+      .catch(e => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) {
+          setRowsErr(String(e)); setRows([]);
+        }
+      })
+      .finally(() => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRowsLoading(false);
+      });
   }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [loadRows]);
 
+  const rowsMatchSelection = rowsRequestRef.current.key === selected;
+  const selectedRows = rowsMatchSelection ? rows : [];
   // 캠페인 companion 셀 메트릭 키는 net_profit/win_rate(stage1 분해 계약),
   // loop_run 행은 profit/total_profit_pct — 후보 키로 둘 다 지원한다.
-  const hasProfit = rows.some(r => _hvMetricAny(r, ["net_profit", "profit"]) != null);
-  const hasPct = rows.some(r => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
+  const hasProfit = selectedRows.some(r => _hvMetricAny(r, ["net_profit", "profit"]) != null);
+  const hasPct = selectedRows.some(r => _hvMetricAny(r, ["win_rate", "total_profit_pct"]) != null);
   const effectiveMode = metricMode === "profit" && !hasProfit && hasPct ? "total_profit_pct" : metricMode;
   // 캠페인 win_rate는 0~1 비율, loop_run total_profit_pct는 % 값 — 표시 배율 분기.
-  const pctIsWinRate = rows.some(r => ((r && r.metrics) || {}).win_rate != null);
+  const pctIsWinRate = selectedRows.some(r => ((r && r.metrics) || {}).win_rate != null);
 
   const grid = (() => {
     const timeLabels = [];
     const capLabels = [];
     const cellMap = {};
-    for (const row of rows) {
+    for (const row of selectedRows) {
       const axis = _hvSplitAxisLabel(row.label);
       if (!axis) continue;
       const [t, c] = axis;
@@ -374,9 +458,9 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
       const cell = cellMap[key];
       cell.count += 1;
       const profit = _hvMetricAny(row, ["net_profit", "profit"]);
-      if (profit != null && !Number.isNaN(Number(profit))) cell.profitSum += Number(profit);
+      if (typeof profit === "number" && Number.isFinite(profit)) cell.profitSum += profit;
       const pct = _hvMetricAny(row, ["win_rate", "total_profit_pct"]);
-      if (pct != null && !Number.isNaN(Number(pct))) { cell.pctSum += Number(pct); cell.pctN += 1; }
+      if (typeof pct === "number" && Number.isFinite(pct)) { cell.pctSum += pct; cell.pctN += 1; }
     }
     if (!capLabels.length || !timeLabels.length) return null;
     return { timeLabels, capLabels, cellMap };
@@ -394,6 +478,11 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
         </button>
       </div>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <ChartFrame title="12셀 히트맵" unit={effectiveMode === "profit" ? "손익 ₩" : (pctIsWinRate ? "승률 %" : "수익률 %")}
+          period="선택 campaign 평가" sampleCount={selectedRows.length} freshness="조회 시각 미발행"
+          threshold="손익분기 0" source="/history/detail?section=evaluations"
+          rows={selectedRows.map(row => ({ label: row.label, net_profit: _hvMetricAny(row, ["net_profit", "profit"]), percent: _hvMetricAny(row, ["win_rate", "total_profit_pct"]) }))}
+          status={rowsMatchSelection && rowsErr ? "malformed" : rowsMatchSelection && rowsLoading ? "stale" : (selectedRows.length ? "ready" : "empty")}>
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 히트맵이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
@@ -466,6 +555,7 @@ function CellHeatmap({ baseUrl, wsStatus, preferredResearchId }) {
             )}
           </React.Fragment>
         )}
+        </ChartFrame>
       </div>
     </div>
   );
@@ -484,6 +574,7 @@ function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
   const [rows, setRows] = useState_hv([]);
   const [rowsLoading, setRowsLoading] = useState_hv(false);
   const [rowsErr, setRowsErr] = useState_hv("");
+  const rowsRequestRef = useRef_hv({ key: "", controller: null });
 
   const loadRuns = useCallback_hv(() => {
     if (isDemo || !baseUrl) return;
@@ -493,13 +584,14 @@ function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
       .then(j => {
         const items = Array.isArray(j && j.items) ? j.items : [];
         setRuns(items);
-        setSelected(prev => (
-          preferredResearchId && preferredResearchId.startsWith("loop_run:") && items.some(item => item.research_id === preferredResearchId)
-            ? preferredResearchId
-            : (prev || (items.length ? items[0].research_id : ""))
-        ));
+        setSelected(prev => {
+          if (preferredResearchId && preferredResearchId.startsWith("loop_run:")
+              && items.some(item => item.research_id === preferredResearchId)) return preferredResearchId;
+          if (prev && items.some(item => item.research_id === prev)) return prev;
+          return items.length ? items[0].research_id : "";
+        });
       })
-      .catch(e => { setRunsErr(String(e)); setRuns([]); })
+      .catch(e => { setRunsErr(String(e)); setRuns([]); setSelected(""); })
       .finally(() => setRunsLoading(false));
   }, [baseUrl, isDemo, preferredResearchId]);
 
@@ -514,43 +606,56 @@ function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
   }, [preferredResearchId, runs]);
 
   const loadRows = useCallback_hv(() => {
+    if (rowsRequestRef.current.controller) rowsRequestRef.current.controller.abort();
     if (isDemo || !baseUrl || !selected) {
-      setRows([]);
+      rowsRequestRef.current = { key: "", controller: null };
+      setRows([]); setRowsErr(""); setRowsLoading(false);
       return;
     }
+    const key = selected;
+    const controller = new AbortController();
+    rowsRequestRef.current = { key, controller };
     setRowsLoading(true);
+    setRows([]);
     setRowsErr("");
     _hvFetchAllPages(
-      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations"
+      baseUrl + "/history/detail?research_id=" + encodeURIComponent(selected) + "&section=evaluations",
+      30000, controller.signal
     )
-      .then(rows => setRows(rows))
-      .catch(e => { setRowsErr(String(e)); setRows([]); })
-      .finally(() => setRowsLoading(false));
+      .then(nextRows => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRows(nextRows);
+      })
+      .catch(e => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) {
+          setRowsErr(String(e)); setRows([]);
+        }
+      })
+      .finally(() => {
+        if (rowsRequestRef.current.key === key && !controller.signal.aborted) setRowsLoading(false);
+      });
   }, [baseUrl, isDemo, selected]);
 
   useEffect_hv(() => {
     loadRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [loadRows]);
+  const rowsMatchSelection = rowsRequestRef.current.key === selected;
+  const selectedRows = rowsMatchSelection ? rows : [];
 
-  const evaluatedCount = rows.length;
+  const evaluatedCount = selectedRows.length;
   // gate_passed는 loop_run 평가 행에만 additive로 존재한다(campaign 행은 필드 자체가 없음).
   // boolean 신호가 하나라도 있을 때만 통과수를 집계하고, 전혀 없으면 "—"로 정직하게 표시한다.
-  const gateSignalSeen = rows.some(r => r && typeof r.gate_passed === "boolean");
-  const gatePassedCount = rows.filter(r => r && r.gate_passed === true).length;
-  // 홀드아웃 신호는 metrics 키에 "holdout"이 실제로 존재할 때만 집계한다
-  // (추측 금지 — 서버가 명시적으로 내려준 신호만 사용, reason 같은 존재하지 않는 필드는 참조하지 않는다).
+  const gateSignalSeen = selectedRows.some(r => r && typeof r.gate_passed === "boolean");
+  const gatePassedCount = selectedRows.filter(r => r && r.gate_passed === true).length;
+  // holdout_passed가 boolean으로 발행된 모든 평가를 분모에 포함하고, true만 통과로 집계한다.
   let holdoutTotal = 0;
   let holdoutPassed = 0;
   let holdoutSignalSeen = false;
-  for (const row of rows) {
-    const metrics = (row && row.metrics) || {};
-    const metricKeys = Object.keys(metrics).filter(k => k.toLowerCase().includes("holdout"));
-    if (metricKeys.length === 0) continue;
+  for (const row of selectedRows) {
+    const evidence = _hvHoldoutEvidence(row);
+    if (evidence.length === 0) continue;
     holdoutSignalSeen = true;
     holdoutTotal += 1;
-    const truthy = metricKeys.some(k => !!metrics[k]);
-    if (truthy) holdoutPassed += 1;
+    if (row.holdout_passed === true && evidence.includes("holdout_passed=true")) holdoutPassed += 1;
   }
 
   const maxCount = Math.max(evaluatedCount, 1);
@@ -579,6 +684,11 @@ function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
         </button>
       </div>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <ChartFrame title="홀드아웃 퍼널" unit="평가 건수" period="선택 loop run 평가"
+          sampleCount={evaluatedCount} freshness="조회 시각 미발행"
+          threshold="gate_passed / holdout 원본 신호" source="/history/detail?section=evaluations"
+          rows={selectedRows.map(row => ({ evaluation_id: row.evaluation_id, gate_passed: _hvGatePassed(row), holdout_evidence: _hvHoldoutEvidence(row).join(", ") || "—" }))}
+          status={rowsMatchSelection && rowsErr ? "malformed" : rowsMatchSelection && rowsLoading ? "stale" : (evaluatedCount ? "ready" : "empty")}>
         {isDemo && <_HvEmpty>Demo mode — 백엔드 연결 시 홀드아웃 퍼널이 표시됩니다.</_HvEmpty>}
         {!isDemo && (
           <React.Fragment>
@@ -633,6 +743,7 @@ function HoldoutFunnel({ baseUrl, wsStatus, preferredResearchId }) {
             )}
           </React.Fragment>
         )}
+        </ChartFrame>
       </div>
     </div>
   );

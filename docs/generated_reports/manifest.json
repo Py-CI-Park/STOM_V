@@ -106,7 +106,11 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "c340ba915cf46ef37e80a01ae1854f649cbe7315b6219150b47212aba69e538f"
+      "sha256": "c340ba915cf46ef37e80a01ae1854f649cbe7315b6219150b47212aba69e538f",
+      "pdf_path": "run_report_lat_smoke_tick_full_sanitized_20260704.pdf",
+      "pdf_bytes": 3574772,
+      "pdf_sha256": "391b584b6f1eeee5ca238c7628aff22391ef2b3bcca5eed3d0ef9fd75cf19b63",
+      "pdf_source_content_sha256": "c340ba915cf46ef37e80a01ae1854f649cbe7315b6219150b47212aba69e538f"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -205,7 +209,11 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "e9bbaa4d30ac7516e1439f67b7c1a041b9ae53448438c92229b9f904c43b9d76"
+      "sha256": "e9bbaa4d30ac7516e1439f67b7c1a041b9ae53448438c92229b9f904c43b9d76",
+      "pdf_path": "run_report_tmap_llmg19_fullsweep_q1_20260614.pdf",
+      "pdf_bytes": 1454814,
+      "pdf_sha256": "baf7769e3c88101c8423ab87ccfbc9f98d99c6c17e9117f32f5a26dfc78dff41",
+      "pdf_source_content_sha256": "e9bbaa4d30ac7516e1439f67b7c1a041b9ae53448438c92229b9f904c43b9d76"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -304,7 +312,11 @@
         "profile hash가 다른 run의 단순 delta 비교 금지"
       ],
       "step_id": "run",
-      "sha256": "6066c2022b1be1aa0f833b487c96ac38356e745e39553d62da5e14e6e8d45aa3"
+      "sha256": "6066c2022b1be1aa0f833b487c96ac38356e745e39553d62da5e14e6e8d45aa3",
+      "pdf_path": "run_report_tmap_seed_full_train_20260611.pdf",
+      "pdf_bytes": 1227061,
+      "pdf_sha256": "101c7664a9bda214a0feb43dd154f44c0a5f74791fe8b0751174d034bdb88f09",
+      "pdf_source_content_sha256": "6066c2022b1be1aa0f833b487c96ac38356e745e39553d62da5e14e6e8d45aa3"
     },
     {
       "schema_version": "stom-research-report-v1",
@@ -362,8 +374,16 @@
           "label": "관련 커밋 / 작업"
         }
       ],
+      "profile": null,
+      "evidence": null,
+      "decision": null,
+      "limitations": null,
       "step_id": "stage1",
-      "sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf"
+      "sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf",
+      "pdf_path": "v5_reporting_demo__stage1.pdf",
+      "pdf_bytes": 59467,
+      "pdf_sha256": "39868d41d92b4051eec77f6b11864eb2982eb40f94be524a702b114a55458965",
+      "pdf_source_content_sha256": "0bc54d4e5b7bd242c11b548f3611e61e69ae3e11c1faaae01dc3c8bca71ea7bf"
     }
   ]
 }

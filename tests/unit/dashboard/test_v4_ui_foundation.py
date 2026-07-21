@@ -44,12 +44,15 @@ def test_v4_tab_keyboard_runtime_wraps_and_supports_home_end() -> None:
 const fn = new Function(process.argv[2] + '; return _nextV4TabKey;')();
 const keys = ['research','backtest','replay','history','lab','workbench','audit','context'];
 console.log(JSON.stringify({
-  right: fn(keys, 'research', 'ArrowRight'),
-  leftWrap: fn(keys, 'research', 'ArrowLeft'),
-  rightWrap: fn(keys, 'context', 'ArrowRight'),
-  home: fn(keys, 'audit', 'Home'),
-  end: fn(keys, 'research', 'End'),
-  ignored: fn(keys, 'lab', 'Enter'),
+  right: fn(keys, 'research', 'ArrowRight', 'horizontal'),
+  leftWrap: fn(keys, 'research', 'ArrowLeft', 'horizontal'),
+  rightWrap: fn(keys, 'context', 'ArrowRight', 'horizontal'),
+  down: fn(keys, 'research', 'ArrowDown', 'vertical'),
+  upWrap: fn(keys, 'research', 'ArrowUp', 'vertical'),
+  downWrap: fn(keys, 'context', 'ArrowDown', 'vertical'),
+  home: fn(keys, 'audit', 'Home', 'vertical'),
+  end: fn(keys, 'research', 'End', 'horizontal'),
+  ignored: fn(keys, 'lab', 'Enter', 'vertical'),
 }));
 """
     result = subprocess.run(
@@ -60,6 +63,9 @@ console.log(JSON.stringify({
         "right": "backtest",
         "leftWrap": "context",
         "rightWrap": "research",
+        "down": "backtest",
+        "upWrap": "context",
+        "downWrap": "research",
         "home": "research",
         "end": "context",
         "ignored": "lab",

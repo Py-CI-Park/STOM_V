@@ -460,6 +460,7 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
             disabled={isDemo}
             className="mono"
             data-tip="분석할 run 선택(기본 현재 run)"
+            aria-label="분석할 연구 run 선택"
             style={{
               fontSize: 11, background: "var(--bg-1)", color: "var(--ink-0)",
               border: "1px solid var(--line-2)", borderRadius: 5, padding: "3px 6px", maxWidth: 240,

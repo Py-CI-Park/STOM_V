@@ -165,7 +165,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
             표시할 전략이 없습니다 (인간 벤치마크 JSON / AI 흑자 세대 누적 시 표시).
           </div>
         ) : (
-          <div className="hof-scroll" style={{ overflowX: "auto", width: "100%" }}>
+          <div className="hof-scroll" style={{ overflowX: "auto", width: "100%" }} tabIndex="0" aria-label="명예의 전당 전략 표">
             <table className="data-table" style={{ width: "100%", borderCollapse: "collapse",
                                                    fontFamily: "var(--mono)", fontSize: 12,
                                                    minWidth: 1180 }}>
