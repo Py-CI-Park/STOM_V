@@ -377,6 +377,7 @@ def test_v59_result_request_guard_rejects_superseded_sources_and_preserves_mdd_a
         oldSource: mod.btRequestIsCurrent(state, 2, 'run-b/2', 'run-a/1', currentController.signal),
         current: mod.btRequestIsCurrent(state, 2, 'run-b/2', 'run-b/2', currentController.signal),
         mdd: mod.btMetricValue({{ max_drawdown_pct: 17.8 }}, {{}}, 'mdd_pct'),
+        explicitNull: mod.btMetricValue({{ max_drawdown_pct: null }}, {{ max_drawdown_pct: 0 }}, 'mdd_pct'),
         missingCagr: mod.btMetricValue({{}}, {{}}, 'cagr') ?? null,
       }};
       console.log(JSON.stringify(checks));
@@ -391,5 +392,5 @@ def test_v59_result_request_guard_rejects_superseded_sources_and_preserves_mdd_a
     assert completed.returncode == 0, completed.stderr
     assert completed.stdout.strip() == (
         '{"oldAborted":false,"oldSequence":false,"oldSource":false,'
-        '"current":true,"mdd":17.8,"missingCagr":null}'
+        '"current":true,"mdd":17.8,"explicitNull":null,"missingCagr":null}'
     )

@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import time
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -282,10 +283,37 @@ def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregiste
     assert "content_sha256" in source and "source_sha256" in source
     assert "const catalogReports = filteredReports;" in source
     assert "최신순 리포트" in source
+    assert "sortReportsNewest(Array.isArray(j && j.reports)" in source
     assert "v4-reports-toc-toggle" in source
     assert "v4-reports-toc-slot.open" in css
     assert "@media (max-width: 1200px)" in css
     assert "run_report_" not in source
+
+
+def test_reports_newest_order_includes_mtime_and_matches_default_selection() -> None:
+    helper_uri = (
+        Path("ai_strategy_loop/dashboard/frontend/report-order.mjs")
+        .resolve()
+        .as_uri()
+    )
+    script = f"""
+      const mod = await import('{helper_uri}');
+      const rows = [
+        {{ path: 'registered.html', generated_at: '2026-01-01T00:00:00Z' }},
+        {{ path: 'unregistered.html', mtime: 1893456000 }},
+        {{ path: 'older.html', date: '2025-01-01' }},
+      ];
+      console.log(mod.sortReportsNewest(rows).map(row => row.path).join(','));
+    """
+    completed = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "unregistered.html,registered.html,older.html"
+
 def test_reports_frontend_keeps_the_report_iframe_as_the_single_view_request() -> None:
     source = _frontend_source("v4-reports.jsx")
 

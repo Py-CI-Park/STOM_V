@@ -131,3 +131,5 @@ The first independent architecture review returned `BLOCK` and the branch was no
 | History tree interactions were mouse-only | Research rows, stage/condition toggles, and sortable headers now use focusable buttons, `aria-expanded`/`aria-pressed`, and visible keyboard focus |
 | Backtest detail referenced a nonexistent chart-height token | Corrected to `--v59-chart-height` |
 | Report catalog was grouped before limiting and therefore not globally newest-first | Preserved the globally date-sorted catalog order and changed the UI label to `최신순 리포트` |
+
+A second review found two medium residuals. Explicit `null` metrics now remain `null` even when the empty analysis summary contains zeros, so the UI renders `—`. Report ordering now normalizes `generated_at`, `date`, and filesystem `mtime`, and both the visible first row and initial selection use the same sorted array. Executable helper tests and browser probes cover both cases.

@@ -5,6 +5,7 @@
  */
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
+import { sortReportsNewest } from "./report-order.mjs";
 
 function _fmtReportBytes(n) {
   if (!Number.isFinite(n)) return "";
@@ -75,7 +76,7 @@ function V4Reports({ baseUrl }) {
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
         if (cancelled) return;
-        const reports = Array.isArray(j && j.reports) ? j.reports : [];
+        const reports = sortReportsNewest(Array.isArray(j && j.reports) ? j.reports : []);
         setList(reports);
         setSel(prev => reports.some(rp => rp.path === prev) ? prev : (reports.length ? reports[0].path : ""));
       })
@@ -161,18 +162,14 @@ function V4Reports({ baseUrl }) {
   const frameSrc = viewUrl ? (anchor ? viewUrl + "#" + anchor : viewUrl) : "";
   const reportStatuses = [...new Set(reports.filter(rp => rp.registered === true).map(rp => rp.status).filter(Boolean))].sort();
   const reportTrusts = [...new Set(reports.filter(rp => rp.registered === true).map(rp => rp.trust).filter(Boolean))].sort();
-  const filteredReports = reports.filter(rp => {
+  const filteredReports = sortReportsNewest(reports.filter(rp => {
     const kind = _reportKind(rp);
     const query = reportQuery.trim().toLowerCase();
     return (!query || _reportSearchText(rp).includes(query))
       && (reportType === "all" || kind === reportType)
       && (reportStatus === "all" || rp.status === reportStatus)
       && (reportTrust === "all" || rp.trust === reportTrust);
-  }).sort((a, b) => {
-    const at = Date.parse(a.generated_at || a.date || "") || 0;
-    const bt = Date.parse(b.generated_at || b.date || "") || 0;
-    return bt - at || String(a.path || "").localeCompare(String(b.path || ""));
-  });
+  }));
   const catalogReports = filteredReports;
   const visibleReports = catalogReports.slice(0, Math.min(reportLimit, 250));
   const exampleReport = reports.find(rp => _reportKind(rp) === "run") || reports.find(rp => _reportKind(rp) === "step") || null;

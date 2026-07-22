@@ -5,9 +5,9 @@ export function btRequestIsCurrent(requestState, seq, currentKey, expectedKey, s
 export function btMetricValue(metrics, summary, key) {
   const source = metrics && typeof metrics === "object" ? metrics : {};
   const fallback = summary && typeof summary === "object" ? summary : {};
-  if (source[key] != null) return source[key];
-  if (key === "mdd_pct" && source.max_drawdown_pct != null) return source.max_drawdown_pct;
-  if (key === "mdd_pct" && source.mdd != null) return source.mdd;
+  if (Object.prototype.hasOwnProperty.call(source, key)) return source[key];
+  if (key === "mdd_pct" && Object.prototype.hasOwnProperty.call(source, "max_drawdown_pct")) return source.max_drawdown_pct;
+  if (key === "mdd_pct" && Object.prototype.hasOwnProperty.call(source, "mdd")) return source.mdd;
   const aliases = {
     trade_count: fallback.trade_count,
     win_rate: fallback.win_rate,

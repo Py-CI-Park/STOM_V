@@ -25778,9 +25778,9 @@ def signal_sell(pos, bar, ind):
   function btMetricValue(metrics, summary, key) {
     const source = metrics && typeof metrics === "object" ? metrics : {};
     const fallback = summary && typeof summary === "object" ? summary : {};
-    if (source[key] != null) return source[key];
-    if (key === "mdd_pct" && source.max_drawdown_pct != null) return source.max_drawdown_pct;
-    if (key === "mdd_pct" && source.mdd != null) return source.mdd;
+    if (Object.prototype.hasOwnProperty.call(source, key)) return source[key];
+    if (key === "mdd_pct" && Object.prototype.hasOwnProperty.call(source, "max_drawdown_pct")) return source.max_drawdown_pct;
+    if (key === "mdd_pct" && Object.prototype.hasOwnProperty.call(source, "mdd")) return source.mdd;
     const aliases = {
       trade_count: fallback.trade_count,
       win_rate: fallback.win_rate,
@@ -36142,6 +36142,22 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Workbench });
 
+  // ai_strategy_loop/dashboard/frontend/report-order.mjs
+  function reportTimestamp(report) {
+    const source = report && typeof report === "object" ? report : {};
+    const dated = Date.parse(source.generated_at || source.date || "");
+    if (Number.isFinite(dated)) return dated;
+    const mtime = Number(source.mtime);
+    if (!Number.isFinite(mtime)) return 0;
+    return mtime < 1e12 ? mtime * 1e3 : mtime;
+  }
+  function sortReportsNewest(reports) {
+    return (Array.isArray(reports) ? reports : []).slice().sort((a, b) => {
+      const delta = reportTimestamp(b) - reportTimestamp(a);
+      return delta || String((a == null ? void 0 : a.path) || "").localeCompare(String((b == null ? void 0 : b.path) || ""));
+    });
+  }
+
   // ai_strategy_loop/dashboard/frontend/v4-reports.jsx
   var { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
   function _fmtReportBytes(n) {
@@ -36212,7 +36228,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       let cancelled = false;
       fetch(baseUrl + "/reports", { signal: AbortSignal.timeout(6e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
         if (cancelled) return;
-        const reports2 = Array.isArray(j && j.reports) ? j.reports : [];
+        const reports2 = sortReportsNewest(Array.isArray(j && j.reports) ? j.reports : []);
         setList(reports2);
         setSel((prev) => reports2.some((rp) => rp.path === prev) ? prev : reports2.length ? reports2[0].path : "");
       }).catch((e) => {
@@ -36303,15 +36319,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const frameSrc = viewUrl ? anchor ? viewUrl + "#" + anchor : viewUrl : "";
     const reportStatuses = [...new Set(reports.filter((rp) => rp.registered === true).map((rp) => rp.status).filter(Boolean))].sort();
     const reportTrusts = [...new Set(reports.filter((rp) => rp.registered === true).map((rp) => rp.trust).filter(Boolean))].sort();
-    const filteredReports = reports.filter((rp) => {
+    const filteredReports = sortReportsNewest(reports.filter((rp) => {
       const kind = _reportKind(rp);
       const query = reportQuery.trim().toLowerCase();
       return (!query || _reportSearchText(rp).includes(query)) && (reportType === "all" || kind === reportType) && (reportStatus === "all" || rp.status === reportStatus) && (reportTrust === "all" || rp.trust === reportTrust);
-    }).sort((a, b) => {
-      const at = Date.parse(a.generated_at || a.date || "") || 0;
-      const bt = Date.parse(b.generated_at || b.date || "") || 0;
-      return bt - at || String(a.path || "").localeCompare(String(b.path || ""));
-    });
+    }));
     const catalogReports = filteredReports;
     const visibleReports = catalogReports.slice(0, Math.min(reportLimit, 250));
     const exampleReport = reports.find((rp) => _reportKind(rp) === "run") || reports.find((rp) => _reportKind(rp) === "step") || null;
