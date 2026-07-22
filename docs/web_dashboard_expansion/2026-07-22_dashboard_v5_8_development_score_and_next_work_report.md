@@ -198,20 +198,20 @@ v5.7 감사에서 상태·데이터 진실성, History 확장성, 보고서 무�
 | 항목 | 결과 |
 |---|---|
 | 재시작 시각 | 2026-07-22 현재 작업 |
-| 실행 PID | `181324` |
+| 최종 부모 브랜치 실행 PID | `214964` (관측 시점 값) |
 | 주소 | `http://127.0.0.1:8770` |
 | `/health` | 200, contract v2 |
-| Bundle manifest | 200, 19.5ms |
-| `/runs?fields=slim` | 200, 139.6ms |
-| `/history/index?limit=50` | 200, cold 875.8ms |
-| `/research_docs?limit=100` | 200, 30.6ms |
-| `/reports` | 200, 558.3ms |
+| Bundle manifest | 200, 15.0ms |
+| `/runs?fields=slim` | 200, 149.1ms |
+| `/history/index?limit=50` | 200, cold 1,139.7ms |
+| `/research_docs?limit=100` | 200, 22.2ms |
+| `/reports` | 200, 475.8ms |
 | `/debug/logs` 미인증 | 401 |
 | Reports 브라우저 | v5.8.0, build 15c4c554, sandbox/no-referrer 정상 |
 | History 브라우저 | 선택 탭·campaign 내용 정상 |
 | Console/page error | 0 |
 
-운영 cold History는 이번 재시작에서 1초 예산 안에 들어왔지만 단일 관측치이므로 성능 증명으로 승격하지 않는다. 장시간 p95 계측 과제는 유지한다.
+운영 cold History는 재시작별 관측에서 875.8ms와 1,139.7ms로 변동해 단일 1초 예산을 안정적으로 만족한다고 볼 수 없다. 합성 scale gate는 통과하지만 실제 운영 p95 계측·cold-start 최적화 과제는 P1로 유지한다.
 
 ## 10. 최종 결론
 
