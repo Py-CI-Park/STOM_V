@@ -6,7 +6,7 @@
    isDemoSource 도 window 전역으로 소비한다. React 훅은 파일 고유 별칭(useMemo_pan)으로
    destructure 한다(단일 번들 dup-globals 가드).
 */
-const { useMemo: useMemo_pan } = React;
+const { useMemo: useMemo_pan, useState: useState_pan } = React;
 
 // ---- Cost / cumulative panel ----
 function CostPanel({ state, cap = 50000 }) {
@@ -150,6 +150,11 @@ function _cdScore(score) {
 function _CdPill({ label, tone = "info", title }) {
   return <span className={`condition-discovery-pill ${tone}`} title={title}>{label}</span>;
 }
+const _CD_TABS = [
+  { key: "policy", label: "정책·게이트", description: "생성의 허용 범위와 하드 게이트를 먼저 확인합니다." },
+  { key: "observability", label: "연구 관찰성", description: "연구 입력·분기·후보의 출처를 검토합니다." },
+  { key: "evidence", label: "증거 건전성", description: "저장 영수증과 차단 근거가 승격 판단을 지지하는지 확인합니다." },
+];
 
 function ConditionDiscoveryPanel({ state, wsStatus }) {
   const discovery = state.page_data?.condition_discovery;
@@ -157,6 +162,18 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
   const feedback = state.page_data?.condition_feedback;
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const [activeTab, setActiveTab] = useState_pan("policy");
+  const onTabKeyDown = (event) => {
+    const current = _CD_TABS.findIndex(tab => tab.key === activeTab);
+    let next = current;
+    if (event.key === "ArrowRight") next = (current + 1) % _CD_TABS.length;
+    else if (event.key === "ArrowLeft") next = (current - 1 + _CD_TABS.length) % _CD_TABS.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = _CD_TABS.length - 1;
+    else return;
+    event.preventDefault();
+    setActiveTab(_CD_TABS[next].key);
+  };
 
   if (!discovery) {
     return (
@@ -259,136 +276,142 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
           </div>
         </div>
 
-        {/* v5.4 L3 — 거버넌스 분리: 기술 상세는 접이식, 핵심(정책·게이트·점수)만 상시 노출 */}
-        <details className="evo-group v54-gov-fold">
-        <summary className="evo-group-summary"><div className="stom-section-label">연구 관찰성 · Research Pack 상세</div></summary>
-        <div className="condition-discovery-grid research-observability-grid" aria-label="Research Pack Branch Tree">
-          <section>
-            <h4>Research Pack / Branch Tree</h4>
-            <div className="condition-discovery-row">
-              <span>mode authority</span>
-              <b>{modeAuthority.generation_allowed === true ? "research generation allowed" : (modeAuthority.generation_allowed === false ? "zero-generation review" : "authority pending/blocked")}</b>
-              <small>{modeAuthority.process || discovery.current_process?.code || "process"} · {modeAuthority.preset || discovery.preset}</small>
-            </div>
-            <div className="condition-discovery-note">
-              context pack health: {contextPackHealth.status || "pending"} · budget≤{contextPackHealth.fail_closed_budget_tokens || 250000}
-            </div>
-            <div className="condition-discovery-pillrow">
-              {contextFields.map(field => <_CdPill key={field} label={field} tone="info" />)}
-            </div>
-            {branchTree.length > 0 && (
-              <ol className="condition-discovery-note" style={{ margin: "8px 0 0", paddingLeft: 18 }}>
-                {branchTree.map(step => (
-                  <li key={step.step}><b>{step.step}</b> → {step.output}</li>
-                ))}
-              </ol>
-            )}
-          </section>
-
-          <section>
-            <h4>Candidate pack · Analysis cards</h4>
-            <div className="condition-discovery-row">
-              <span>candidate pack</span>
-              <b>{candidatePack.recommended_candidates || "2-3+"}</b>
-              <small>min {candidatePack.min_candidates || 2} · fallback {candidatePack.fallback_source || "diagnostic fallback"}</small>
-            </div>
-            <div className="condition-discovery-pillrow">
-              {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" />)}
-            </div>
-            <div className="condition-discovery-row">
-              <span>analysis cards</span>
-              <b>{analysisCards.schema || "analysis_card_v2"}</b>
-              <small>{analysisFields.join(" · ") || "root cause / segment contribution / insight score"}</small>
-            </div>
-          </section>
-
-          <section>
-            <h4>Prompt receipts · Fallback</h4>
-            <div className="condition-discovery-row">
-              <span>prompt receipts</span>
-              <b>{promptReceipts.prompt_maturity_authority || "research_prompt_maturity_only"}</b>
-              <small>{promptFields.join(" · ") || "downstream official backtest result required"}</small>
-            </div>
-            <div className="condition-discovery-note">
-              fallback status: deterministic filter-only 후보는 diagnostic fallback으로만 표시되고 prompt maturity credit은 0입니다.
-            </div>
-          </section>
-
-          <section>
-            <h4>Promotion blockers</h4>
-            <div className="condition-discovery-row">
-              <span>promotion-review</span>
-              <b>{promotionBlockers.generation_allowed === false ? "zero generation" : "research only"}</b>
-              <small>{promotionBlockers.authority || "fresh/frozen holdout · OOS/WF · slippage advisory required"}</small>
-            </div>
-            <div className="condition-discovery-pillrow">
-              {blockerItems.length === 0 ? (
-                <_CdPill label="blockers pending" tone="info" />
-              ) : blockerItems.map(blocker => <_CdPill key={blocker} label={blocker} tone="danger" />)}
-            </div>
-          </section>
+        <div className="condition-discovery-tabs" role="tablist" aria-label="조건식 발굴 거버넌스 상세" onKeyDown={onTabKeyDown}>
+          {_CD_TABS.map(tab => (
+            <button key={tab.key} type="button" role="tab" id={`condition-discovery-tab-${tab.key}`}
+                    aria-selected={activeTab === tab.key} aria-controls={`condition-discovery-panel-${tab.key}`}
+                    tabIndex={activeTab === tab.key ? 0 : -1}
+                    className={"condition-discovery-tab" + (activeTab === tab.key ? " active" : "")}
+                    onClick={() => setActiveTab(tab.key)}>
+              {tab.label}
+            </button>
+          ))}
         </div>
-        </details>
-        <details className="evo-group v54-gov-fold">
-        <summary className="evo-group-summary"><div className="stom-section-label">증거 건전성 · 저장 · 부검 가설 상세</div></summary>
-
-        <div className="condition-discovery-grid">
-          <section>
-            <h4>Evidence health</h4>
-            <div className="condition-discovery-pillrow">
-              {evidenceRows.map(row => (
-                <_CdPill key={row.name}
-                         label={`${row.name}:${row.status}`}
-                         tone={row.blocker_reason ? "danger" : (row.status === "present" ? "success" : "info")}
-                         title={row.blocker_reason || (row.required ? "required" : "optional")} />
-              ))}
-            </div>
-            {blockedBy.length > 0 && (
-              <div className="condition-discovery-note danger">
-                authority blocked: {blockedBy.join(" · ")}
+        {_CD_TABS.map(tab => activeTab === tab.key && (
+          <section key={tab.key} id={`condition-discovery-panel-${tab.key}`} role="tabpanel"
+                   aria-labelledby={`condition-discovery-tab-${tab.key}`} className="condition-discovery-tabpanel">
+            <p className="condition-discovery-tab-intro">{tab.description}</p>
+            {tab.key === "policy" && (
+              <div className="condition-discovery-grid condition-discovery-policy-grid">
+                <section>
+                  <h4>정책 권한</h4>
+                  <div className="condition-discovery-row">
+                    <span>generation authority</span>
+                    <b>{modeAuthority.generation_allowed === true ? "research generation allowed" : (modeAuthority.generation_allowed === false ? "zero-generation review" : "authority pending/blocked")}</b>
+                    <small>{modeAuthority.process || discovery.current_process?.code || "process"} · {modeAuthority.preset || discovery.preset}</small>
+                  </div>
+                </section>
+                <section>
+                  <h4>하드 게이트</h4>
+                  <div className="condition-discovery-row">
+                    <span>MDD</span>
+                    <b>{mddGate.cap ?? "—"}%</b>
+                    <small>preset {mddGate.preset_cap ?? "—"} · configured {mddGate.configured_cap ?? "—"}</small>
+                  </div>
+                  <div className="condition-discovery-row">
+                    <span>minimum daily trades</span>
+                    <b>{tradeGate.value ?? "—"} / day</b>
+                    <small>{tradeGate.authority || "hard gate"}</small>
+                  </div>
+                </section>
               </div>
             )}
-          </section>
-
-          <section>
-            <h4>Prompt / Equity 저장</h4>
-            {persistenceRows.length === 0 ? (
-              <div className="condition-discovery-note">persistence rows pending</div>
-            ) : persistenceRows.map(row => (
-              <div className="condition-discovery-row" key={row.kind}>
-                <span>{row.kind}</span>
-                <b>{row.status}</b>
-                <small>{row.count == null ? "count unavailable" : `${row.count} records`}</small>
+            {tab.key === "observability" && (
+              <div className="condition-discovery-grid research-observability-grid" aria-label="Research Pack Branch Tree">
+                <section>
+                  <h4>Research Pack / Branch Tree</h4>
+                  <div className="condition-discovery-note">
+                    context pack health: {contextPackHealth.status || "pending"} · budget≤{contextPackHealth.fail_closed_budget_tokens || 250000}
+                  </div>
+                  <div className="condition-discovery-pillrow">
+                    {contextFields.map(field => <_CdPill key={field} label={field} tone="info" />)}
+                  </div>
+                  {branchTree.length > 0 && (
+                    <ol className="condition-discovery-note condition-discovery-branch-tree">
+                      {branchTree.map(step => <li key={step.step}><b>{step.step}</b> → {step.output}</li>)}
+                    </ol>
+                  )}
+                </section>
+                <section>
+                  <h4>Candidate pack · Analysis cards</h4>
+                  <div className="condition-discovery-row">
+                    <span>candidate pack</span>
+                    <b>{candidatePack.recommended_candidates || "2-3+"}</b>
+                    <small>min {candidatePack.min_candidates || 2} · fallback {candidatePack.fallback_source || "diagnostic fallback"}</small>
+                  </div>
+                  <div className="condition-discovery-pillrow">
+                    {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" />)}
+                  </div>
+                  <div className="condition-discovery-row">
+                    <span>analysis cards</span>
+                    <b>{analysisCards.schema || "analysis_card_v2"}</b>
+                    <small>{analysisFields.join(" · ") || "root cause / segment contribution / insight score"}</small>
+                  </div>
+                </section>
+                <section>
+                  <h4>Prompt receipts · Fallback</h4>
+                  <div className="condition-discovery-row">
+                    <span>prompt receipts</span>
+                    <b>{promptReceipts.prompt_maturity_authority || "research_prompt_maturity_only"}</b>
+                    <small>{promptFields.join(" · ") || "downstream official backtest result required"}</small>
+                  </div>
+                  <div className="condition-discovery-note">
+                    fallback status: deterministic filter-only 후보는 diagnostic fallback으로만 표시되고 prompt maturity credit은 0입니다.
+                  </div>
+                </section>
+                <section>
+                  <h4>Promotion blockers</h4>
+                  <div className="condition-discovery-row">
+                    <span>promotion-review</span>
+                    <b>{promotionBlockers.generation_allowed === false ? "zero generation" : "research only"}</b>
+                    <small>{promotionBlockers.authority || "fresh/frozen holdout · OOS/WF · slippage advisory required"}</small>
+                  </div>
+                  <div className="condition-discovery-pillrow">
+                    {blockerItems.length === 0 ? <_CdPill label="blockers pending" tone="info" /> : blockerItems.map(blocker => <_CdPill key={blocker} label={blocker} tone="danger" />)}
+                  </div>
+                </section>
               </div>
-            ))}
-          </section>
-
-          <section>
-            <h4>부검 hypothesis</h4>
-            {hypotheses.length === 0 ? (
-              <div className="condition-discovery-note">가정 환류 대기</div>
-            ) : hypotheses.slice(0, 3).map(row => (
-              <div className="condition-discovery-row" key={row.id}>
-                <span>{row.status}</span>
-                <b>{row.id}</b>
-                <small>{row.hypothesis}</small>
+            )}
+            {tab.key === "evidence" && (
+              <div className="condition-discovery-grid">
+                <section>
+                  <h4>Evidence health</h4>
+                  <div className="condition-discovery-pillrow">
+                    {evidenceRows.map(row => (
+                      <_CdPill key={row.name} label={`${row.name}:${row.status}`}
+                               tone={row.blocker_reason ? "danger" : (row.status === "present" ? "success" : "info")}
+                               title={row.blocker_reason || (row.required ? "required" : "optional")} />
+                    ))}
+                  </div>
+                  {blockedBy.length > 0 && <div className="condition-discovery-note danger">authority blocked: {blockedBy.join(" · ")}</div>}
+                </section>
+                <section>
+                  <h4>Prompt / Equity 저장</h4>
+                  {persistenceRows.length === 0 ? <div className="condition-discovery-note">persistence rows pending</div> : persistenceRows.map(row => (
+                    <div className="condition-discovery-row" key={row.kind}>
+                      <span>{row.kind}</span><b>{row.status}</b><small>{row.count == null ? "count unavailable" : `${row.count} records`}</small>
+                    </div>
+                  ))}
+                </section>
+                <section>
+                  <h4>부검 hypothesis</h4>
+                  {hypotheses.length === 0 ? <div className="condition-discovery-note">가정 환류 대기</div> : hypotheses.slice(0, 3).map(row => (
+                    <div className="condition-discovery-row" key={row.id}>
+                      <span>{row.status}</span><b>{row.id}</b><small>{row.hypothesis}</small>
+                    </div>
+                  ))}
+                </section>
+                <section>
+                  <h4>Human DB pattern cards</h4>
+                  <div className="condition-discovery-row">
+                    <span>cards</span><b>{patternCards.length}</b><small>{feedback?.pattern_cards?.authority || "creativity only"}</small>
+                  </div>
+                  <div className="condition-discovery-note">임계값·전체식·성과 복사는 anti-copy guard가 차단합니다.</div>
+                </section>
               </div>
-            ))}
+            )}
           </section>
-
-          <section>
-            <h4>Human DB pattern cards</h4>
-            <div className="condition-discovery-row">
-              <span>cards</span>
-              <b>{patternCards.length}</b>
-              <small>{feedback?.pattern_cards?.authority || "creativity only"}</small>
-            </div>
-            <div className="condition-discovery-note">
-              임계값·전체식·성과 복사는 anti-copy guard가 차단합니다.
-            </div>
-          </section>
-        </div>
-        </details>
+        ))}
       </div>
     </div>
   );

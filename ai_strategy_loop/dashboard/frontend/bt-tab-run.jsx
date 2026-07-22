@@ -624,6 +624,8 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
   const [editing, setEditing] = useState_bt("");      // 메타 편집 중인 job_id.
   const [tagDraft, setTagDraft] = useState_bt("");
   const [memoDraft, setMemoDraft] = useState_bt("");
+  const [visibleLimit, setVisibleLimit] = useState_bt(60);
+  useEffect_bt(() => { setVisibleLimit(60); }, [query, favOnly, tagFilter]);
 
   const openReport = (jobId) => {
     if (isDemo || !baseUrl || !jobId) return;
@@ -735,7 +737,7 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
               <div className="research-empty">{(jobs || []).length === 0 ? "실행 이력이 없습니다" : "조건에 맞는 결과 없음"}</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" }}>
-                {filtered.map(j => {
+                {filtered.slice(0, visibleLimit).map(j => {
                   const statusKind = j.status_kind || j.status;
                   const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
                   const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
@@ -827,6 +829,11 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                     </div>
                   );
                 })}
+                {filtered.length > visibleLimit && (
+                  <button className="btn ghost sm" onClick={() => setVisibleLimit(limit => Math.min(limit + 60, filtered.length))}>
+                    더 보기 · {visibleLimit}/{filtered.length}
+                  </button>
+                )}
               </div>
             )}
           </>

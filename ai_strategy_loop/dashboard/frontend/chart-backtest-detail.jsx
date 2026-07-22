@@ -572,7 +572,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   // ── 상단 보유종목수 sub-panel(STOM fig2 상단 대응) ──────────────────────
   //   동시보유 종목수(holdings: [{t_index,count}])를 이벤트(시각) 진행 축으로 계단
   //   라인 그린다. 보유금액(원)은 엔진 전용(CSV 미저장)이라 동시보유 종목수로 대체.
-  const HpH = 90;                              // 상단 패널 높이.
+  const HpH = 96;                              // compact holdings strip height.
   const hpPadT = 14, hpPadB = 18;              // 상하 패딩.
   const hpInnerH = HpH - hpPadT - hpPadB;
   // x축은 하단과 동일한 [padL, W-padR] 폭을 쓰되 holdings 이벤트 인덱스로 매핑.
@@ -636,11 +636,11 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const onLeave = () => setHover(null);
 
   return (
-    <div className="panel">
+    <div className="panel bt-backtest-detail bt-equal-card">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          백테 상세 — 동시보유 종목수 · 일별손익 · 누적수익곡선
+          백테 상세 — 부분 GUI 패리티 · 보유 · 일별손익 · 누적수익
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <LegendDot color="var(--teal)" label="동시보유 종목수" />
@@ -670,13 +670,14 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           </button>
         </div>
       </div>
-      <div className="panel-bd">
+      <div className="panel-bd bt-backtest-detail-body">
         <ChartFrame title="백테 상세" unit="일별 손익·누적 수익(원)"
           period={chartRows && chartRows.length ? `${chartRows[0].date} ~ ${chartRows[chartRows.length - 1].date}` : "기간 미발행"}
           sampleCount={chartRows ? chartRows.length : 0} freshness={loading ? "새로고침 중" : "선택 시 조회"}
           threshold="손익분기 0원 · 일자 정렬된 원본 행" source="/backtest_detail"
           rows={(chartRows || []).map(row => ({ evidence: "daily", ...row })).concat(holdings.map((holding, index) => ({ evidence: "holding", point_index: index, count: holding.count })))}
           status={detailStatus}>
+        <div className="bt-detail-summary-rail">
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="거래수" value={summary.trade_count != null ? String(summary.trade_count) : "—"} />
           <Mini label="거래일" value={summary.n_days != null ? String(summary.n_days) : "—"} />
@@ -699,6 +700,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           `DB max_hold_count=${dbMaxHold != null ? dbMaxHold : "-"}`,
           "period/timeframe are inherited from the selected run",
         ]} />
+        </div>
         {sparseHoldSuspicious && (
           <div className="research-empty danger" title="Sparse hold warning">
             Sparse hold warning: DB max_hold_count {dbMaxHold} differs from CSV peak_holdings {peakHoldings}.
@@ -710,7 +712,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
             보유금액(원)은 엔진 전용(CSV 미저장)이라 미표시, 동시보유 종목수로 대체.
             holdings(매수/매도시간 event-sweep)가 비면 이 패널은 생략한다(빈 상태). */}
         {!isDemo && !err && hasHoldings && (
-          <div style={{ marginBottom: 6 }}>
+          <div className="bt-detail-holdings-strip">
             <svg viewBox={`0 0 ${W} ${HpH}`} preserveAspectRatio="none"
                  style={{ width: "100%", height: HpH, display: "block" }}>
               {/* 프레임(좌·하) */}
@@ -745,7 +747,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           </div>
         )}
 
-        <div className="chart-wrap">
+        <div className="chart-wrap bt-detail-primary-chart">
           {isDemo ? (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
                           color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>

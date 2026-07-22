@@ -328,3 +328,21 @@ def test_capture_inventory_is_exactly_all_eight_unique_tabs() -> None:
         "context",
     ]
     assert len(module.VIEWS) == len(set(module.VIEWS)) == 8
+def test_v59_live_research_source_contracts() -> None:
+    live = (ROOT / "ai_strategy_loop/dashboard/frontend/v4-research.jsx").read_text(encoding="utf-8")
+    config = (ROOT / "ai_strategy_loop/dashboard/frontend/panels-config.jsx").read_text(encoding="utf-8")
+    analysis = (ROOT / "ai_strategy_loop/dashboard/frontend/panels-analysis.jsx").read_text(encoding="utf-8")
+
+    assert 'import { BtResultArea } from "./backtest-charts.jsx";' in live
+    assert "<BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={null}" in live
+    assert "evoSource={{ run_id: runId, gen_no: selectedGen }}" in live
+    assert "ResearchLabPanel" not in live
+    assert "stom_v6_stage_cols" not in live
+    assert "v59-stage-layout" in live
+    assert "active-strategy-code-columns" in config
+    assert "slice(0, limit)" not in config
+    assert "매수 복사" in config and "매도 복사" in config and "함께 복사" in config
+    assert 'role="tablist"' in analysis
+    assert 'role="tab"' in analysis
+    assert 'role="tabpanel"' in analysis
+    assert "onTabKeyDown" in analysis

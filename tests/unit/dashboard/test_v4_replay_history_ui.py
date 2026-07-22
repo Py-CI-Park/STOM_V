@@ -31,6 +31,9 @@ def test_replay_preserves_w2a_activation_boundary() -> None:
     assert "function V4Replay({ baseUrl, wsStatus, active })" in source
     assert "<SimulationTab baseUrl={baseUrl} wsStatus={wsStatus} active={active} />" in source
     assert "style={{" not in source
+    replay = _read("sim-tab-root.jsx")
+    assert 'if (active || status !== "playing") return;' in replay
+    assert '_wsSend({ action: "pause" });' in replay
 
 
 def test_history_names_archive_summary_compare_and_stale_states() -> None:
@@ -52,3 +55,44 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate}" in source
     assert "preferredResearchId={selResearch && selResearch.researchId}" in source
     assert "style={{" not in source
+def test_history_compare_and_condition_tree_are_immediately_usable() -> None:
+    history = _read("v4-history.jsx")
+    compare = _read("run-compare.jsx")
+    tree = _read("history-condition-tree.jsx")
+    records = _read("research-records-panel.jsx")
+
+    assert '<details className="evo-group" open' in history
+    assert 'import { BtResultArea } from "./backtest-charts.jsx";' in history
+    assert "<BtResultArea baseUrl={baseUrl} isDemo={wsStatus === \"demo\"} jobId={null} evoSource={selectedAnalysis} />" in history
+    assert "분석 닫기" in history
+    assert "호환되지" in history
+
+    assert "onSelectAnalysis" in compare
+    assert "분석 보기" in compare
+    assert "run-compare-viewport" in compare
+    assert "run-compare-sticky-header" in compare
+    assert "is-selected" in compare
+
+    assert "history-condition-index-viewport" in tree
+    assert "history-condition-sticky-header" in tree
+    assert "history-condition-detail-viewport" in tree
+    assert 'loadSection("stages", null);' in tree
+    assert "Research ID" in tree
+    assert "Series / Pair" in tree
+    assert "Gate count" in tree
+
+    assert "research-records-list-viewport" in records
+    assert "research-records-selected-detail" in records
+    assert "Research date" in records
+    assert "Artifacts" in records
+
+
+def test_history_condition_tree_uses_keyboard_operable_controls() -> None:
+    tree = _read("history-condition-tree.jsx")
+    css = _read("v4.css")
+
+    assert 'className="history-condition-row-button"' in tree
+    assert tree.count('className="history-condition-toggle" aria-expanded=') == 2
+    assert 'className="history-condition-sort"' in tree
+    assert '<tr key={row.research_id} style={{' in tree
+    assert '.history-condition-toggle:focus-visible' in css

@@ -29,7 +29,7 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.8.0";
+const V4_DASH_VERSION = "v5.9.0";
 // v5.6 U9 — 프론트엔드 로그 버퍼(설정 탭 로그 뷰어 소비): onerror + console.error 최근 200건.
 (function _initFeLogBuffer() {
   if (window.__stomFeLog) return;

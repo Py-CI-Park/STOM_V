@@ -273,6 +273,13 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const resumeReplay = () => { _wsSend({ action: "resume" }); setStatus("playing"); };
   const changeSpeed = (sp) => { setSpeed(sp); _wsSend({ action: "speed", value: sp }); };
 
+  // 숨겨진 탭에서 리플레이가 계속 소비되지 않도록 탭 이탈 즉시 안전하게 일시정지한다.
+  useEffect_sim(() => {
+    if (active || status !== "playing") return;
+    _wsSend({ action: "pause" });
+    setStatus("paused");
+  }, [active, status]);
+
 
   const seekByIndex = (idx) => {
     setCursor(idx);

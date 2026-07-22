@@ -185,6 +185,8 @@ def test_result_by_run_gen_csv_missing_abbreviated(client: TestClient, tmp_path:
     assert body["has_csv"] is False
     # CSV 부재 → generations 행 메트릭 요약 + 빈 분석(차트 없음, 무예외).
     assert body["metrics"]["total_profit_krw"] == -5000.0
+    assert body["metrics"]["max_drawdown_pct"] == 12.0
+    assert body["artifact_state"] == "metrics_only_csv_missing"
     assert body["analysis"]["summary"]["trade_count"] == 0
     assert "message" in body
 

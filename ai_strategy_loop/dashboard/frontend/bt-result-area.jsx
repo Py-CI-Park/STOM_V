@@ -8,10 +8,11 @@
      로 남아 load() 호출 시점에 `ReferenceError: _btFetchJson is not defined` 가 발생한다.
 */
 import {
-  useState_btc, useEffect_btc, useCallback_btc,
+  useState_btc, useEffect_btc, useCallback_btc, useRef_btc,
   _btDateLabel, _btDownloadAnalysisCsv, _useCountUp, _BtArcGauge, _BtSparkline,
 } from "./bt-chart-utils.jsx";
 import { _btFetchJson } from "./bt-tab-utils.jsx";
+import { btRequestIsCurrent, btMetricValue } from "./bt-request-guard.mjs";
 import {
   BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCumulativeTradesChart,
 } from "./bt-equity-charts.jsx";
@@ -49,6 +50,9 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const [mcLoading, setMcLoading] = useState_btc(false);
   // 전체화면 분석 모드(트랙 D) — position:fixed 오버레이. Esc 로 닫기.
   const [fullscreen, setFullscreen] = useState_btc(false);
+  const resultRequestRef = useRef_btc({ seq: 0, controller: null });
+  const mcRequestRef = useRef_btc({ seq: 0, controller: null });
+  const sourceKeyRef = useRef_btc("");
 
   // Esc 키로 전체화면 닫기 + 배경 스크롤 잠금(전체화면 동안만).
   useEffect_btc(() => {
@@ -70,7 +74,18 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
 
   const load = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !hasSource) { setResult(null); return; }
+    const requestState = resultRequestRef.current;
+    if (requestState.controller) requestState.controller.abort();
+    if (isDemo || !baseUrl || !hasSource) {
+      requestState.controller = null;
+      setResult(null);
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const seq = requestState.seq + 1;
+    resultRequestRef.current = { seq, controller };
+    const expectedKey = sourceKey;
     setLoading(true); setErr("");
     let url;
     if (jobId) {
@@ -80,27 +95,62 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id)
           + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
     }
-    _btFetchJson(url, 8000)
-      .then(j => { setResult(j); if (!(j && j.available)) setErr("결과를 찾을 수 없습니다"); })
-      .catch(e => { setResult(null); setErr(String(e)); })
-      .finally(() => setLoading(false));
+    _btFetchJson(url, 8000, controller.signal)
+      .then(j => {
+        if (!btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setResult(j);
+        if (!(j && j.available)) setErr("결과를 찾을 수 없습니다");
+      })
+      .catch(e => {
+        if (!btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setResult(null); setErr(String(e));
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setLoading(false);
+      });
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
   // 몬테카를로 재계산(현재 구간 반영). 잡 전용 — 진화 세대는 스킵. 무예외.
   const loadMc = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !jobId) { setMc(null); return; }
+    const requestState = mcRequestRef.current;
+    if (requestState.controller) requestState.controller.abort();
+    if (isDemo || !baseUrl || !jobId) {
+      requestState.controller = null;
+      setMc(null);
+      setMcLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const seq = requestState.seq + 1;
+    mcRequestRef.current = { seq, controller };
+    const expectedKey = sourceKey;
     setMcLoading(true);
     let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
     if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
-    _btFetchJson(url, 12000)
-      .then(j => setMc((j && j.montecarlo) || null))
-      .catch(() => setMc(null))
-      .finally(() => setMcLoading(false));
-  }, [baseUrl, isDemo, jobId, range]);
+    _btFetchJson(url, 12000, controller.signal)
+      .then(j => {
+        if (!btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setMc((j && j.montecarlo) || null);
+      })
+      .catch(() => {
+        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMc(null);
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
+      });
+  }, [baseUrl, isDemo, jobId, sourceKey, range]);
 
+  useEffect_btc(() => {
+    sourceKeyRef.current = sourceKey;
+    setResult(null); setErr(""); setRange(null); setMc(null);
+    if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
+    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
+  }, [sourceKey]);
   useEffect_btc(() => { load(); }, [load]);
-  // 소스(잡/세대)가 바뀌면 구간 선택·몬테카를로 초기화.
-  useEffect_btc(() => { setRange(null); setMc(null); }, [sourceKey]);
+  useEffect_btc(() => () => {
+    if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
+    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
+  }, []);
   // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
   useEffect_btc(() => {
     if (jobId && result && result.available && result.status !== "no_trades") { loadMc(); }
@@ -202,16 +252,31 @@ const analysis = result.analysis || {};
 // 메트릭 우선순위: CLI metrics(브리핑 필드) → 없으면 analysis.summary 매핑.
 const metrics = result.metrics || {};
 const summary = analysis.summary || {};
-const metricVal = (key) => {
-  if (metrics[key] != null) return metrics[key];
-  // analysis.summary 폴백 매핑(cagr 은 summary 에 없음).
-  const map = {
-    trade_count: summary.trade_count, win_rate: summary.win_rate,
-    total_profit_pct: summary.total_profit_pct, total_profit_krw: summary.total_profit_krw,
-    mdd_pct: summary.max_drawdown_pct, cagr: undefined,
-  };
-  return map[key];
-};
+const metricVal = (key) => btMetricValue(metrics, summary, key);
+const metricsOnly = result.has_csv === false || result.artifact_state === "metrics_only_csv_missing";
+if (metricsOnly) {
+  return (
+    <div className="panel bt-result-metrics-only" role="status">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>메트릭 요약 · 차트 증거 없음</div>
+        <span className="badge warn">CSV 없음</span>
+      </div>
+      <div className="panel-bd">
+        <p className="bt-section-purpose">{result.message || "결과 CSV가 없어 저장된 세대 메트릭만 표시합니다. 차트와 상세 분석은 제공하지 않습니다."}</p>
+        <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}>
+          {_BT_METRIC_CARDS.map(meta => {
+            const value = metricVal(meta.key);
+            const num = typeof value === "number" && Number.isFinite(value) ? value : null;
+            return <_BtMetricCard key={meta.key} meta={meta} num={num} dailyPnl={[]} />;
+          })}
+        </div>
+        <div className="mono" style={{ marginTop: 10, color: "var(--ink-3)" }}>
+          artifact={result.artifact_state || "metrics_only"} · evidence={result.evidence_id || "없음"}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const distribution = analysis.distribution || {};
 const insights = analysis.insights || [];
@@ -222,7 +287,14 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div className="bt-result-flow" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+  <div className="bt-result-flow bt-result-grid-12" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <section className="bt-result-section bt-result-summary" aria-labelledby="bt-result-summary-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-summary-title" className="stom-section-label">결과 요약</div>
+          <p className="bt-section-purpose">조건식, 기간, 표본 내 advisory와 핵심 지표를 한 곳에서 확인합니다.</p>
+        </div>
+      </div>
     {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
     {(() => {
       const spec = result.spec || {};
@@ -278,7 +350,7 @@ return (
     )}
 
     {/* 메트릭 카드 행 — 카운트업 + 게이지 */}
-    <div className="panel">
+    <div className="panel bt-equal-card">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: isEvo ? "var(--violet)" : "var(--teal)" }}></span>
@@ -322,63 +394,76 @@ return (
         })}
       </div>
     </div>
+    </section>
 
-    {/* A/B 비교 뷰(활성 시 최상단) */}
-    {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
-
-    {/* 차트 — 수익곡선(인터랙션+브러시) → 분포 → 히트맵 → 언더워터 → MAE/MFE → 매도조건 */}
-    <BtEquityChart equity={analysis.equity} onBrush={onBrush}
-                   brushActive={!!range} onBrushClear={onBrushClear} />
-    <BtDistributionChart distribution={distribution} />
-    <BtHeatmap heatmap={analysis.heatmap} />
-    <BtUnderwaterChart underwater={analysis.underwater} />
-    <BtMaeMfeScatter points={analysis.mae_mfe} />
-    {/* v5.4 B1 — 퀀트 인사이트(다차원 회귀·자기상관·보유시간 회귀·요일 구조) */}
-    <BtQuantPanel analysis={analysis} />
-    <BtExitReasonPanel rows={analysis.exit_reasons} />
-
-    {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
-    <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
-    <BtOrderflowPanel orderflow={orderflow} />
-    <BtStatTestPanel stats={stats} />
-
-    {/* B3 — GUI 패리티(v5.3.7 검수: 6,969px 세로 점유 → 기본닫힘 fold 격하, 내용 불변) */}
-    <details className="evo-group bt-flow-full" open={false}>
-      <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사(클릭 펼침)</div></summary>
-      <div className="evo-group-body">
-        <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+    <section className="bt-result-section bt-result-primary" aria-labelledby="bt-result-primary-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-primary-title" className="stom-section-label">핵심 결과</div>
+          <p className="bt-section-purpose">누적 수익 경로와 손익 분포를 먼저 검토합니다. 드래그하면 구간 분석을 적용합니다.</p>
+        </div>
       </div>
-    </details>
+      {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
+      <div className="bt-primary-chart-grid bt-equal-card-grid">
+        <BtEquityChart equity={analysis.equity} onBrush={onBrush}
+                       brushActive={!!range} onBrushClear={onBrushClear} />
+        <BtDistributionChart distribution={distribution} />
+      </div>
+    </section>
 
-    {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
-    <details className="bt-extra-charts" open={false}>
-      <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
-        ▸ 추가 분석 그래프 — 롤링 지표 · 월별 캘린더 · 누적 거래 (전체화면 권장)
-      </summary>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+    <section className="bt-result-section bt-result-evidence" aria-labelledby="bt-result-evidence-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-evidence-title" className="stom-section-label">위험 · 경로 증거</div>
+          <p className="bt-section-purpose">MDD 무작위화와 GUI 결과 이미지의 부분 패리티를 기본 흐름에서 확인합니다.</p>
+        </div>
+      </div>
+      <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
+    </section>
+
+    <section className="bt-result-section bt-result-diagnostics" aria-labelledby="bt-result-diagnostics-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-diagnostics-title" className="stom-section-label">진단</div>
+          <p className="bt-section-purpose">손실 구간, 거래 품질, 실행 흐름과 cadence를 교차 확인합니다.</p>
+        </div>
+      </div>
+      <div className="bt-diagnostic-grid bt-equal-card-grid">
+        <BtHeatmap heatmap={analysis.heatmap} />
+        <BtUnderwaterChart underwater={analysis.underwater} />
+        <BtMaeMfeScatter points={analysis.mae_mfe} />
+        <BtQuantPanel analysis={analysis} />
+        <BtExitReasonPanel rows={analysis.exit_reasons} />
+        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+        <BtOrderflowPanel orderflow={orderflow} />
+        <BtStatTestPanel stats={stats} />
         <BtRollingChart rolling={analysis.rolling} />
         <BtMonthlyCalendar monthly={analysis.monthly} />
-        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-      </div>
-    </details>
-
-    {/* 종목 기여 Top/Bottom */}
-    {(topC.length > 0 || botC.length > 0) && (
-      <div className="panel">
-        <div className="panel-hd">
-          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
+        <div className="bt-cadence-diagnostic">
+          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
         </div>
-        <div className="panel-bd">
-          <div className="row-2">
-            <BtContribTable title="상위 기여" rows={topC} />
-            <BtContribTable title="하위 기여" rows={botC} />
+      </div>
+    </section>
+
+    {(topC.length > 0 || botC.length > 0) && (
+      <section className="bt-result-section bt-result-evidence bt-contributor-evidence" aria-label="종목 기여 증거">
+        <div className="panel bt-equal-card">
+          <div className="panel-hd">
+            <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
+          </div>
+          <div className="panel-bd">
+            <div className="row-2">
+              <BtContribTable title="상위 기여" rows={topC} />
+              <BtContribTable title="하위 기여" rows={botC} />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     )}
 
-    {/* 인사이트 패널 */}
-    <BtInsightsPanel insights={insights} />
+    <section className="bt-result-section bt-result-evidence" aria-label="분석 인사이트">
+      <BtInsightsPanel insights={insights} />
+    </section>
 
     {/* 전체화면 분석 모드 오버레이(트랙 D) — position:fixed 풀스크린, 2~3컬럼 그리드 */}
     {fullscreen && (

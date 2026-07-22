@@ -10,13 +10,13 @@ import { SimulationTab } from "./simulation.jsx";
 function V4Replay({ baseUrl, wsStatus, active }) {
   const replayReady = wsStatus === "open" || wsStatus === "demo";
   const replayConnecting = wsStatus === "connecting" || wsStatus === "reconnecting";
+  const availability = replayReady ? "available" : replayConnecting ? "checking" : "unavailable";
   const connectionLabel = wsStatus === "open"
-    ? "Replay 서버 연결됨 · 재생 제어 사용 가능"
+    ? "사용 가능 · 연결된 Replay 표면"
     : wsStatus === "demo"
-      ? "예시 데이터 · 운영 재생과 분리됨"
-      : wsStatus === "reconnecting"
-        ? "연결 끊김 · 재연결 중 · 재생 제어 비활성"
-        : "Replay 서버 연결 중 · 재생 제어 비활성";
+      ? "예시 데이터 표면 · 운영 재생과 분리됨"
+      : replayConnecting ? "준비 상태 확인 중 · 제어 가능 여부는 아래 표면에서 결정됩니다"
+        : "현재 사용 불가 · 연결 상태가 준비되지 않았습니다";
 
   return (
     <div className="v4-replay">
@@ -24,7 +24,7 @@ function V4Replay({ baseUrl, wsStatus, active }) {
         <header className="panel-hd">
           <div>
             <div className="stom-section-label" id="v4-replay-journey-title">Replay 작업 흐름</div>
-            <div className="mono">실제 시장 시각을 보존하는 프레임 단위 재생</div>
+            <div className="mono">실제 시장 시각과 프레임 타임스탬프를 보존하는 프레임 단위 재생</div>
           </div>
         </header>
         <div className="panel-bd">
@@ -44,8 +44,9 @@ function V4Replay({ baseUrl, wsStatus, active }) {
           </div>
           <p className="mono" aria-live="polite">{connectionLabel}</p>
           <p className="mono" id="v4-replay-time-contract">
-            진행 위치는 실제 시장 시각과 프레임 타임스탬프 기준입니다. 장 마감 공백을 숫자로 보간하지 않습니다.
+            목적: 기록된 시장 시계열과 신호를 검토하는 읽기 중심 Replay 진입점입니다. 이 래퍼는 데이터 가용성, 재생 제어 또는 결과를 보장하지 않으며 아래 기존 표면의 실제 상태만 표시합니다.
           </p>
+          <p className="mono" role="status">가용성 계약: {availability} · websocket={wsStatus || "unknown"}</p>
         </div>
       </section>
       <section

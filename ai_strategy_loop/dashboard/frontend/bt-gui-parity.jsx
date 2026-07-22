@@ -14,7 +14,7 @@ function BtMddRandomChart({ data }) {
   const d = data || {};
   const curves = d.curves || [];
   const actual = d.actual || [];
-  const W = 880, H = 260;
+  const W = 880, H = 320;
   const padL = 58, padR = 24, padT = 18, padB = 26;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -87,7 +87,7 @@ function BtDailyPnlChart({ data }) {
   const series = d.series || [];
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
-  const W = 880, H = 260;
+  const W = 880, H = 320;
   const padL = 58, padR = 62, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -194,7 +194,7 @@ function BtDailyPnlChart({ data }) {
 function BtHourlyPnlChart({ data }) {
   const slots = (data && data.slots) || [];
   const [hover, setHover] = useState_btc(null);
-  const W = 880, H = 240;
+  const W = 880, H = 320;
   const padL = 58, padR = 24, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -272,7 +272,7 @@ function BtHourlyPnlChart({ data }) {
 // 이미지1-(d) 요일별 손익 — 요일별 이익/손실 부호 막대.
 function BtWeekdayPnlChart({ data }) {
   const days = (data && data.days) || [];
-  const W = 560, H = 240;
+  const W = 560, H = 320;
   const padL = 58, padR = 24, padT = 18, padB = 28;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -341,7 +341,7 @@ function BtHoldingCurveChart({ data }) {
   const series = d.series || [];
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
-  const W = 880, H = 240;
+  const W = 880, H = 320;
   const padL = 64, padR = 24, padT = 18, padB = 28;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -424,7 +424,7 @@ function BtTradeRollingChart({ data }) {
   const windows = d.windows || [20, 60, 120, 240, 480];
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
-  const W = 880, H = 280;
+  const W = 880, H = 320;
   const padL = 60, padR = 24, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -531,34 +531,64 @@ function BtTradeRollingChart({ data }) {
   );
 }
 
-// GUI 패리티 섹션 — 6 차트를 묶어 결과 분석 영역·전체화면에 배치(접이식 헤더 포함 선택).
+// GUI 패리티 진단 — 원본 GUI 이미지의 근사이며, 결과 증거를 대체하지 않는다.
 function BtGuiParitySection({ guiParity, columns, layoutMode }) {
   const gp = guiParity || {};
   const largeOneColumn = layoutMode === "large-one-column";
-  const grid = columns === 2 && !largeOneColumn;
-  const layoutLabel = largeOneColumn ? "Evolution large one-column · 6 stacked graphs" : "부가정보 2×2 · 결과 2×1";
+  const layoutClass = largeOneColumn ? " bt-gui-parity-large" : (columns === 2 ? " bt-gui-parity-wide" : "");
+  const groups = [
+    {
+      key: "risk",
+      title: "위험 · 경로",
+      purpose: "거래 순서가 MDD와 누적 경로에 미치는 영향을 확인합니다.",
+      charts: [
+        <BtMddRandomChart key="mdd-random" data={gp.mdd_random} />,
+        <BtDailyPnlChart key="daily" data={gp.daily} />,
+      ],
+    },
+    {
+      key: "timing",
+      title: "타이밍",
+      purpose: "시간대와 요일별 손익 편향을 확인합니다.",
+      charts: [
+        <BtHourlyPnlChart key="hourly" data={gp.hourly} />,
+        <BtWeekdayPnlChart key="weekday" data={gp.weekday} />,
+      ],
+    },
+    {
+      key: "holding-trade",
+      title: "보유 · 거래",
+      purpose: "보유 원금 노출과 거래 순서별 손익의 cadence를 확인합니다.",
+      charts: [
+        <BtHoldingCurveChart key="holding" data={gp.holding} />,
+        <BtTradeRollingChart key="trade-rolling" data={gp.trade_rolling} />,
+      ],
+    },
+  ];
   return (
-    <div className={"panel" + (largeOneColumn ? " bt-gui-parity-large" : "")}>
-      <div className="panel-hd">
-        <div className="panel-hd-title">
-          <span className="dot" style={{ background: "var(--amber)" }}></span>
-          GUI 패리티 — STOM 백테스트 결과 이미지 2장
+    <section className={"bt-gui-parity-section bt-result-evidence" + layoutClass}
+             aria-label="부분 GUI 패리티 진단">
+      <div className="bt-section-heading">
+        <div>
+          <div className="stom-section-label">부분 GUI 패리티 진단</div>
+          <p className="bt-section-purpose">STOM 결과 이미지의 읽기 전용 근사입니다. 원본 거래·분석 증거는 그대로 유지됩니다.</p>
         </div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>{layoutLabel}</span>
+        <span className="mono bt-parity-provenance">partial GUI parity · 6 diagnostics</span>
       </div>
-      <div className="panel-bd">
-        <div style={grid
-          ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 }
-          : { display: "flex", flexDirection: "column", gap: largeOneColumn ? 18 : 14 }}>
-          <BtMddRandomChart data={gp.mdd_random} />
-          <BtDailyPnlChart data={gp.daily} />
-          <BtHourlyPnlChart data={gp.hourly} />
-          <BtWeekdayPnlChart data={gp.weekday} />
-          <BtHoldingCurveChart data={gp.holding} />
-          <BtTradeRollingChart data={gp.trade_rolling} />
-        </div>
+      <div className="bt-gui-parity-groups">
+        {groups.map(group => (
+          <section key={group.key} className={"bt-gui-parity-group bt-gui-parity-" + group.key}>
+            <div className="bt-gui-parity-group-hd">
+              <strong>{group.title}</strong>
+              <span>{group.purpose}</span>
+            </div>
+            <div className="bt-gui-parity-cards bt-equal-card-grid">
+              {group.charts}
+            </div>
+          </section>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
 
