@@ -236,6 +236,26 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
         }));
       });
   }, [baseUrl, isDemo, selectedId]);
+  useEffect_hct(() => {
+    if (!selectedId || !sections.research || sections.research.loading || sections.research.err || sections.stages) return;
+    loadSection("stages", null);
+  }, [selectedId, sections.research, sections.stages, loadSection]);
+
+  useEffect_hct(() => {
+    const rows = sections.stages && sections.stages.rows;
+    if (!rows || !rows.length) return;
+    const firstStageId = rows[0].stage_id;
+    setExpandedStages(prev => prev[firstStageId] ? prev : { ...prev, [firstStageId]: true });
+    if (!sections.conditions) loadSection("conditions", null);
+  }, [sections.stages, sections.conditions, loadSection]);
+
+  useEffect_hct(() => {
+    const rows = sections.conditions && sections.conditions.rows;
+    if (!rows || !rows.length) return;
+    const firstConditionId = rows[0].condition_id;
+    setExpandedConditions(prev => prev[firstConditionId] ? prev : { ...prev, [firstConditionId]: true });
+    if (!sections.evaluations) loadSection("evaluations", null);
+  }, [sections.conditions, sections.evaluations, loadSection]);
 
   const toggleStage = useCallback_hct((stageId) => {
     setExpandedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
@@ -307,11 +327,14 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
             )}
             {!indexErr && items.length === 0 && !indexLoading && <div className="research-empty">기록 없음</div>}
             {items.length > 0 && (
-              <div style={{ overflowX: "auto" }}>
+              <div className="history-condition-index-viewport" data-region="scroll" tabIndex={0} aria-label="조건식 History 연구 색인">
                 <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-                  <thead>
+                  <thead className="history-condition-sticky-header">
                     <tr style={{ color: "var(--ink-3)" }}>
+                      <th style={{ textAlign: "left", padding: "6px 8px" }}>Research ID</th>
                       <th style={{ textAlign: "left", padding: "6px 8px" }}>Label</th>
+                      <th style={{ textAlign: "left", padding: "6px 8px" }}>Series / Pair</th>
+                      <th style={{ textAlign: "right", padding: "6px 8px" }}>Gate count</th>
                       <th style={{ textAlign: "left", padding: "6px 8px" }}>Source</th>
                       <th style={{ textAlign: "right", padding: "6px 8px" }}>Stages</th>
                       <th style={{ textAlign: "right", padding: "6px 8px" }}>Conditions</th>
@@ -330,24 +353,14 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                           background: active ? "rgba(159,180,255,0.08)" : "transparent",
                           cursor: "pointer",
                         }} onClick={() => selectResearch(row.research_id)}>
+                          <td className="mono" style={{ padding: "7px 8px", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{row.research_id}</td>
                           <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                             <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</div>
-                            {(row.series || row.ab_role || (row.gate_passed_count > 0)) && (
-                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 3 }}>
-                                {row.series && (
-                                  <span className="badge" title="series">{row.series}</span>
-                                )}
-                                {row.ab_role && row.ab_role.pair && (
-                                  <span className="badge" title="A/B 역할(pair·arm)">
-                                    {row.ab_role.pair}{row.ab_role.arm ? "\u00b7" + row.ab_role.arm : ""}
-                                  </span>
-                                )}
-                                {row.gate_passed_count > 0 && (
-                                  <span className="badge ok" title="gate 통과 세대수">gate {row.gate_passed_count}</span>
-                                )}
-                              </div>
-                            )}
                           </td>
+                          <td style={{ padding: "7px 8px" }}>
+                            {(row.series || (row.ab_role && row.ab_role.pair)) ? [row.series, row.ab_role && row.ab_role.pair].filter(Boolean).join(" / ") : "-"}
+                          </td>
+                          <td style={{ padding: "7px 8px", textAlign: "right" }}>{_hctNum(row.gate_passed_count)}</td>
                           <td style={{ padding: "7px 8px", color: "var(--ink-2)" }}>{row.source_kind || "-"}</td>
                           <td style={{ padding: "7px 8px", textAlign: "right" }}>{_hctNum(counts.stages)}</td>
                           <td style={{ padding: "7px 8px", textAlign: "right" }}>{_hctNum(counts.conditions)}</td>
@@ -380,7 +393,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                     {sections.stages && sections.stages.loading ? "로딩…" : "Stages 로드"}
                   </button>
                 </div>
-                <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="panel-bd history-condition-detail-viewport" data-region="scroll" tabIndex={0} aria-label="선택 연구 조건식 상세" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {sections.research && sections.research.err && (
                     <div className="research-empty danger">
                       {sections.research.err}
@@ -407,7 +420,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                           <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{stage.stage_id}</span>
                         </div>
                         {stageOpen && (
-                          <div style={{ marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+                          <div className="history-condition-tree-viewport" style={{ marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
                             {sections.conditions && sections.conditions.err && (
                               <div className="research-empty danger">
                                 {sections.conditions.err}
@@ -441,7 +454,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                                     )}
                                   </div>
                                   {condOpen && (
-                                    <div style={{ marginTop: 6, marginLeft: 18 }}>
+                                    <div className="history-condition-code-viewport" style={{ marginTop: 6, marginLeft: 18 }}>
                                       {sections.evaluations && sections.evaluations.err && (
                                         <div className="research-empty danger">
                                           {sections.evaluations.err}
@@ -473,7 +486,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                     {sortedEvaluations.length === 0 ? (
                       <div className="research-empty">evaluation 로드 후 표시됩니다 (조건 노드를 펼치세요)</div>
                     ) : (
-                      <div style={{ overflowX: "auto" }}>
+                      <div className="history-condition-evaluation-viewport" data-region="scroll" tabIndex={0} aria-label="조건식 평가 이력">
                         <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
                           <thead>
                             <tr style={{ color: "var(--ink-3)" }}>

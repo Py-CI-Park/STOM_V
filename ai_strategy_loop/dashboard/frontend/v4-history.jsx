@@ -11,6 +11,7 @@ import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx
 import { AuditDecisionTrace } from "./v4-audit.jsx";
 import { ResearchIndexPage, VerdictPanel } from "./dashboard-pages.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
+import { BtResultArea } from "./backtest-charts.jsx";
 const { useState: useState_v4h, useEffect: useEffect_v4h } = React;
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
@@ -23,12 +24,16 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       ? prev
       : { name, researchId, meta: meta || (prev && prev.researchId === researchId ? prev.meta : null) });
   };
+  const [selectedAnalysis, setSelectedAnalysis] = useState_v4h(null);
+  const onSelectAnalysis = (selection) => {
+    if (selection && selection.run_id && selection.gen_no != null) setSelectedAnalysis(selection);
+  };
   // L10: 재연결 문구 깜빡임 디바운스 — reconnecting 이 2초 지속될 때만 경고 문구 표시.
-  // v5.4 H1 — 무거운 하위 섹션 lazy-mount: 접힘 상태에서는 fetch/렌더 자체를 하지 않는다.
-  //   (색인 /research_index 는 대용량 — 탭 진입 즉시 로드가 히스토리 렌더 정지의 원인이었다)
+  // 대용량 색인·거버넌스·시각화 근거는 접힌 동안 마운트하지 않는다.
   const [indexOpen, setIndexOpen] = useState_v4h(false);
   const [govOpen, setGovOpen] = useState_v4h(false);
-  const [cmpOpen, setCmpOpen] = useState_v4h(false);
+  const [cmpOpen, setCmpOpen] = useState_v4h(true);
+  const [treeOpen, setTreeOpen] = useState_v4h(true);
   const [vizOpen, setVizOpen] = useState_v4h(false);
   const [stableWs, setStableWs] = useState_v4h(wsStatus);
   useEffect_v4h(() => {
@@ -90,28 +95,48 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       )}
       <section aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약</h2>
+        <p className="v4-history-feature-copy">목적: 기록의 출처와 후보를 고정합니다. 방법: 캠페인을 선택해 상세를 확인하세요. 필요성: 이후 비교는 선택된 읽기 전용 근거를 기준으로 합니다.</p>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
           <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} onSelectCampaign={onSelectCampaign} />
         </div>
       </section>
 
-      {/* v5.6 U7 — 진입 비용 절감: Compare·계보 시각화는 lazy fold(열 때만 fetch/마운트). */}
-      <details className="evo-group" onToggle={(e) => setCmpOpen(e.currentTarget.open)}>
+      {/* Compare와 조건식 트리는 즉시 열고, 대용량 시각화 근거는 필요할 때만 마운트한다. */}
+      <details className="evo-group" open onToggle={(e) => setCmpOpen(e.currentTarget.open)}>
         <summary className="evo-group-summary">
-          <h2 className="stom-section-label">Run Compare · A/B 비교 (클릭 시 로드)</h2>
+          <h2 className="stom-section-label">Run Compare · A/B 비교</h2>
         </summary>
         <div className="evo-group-body" data-region="scroll" tabIndex={0}>
-          {cmpOpen && <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />}
+          <p className="v4-history-feature-copy">목적: run의 성과와 winner 세대를 같은 기준으로 비교합니다. 방법: 최대 6개 run을 선택하고 ‘분석 보기’를 누르세요. 필요성: <b>campaign 연구 ID는 호환되지 않으며</b> Run Compare는 loop_run만 사용합니다.</p>
+          {cmpOpen && <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} onSelectAnalysis={onSelectAnalysis} />}
+          {selectedAnalysis && (
+            <section className="v4-history-analysis" aria-label="선택한 run winner 분석">
+              <div className="v4-history-analysis-head">
+                <span className="mono">{selectedAnalysis.run_id} / gen {selectedAnalysis.gen_no}</span>
+                <button className="btn ghost sm" onClick={() => setSelectedAnalysis(null)}>분석 닫기</button>
+              </div>
+              <BtResultArea baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
+            </section>
+          )}
+        </div>
+      </details>
+      <details className="evo-group" open onToggle={(e) => setTreeOpen(e.currentTarget.open)}>
+        <summary className="evo-group-summary">
+          <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리</h2>
+        </summary>
+        <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리 영역">
+          <p className="v4-history-feature-copy">목적: 조건식 계보와 평가 흔적을 탐색합니다. 방법: research ID를 선택해 단계와 조건을 펼치세요. 필요성: <b>loop_run과 campaign ID는 서로 호환되지 않는 경우가 있어</b> 서버가 허용한 기록만 표시합니다.</p>
+          {treeOpen && <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />}
         </div>
       </details>
       <details className="evo-group" onToggle={(e) => setVizOpen(e.currentTarget.open)}>
         <summary className="evo-group-summary">
-          <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리 · A/B · 셀 히트맵 · 홀드아웃 퍼널 (클릭 시 로드)</h2>
+          <h2 className="stom-section-label">A/B · 셀 히트맵 · 홀드아웃 퍼널 (클릭 시 로드)</h2>
         </summary>
-        <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리와 연구 시각화 영역">
+        <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 대용량 시각화 근거 영역">
+          <p className="v4-history-feature-copy">목적: A/B와 홀드아웃 근거를 교차 확인합니다. 방법: 트리 검토 뒤 필요할 때만 펼치세요. 필요성: 대용량 증거는 lazy 로드하며 호환되지 않는 research ID를 추정 결합하지 않습니다.</p>
           {vizOpen && (
             <React.Fragment>
-              <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
               <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
               <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
               <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
@@ -127,6 +152,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거 (클릭 시 로드)</h2>
         </summary>
         <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역" aria-busy={historyLoading}>
+          <p className="v4-history-feature-copy">목적: 대량 연구 기록의 상세 근거를 찾습니다. 방법: 필요할 때만 펼쳐 검색하세요. 필요성: 색인은 무겁고, 호환되지 않는 research ID는 독립 조회로 남습니다.</p>
           {indexOpen && <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} initialQuery={selResearch ? selResearch.researchId : ""} preferredResearchId={selResearch && selResearch.researchId} />}
         </div>
       </details>
@@ -138,6 +164,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <div className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 (기본 접힘 · export 승인 경계는 불변)</div>
         </summary>
         <div className="evo-group-body">
+          <p className="v4-history-feature-copy">목적: 결정 감사와 승인 경계를 확인합니다. 방법: 필요할 때만 펼쳐 원장을 읽으세요. 필요성: 거버넌스는 증거 조회 전용이며 호환되지 않는 연구 ID를 결합하지 않습니다.</p>
           <p className="mono v4-history-governance-note">
             append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
           </p>

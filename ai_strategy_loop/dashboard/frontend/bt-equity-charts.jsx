@@ -23,7 +23,7 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
   const [brushSel, setBrushSel] = useState_btc(null);  // {a, b} 인덱스(표시용).
   const svgRef = useRef_btc(null);
 
-  const W = 880, H = 300;
+  const W = 880, H = 320;
   const padL = 58, padR = 62, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -399,7 +399,7 @@ function BtUnderwaterChart({ underwater }) {
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
 
-  const W = 880, H = 240;
+  const W = 880, H = 320;
   const padL = 58, padR = 24, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -534,7 +534,7 @@ function BtRollingChart({ rolling }) {
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
 
-  const W = 880, H = 260;
+  const W = 880, H = 320;
   const padL = 48, padR = 52, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
@@ -656,7 +656,7 @@ function BtCumulativeTradesChart({ data }) {
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
 
-  const W = 880, H = 280;
+  const W = 880, H = 320;
   const padL = 52, padR = 60, padT = 18, padB = 30;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;

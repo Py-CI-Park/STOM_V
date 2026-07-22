@@ -18,7 +18,7 @@ import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
 import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
-import { ResearchLabPanel } from "./research-lab.jsx";
+import { BtResultArea } from "./backtest-charts.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -303,20 +303,17 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
   // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
-  // v5.4 L2 — 스테이지 그리드 열 수 선택(2열/4열, localStorage 유지).
-  const [stageCols, setStageCols] = useState_v4r(() => {
-    try { const v = window.localStorage.getItem("stom_v6_stage_cols"); return ["2", "3", "4"].includes(v) ? v : "4"; }
-    catch (e) { return "4"; }
-  });
-  const setStageColsPersist = (c) => {
-    setStageCols(c);
-    try { window.localStorage.setItem("stom_v6_stage_cols", c); } catch (e) {}
-  };
   const s = state || {};
   const latest = s.latest || {};
   const runId = s.run_id || "";
   const gens = Array.isArray(s.generations) ? s.generations : [];
   const hasData = gens.length > 0;
+  const knownGenNos = gens.map(g => Number(g.gen_no)).filter(Number.isFinite);
+  const latestGen = knownGenNos.length ? Math.max(...knownGenNos) : null;
+  const selectedGen = [selectedDetailGen, s.best && s.best.gen, latestGen]
+    .map(value => value == null ? null : Number(value))
+    .find(value => Number.isFinite(value) && knownGenNos.includes(value));
+  const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
   const runStatus = _v4RunStatus(s.status, latest.phase);
@@ -401,8 +398,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
 
 
       {/* ===== 스테이지 탭(4) — 라이브 자동전환·pin ===== */}
-      {/* v5.4 L2: 스테이지 탭 우측 배치(열 수) 선택 */}
-      <div className="v6-stage-tabs" role="group" aria-label="연구 프로세스 단계와 배치">
+      <div className="v6-stage-tabs" role="group" aria-label="연구 프로세스 단계">
         <span className="v6-stage-tablist" role="tablist" aria-label="연구 프로세스 단계" onKeyDown={onStageKey}>
           {V6_STAGES.map((st, i) => (
             <button key={st.key} type="button" role="tab" id={"v6-stage-tab-" + st.key}
@@ -422,17 +418,10 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             단계 고정 해제 · 라이브 따라가기
           </button>
         )}
-        <span className="v6-cols-pick" role="group" aria-label="스테이지 배치 열 수 선택">
-          <span className="lbl">배치</span>
-          {["2", "3", "4"].map(c => (
-            <button key={c} type="button" className={"btn ghost sm" + (stageCols === c ? " on" : "")}
-                    aria-pressed={stageCols === c} onClick={() => setStageColsPersist(c)}>{c}열</button>
-          ))}
-        </span>
       </div>
 
       {/* ===== 현재 스테이지 단일 포커스 패널 ===== */}
-      <div id="v6-stage-panel" className={"v6-stage-panel cols-" + stageCols} role="tabpanel"
+      <div id="v6-stage-panel" className="v6-stage-panel v59-stage-layout" role="tabpanel"
            aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
         {activeStage === 0 && (
           <div className="v6-stage-grid">
@@ -451,12 +440,22 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <div className="v56-cell v6-engine-xl">
               <EnginePanel state={s} wsStatus={wsStatus} />
             </div>
+            <section className="v59-live-result-analysis v54-span-all" aria-labelledby="v59-live-result-heading">
+              <h3 id="v59-live-result-heading" className="stom-section-label">전체 결과 분석 · Backtest와 동일한 정본</h3>
+              <p className="v59-section-intro">선택·best·최신 순서로 유효한 세대를 연결해 자본곡선, 분포, 위험 및 거래 분석을 Backtest 소유 컴포넌트로 재사용합니다.</p>
+              {runId && selectedGen != null ? (
+                <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={null}
+                              evoSource={{ run_id: runId, gen_no: selectedGen }} />
+              ) : (
+                <div className="v59-result-pending">유효한 run과 세대가 발행되면 전체 결과 분석이 표시됩니다.</div>
+              )}
+            </section>
             <section className="v56-cell v54-btdetail" aria-label="백테스트 상세 그래프">
               <div className="v55-btd-actions">
                 <button className="btn ghost sm"
                         title="선택 세대(미선택 시 best)를 백테스트 탭에서 결과·퀀트 분석으로 상세 확인"
                         onClick={() => {
-                          const genNo = selectedDetailGen != null ? selectedDetailGen : (s.best && s.best.gen);
+                          const genNo = selectedGen;
                           if (runId && genNo != null) {
                             try {
                               const detail = { run_id: runId, gen_no: genNo };
@@ -469,18 +468,21 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                   ⇲ 백테스트 탭에서 상세 분석
                 </button>
               </div>
-              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+              <h3 className="stom-section-label">컴팩트 실행 증거 · 백테스트 상세</h3>
+              <p className="v59-section-intro">빠른 단계 확인용 요약 그래프입니다. 전체 분석은 위의 정본 결과 분석을 사용합니다.</p>
+              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
             </section>
             {/* v5.6.1 — GUI 패리티: fold 폐지, 매트릭스 셀 직접 노출(사장님 지시) + 내부 그리드 강화 */}
             <section className="v56-cell v56-parity" aria-label="GUI 패리티 — STOM 백테스트 결과 이미지 대사">
-              <h3 className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사</h3>
-              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+              <h3 className="stom-section-label">GUI 패리티 · 컴팩트 화면 증거</h3>
+              <p className="v59-section-intro">공식 STOM 결과 화면과의 표시 대사를 확인하는 보조 증거입니다.</p>
+              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
             </section>
           </div>
         )}
         {activeStage === 2 && (
           <div className="v6-stage-grid">
-            {/* v5.5 F4 — 분석 매트릭스가 본문: 게이트 fold → 연구실 매트릭스(전폭) → 부검·계보·메타·홀드아웃·피드백 → 세대 이력(하단 전폭) */}
+            {/* 게이트·부검·계보·메타·홀드아웃·피드백과 세대 이력은 보존한다. */}
             <div className="v54-span-all">
               <_V4Fold storageKey="stom_v6_gate" label="게이트·채점 기준 · 현재 run 유효값 (클릭 상세)">
                 <div className="v55-gatefold-grid">
@@ -491,10 +493,6 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 </div>
               </_V4Fold>
             </div>
-            <section className="v6-stage-lab v54-span-all" aria-label="탐색·엣지·상관·안정성 통합 분석">
-              <h3 className="stom-section-label">탐색 히트맵 · 엣지 · 상관 · 안정성 검증 (통합 분석 매트릭스)</h3>
-              <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
-            </section>
             <AutopsyPanel state={s} wsStatus={wsStatus} />
             <LineagePanel state={s} wsStatus={wsStatus} />
             <MetaPanel state={s} wsStatus={wsStatus} />

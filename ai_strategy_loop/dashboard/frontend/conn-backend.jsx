@@ -697,14 +697,14 @@ function useBackend(baseUrl) {
     closedByUs.current = false;
     setWsStatus("connecting");
     try {
-      const r = await fetch(baseUrl + "/health", { signal: AbortSignal.timeout(1500) });
+      const r = await fetch(baseUrl + "/health", { signal: AbortSignal.timeout(5000) });
       if (!r.ok) throw new Error("health failed");
       const j = await r.json();
       setHealth({ connected: true, contract_version: j.contract_version ?? null });
 
       // Fetch config spec
       try {
-        const cs = await fetch(baseUrl + "/config/spec", { signal: AbortSignal.timeout(1500) });
+        const cs = await fetch(baseUrl + "/config/spec", { signal: AbortSignal.timeout(5000) });
         if (cs.ok) {
           const csj = await cs.json();
           const normalized = normalizeConfigSpecPayload(csj);
@@ -721,7 +721,7 @@ function useBackend(baseUrl) {
 
       // Fetch current state
       try {
-        const st = await fetch(baseUrl + "/status", { signal: AbortSignal.timeout(1500) });
+        const st = await fetch(baseUrl + "/status", { signal: AbortSignal.timeout(5000) });
         if (st.ok) {
           const stj = await st.json();
           setState(stj);

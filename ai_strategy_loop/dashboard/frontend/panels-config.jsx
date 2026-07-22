@@ -141,10 +141,11 @@ function _activeStrategyFromState(state) {
 }
 
 function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
-  const [expanded, setExpanded] = useState_pcf(false);
+  const [wrapCode, setWrapCode] = useState_pcf(false);
   const [codePayload, setCodePayload] = useState_pcf(null);
   const [diffPayload, setDiffPayload] = useState_pcf(null);
   const [fetchError, setFetchError] = useState_pcf("");
+  const [copyStatus, setCopyStatus] = useState_pcf("");
   const active = useMemo_pcf(() => _activeStrategyFromState(state || {}), [state]);
   const generation = active.generation || {};
   const genNo = _activeStrategyGenNo(generation);
@@ -178,57 +179,63 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
     ? "streaming_partial"
     : (codePayload?.code_status || (active.source === "no_strategy" ? "no_strategy" : "loading"));
   const diffStatus = diffPayload?.diff_status || (canFetch ? "loading" : "unavailable");
-  // v5.4 L3 — 매수/매도 코드를 분리 표기(대형 가독). 연결문자열 미리보기는 폐기.
-  const limit = expanded ? 60 : 8;
-  const buyPreview = (buyCode || "").split("\n").slice(0, limit).join("\n");
-  const sellPreview = (sellCode || "").split("\n").slice(0, limit).join("\n");
+  const copyCode = (label, code) => {
+    if (!code) {
+      setCopyStatus(`${label} 코드가 아직 없어 복사하지 못했습니다.`);
+      return;
+    }
+    if (!(navigator.clipboard && typeof navigator.clipboard.writeText === "function")) {
+      setCopyStatus("브라우저가 클립보드 복사를 지원하지 않아 복사하지 못했습니다.");
+      return;
+    }
+    navigator.clipboard.writeText(code)
+      .then(() => setCopyStatus(`${label} 코드를 복사했습니다.`))
+      .catch(() => setCopyStatus(`${label} 코드 복사에 실패했습니다.`));
+  };
 
   return (
     <div className="panel active-strategy-panel">
       <div className="panel-hd">
         <div className="panel-hd-title"><span className="dot"></span>현재 조건식 · 매수/매도</div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          gen {genNo ?? "—"} · {codeStatus === "ok" ? "코드 수신" : codeStatus}
-        </span>
+        <span className="active-strategy-status mono">gen {genNo ?? "—"} · {codeStatus === "ok" ? "코드 수신" : codeStatus}</span>
       </div>
-      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* v5.4 L3 — 매수/매도 조건식 이름 대형 카드 */}
-        <div className="v54-cond-names">
-          <div className="v54-cond-name buy">
-            <span className="k">매수 조건식</span>
-            <b className="mono">{buyName || "생성 대기"}</b>
+      <div className="panel-bd active-strategy-body">
+        <div className="active-strategy-identity">
+          <div className="v54-cond-names">
+            <div className="v54-cond-name buy">
+              <span className="k">매수 조건식</span>
+              <b className="mono">{buyName || "생성 대기"}</b>
+            </div>
+            <div className="v54-cond-name sell">
+              <span className="k">매도 조건식</span>
+              <b className="mono">{sellName || "생성 대기"}</b>
+            </div>
           </div>
-          <div className="v54-cond-name sell">
-            <span className="k">매도 조건식</span>
-            <b className="mono">{sellName || "생성 대기"}</b>
+          <span className="active-strategy-provenance mono">run {runId || "—"} · gen {genNo ?? "—"} · source {active.source} · diff {diffStatus}</span>
+        </div>
+        {fetchError && <div className="active-strategy-fetch-error mono">조건식 코드 조회 실패: {fetchError}</div>}
+        <div className={"active-strategy-code-columns" + (wrapCode ? " is-wrapped" : "")}>
+          <div className="active-strategy-code-viewport buy">
+            <div className="cap">매수 로직 · 전체 코드</div>
+            <pre className="code-block">{buyCode || `대기: ${codeStatus}`}</pre>
+          </div>
+          <div className="active-strategy-code-viewport sell">
+            <div className="cap">매도 로직 · 전체 코드</div>
+            <pre className="code-block">{sellCode || `대기: ${codeStatus}`}</pre>
           </div>
         </div>
-        {fetchError && (
-          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>
-            조건식 코드 조회 실패: {fetchError}
-          </div>
-        )}
-        <div className="v54-cond-codes">
-          <div className="v54-cond-code buy">
-            <div className="cap">매수 로직</div>
-            <pre className="code-block">{buyPreview || `대기: ${codeStatus}`}</pre>
-          </div>
-          <div className="v54-cond-code sell">
-            <div className="cap">매도 로직</div>
-            <pre className="code-block">{sellPreview || `대기: ${codeStatus}`}</pre>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <button className="btn ghost sm" onClick={() => setExpanded(!expanded)}>
-            {expanded ? "미리보기 접기" : "미리보기 펼치기"}
+        <div className="active-strategy-actions">
+          <button className="btn ghost sm" onClick={() => setWrapCode(value => !value)} aria-pressed={wrapCode}>
+            줄바꿈 {wrapCode ? "해제" : "켜기"}
           </button>
+          <button className="btn ghost sm" onClick={() => copyCode("매수", buyCode)}>매수 복사</button>
+          <button className="btn ghost sm" onClick={() => copyCode("매도", sellCode)}>매도 복사</button>
+          <button className="btn ghost sm" onClick={() => copyCode("매수·매도", [buyCode, sellCode].filter(Boolean).join("\n\n"))}>매수·매도 함께 복사</button>
           <button className="btn ghost sm" disabled={genNo === null || !onViewCode}
                   onClick={() => onViewCode && onViewCode(genNo)}>
-            전체 코드 열기
+            전체 코드 대화상자
           </button>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-            run {runId || "—"} · diff {diffStatus} · source {active.source}
-          </span>
+          <span className="active-strategy-copy-status mono" role="status" aria-live="polite">{copyStatus}</span>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import tempfile
+from urllib.parse import quote
 from datetime import datetime, timezone
 from typing import Any
 
@@ -23,18 +24,12 @@ STANDARD_SECTIONS: tuple[tuple[str, str], ...] = (
 MAX_REPORTS = 1000
 MAX_BYTES_EACH = 2 * 1024 * 1024
 _INLINE_STYLE = (
-    "body{font-family:system-ui,'Malgun Gothic',sans-serif;max-width:960px;margin:0 auto;"
-    "padding:24px;color:#1a2028;background:#fff;line-height:1.6}"
-    "h1{font-size:22px;border-bottom:2px solid #2a3441;padding-bottom:8px}"
-    "h2{font-size:16px;margin-top:24px;color:#0b5}"
-    "dl.meta{background:#f4f6f8;border:1px solid #dde;border-radius:8px;padding:12px 16px}"
-    "dl.meta dt{font-weight:600;color:#556}dl.meta dd{margin:0 0 8px}"
-    "nav.tabs{position:sticky;top:0;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:10px 0;background:#fff;border-bottom:1px solid #dde}"
-    "nav.tabs a{flex:0 0 auto;padding:6px 10px;border:1px solid #ccd5e2;border-radius:999px;text-decoration:none;font-size:12px}"
-    "section{scroll-margin-top:58px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #dde;font-size:12px;color:#667}"
-    "a{color:#06c}ul{margin:0;padding-left:18px}"
-    "@media(max-width:640px){body{padding:14px}dl.meta{padding:10px}h1{font-size:19px}}"
-    "@media print{nav.tabs{position:static;display:none}section{break-inside:avoid}body{max-width:none;padding:0}}"
+    ":root{color-scheme:light dark}body{font-family:system-ui,'Malgun Gothic',sans-serif;max-width:1040px;margin:0 auto;padding:28px;color:#18212b;background:#fff;line-height:1.65}"
+    "h1{font-size:26px;border-bottom:2px solid #2a3441;padding-bottom:10px}h2{font-size:17px;margin-top:28px;color:#087f5b}"
+    ".summary,.kpis,.callout,dl.meta{background:#f4f6f8;border:1px solid #cfd8e3;border-radius:8px;padding:14px 16px}.kpis{display:flex;gap:12px;flex-wrap:wrap}.kpis div{min-width:130px}.kpis b{display:block;font-size:18px}.callout{border-left:4px solid #087f5b}dl.meta dt{font-weight:600;color:#556}dl.meta dd{margin:0 0 8px}"
+    "nav.tabs{position:sticky;top:0;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:10px 0;background:inherit;border-bottom:1px solid #ccd5e2}nav.tabs a{flex:0 0 auto;padding:6px 10px;border:1px solid #ccd5e2;border-radius:999px;text-decoration:none;font-size:12px}"
+    "section{scroll-margin-top:58px}footer{margin-top:32px;padding-top:12px;border-top:1px solid #ccd5e2;font-size:12px;color:#667}a{color:#065cc2}ul{margin:0;padding-left:18px}pre,code{font-family:ui-monospace,Consolas,monospace;overflow:auto}pre{padding:12px;background:#edf1f5;border-radius:6px}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse}th,td{border:1px solid #cfd8e3;padding:6px;text-align:left}"
+    "@media(prefers-color-scheme:dark){body{color:#e6edf3;background:#111820}.summary,.kpis,.callout,dl.meta,pre{background:#19232e;border-color:#3b4a59}h2{color:#6ee7b7}a{color:#8ab4f8}nav.tabs{border-color:#3b4a59}}@media(max-width:640px){body{padding:14px}h1{font-size:20px}}@media print{body{color:#111;background:#fff;max-width:none;padding:0}nav.tabs{position:static;display:none}.summary,.kpis,.callout,dl.meta,pre{background:#fff;color:#111}section{break-inside:avoid}}"
 )
 
 
@@ -226,7 +221,7 @@ def _slug(value: str) -> str:
 def _render_link_item(item: Any) -> str:
     text = "" if item is None else str(item)
     if text.endswith(".html") and ".." not in text and not text.startswith(("http://", "https://", "/")):
-        return f'<a href="/reports/view?path={_esc(text)}">{_esc(text)}</a>'
+        return f'<a href="/reports/view?path={quote(text, safe="")}">{_esc(text)}</a>'
     return _esc(text)
 
 
@@ -240,24 +235,28 @@ def _render_list_or_text(value: Any, *, as_links: bool = False) -> str:
 
 def render_report_html(spec: dict) -> str:
     """Render escaped, script-free standard report HTML."""
-    title = _esc(spec.get("title") or spec.get("research_id") or "연구 리포트")
+    normalized = dict(spec)
+    if normalized.get("limitations") is None and normalized.get("limits") is not None:
+        normalized["limitations"] = normalized["limits"]
+    normalized["limits"] = normalized.get("limitations")
+    title = _esc(normalized.get("title") or normalized.get("research_id") or "연구 리포트")
     sections = "".join(
-        f'<section id="sec-{key}"><h2>{_esc(label)}</h2>{_render_list_or_text(spec.get(key), as_links=key in ("related_docs", "related_commits"))}</section>'
+        f'<section id="sec-{key}"><h2>{_esc(label)}</h2>{_render_list_or_text(normalized.get(key), as_links=key in ("related_docs", "related_commits"))}</section>'
         for key, label in STANDARD_SECTIONS
     )
     tabs = '<nav class="tabs" aria-label="보고서 섹션">' + "".join(
         f'<a href="#sec-{key}">{_esc(label)}</a>' for key, label in STANDARD_SECTIONS
     ) + "</nav>"
+    evidence = normalized.get("evidence") if isinstance(normalized.get("evidence"), dict) else {}
+    kpis = "".join(f"<div><small>{_esc(key)}</small><b>{_esc(value)}</b></div>" for key, value in list(evidence.items())[:8])
+    summary = normalized.get("executive_summary") or normalized.get("decision") or normalized.get("conclusion")
     return (
-        '<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8">'
-        '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        f"<title>{title}</title><style>{_INLINE_STYLE}</style></head><body><article>"
-        f"<h1>{title}</h1><dl class=\"meta\"><dt>연구목적</dt><dd>{_esc(spec.get('purpose'))}</dd>"
-        f"<dt>일자</dt><dd>{_esc(spec.get('date') or _now_iso())}</dd>"
-        f"<dt>research_id</dt><dd>{_esc(spec.get('research_id'))}</dd>"
-        f"<dt>step_id</dt><dd>{_esc(spec.get('step_id'))}</dd></dl>{tabs}{sections}"
-        f"<footer>생성 {_now_iso()} · trust={_esc(spec.get('trust') or 'derived')} · provenance={_esc(spec.get('provenance') or spec.get('source') or '(미기재)')} · 원문 불변 · 읽기 전용(sandbox·CSP 서빙)</footer>"
-        "</article></body></html>"
+        '<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        f"<title>{title}</title><style>{_INLINE_STYLE}</style></head><body><article><h1>{title}</h1>"
+        f"<div class=\"summary\"><b>경영 요약</b>{_render_list_or_text(summary)}</div>"
+        f"{'<div class=\"kpis\"><b>근거 지표</b>' + kpis + '</div>' if kpis else ''}"
+        f"<dl class=\"meta\"><dt>연구목적</dt><dd>{_esc(normalized.get('purpose'))}</dd><dt>일자</dt><dd>{_esc(normalized.get('date') or _now_iso())}</dd><dt>research_id</dt><dd>{_esc(normalized.get('research_id'))}</dd><dt>step_id</dt><dd>{_esc(normalized.get('step_id'))}</dd></dl>{tabs}{sections}"
+        f"<footer>생성 {_now_iso()} · trust={_esc(normalized.get('trust') or 'derived')} · provenance={_esc(normalized.get('provenance') or normalized.get('source') or '(미기재)')} · 원문 불변 · 읽기 전용(sandbox·CSP 서빙)</footer></article></body></html>"
     )
 
 
@@ -307,7 +306,7 @@ def report_entry(spec: dict, path: str, html_text: str, *, report_type: str = "s
         "profile": spec.get("profile"),
         "evidence": spec.get("evidence"),
         "decision": spec.get("decision"),
-        "limitations": spec.get("limitations"),
+        "limitations": spec.get("limitations", spec.get("limits")),
         # Legacy aliases are retained for consumers of the pre-v1 manifest.
         "step_id": step_id,
         "sha256": content_sha256,

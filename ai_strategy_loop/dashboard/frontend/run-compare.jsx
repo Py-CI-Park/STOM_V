@@ -48,7 +48,7 @@ function rcDefaultCompareIds(runs) {
   return matched.length >= 2 ? matched : runs.slice(0, 2).map(r => r.run_id);
 }
 
-function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
+function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnalysis }) {
   const [runs, setRuns] = useState_rc([]);
   const [selected, setSelected] = useState_rc([]);
   const [compareRows, setCompareRows] = useState_rc([]);
@@ -97,7 +97,15 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
   }, [baseUrl, isDemo, selected.join("|")]);
 
   const toggleSelected = (runId) => {
-    setSelected(prev => prev.includes(runId) ? prev.filter(x => x !== runId) : [...prev, runId]);
+    setSelected(prev => {
+      if (prev.includes(runId)) return prev.filter(x => x !== runId);
+      return prev.length >= 6 ? prev : prev.concat(runId);
+    });
+  };
+
+  const selectAnalysis = (run) => {
+    if (!run || !run.winner || run.winner.gen_no == null || typeof onSelectAnalysis !== "function") return;
+    onSelectAnalysis({ run_id: run.run_id, gen_no: run.winner.gen_no });
   };
 
   const selectSeedAi = () => setSelected(rcDefaultCompareIds(runs));
@@ -136,14 +144,14 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
               <span>generation_rows={compareRows.length}</span>
               <span>sort={sortKey}</span>
             </div>
-            <div className="run-compare-scroll">
+            <div className="run-compare-scroll run-compare-viewport" data-region="scroll" tabIndex={0} aria-label="run 비교 목록">
               <table className="run-compare-table">
-                <thead>
+                <thead className="run-compare-sticky-header">
                   <tr>
                     <th>Pick</th><th>run_id</th><th>Status</th><th>Period</th><th>Years</th>
                     <th>min/tick</th><th>Universe Time</th><th>Total Profit</th><th>Return %</th>
                     <th>Trades</th><th>Daily</th><th>MDD</th><th>Payoff</th><th>Max Hold</th>
-                    <th>Elapsed</th><th>Cost/Count</th><th>Winner</th>
+                    <th>Elapsed</th><th>Cost/Count</th><th>Winner</th><th>Analysis</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -152,7 +160,7 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
                       && r.max_hold_count <= 1
                       && (r.trade_count || 0) >= 50;
                     return (
-                      <tr key={r.run_id}>
+                      <tr key={r.run_id} className={selected.includes(r.run_id) ? "run-compare-row is-selected" : "run-compare-row"}>
                         <td><input type="checkbox" checked={selected.includes(r.run_id)} onChange={() => toggleSelected(r.run_id)} /></td>
                         <td>{r.run_id}</td>
                         <td>{r.status || "-"}</td>
@@ -175,6 +183,7 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId }) {
                         <td>{rcDuration(r.elapsed_sec)}</td>
                         <td>{r.cost_or_count_text || rcNum(r.cost_or_count, 1)}</td>
                         <td>{r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"}</td>
+                        <td><button className="btn ghost sm" onClick={() => selectAnalysis(r)} disabled={!r.winner || r.winner.gen_no == null}>분석 보기</button></td>
                       </tr>
                     );
                   })}

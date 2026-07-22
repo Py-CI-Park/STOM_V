@@ -32,6 +32,14 @@ function _shortReportHash(value) {
 function _reportSearchText(report) {
   return [report.name, report.path, report.title, report.research_id, report.run_id].filter(Boolean).join(" ").toLowerCase();
 }
+function _fmtReportValue(value) {
+  if (value === null || value === undefined || value === "") return "없음";
+  if (Array.isArray(value)) return value.map(item => _fmtReportValue(item)).join(" · ");
+  if (typeof value === "object") {
+    try { return JSON.stringify(value); } catch (e) { return "구조화 메타데이터"; }
+  }
+  return String(value);
+}
 
 
 
@@ -56,6 +64,8 @@ function V4Reports({ baseUrl }) {
   const [reportType, setReportType] = useState_rp7("all");
   const [reportStatus, setReportStatus] = useState_rp7("all");
   const [reportTrust, setReportTrust] = useState_rp7("all");
+  const [reportLimit, setReportLimit] = useState_rp7(50);
+  const [frameState, setFrameState] = useState_rp7("idle");
   const [tocOpen, setTocOpen] = useState_rp7(false);
 
   useEffect_rp7(() => {
@@ -67,7 +77,7 @@ function V4Reports({ baseUrl }) {
         if (cancelled) return;
         const reports = Array.isArray(j && j.reports) ? j.reports : [];
         setList(reports);
-        setSel(prev => prev || (reports.length ? reports[0].path : ""));
+        setSel(prev => reports.some(rp => rp.path === prev) ? prev : (reports.length ? reports[0].path : ""));
       })
       .catch(e => { if (!cancelled) { setList([]); setErr(String(e && e.message ? e.message : e)); } });
     return () => { cancelled = true; };
@@ -141,6 +151,8 @@ function V4Reports({ baseUrl }) {
     };
   }, [baseUrl, mode, wikiSel]);
   useEffect_rp7(() => { setAnchor(""); }, [sel]);
+  useEffect_rp7(() => { setReportLimit(50); }, [reportQuery, reportType, reportStatus, reportTrust]);
+  useEffect_rp7(() => { setFrameState(sel ? "loading" : "idle"); }, [sel, anchor]);
 
   const reports = list || [];
   const selectedReport = reports.find(rp => rp.path === sel) || null;
@@ -156,12 +168,18 @@ function V4Reports({ baseUrl }) {
       && (reportType === "all" || kind === reportType)
       && (reportStatus === "all" || rp.status === reportStatus)
       && (reportTrust === "all" || rp.trust === reportTrust);
+  }).sort((a, b) => {
+    const at = Date.parse(a.generated_at || a.date || "") || 0;
+    const bt = Date.parse(b.generated_at || b.date || "") || 0;
+    return bt - at || String(a.path || "").localeCompare(String(b.path || ""));
   });
-  const runReports = filteredReports.filter(rp => _reportKind(rp) === "run");
-  const stepReports = filteredReports.filter(rp => _reportKind(rp) === "step");
-  const legacyReports = filteredReports.filter(rp => _reportKind(rp) === "legacy");
-  const unregisteredReports = filteredReports.filter(rp => _reportKind(rp) === "unregistered");
-  const catalogReports = [...runReports, ...stepReports, ...legacyReports, ...unregisteredReports];
+  const catalogReports = ["run", "step", "legacy", "unregistered"].flatMap(kind =>
+    filteredReports.filter(rp => _reportKind(rp) === kind));
+  const visibleReports = catalogReports.slice(0, Math.min(reportLimit, 250));
+  const runReports = visibleReports.filter(rp => _reportKind(rp) === "run");
+  const stepReports = visibleReports.filter(rp => _reportKind(rp) === "step");
+  const legacyReports = visibleReports.filter(rp => _reportKind(rp) === "legacy");
+  const unregisteredReports = visibleReports.filter(rp => _reportKind(rp) === "unregistered");
   const exampleReport = reports.find(rp => _reportKind(rp) === "run") || reports.find(rp => _reportKind(rp) === "step") || null;
   const wikiFiltered = (wiki || []).filter(d => {
     const q = wikiQuery.trim().toLowerCase();
@@ -196,7 +214,7 @@ function V4Reports({ baseUrl }) {
     return (
       <button key={rp.path} className={"v4-reports-item" + (sel === rp.path ? " active" : "")} onClick={() => selectReport(rp.path)} title={rp.path}>
         <span className="v4-reports-name"><span className={"v4-report-kind " + kind}>{kind === "run" ? "run 종합" : kind === "step" ? "스텝" : kind === "legacy" ? "레거시" : "미등록"}</span>{rp.title || rp.name}</span>
-        <span className="v4-reports-meta mono">{rp.research_id || rp.run_id || _fmtReportBytes(rp.bytes)}</span>
+        <span className="v4-reports-meta mono">{rp.research_id || rp.run_id || _fmtReportBytes(rp.bytes)} · {rp.status || rp.publication_status || "상태 없음"}</span>
       </button>
     );
   };
@@ -235,7 +253,7 @@ function V4Reports({ baseUrl }) {
           <p className="v4-reports-safe mono" role="note">읽기 전용 · 스크립트 차단(CSP default-src 'none' + sandbox iframe) · docs/ 하위 HTML 한정</p>
           <div className="v4-reports-body">
             <aside className="v4-reports-list" aria-label="리포트 목록">
-              <div className="v4-reports-filters">
+              <div className="v4-reports-filters" aria-label="리포트 필터">
                 <input className="toolbar-input" type="search" placeholder="제목 · 연구 · run 검색" value={reportQuery} onChange={e => setReportQuery(e.target.value)} aria-label="리포트 검색" />
                 <select value={reportType} onChange={e => setReportType(e.target.value)} aria-label="리포트 종류"><option value="all">모든 종류</option><option value="run">run</option><option value="step">step</option><option value="legacy">legacy</option><option value="unregistered">미등록</option></select>
                 <select value={reportStatus} onChange={e => setReportStatus(e.target.value)} aria-label="리포트 상태"><option value="all">모든 상태</option>{reportStatuses.map(value => <option key={value} value={value}>{value}</option>)}</select>
@@ -248,31 +266,33 @@ function V4Reports({ baseUrl }) {
               {stepReports.length > 0 && <><div className="v6-report-group mono">등록 스텝 리포트 · {stepReports.length}건</div>{stepReports.map(renderReportItem)}</>}
               {legacyReports.length > 0 && <><div className="v6-report-group mono">등록 레거시 리포트 · {legacyReports.length}건</div>{legacyReports.map(renderReportItem)}</>}
               {unregisteredReports.length > 0 && <><div className="v6-report-group unregistered mono">미등록·검증 불가 · {unregisteredReports.length}건</div>{unregisteredReports.map(renderReportItem)}</>}
+              {catalogReports.length > visibleReports.length && <button className="btn ghost sm" onClick={() => setReportLimit(limit => Math.min(limit + 50, 250))}>더 보기 · {visibleReports.length}/{catalogReports.length}</button>}
             </aside>
             <div className="v4-reports-main">
-              {selectedReport && <div className="v4-report-provenance mono">
+              {selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
                 <span className={selectedReport.registered === true ? "v4-report-badge registered" : "v4-report-badge unregistered"}>{selectedReport.registered === true ? "등록됨" : "미등록·검증 불가"}</span>
-                <span>type {_reportKind(selectedReport)}</span>
-                <span>research {selectedReport.research_id || "없음"}</span>
-                <span>run {selectedReport.run_id || "없음"}</span>
-                <span>status {selectedReport.status || "없음"}</span>
-                <span>trust {selectedReport.trust || "없음"}</span>
-                <span>schema {selectedReport.schema_version || "없음"}</span>
-                <span title={_reportHash(selectedReport)}>hash {_shortReportHash(_reportHash(selectedReport))}</span>
-                <span>source {_shortReportHash(selectedReport.source_sha256)}</span>
-              </div>}
+                <span>type {_reportKind(selectedReport)}</span><span>status {selectedReport.status || "없음"}</span><span>trust {selectedReport.trust || "없음"}</span><span>research {selectedReport.research_id || "없음"}</span><span>run {selectedReport.run_id || "없음"}</span>
+                <span>generation {selectedReport.generation ?? "없음"}</span><span>cycle {selectedReport.cycle ?? "없음"}</span>
+                <span>publication {selectedReport.publication_status || "없음"}</span><span>generator {selectedReport.generator || "없음"}</span>
+                <span>generated {selectedReport.generated_at || "없음"}</span><span>bytes {_fmtReportBytes(selectedReport.bytes) || "없음"}</span>
+                <span>profile {_fmtReportValue(selectedReport.profile)}</span><span>limitations {_fmtReportValue(selectedReport.limitations || selectedReport.limits)}</span>
+                <span>PDF {selectedReport.pdf_path ? "등록됨" : "없음"} {selectedReport.pdf_source_content_sha256 ? "· HTML 결속 검증" : ""}</span>
+                <span title={_reportHash(selectedReport)}>hash {_shortReportHash(_reportHash(selectedReport))}</span><span>source {_shortReportHash(selectedReport.source_sha256)}</span>
+              </section>}
               {selectedReport && selectedReport.registered === true && (selectedReport.decision || selectedReport.evidence) && (
                 <section className="v4-report-insight" aria-label="보고서 결정과 근거 요약">
-                  {selectedReport.decision && <div className="v4-report-decision"><b>결론·다음 행동</b><span>{selectedReport.decision}</span></div>}
+                  {selectedReport.decision && <div className="v4-report-decision"><b>결론·다음 행동</b><span>{_fmtReportValue(selectedReport.decision)}</span></div>}
                   {selectedReport.evidence && <div className="v4-report-evidence">
                     {Object.entries(selectedReport.evidence).slice(0, 10).map(([key, value]) => (
-                      <span key={key}><i>{key}</i><b>{String(value)}</b></span>
+                      <span key={key}><i>{key}</i><b>{_fmtReportValue(value)}</b></span>
                     ))}
                   </div>}
                 </section>
               )}
               <div className="v4-reports-view">
-                {viewUrl ? <iframe key={sel} className="v4-reports-frame" src={frameSrc} sandbox="" referrerPolicy="no-referrer" title={"리포트: " + sel} loading="lazy" /> : <div className="v4-reports-empty mono">리포트를 선택하세요</div>}
+                {frameState === "loading" && <div className="v4-reports-empty mono" role="status">리포트 로드 중…</div>}
+                {frameState === "error" && <div className="v4-reports-empty mono" role="alert">리포트를 불러오지 못했습니다. 등록된 원본과 연결 상태를 확인하세요.</div>}
+                {viewUrl ? <iframe key={sel} className="v4-reports-frame" src={frameSrc} sandbox="" referrerPolicy="no-referrer" title={"리포트: " + sel} loading="lazy" onLoad={() => setFrameState("ready")} onError={() => setFrameState("error")} /> : <div className="v4-reports-empty mono">리포트를 선택하세요</div>}
               </div>
             </div>
             <div className={"v4-reports-toc-slot" + (tocOpen ? " open" : "")}>

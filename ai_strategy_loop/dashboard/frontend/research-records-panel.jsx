@@ -148,6 +148,16 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
   const errors = (payload && Array.isArray(payload.errors)) ? payload.errors : [];
   const currentRunId = runList.length ? runList[0].run_id : "";
   const currentGenNo = 0;
+  const selectedSummary = selected && selected.summary && typeof selected.summary === "object" ? selected.summary : {};
+  const selectedFields = [
+    ["Period", selectedSummary.period],
+    ["Source", selectedSummary.source],
+    ["Research date", selectedSummary.research_date],
+    ["Artifacts", selected && selected.artifacts
+      ? [selected.artifacts.summary, selected.artifacts.jsonl, selected.artifacts.run_log]
+        .concat(selected.artifacts.pairs || []).filter(Boolean).join(" / ")
+      : null],
+  ].filter(([, value]) => value !== undefined && value !== null && value !== "");
 
   return (
     <div className="panel">
@@ -170,13 +180,13 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
         {isDemo && <div className="research-empty">Demo mode</div>}
         {!isDemo && rows.length === 0 && !err && <div className="research-empty">No research records</div>}
         {rowsAll.length > 0 && (
-          <div style={{ overflowX: "auto" }}>
+          <div className="research-records-list-viewport" data-region="scroll" tabIndex={0} aria-label="연구 기록 목록">
             <input className="toolbar-input" type="search" placeholder="캠페인 검색(필터)"
                    value={rq} onChange={e => setRq(e.target.value)} aria-label="캠페인 필터"
                    style={{ marginBottom: 8, width: 260 }} />
             {rq && <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: "var(--ink-3)" }}>필터 {rows.length}/{rowsAll.length}건</span>}
-            <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-              <thead>
+            <table className="mono research-records-sticky-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+              <thead className="research-records-sticky-header">
                 <tr style={{ color: "var(--ink-3)" }}>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("name")}>Campaign{_si("name")}</button></th>
                   <th style={{ textAlign: "right", padding: "6px 8px" }}><button className="rrp-th" onClick={() => onSort("candidate_count")}>Candidates{_si("candidate_count")}</button></th>
@@ -232,7 +242,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
           </div>
         )}
         {selected && (
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 1fr) minmax(260px, 1.3fr)", gap: 12 }}>
+          <div className="research-records-selected-detail">
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
               <div className="stat-label" style={{ marginBottom: 6 }}>Selected</div>
               <div className="mono" style={{ color: "var(--ink-0)", marginBottom: 6 }}>{selected.name}</div>
@@ -242,6 +252,11 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
               <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 }}>
                 root={(payload && payload.root) || "-"}
               </div>
+              {selectedFields.length > 0 && (
+                <div className="research-records-fields mono">
+                  {selectedFields.map(([label, value]) => <div key={label}><span>{label}</span><b>{String(value)}</b></div>)}
+                </div>
+              )}
             </div>
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
               <div className="stat-label" style={{ marginBottom: 6 }}>Top Candidates</div>

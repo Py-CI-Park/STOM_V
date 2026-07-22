@@ -222,7 +222,14 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div className="bt-result-flow" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+  <div className="bt-result-flow bt-result-grid-12" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <section className="bt-result-section bt-result-summary" aria-labelledby="bt-result-summary-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-summary-title" className="stom-section-label">결과 요약</div>
+          <p className="bt-section-purpose">조건식, 기간, 표본 내 advisory와 핵심 지표를 한 곳에서 확인합니다.</p>
+        </div>
+      </div>
     {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
     {(() => {
       const spec = result.spec || {};
@@ -278,7 +285,7 @@ return (
     )}
 
     {/* 메트릭 카드 행 — 카운트업 + 게이지 */}
-    <div className="panel">
+    <div className="panel bt-equal-card">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: isEvo ? "var(--violet)" : "var(--teal)" }}></span>
@@ -322,63 +329,76 @@ return (
         })}
       </div>
     </div>
+    </section>
 
-    {/* A/B 비교 뷰(활성 시 최상단) */}
-    {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
-
-    {/* 차트 — 수익곡선(인터랙션+브러시) → 분포 → 히트맵 → 언더워터 → MAE/MFE → 매도조건 */}
-    <BtEquityChart equity={analysis.equity} onBrush={onBrush}
-                   brushActive={!!range} onBrushClear={onBrushClear} />
-    <BtDistributionChart distribution={distribution} />
-    <BtHeatmap heatmap={analysis.heatmap} />
-    <BtUnderwaterChart underwater={analysis.underwater} />
-    <BtMaeMfeScatter points={analysis.mae_mfe} />
-    {/* v5.4 B1 — 퀀트 인사이트(다차원 회귀·자기상관·보유시간 회귀·요일 구조) */}
-    <BtQuantPanel analysis={analysis} />
-    <BtExitReasonPanel rows={analysis.exit_reasons} />
-
-    {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
-    <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
-    <BtOrderflowPanel orderflow={orderflow} />
-    <BtStatTestPanel stats={stats} />
-
-    {/* B3 — GUI 패리티(v5.3.7 검수: 6,969px 세로 점유 → 기본닫힘 fold 격하, 내용 불변) */}
-    <details className="evo-group bt-flow-full" open={false}>
-      <summary className="evo-group-summary"><div className="stom-section-label">GUI 패리티 — STOM 백테스트 결과 이미지 대사(클릭 펼침)</div></summary>
-      <div className="evo-group-body">
-        <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+    <section className="bt-result-section bt-result-primary" aria-labelledby="bt-result-primary-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-primary-title" className="stom-section-label">핵심 결과</div>
+          <p className="bt-section-purpose">누적 수익 경로와 손익 분포를 먼저 검토합니다. 드래그하면 구간 분석을 적용합니다.</p>
+        </div>
       </div>
-    </details>
+      {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
+      <div className="bt-primary-chart-grid bt-equal-card-grid">
+        <BtEquityChart equity={analysis.equity} onBrush={onBrush}
+                       brushActive={!!range} onBrushClear={onBrushClear} />
+        <BtDistributionChart distribution={distribution} />
+      </div>
+    </section>
 
-    {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
-    <details className="bt-extra-charts" open={false}>
-      <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
-        ▸ 추가 분석 그래프 — 롤링 지표 · 월별 캘린더 · 누적 거래 (전체화면 권장)
-      </summary>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+    <section className="bt-result-section bt-result-evidence" aria-labelledby="bt-result-evidence-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-evidence-title" className="stom-section-label">위험 · 경로 증거</div>
+          <p className="bt-section-purpose">MDD 무작위화와 GUI 결과 이미지의 부분 패리티를 기본 흐름에서 확인합니다.</p>
+        </div>
+      </div>
+      <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
+    </section>
+
+    <section className="bt-result-section bt-result-diagnostics" aria-labelledby="bt-result-diagnostics-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="bt-result-diagnostics-title" className="stom-section-label">진단</div>
+          <p className="bt-section-purpose">손실 구간, 거래 품질, 실행 흐름과 cadence를 교차 확인합니다.</p>
+        </div>
+      </div>
+      <div className="bt-diagnostic-grid bt-equal-card-grid">
+        <BtHeatmap heatmap={analysis.heatmap} />
+        <BtUnderwaterChart underwater={analysis.underwater} />
+        <BtMaeMfeScatter points={analysis.mae_mfe} />
+        <BtQuantPanel analysis={analysis} />
+        <BtExitReasonPanel rows={analysis.exit_reasons} />
+        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+        <BtOrderflowPanel orderflow={orderflow} />
+        <BtStatTestPanel stats={stats} />
         <BtRollingChart rolling={analysis.rolling} />
         <BtMonthlyCalendar monthly={analysis.monthly} />
-        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-      </div>
-    </details>
-
-    {/* 종목 기여 Top/Bottom */}
-    {(topC.length > 0 || botC.length > 0) && (
-      <div className="panel">
-        <div className="panel-hd">
-          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
+        <div className="bt-cadence-diagnostic">
+          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
         </div>
-        <div className="panel-bd">
-          <div className="row-2">
-            <BtContribTable title="상위 기여" rows={topC} />
-            <BtContribTable title="하위 기여" rows={botC} />
+      </div>
+    </section>
+
+    {(topC.length > 0 || botC.length > 0) && (
+      <section className="bt-result-section bt-result-evidence bt-contributor-evidence" aria-label="종목 기여 증거">
+        <div className="panel bt-equal-card">
+          <div className="panel-hd">
+            <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
+          </div>
+          <div className="panel-bd">
+            <div className="row-2">
+              <BtContribTable title="상위 기여" rows={topC} />
+              <BtContribTable title="하위 기여" rows={botC} />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     )}
 
-    {/* 인사이트 패널 */}
-    <BtInsightsPanel insights={insights} />
+    <section className="bt-result-section bt-result-evidence" aria-label="분석 인사이트">
+      <BtInsightsPanel insights={insights} />
+    </section>
 
     {/* 전체화면 분석 모드 오버레이(트랙 D) — position:fixed 풀스크린, 2~3컬럼 그리드 */}
     {fullscreen && (

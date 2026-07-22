@@ -9,7 +9,7 @@ import { LegendDot } from "./chart-primitives.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
-const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq } = React;
+const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
 const { useState: useState_rg, useEffect: useEffect_rg } = React;
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -27,27 +27,33 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [data, setData] = useState_eq(null);   // {human:[...], ai:[...]}
   const [loading, setLoading] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
-  const [sortKey, setSortKey] = useState_eq("total_return_pct"); // total_return_pct|total_return_krw|annual_return_pct|mdd_pct|payoff
-  const [filter, setFilter] = useState_eq("all");                // all|human|ai
-  const [galleryOpen, setGalleryOpen] = useState_eq(false);      // 📷 인간 결과 스크린샷 모달.
+  const [sortKey, setSortKey] = useState_eq("total_return_pct");
+  const [sortDirection, setSortDirection] = useState_eq("desc");
+  const [filter, setFilter] = useState_eq("all");
+  const [galleryOpen, setGalleryOpen] = useState_eq(false);
+  const [lastUpdated, setLastUpdated] = useState_eq(null);
+  const requestRef = useRef_eq(null);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   const refresh = useCallback_eq(() => {
     if (isDemo || !baseUrl) return;
+    if (requestRef.current) requestRef.current.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLoading(true);
-    fetch(baseUrl + "/hall_of_fame", { signal: AbortSignal.timeout(4000) })
+    fetch(baseUrl + "/hall_of_fame", { signal: controller.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { setData(j); setErr(null); })
-      .catch(e => setErr(String(e)))
-      .finally(() => setLoading(false));
+      .then(j => { if (!controller.signal.aborted) { setData(j); setErr(null); setLastUpdated(new Date()); } })
+      .catch(e => { if (!controller.signal.aborted && e.name !== "AbortError") setErr(String(e)); })
+      .finally(() => { if (requestRef.current === controller) { requestRef.current = null; setLoading(false); } });
   }, [baseUrl, isDemo]);
 
   // 최초 + 30초 자동 새로고침.
   useEffect_eq(() => {
     refresh();
     const id = setInterval(refresh, 30000);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); if (requestRef.current) requestRef.current.abort(); };
   }, [refresh]);
 
   const human = (data && data.human) || [];
@@ -59,13 +65,12 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
     ...ai.map(a => ({ ...a, _maxHold: a.max_hold_count })),
   ].filter(r => (filter === "all" ? true : r.kind === filter));
 
-  // 정렬: 선택 키 내림차순(없는 값은 맨 뒤). MDD는 낮을수록 좋지만 일관성 위해
-  //   '값 큰 순'을 그대로 쓰되, 사용자가 의도적으로 토글한다(라벨로 의미 전달).
+  // MDD is loss magnitude: its default direction is ascending; missing values remain last.
   const sorted = rows.slice().sort((a, b) => {
     const av = a[sortKey], bv = b[sortKey];
-    const an = (typeof av === "number") ? av : -Infinity;
-    const bn = (typeof bv === "number") ? bv : -Infinity;
-    return bn - an;
+    const missingA = typeof av !== "number", missingB = typeof bv !== "number";
+    if (missingA || missingB) return missingA === missingB ? String(a.label || "").localeCompare(String(b.label || "")) : (missingA ? 1 : -1);
+    return sortDirection === "asc" ? av - bv : bv - av;
   });
 
   const fmtPctSigned = (v) => (typeof v === "number"
@@ -126,10 +131,9 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
             <span style={{ fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" }}>정렬</span>
             {SORTS.map(s => (
               <button key={s.key} className="btn ghost sm"
-                      onClick={() => setSortKey(s.key)}
-                      style={sortKey === s.key
-                        ? { color: "var(--amber)", borderColor: "var(--amber)" } : undefined}>
-                {s.label}
+                      onClick={() => { if (sortKey === s.key) setSortDirection(direction => direction === "asc" ? "desc" : "asc"); else { setSortKey(s.key); setSortDirection(s.key === "mdd_pct" ? "asc" : "desc"); } }}
+                      style={sortKey === s.key ? { color: "var(--amber)", borderColor: "var(--amber)" } : undefined}>
+                {s.label}{sortKey === s.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
               </button>
             ))}
           </div>
@@ -144,17 +148,19 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
               </button>
             ))}
           </div>
+          <button className="btn ghost sm" onClick={() => setSortDirection(direction => direction === "asc" ? "desc" : "asc")} aria-label="정렬 방향 전환">{sortDirection === "asc" ? "오름차순 ↑" : "내림차순 ↓"}</button>
           <div style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
-            인간 {human.length} · 시드 {ai.filter(r => r.kind === "seed").length} · AI {ai.filter(r => r.kind === "ai").length}
+            인간 {human.length} · 시드 {ai.filter(r => r.kind === "seed").length} · AI {ai.filter(r => r.kind === "ai").length}{lastUpdated ? " · 갱신 " + lastUpdated.toLocaleTimeString("ko-KR") : ""}
           </div>
         </div>
 
+        {err && data && <div className="v4s-note" role="alert">마지막 성공 결과를 표시 중 · 최신 조회 실패: {err}</div>}
         {isDemo ? (
           <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
                         fontSize: 12, fontFamily: "var(--mono)" }}>
             데모 모드 — 백엔드 연결 시 명예의 전당이 표시됩니다.
           </div>
-        ) : err ? (
+        ) : err && !data ? (
           <div style={{ padding: "28px 0", textAlign: "center", color: "var(--red)",
                         fontSize: 12, fontFamily: "var(--mono)" }}>
             조회 실패: {err}
@@ -172,6 +178,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
               <thead>
                 <tr style={{ color: "var(--ink-2)", fontSize: 10, letterSpacing: ".08em",
                              textTransform: "uppercase", borderBottom: "1px solid var(--line-2)" }}>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}>순위</th>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}>구분</th>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}>이름</th>
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>총수익금(원)</th>
@@ -183,6 +190,11 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>동시보유</th>
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>운영금(원)</th>
                   <th style={{ textAlign: "left", padding: "6px 8px" }}>백테 기간</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}>거래수</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}>승률%</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}>calmar</th>
+                  <th style={{ textAlign: "right", padding: "6px 8px" }}>score</th>
+                  <th style={{ textAlign: "left", padding: "6px 8px" }}>매수 전략</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,6 +204,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                   return (
                     <tr key={(r.kind || "") + (r.label || "") + i}
                         style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-2)" }}>{i + 1}</td>
                       <td style={{ padding: "5px 8px" }}>
                         <span style={{
                           display: "inline-block", padding: "1px 6px", borderRadius: 4,
@@ -250,6 +263,11 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                           </span>
                         )}
                       </td>
+                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtInt2(r.trades)}</td>
+                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.win_rate_pct, 1)}</td>
+                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.calmar, 2)}</td>
+                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.score, 2)}</td>
+                      <td style={{ padding: "5px 8px", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.buy_name || ""}>{r.buy_name || "—"}</td>
                     </tr>
                   );
                 })}

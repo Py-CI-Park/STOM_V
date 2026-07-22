@@ -1048,3 +1048,291 @@
   .chart-meta { gap: 4px 8px; }
   .chart-meta-item { flex: 1 1 120px; }
 }
+
+/* ═══ V5.9 comprehensive dashboard UX contract ═══ */
+:root {
+  --v59-gap: 16px;
+  --v59-radius: 12px;
+  --v59-chart-height: 320px;
+  --v59-table-height: clamp(360px, 58vh, 720px);
+}
+.v59-section-intro,
+.bt-section-purpose,
+.v4-history-feature-copy,
+.condition-discovery-tab-intro {
+  margin: 4px 0 10px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.v59-result-pending {
+  padding: 20px;
+  border: 1px dashed var(--line-2);
+  border-radius: 10px;
+  color: var(--ink-2);
+  background: var(--bg-1);
+}
+.v59-live-result-analysis {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--v59-radius);
+  background: var(--bg-1);
+}
+.v59-stage-layout .v6-stage-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--v59-gap);
+  align-items: stretch;
+}
+.v59-stage-layout .v6-stage-grid > * { grid-column: span 6; min-width: 0; }
+.v59-stage-layout .v6-stage-grid > .v54-span-all,
+.v59-stage-layout .v6-stage-grid > .v59-live-result-analysis,
+.v59-stage-layout .v6-stage-grid > .v6-stage-lab { grid-column: 1 / -1; }
+
+/* Strategy source is the primary Generation-stage work surface. */
+.active-strategy-panel { grid-column: span 8 !important; }
+.active-strategy-body { display: flex; flex-direction: column; gap: 12px; }
+.active-strategy-identity { display: flex; flex-direction: column; gap: 6px; }
+.active-strategy-status,
+.active-strategy-provenance,
+.active-strategy-copy-status { color: var(--ink-2); font-size: 11px; }
+.active-strategy-fetch-error { color: var(--red); font-size: 11px; }
+.active-strategy-code-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+.active-strategy-code-viewport {
+  min-width: 0;
+  min-height: 420px;
+  max-height: 620px;
+  overflow: auto;
+  border: 1px solid var(--line-1);
+  border-radius: 10px;
+  background: var(--bg-0);
+}
+.active-strategy-code-viewport .cap {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  color: var(--ink-2);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+}
+.active-strategy-code-viewport .code-block {
+  min-height: 380px;
+  margin: 0;
+  padding: 12px;
+  overflow: visible;
+  white-space: pre;
+}
+.active-strategy-code-columns.is-wrapped .code-block {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.active-strategy-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* Governance is one readable surface with three explicit purposes. */
+.condition-discovery-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+  border-bottom: 1px solid var(--line-1);
+}
+.condition-discovery-tab {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.condition-discovery-tab.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+}
+.condition-discovery-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.condition-discovery-tabpanel { min-height: 300px; }
+.condition-discovery-tabpanel .condition-discovery-grid { align-items: stretch; }
+.condition-discovery-tabpanel .condition-discovery-grid > section {
+  min-height: 260px;
+  padding: 12px;
+  border: 1px solid var(--line-1);
+  border-radius: 10px;
+  background: var(--bg-0);
+}
+
+/* Backtest/Live/History share one 12-column result rhythm. */
+.bt-result-flow { gap: var(--v59-gap) !important; }
+.bt-result-section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--v59-radius);
+  background: var(--bg-1);
+}
+.bt-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+}
+.bt-primary-chart-grid,
+.bt-diagnostic-grid,
+.bt-equal-card-grid,
+.bt-gui-parity-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--v59-gap);
+  align-items: stretch;
+}
+.bt-diagnostic-grid { grid-template-columns: repeat(2, minmax(360px, 1fr)); }
+.bt-equal-card,
+.bt-equal-card-grid > .panel,
+.bt-primary-chart-grid > .panel,
+.bt-diagnostic-grid > .panel,
+.bt-gui-parity-cards > .panel,
+.bt-diagnostic-grid > div {
+  height: 100%;
+  min-width: 0;
+}
+.bt-result-primary .chart-wrap,
+.bt-result-diagnostics .chart-wrap,
+.bt-gui-parity-cards .chart-wrap,
+.bt-result-primary svg,
+.bt-result-diagnostics svg,
+.bt-gui-parity-cards svg {
+  min-height: var(--v59-chart-height);
+}
+.bt-cadence-diagnostic { grid-column: 1 / -1; }
+.bt-gui-parity-groups { display: flex; flex-direction: column; gap: var(--v59-gap); }
+.bt-gui-parity-group {
+  padding: 12px;
+  border: 1px solid var(--line-1);
+  border-radius: 10px;
+  background: var(--bg-0);
+}
+.bt-gui-parity-group-hd { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+.bt-gui-parity-group-hd span,
+.bt-parity-provenance { color: var(--ink-2); font-size: 11px; }
+.bt-detail-summary-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 12px; }
+.bt-detail-primary-chart { min-height: var(--v59-chart-h); height: var(--v59-chart-h); }
+.bt-detail-summary-rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bt-detail-holdings-strip { min-height: 96px; }
+
+/* History uses visible selection and bounded data-heavy viewports. */
+.v4-history { display: flex; flex-direction: column; gap: var(--v59-gap); }
+.v4-history-analysis {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--v59-radius);
+  background: var(--bg-0);
+}
+.v4-history-analysis-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.run-compare-viewport,
+.history-condition-index-viewport,
+.history-condition-detail-viewport,
+.history-condition-evaluation-viewport,
+.research-records-list-viewport {
+  max-width: 100%;
+  max-height: var(--v59-table-height);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--line-1);
+  border-radius: 8px;
+}
+.history-condition-tree-viewport { max-height: 520px; overflow: auto; scrollbar-gutter: stable; }
+.history-condition-code-viewport { max-height: 440px; overflow: auto; }
+.run-compare-table,
+.history-condition-index-viewport table,
+.history-condition-evaluation-viewport table,
+.research-records-sticky-table { min-width: 980px; }
+.run-compare-sticky-header th,
+.history-condition-sticky-header th,
+.research-records-sticky-header th,
+.history-condition-evaluation-viewport thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-1);
+  box-shadow: inset 0 -1px 0 var(--line-1);
+}
+.run-compare-table tr.is-selected,
+.history-condition-index-viewport tr.is-selected { background: rgba(76,214,179,.08); }
+
+/* Newsletter benchmark: wider master/detail, contained catalog and neutral cards. */
+.v4-reports-body {
+  grid-template-columns: minmax(360px, 460px) minmax(0, 1fr);
+  gap: var(--v59-gap);
+}
+.v4-reports-list {
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.v4-reports-filters {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 10px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+}
+.v4-report-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+.v4-report-details > div {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line-1);
+  border-radius: 8px;
+  background: var(--bg-0);
+}
+.hof-scroll { max-height: clamp(420px, 68vh, 820px); overflow: auto !important; scrollbar-gutter: stable; }
+.hof-scroll thead th { position: sticky; top: 0; z-index: 2; background: var(--bg-1); }
+.v4-settings { display: flex; flex-direction: column; gap: var(--v59-gap); }
+.v4-settings > .panel { border-radius: var(--v59-radius); }
+.v4-replay > .panel { border-radius: var(--v59-radius); }
+
+/* Longer, equal evidence frames across major tabs. */
+.v6-graphs .panel,
+.v54-ea-cell,
+.v56-cell { align-self: stretch; }
+.v6-graphs .chart-wrap,
+.v6-graphs .v4-canvas-wrap,
+.v54-ea-cell svg {
+  min-height: 280px;
+  max-height: 360px;
+}
+@media (min-width: 1800px) {
+  .v6-graphs .chart-wrap,
+  .v6-graphs .v4-canvas-wrap,
+  .v54-ea-cell svg { min-height: 320px; }
+}
+@media (max-width: 1199px) {
+  .v59-stage-layout .v6-stage-grid > *,
+  .active-strategy-panel { grid-column: 1 / -1 !important; }
+  .bt-primary-chart-grid,
+  .bt-diagnostic-grid,
+  .bt-equal-card-grid,
+  .bt-gui-parity-cards,
+  .active-strategy-code-columns,
+  .bt-detail-summary-layout { grid-template-columns: minmax(0, 1fr); }
+  .v4-reports-body { grid-template-columns: minmax(0, 1fr); }
+  .v4-reports-list { max-height: 460px; }
+}
+@media (max-width: 640px) {
+  .bt-summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .condition-discovery-tabs { flex-direction: column; }
+  .condition-discovery-tab { width: 100%; text-align: left; }
+}

@@ -308,3 +308,49 @@ def test_overlay_two_valid_jobs(monkeypatch, tmp_path: Path):
         assert "cumulative" in s
         assert isinstance(s["cumulative"], list)
         assert "summary" in s and "total_profit_pct" in s["summary"]
+def test_v59_result_flow_source_contract():
+    frontend = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
+    result_source = (frontend / "bt-result-area.jsx").read_text(encoding="utf-8")
+    parity_source = (frontend / "bt-gui-parity.jsx").read_text(encoding="utf-8")
+
+    for section in (
+        "bt-result-summary",
+        "bt-result-primary",
+        "bt-result-diagnostics",
+        "bt-result-evidence",
+        "bt-result-grid-12",
+        "bt-equal-card-grid",
+        "bt-cadence-diagnostic",
+    ):
+        assert section in result_source
+    assert "BtGuiParitySection guiParity={analysis.gui_parity} columns={2}" in result_source
+    assert '<details className="evo-group bt-flow-full"' not in result_source
+    assert '<details className="bt-extra-charts"' not in result_source
+
+    for group in ("risk", "timing", "holding-trade"):
+        assert f'key: "{group}"' in parity_source
+    assert "partial GUI parity" in parity_source
+    assert "BtMddRandomChart key=\"mdd-random\"" in parity_source
+    assert "bt-equal-card-grid" in parity_source
+
+
+def test_v59_chart_height_source_contract():
+    frontend = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
+    equity_source = (frontend / "bt-equity-charts.jsx").read_text(encoding="utf-8")
+    parity_source = (frontend / "bt-gui-parity.jsx").read_text(encoding="utf-8")
+    detail_source = (frontend / "chart-backtest-detail.jsx").read_text(encoding="utf-8")
+
+    assert equity_source.count("H = 320") == 5
+    assert parity_source.count("H = 320") == 6
+    assert detail_source.count("const W = 880, H = 320;") == 2
+    assert "const HpH = 96;" in detail_source
+    for hook in ("bt-detail-summary-rail", "bt-detail-holdings-strip", "bt-detail-primary-chart"):
+        assert hook in detail_source
+
+
+def test_v59_result_library_bounds_large_dom_lists():
+    frontend = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
+    source = (frontend / "bt-tab-run.jsx").read_text(encoding="utf-8")
+
+    assert "filtered.slice(0, visibleLimit).map" in source
+    assert "setVisibleLimit(limit => Math.min(limit + 60, filtered.length))" in source
