@@ -1053,7 +1053,7 @@
 :root {
   --v59-gap: 16px;
   --v59-radius: 12px;
-  --v59-chart-height: 320px;
+  --v59-chart-height: clamp(420px, 38vw, 560px);
   --v59-table-height: clamp(360px, 58vh, 720px);
 }
 .v59-section-intro,
@@ -1188,11 +1188,11 @@
 .bt-equal-card-grid,
 .bt-gui-parity-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--v59-gap);
   align-items: stretch;
 }
-.bt-diagnostic-grid { grid-template-columns: repeat(2, minmax(360px, 1fr)); }
+.bt-diagnostic-grid { grid-template-columns: minmax(0, 1fr); }
 .bt-equal-card,
 .bt-equal-card-grid > .panel,
 .bt-primary-chart-grid > .panel,
@@ -1209,6 +1209,7 @@
 .bt-result-diagnostics svg,
 .bt-gui-parity-cards svg {
   min-height: var(--v59-chart-height);
+  width: 100%;
 }
 .bt-cadence-diagnostic { grid-column: 1 / -1; }
 .bt-gui-parity-groups { display: flex; flex-direction: column; gap: var(--v59-gap); }
@@ -1344,6 +1345,9 @@
   .bt-detail-summary-layout { grid-template-columns: minmax(0, 1fr); }
   .v4-reports-body { grid-template-columns: minmax(0, 1fr); }
   .v4-reports-list { max-height: 460px; }
+}
+@media (max-width: 760px) {
+  :root { --v59-chart-height: 320px; }
 }
 @media (max-width: 640px) {
   .bt-summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
