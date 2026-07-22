@@ -1222,7 +1222,7 @@
 .bt-gui-parity-group-hd span,
 .bt-parity-provenance { color: var(--ink-2); font-size: 11px; }
 .bt-detail-summary-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 12px; }
-.bt-detail-primary-chart { min-height: var(--v59-chart-h); height: var(--v59-chart-h); }
+.bt-detail-primary-chart { min-height: var(--v59-chart-height); height: var(--v59-chart-height); }
 .bt-detail-summary-rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .bt-detail-holdings-strip { min-height: 96px; }
 
@@ -1251,6 +1251,20 @@
 }
 .history-condition-tree-viewport { max-height: 520px; overflow: auto; scrollbar-gutter: stable; }
 .history-condition-code-viewport { max-height: 440px; overflow: auto; }
+.history-condition-row-button,
+.history-condition-toggle,
+.history-condition-sort {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.history-condition-row-button { width: 100%; padding: 0; text-align: left; cursor: pointer; }
+.history-condition-toggle { width: 100%; display: flex; align-items: center; gap: 8px; padding: 0; text-align: left; cursor: pointer; flex-wrap: wrap; }
+.history-condition-sort { width: 100%; padding: 0; text-align: inherit; cursor: pointer; }
+.history-condition-row-button:focus-visible,
+.history-condition-toggle:focus-visible,
+.history-condition-sort:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 3px; }
 .run-compare-table,
 .history-condition-index-viewport table,
 .history-condition-evaluation-viewport table,

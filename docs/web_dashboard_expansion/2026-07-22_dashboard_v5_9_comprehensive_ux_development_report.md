@@ -118,3 +118,16 @@ Dashboard engineering is no longer a blocker for ordinary research. Research can
 7. treat full-day Replay profiling and regeneration of old report HTML as separate evidence-backed maintenance work, not prerequisites for research.
 
 The release does not authorize live trading, broker connection, V3K gates, or protected database changes.
+
+## 9. Independent review closure
+
+The first independent architecture review returned `BLOCK` and the branch was not merged. Every finding was addressed before the PR was updated:
+
+| Review finding | Resolution |
+|---|---|
+| Superseded Backtest result/Monte Carlo responses could overwrite a newer Live/History selection | Added abort controllers, request sequence and source-key acceptance guards, unmount cleanup, and an executable A→B guard test |
+| Metrics-only generation could render zero-filled analysis and lose stored MDD | Added a fail-closed metrics-only summary, `max_drawdown_pct` alias handling, and explicit unavailable chart evidence |
+| v5.9 CSS still used an old immutable cache key | Build now hashes normalized `v4.css`, writes the hash to the manifest, updates `v4.html`, and verifies the contract |
+| History tree interactions were mouse-only | Research rows, stage/condition toggles, and sortable headers now use focusable buttons, `aria-expanded`/`aria-pressed`, and visible keyboard focus |
+| Backtest detail referenced a nonexistent chart-height token | Corrected to `--v59-chart-height` |
+| Report catalog was grouped before limiting and therefore not globally newest-first | Preserved the globally date-sorted catalog order and changed the UI label to `최신순 리포트` |

@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import sys
+import subprocess
 import time
 from pathlib import Path
 
@@ -354,3 +355,41 @@ def test_v59_result_library_bounds_large_dom_lists():
 
     assert "filtered.slice(0, visibleLimit).map" in source
     assert "setVisibleLimit(limit => Math.min(limit + 60, filtered.length))" in source
+
+
+def test_v59_result_request_guard_rejects_superseded_sources_and_preserves_mdd_alias():
+    guard_uri = (
+        Path(PROJECT_ROOT)
+        / "ai_strategy_loop"
+        / "dashboard"
+        / "frontend"
+        / "bt-request-guard.mjs"
+    ).resolve().as_uri()
+    script = f"""
+      const mod = await import('{guard_uri}');
+      const oldController = new AbortController();
+      const currentController = new AbortController();
+      const state = {{ seq: 2 }};
+      oldController.abort();
+      const checks = {{
+        oldAborted: mod.btRequestIsCurrent(state, 1, 'run-b/2', 'run-a/1', oldController.signal),
+        oldSequence: mod.btRequestIsCurrent(state, 1, 'run-b/2', 'run-a/1', currentController.signal),
+        oldSource: mod.btRequestIsCurrent(state, 2, 'run-b/2', 'run-a/1', currentController.signal),
+        current: mod.btRequestIsCurrent(state, 2, 'run-b/2', 'run-b/2', currentController.signal),
+        mdd: mod.btMetricValue({{ max_drawdown_pct: 17.8 }}, {{}}, 'mdd_pct'),
+        missingCagr: mod.btMetricValue({{}}, {{}}, 'cagr') ?? null,
+      }};
+      console.log(JSON.stringify(checks));
+    """
+    completed = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == (
+        '{"oldAborted":false,"oldSequence":false,"oldSource":false,'
+        '"current":true,"mdd":17.8,"missingCagr":null}'
+    )

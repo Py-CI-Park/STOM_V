@@ -351,9 +351,10 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                         <tr key={row.research_id} style={{
                           borderTop: "1px solid var(--line-1)",
                           background: active ? "rgba(159,180,255,0.08)" : "transparent",
-                          cursor: "pointer",
-                        }} onClick={() => selectResearch(row.research_id)}>
-                          <td className="mono" style={{ padding: "7px 8px", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{row.research_id}</td>
+                        }}>
+                          <td className="mono" style={{ padding: "7px 8px", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <button type="button" className="history-condition-row-button" aria-pressed={active} onClick={() => selectResearch(row.research_id)}>{row.research_id}</button>
+                          </td>
                           <td style={{ padding: "7px 8px", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
                             <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{row.label || row.research_id}</div>
                           </td>
@@ -414,11 +415,11 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                     const stageConditions = conditionRows.filter(c => c.stage_id === stage.stage_id);
                     return (
                       <div key={stage.stage_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleStage(stage.stage_id)}>
+                        <button type="button" className="history-condition-toggle" aria-expanded={stageOpen} onClick={() => toggleStage(stage.stage_id)}>
                           <span className="mono">{stageOpen ? "▼" : "▶"}</span>
                           <span className="mono" style={{ color: "var(--ink-0)" }}>{stage.label || stage.stage_id}</span>
                           <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{stage.stage_id}</span>
-                        </div>
+                        </button>
                         {stageOpen && (
                           <div className="history-condition-tree-viewport" style={{ marginTop: 8, marginLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
                             {sections.conditions && sections.conditions.err && (
@@ -437,7 +438,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                               const parentId = (meta && meta.parent_condition_id) || cond.parent_condition_id;
                               return (
                                 <div key={cond.condition_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 6 }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", cursor: "pointer" }} onClick={() => toggleCondition(cond.condition_id)}>
+                                  <button type="button" className="history-condition-toggle" aria-expanded={condOpen} onClick={() => toggleCondition(cond.condition_id)}>
                                     <span className="mono">{condOpen ? "▼" : "▶"}</span>
                                     <span className="badge" style={{ color: cond.side === "sell" ? "var(--red)" : "var(--teal)" }}>{cond.side || "-"}</span>
                                     <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{cond.condition_id}</span>
@@ -452,7 +453,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                                     {meta && ("hypotheses_present" in meta) && (
                                       <span className="badge" title="가설(hypotheses_json) 존재 여부">가설 {_hctPresence(!!meta.hypotheses_present)}</span>
                                     )}
-                                  </div>
+                                  </button>
                                   {condOpen && (
                                     <div className="history-condition-code-viewport" style={{ marginTop: 6, marginLeft: 18 }}>
                                       {sections.evaluations && sections.evaluations.err && (
@@ -491,12 +492,12 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                           <thead>
                             <tr style={{ color: "var(--ink-3)" }}>
                               {HCT_EVAL_COLUMNS.map(col => (
-                                <th
-                                  key={col.key}
-                                  style={{ textAlign: col.numeric ? "right" : "left", padding: "6px 8px", cursor: col.numeric ? "pointer" : "default" }}
-                                  onClick={() => col.numeric && toggleSort(col.key)}
-                                >
-                                  {col.label}{sortKey === col.key ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
+                                <th key={col.key} style={{ textAlign: col.numeric ? "right" : "left", padding: "6px 8px" }}>
+                                  {col.numeric ? (
+                                    <button type="button" className="history-condition-sort" onClick={() => toggleSort(col.key)} aria-label={`${col.label} 정렬`}>
+                                      {col.label}{sortKey === col.key ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
+                                    </button>
+                                  ) : col.label}
                                 </th>
                               ))}
                             </tr>

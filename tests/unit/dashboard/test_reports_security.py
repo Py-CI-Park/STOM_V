@@ -280,6 +280,8 @@ def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregiste
     assert "rp.status" in source and "selectedReport.status" in source
     assert "rp.trust" in source and "selectedReport.trust" in source
     assert "content_sha256" in source and "source_sha256" in source
+    assert "const catalogReports = filteredReports;" in source
+    assert "최신순 리포트" in source
     assert "v4-reports-toc-toggle" in source
     assert "v4-reports-toc-slot.open" in css
     assert "@media (max-width: 1200px)" in css

@@ -15,8 +15,12 @@ const {
 
 // 무예외 fetch 헬퍼 — 실패 시 throw 대신 거부를 호출측 catch 로 흘린다.
 //   backtest-charts.jsx 의 BtResultArea 도 _btFetchJson 을 전역으로 공유해 쓴다(호출은 렌더 시점).
-function _btFetchJson(url, timeoutMs) {
-  return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 5000) })
+function _btFetchJson(url, timeoutMs, externalSignal) {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs || 5000);
+  const signal = externalSignal && typeof AbortSignal.any === "function"
+    ? AbortSignal.any([timeoutSignal, externalSignal])
+    : (externalSignal || timeoutSignal);
+  return fetch(url, { signal })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 function _btPostJson(url, body, timeoutMs) {

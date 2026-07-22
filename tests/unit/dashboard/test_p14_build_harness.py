@@ -221,6 +221,11 @@ def test_content_hash_cache_consistency() -> None:
     index = _read(FRONTEND / "index.html")
     assert f"bundle/app.js?v={app_v}" in index, "index.html app.js ?v= 가 content-hash 와 불일치(stale)."
     assert f"bundle/stom-ui.js?v={stom_v}" in index, "index.html stom-ui.js ?v= 가 content-hash 와 불일치(stale)."
+    v4_css_raw = (FRONTEND / "v4.css").read_bytes().replace(b"\r\n", b"\n")
+    v4_css_v = hashlib.sha256(v4_css_raw).hexdigest()[:8]
+    assert manifest["styles"]["v4.css"]["v"] == v4_css_v
+    v4_html = _read(FRONTEND / "v4.html")
+    assert f"/ui/v4.css?v={v4_css_v}" in v4_html, "v4.html v4.css ?v= 가 content-hash 와 불일치(stale)."
     # CSS is not inside the JS manifest, but every served HTML entry must carry the same explicit
     # cache pin so a styles.css edit cannot leave one route stale.
     style_pins = {}

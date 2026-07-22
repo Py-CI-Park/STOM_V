@@ -173,13 +173,8 @@ function V4Reports({ baseUrl }) {
     const bt = Date.parse(b.generated_at || b.date || "") || 0;
     return bt - at || String(a.path || "").localeCompare(String(b.path || ""));
   });
-  const catalogReports = ["run", "step", "legacy", "unregistered"].flatMap(kind =>
-    filteredReports.filter(rp => _reportKind(rp) === kind));
+  const catalogReports = filteredReports;
   const visibleReports = catalogReports.slice(0, Math.min(reportLimit, 250));
-  const runReports = visibleReports.filter(rp => _reportKind(rp) === "run");
-  const stepReports = visibleReports.filter(rp => _reportKind(rp) === "step");
-  const legacyReports = visibleReports.filter(rp => _reportKind(rp) === "legacy");
-  const unregisteredReports = visibleReports.filter(rp => _reportKind(rp) === "unregistered");
   const exampleReport = reports.find(rp => _reportKind(rp) === "run") || reports.find(rp => _reportKind(rp) === "step") || null;
   const wikiFiltered = (wiki || []).filter(d => {
     const q = wikiQuery.trim().toLowerCase();
@@ -262,10 +257,7 @@ function V4Reports({ baseUrl }) {
               {list === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
               {list !== null && list.length === 0 && <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>}
               {list !== null && list.length > 0 && catalogReports.length === 0 && <div className="v4-reports-empty mono">검색 결과 없음</div>}
-              {runReports.length > 0 && <><div className="v6-report-group run mono">등록 결과 리포트 · run 종합 {runReports.length}건</div>{runReports.map(renderReportItem)}</>}
-              {stepReports.length > 0 && <><div className="v6-report-group mono">등록 스텝 리포트 · {stepReports.length}건</div>{stepReports.map(renderReportItem)}</>}
-              {legacyReports.length > 0 && <><div className="v6-report-group mono">등록 레거시 리포트 · {legacyReports.length}건</div>{legacyReports.map(renderReportItem)}</>}
-              {unregisteredReports.length > 0 && <><div className="v6-report-group unregistered mono">미등록·검증 불가 · {unregisteredReports.length}건</div>{unregisteredReports.map(renderReportItem)}</>}
+              {visibleReports.length > 0 && <><div className="v6-report-group mono">최신순 리포트 · {visibleReports.length}/{catalogReports.length}건</div>{visibleReports.map(renderReportItem)}</>}
               {catalogReports.length > visibleReports.length && <button className="btn ghost sm" onClick={() => setReportLimit(limit => Math.min(limit + 50, 250))}>더 보기 · {visibleReports.length}/{catalogReports.length}</button>}
             </aside>
             <div className="v4-reports-main">

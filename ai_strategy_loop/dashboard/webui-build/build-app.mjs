@@ -78,11 +78,13 @@ async function buildServedBundle(outfile) {
 // ============================================================================
 function runPostBuild(manifestModelFields) {
   // ---------- content-hash 계산 ----------
-  const hash8 = (p) => createHash("sha256").update(readFileSync(p)).digest("hex").slice(0, 8);
+  const hash8 = (p) => createHash("sha256").update(readFileSync(p).toString().replace(/\r\n/g, "\n")).digest("hex").slice(0, 8);
   const appPath = resolve(BUNDLE, "app.js");
   const appV = hash8(appPath);
   const stomPath = resolve(BUNDLE, "stom-ui.js");
   const stomV = hash8(stomPath);  // stom-ui.js 는 선행 `vite build` 산출물(분리·불변).
+  const v4CssPath = resolve(FRONTEND, "v4.css");
+  const v4CssV = hash8(v4CssPath);
 
   // ---------- HTML ?v= 자동 갱신(수동 핀 폐지) ----------
   //   대상: bundle/app.js + bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
@@ -96,6 +98,13 @@ function runPostBuild(manifestModelFields) {
       `$1/ui/bundle/${name}?v=${v}$3`,
     );
   };
+  const setCssV = (html, name, v) => {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return html.replace(
+      new RegExp(`(href=["'])(?:/ui/)?${esc}(\\?v=[^"']*)?(["'])`, "g"),
+      `$1/ui/${name}?v=${v}$3`,
+    );
+  };
 
   const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html", "v4.html"];
   const touched = [];
@@ -106,6 +115,7 @@ function runPostBuild(manifestModelFields) {
     let out = s;
     if (out.includes("bundle/app.js")) out = setV(out, "app.js", appV);
     if (out.includes("bundle/stom-ui.js")) out = setV(out, "stom-ui.js", stomV);
+    if (out.includes("v4.css")) out = setCssV(out, "v4.css", v4CssV);
     if (out !== s) { writeFileSync(p, out, "utf8"); touched.push(h); }
   }
 
@@ -113,10 +123,11 @@ function runPostBuild(manifestModelFields) {
   const manifest = {
     note: "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
     bundles: { "app.js": { v: appV }, "stom-ui.js": { v: stomV } },
+    styles: { "v4.css": { v: v4CssV } },
     ...manifestModelFields,
   };
   writeFileSync(resolve(BUNDLE, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
-  return { appV, stomV, touched };
+  return { appV, stomV, v4CssV, touched };
 }
 
 // ============================================================================
@@ -124,10 +135,10 @@ function runPostBuild(manifestModelFields) {
 // ============================================================================
 mkdirSync(BUNDLE, { recursive: true });
 await buildServedBundle(resolve(BUNDLE, "app.js"));
-const { appV, stomV, touched } = runPostBuild({
+const { appV, stomV, v4CssV, touched } = runPostBuild({
   model: "bundle",
   entry: ENTRY_REL,
   externalizedGlobals: EXTERNALIZED_GLOBALS,
 });
-console.log(`[build-app][bundle] app.js v=${appV} (entry=${ENTRY_REL}, react via alias-to-shim) · stom-ui.js v=${stomV}`);
+console.log(`[build-app][bundle] app.js v=${appV} (entry=${ENTRY_REL}, react via alias-to-shim) · stom-ui.js v=${stomV} · v4.css v=${v4CssV}`);
 console.log(`[build-app][bundle] html ?v= 갱신: ${touched.join(", ") || "(변경 없음)"}`);

@@ -1454,13 +1454,13 @@ def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
             "has_csv": True,
         }
     # CSV 부재 — generations 행 메트릭 요약 + 빈 분석 구조(무예외).
-    #   total_profit_pct 는 None(미측정)을 0.0으로 강제하지 않는다(손실 세대 오표시 방지).
+    #   None(미측정)은 모든 저장 메트릭에서 그대로 전파해 실제 0과 구분한다.
     fallback_metrics = {
-        "trade_count": int(row.get("trade_count", 0) or 0),
-        "total_profit_krw": float(row.get("profit", 0.0) or 0.0),
+        "trade_count": _opt_metric(row.get("trade_count")),
+        "total_profit_krw": _opt_metric(row.get("profit")),
         "total_profit_pct": _opt_metric(row.get("total_profit_pct")),
-        "max_drawdown_pct": float(row.get("mdd", 0.0) or 0.0),
-        "payoff_ratio": float(row.get("payoff_ratio", 0.0) or 0.0),
+        "max_drawdown_pct": _opt_metric(row.get("mdd")),
+        "payoff_ratio": _opt_metric(row.get("payoff_ratio")),
     }
     return {
         "available": True,

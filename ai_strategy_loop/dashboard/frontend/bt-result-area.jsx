@@ -8,10 +8,11 @@
      로 남아 load() 호출 시점에 `ReferenceError: _btFetchJson is not defined` 가 발생한다.
 */
 import {
-  useState_btc, useEffect_btc, useCallback_btc,
+  useState_btc, useEffect_btc, useCallback_btc, useRef_btc,
   _btDateLabel, _btDownloadAnalysisCsv, _useCountUp, _BtArcGauge, _BtSparkline,
 } from "./bt-chart-utils.jsx";
 import { _btFetchJson } from "./bt-tab-utils.jsx";
+import { btRequestIsCurrent, btMetricValue } from "./bt-request-guard.mjs";
 import {
   BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCumulativeTradesChart,
 } from "./bt-equity-charts.jsx";
@@ -49,6 +50,9 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const [mcLoading, setMcLoading] = useState_btc(false);
   // 전체화면 분석 모드(트랙 D) — position:fixed 오버레이. Esc 로 닫기.
   const [fullscreen, setFullscreen] = useState_btc(false);
+  const resultRequestRef = useRef_btc({ seq: 0, controller: null });
+  const mcRequestRef = useRef_btc({ seq: 0, controller: null });
+  const sourceKeyRef = useRef_btc("");
 
   // Esc 키로 전체화면 닫기 + 배경 스크롤 잠금(전체화면 동안만).
   useEffect_btc(() => {
@@ -70,7 +74,18 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
 
   const load = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !hasSource) { setResult(null); return; }
+    const requestState = resultRequestRef.current;
+    if (requestState.controller) requestState.controller.abort();
+    if (isDemo || !baseUrl || !hasSource) {
+      requestState.controller = null;
+      setResult(null);
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const seq = requestState.seq + 1;
+    resultRequestRef.current = { seq, controller };
+    const expectedKey = sourceKey;
     setLoading(true); setErr("");
     let url;
     if (jobId) {
@@ -80,27 +95,62 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id)
           + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
     }
-    _btFetchJson(url, 8000)
-      .then(j => { setResult(j); if (!(j && j.available)) setErr("결과를 찾을 수 없습니다"); })
-      .catch(e => { setResult(null); setErr(String(e)); })
-      .finally(() => setLoading(false));
+    _btFetchJson(url, 8000, controller.signal)
+      .then(j => {
+        if (!btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setResult(j);
+        if (!(j && j.available)) setErr("결과를 찾을 수 없습니다");
+      })
+      .catch(e => {
+        if (!btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setResult(null); setErr(String(e));
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setLoading(false);
+      });
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
   // 몬테카를로 재계산(현재 구간 반영). 잡 전용 — 진화 세대는 스킵. 무예외.
   const loadMc = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !jobId) { setMc(null); return; }
+    const requestState = mcRequestRef.current;
+    if (requestState.controller) requestState.controller.abort();
+    if (isDemo || !baseUrl || !jobId) {
+      requestState.controller = null;
+      setMc(null);
+      setMcLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const seq = requestState.seq + 1;
+    mcRequestRef.current = { seq, controller };
+    const expectedKey = sourceKey;
     setMcLoading(true);
     let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
     if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
-    _btFetchJson(url, 12000)
-      .then(j => setMc((j && j.montecarlo) || null))
-      .catch(() => setMc(null))
-      .finally(() => setMcLoading(false));
-  }, [baseUrl, isDemo, jobId, range]);
+    _btFetchJson(url, 12000, controller.signal)
+      .then(j => {
+        if (!btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
+        setMc((j && j.montecarlo) || null);
+      })
+      .catch(() => {
+        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMc(null);
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
+      });
+  }, [baseUrl, isDemo, jobId, sourceKey, range]);
 
+  useEffect_btc(() => {
+    sourceKeyRef.current = sourceKey;
+    setResult(null); setErr(""); setRange(null); setMc(null);
+    if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
+    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
+  }, [sourceKey]);
   useEffect_btc(() => { load(); }, [load]);
-  // 소스(잡/세대)가 바뀌면 구간 선택·몬테카를로 초기화.
-  useEffect_btc(() => { setRange(null); setMc(null); }, [sourceKey]);
+  useEffect_btc(() => () => {
+    if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
+    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
+  }, []);
   // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
   useEffect_btc(() => {
     if (jobId && result && result.available && result.status !== "no_trades") { loadMc(); }
@@ -202,16 +252,31 @@ const analysis = result.analysis || {};
 // 메트릭 우선순위: CLI metrics(브리핑 필드) → 없으면 analysis.summary 매핑.
 const metrics = result.metrics || {};
 const summary = analysis.summary || {};
-const metricVal = (key) => {
-  if (metrics[key] != null) return metrics[key];
-  // analysis.summary 폴백 매핑(cagr 은 summary 에 없음).
-  const map = {
-    trade_count: summary.trade_count, win_rate: summary.win_rate,
-    total_profit_pct: summary.total_profit_pct, total_profit_krw: summary.total_profit_krw,
-    mdd_pct: summary.max_drawdown_pct, cagr: undefined,
-  };
-  return map[key];
-};
+const metricVal = (key) => btMetricValue(metrics, summary, key);
+const metricsOnly = result.has_csv === false || result.artifact_state === "metrics_only_csv_missing";
+if (metricsOnly) {
+  return (
+    <div className="panel bt-result-metrics-only" role="status">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>메트릭 요약 · 차트 증거 없음</div>
+        <span className="badge warn">CSV 없음</span>
+      </div>
+      <div className="panel-bd">
+        <p className="bt-section-purpose">{result.message || "결과 CSV가 없어 저장된 세대 메트릭만 표시합니다. 차트와 상세 분석은 제공하지 않습니다."}</p>
+        <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}>
+          {_BT_METRIC_CARDS.map(meta => {
+            const value = metricVal(meta.key);
+            const num = typeof value === "number" && Number.isFinite(value) ? value : null;
+            return <_BtMetricCard key={meta.key} meta={meta} num={num} dailyPnl={[]} />;
+          })}
+        </div>
+        <div className="mono" style={{ marginTop: 10, color: "var(--ink-3)" }}>
+          artifact={result.artifact_state || "metrics_only"} · evidence={result.evidence_id || "없음"}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const distribution = analysis.distribution || {};
 const insights = analysis.insights || [];

@@ -85,3 +85,14 @@ def test_history_compare_and_condition_tree_are_immediately_usable() -> None:
     assert "research-records-selected-detail" in records
     assert "Research date" in records
     assert "Artifacts" in records
+
+
+def test_history_condition_tree_uses_keyboard_operable_controls() -> None:
+    tree = _read("history-condition-tree.jsx")
+    css = _read("v4.css")
+
+    assert 'className="history-condition-row-button"' in tree
+    assert tree.count('className="history-condition-toggle" aria-expanded=') == 2
+    assert 'className="history-condition-sort"' in tree
+    assert '<tr key={row.research_id} style={{' in tree
+    assert '.history-condition-toggle:focus-visible' in css
