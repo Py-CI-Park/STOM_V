@@ -394,3 +394,19 @@ def test_v59_result_request_guard_rejects_superseded_sources_and_preserves_mdd_a
         '{"oldAborted":false,"oldSequence":false,"oldSource":false,'
         '"current":true,"mdd":17.8,"explicitNull":null,"missingCagr":null}'
     )
+
+
+def test_v591_backtest_charts_are_full_width_and_individually_large():
+    css = (
+        Path(PROJECT_ROOT)
+        / "ai_strategy_loop"
+        / "dashboard"
+        / "frontend"
+        / "v4.css"
+    ).read_text(encoding="utf-8")
+
+    shared_grid = css.split(".bt-primary-chart-grid,", 1)[1].split("}", 1)[0]
+    assert "grid-template-columns: minmax(0, 1fr);" in shared_grid
+    assert "repeat(2" not in shared_grid
+    assert "--v59-chart-height: clamp(420px, 38vw, 560px);" in css
+    assert ".bt-diagnostic-grid { grid-template-columns: minmax(0, 1fr); }" in css
