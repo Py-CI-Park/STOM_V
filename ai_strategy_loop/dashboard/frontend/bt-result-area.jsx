@@ -48,6 +48,28 @@ const _BT_RESULT_CAPABILITIES = {
   none: { label: "선택 없음", range: false, monteCarlo: false, compare: false,
     notes: { range: "결과를 선택한 뒤 사용할 수 있습니다.", monteCarlo: "결과를 선택한 뒤 사용할 수 있습니다.", compare: "결과를 선택한 뒤 사용할 수 있습니다." } },
 };
+const _BT_RESULT_LAYOUT_KEY = "stom_v511_result_layout";
+const _BT_RESULT_DIAGNOSTICS_KEY = "stom_v511_result_diagnostics_open";
+const _BT_RESULT_LAYOUTS = ["auto", "wide", "balanced", "dense"];
+function _btStoredPreference(key, fallback) {
+  try {
+    const value = window.localStorage.getItem(key);
+    return value === null ? fallback : value;
+  } catch (e) {
+    return fallback;
+  }
+}
+function _btResultColumns(layout, width) {
+  const available = Number(width) || 0;
+  if (available < 864) return 1;
+  if (layout === "wide") return 1;
+  if (layout === "dense") {
+    const maxColumns = Math.max(1, Math.min(4, Math.floor((available + 12) / 432)));
+    return Math.min(available >= 3000 ? 4 : 3, maxColumns);
+  }
+  if (layout === "auto") return Math.max(1, Math.min(4, available >= 2520 ? 4 : available >= 1680 ? 3 : 2));
+  return 2;
+}
 
 function _BtResultCapabilities({ capabilities }) {
   return (
@@ -256,7 +278,35 @@ function ResultDetailBody({
   onFullscreen, onCloseFullscreen, fullscreen,
 }) {
   const { isEvo, evoSource, jobId, baseUrl, capabilities } = sourceContext || {};
-  const [diagnosticsOpen, setDiagnosticsOpen] = useState_btc(false);
+  const [layout, setLayout] = useState_btc(() => {
+    const stored = _btStoredPreference(_BT_RESULT_LAYOUT_KEY, "balanced");
+    return _BT_RESULT_LAYOUTS.includes(stored) ? stored : "balanced";
+  });
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState_btc(
+    () => _btStoredPreference(_BT_RESULT_DIAGNOSTICS_KEY, "1") !== "0",
+  );
+  const layoutRef = useRef_btc(null);
+  const [layoutWidth, setLayoutWidth] = useState_btc(() => typeof window === "undefined" ? 0 : window.innerWidth);
+  const columns = _btResultColumns(layout, layoutWidth);
+  useEffect_btc(() => {
+    const node = layoutRef.current;
+    if (!node) return undefined;
+    const update = () => setLayoutWidth(node.clientWidth || window.innerWidth || 0);
+    update();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", update);
+      return () => window.removeEventListener("resize", update);
+    }
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  useEffect_btc(() => {
+    try { window.localStorage.setItem(_BT_RESULT_LAYOUT_KEY, layout); } catch (e) {}
+  }, [layout]);
+  useEffect_btc(() => {
+    try { window.localStorage.setItem(_BT_RESULT_DIAGNOSTICS_KEY, diagnosticsOpen ? "1" : "0"); } catch (e) {}
+  }, [diagnosticsOpen]);
 // no_trades → 안내 카드(에러 아님).
 if (result.status === "no_trades") {
   return (
@@ -316,12 +366,24 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div className="bt-result-flow bt-result-grid-12">
+  <div ref={layoutRef} className={"bt-result-flow bt-result-grid-12 bt-result-layout-" + layout}
+       style={{ "--bt-result-columns": columns }}>
     <nav className="bt-result-nav" aria-label="결과 분석 섹션">
       <a href="#bt-result-summary-title">요약</a>
       <a href="#bt-result-primary-title">핵심 결과</a>
       <a href="#bt-result-risk-title">MDD · 위험</a>
       <a href="#bt-result-diagnostics-title" onClick={() => setDiagnosticsOpen(true)}>진단</a>
+      <span className="bt-result-layout-status" role="status">
+        레이아웃: {layout} · 실제 {columns}열
+      </span>
+      <span className="bt-result-layout-controls" role="radiogroup" aria-label="결과 차트 레이아웃">
+        {_BT_RESULT_LAYOUTS.map(mode => (
+          <button key={mode} type="button" className={"btn ghost sm" + (layout === mode ? " active" : "")}
+                  role="radio" aria-checked={layout === mode} onClick={() => setLayout(mode)}>
+            {mode === "auto" ? "자동" : mode === "wide" ? "넓게 1열" : mode === "balanced" ? "균형 2열" : "밀집 3/4열"}
+          </button>
+        ))}
+      </span>
       <button type="button" className="btn ghost sm" onClick={() => setDiagnosticsOpen(true)}
               aria-expanded={diagnosticsOpen} aria-controls="bt-result-diagnostics">
         모든 진단 펼치기
@@ -452,22 +514,22 @@ return (
           {diagnosticsOpen ? "진단 접기" : "진단 펼치기"}
         </button>
       </div>
-      {diagnosticsOpen && (
-        <div id="bt-result-diagnostics-body" className="bt-diagnostic-grid bt-equal-card-grid">
-          <BtHeatmap heatmap={analysis.heatmap} />
-          <BtMaeMfeScatter points={analysis.mae_mfe} />
-          <BtQuantPanel analysis={analysis} />
-          <BtExitReasonPanel rows={analysis.exit_reasons} />
-          <BtOrderflowPanel orderflow={orderflow} />
-          <BtStatTestPanel stats={stats} />
-          <BtRollingChart rolling={analysis.rolling} />
-          <BtMonthlyCalendar monthly={analysis.monthly} />
-          <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
-          <div className="bt-cadence-diagnostic">
-            <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-          </div>
+      <div id="bt-result-diagnostics-body"
+           className={"bt-diagnostic-grid bt-equal-card-grid" + (diagnosticsOpen ? "" : " is-collapsed")}
+           aria-hidden={!diagnosticsOpen}>
+        <BtHeatmap heatmap={analysis.heatmap} />
+        <BtMaeMfeScatter points={analysis.mae_mfe} />
+        <BtQuantPanel analysis={analysis} />
+        <BtExitReasonPanel rows={analysis.exit_reasons} />
+        <BtOrderflowPanel orderflow={orderflow} />
+        <BtStatTestPanel stats={stats} />
+        <BtRollingChart rolling={analysis.rolling} />
+        <BtMonthlyCalendar monthly={analysis.monthly} />
+        <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
+        <div className="bt-cadence-diagnostic">
+          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
         </div>
-      )}
+      </div>
     </section>
 
     {(topC.length > 0 || botC.length > 0) && (
