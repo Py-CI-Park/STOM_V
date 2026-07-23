@@ -506,6 +506,7 @@ class TestFrontendStructure:
         assert 'value > 0 ? "positive" : value < 0 ? "negative" : "neutral"' in src
         assert '"보합"' in src
         assert 'hofClass("metric", "missing")' in src
+        assert 'formatted.replace(/^\\+/, "")' in src
         assert '"낮음" : tier === "caution" ? "주의" : "높음"' in src
 
     def test_catalog_request_and_pagination_contract_remain_server_owned(self):

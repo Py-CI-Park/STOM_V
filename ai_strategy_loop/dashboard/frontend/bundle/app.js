@@ -22948,10 +22948,11 @@ def signal_sell(pos, bar, ind):
   function HofSignedValue({ value, format, label }) {
     if (!hofNumber(value)) return /* @__PURE__ */ React.createElement("span", { className: hofClass("metric", "missing") }, "\u2014");
     const tone = hofTone(value);
-    const prefix = value > 0 ? "+" : "";
+    const formatted = String(format(value));
+    const signed = value > 0 ? "+" + formatted.replace(/^\+/, "") : formatted;
     const state = value > 0 ? "\uC774\uC775" : value < 0 ? "\uC190\uC2E4" : "\uBCF4\uD569";
     const icon = value > 0 ? "\u25B2" : value < 0 ? "\u25BC" : "\u25CF";
-    return /* @__PURE__ */ React.createElement("span", { className: hofClass("metric", tone), "aria-label": `${label} ${state} ${prefix}${format(value)}` }, /* @__PURE__ */ React.createElement("b", { "aria-hidden": "true" }, icon), " ", state, " ", prefix, format(value));
+    return /* @__PURE__ */ React.createElement("span", { className: hofClass("metric", tone), "aria-label": `${label} ${state} ${signed}` }, /* @__PURE__ */ React.createElement("b", { "aria-hidden": "true" }, icon), " ", state, " ", signed);
   }
   function HofMddValue({ value }) {
     if (!hofNumber(value)) return /* @__PURE__ */ React.createElement("span", { className: hofClass("mdd", "missing") }, "\u2014");

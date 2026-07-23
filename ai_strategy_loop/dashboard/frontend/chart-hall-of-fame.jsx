@@ -22,11 +22,12 @@ const hofClass = (kind, tone) => `hof-${kind} hof-${kind}--${tone}`;
 function HofSignedValue({ value, format, label }) {
   if (!hofNumber(value)) return <span className={hofClass("metric", "missing")}>—</span>;
   const tone = hofTone(value);
-  const prefix = value > 0 ? "+" : "";
+  const formatted = String(format(value));
+  const signed = value > 0 ? "+" + formatted.replace(/^\+/, "") : formatted;
   const state = value > 0 ? "이익" : value < 0 ? "손실" : "보합";
   const icon = value > 0 ? "▲" : value < 0 ? "▼" : "●";
-  return <span className={hofClass("metric", tone)} aria-label={`${label} ${state} ${prefix}${format(value)}`}>
-    <b aria-hidden="true">{icon}</b> {state} {prefix}{format(value)}
+  return <span className={hofClass("metric", tone)} aria-label={`${label} ${state} ${signed}`}>
+    <b aria-hidden="true">{icon}</b> {state} {signed}
   </span>;
 }
 

@@ -1,0 +1,56 @@
+{
+  "schema_version": "stom-dashboard-v511-final-interaction-v1",
+  "observed_at": "2026-07-23",
+  "base_url": "http://127.0.0.1:8770",
+  "release": "v5.11.0",
+  "app_build": "812714fc",
+  "canonical_route": {
+    "input": "/ui/evolution/workbench?tab=research",
+    "final": "/ui/evolution/workbench",
+    "selected_tab": "성과",
+    "status": "passed"
+  },
+  "responsive_route_matrix": {
+    "widths": [375, 768, 1199, 1200, 1920, 2560, 3440],
+    "routes": [
+      "/ui/evolution",
+      "/ui/evolution/records",
+      "/ui/v4/?tab=reports",
+      "/ui/evolution/workbench",
+      "/ui/backtest",
+      "/ui/chart-replay",
+      "/ui/v4/?tab=settings"
+    ],
+    "cases": 49,
+    "horizontal_overflow_failures": 0,
+    "render_error_boundaries": 0,
+    "empty_roots": 0,
+    "status": "passed"
+  },
+  "hall_of_fame": {
+    "rendered_rows": 69,
+    "positive_sample": "▲ 이익 +305,178,048원",
+    "positive_computed_color": "rgb(76, 214, 179)",
+    "double_plus_found": false,
+    "horizontal_overflow": 0,
+    "status": "passed"
+  },
+  "replay": {
+    "quick_start": "최대 상승일",
+    "engine": "LWC",
+    "source": "min",
+    "received_bars_after_bounded_wait": 5,
+    "total_bars": 376,
+    "slider_max": 375,
+    "slider_disabled": false,
+    "screenshot_build": "812714fc",
+    "ohlc_range": "79,300–82,200",
+    "screenshot": "artifacts/v511_replay_lwc_lifecycle.png",
+    "status": "passed"
+  },
+  "limitations": [
+    "브라우저 게이트는 UI·상호작용 회귀 검증이며 투자 성과 증명이 아니다.",
+    "performance_proved는 false로 유지한다.",
+    "V3K 승인 게이트 상태는 3/6으로 변경하지 않았다."
+  ]
+}

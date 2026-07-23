@@ -290,15 +290,16 @@ class TestSimulationSource:
         assert "gridExtra" in root
 
     def test_engine_popover_wired(self):
-        """SimEnginePopover 가 정의·배선되고, 비대칭(LWC=체결강도 오버레이만)을 설명한다."""
+        """SimEnginePopover 가 정의·배선되고, LWC 기본과 보조 엔진 역할을 설명한다."""
         # P5.5 분해 — SimEnginePopover 정의·SimViewBar 배선은 sim-tab-controls.jsx 로 이동.
         src = _read_frontend("sim-tab-controls.jsx")
         assert "function SimEnginePopover" in src
         assert "<SimEnginePopover" in src
-        # 3엔진 모두 + LWC 비대칭 문구. "라이브"/"체결강도 오버레이만" 문구는 _SIM_ENGINE_ROWS(utils).
+        # 세 엔진과 v5.11 기본/고급/폴백 역할 문구는 _SIM_ENGINE_ROWS(utils)에 둔다.
         utils = _read_frontend("sim-tab-utils.jsx")
-        assert "라이브" in utils and "SVG" in utils and "LWC" in utils
-        assert "체결강도 오버레이만" in utils
+        assert '["LWC", "기본 · 전문 줌/크로스헤어 · 체결강도 오버레이"]' in utils
+        assert '["Canvas", "고급/실험적 · 풀 오더플로우' in utils
+        assert '["SVG", "무의존 폴백 · 풀 오더플로우' in utils
         assert "var(--ink-1)" in src
 
     def test_vwap_band_carried_into_store_bar(self):
