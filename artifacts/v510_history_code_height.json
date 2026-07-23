@@ -1,0 +1,22 @@
+{
+  "identity": "abmain0716f_p5_typed / gen 0\n분석 닫기",
+  "blocks": [
+    {
+      "height": 560,
+      "minHeight": "440px",
+      "maxHeight": "560px",
+      "overflowY": "auto",
+      "textLength": 3836
+    },
+    {
+      "height": 560,
+      "minHeight": "440px",
+      "maxHeight": "560px",
+      "overflowY": "auto",
+      "textLength": 1374
+    }
+  ],
+  "requests": [
+    "http://127.0.0.1:8784/strategy_code?run=abmain0716f_p5_typed&gen=0"
+  ]
+}

@@ -3913,3 +3913,53 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
     grid-template-columns: 1fr;
   }
 }
+/* v5.10 History: preserve the shared code viewer while giving archived
+   buy/sell conditions a readable, independently scrollable viewport. */
+.v4-history .rp-code-block,
+.v4-history .v4-history-code-block {
+  min-height: 440px;
+  max-height: 560px;
+  overflow: auto;
+}
+
+/* History read models can be long. Bound the local viewport so the surrounding
+   reading order and native keyboard focus remain intact. */
+.v4-history .research-records-list-viewport,
+.v4-history .run-compare-viewport,
+.v4-history .history-condition-index-viewport {
+  max-height: 440px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.v4-history .history-condition-detail-viewport {
+  max-height: 680px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.v4-history .history-condition-tree-viewport,
+.v4-history .history-condition-evaluation-viewport {
+  max-height: 360px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.v4-history .research-records-list-viewport:focus-visible,
+.v4-history .run-compare-viewport:focus-visible,
+.v4-history .history-condition-index-viewport:focus-visible,
+.v4-history .history-condition-detail-viewport:focus-visible,
+.v4-history .history-condition-tree-viewport:focus-visible,
+.v4-history .history-condition-evaluation-viewport:focus-visible {
+  outline: 2px solid var(--teal-dim);
+  outline-offset: 2px;
+}
+
+/* Sticky headings keep wide archive tables readable without mounting another
+   analysis surface. */
+.v4-history .research-records-sticky-header th,
+.v4-history .run-compare-sticky-header th,
+.v4-history .history-condition-sticky-header th,
+.v4-history .history-condition-evaluation-viewport thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-0);
+}

@@ -28,7 +28,7 @@ AXE_SOURCE = WEBUI_BUILD / "node_modules" / "axe-core" / "axe.min.js"
 AXE_PACKAGE = WEBUI_BUILD / "node_modules" / "axe-core" / "package.json"
 APP_BUNDLE = ROOT / "ai_strategy_loop" / "dashboard" / "frontend" / "bundle" / "app.js"
 TABS = ("research", "history", "reports", "workbench", "backtest", "replay", "catalog", "settings", "glossary")
-VIEWPORTS = (375, 768, 1280, 1920, 2560, 3440)
+VIEWPORTS = (375, 768, 1199, 1200, 1920, 2560, 3440)
 THEMES = ("dark", "light")
 MOTIONS = ("no-preference", "reduce")
 HARD_IMPACTS = frozenset(("serious", "critical"))
@@ -259,6 +259,54 @@ def _overflow_contract(page: Any) -> list[str]:
     return []
 
 
+def _quality_metrics(page: Any) -> dict[str, Any]:
+    return page.evaluate("""() => {
+        const rect = selector => {
+            const element = document.querySelector(selector);
+            if (!element) return null;
+            const box = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return {
+                width: Math.round(box.width * 100) / 100,
+                height: Math.round(box.height * 100) / 100,
+                display: style.display,
+                gridTemplateColumns: style.gridTemplateColumns,
+                overflowX: style.overflowX,
+                position: style.position,
+                top: style.top
+            };
+        };
+        const resources = performance.getEntriesByType('resource');
+        const longTasks = Array.isArray(window.__stomLongTasks) ? window.__stomLongTasks : null;
+        return {
+            documentHeight: document.documentElement.scrollHeight,
+            documentWidth: document.documentElement.scrollWidth,
+            viewportWidth: innerWidth,
+            viewportHeight: innerHeight,
+            domNodes: document.getElementsByTagName('*').length,
+            svgCount: document.querySelectorAll('svg').length,
+            canvasCount: document.querySelectorAll('canvas').length,
+            resourceCount: resources.length,
+            longTaskSupported: longTasks !== null,
+            longTaskCount: longTasks ? longTasks.length : null,
+            longTaskTotalMs: longTasks ? Math.round(longTasks.reduce((sum, value) => sum + value, 0) * 100) / 100 : null,
+            longTaskMaxMs: longTasks && longTasks.length ? Math.round(Math.max(...longTasks) * 100) / 100 : 0,
+            navigationDomContentLoadedMs: Math.round((performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd || 0) * 100) / 100,
+            computed: {
+                resultFlow: rect('.bt-result-flow'),
+                resultSection: rect('.bt-result-section'),
+                primaryChart: rect('.bt-primary-chart-grid .chart-frame, .bt-primary-chart-grid .panel'),
+                historyCode: rect('.v4-history .rp-code-block'),
+                reportsBody: rect('.v4-reports-body'),
+                reportsCatalog: rect('.v4-reports-list'),
+                resultNav: rect('.bt-result-nav')
+            }
+        };
+    }""")
+
+
+
+
 def _axe_violations(page: Any) -> tuple[str, list[dict[str, Any]]]:
     result = page.evaluate("""async () => {
         if (!window.axe || typeof window.axe.run !== 'function') throw new Error('axe was not injected');
@@ -307,6 +355,18 @@ def _run_case(browser: Any, base_url: str, axe_source: Path, axe_version: str, t
         context = browser.new_context(viewport={"width": width, "height": 900}, color_scheme=theme,
                                       reduced_motion=motion, service_workers="block")
         context.add_init_script(script=f"localStorage.setItem('stom_theme', {json.dumps(theme)});")
+        context.add_init_script(script="""(() => {
+            window.__stomLongTasks = [];
+            if (typeof PerformanceObserver !== 'function') return;
+            try {
+                const observer = new PerformanceObserver(list => {
+                    for (const entry of list.getEntries()) window.__stomLongTasks.push(entry.duration);
+                });
+                observer.observe({ type: 'longtask', buffered: true });
+            } catch (error) {
+                window.__stomLongTasks = null;
+            }
+        })();""")
 
         def validate_url(url: str, label: str) -> None:
             observed_urls.append(url)
@@ -397,12 +457,14 @@ def _run_case(browser: Any, base_url: str, axe_source: Path, axe_version: str, t
             errors.append(f"expected exactly one V4 app bundle script, found {len(app_scripts)}")
         page.wait_for_timeout(0)
         _append_network_boundary_errors(errors, blocked_requests, blocked_websockets)
+        quality_metrics = _quality_metrics(page)
         return {"tab": tab, "width": width, "theme": theme, "reducedMotion": motion == "reduce",
                 "finalUrl": page.url, "appBundleUrl": app_scripts[0] if len(app_scripts) == 1 else None,
                 "appBundleSha256": (hashlib.sha256(bundle_responses[0][1]).hexdigest()
                                     if len(bundle_responses) == 1 else None),
                 "observedUrls": observed_urls, "redirectUrls": redirect_urls,
                 "errors": errors, "axe": axe, "axeErrors": axe_errors,
+                "qualityMetrics": quality_metrics,
                 "passed": not errors and not axe_errors}
     except Exception as error:
         return {"tab": tab, "width": width, "theme": theme, "reducedMotion": motion == "reduce",

@@ -8,6 +8,7 @@
   - GET  /sim/days?src=tick|min                 → 일일 DB 날짜 인벤토리.
   - GET  /sim/stocks?date&src                    → 그날 종목(코드·이름·등락·거래대금) 등락순.
   - GET  /sim/signals?date&src&code&buy&sell      → 조건식 매매 신호(아래 정합 설계).
+  - GET  /sim/signals/batch?date&src&codes&buy&sell → bounded per-code signal results.
   - WS   /sim/ws                                  → 리플레이 세션(start/pause/resume/speed/seek/stop).
 
 조건식 매매 오버레이 — 엔진 정합(핵심 설계 결정):
@@ -386,6 +387,33 @@ def sim_signals(
     return {"trades": trades, "count": len(trades), "status": "ok", "job_id": job_id}
 
 
+@simulation_router.get("/signals/batch")
+def sim_signals_batch(
+    date: int = 0,
+    src: str = "tick",
+    codes: str = "",
+    buy: str = "",
+    sell: str = "",
+) -> Dict[str, Any]:
+    """One bounded request for selected-code overlays; each code retains its own result/error."""
+    all_codes = list(dict.fromkeys(
+        code.strip() for code in str(codes or "").split(",") if code.strip()
+    ))
+    selected = all_codes[:replay_engine.MAX_CODES]
+    results: Dict[str, Dict[str, Any]] = {}
+    for code in selected:
+        results[code] = sim_signals(date=date, src=src, code=code, buy=buy, sell=sell)
+    failed_codes = [
+        code for code, result in results.items() if result.get("status") != "ok"
+    ]
+    return {
+        "results": results,
+        "codes": selected,
+        "count": len(selected),
+        "failed_codes": failed_codes,
+        "truncated": len(all_codes) > replay_engine.MAX_CODES,
+    }
+
 def _spec_signature(spec: BacktestJobSpec) -> tuple:
     """동일 신호 spec 식별자 — 같은 날짜·종목·조건식·tf 면 잡을 재사용한다."""
     return (spec.buy, spec.sell, spec.start, spec.end, spec.timeframe, spec.one_code)
@@ -600,6 +628,7 @@ class SimReplaySession:
                 self.data.elapsed_seconds_at(self.data.bars_total - 1)
                 if self.data.bars_total else 0
             ),
+            "replay_metadata": self.data.metadata,
         })
         if self.data.bars_total == 0:
             await self._send({"type": "done"})

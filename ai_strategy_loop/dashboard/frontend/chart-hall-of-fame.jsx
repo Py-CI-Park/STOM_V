@@ -13,272 +13,171 @@ const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback
 const { useState: useState_rg, useEffect: useEffect_rg } = React;
 
 /* ─────────────────────────────────────────────────────────────────────────
-   명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합 패널.
-
-   GET /hall_of_fame 에서 {human:[...], ai:[...]} 를 받아 한 테이블에 합쳐 보여준다.
-   - 금액은 원 단위(fmtMoney), 수익률은 '운영금 대비'(%), 연평균은 단리 환산.
-   - AI 단기창(annual_unreliable)은 연평균을 회색 + '단기' 표기(과대 환산 경고).
-   - 인간(👤)은 초록/중립, AI(🤖)는 보라(violet) 뱃지로 시각 구분 → 인간 벤치마크가
-     'AI가 도달해야 할 목표선'으로 한눈에 보이게 한다.
-   - 정렬 토글(총수익률/연평균/MDD/payoff) + 필터(전체/인간/시드/AI). 기본=총수익률 ↓.
-   - demo면 미fetch(EquityOverlayChart 패턴). 빈 응답이면 빈 상태.
+   Hall separates the fixed human benchmark from the server-paginated AI
+   research catalog.  Missing stored values intentionally render as "—".
    ───────────────────────────────────────────────────────────────────────── */
 function HallOfFamePanel({ baseUrl, wsStatus }) {
-  const [data, setData] = useState_eq(null);   // {human:[...], ai:[...]}
+  const [human, setHuman] = useState_eq([]);
+  const [catalog, setCatalog] = useState_eq({ items: [], total: 0, returned: 0, next: null });
   const [loading, setLoading] = useState_eq(false);
+  const [loadingMore, setLoadingMore] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
-  const [sortKey, setSortKey] = useState_eq("total_return_pct");
+  const [sortKey, setSortKey] = useState_eq("score");
   const [sortDirection, setSortDirection] = useState_eq("desc");
-  const [filter, setFilter] = useState_eq("all");
+  const [statusFilter, setStatusFilter] = useState_eq("");
+  const [gateFilter, setGateFilter] = useState_eq("");
+  const [outcomeFilter, setOutcomeFilter] = useState_eq("");
   const [galleryOpen, setGalleryOpen] = useState_eq(false);
   const [lastUpdated, setLastUpdated] = useState_eq(null);
   const requestRef = useRef_eq(null);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
-  const refresh = useCallback_eq(() => {
+  const fetchCatalog = useCallback_eq((offset, append) => {
     if (isDemo || !baseUrl) return;
     if (requestRef.current) requestRef.current.abort();
     const controller = new AbortController();
     requestRef.current = controller;
-    setLoading(true);
-    fetch(baseUrl + "/hall_of_fame", { signal: controller.signal })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => { if (!controller.signal.aborted) { setData(j); setErr(null); setLastUpdated(new Date()); } })
+    append ? setLoadingMore(true) : setLoading(true);
+    const params = new URLSearchParams({
+      limit: "50", offset: String(offset), sort: sortKey, order: sortDirection,
+    });
+    if (statusFilter) params.set("status", statusFilter);
+    if (gateFilter) params.set("gate", gateFilter);
+    if (outcomeFilter) params.set("outcome", outcomeFilter);
+    const catalogRequest = fetch(baseUrl + "/hall_of_fame/catalog?" + params, { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+    const humanRequest = append ? Promise.resolve(null) : fetch(baseUrl + "/hall_of_fame", { signal: controller.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+    Promise.all([catalogRequest, humanRequest])
+      .then(([nextCatalog, legacy]) => {
+        if (controller.signal.aborted) return;
+        if (legacy) setHuman(Array.isArray(legacy.human) ? legacy.human : []);
+        setCatalog(previous => append
+          ? { ...nextCatalog, items: [...previous.items, ...(nextCatalog.items || [])] }
+          : nextCatalog);
+        setErr(null);
+        setLastUpdated(new Date());
+      })
       .catch(e => { if (!controller.signal.aborted && e.name !== "AbortError") setErr(String(e)); })
-      .finally(() => { if (requestRef.current === controller) { requestRef.current = null; setLoading(false); } });
-  }, [baseUrl, isDemo]);
+      .finally(() => {
+        if (requestRef.current === controller) {
+          requestRef.current = null;
+          setLoading(false);
+          setLoadingMore(false);
+        }
+      });
+  }, [baseUrl, isDemo, sortKey, sortDirection, statusFilter, gateFilter, outcomeFilter]);
 
-  // 최초 + 30초 자동 새로고침.
   useEffect_eq(() => {
-    refresh();
-    const id = setInterval(refresh, 30000);
+    fetchCatalog(0, false);
+    const id = setInterval(() => fetchCatalog(0, false), 30000);
     return () => { clearInterval(id); if (requestRef.current) requestRef.current.abort(); };
-  }, [refresh]);
+  }, [fetchCatalog]);
 
-  const human = (data && data.human) || [];
-  const ai = (data && data.ai) || [];
-
-  // 통합 행: 인간(max_holdings)·AI(max_hold_count)를 공통 max_hold로 정규화.
-  const rows = [
-    ...human.map(h => ({ ...h, _maxHold: h.max_holdings })),
-    ...ai.map(a => ({ ...a, _maxHold: a.max_hold_count })),
-  ].filter(r => (filter === "all" ? true : r.kind === filter));
-
-  // MDD is loss magnitude: its default direction is ascending; missing values remain last.
-  const sorted = rows.slice().sort((a, b) => {
-    const av = a[sortKey], bv = b[sortKey];
-    const missingA = typeof av !== "number", missingB = typeof bv !== "number";
-    if (missingA || missingB) return missingA === missingB ? String(a.label || "").localeCompare(String(b.label || "")) : (missingA ? 1 : -1);
-    return sortDirection === "asc" ? av - bv : bv - av;
-  });
-
-  const fmtPctSigned = (v) => (typeof v === "number"
-    ? (v >= 0 ? "+" : "") + v.toFixed(1) + "%" : "—");
-  const fmtPlain = (v, d = 1) => (typeof v === "number" ? v.toFixed(d) : "—");
-  const fmtInt2 = (v) => (typeof v === "number" ? Math.round(v).toLocaleString("ko-KR") : "—");
-
-  const SORTS = [
-    { key: "total_return_pct", label: "총수익률" },
-    { key: "total_return_krw", label: "총수익금" },
-    { key: "annual_return_pct", label: "연평균" },
-    { key: "mdd_pct", label: "MDD" },
-    { key: "payoff", label: "payoff" },
-  ];
-  const FILTERS = [
-    { key: "all", label: "전체" },
-    { key: "human", label: "👤 인간" },
-    { key: "seed", label: "🌱 시드" },
-    { key: "ai", label: "🤖 AI" },
-  ];
-  // 구분 뱃지 메타 — 인간 벤치마크(초록) / 시드 Tick_902 인간 튜닝(앰버) / AI 생성 AILOOP(보라).
-  const HOF_KIND_META = {
-    human: { color: "var(--green)",  label: "👤 인간", bg: "rgba(110,231,168,0.06)" },
-    seed:  { color: "var(--amber)",  label: "🌱 시드", bg: "rgba(240,179,90,0.08)" },
-    ai:    { color: "var(--violet)", label: "🤖 AI",   bg: "rgba(165,148,255,0.08)" },
-  };
+  const fmtPct = (v) => typeof v === "number" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}%` : "—";
+  const fmtNumber = (v, digits = 2) => typeof v === "number" ? v.toFixed(digits) : "—";
+  const fmtInt = (v) => typeof v === "number" ? Math.round(v).toLocaleString("ko-KR") : "—";
+  const humanRows = human.slice().sort((a, b) => (
+    (b.total_return_pct ?? -Infinity) - (a.total_return_pct ?? -Infinity)
+    || String(a.label || "").localeCompare(String(b.label || ""))
+  ));
+  const catalogRows = catalog.items || [];
+  const filterStyle = (selected, value) => selected === value
+    ? { color: "var(--amber)", borderColor: "var(--amber)" } : undefined;
 
   return (
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          🏆 성과 명예의 전당 — 인간 벤치마크 &amp; AI 생성
+          🏆 명예의 전당 · 인간 벤치마크 &amp; AI 전체 연구 카탈로그
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <LegendDot color="var(--green)" label="👤 인간 벤치마크" />
-          <LegendDot color="var(--amber)" label="🌱 시드(Tick_902 인간튜닝)" />
-          <LegendDot color="var(--violet)" label="🤖 AI 생성(AILOOP)" />
+          <LegendDot color="var(--violet)" label="🤖 전체 AI 연구" />
           <span style={{ fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--mono)" }}
-                data-tip="백테 기간이 3개월 미만이면 연평균이 과대추정됨 — 신뢰 낮음">
-            단기=연환산 신뢰낮음(짧은 백테)
+                data-tip="백테 기간이 3개월 미만이면 연환산이 과대추정될 수 있습니다.">
+            단기 창=연환산 신뢰낮음
           </span>
-          <button className="btn ghost sm" onClick={() => setGalleryOpen(true)}
-                  data-tip="인간 reference 결과 스크린샷 갤러리 열기">
-            📷 인간 결과 스크린샷
-          </button>
-          <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading}
-                  data-tip="명예의 전당 새로고침">
+          <button className="btn ghost sm" onClick={() => setGalleryOpen(true)}>📷 인간 결과 스크린샷</button>
+          <button className="btn ghost sm" onClick={() => fetchCatalog(0, false)} disabled={isDemo || loading}>
             {loading ? "로딩…" : "↻ 새로고침"}
           </button>
         </div>
       </div>
       <div className="panel-bd">
         <HofInventoryGate compact />
-        {/* 정렬/필터 컨트롤 */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" }}>정렬</span>
-            {SORTS.map(s => (
-              <button key={s.key} className="btn ghost sm"
-                      onClick={() => { if (sortKey === s.key) setSortDirection(direction => direction === "asc" ? "desc" : "asc"); else { setSortKey(s.key); setSortDirection(s.key === "mdd_pct" ? "asc" : "desc"); } }}
-                      style={sortKey === s.key ? { color: "var(--amber)", borderColor: "var(--amber)" } : undefined}>
-                {s.label}{sortKey === s.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" }}>구분</span>
-            {FILTERS.map(f => (
-              <button key={f.key} className="btn ghost sm"
-                      onClick={() => setFilter(f.key)}
-                      style={filter === f.key
-                        ? { color: "var(--ink-0)", borderColor: "var(--line-2)" } : undefined}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <button className="btn ghost sm" onClick={() => setSortDirection(direction => direction === "asc" ? "desc" : "asc")} aria-label="정렬 방향 전환">{sortDirection === "asc" ? "오름차순 ↑" : "내림차순 ↓"}</button>
-          <div style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
-            인간 {human.length} · 시드 {ai.filter(r => r.kind === "seed").length} · AI {ai.filter(r => r.kind === "ai").length}{lastUpdated ? " · 갱신 " + lastUpdated.toLocaleTimeString("ko-KR") : ""}
-          </div>
-        </div>
-
-        {err && data && <div className="v4s-note" role="alert">마지막 성공 결과를 표시 중 · 최신 조회 실패: {err}</div>}
+        {err && <div className="v4s-note" role="alert">조회 실패: {err}</div>}
         {isDemo ? (
-          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
-                        fontSize: 12, fontFamily: "var(--mono)" }}>
-            데모 모드 — 백엔드 연결 시 명예의 전당이 표시됩니다.
-          </div>
-        ) : err && !data ? (
-          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--red)",
-                        fontSize: 12, fontFamily: "var(--mono)" }}>
-            조회 실패: {err}
-          </div>
-        ) : sorted.length === 0 ? (
-          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
-                        fontSize: 12, fontFamily: "var(--mono)" }}>
-            표시할 전략이 없습니다 (인간 벤치마크 JSON / AI 흑자 세대 누적 시 표시).
+          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)" }}>
+            데모 모드 — 백엔드 연결 시 카탈로그가 표시됩니다.
           </div>
         ) : (
-          <div className="hof-scroll" style={{ overflowX: "auto", width: "100%" }} tabIndex="0" aria-label="명예의 전당 전략 표">
-            <table className="data-table" style={{ width: "100%", borderCollapse: "collapse",
-                                                   fontFamily: "var(--mono)", fontSize: 12,
-                                                   minWidth: 1180 }}>
-              <thead>
-                <tr style={{ color: "var(--ink-2)", fontSize: 10, letterSpacing: ".08em",
-                             textTransform: "uppercase", borderBottom: "1px solid var(--line-2)" }}>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>순위</th>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>구분</th>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>이름</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>총수익금(원)</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>총수익률%</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>연평균%</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>MDD%</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>payoff</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>일평균거래</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>동시보유</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>운영금(원)</th>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>백테 기간</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>거래수</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>승률%</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>calmar</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>score</th>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>매수 전략</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((r, i) => {
-                  const _km = HOF_KIND_META[r.kind] || HOF_KIND_META.ai;
-                  const accent = _km.color;
-                  return (
-                    <tr key={(r.kind || "") + (r.label || "") + i}
-                        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-2)" }}>{i + 1}</td>
-                      <td style={{ padding: "5px 8px" }}>
-                        <span style={{
-                          display: "inline-block", padding: "1px 6px", borderRadius: 4,
-                          fontSize: 10, fontWeight: 600, color: accent,
-                          border: `1px solid ${accent}`,
-                          background: _km.bg,
-                        }}>
-                          {_km.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: "5px 8px", color: "var(--ink-0)" }}>{r.label || "—"}</td>
-                      <td style={{ padding: "5px 8px", textAlign: "right",
-                                   color: (typeof r.total_return_krw === "number" && r.total_return_krw > 0)
-                                     ? "var(--teal)" : "var(--ink-0)" }}>
-                        {typeof r.total_return_krw === "number" ? fmtMoney(r.total_return_krw) : "—"}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right",
-                                   color: (typeof r.total_return_pct === "number" && r.total_return_pct > 0)
-                                     ? "var(--teal)" : "var(--ink-0)" }}>
-                        {fmtPctSigned(r.total_return_pct)}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right",
-                                   color: r.annual_unreliable ? "var(--ink-3)" : "var(--ink-0)" }}>
-                        {fmtPctSigned(r.annual_return_pct)}
-                        {r.annual_unreliable && (
-                          <span
-                            data-tip="백테 기간이 3개월 미만이라 연평균이 과대추정됨(1개월 7%→연84% 식). 단기 창은 신뢰 낮음."
-                            title="백테 기간이 3개월 미만이라 연평균이 과대추정됨(1개월 7%→연84% 식). 단기 창은 신뢰 낮음."
-                            style={{ fontSize: 9, color: "var(--ink-3)", marginLeft: 4,
-                                     borderBottom: "1px dotted var(--ink-3)", cursor: "help" }}>
-                            단기
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--red)" }}>
-                        {fmtPlain(r.mdd_pct, 2)}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-0)" }}>
-                        {fmtPlain(r.payoff, 2)}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-0)" }}>
-                        {fmtPlain(r.daily_avg_trades, 1)}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-0)" }}>
-                        {typeof r._maxHold === "number" ? fmtPlain(r._maxHold, r.kind === "ai" ? 1 : 0) : "—"}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-2)" }}>
-                        {fmtInt2(r.operating_capital_krw)}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "left", color: "var(--ink-2)",
-                                   whiteSpace: "nowrap", fontSize: 11 }}>
-                        {r.period || "—"}
-                        {typeof r.days === "number" && (
-                          <span style={{ color: "var(--ink-3)", marginLeft: 5 }}>
-                            ({r.days}일)
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtInt2(r.trades)}</td>
-                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.win_rate_pct, 1)}</td>
-                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.calmar, 2)}</td>
-                      <td style={{ padding: "5px 8px", textAlign: "right" }}>{fmtPlain(r.score, 2)}</td>
-                      <td style={{ padding: "5px 8px", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.buy_name || ""}>{r.buy_name || "—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div style={{ margin: "14px 0 8px", fontWeight: 700 }}>👤 인간 벤치마크 ({humanRows.length})</div>
+            <div className="hof-scroll" style={{ overflowX: "auto" }} tabIndex="0" aria-label="인간 벤치마크 표">
+              <table className="data-table" style={{ width: "100%", minWidth: 1320, fontFamily: "var(--mono)", fontSize: 12 }}>
+                <thead><tr><th>이름</th><th>운영금</th><th>총수익금(원)</th><th>총수익률</th><th>연평균</th><th>MDD</th><th>payoff</th><th>승률</th><th>일평균 거래</th><th>최대 보유</th><th>기간</th><th>거래수</th></tr></thead>
+                <tbody>{humanRows.map(row => <tr key={row.label}>
+                  <td>{row.label || "—"}</td>
+                  <td>{typeof row.operating_capital_krw === "number" ? fmtMoney(row.operating_capital_krw) : "—"}</td>
+                  <td>{typeof row.total_return_krw === "number" ? fmtMoney(row.total_return_krw) : "—"}</td>
+                  <td>{fmtPct(row.total_return_pct)}</td><td>{fmtPct(row.annual_return_pct)}</td><td>{fmtNumber(row.mdd_pct)}</td>
+                  <td>{fmtNumber(row.payoff)}</td><td>{fmtPct(row.win_rate_pct)}</td><td>{fmtNumber(row.daily_avg_trades)}</td>
+                  <td>{fmtInt(row.max_holdings)}</td><td>{row.period || "—"}</td><td>{fmtInt(row.trades)}</td>
+                </tr>)}</tbody>
+              </table>
+            </div>
+
+            <div style={{ margin: "20px 0 8px", fontWeight: 700 }}>🤖 AI 연구 카탈로그 — 전체 세대</div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>정렬</span>
+              {[
+                ["score", "score"], ["returns", "수익률"], ["mdd", "MDD"], ["trades", "거래수"], ["gen_no", "세대"],
+              ].map(([key, label]) => <button key={key} className="btn ghost sm"
+                onClick={() => {
+                  if (sortKey === key) setSortDirection(direction => direction === "asc" ? "desc" : "asc");
+                  else { setSortKey(key); setSortDirection(key === "mdd" ? "asc" : "desc"); }
+                }} style={filterStyle(sortKey, key)}>{label}{sortKey === key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}</button>)}
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 8 }}>상태</span>
+              {["", "ok", "success", "complete", "failed", "error", "unavailable"].map(value => <button key={value || "all-status"} className="btn ghost sm"
+                onClick={() => setStatusFilter(value)} style={filterStyle(statusFilter, value)}>{value || "전체"}</button>)}
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 8 }}>gate</span>
+              {[["", "전체"], ["passed", "통과"], ["failed", "미통과"]].map(([value, label]) => <button key={value || "all-gate"} className="btn ghost sm"
+                onClick={() => setGateFilter(value)} style={filterStyle(gateFilter, value)}>{label}</button>)}
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 8 }}>결과</span>
+              {[["", "전체"], ["success", "성공"], ["loss", "손실"], ["failure", "실패"], ["no_trade", "거래없음"], ["unavailable", "불가"]].map(([value, label]) => <button key={value || "all-outcome"} className="btn ghost sm"
+                onClick={() => setOutcomeFilter(value)} style={filterStyle(outcomeFilter, value)}>{label}</button>)}
+              <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
+                정확한 총 {catalog.total} · 표시 {catalogRows.length}{lastUpdated ? " · 갱신 " + lastUpdated.toLocaleTimeString("ko-KR") : ""}
+              </span>
+            </div>
+            <div className="hof-scroll" style={{ overflowX: "auto" }} tabIndex="0" aria-label="AI 연구 카탈로그 표">
+              <table className="data-table" style={{ width: "100%", minWidth: 1960, fontFamily: "var(--mono)", fontSize: 12 }}>
+                <thead><tr><th>run / gen</th><th>종류</th><th>상태</th><th>gate</th><th>결과</th><th>score</th><th>운영금</th><th>총수익금(원)</th><th>총수익률</th><th>연평균</th><th>MDD</th><th>Calmar</th><th>payoff</th><th>승률</th><th>거래수</th><th>일평균 거래</th><th>최대 보유</th><th>기간</th><th>매수 조건식</th><th>매도 조건식</th><th>사유</th><th>출처</th></tr></thead>
+                <tbody>{catalogRows.map(row => <tr key={`${row.run_id}/${row.gen_no}`}>
+                  <td>{row.label || "—"}</td><td>{row.kind || "—"}</td><td>{row.status || "—"}</td><td>{row.gate_passed === null ? "—" : row.gate_passed ? "통과" : "미통과"}</td>
+                  <td>{row.outcome || "—"}{row.annual_unreliable ? <small title="짧은 백테 기간의 연환산은 신뢰도가 낮습니다." style={{ marginLeft: 4, color: "var(--ink-3)" }}>단기</small> : null}</td>
+                  <td>{fmtNumber(row.score)}</td><td>{typeof row.operating_capital_krw === "number" ? fmtMoney(row.operating_capital_krw) : "—"}</td>
+                  <td>{typeof row.return_krw === "number" ? fmtMoney(row.return_krw) : "—"}</td><td>{fmtPct(row.return_pct)}</td>
+                  <td>{fmtPct(row.annual_return_pct)}</td><td>{fmtNumber(row.mdd_pct)}</td><td>{fmtNumber(row.calmar)}</td><td>{fmtNumber(row.payoff)}</td>
+                  <td>{fmtPct(row.win_rate_pct)}</td><td>{fmtInt(row.trades)}</td><td>{fmtNumber(row.daily_avg_trades)}</td><td>{fmtInt(row.max_hold_count)}</td><td>{row.period || "—"}</td>
+                  <td>{row.buy_name || "—"}</td><td>{row.sell_name || "—"}</td><td>{row.reason || "—"}</td>
+                  <td>{row.provenance && row.provenance.source ? row.provenance.source : "—"}</td>
+                </tr>)}</tbody>
+              </table>
+            </div>
+            {catalogRows.length === 0 && !loading && <div className="v4s-note">표시할 AI 연구 세대가 없습니다.</div>}
+            {catalog.next !== null && <div style={{ textAlign: "center", marginTop: 12 }}>
+              <button className="btn ghost sm" onClick={() => fetchCatalog(catalog.next, true)} disabled={loadingMore}>
+                {loadingMore ? "불러오는 중…" : `더 보기 (${catalogRows.length}/${catalog.total})`}
+              </button>
+            </div>}
+          </>
         )}
       </div>
-      {galleryOpen && (
-        <ReferenceGallery baseUrl={baseUrl} onClose={() => setGalleryOpen(false)} />
-      )}
+      {galleryOpen && <ReferenceGallery baseUrl={baseUrl} onClose={() => setGalleryOpen(false)} />}
     </div>
   );
 }

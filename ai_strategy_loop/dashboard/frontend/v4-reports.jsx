@@ -21,6 +21,7 @@ function _reportToc(report) {
     .map(item => ({ id: item.id, label: item.label, lvl: item.level === 3 ? 3 : 2 }));
 }
 function _reportKind(report) {
+  if (_reportClassification(report) === "legacy_static") return "legacy";
   if (!report || report.registered !== true) return "unregistered";
   return ["run", "step", "legacy"].includes(report.report_type) ? report.report_type : "legacy";
 }
@@ -40,6 +41,17 @@ function _fmtReportValue(value) {
     try { return JSON.stringify(value); } catch (e) { return "구조화 메타데이터"; }
   }
   return String(value);
+}
+function _reportClassification(report) {
+  return (report && report.catalog_classification) || "unverifiable";
+}
+function _reportClassificationLabel(value) {
+  return {
+    canonical_registered: "정본 등록",
+    source_backed_regenerable: "소스 근거 재생성 가능",
+    legacy_static: "레거시 정적",
+    unverifiable: "검증 불가",
+  }[value] || value;
 }
 
 
@@ -65,6 +77,8 @@ function V4Reports({ baseUrl }) {
   const [reportType, setReportType] = useState_rp7("all");
   const [reportStatus, setReportStatus] = useState_rp7("all");
   const [reportTrust, setReportTrust] = useState_rp7("all");
+  const [reportClassification, setReportClassification] = useState_rp7("all");
+  const [reportIntegrity, setReportIntegrity] = useState_rp7("all");
   const [reportLimit, setReportLimit] = useState_rp7(50);
   const [frameState, setFrameState] = useState_rp7("idle");
   const [tocOpen, setTocOpen] = useState_rp7(false);
@@ -152,7 +166,7 @@ function V4Reports({ baseUrl }) {
     };
   }, [baseUrl, mode, wikiSel]);
   useEffect_rp7(() => { setAnchor(""); }, [sel]);
-  useEffect_rp7(() => { setReportLimit(50); }, [reportQuery, reportType, reportStatus, reportTrust]);
+  useEffect_rp7(() => { setReportLimit(50); }, [reportQuery, reportType, reportStatus, reportTrust, reportClassification, reportIntegrity]);
   useEffect_rp7(() => { setFrameState(sel ? "loading" : "idle"); }, [sel, anchor]);
 
   const reports = list || [];
@@ -162,13 +176,22 @@ function V4Reports({ baseUrl }) {
   const frameSrc = viewUrl ? (anchor ? viewUrl + "#" + anchor : viewUrl) : "";
   const reportStatuses = [...new Set(reports.filter(rp => rp.registered === true).map(rp => rp.status).filter(Boolean))].sort();
   const reportTrusts = [...new Set(reports.filter(rp => rp.registered === true).map(rp => rp.trust).filter(Boolean))].sort();
+  const reportClassifications = [...new Set(reports.map(_reportClassification))].sort();
+  const reportIntegrities = [...new Set(reports.map(rp => rp.integrity_status).filter(Boolean))].sort();
+  const reportCounts = reports.reduce((counts, rp) => {
+    const classification = _reportClassification(rp);
+    counts[classification] = (counts[classification] || 0) + 1;
+    return counts;
+  }, {});
   const filteredReports = sortReportsNewest(reports.filter(rp => {
     const kind = _reportKind(rp);
     const query = reportQuery.trim().toLowerCase();
     return (!query || _reportSearchText(rp).includes(query))
       && (reportType === "all" || kind === reportType)
       && (reportStatus === "all" || rp.status === reportStatus)
-      && (reportTrust === "all" || rp.trust === reportTrust);
+      && (reportTrust === "all" || rp.trust === reportTrust)
+      && (reportClassification === "all" || _reportClassification(rp) === reportClassification)
+      && (reportIntegrity === "all" || rp.integrity_status === reportIntegrity);
   }));
   const catalogReports = filteredReports;
   const visibleReports = catalogReports.slice(0, Math.min(reportLimit, 250));
@@ -205,8 +228,8 @@ function V4Reports({ baseUrl }) {
     const kind = _reportKind(rp);
     return (
       <button key={rp.path} className={"v4-reports-item" + (sel === rp.path ? " active" : "")} onClick={() => selectReport(rp.path)} title={rp.path}>
-        <span className="v4-reports-name"><span className={"v4-report-kind " + kind}>{kind === "run" ? "run 종합" : kind === "step" ? "스텝" : kind === "legacy" ? "레거시" : "미등록"}</span>{rp.title || rp.name}</span>
-        <span className="v4-reports-meta mono">{rp.research_id || rp.run_id || _fmtReportBytes(rp.bytes)} · {rp.status || rp.publication_status || "상태 없음"}</span>
+        <span className="v4-reports-name"><span className={"v4-report-kind " + kind}>{_reportClassificationLabel(_reportClassification(rp))}</span>{rp.title || rp.name}</span>
+        <span className="v4-reports-meta mono">{rp.research_id || rp.run_id || _fmtReportBytes(rp.bytes)} · {rp.integrity_status || "상태 없음"} · {rp.status || rp.publication_status || "상태 없음"}</span>
       </button>
     );
   };
@@ -249,22 +272,25 @@ function V4Reports({ baseUrl }) {
                 <input className="toolbar-input" type="search" placeholder="제목 · 연구 · run 검색" value={reportQuery} onChange={e => setReportQuery(e.target.value)} aria-label="리포트 검색" />
                 <select value={reportType} onChange={e => setReportType(e.target.value)} aria-label="리포트 종류"><option value="all">모든 종류</option><option value="run">run</option><option value="step">step</option><option value="legacy">legacy</option><option value="unregistered">미등록</option></select>
                 <select value={reportStatus} onChange={e => setReportStatus(e.target.value)} aria-label="리포트 상태"><option value="all">모든 상태</option>{reportStatuses.map(value => <option key={value} value={value}>{value}</option>)}</select>
-                <select value={reportTrust} onChange={e => setReportTrust(e.target.value)} aria-label="리포트 신뢰도"><option value="all">모든 신뢰도</option>{reportTrusts.map(value => <option key={value} value={value}>{value}</option>)}</select>
+                <select value={reportClassification} onChange={e => setReportClassification(e.target.value)} aria-label="리포트 분류"><option value="all">모든 분류</option>{reportClassifications.map(value => <option key={value} value={value}>{_reportClassificationLabel(value)}</option>)}</select>
+                <select value={reportIntegrity} onChange={e => setReportIntegrity(e.target.value)} aria-label="리포트 검증 상태"><option value="all">모든 검증 상태</option>{reportIntegrities.map(value => <option key={value} value={value}>{value}</option>)}</select>
               </div>
               {list === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
               {list !== null && list.length === 0 && <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>}
               {list !== null && list.length > 0 && catalogReports.length === 0 && <div className="v4-reports-empty mono">검색 결과 없음</div>}
+              {list !== null && list.length > 0 && <div className="v6-report-group mono">분류 · {reportClassifications.map(value => `${_reportClassificationLabel(value)} ${reportCounts[value] || 0}건`).join(" · ")}</div>}
               {visibleReports.length > 0 && <><div className="v6-report-group mono">최신순 리포트 · {visibleReports.length}/{catalogReports.length}건</div>{visibleReports.map(renderReportItem)}</>}
               {catalogReports.length > visibleReports.length && <button className="btn ghost sm" onClick={() => setReportLimit(limit => Math.min(limit + 50, 250))}>더 보기 · {visibleReports.length}/{catalogReports.length}</button>}
             </aside>
             <div className="v4-reports-main">
               {selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
-                <span className={selectedReport.registered === true ? "v4-report-badge registered" : "v4-report-badge unregistered"}>{selectedReport.registered === true ? "등록됨" : "미등록·검증 불가"}</span>
+                <span className={"v4-report-badge " + _reportClassification(selectedReport)}>{_reportClassificationLabel(_reportClassification(selectedReport))}</span>
+                <span>분류 사유 {selectedReport.catalog_reason || "없음"}</span><span>검증 {selectedReport.integrity_status || "없음"}</span><span>오류 {selectedReport.integrity_error || "없음"}</span>
                 <span>type {_reportKind(selectedReport)}</span><span>status {selectedReport.status || "없음"}</span><span>trust {selectedReport.trust || "없음"}</span><span>research {selectedReport.research_id || "없음"}</span><span>run {selectedReport.run_id || "없음"}</span>
                 <span>generation {selectedReport.generation ?? "없음"}</span><span>cycle {selectedReport.cycle ?? "없음"}</span>
                 <span>publication {selectedReport.publication_status || "없음"}</span><span>generator {selectedReport.generator || "없음"}</span>
                 <span>generated {selectedReport.generated_at || "없음"}</span><span>bytes {_fmtReportBytes(selectedReport.bytes) || "없음"}</span>
-                <span>profile {_fmtReportValue(selectedReport.profile)}</span><span>limitations {_fmtReportValue(selectedReport.limitations || selectedReport.limits)}</span>
+                <span>provenance {_fmtReportValue(selectedReport.provenance)}</span><span>profile {_fmtReportValue(selectedReport.profile)}</span><span>limitations {_fmtReportValue(selectedReport.limitations || selectedReport.limits)}</span>
                 <span>PDF {selectedReport.pdf_path ? "등록됨" : "없음"} {selectedReport.pdf_source_content_sha256 ? "· HTML 결속 검증" : ""}</span>
                 <span title={_reportHash(selectedReport)}>hash {_shortReportHash(_reportHash(selectedReport))}</span><span>source {_shortReportHash(selectedReport.source_sha256)}</span>
               </section>}

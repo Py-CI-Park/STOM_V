@@ -310,6 +310,7 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
               <select
                 className="mono"
                 style={{ padding: "6px 8px", background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 5, color: "var(--ink-0)" }}
+                aria-label="연구 기록 출처 종류"
                 value={sourceKind}
                 onChange={e => setSourceKind(e.target.value)}
               >

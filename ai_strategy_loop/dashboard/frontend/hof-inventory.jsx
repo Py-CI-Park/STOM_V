@@ -15,15 +15,18 @@ const HOF_INVENTORY_FIELDS = [
   { key: "max_hold", label: "동시보유", source: "_maxHold <- human.max_holdings / ai.max_hold_count", obligation: "인간/AI 필드 정규화 유지" },
   { key: "operating_capital_krw", label: "운영금", source: "operating_capital_krw", obligation: "운영금 대비 비교 유지" },
   { key: "period", label: "백테 기간", source: "start/end/days", obligation: "기간과 표본 길이 유지" },
+  { key: "catalog_status", label: "상태·gate·결과", source: "catalog.status / gate_passed / outcome", obligation: "실패·손실·거래없음·불가 세대도 필터 가능하게 유지" },
+  { key: "catalog_provenance", label: "출처", source: "catalog.provenance", obligation: "저장소·run 메타데이터 출처를 추정 없이 표시" },
+  { key: "catalog_paging", label: "카탈로그 페이지", source: "items / total / returned / next", obligation: "서버 정렬·필터와 정확한 총계·더 보기 유지" },
   { key: "screenshots", label: "스크린샷", source: "ReferenceGallery", obligation: "인간 결과 증거 갤러리 유지" },
   { key: "workbench_actions", label: "워크벤치 액션", source: "ResearchProPanel", obligation: "분석 프로 워크벤치 책임 분리 유지" },
 ];
 
 const HOF_FIELD_GROUPS = [
-  { key: "identity", label: "정체성", fields: ["kind", "name", "period"] },
+  { key: "identity", label: "정체성", fields: ["kind", "name", "period", "catalog_status"] },
   { key: "return", label: "성과", fields: ["total_return_krw", "total_return_pct", "annual_return_pct"] },
   { key: "risk", label: "위험·체결", fields: ["mdd_pct", "payoff", "daily_avg_trades", "max_hold", "operating_capital_krw"] },
-  { key: "evidence", label: "증거·액션", fields: ["screenshots", "workbench_actions"] },
+  { key: "evidence", label: "증거·액션", fields: ["catalog_provenance", "catalog_paging", "screenshots", "workbench_actions"] },
 ];
 
 const HOF_WORKBENCH_ACTIONS = [
@@ -35,7 +38,7 @@ const HOF_WORKBENCH_ACTIONS = [
 
 const HOF_MERGE_GATE_RULES = [
   "No HoF component merge before every inventory field has an assertion.",
-  "Human, seed, and AI rows must remain visually distinguishable.",
+  "Human benchmark and the full AI catalog must remain visibly separate.",
   "Short-window annualization must keep the reliability warning.",
   "Reference screenshots and Research Pro workbench actions must not be hidden by benchmark-table cleanup.",
 ];

@@ -238,6 +238,53 @@ class TestReplayMerge:
         # 입력은 4개로 잘리고, 존재하는 2개만 valid.
         assert set(rd.codes) <= {"005930", "000660"}
 
+    def test_replay_deduplicates_codes_and_publishes_profile_metadata(
+        self, synthetic_min_db
+    ):
+        replay = RE.load_replay(
+            20250102,
+            "min",
+            ["005930", "005930", "000660"],
+            agg_sec=10,
+        )
+        assert replay.codes == ["005930", "000660"]
+        assert replay.metadata["requested_codes"] == ["005930", "005930", "000660"]
+        assert replay.metadata["query_count"] <= 5
+        assert replay.metadata["load_ms"] >= 0
+        assert replay.metadata["source_fingerprint"]
+        assert replay.metadata["truncated"] is False
+
+        profile = RE.replay_profile(
+            20250102,
+            "min",
+            ["005930", "000660"],
+            agg_sec=10,
+        )
+        assert profile["query_count"] <= 2
+        assert profile["load_ms"] >= 0
+
+
+class TestSignalBatchContract:
+    def test_batch_deduplicates_caps_and_preserves_per_code_errors(self, monkeypatch):
+        calls = []
+
+        def fake_signal(**kwargs):
+            calls.append(kwargs["code"])
+            status = "error" if kwargs["code"] == "000660" else "ok"
+            return {"status": status, "trades": []}
+
+        monkeypatch.setattr(SA, "sim_signals", fake_signal)
+        payload = SA.sim_signals_batch(
+            date=20250102,
+            src="min",
+            codes="005930,005930,000660",
+            buy="buy",
+            sell="sell",
+        )
+        assert payload["codes"] == ["005930", "000660"]
+        assert calls == ["005930", "000660"]
+        assert payload["failed_codes"] == ["000660"]
+        assert payload["truncated"] is False
 
 class TestTickAggregation:
     def test_tick_aggregates_into_buckets(self, synthetic_tick_db):

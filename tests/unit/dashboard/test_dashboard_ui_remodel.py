@@ -372,19 +372,18 @@ def test_hof_inventory_gate_blocks_merge_without_field_contract() -> None:
     gate = _read("hof-inventory.jsx")
     chart = _read("chart-hall-of-fame.jsx")
     expected_sources = {
-        "kind": "HOF_KIND_META",
-        "name": "r.label",
-        "total_return_krw": "r.total_return_krw",
-        "total_return_pct": "r.total_return_pct",
-        "annual_return_pct": "r.annual_return_pct",
-        "mdd_pct": "r.mdd_pct",
-        "payoff": "r.payoff",
-        "daily_avg_trades": "r.daily_avg_trades",
-        "max_hold": "_maxHold",
-        "operating_capital_krw": "r.operating_capital_krw",
-        "period": "r.period",
+        "kind": "row.kind",
+        "name": "row.label",
+        "total_return_krw": "row.return_krw",
+        "total_return_pct": "row.return_pct",
+        "annual_return_pct": "row.annual_return_pct",
+        "mdd_pct": "row.mdd_pct",
+        "payoff": "row.payoff",
+        "daily_avg_trades": "row.daily_avg_trades",
+        "max_hold": "row.max_hold_count",
+        "operating_capital_krw": "row.operating_capital_krw",
+        "period": "row.period",
         "screenshots": "ReferenceGallery",
-        "workbench_actions": "ResearchProPanel",
     }
     dashboard_pages = _read("dashboard-pages.jsx")
     for field, render_marker in expected_sources.items():

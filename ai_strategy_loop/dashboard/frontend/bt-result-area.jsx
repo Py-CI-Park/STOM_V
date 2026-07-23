@@ -38,6 +38,29 @@ const _BT_METRIC_CARDS = [
   { key: "mdd_pct",          label: "MDD",        fmt: (v) => fmtPct(v), risk: true },
   { key: "cagr",             label: "CAGR",       fmt: (v) => fmtPct(v), signed: true },
 ];
+const _BT_RESULT_CAPABILITIES = {
+  job: { label: "완료 잡", range: true, monteCarlo: true, compare: true,
+    notes: { range: "완료 잡의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "완료 잡의 거래 표본으로 계산합니다.", compare: "다른 완료 잡을 비교 대상으로 선택할 수 있습니다." } },
+  evolution: { label: "진화 세대", range: false, monteCarlo: false, compare: false,
+    notes: { range: "세대 요약에는 구간별 거래 시계열이 없습니다.", monteCarlo: "세대 요약에는 몬테카를로 입력 거래 표본이 없습니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
+  demo: { label: "데모", range: false, monteCarlo: false, compare: false,
+    notes: { range: "데모 상태는 결과 artifact를 발행하지 않습니다.", monteCarlo: "데모 상태는 결과 artifact를 발행하지 않습니다.", compare: "데모 상태는 완료 잡을 제공하지 않습니다." } },
+  none: { label: "선택 없음", range: false, monteCarlo: false, compare: false,
+    notes: { range: "결과를 선택한 뒤 사용할 수 있습니다.", monteCarlo: "결과를 선택한 뒤 사용할 수 있습니다.", compare: "결과를 선택한 뒤 사용할 수 있습니다." } },
+};
+
+function _BtResultCapabilities({ capabilities }) {
+  return (
+    <div className="bt-result-capabilities" role="status" aria-label={"결과 소스 기능: " + capabilities.label}>
+      <b>결과 소스 · {capabilities.label}</b>
+      {[["구간 분석", "range"], ["몬테카를로", "monteCarlo"], ["A/B 비교", "compare"]].map(([label, key]) => (
+        <span key={key} className={capabilities[key] ? "ok" : "unsupported"}>
+          {label}: {capabilities[key] ? "지원" : "미지원"}{!capabilities[key] ? " — " + capabilities.notes[key] : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
   const [result, setResult] = useState_btc(null);   // /bt/result
@@ -67,10 +90,11 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     };
   }, [fullscreen]);
 
-  // 결과 소스: jobId(잡) 우선, 없으면 evoSource(run_id+gen_no, 진화 세대 분석).
-  //   진화 세대는 브러시/몬테카를로 구간 재계산을 지원하지 않는다(잡 전용 경로).
+  // 결과 소스별 지원 기능은 UI와 요청 경로가 함께 따르는 명시 계약이다.
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-  const hasSource = !!jobId || isEvo;
+  const sourceKind = isDemo ? "demo" : (jobId ? "job" : (isEvo ? "evolution" : "none"));
+  const capabilities = _BT_RESULT_CAPABILITIES[sourceKind];
+  const hasSource = sourceKind === "job" || sourceKind === "evolution";
   const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
 
   const load = useCallback_btc(() => {
@@ -153,25 +177,27 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   }, []);
   // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
   useEffect_btc(() => {
-    if (jobId && result && result.available && result.status !== "no_trades") { loadMc(); }
-  }, [result, loadMc, jobId]);
+    if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades") { loadMc(); }
+  }, [result, loadMc, capabilities.monteCarlo]);
 
   const onBrush = useCallback_btc((t_start, t_end) => {
-    if (!jobId) { return; }   // 진화 세대는 구간 분석 미지원.
+    if (!capabilities.range) return;
     setRange({ t_start, t_end });
-  }, [jobId]);
+  }, [capabilities.range]);
   const onBrushClear = useCallback_btc(() => { setRange(null); }, []);
 
   if (!hasSource) {
+    const message = isDemo
+      ? "데모 모드에는 결과 artifact가 없습니다. 실제로 실행된 완료 잡 또는 진화 세대를 선택하면 분석을 표시합니다."
+      : "완료된 백테스트 잡 또는 진화 세대를 선택하면 결과·분석이 여기에 표시됩니다.";
     return (
       <div className="panel">
         <div className="panel-hd">
           <div className="panel-hd-title"><span className="dot"></span>결과 · 분석</div>
         </div>
         <div className="panel-bd">
-          <div className="research-empty">
-            왼쪽에서 백테스트를 실행하거나 잡 이력을 선택하면 결과·분석이 여기에 표시됩니다.
-          </div>
+          <div className="research-empty">{message}</div>
+          <_BtResultCapabilities capabilities={capabilities} />
         </div>
       </div>
     );
@@ -200,7 +226,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     );
   }
 
-  const sourceContext = { isEvo, evoSource, jobId, baseUrl };
+  const sourceContext = { isEvo, evoSource, jobId, baseUrl, capabilities };
   return (
     <ResultDetailBody
       result={result}
@@ -229,7 +255,8 @@ function ResultDetailBody({
   onSetCompareA, onCloseCompare, onBrush, onBrushClear, onRunMc, onReload,
   onFullscreen, onCloseFullscreen, fullscreen,
 }) {
-  const { isEvo, evoSource, jobId, baseUrl } = sourceContext || {};
+  const { isEvo, evoSource, jobId, baseUrl, capabilities } = sourceContext || {};
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState_btc(false);
 // no_trades → 안내 카드(에러 아님).
 if (result.status === "no_trades") {
   return (
@@ -243,6 +270,7 @@ if (result.status === "no_trades") {
           <h2 style={{ color: "var(--amber)" }}>거래 0건</h2>
           <p>{result.message || "전략이 해당 기간에 매수 신호를 내지 않았습니다. 에러가 아닙니다 — 조건식/기간을 조정해 보세요."}</p>
         </div>
+          <_BtResultCapabilities capabilities={capabilities} />
       </div>
     </div>
   );
@@ -273,6 +301,7 @@ if (metricsOnly) {
         <div className="mono" style={{ marginTop: 10, color: "var(--ink-3)" }}>
           artifact={result.artifact_state || "metrics_only"} · evidence={result.evidence_id || "없음"}
         </div>
+        <_BtResultCapabilities capabilities={capabilities} />
       </div>
     </div>
   );
@@ -287,7 +316,18 @@ const orderflow = analysis.orderflow || {};
 const stats = analysis.stats || [];
 
 return (
-  <div className="bt-result-flow bt-result-grid-12" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+  <div className="bt-result-flow bt-result-grid-12">
+    <nav className="bt-result-nav" aria-label="결과 분석 섹션">
+      <a href="#bt-result-summary-title">요약</a>
+      <a href="#bt-result-primary-title">핵심 결과</a>
+      <a href="#bt-result-risk-title">MDD · 위험</a>
+      <a href="#bt-result-diagnostics-title" onClick={() => setDiagnosticsOpen(true)}>진단</a>
+      <button type="button" className="btn ghost sm" onClick={() => setDiagnosticsOpen(true)}
+              aria-expanded={diagnosticsOpen} aria-controls="bt-result-diagnostics">
+        모든 진단 펼치기
+      </button>
+    </nav>
+    <_BtResultCapabilities capabilities={capabilities} />
     <section className="bt-result-section bt-result-summary" aria-labelledby="bt-result-summary-title">
       <div className="bt-section-heading">
         <div>
@@ -308,32 +348,6 @@ return (
           <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
           {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
           <a className="btn ghost sm" href="/ui/chart-replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
-        </div>
-      );
-    })()}
-    {/* V6.5(S6): 결과 종합 판정 배너 — 표본 내 요약 advisory. 승격/운영 판단 권한 없음. */}
-    {(() => {
-      const pf = Number(metricVal("total_profit_pct"));
-      const md = Number(metricVal("mdd_pct"));
-      const wr = Number(metricVal("win_rate"));
-      const tc = Number(metricVal("trade_count"));
-      const known = Number.isFinite(pf) || Number.isFinite(md) || Number.isFinite(wr) || Number.isFinite(tc);
-      if (!known) return null;
-      const flags = [];
-      if (Number.isFinite(pf)) flags.push({ ok: pf > 0, label: `수익 ${pf > 0 ? "+" : ""}${pf.toFixed(2)}%` });
-      if (Number.isFinite(md)) flags.push({ ok: Math.abs(md) <= 15, label: `MDD ${Math.abs(md).toFixed(1)}%` });
-      if (Number.isFinite(wr)) flags.push({ ok: wr >= 50, label: `승률 ${wr.toFixed(1)}%` });
-      if (Number.isFinite(tc)) flags.push({ ok: tc >= 10, label: `거래 ${tc}건` });
-      const okN = flags.filter(f => f.ok).length;
-      const cls = okN === flags.length ? "good" : okN >= flags.length - 1 ? "warn" : "bad";
-      const word = cls === "good" ? "양호" : cls === "warn" ? "주의" : "부적합";
-      return (
-        <div className={"bt-verdict-band " + cls} role="note" aria-label="결과 종합 판정(표본 내 advisory)">
-          <b className="bt-verdict-word">{word}</b>
-          {flags.map(f => (
-            <span key={f.label} className={"v4-chip " + (f.ok ? "ok" : "warn")}>{f.label}</span>
-          ))}
-          <span className="bt-verdict-note mono">표본 내 요약 · 승격/운영 판단 아님(performance_proved=false)</span>
         </div>
       );
     })()}
@@ -363,8 +377,7 @@ return (
           )}
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {/* 비교 기준(A) 는 잡 전용(진화 세대는 A/B 비교 미지원). */}
-          {onSetCompareA && jobId && (
+          {onSetCompareA && jobId && capabilities.compare && (
             <button className="btn ghost sm" onClick={() => onSetCompareA(jobId)}
                     title="이 잡을 A/B 비교의 기준(A)으로 고정">⊕ 비교 기준(A)</button>
           )}
@@ -400,49 +413,61 @@ return (
       <div className="bt-section-heading">
         <div>
           <div id="bt-result-primary-title" className="stom-section-label">핵심 결과</div>
-          <p className="bt-section-purpose">누적 수익 경로와 손익 분포를 먼저 검토합니다. 드래그하면 구간 분석을 적용합니다.</p>
+          <p className="bt-section-purpose">누적 수익 경로와 손익 분포를 먼저 검토합니다.{capabilities.range ? " 드래그하면 구간 분석을 적용합니다." : ""}</p>
         </div>
       </div>
       {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
       <div className="bt-primary-chart-grid bt-equal-card-grid">
-        <BtEquityChart equity={analysis.equity} onBrush={onBrush}
-                       brushActive={!!range} onBrushClear={onBrushClear} />
+        <BtEquityChart equity={analysis.equity} onBrush={capabilities.range ? onBrush : undefined}
+                       brushActive={capabilities.range && !!range} onBrushClear={onBrushClear} />
         <BtDistributionChart distribution={distribution} />
       </div>
     </section>
 
-    <section className="bt-result-section bt-result-evidence" aria-labelledby="bt-result-evidence-title">
+    <section className="bt-result-section bt-result-evidence" aria-labelledby="bt-result-risk-title">
       <div className="bt-section-heading">
         <div>
-          <div id="bt-result-evidence-title" className="stom-section-label">위험 · 경로 증거</div>
-          <p className="bt-section-purpose">MDD 무작위화와 GUI 결과 이미지의 부분 패리티를 기본 흐름에서 확인합니다.</p>
+          <div id="bt-result-risk-title" className="stom-section-label">MDD · 위험 증거</div>
+          <p className="bt-section-purpose">관측된 최대 낙폭 경로와, 지원되는 경우 거래 표본의 몬테카를로 결과를 확인합니다.</p>
         </div>
       </div>
-      <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
+      <div className="bt-primary-chart-grid bt-equal-card-grid">
+        <BtUnderwaterChart underwater={analysis.underwater} />
+        {capabilities.monteCarlo ? (
+          <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+        ) : (
+          <div className="research-empty" role="status">몬테카를로 미지원 — {capabilities.notes.monteCarlo}</div>
+        )}
+      </div>
     </section>
 
-    <section className="bt-result-section bt-result-diagnostics" aria-labelledby="bt-result-diagnostics-title">
+    <section id="bt-result-diagnostics" className="bt-result-section bt-result-diagnostics" aria-labelledby="bt-result-diagnostics-title">
       <div className="bt-section-heading">
         <div>
           <div id="bt-result-diagnostics-title" className="stom-section-label">진단</div>
           <p className="bt-section-purpose">손실 구간, 거래 품질, 실행 흐름과 cadence를 교차 확인합니다.</p>
         </div>
+        <button type="button" className="btn ghost sm" onClick={() => setDiagnosticsOpen(open => !open)}
+                aria-expanded={diagnosticsOpen} aria-controls="bt-result-diagnostics-body">
+          {diagnosticsOpen ? "진단 접기" : "진단 펼치기"}
+        </button>
       </div>
-      <div className="bt-diagnostic-grid bt-equal-card-grid">
-        <BtHeatmap heatmap={analysis.heatmap} />
-        <BtUnderwaterChart underwater={analysis.underwater} />
-        <BtMaeMfeScatter points={analysis.mae_mfe} />
-        <BtQuantPanel analysis={analysis} />
-        <BtExitReasonPanel rows={analysis.exit_reasons} />
-        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
-        <BtOrderflowPanel orderflow={orderflow} />
-        <BtStatTestPanel stats={stats} />
-        <BtRollingChart rolling={analysis.rolling} />
-        <BtMonthlyCalendar monthly={analysis.monthly} />
-        <div className="bt-cadence-diagnostic">
-          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+      {diagnosticsOpen && (
+        <div id="bt-result-diagnostics-body" className="bt-diagnostic-grid bt-equal-card-grid">
+          <BtHeatmap heatmap={analysis.heatmap} />
+          <BtMaeMfeScatter points={analysis.mae_mfe} />
+          <BtQuantPanel analysis={analysis} />
+          <BtExitReasonPanel rows={analysis.exit_reasons} />
+          <BtOrderflowPanel orderflow={orderflow} />
+          <BtStatTestPanel stats={stats} />
+          <BtRollingChart rolling={analysis.rolling} />
+          <BtMonthlyCalendar monthly={analysis.monthly} />
+          <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
+          <div className="bt-cadence-diagnostic">
+            <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+          </div>
         </div>
-      </div>
+      )}
     </section>
 
     {(topC.length > 0 || botC.length > 0) && (

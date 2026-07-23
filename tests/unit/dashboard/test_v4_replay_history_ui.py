@@ -63,7 +63,13 @@ def test_history_compare_and_condition_tree_are_immediately_usable() -> None:
 
     assert '<details className="evo-group" open' in history
     assert 'import { BtResultArea } from "./backtest-charts.jsx";' in history
-    assert "<BtResultArea baseUrl={baseUrl} isDemo={wsStatus === \"demo\"} jobId={null} evoSource={selectedAnalysis} />" in history
+    assert 'key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`}' in history
+    assert 'evoSource={selectedAnalysis}' in history
+    assert "<_HistoryStrategyCode" in history
+    assert '"/strategy_code?run="' in history
+    assert history.count('className="rp-code-block"') == 2
+    assert "stom_history_evo_pending" in history
+    assert "stom:history-evo-select" in history
     assert "분석 닫기" in history
     assert "호환되지" in history
 

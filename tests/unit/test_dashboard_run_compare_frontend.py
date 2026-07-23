@@ -48,12 +48,8 @@ def test_run_compare_does_not_filter_negative_profit_rows() -> None:
 
 
 def test_primary_bundle_keeps_compare_out_of_home_owner() -> None:
-    # Ownership contract: the V2 Home/evolution SPA (app.jsx) must not render
-    # RunComparePanel directly. Compare is owned by History navigation and, in the
-    # opt-in V4 shell, by the Workbench tab. Since V4 shares the single compiled
-    # bundle, app.js legitimately CONTAINS RunComparePanel (imported by V4 Workbench);
-    # asserting bundle string-absence is therefore invalid post-V4. Assert the real
-    # contract on the owning source files instead.
+    # Ownership contract: the legacy Home and Hall/Performance surfaces do not render
+    # RunComparePanel. Compare is owned once by the canonical V4 History page.
     bundle = _read_front("bundle/app.js")
     assert "CurrentGenPanel" in bundle, "app.js 에 panels(CurrentGenPanel) 누락"
     assert "ResearchRecordsPanel" in bundle, "app.js 에 records owner 누락"
@@ -63,9 +59,10 @@ def test_primary_bundle_keeps_compare_out_of_home_owner() -> None:
     app_src = _read_front("app.jsx")
     assert "RunComparePanel" not in app_src, "Home SPA(app.jsx) must not render Compare owner"
 
-    # Compare is owned by the V4 Workbench tab (single legitimate render site).
-    workbench_src = _read_front("v4-workbench.jsx")
-    assert "RunComparePanel" in workbench_src, "V4 Workbench must own Compare"
+    # Compare is owned by the canonical V4 History tab.
+    history_src = _read_front("v4-history.jsx")
+    assert "RunComparePanel" in history_src, "V4 History must own Compare"
+    assert "RunComparePanel" not in _read_front("v4-workbench.jsx")
 
 
 def test_run_compare_component_exposed_on_window() -> None:

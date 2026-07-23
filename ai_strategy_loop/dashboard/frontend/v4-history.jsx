@@ -14,20 +14,107 @@ import { RunComparePanel } from "./run-compare.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
 const { useState: useState_v4h, useEffect: useEffect_v4h } = React;
 
+function _HistoryStrategyCode({ baseUrl, selection }) {
+  const [state, setState] = useState_v4h({ status: "loading", data: null, error: "" });
+  useEffect_v4h(() => {
+    if (!baseUrl || !selection) return undefined;
+    const controller = new AbortController();
+    const key = `${selection.run_id}:${selection.gen_no}`;
+    setState({ status: "loading", data: null, error: "" });
+    fetch(
+      baseUrl + "/strategy_code?run=" + encodeURIComponent(selection.run_id)
+      + "&gen=" + encodeURIComponent(selection.gen_no),
+      { signal: controller.signal }
+    )
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(data => {
+        if (!controller.signal.aborted && key === `${selection.run_id}:${selection.gen_no}`) {
+          setState({ status: "ready", data, error: "" });
+        }
+      })
+      .catch(error => {
+        if (!controller.signal.aborted && error.name !== "AbortError") {
+          setState({ status: "error", data: null, error: String(error) });
+        }
+      });
+    return () => controller.abort();
+  }, [baseUrl, selection && selection.run_id, selection && selection.gen_no]);
+
+  const data = state.data || {};
+  const buyCode = data.buy_code || "";
+  const sellCode = data.sell_code || "";
+  const copy = value => {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(value || "");
+  };
+  return (
+    <section className="history-strategy-code" aria-labelledby="history-strategy-code-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="history-strategy-code-title" className="stom-section-label">선택 세대 매수 · 매도 조건식</div>
+          <p className="v4-history-feature-copy">출처: /strategy_code · 선택한 run/gen과 결속된 읽기 전용 원문입니다.</p>
+        </div>
+        <span className="badge">{data.code_status || state.status}</span>
+      </div>
+      {state.status === "error" ? (
+        <div className="research-empty danger" role="alert">조건식 조회 실패 — {state.error}</div>
+      ) : (
+        <div className="rp-code-grid">
+          <div>
+            <div className="rp-code-label">
+              <span>매수 · {data.buy_name || "이름 미발행"}</span>
+              <button type="button" className="btn ghost sm" onClick={() => copy(buyCode)} disabled={!buyCode}>매수 복사</button>
+            </div>
+            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : buyCode || "코드 미발행"}</pre>
+          </div>
+          <div>
+            <div className="rp-code-label">
+              <span>매도 · {data.sell_name || "이름 미발행"}</span>
+              <button type="button" className="btn ghost sm" onClick={() => copy(sellCode)} disabled={!sellCode}>매도 복사</button>
+            </div>
+            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : sellCode || "코드 미발행"}</pre>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
   // V6.3(S4): 선택 연구 마스터-디테일 — records 패널이 lift 한 선택을 컨텍스트 바가 소유.
   const [selResearch, setSelResearch] = useState_v4h(null); // { name, researchId, meta|null }
   const onSelectCampaign = (name, meta) => {
     const researchId = "campaign:" + name;
-    setSelResearch(prev => (prev && prev.researchId === researchId && !meta)
-      ? prev
-      : { name, researchId, meta: meta || (prev && prev.researchId === researchId ? prev.meta : null) });
+    // A new campaign is a new identity. Do not retain the prior campaign's
+    // metadata while its authoritative detail request is in flight.
+    setSelResearch({ name, researchId, meta: meta || null });
   };
   const [selectedAnalysis, setSelectedAnalysis] = useState_v4h(null);
   const onSelectAnalysis = (selection) => {
-    if (selection && selection.run_id && selection.gen_no != null) setSelectedAnalysis(selection);
+    if (!selection || !selection.run_id || selection.gen_no == null) {
+      setSelectedAnalysis(null);
+      return;
+    }
+    // Keep the archive identity as an indivisible run/gen pair.
+    setSelectedAnalysis({ run_id: selection.run_id, gen_no: selection.gen_no });
   };
+  useEffect_v4h(() => {
+    const consume = detail => {
+      if (detail && detail.run_id && detail.gen_no != null) {
+        onSelectAnalysis({ run_id: detail.run_id, gen_no: detail.gen_no });
+      }
+    };
+    try {
+      const raw = window.localStorage && window.localStorage.getItem("stom_history_evo_pending");
+      if (raw) {
+        window.localStorage.removeItem("stom_history_evo_pending");
+        consume(JSON.parse(raw));
+      }
+    } catch (error) {}
+    const onSelect = event => consume(event && event.detail);
+    window.addEventListener("stom:history-evo-select", onSelect);
+    return () => window.removeEventListener("stom:history-evo-select", onSelect);
+  }, []);
   // L10: 재연결 문구 깜빡임 디바운스 — reconnecting 이 2초 지속될 때만 경고 문구 표시.
   // 대용량 색인·거버넌스·시각화 근거는 접힌 동안 마운트하지 않는다.
   const [indexOpen, setIndexOpen] = useState_v4h(false);
@@ -115,7 +202,8 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
                 <span className="mono">{selectedAnalysis.run_id} / gen {selectedAnalysis.gen_no}</span>
                 <button className="btn ghost sm" onClick={() => setSelectedAnalysis(null)}>분석 닫기</button>
               </div>
-              <BtResultArea baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
+              <_HistoryStrategyCode baseUrl={baseUrl} selection={selectedAnalysis} />
+              <BtResultArea key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`} baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
             </section>
           )}
         </div>

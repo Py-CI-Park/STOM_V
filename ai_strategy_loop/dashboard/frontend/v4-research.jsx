@@ -12,8 +12,7 @@ import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveCon
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
-import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
-import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
+import { ProfitChart, QualityTrendChart, EquityOverlayChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
 import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
@@ -450,33 +449,31 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 <div className="v59-result-pending">유효한 run과 세대가 발행되면 전체 결과 분석이 표시됩니다.</div>
               )}
             </section>
-            <section className="v56-cell v54-btdetail" aria-label="백테스트 상세 그래프">
+            <section className="v56-cell v59-live-result-provenance" aria-label="백테스트 결과 출처">
+              <h3 className="stom-section-label">결과 출처 · 상태</h3>
+              <p className="v59-section-intro">위 정본 결과 분석이 Live의 유일한 상세 결과 소유자입니다. 이 영역은 중복 차트 없이 선택 상태만 표시합니다.</p>
+              <div className="v59-result-provenance mono">
+                <span>source=진화 세대</span>
+                <span>run={runId || "—"}</span>
+                <span>generation={selectedGen != null ? selectedGen : "—"}</span>
+                <span>{runId && selectedGen != null ? "정본 결과 분석에 연결됨" : "유효한 run·세대 대기"}</span>
+              </div>
               <div className="v55-btd-actions">
                 <button className="btn ghost sm"
-                        title="선택 세대(미선택 시 best)를 백테스트 탭에서 결과·퀀트 분석으로 상세 확인"
+                        title="선택 세대를 백테스트 탭의 정본 결과 분석으로 연다"
+                        disabled={!runId || selectedGen == null}
                         onClick={() => {
-                          const genNo = selectedGen;
-                          if (runId && genNo != null) {
-                            try {
-                              const detail = { run_id: runId, gen_no: genNo };
-                              window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
-                              window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
-                            } catch (e) {}
-                          }
+                          if (!runId || selectedGen == null) return;
+                          try {
+                            const detail = { run_id: runId, gen_no: selectedGen };
+                            window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
+                            window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
+                          } catch (e) {}
                           window.location.href = "/ui/evolution/backtest";
                         }}>
-                  ⇲ 백테스트 탭에서 상세 분석
+                  ⇲ 백테스트 탭에서 정본 결과 분석 열기
                 </button>
               </div>
-              <h3 className="stom-section-label">컴팩트 실행 증거 · 백테스트 상세</h3>
-              <p className="v59-section-intro">빠른 단계 확인용 요약 그래프입니다. 전체 분석은 위의 정본 결과 분석을 사용합니다.</p>
-              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
-            </section>
-            {/* v5.6.1 — GUI 패리티: fold 폐지, 매트릭스 셀 직접 노출(사장님 지시) + 내부 그리드 강화 */}
-            <section className="v56-cell v56-parity" aria-label="GUI 패리티 — STOM 백테스트 결과 이미지 대사">
-              <h3 className="stom-section-label">GUI 패리티 · 컴팩트 화면 증거</h3>
-              <p className="v59-section-intro">공식 STOM 결과 화면과의 표시 대사를 확인하는 보조 증거입니다.</p>
-              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
             </section>
           </div>
         )}

@@ -1,0 +1,23 @@
+{
+  "date": 20260227,
+  "code": "322000",
+  "stocks": 51,
+  "stock_summary_ms": {
+    "p50": 89.258,
+    "p95": 122.634,
+    "max": 123.239
+  },
+  "replay_load_ms": {
+    "p50": 24.006,
+    "p95": 33.472,
+    "max": 40.261
+  },
+  "query_count": {
+    "min": 1,
+    "max": 1
+  },
+  "bars_total": {
+    "min": 376,
+    "max": 376
+  }
+}

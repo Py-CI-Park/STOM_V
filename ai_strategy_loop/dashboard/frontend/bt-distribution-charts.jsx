@@ -7,10 +7,17 @@ import {
   useState_btc, useRef_btc, useMemo_btc, useEffect_btc,
   _btMoneyTick, _btAxisTicks, _BT_WEEKDAYS, _BtChartEmpty,
 } from "./bt-chart-utils.jsx";
+import { ChartFrame } from "./chart-frame.jsx";
+
+function _btDistributionWithEvidence(Chart, describe) {
+  return function EvidenceChart(props) {
+    return <ChartFrame {...describe(props)}><Chart {...props} /></ChartFrame>;
+  };
+}
 
 /* ② 손익 히스토그램 — analysis.distribution.pnl_histogram [{bin_start,bin_end,count,unit}].
    각 bin 을 막대로(손실 구간 red / 이익 구간 teal / 0 걸친 구간 amber), 0% 경계선 강조. */
-function BtDistributionChart({ distribution }) {
+function _BtDistributionChartContent({ distribution }) {
   const bins = (distribution && distribution.pnl_histogram) || [];
   const [hover, setHover] = useState_btc(null);
 
@@ -137,7 +144,7 @@ function BtDistributionChart({ distribution }) {
    행=요일(월~금 우선, 토/일은 데이터 있을 때만), 열=30분 슬롯(09:00~15:30 범위).
    셀 값=수익률 합계(%) (수익금 절대액은 종목 규모에 좌우돼 시간대 비교에 부적합).
    셀 색: 부호·크기(red↔teal, 0 중심), hover 시 수익률 합계·수익금·거래수 툴팁. */
-function BtHeatmap({ heatmap }) {
+function _BtHeatmapContent({ heatmap }) {
   const cells = (heatmap && heatmap.cells) || [];
   const [hover, setHover] = useState_btc(null);
   // B1 — 컨테이너 폭 추종 동적 셀 크기. ResizeObserver 로 래퍼 폭을 측정해 셀을 키운다.
@@ -302,7 +309,7 @@ function BtHeatmap({ heatmap }) {
 
 /* ⑦ 몬테카를로 팬 차트 — analysis montecarlo {fan:[{day_index,p5,p25,p50,p75,p95}], mdd_pct, final, ruin_prob, observed}.
    누적 손익 분포 밴드(p5~p95 음영) + 실측 곡선 오버레이 + MDD 분포 미니 히스토그램 + 파산/기대MDD 카드. */
-function BtMonteCarloChart({ mc, loading, onRun }) {
+function _BtMonteCarloChartContent({ mc, loading, onRun }) {
   const fan = (mc && mc.fan) || [];
   const observed = mc && mc.observed;
   const n = fan.length;
@@ -407,6 +414,7 @@ function BtMonteCarloChart({ mc, loading, onRun }) {
 }
 
 // MDD 백분위 분포 미니 박스플롯(가로) — p5~p95 범위에 p25/50/75 박스 + 실측 마커.
+// fan 백분위의 요약 장식이며, 별도 원본 행을 만들거나 증거 차트로 취급하지 않는다.
 function _BtMddBox({ mddPct, observedPct }) {
   const lo = mddPct.p5, hi = Math.max(mddPct.p95, observedPct || 0, 0.0001);
   const span = (hi - lo) || 1;
@@ -439,7 +447,7 @@ const _BT_MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8�
 
 /* ⑫ 월별 캘린더 히트맵(트랙 D) — analysis.monthly {years:[...], cells:[{year,month,profit_krw,trades,win_rate}]}.
    행=연도, 열=1~12월. 셀 색=실현손익 부호·크기. 거래 없는 (연,월) 은 빈 셀. */
-function BtMonthlyCalendar({ monthly }) {
+function _BtMonthlyCalendarContent({ monthly }) {
   const years = (monthly && monthly.years) || [];
   const cells = (monthly && monthly.cells) || [];
   const [hover, setHover] = useState_btc(null);
@@ -527,6 +535,34 @@ function BtMonthlyCalendar({ monthly }) {
     </div>
   );
 }
+
+const BtDistributionChart = _btDistributionWithEvidence(_BtDistributionChartContent, ({ distribution }) => ({
+  title: "손익 분포 — Histogram", unit: "거래 수", period: "거래별 수익률 구간",
+  sampleCount: Array.isArray(distribution && distribution.pnl_histogram) ? distribution.pnl_histogram.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0%", source: "analysis.distribution.pnl_histogram",
+  rows: distribution && distribution.pnl_histogram, columns: ["bin_start", "bin_end", "count", "unit"], rowKey: row => `${row.bin_start}:${row.bin_end}`,
+}));
+const BtHeatmap = _btDistributionWithEvidence(_BtHeatmapContent, ({ heatmap }) => ({
+  title: "요일 × 시간대 히트맵", unit: "수익률 합계 (%)", period: "매수 시각별",
+  sampleCount: Array.isArray(heatmap && heatmap.cells) ? heatmap.cells.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0%", source: "analysis.heatmap.cells",
+  rows: heatmap && heatmap.cells, columns: ["weekday", "slot_label", "profit_pct_sum", "profit_krw", "trades"],
+  rowKey: row => `${row.weekday}:${row.slot}`,
+}));
+const BtMonteCarloChart = _btDistributionWithEvidence(_BtMonteCarloChartContent, ({ mc, loading }) => ({
+  title: "몬테카를로 — 누적손익 팬", unit: "누적 손익 (원)", period: "시뮬레이션 일자별",
+  sampleCount: Array.isArray(mc && mc.fan) ? mc.fan.length : 0,
+  freshness: loading ? "계산 중" : "백테스트 분석 응답", threshold: "p5~p95 분포", source: "analysis.montecarlo.fan",
+  status: loading ? "loading" : undefined, rows: mc && mc.fan,
+  columns: ["day_index", "p5", "p25", "p50", "p75", "p95"], rowKey: "day_index",
+}));
+const BtMonthlyCalendar = _btDistributionWithEvidence(_BtMonthlyCalendarContent, ({ monthly }) => ({
+  title: "월별 수익 캘린더", unit: "월별 손익 (원)", period: "매도일 월별",
+  sampleCount: Array.isArray(monthly && monthly.cells) ? monthly.cells.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.monthly.cells",
+  rows: monthly && monthly.cells, columns: ["year", "month", "profit_krw", "trades", "win_rate"],
+  rowKey: row => `${row.year}:${row.month}`,
+}));
 
 export {
   BtDistributionChart, BtHeatmap, BtMonteCarloChart, BtMonthlyCalendar,

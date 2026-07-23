@@ -408,5 +408,6 @@ def test_v591_backtest_charts_are_full_width_and_individually_large():
     shared_grid = css.split(".bt-primary-chart-grid,", 1)[1].split("}", 1)[0]
     assert "grid-template-columns: minmax(0, 1fr);" in shared_grid
     assert "repeat(2" not in shared_grid
-    assert "--v59-chart-height: clamp(420px, 38vw, 560px);" in css
+    assert "--v4-height-chart-primary: clamp(420px, 38vw, 560px);" in css
+    assert "--v59-chart-height: var(--v4-height-chart-primary);" in css
     assert ".bt-diagnostic-grid { grid-template-columns: minmax(0, 1fr); }" in css

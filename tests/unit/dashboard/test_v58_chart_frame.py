@@ -17,10 +17,10 @@ def test_chart_frame_requires_visible_metadata_and_bounded_table_fallback() -> N
     assert "chart-frame-fallback" in source
     assert "<details" in source
     assert "<table>" in source
-    assert "maxRows = 200" in source
+    assert "maxRows = 40" in source
     assert "displayRows" in source
-    assert 'state === "malformed"' in source
-    assert 'state === "stale"' in source
+    assert 'derivedState === "malformed"' in source
+    assert 'stale: "차트 데이터의 최신 상태' in source
 
 def test_v58_chart_data_contracts_fail_closed_and_key_selection_responses() -> None:
     frame = _source("chart-frame.jsx")
@@ -28,7 +28,7 @@ def test_v58_chart_data_contracts_fail_closed_and_key_selection_responses() -> N
     equity = _source("chart-equity.jsx")
     history = _source("history-viz.jsx")
 
-    assert 'state !== "malformed" && children' in frame
+    assert '!["loading", "malformed", "error"].includes(state) && children' in frame
     assert "_backtestDetailRows" in detail
     assert "date !== cumulativeDate" in detail
     assert "requestRef.current.key !== key" in detail
@@ -90,13 +90,19 @@ def test_core_live_history_backtest_charts_use_chart_frame_contract() -> None:
         "v4-charts.jsx",
         "history-viz.jsx",
         "chart-backtest-detail.jsx",
+        "bt-equity-charts.jsx",
+        "bt-distribution-charts.jsx",
+        "bt-gui-parity.jsx",
     )
     for name in owners:
         source = _source(name)
         assert 'from "./chart-frame.jsx"' in source, name
         assert "<ChartFrame" in source, name
-        for prop in ("unit=", "period=", "sampleCount=", "freshness=", "threshold=", "source=", "rows=", "status="):
-            assert prop in source, f"{name}: missing {prop}"
+        separator = ":" if "WithEvidence(" in source else "="
+        for prop in ("unit", "period", "sampleCount", "freshness", "threshold", "source", "rows"):
+            assert f"{prop}{separator}" in source, f"{name}: missing {prop}"
+        if separator == "=":
+            assert "status=" in source, f"{name}: missing status"
 
 
 def test_chart_frame_styles_preserve_responsive_owned_scroll_region() -> None:

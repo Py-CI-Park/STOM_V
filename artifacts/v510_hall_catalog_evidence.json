@@ -1,0 +1,286 @@
+{
+  "generated_at": "2026-07-23T14:25:27+0900",
+  "total": 5364,
+  "page_count": 54,
+  "pages": [
+    {
+      "offset": 0,
+      "returned": 100,
+      "next": 100
+    },
+    {
+      "offset": 100,
+      "returned": 100,
+      "next": 200
+    },
+    {
+      "offset": 200,
+      "returned": 100,
+      "next": 300
+    },
+    {
+      "offset": 300,
+      "returned": 100,
+      "next": 400
+    },
+    {
+      "offset": 400,
+      "returned": 100,
+      "next": 500
+    },
+    {
+      "offset": 500,
+      "returned": 100,
+      "next": 600
+    },
+    {
+      "offset": 600,
+      "returned": 100,
+      "next": 700
+    },
+    {
+      "offset": 700,
+      "returned": 100,
+      "next": 800
+    },
+    {
+      "offset": 800,
+      "returned": 100,
+      "next": 900
+    },
+    {
+      "offset": 900,
+      "returned": 100,
+      "next": 1000
+    },
+    {
+      "offset": 1000,
+      "returned": 100,
+      "next": 1100
+    },
+    {
+      "offset": 1100,
+      "returned": 100,
+      "next": 1200
+    },
+    {
+      "offset": 1200,
+      "returned": 100,
+      "next": 1300
+    },
+    {
+      "offset": 1300,
+      "returned": 100,
+      "next": 1400
+    },
+    {
+      "offset": 1400,
+      "returned": 100,
+      "next": 1500
+    },
+    {
+      "offset": 1500,
+      "returned": 100,
+      "next": 1600
+    },
+    {
+      "offset": 1600,
+      "returned": 100,
+      "next": 1700
+    },
+    {
+      "offset": 1700,
+      "returned": 100,
+      "next": 1800
+    },
+    {
+      "offset": 1800,
+      "returned": 100,
+      "next": 1900
+    },
+    {
+      "offset": 1900,
+      "returned": 100,
+      "next": 2000
+    },
+    {
+      "offset": 2000,
+      "returned": 100,
+      "next": 2100
+    },
+    {
+      "offset": 2100,
+      "returned": 100,
+      "next": 2200
+    },
+    {
+      "offset": 2200,
+      "returned": 100,
+      "next": 2300
+    },
+    {
+      "offset": 2300,
+      "returned": 100,
+      "next": 2400
+    },
+    {
+      "offset": 2400,
+      "returned": 100,
+      "next": 2500
+    },
+    {
+      "offset": 2500,
+      "returned": 100,
+      "next": 2600
+    },
+    {
+      "offset": 2600,
+      "returned": 100,
+      "next": 2700
+    },
+    {
+      "offset": 2700,
+      "returned": 100,
+      "next": 2800
+    },
+    {
+      "offset": 2800,
+      "returned": 100,
+      "next": 2900
+    },
+    {
+      "offset": 2900,
+      "returned": 100,
+      "next": 3000
+    },
+    {
+      "offset": 3000,
+      "returned": 100,
+      "next": 3100
+    },
+    {
+      "offset": 3100,
+      "returned": 100,
+      "next": 3200
+    },
+    {
+      "offset": 3200,
+      "returned": 100,
+      "next": 3300
+    },
+    {
+      "offset": 3300,
+      "returned": 100,
+      "next": 3400
+    },
+    {
+      "offset": 3400,
+      "returned": 100,
+      "next": 3500
+    },
+    {
+      "offset": 3500,
+      "returned": 100,
+      "next": 3600
+    },
+    {
+      "offset": 3600,
+      "returned": 100,
+      "next": 3700
+    },
+    {
+      "offset": 3700,
+      "returned": 100,
+      "next": 3800
+    },
+    {
+      "offset": 3800,
+      "returned": 100,
+      "next": 3900
+    },
+    {
+      "offset": 3900,
+      "returned": 100,
+      "next": 4000
+    },
+    {
+      "offset": 4000,
+      "returned": 100,
+      "next": 4100
+    },
+    {
+      "offset": 4100,
+      "returned": 100,
+      "next": 4200
+    },
+    {
+      "offset": 4200,
+      "returned": 100,
+      "next": 4300
+    },
+    {
+      "offset": 4300,
+      "returned": 100,
+      "next": 4400
+    },
+    {
+      "offset": 4400,
+      "returned": 100,
+      "next": 4500
+    },
+    {
+      "offset": 4500,
+      "returned": 100,
+      "next": 4600
+    },
+    {
+      "offset": 4600,
+      "returned": 100,
+      "next": 4700
+    },
+    {
+      "offset": 4700,
+      "returned": 100,
+      "next": 4800
+    },
+    {
+      "offset": 4800,
+      "returned": 100,
+      "next": 4900
+    },
+    {
+      "offset": 4900,
+      "returned": 100,
+      "next": 5000
+    },
+    {
+      "offset": 5000,
+      "returned": 100,
+      "next": 5100
+    },
+    {
+      "offset": 5100,
+      "returned": 100,
+      "next": 5200
+    },
+    {
+      "offset": 5200,
+      "returned": 100,
+      "next": 5300
+    },
+    {
+      "offset": 5300,
+      "returned": 64,
+      "next": null
+    }
+  ],
+  "items_seen": 5364,
+  "unique_items": 5364,
+  "duplicates": 0,
+  "latency_ms": {
+    "p50": 585.8674999908544,
+    "p95": 694.7784000076354,
+    "max": 832.4529000092298
+  },
+  "complete": true
+}

@@ -139,10 +139,6 @@ function BacktestTab({ baseUrl, wsStatus }) {
   const onSaved = useCallback_bt(() => { setReloadKey(k => k + 1); }, []);
   const reloadJobs = useCallback_bt(() => { setJobsReloadKey(k => k + 1); }, []);
 
-  // 데모 예시 모드 — 연결됐고 잡/세대 미선택이면 기본 화면에 합성 예시 결과를 띄운다
-  //   (빈 화면 금지). sentinel job_id 를 BtResultArea 에 실어 charts 무수정 렌더 경로로 보낸다.
-  const showDemoResult = connected && !isDemo && !resultJobId && !evoSource;
-  const effectiveJobId = showDemoResult ? "__demo__" : resultJobId;
 
   // 선택 잡의 모드(wfo/sweep 이면 csv 단일 분석 대신 모드별 표를 띄운다).
   const selectedJobMode = useMemo_bt(() => {
@@ -234,15 +230,10 @@ function BacktestTab({ baseUrl, wsStatus }) {
                            selectedJobId={resultJobId} onReload={reloadJobs}
                            compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
           <div style={{ minWidth: 0, position: "relative" }}>
-            {showDemoResult && (
-              <span className="badge warn" style={{ position: "absolute", top: 10, right: 10, zIndex: 2 }}>
-                예시 데이터
-              </span>
-            )}
             {isModeResult ? (
               <BtModeResultPanel baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} mode={selectedJobMode} />
             ) : (
-              <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={effectiveJobId} evoSource={evoSource}
+              <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} evoSource={evoSource}
                             onSetCompareA={onSetCompareA} compareView={compareView} onCloseCompare={onCloseCompare} />
             )}
           </div>

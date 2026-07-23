@@ -80,13 +80,13 @@ def test_lab_page_wires_research_lab_with_selected_run() -> None:
     assert "runId={runId}" in snippet
 
 
-def test_research_lab_shows_edge_panel_before_guidance() -> None:
-    """Given LabPage layout, Then the active heatmap panel appears before explanatory guidance blocks."""
+def test_research_lab_shows_status_before_active_analysis() -> None:
+    """The active analysis follows its status bar; glossary/examples live in the glossary tab."""
     src = _read_front("rl-panel.jsx")
 
     assert src.index('className="research-statusbar mono"') < src.index("{body}")
-    assert src.index("{body}") < src.index('className="lab-glossary"')
-    assert src.index("{body}") < src.index('className="lab-example"')
+    assert 'className="lab-glossary"' not in src
+    assert 'className="lab-example"' not in src
 
 
 def test_edge_heatmap_uses_intrinsic_bounded_scroll_size() -> None:

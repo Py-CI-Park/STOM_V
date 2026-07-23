@@ -154,26 +154,35 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   }, []);
 
 
-  // 신호 로드(buy/sell + 선택 종목 변경 시). 종목별로 1일·1종목 백테 신호를 받는다.
+  // 신호 로드 — 선택 코드 전체를 하나의 bounded batch request로 받는다.
   useEffect_sim(() => {
     if (isDemo || !baseUrl || !date || !buy || !sell || selected.length === 0) {
       setSignals({}); setSignalErr(""); return;
     }
     let cancelled = false;
-    const next = {};
-    const failedCodes = [];
-    Promise.all(selected.map(code =>
-      _simFetchJson(
-        baseUrl + "/sim/signals?date=" + encodeURIComponent(date) + "&src=" + src +
-        "&code=" + encodeURIComponent(code) +
-        "&buy=" + encodeURIComponent(buy) + "&sell=" + encodeURIComponent(sell),
-        200000
-      ).then(j => { next[code] = (j && Array.isArray(j.trades)) ? j.trades : []; })
-       .catch(e => { next[code] = []; failedCodes.push(code + ": " + String(e && e.message ? e.message : e)); })
-    )).then(() => {
+    const selectedCodes = Array.from(new Set(selected)).slice(0, _SIM_MAX_CODES);
+    _simFetchJson(
+      baseUrl + "/sim/signals/batch?date=" + encodeURIComponent(date) + "&src=" + src +
+      "&codes=" + encodeURIComponent(selectedCodes.join(",")) +
+      "&buy=" + encodeURIComponent(buy) + "&sell=" + encodeURIComponent(sell),
+      200000
+    ).then(j => {
       if (cancelled) return;
+      const next = {};
+      const results = (j && j.results && typeof j.results === "object") ? j.results : {};
+      const failedCodes = [];
+      selectedCodes.forEach(code => {
+        const result = results[code] || {};
+        next[code] = Array.isArray(result.trades) ? result.trades : [];
+        if (result.status !== "ok") failedCodes.push(code + ": " + (result.note || "신호 로드 실패"));
+      });
       setSignals(next);
       setSignalErr(failedCodes.length ? "신호 로드 실패: " + failedCodes.join(", ") : "");
+    }).catch(e => {
+      if (!cancelled) {
+        setSignals(Object.fromEntries(selectedCodes.map(code => [code, []])));
+        setSignalErr("신호 로드 실패: " + String(e && e.message ? e.message : e));
+      }
     });
     return () => { cancelled = true; };
   }, [baseUrl, isDemo, date, src, buy, sell, selected.join(",")]);
@@ -223,7 +232,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         return;
       }
       if (m.type === "meta") {
-        setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0] });
+        setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0], replay_metadata: m.replay_metadata || {} });
         setCursor(0);
       } else if (m.type === "bars") {
         // S1 결함 수정 — 코드별 시계열에 **불변(immutable) append**.
@@ -523,6 +532,13 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
             speed={speed} onSpeed={changeSpeed} cursor={cursor}
             total={meta ? meta.bars_total : 0} curT={curT}
             sessionRange={meta ? meta.session_range : [0, 0]} onSeek={seekByIndex} canPlay={canPlay} />
+          {meta && meta.replay_metadata && meta.replay_metadata.truncated && (
+            <div className="research-empty" role="status">
+              리플레이 원본이 안전 상한으로 잘렸습니다
+              {meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length
+                ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."}
+            </div>
+          )}
 
           {selected.length > 0 && (
             <SimViewBar

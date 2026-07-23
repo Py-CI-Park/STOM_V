@@ -46,6 +46,8 @@ _LEGACY_ONLY_WHITELIST = {
     "ProPage": "V4Workbench 가 하부 패널(Pro/RunCompare/HoF)을 직접 마운트",
     "PhaseTimeline": "v5.3.2 수평 파이프라인 벨트(_V6PipelineBelt)+스테이지 탭이 대체",
     "ProcessFlowPanel": "v5.3.2 벨트·스테이지 탭과 3중 중복 — docs/process_flow.html 로 대체(N7)",
+    "BacktestDetailChart": "V4는 공통 BtResultArea가 백테스트 상세 결과를 상위호환하며 중복 fetch를 제거",
+    "EvolutionGuiParityPanel": "V4는 공통 BtResultArea의 GUI parity 진단이 상위호환하며 중복 렌더를 제거",
 }
 
 

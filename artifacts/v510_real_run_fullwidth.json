@@ -1,0 +1,110 @@
+[
+  {
+    "width": 1920,
+    "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+    "identity": false,
+    "flow": {
+      "w": 1808,
+      "h": 3950.6,
+      "display": "flex",
+      "cols": "none"
+    },
+    "section": {
+      "w": 1808,
+      "h": 374.2,
+      "display": "block",
+      "cols": "none"
+    },
+    "chart": {
+      "w": 1782,
+      "h": 774.7,
+      "display": "flex",
+      "cols": "none"
+    },
+    "sectionWidths": [
+      1808,
+      1808,
+      1808,
+      1808,
+      1808,
+      1808
+    ],
+    "docH": 5231,
+    "dom": 1885,
+    "svg": 18,
+    "diagnosticsMounted": false,
+    "error": null
+  },
+  {
+    "width": 2560,
+    "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+    "identity": false,
+    "flow": {
+      "w": 2428,
+      "h": 3971.3,
+      "display": "flex",
+      "cols": "none"
+    },
+    "section": {
+      "w": 2428,
+      "h": 394.9,
+      "display": "block",
+      "cols": "none"
+    },
+    "chart": {
+      "w": 2402,
+      "h": 774.7,
+      "display": "flex",
+      "cols": "none"
+    },
+    "sectionWidths": [
+      2428,
+      2428,
+      2428,
+      2428,
+      2428,
+      2428
+    ],
+    "docH": 5213,
+    "dom": 1885,
+    "svg": 18,
+    "diagnosticsMounted": false,
+    "error": null
+  },
+  {
+    "width": 3440,
+    "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+    "identity": false,
+    "flow": {
+      "w": 3284,
+      "h": 3999.8,
+      "display": "flex",
+      "cols": "none"
+    },
+    "section": {
+      "w": 3284,
+      "h": 423.4,
+      "display": "block",
+      "cols": "none"
+    },
+    "chart": {
+      "w": 3258,
+      "h": 774.7,
+      "display": "flex",
+      "cols": "none"
+    },
+    "sectionWidths": [
+      3284,
+      3284,
+      3284,
+      3284,
+      3284,
+      3284
+    ],
+    "docH": 5252,
+    "dom": 1885,
+    "svg": 18,
+    "diagnosticsMounted": false,
+    "error": null
+  }
+]

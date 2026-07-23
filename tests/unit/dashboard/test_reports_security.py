@@ -275,7 +275,10 @@ def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregiste
 
     assert 'report.registered !== true' in source
     assert '["run", "step", "legacy"].includes(report.report_type)' in source
-    assert "미등록·검증 불가" in source
+    assert "정본 등록" in source
+    assert "소스 근거 재생성 가능" in source
+    assert "레거시 정적" in source
+    assert "검증 불가" in source
     assert "rp.research_id" in source or "selectedReport.research_id" in source
     assert "rp.run_id" in source or "selectedReport.run_id" in source
     assert "rp.status" in source and "selectedReport.status" in source
