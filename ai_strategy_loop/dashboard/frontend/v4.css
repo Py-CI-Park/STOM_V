@@ -744,7 +744,7 @@
 .v6-engine-xl .engine-cell { font-size: 13px; }
 .v6-engine-xl .engine-log-strip { display: none; }
 
-/* Backtest results remain one full-width reading column at every desktop width. */
+/* Result semantics remain full-width; only homogeneous chart/card groups use the user-selected grid. */
 .bt-result-flow .panel svg { max-height: 420px; }
 .bt-result-flow details svg { max-height: 420px; }
 
@@ -1083,6 +1083,10 @@
 .v59-stage-layout .v6-stage-grid > .v54-span-all,
 .v59-stage-layout .v6-stage-grid > .v59-live-result-analysis,
 .v59-stage-layout .v6-stage-grid > .v6-stage-lab { grid-column: 1 / -1; }
+.v511-result-ready { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--teal); border-radius: 10px; background: var(--bg-1); color: var(--ink-1); }
+.v6-stage-density { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); font-size: 11px; }
+.v6-live-density-compact .v6-stage-tab { padding: 6px 10px; min-width: 124px; }
+.v6-live-density-compact .v6-stage-tab span { display: none; }
 
 /* Strategy source is the primary Generation-stage work surface. */
 .active-strategy-panel { grid-column: span 8 !important; }
@@ -1182,7 +1186,10 @@
 }
 .bt-result-nav a { color: var(--ink-2); font-size: 12px; text-decoration: none; padding: 6px 8px; border-radius: 6px; }
 .bt-result-nav a:hover, .bt-result-nav a:focus-visible { color: var(--teal); background: var(--bg-2); }
-.bt-result-nav .btn { margin-left: auto; }
+.bt-result-nav > .btn:last-child { margin-left: auto; }
+.bt-result-layout-status { color: var(--ink-2); font: 11px/1.3 var(--mono); white-space: nowrap; }
+.bt-result-layout-controls { display: flex; flex-wrap: wrap; gap: 4px; }
+.bt-result-layout-controls .active { color: var(--teal); border-color: var(--teal); }
 .bt-result-capabilities {
   display: flex;
   flex-wrap: wrap;
@@ -1226,11 +1233,11 @@
 .bt-equal-card-grid,
 .bt-gui-parity-cards {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(var(--bt-result-columns, 2), minmax(0, 1fr));
   gap: var(--v59-gap);
   align-items: stretch;
 }
-.bt-diagnostic-grid { grid-template-columns: minmax(0, 1fr); }
+.bt-diagnostic-grid.is-collapsed > * { max-height: 52px; overflow: hidden; }
 .bt-equal-card,
 .bt-equal-card-grid > .panel,
 .bt-primary-chart-grid > .panel,
@@ -1415,10 +1422,6 @@
 @media (max-width: 1199px) {
   .v59-stage-layout .v6-stage-grid > *,
   .active-strategy-panel { grid-column: 1 / -1 !important; }
-  .bt-primary-chart-grid,
-  .bt-diagnostic-grid,
-  .bt-equal-card-grid,
-  .bt-gui-parity-cards,
   .active-strategy-code-columns,
   .bt-detail-summary-layout { grid-template-columns: minmax(0, 1fr); }
   .v4-reports-body { grid-template-columns: minmax(0, 1fr); }

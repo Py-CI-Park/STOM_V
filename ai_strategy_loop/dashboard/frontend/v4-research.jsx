@@ -302,6 +302,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
   // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
+  const [liveStageDensity, setLiveStageDensity] = useState_v4r(() => {
+    try {
+      const stored = window.localStorage.getItem("stom_v511_live_stage_density");
+      return stored === "compact" ? "compact" : "comfortable";
+    } catch (e) {
+      return "comfortable";
+    }
+  });
   const s = state || {};
   const latest = s.latest || {};
   const runId = s.run_id || "";
@@ -312,7 +320,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const selectedGen = [selectedDetailGen, s.best && s.best.gen, latestGen]
     .map(value => value == null ? null : Number(value))
     .find(value => Number.isFinite(value) && knownGenNos.includes(value));
-  const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+  const isDemo = wsStatus === "demo";
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
   const runStatus = _v4RunStatus(s.status, latest.phase);
@@ -327,6 +335,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     else if (e.key === "Home") { e.preventDefault(); setStagePin(0); }
     else if (e.key === "End") { e.preventDefault(); setStagePin(n - 1); }
   };
+  useEffect_v4r(() => {
+    try { window.localStorage.setItem("stom_v511_live_stage_density", liveStageDensity); } catch (e) {}
+  }, [liveStageDensity]);
 
   useEffect_v4r(() => {
     let active = true;
@@ -375,7 +386,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   };
 
   return (
-    <section className="v4-research v6-live" aria-labelledby="v4-research-heading">
+    <section className={"v4-research v6-live v6-live-density-" + liveStageDensity} aria-labelledby="v4-research-heading">
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
 
@@ -392,6 +403,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           {s.status === "error" || s.status === "failed"
             ? `연구 요청 실패 · ${String(s.error || (s.latest && s.latest.error) || "서버 로그를 확인하세요")}`
             : `연구 ${s.status === "blocked" ? "차단" : "진행"} · 현재 단계 ${(s.latest && s.latest.current_step) ?? "발행 대기"} · 세대 데이터 대기`}
+        </div>
+      )}
+      {runStatus.key === "complete" && runId && selectedGen != null && (
+        <div className="v511-result-ready" role="status">
+          <span>완료된 세대 g{selectedGen}의 결과 분석을 다시 열 수 있습니다.</span>
+          <button className="btn primary sm" type="button" onClick={() => setStagePin(1)}>
+            결과 분석 열기
+          </button>
         </div>
       )}
 
@@ -411,6 +430,15 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
               {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
             </button>
           ))}
+        </span>
+        <span className="v6-stage-density" role="group" aria-label="Live 단계 밀도">
+          <span>단계 밀도</span>
+          <button className={"btn ghost sm" + (liveStageDensity === "comfortable" ? " active" : "")}
+                  type="button" aria-pressed={liveStageDensity === "comfortable"}
+                  onClick={() => setLiveStageDensity("comfortable")}>여유</button>
+          <button className={"btn ghost sm" + (liveStageDensity === "compact" ? " active" : "")}
+                  type="button" aria-pressed={liveStageDensity === "compact"}
+                  onClick={() => setLiveStageDensity("compact")}>압축</button>
         </span>
         {stagePin != null && (
           <button className="btn ghost sm v5-pin-reset" onClick={() => setStagePin(null)}>
