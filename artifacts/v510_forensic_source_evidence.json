@@ -1,0 +1,66 @@
+{
+  "schema": "v510-forensic-source-evidence-v1",
+  "source_commit": "5bf4f4c1",
+  "findings": [
+    {
+      "id": "backtest-one-column",
+      "file": "ai_strategy_loop/dashboard/frontend/v4.css",
+      "lines": "1163-1168, 1224-1233",
+      "evidence": "bt-result-flow is a vertical flex flow and bt-primary-chart-grid, bt-diagnostic-grid, bt-equal-card-grid and bt-gui-parity-cards resolve to one grid column."
+    },
+    {
+      "id": "backtest-diagnostics-hidden",
+      "file": "ai_strategy_loop/dashboard/frontend/bt-result-area.jsx",
+      "lines": "259, 450-469",
+      "evidence": "diagnosticsOpen defaults false and the diagnostic grid is conditionally mounted only when true."
+    },
+    {
+      "id": "live-result-stage-gate",
+      "file": "ai_strategy_loop/dashboard/frontend/v4-research.jsx",
+      "lines": "312-314, 432-449",
+      "evidence": "The shared result area requires the Backtest stage and an exact known run/generation source."
+    },
+    {
+      "id": "report-renderer-split",
+      "file": "ai_strategy_loop/dashboard/report_writer.py",
+      "lines": "18-31, 235-258",
+      "evidence": "The standard writer owns one section sequence and one renderer with system/light/dark display radios."
+    },
+    {
+      "id": "run-report-renderer-split",
+      "file": "scripts/build_step_reports.py",
+      "lines": "392-442",
+      "evidence": "Run comprehensive reports independently own the navy/gold masthead, KPI, SVG visualization and light-only stylesheet."
+    },
+    {
+      "id": "replay-default-live",
+      "file": "ai_strategy_loop/dashboard/frontend/sim-tab-utils.jsx",
+      "lines": "94-100",
+      "evidence": "The chart engine preference falls back to live Canvas."
+    },
+    {
+      "id": "replay-early-bar-geometry",
+      "file": "ai_strategy_loop/dashboard/frontend/sim-live-chart.jsx",
+      "lines": "33-35, 505-528",
+      "evidence": "The Canvas reserves 48 slots and draws the latest-price guide across the plot width."
+    },
+    {
+      "id": "tick-one-second-ohlc-risk",
+      "file": "ai_strategy_loop/dashboard/replay_engine.py",
+      "lines": "340-354",
+      "evidence": "The one-second aggregation branch can consume raw day-layout open/high/low columns instead of current-price observation buckets."
+    },
+    {
+      "id": "path-query-precedence",
+      "file": "ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx",
+      "lines": "129-136, 379-385",
+      "evidence": "The tab query is evaluated before pathname mapping, so /ui/evolution/workbench?tab=research mounts Research Live."
+    },
+    {
+      "id": "same-v4-response",
+      "file": "ai_strategy_loop/dashboard/app.py",
+      "lines": "3561-3572, 3705-3725",
+      "evidence": "/ui/v4/ and allowed /ui/evolution routes serve the same v4.html response."
+    }
+  ]
+}

@@ -1,0 +1,569 @@
+{
+  "schema": "v510-forensic-tag-feature-matrix-v2",
+  "detector_note": "Each boolean uses the exact detector shown. Line numbers are within the concatenated target only where two files are combined; source_commit is peeled commit, not annotated tag object.",
+  "versions": [
+    {
+      "version": "V2UC-Dashboard-v5.5.0",
+      "source_commit": "608b0582",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            284,
+            285,
+            288,
+            289,
+            290,
+            405,
+            528,
+            564
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            223
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.5.1",
+      "source_commit": "72effd4d",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            283,
+            284,
+            287,
+            288,
+            289,
+            404,
+            547,
+            583
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            223
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.6.0",
+      "source_commit": "1bdd8156",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            286,
+            287,
+            290,
+            291,
+            292,
+            407,
+            550,
+            598
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            210,
+            222,
+            223,
+            224,
+            236,
+            244,
+            248
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.6.1",
+      "source_commit": "916af163",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            285,
+            286,
+            289,
+            290,
+            291,
+            406,
+            548,
+            596
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            210,
+            222,
+            223,
+            224,
+            236,
+            244,
+            248
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.7.0",
+      "source_commit": "44a11607",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            307,
+            308,
+            311,
+            312,
+            313,
+            427,
+            569,
+            617
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            392,
+            405,
+            406,
+            407,
+            420,
+            426,
+            437,
+            442
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.8.0",
+      "source_commit": "b5c60420",
+      "evidence": {
+        "layout_selector": {
+          "present": true,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": [
+            307,
+            308,
+            311,
+            312,
+            313,
+            429,
+            571,
+            619
+          ]
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            207,
+            212
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            392,
+            405,
+            406,
+            407,
+            420,
+            426,
+            437,
+            442
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.9.0",
+      "source_commit": "c052fb76",
+      "evidence": {
+        "layout_selector": {
+          "present": false,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": []
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            220,
+            225
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            392,
+            405,
+            406,
+            407,
+            420,
+            426,
+            437,
+            442
+          ]
+        }
+      }
+    },
+    {
+      "version": "V2UC-Dashboard-v5.9.1",
+      "source_commit": "a805d527",
+      "evidence": {
+        "layout_selector": {
+          "present": false,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": []
+        },
+        "hall_signed_return_color": {
+          "present": true,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": [
+            220,
+            225
+          ]
+        },
+        "diagnostics_lazy_mount": {
+          "present": false,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": []
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": false,
+          "detector": "system/light/dark report-theme ids",
+          "lines": []
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            392,
+            405,
+            406,
+            407,
+            420,
+            426,
+            437,
+            442
+          ]
+        }
+      }
+    },
+    {
+      "version": "v5.10 source",
+      "source_commit": "5bf4f4c1",
+      "evidence": {
+        "layout_selector": {
+          "present": false,
+          "detector": "stom_v6_stage_cols or setStageCols",
+          "lines": []
+        },
+        "hall_signed_return_color": {
+          "present": false,
+          "detector": "inline total_return_krw/total_return_pct color expression",
+          "lines": []
+        },
+        "diagnostics_lazy_mount": {
+          "present": true,
+          "detector": "diagnosticsOpen state + conditional mount",
+          "lines": [
+            259,
+            455
+          ]
+        },
+        "replay_default_live_canvas": {
+          "present": true,
+          "detector": "_loadEngineMode fallback expression or catch returns live",
+          "lines": [
+            98,
+            99
+          ]
+        },
+        "replay_min_48_slots": {
+          "present": true,
+          "detector": "_SLC_MIN_SLOTS = 48",
+          "lines": [
+            34
+          ]
+        },
+        "standard_report_theme_radios": {
+          "present": true,
+          "detector": "system/light/dark report-theme ids",
+          "lines": [
+            28,
+            254
+          ]
+        },
+        "separate_rich_run_report": {
+          "present": true,
+          "detector": "build_step_reports run-comprehensive-v3/mastkpi/viz",
+          "lines": [
+            392,
+            405,
+            406,
+            407,
+            420,
+            426,
+            437,
+            442
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "v510-forensic-server-mismatch-v1",
+  "observations": [
+    {
+      "phase": "before_restart",
+      "port": 8770,
+      "pid": 214964,
+      "command": "python -m ai_strategy_loop --host 127.0.0.1 --port 8770",
+      "cwd": "C:/System_Trading/STOM/STOM_V.wt-dev",
+      "frontend_release": "v5.10.0",
+      "frontend_bundle": "ecfc1971",
+      "health_http_status": 200,
+      "hall_catalog_http_status": 404,
+      "visible_workbench_error": "조회 실패: Error: HTTP 404"
+    },
+    {
+      "phase": "temporary_audit_server",
+      "port": 8784,
+      "pid": 254832,
+      "command": "python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port 8784 --log-level warning",
+      "cwd": "C:/System_Trading/STOM/STOM_V.wt-dev",
+      "frontend_release": "v5.10.0",
+      "frontend_bundle": "ecfc1971",
+      "hall_catalog_http_status": 200
+    },
+    {
+      "phase": "after_restart",
+      "port": 8770,
+      "pid": 42304,
+      "command": "python -m ai_strategy_loop --host 127.0.0.1 --port 8770",
+      "health_http_status": 200,
+      "hall_catalog_http_status": 200,
+      "hall_catalog_total": 5364
+    }
+  ],
+  "interpretation_boundary": "The observations prove a frontend/backend capability mismatch before restart and its resolution after restart. They do not prove the exact source commit loaded by PID 214964."
+}
