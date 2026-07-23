@@ -6,7 +6,7 @@
 - S1: simulation.jsx 가 immutable append(새 배열 참조) 로 봉·거래량 동결 결함을 고친다.
 - S2: 동시보기 10개 상한 + 반응형 그리드(_responsiveCols).
 - S3: simulation-charts.jsx 에 SimFootprint(오더플로우 가격 사다리).
-- S4: sim-live-chart.jsx 가 window.SimLiveChart(Canvas 라이브) 를 노출, 기본 엔진 라이브.
+- S4: sim-live-chart.jsx 가 window.SimLiveChart(Canvas 라이브) 를 노출하고 기본 엔진은 LWC다.
 - S5: SimOrderBook(HTS형 호가 사다리)로 호가 시각화 강화.
 - 세 JSX 파일이 vendor-babel 로 트랜스폼된다(문법 무결).
 """
@@ -78,14 +78,14 @@ def test_s4_live_chart_file_exists_and_exposes_global() -> None:
     assert "_lerp" in src
 
 
-def test_s4_live_is_default_engine_mode() -> None:
+def test_s4_lwc_is_default_engine_mode() -> None:
     # P5.5 분해 — 엔진 모드 상수/로더는 sim-tab-utils.jsx, 디스패처(SimChartByEngine)는 sim-tab-panels.jsx.
     utils = _read("sim-tab-utils.jsx")
-    # 엔진 모드 기본값 라이브(_loadEngineMode 기본 'live').
     assert '_SIM_ENGINE_MODES' in utils
-    assert '"라이브"' in utils
-    assert 'return (v === "lwc" || v === "svg" || v === "live") ? v : "live"' in utils
-    # 디스패처가 라이브 우선.
+    assert '"LWC · 기본"' in utils
+    assert '"Canvas · 고급/실험적"' in utils
+    assert 'return (v === "lwc" || v === "svg" || v === "live") ? v : "lwc"' in utils
+    assert 'catch (e) { return "lwc"; }' in utils
     assert "SimChartByEngine" in _read("sim-tab-panels.jsx")
 
 

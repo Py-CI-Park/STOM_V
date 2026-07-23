@@ -8,9 +8,17 @@ import {
   useState_btc, useRef_btc, useMemo_btc,
   _btDateLabel, _gpMoney, _BtChartEmpty,
 } from "./bt-chart-utils.jsx";
+import { ChartFrame } from "./chart-frame.jsx";
+
+function _btParityWithEvidence(Chart, describe) {
+  return function EvidenceChart(props) {
+    return <ChartFrame {...describe(props)}><Chart {...props} /></ChartFrame>;
+  };
+}
 
 // 이미지1-(a) MDD 랜덤곡선 — 30개 셔플 누적곡선(회색) + 실제 누적곡선(주황). actual_mdd vs random.
-function BtMddRandomChart({ data }) {
+// 셔플 선은 실제 거래 증거가 아닌 비교용 장식이며, 원본 표에는 실제 actual 행만 제공한다.
+function _BtMddRandomChartContent({ data }) {
   const d = data || {};
   const curves = d.curves || [];
   const actual = d.actual || [];
@@ -82,7 +90,7 @@ function BtMddRandomChart({ data }) {
 }
 
 // 이미지1-(b) 일별 수익 막대 + 누적 라인. index_available=false 면 지수 미제공 안내.
-function BtDailyPnlChart({ data }) {
+function _BtDailyPnlChartContent({ data }) {
   const d = data || {};
   const series = d.series || [];
   const [hover, setHover] = useState_btc(null);
@@ -191,7 +199,7 @@ function BtDailyPnlChart({ data }) {
 }
 
 // 이미지1-(c) 시간대별 손익 — 슬롯별 이익(위)/손실(아래) 부호 막대.
-function BtHourlyPnlChart({ data }) {
+function _BtHourlyPnlChartContent({ data }) {
   const slots = (data && data.slots) || [];
   const [hover, setHover] = useState_btc(null);
   const W = 880, H = 320;
@@ -270,7 +278,7 @@ function BtHourlyPnlChart({ data }) {
 }
 
 // 이미지1-(d) 요일별 손익 — 요일별 이익/손실 부호 막대.
-function BtWeekdayPnlChart({ data }) {
+function _BtWeekdayPnlChartContent({ data }) {
   const days = (data && data.days) || [];
   const W = 560, H = 320;
   const padL = 58, padR = 24, padT = 18, padB = 28;
@@ -336,7 +344,7 @@ function BtWeekdayPnlChart({ data }) {
 }
 
 // 이미지2-(e) 보유금액 곡선 — 시점별 미청산 진입원금 합(holding_basis=entry_cost).
-function BtHoldingCurveChart({ data }) {
+function _BtHoldingCurveChartContent({ data }) {
   const d = data || {};
   const series = d.series || [];
   const [hover, setHover] = useState_btc(null);
@@ -418,7 +426,7 @@ function BtHoldingCurveChart({ data }) {
 }
 
 // 이미지2-(f) 거래별 손익 + 누적 + 롤링 평균(창 20/60/120/240/480).
-function BtTradeRollingChart({ data }) {
+function _BtTradeRollingChartContent({ data }) {
   const d = data || {};
   const series = d.series || [];
   const windows = d.windows || [20, 60, 120, 240, 480];
@@ -591,6 +599,43 @@ function BtGuiParitySection({ guiParity, columns, layoutMode }) {
     </section>
   );
 }
+
+const BtMddRandomChart = _btParityWithEvidence(_BtMddRandomChartContent, ({ data }) => ({
+  title: "MDD 랜덤 곡선", unit: "누적 손익 (원)", period: "거래 순서",
+  sampleCount: Array.isArray(data && data.actual) ? data.actual.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "실제 대 셔플 MDD", source: "analysis.gui_parity.mdd_random.actual",
+  rows: data && data.actual, columns: ["index", "cum"], rowKey: "index",
+}));
+const BtDailyPnlChart = _btParityWithEvidence(_BtDailyPnlChartContent, ({ data }) => ({
+  title: "일별 수익", unit: "일별·누적 손익 (원)", period: "일자별",
+  sampleCount: Array.isArray(data && data.series) ? data.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.gui_parity.daily.series",
+  rows: data && data.series, columns: ["date", "pnl", "cum"], rowKey: "date",
+}));
+const BtHourlyPnlChart = _btParityWithEvidence(_BtHourlyPnlChartContent, ({ data }) => ({
+  title: "시간대별 손익", unit: "손익 (원)", period: "30분 매수 시각 슬롯",
+  sampleCount: Array.isArray(data && data.slots) ? data.slots.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.gui_parity.hourly.slots",
+  rows: data && data.slots, columns: ["slot_label", "profit", "loss", "net", "trades"], rowKey: "slot_label",
+}));
+const BtWeekdayPnlChart = _btParityWithEvidence(_BtWeekdayPnlChartContent, ({ data }) => ({
+  title: "요일별 손익", unit: "손익 (원)", period: "매수 요일별",
+  sampleCount: Array.isArray(data && data.days) ? data.days.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.gui_parity.weekday.days",
+  rows: data && data.days, columns: ["weekday", "profit", "loss", "net", "trades"], rowKey: "weekday",
+}));
+const BtHoldingCurveChart = _btParityWithEvidence(_BtHoldingCurveChartContent, ({ data }) => ({
+  title: "보유금액 곡선", unit: "미청산 진입원금 (원)", period: "거래 시점별",
+  sampleCount: Array.isArray(data && data.series) ? data.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "진입원가 기준", source: "analysis.gui_parity.holding.series",
+  rows: data && data.series, columns: ["time", "holding"], rowKey: "time",
+}));
+const BtTradeRollingChart = _btParityWithEvidence(_BtTradeRollingChartContent, ({ data }) => ({
+  title: "거래별 손익 · 누적 · 롤링", unit: "손익 (원)", period: "거래 순서",
+  sampleCount: Array.isArray(data && data.series) ? data.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.gui_parity.trade_rolling.series",
+  rows: data && data.series, columns: ["index", "pnl", "cum"], rowKey: "index",
+}));
 
 export {
   BtMddRandomChart, BtDailyPnlChart, BtHourlyPnlChart, BtWeekdayPnlChart,

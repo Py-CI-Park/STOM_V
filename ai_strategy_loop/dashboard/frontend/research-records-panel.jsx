@@ -21,12 +21,17 @@ function _rrpPct(value) {
 }
 
 function _rrpDate(ts) {
-  if (!ts) return "-";
-  try {
-    return new Date(Number(ts) * 1000).toLocaleString();
-  } catch {
-    return "-";
-  }
+  if (ts == null || ts === "") return "—";
+  const n = Number(ts);
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  const date = new Date(n * 1000);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+}
+
+function _rrpMetadataValue(value) {
+  if (value == null || value === "") return "—";
+  if (Array.isArray(value)) return value.length ? value.map(String).join(" / ") : "—";
+  return typeof value === "object" ? "—" : String(value);
 }
 
 function _rrpBestLabel(record) {
@@ -80,22 +85,40 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
       setDetail(null);
       return;
     }
-    // V5.4(§10-10): 세대 가드 — 늦게 도착한 이전 선택 응답이 새 선택을 덮어쓰지 않게 한다.
+    // Clear the prior detail before requesting the newly selected campaign.
+    // The response must also name that campaign before it becomes selectable metadata.
+    setDetail(null);
     const reqId = ++detailReqRef.current;
     const forCampaign = selectedCampaign;
-    let cancelled = false;
-    fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(selectedCampaign),
-          { signal: AbortSignal.timeout(6000) })
+    const controller = new AbortController();
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 6000);
+    fetch(baseUrl + "/research_records/detail?campaign=" + encodeURIComponent(forCampaign),
+          { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
-        if (!cancelled && reqId === detailReqRef.current) {
-          setDetail(Object.assign({ __campaign: forCampaign }, j));
-          // V6.3(S4): 선택 연구를 상위(History 컨텍스트 바)로 lift — stable ID 마스터-디테일.
-          if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, (j && j.campaign) || null);
+        const campaign = j && j.campaign;
+        if (reqId !== detailReqRef.current) return;
+        if (!j || !j.available || !campaign || campaign.name !== forCampaign) {
+          setDetail({ available: false, reason: "selection_metadata_unavailable", __campaign: forCampaign });
+          return;
+        }
+        setDetail({ available: true, campaign, __campaign: forCampaign });
+        if (typeof onSelectCampaign === "function") onSelectCampaign(forCampaign, campaign);
+      })
+      .catch(e => {
+        if (reqId === detailReqRef.current && (timedOut || e.name !== "AbortError")) {
+          setDetail({ available: false, reason: timedOut ? "request_timeout" : String(e), __campaign: forCampaign });
         }
       })
-      .catch(e => { if (!cancelled && reqId === detailReqRef.current) setDetail({ available: false, reason: String(e), __campaign: forCampaign }); });
-    return () => { cancelled = true; };
+      .finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, [baseUrl, isDemo, selectedCampaign]);
   const refreshRuns = useCallback_rrp(() => {
     if (isDemo || !baseUrl) {
@@ -142,22 +165,42 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
     });
   const onSort = (k) => { if (k === sortKey) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(k === "name"); } };
   const _si = (k) => (sortKey === k ? (sortAsc ? " ▲" : " ▼") : "");
-  const selected = (detail && detail.available && detail.campaign)
-    ? detail.campaign : rows.find(r => r.name === selectedCampaign);
+  const selected = (detail && detail.__campaign === selectedCampaign && detail.available && detail.campaign)
+    ? detail.campaign : null;
   const candidates = (selected && Array.isArray(selected.candidates)) ? selected.candidates.slice(0, 5) : [];
   const errors = (payload && Array.isArray(payload.errors)) ? payload.errors : [];
   const currentRunId = runList.length ? runList[0].run_id : "";
   const currentGenNo = 0;
   const selectedSummary = selected && selected.summary && typeof selected.summary === "object" ? selected.summary : {};
+  const selectedArtifacts = selected && selected.artifacts && typeof selected.artifacts === "object" ? selected.artifacts : {};
+  const selectedLinkage = (() => {
+    const parts = [];
+    if (selectedSummary.run_id != null && selectedSummary.run_id !== "") parts.push(`run ${selectedSummary.run_id}`);
+    if (selectedSummary.gen_no != null && selectedSummary.gen_no !== "") parts.push(`gen ${selectedSummary.gen_no}`);
+    return parts.length ? parts.join(" / ") : "—";
+  })();
+  const selectedEvidence = [
+    selectedArtifacts.summary,
+    selectedArtifacts.jsonl,
+    selectedArtifacts.run_log,
+    ...(Array.isArray(selectedArtifacts.pairs) ? selectedArtifacts.pairs : []),
+  ].filter(Boolean);
+  const selectedUseReference = [
+    selectedSummary.use_evidence,
+    selectedSummary.referenced_by,
+  ].filter(value => value != null && value !== "");
   const selectedFields = [
-    ["Period", selectedSummary.period],
-    ["Source", selectedSummary.source],
     ["Research date", selectedSummary.research_date],
-    ["Artifacts", selected && selected.artifacts
-      ? [selected.artifacts.summary, selected.artifacts.jsonl, selected.artifacts.run_log]
-        .concat(selected.artifacts.pairs || []).filter(Boolean).join(" / ")
-      : null],
-  ].filter(([, value]) => value !== undefined && value !== null && value !== "");
+    ["Created", selectedSummary.created_at],
+    ["Updated", selected ? _rrpDate(selected.updated_at) : "—"],
+    ["Purpose", selectedSummary.purpose],
+    ["Source", selectedSummary.source],
+    ["Run / generation", selectedLinkage],
+    ["Use / reference evidence", selectedUseReference],
+    ["Evidence files", selectedEvidence],
+    ["Status", selected ? "available" : `unavailable${detail && detail.reason ? `: ${detail.reason}` : ""}`],
+    ["Freshness", wsStatus === "open" ? "connected response" : wsStatus === "demo" ? "unavailable in Demo" : "connection not current; displayed response may be stale"],
+  ];
 
   return (
     <div className="panel">
@@ -241,22 +284,28 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
             </button>
           </div>
         )}
-        {selected && (
+        {selectedCampaign && (
           <div className="research-records-selected-detail">
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
               <div className="stat-label" style={{ marginBottom: 6 }}>Selected</div>
-              <div className="mono" style={{ color: "var(--ink-0)", marginBottom: 6 }}>{selected.name}</div>
-              <div className="mono" style={{ color: "var(--ink-2)", fontSize: 11 }}>
-                best={_rrpBestLabel(selected)}
-              </div>
-              <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 }}>
-                root={(payload && payload.root) || "-"}
-              </div>
-              {selectedFields.length > 0 && (
-                <div className="research-records-fields mono">
-                  {selectedFields.map(([label, value]) => <div key={label}><span>{label}</span><b>{String(value)}</b></div>)}
+              <div className="mono" style={{ color: "var(--ink-0)", marginBottom: 6 }}>{selected ? selected.name : selectedCampaign}</div>
+              {selected ? (
+                <React.Fragment>
+                  <div className="mono" style={{ color: "var(--ink-2)", fontSize: 11 }}>
+                    best={_rrpBestLabel(selected)}
+                  </div>
+                  <div className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5, marginTop: 6 }}>
+                    root={(payload && payload.root) || "—"}
+                  </div>
+                </React.Fragment>
+              ) : (
+                <div className="mono" style={{ color: "var(--ink-3)", fontSize: 11 }}>
+                  Selected metadata unavailable
                 </div>
               )}
+              <div className="research-records-fields mono">
+                {selectedFields.map(([label, value]) => <div key={label}><span>{label}</span><b>{_rrpMetadataValue(value)}</b></div>)}
+              </div>
             </div>
             <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10 }}>
               <div className="stat-label" style={{ marginBottom: 6 }}>Top Candidates</div>

@@ -198,14 +198,14 @@ function _RpStrategyCode({ baseUrl, isDemo, runId, genNo }) {
         <div className="rp-code-label" style={{ color: "var(--teal)" }}>
           매수 조건식 {code.buy_name ? `· ${code.buy_name}` : ""}
         </div>
-        <pre className="rp-code-block">{buy || "(없음)"}</pre>
+        <pre className="rp-code-block v4-history-code-block">{buy || "(없음)"}</pre>
         <_RpVarChips baseUrl={baseUrl} isDemo={isDemo} code={buy} />
       </div>
       <div>
         <div className="rp-code-label" style={{ color: "var(--blue)" }}>
           매도 조건식 {code.sell_name ? `· ${code.sell_name}` : ""}
         </div>
-        <pre className="rp-code-block">{sell || "(없음)"}</pre>
+        <pre className="rp-code-block v4-history-code-block">{sell || "(없음)"}</pre>
         <_RpVarChips baseUrl={baseUrl} isDemo={isDemo} code={sell} />
       </div>
     </div>

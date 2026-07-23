@@ -77,15 +77,14 @@ def test_v4_research_status_helper_makes_complete_the_terminal_stage() -> None:
     assert "runStatus.engineLabel" in source
 
 
-def test_analysis_fallback_only_derives_missing_or_pending_authority() -> None:
+def test_analysis_never_derives_missing_authoritative_evidence() -> None:
     analysis = _read(FRONTEND / "panels-analysis.jsx")
     config = _read(FRONTEND / "panels-config.jsx")
 
-    assert 'return !data || data.status === "missing" || data.status === "pending";' in analysis
-    assert "_derivedFallbackAllowed(autopsy)" in analysis
-    assert "_derivedFallbackAllowed(lineage)" in analysis
-    assert 'autopsy.status !== "ok"' not in analysis
-    assert 'lineage.status !== "ok"' not in analysis
+    assert "_derivedFallbackAllowed" not in analysis
+    assert 'lineage && lineage.status === "ok"' in analysis
+    assert "전략 계보 미발행" in analysis
+    assert "부검 데이터 미발행" in analysis
     assert "정본 상태:" in analysis
     assert "마지막 정상 정보:" in analysis
 

@@ -421,38 +421,49 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
 // page_data.autopsy(세그먼트 강화 부검 요약)를 LIVE로 렌더한다. backend가 발행하면
 //   세그먼트/임계값 테이블을 보이고, 없으면(데모 또는 미발행) 출처를 명시한다.
 //   M1 LIVE↔DEMO 규약 준수: 데모면 DEMO 배지, 라이브인데 미발행이면 "실시간 데이터 대기".
-function _pct(x) { return (typeof x === "number" ? (x * 100).toFixed(0) : "—") + "%"; }
-function _num(x) { return typeof x === "number" ? x.toFixed(2) : "—"; }
+function _pct(x) { return typeof x === "number" && Number.isFinite(x) ? (x * 100).toFixed(0) + "%" : "미발행"; }
+function _num(x) { return typeof x === "number" && Number.isFinite(x) ? x.toFixed(2) : "미발행"; }
 
 function _ThresholdCond(t) {
+  if (!t || typeof t !== "object" || Array.isArray(t)) return "임계값 형식 불완전";
+  const variable = typeof t.stom_var === "string" && t.stom_var ? t.stom_var : "변수 미발행";
   if (t.operator === "between") {
     const lo = t.lower_bound == null ? "-∞" : _num(t.lower_bound);
     const hi = t.upper_bound == null ? "∞" : _num(t.upper_bound);
-    return `${t.stom_var} ∈ [${lo}, ${hi}]`;
+    return `${variable} ∈ [${lo}, ${hi}]`;
   }
-  if (t.threshold != null) return `${t.stom_var} ${t.operator} ${_num(t.threshold)}`;
-  return t.stom_var;
+  if (typeof t.operator === "string" && t.threshold != null) return `${variable} ${t.operator} ${_num(t.threshold)}`;
+  return variable;
 }
 
 function _SegRows({ title, rows }) {
-  if (!rows || rows.length === 0) return null;
+  if (!Array.isArray(rows) || rows.length === 0) return null;
   return (
     <div style={{ marginBottom: 10 }}>
       <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>{title}</div>
       <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-        {rows.map((s, i) => (
-          <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
-            <span style={{ color: s.return_diff < 0 ? "var(--red)" : "var(--ink-1)" }}>{s.label}</span>
-            {` · ${s.count}건 · 승률 ${_pct(s.win_rate)} · 평균 ${_num(s.avg_return)}% · 대비 ${s.return_diff >= 0 ? "+" : ""}${_num(s.return_diff)}%p`}
-          </li>
-        ))}
+        {rows.map((s, i) => {
+          const valid = s && typeof s === "object" && !Array.isArray(s);
+          if (!valid) return <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--amber)", padding: "3px 0" }}>세그먼트 형식 불완전</li>;
+          const diff = typeof s.return_diff === "number" && Number.isFinite(s.return_diff) ? s.return_diff : null;
+          return (
+            <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
+              <span style={{ color: diff != null && diff < 0 ? "var(--red)" : "var(--ink-1)" }}>{typeof s.label === "string" ? s.label : "라벨 미발행"}</span>
+              {` · ${typeof s.count === "number" ? s.count : "건수 미발행"}건 · 승률 ${_pct(s.win_rate)} · 평균 ${typeof s.avg_return === "number" && Number.isFinite(s.avg_return) ? `${_num(s.avg_return)}%` : "미발행"} · 대비 ${diff == null ? "미발행" : `${diff >= 0 ? "+" : ""}${_num(diff)}%p`}`}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
 }
 
-function _derivedFallbackAllowed(data) {
-  return !data || data.status === "missing" || data.status === "pending";
+function _autopsyAvailability(data) {
+  if (!data) return "부검 데이터 미발행";
+  if (typeof data !== "object" || Array.isArray(data)) return "부검 데이터 형식 불완전";
+  if (data.status === "missing") return "부검 데이터 미발행";
+  if (data.status === "pending") return "부검 데이터 대기";
+  return null;
 }
 
 function _authorityDetail(data) {
@@ -488,55 +499,32 @@ function AutopsyPanel({ state, wsStatus }) {
         </span>
       </div>
       <div className="panel-bd">
-        {_derivedFallbackAllowed(autopsy) ? (
-          // v5.6.1 — 폴백: 발행 전에도 세대별 부검/게이트 사유를 파생 표시(빈 화면 금지).
-          (() => {
-            const gens = Array.isArray(state.generations) ? state.generations : [];
-            const rows = gens.filter(g => (g.gate_reason && g.gate_reason !== "조건 충족") || g.reason).slice(-8).reverse();
-            if (!rows.length) {
-              return (
-                <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
-                  {isDemo ? "데모 모드 — 세그먼트 부검은 라이브 실행에서 발행됩니다."
-                          : "부검 데이터 대기 — 운영 run 진행 시 세그먼트(시간대·시총) 부검이 발행됩니다."}
-                </div>
-              );
-            }
-            return (
-              <div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 }}>
-                  세그먼트 부검 발행 전 — 세대별 부검 사유(파생)
-                </div>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                  {rows.map((g, i) => (
-                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-1)", padding: "4px 0", borderBottom: "1px solid var(--line-1)", lineHeight: 1.55 }}>
-                      <b style={{ color: g.gate_passed ? "var(--teal)" : "var(--ink-2)" }}>gen_{String(g.gen_no).padStart(2, "0")}</b>
-                      {" "}{String(g.gate_reason && g.gate_reason !== "조건 충족" ? g.gate_reason : g.reason)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })()
+        {_autopsyAvailability(autopsy) ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {_autopsyAvailability(autopsy)}
+          </div>
         ) : (
           <div>
             <_AuthorityStatus data={autopsy} />
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 10 }}>
-              거래 {autopsy.trade_count}건 · 전체 승률 {_pct(autopsy.overall_win_rate)} · 평균 {_num(autopsy.overall_avg_return)}%
+              거래 {typeof autopsy.trade_count === "number" ? autopsy.trade_count : "미발행"}건 · 전체 승률 {_pct(autopsy.overall_win_rate)} · 평균 {_num(autopsy.overall_avg_return)}%
             </div>
             <_SegRows title="시간대 손실 집중" rows={autopsy.time_segments} />
             <_SegRows title="시총 밴드 손실 집중" rows={autopsy.market_cap_segments} />
             <_SegRows title="교차(시간대×시총)" rows={autopsy.cross_segments} />
-            {autopsy.thresholds && autopsy.thresholds.length > 0 && (
+            {Array.isArray(autopsy.thresholds) && autopsy.thresholds.length > 0 ? (
               <div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>구체 임계값(손실 구간)</div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>발행된 임계값(손실 구간)</div>
                 <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
                   {autopsy.thresholds.map((t, i) => (
                     <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
-                      {`${_ThresholdCond(t)} · ${t.count}건 · 승률 ${_pct(t.win_rate)} · 평균 ${_num(t.mean_return)}%`}
+                      {`${_ThresholdCond(t)} · ${typeof t?.count === "number" ? t.count : "건수 미발행"}건 · 승률 ${_pct(t?.win_rate)} · 평균 ${typeof t?.mean_return === "number" && Number.isFinite(t.mean_return) ? `${_num(t.mean_return)}%` : "미발행"}`}
                     </li>
                   ))}
                 </ul>
               </div>
+            ) : (
+              <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>임계값 미발행</div>
             )}
           </div>
         )}
@@ -576,40 +564,7 @@ function LineagePanel({ state, wsStatus }) {
         </span>
       </div>
       <div className="panel-bd">
-        {_derivedFallbackAllowed(lineage) ? (
-          // v5.6.1 — 폴백: lineage 미발행 시 세대 흐름(파생 계보)을 표시(빈 화면 금지).
-          (() => {
-            const gens = (Array.isArray(state.generations) ? state.generations : []).filter(g => g.gen_no >= 0);
-            if (!gens.length) {
-              return (
-                <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
-                  {isDemo ? "데모 모드 — 전략 계보는 라이브 실행에서 발행됩니다." : "세대 데이터 대기 — run 시작 시 계보가 표시됩니다."}
-                </div>
-              );
-            }
-            const bestGen = state.best && state.best.gen;
-            return (
-              <div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6 }}>
-                  계보 발행 전 — 세대 흐름(파생) · best gen_{bestGen != null ? bestGen : "—"}
-                </div>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                  {gens.slice(-10).map((g, i) => (
-                    <li key={i} className="mono" style={{ padding: "4px 0", borderBottom: "1px solid var(--line-1)", fontSize: 11.5, display: "flex", gap: 10 }}>
-                      <b style={{ color: g.gen_no === bestGen ? "var(--violet)" : (g.gate_passed ? "var(--teal)" : "var(--ink-2)"), flex: "0 0 58px" }}>
-                        gen_{String(g.gen_no).padStart(2, "0")}{g.gen_no === bestGen ? " ★" : g.gate_passed ? " ✓" : ""}
-                      </b>
-                      <span style={{ color: "var(--ink-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{g.buy_name || "—"}</span>
-                      <span style={{ marginLeft: "auto", color: (g.graded_score ?? 0) > 0 ? "var(--teal)" : "var(--ink-3)" }}>
-                        {typeof g.graded_score === "number" ? g.graded_score.toFixed(2) : "—"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })()
-        ) : (
+        {lineage && lineage.status === "ok" ? (
           <div>
             <_AuthorityStatus data={lineage} />
             <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 8 }}>
@@ -640,6 +595,12 @@ function LineagePanel({ state, wsStatus }) {
                 </li>
               ))}
             </ul>
+          </div>
+        ) : (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }} role="status">
+            {isDemo
+              ? "데모 모드 — 전략 계보는 라이브 실행에서 발행됩니다."
+              : `전략 계보 미발행 — ${lineage && lineage.status ? lineage.status : "authoritative lineage 없음"}`}
           </div>
         )}
       </div>

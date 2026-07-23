@@ -13,6 +13,163 @@ import { ResearchIndexPage, VerdictPanel } from "./dashboard-pages.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
 const { useState: useState_v4h, useEffect: useEffect_v4h } = React;
+const HISTORY_RESULT_LAYOUT_KEY = "stom_v511_result_layout";
+const HISTORY_RESULT_LAYOUTS = ["auto", "wide", "balanced", "dense"];
+function _historyLayoutPreference() {
+  try {
+    const value = window.localStorage.getItem(HISTORY_RESULT_LAYOUT_KEY);
+    return HISTORY_RESULT_LAYOUTS.includes(value) ? value : "balanced";
+  } catch (error) {
+    return "balanced";
+  }
+}
+function _historyMetric(row, keys) {
+  for (const key of keys) {
+    if (typeof row[key] === "number" && Number.isFinite(row[key])) return row[key];
+  }
+  return null;
+}
+function _historyGenerationRows(selection) {
+  if (!selection) return [];
+  if (Array.isArray(selection.generation_rows)) return selection.generation_rows;
+  if (Array.isArray(selection.generations)) return selection.generations;
+  return _historyMetric(selection, ["graded_score", "score", "mdd", "max_drawdown"]) !== null ? [selection] : [];
+}
+function _historyValue(value, digits = 3) {
+  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—";
+}
+function _HistoryIterationAnalysis({ selection, layout, onLayoutChange }) {
+  const rows = _historyGenerationRows(selection);
+  const points = rows.map((row, index) => ({
+    gen: row.gen_no == null ? "—" : row.gen_no,
+    score: _historyMetric(row, ["graded_score", "score"]),
+    mdd: _historyMetric(row, ["mdd", "max_drawdown"]),
+    reason: typeof row.failure_reason === "string" ? row.failure_reason
+      : typeof row.rejection_reason === "string" ? row.rejection_reason
+        : typeof row.error === "string" ? row.error : "",
+    index,
+  }));
+  const scored = points.filter(point => point.score !== null);
+  const scatter = points.filter(point => point.score !== null && point.mdd !== null);
+  const failures = points.filter(point => point.reason);
+  const regressions = points.filter((point, index) => index > 0 && point.score !== null && points[index - 1].score !== null && point.score < points[index - 1].score);
+  const scoreMin = scored.length ? Math.min(...scored.map(point => point.score)) : null;
+  const scoreMax = scored.length ? Math.max(...scored.map(point => point.score)) : null;
+  const mddMin = scatter.length ? Math.min(...scatter.map(point => point.mdd)) : null;
+  const mddMax = scatter.length ? Math.max(...scatter.map(point => point.mdd)) : null;
+  const scale = (value, min, max, start, size) => min === null || max === null ? start : (max === min ? start + size / 2 : start + ((value - min) / (max - min)) * size);
+  return (
+    <section className={"v4-history-iteration v4-history-layout-" + layout} aria-labelledby="history-iteration-title">
+      <div className="v4-history-iteration-head">
+        <div>
+          <div id="history-iteration-title" className="stom-section-label">세대 반복 분석 · 로드된 출처만</div>
+          <p className="v4-history-feature-copy">선택 이벤트에 이미 포함된 generation 필드만 표시합니다. 누락 지표는 추정하거나 0으로 바꾸지 않습니다.</p>
+        </div>
+        <span className="bt-result-layout-controls" role="radiogroup" aria-label="History 결과 레이아웃">
+          {HISTORY_RESULT_LAYOUTS.map(mode => (
+            <button key={mode} type="button" className={"btn ghost sm" + (layout === mode ? " active" : "")}
+                    role="radio" aria-checked={layout === mode} onClick={() => onLayoutChange(mode)}>
+              {mode}
+            </button>
+          ))}
+        </span>
+      </div>
+      {!rows.length ? <p className="v4-history-unavailable" role="status">반복 분석 사용 불가 — 선택한 세대에 로드된 generation 지표가 없습니다.</p> : (
+        <React.Fragment>
+          <div className="v4-history-iteration-charts">
+            <figure className="v4-history-mini-chart">
+              <figcaption>점수 추세 <span>{scored.length ? `${scored.length}개 출처 값` : "사용 불가"}</span></figcaption>
+              {scored.length ? <svg viewBox="0 0 240 72" role="img" aria-label="로드된 세대 점수 추세">
+                <polyline className="v4-history-score-line" fill="none" points={scored.map((point, index) => `${20 + (scored.length === 1 ? 100 : index * 200 / (scored.length - 1))},${60 - scale(point.score, scoreMin, scoreMax, 0, 48)}`).join(" ")} />
+                {scored.map((point, index) => <circle key={`${point.gen}-${index}`} className="v4-history-score-point" cx={20 + (scored.length === 1 ? 100 : index * 200 / (scored.length - 1))} cy={60 - scale(point.score, scoreMin, scoreMax, 0, 48)} r="3"><title>gen {point.gen}: score {_historyValue(point.score)}</title></circle>)}
+              </svg> : <p className="v4-history-unavailable">점수 사용 불가 —</p>}
+            </figure>
+            <figure className="v4-history-mini-chart">
+              <figcaption>점수 대 MDD <span>{scatter.length ? `${scatter.length}개 출처 값` : "사용 불가"}</span></figcaption>
+              {scatter.length ? <svg viewBox="0 0 240 72" role="img" aria-label="로드된 점수와 MDD 산점도">
+                {scatter.map((point, index) => <circle key={`${point.gen}-${index}`} className="v4-history-scatter-point" cx={20 + scale(point.mdd, mddMin, mddMax, 0, 200)} cy={60 - scale(point.score, scoreMin, scoreMax, 0, 48)} r="3"><title>gen {point.gen}: score {_historyValue(point.score)}, MDD {_historyValue(point.mdd)}</title></circle>)}
+              </svg> : <p className="v4-history-unavailable">MDD 또는 점수 사용 불가 —</p>}
+            </figure>
+            <aside className="v4-history-failure-summary" aria-label="회귀와 실패 사유 요약">
+              <b>회귀 · 실패 사유</b>
+              <span>점수 회귀: {scored.length > 1 ? regressions.length : "—"} · 사유 기록: {failures.length || "—"}</span>
+              {failures.length ? <ul>{failures.slice(0, 3).map((point, index) => <li key={`${point.gen}-${index}`}>gen {point.gen}: {point.reason}</li>)}</ul> : <p>실패 사유 사용 불가 —</p>}
+            </aside>
+          </div>
+          <div className="v4-history-iteration-table" tabIndex={0} aria-label="반복 분석 텍스트 표">
+            <table><caption>반복 분석 텍스트 대안</caption><thead><tr><th scope="col">세대</th><th scope="col">점수</th><th scope="col">MDD</th><th scope="col">실패 사유</th></tr></thead>
+              <tbody>{points.map((point, index) => <tr key={`${point.gen}-${index}`}><td>{point.gen}</td><td>{_historyValue(point.score)}</td><td>{_historyValue(point.mdd)}</td><td>{point.reason || "—"}</td></tr>)}</tbody></table>
+          </div>
+        </React.Fragment>
+      )}
+    </section>
+  );
+}
+
+function _HistoryStrategyCode({ baseUrl, selection }) {
+  const [state, setState] = useState_v4h({ status: "loading", data: null, error: "" });
+  useEffect_v4h(() => {
+    if (!baseUrl || !selection) return undefined;
+    const controller = new AbortController();
+    const key = `${selection.run_id}:${selection.gen_no}`;
+    setState({ status: "loading", data: null, error: "" });
+    fetch(
+      baseUrl + "/strategy_code?run=" + encodeURIComponent(selection.run_id)
+      + "&gen=" + encodeURIComponent(selection.gen_no),
+      { signal: controller.signal }
+    )
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(data => {
+        if (!controller.signal.aborted && key === `${selection.run_id}:${selection.gen_no}`) {
+          setState({ status: "ready", data, error: "" });
+        }
+      })
+      .catch(error => {
+        if (!controller.signal.aborted && error.name !== "AbortError") {
+          setState({ status: "error", data: null, error: String(error) });
+        }
+      });
+    return () => controller.abort();
+  }, [baseUrl, selection && selection.run_id, selection && selection.gen_no]);
+
+  const data = state.data || {};
+  const buyCode = data.buy_code || "";
+  const sellCode = data.sell_code || "";
+  const copy = value => {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(value || "");
+  };
+  return (
+    <section className="history-strategy-code" aria-labelledby="history-strategy-code-title">
+      <div className="bt-section-heading">
+        <div>
+          <div id="history-strategy-code-title" className="stom-section-label">선택 세대 매수 · 매도 조건식</div>
+          <p className="v4-history-feature-copy">출처: /strategy_code · 선택한 run/gen과 결속된 읽기 전용 원문입니다.</p>
+        </div>
+        <span className="badge">{data.code_status || state.status}</span>
+      </div>
+      {state.status === "error" ? (
+        <div className="research-empty danger" role="alert">조건식 조회 실패 — {state.error}</div>
+      ) : (
+        <div className="rp-code-grid">
+          <div>
+            <div className="rp-code-label">
+              <span>매수 · {data.buy_name || "이름 미발행"}</span>
+              <button type="button" className="btn ghost sm" onClick={() => copy(buyCode)} disabled={!buyCode}>매수 복사</button>
+            </div>
+            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : buyCode || "코드 미발행"}</pre>
+          </div>
+          <div>
+            <div className="rp-code-label">
+              <span>매도 · {data.sell_name || "이름 미발행"}</span>
+              <button type="button" className="btn ghost sm" onClick={() => copy(sellCode)} disabled={!sellCode}>매도 복사</button>
+            </div>
+            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : sellCode || "코드 미발행"}</pre>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
@@ -20,14 +177,42 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
   const [selResearch, setSelResearch] = useState_v4h(null); // { name, researchId, meta|null }
   const onSelectCampaign = (name, meta) => {
     const researchId = "campaign:" + name;
-    setSelResearch(prev => (prev && prev.researchId === researchId && !meta)
-      ? prev
-      : { name, researchId, meta: meta || (prev && prev.researchId === researchId ? prev.meta : null) });
+    // A new campaign is a new identity. Do not retain the prior campaign's
+    // metadata while its authoritative detail request is in flight.
+    setSelResearch({ name, researchId, meta: meta || null });
   };
   const [selectedAnalysis, setSelectedAnalysis] = useState_v4h(null);
+  const [resultLayout, setResultLayout] = useState_v4h(_historyLayoutPreference);
   const onSelectAnalysis = (selection) => {
-    if (selection && selection.run_id && selection.gen_no != null) setSelectedAnalysis(selection);
+    if (!selection || !selection.run_id || selection.gen_no == null) {
+      setSelectedAnalysis(null);
+      return;
+    }
+    // Keep the archive identity as an indivisible run/gen pair; carry only fields already loaded with it.
+    setSelectedAnalysis({ run_id: selection.run_id, gen_no: selection.gen_no, generation_rows: _historyGenerationRows(selection) });
   };
+  const setHistoryLayout = mode => {
+    if (!HISTORY_RESULT_LAYOUTS.includes(mode)) return;
+    setResultLayout(mode);
+    try { window.localStorage.setItem(HISTORY_RESULT_LAYOUT_KEY, mode); } catch (error) {}
+  };
+  useEffect_v4h(() => {
+    const consume = detail => {
+      if (detail && detail.run_id && detail.gen_no != null) {
+        onSelectAnalysis(detail);
+      }
+    };
+    try {
+      const raw = window.localStorage && window.localStorage.getItem("stom_history_evo_pending");
+      if (raw) {
+        window.localStorage.removeItem("stom_history_evo_pending");
+        consume(JSON.parse(raw));
+      }
+    } catch (error) {}
+    const onSelect = event => consume(event && event.detail);
+    window.addEventListener("stom:history-evo-select", onSelect);
+    return () => window.removeEventListener("stom:history-evo-select", onSelect);
+  }, []);
   // L10: 재연결 문구 깜빡임 디바운스 — reconnecting 이 2초 지속될 때만 경고 문구 표시.
   // 대용량 색인·거버넌스·시각화 근거는 접힌 동안 마운트하지 않는다.
   const [indexOpen, setIndexOpen] = useState_v4h(false);
@@ -115,7 +300,9 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
                 <span className="mono">{selectedAnalysis.run_id} / gen {selectedAnalysis.gen_no}</span>
                 <button className="btn ghost sm" onClick={() => setSelectedAnalysis(null)}>분석 닫기</button>
               </div>
-              <BtResultArea baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
+              <_HistoryStrategyCode baseUrl={baseUrl} selection={selectedAnalysis} />
+              <_HistoryIterationAnalysis selection={selectedAnalysis} layout={resultLayout} onLayoutChange={setHistoryLayout} />
+              <BtResultArea key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`} baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
             </section>
           )}
         </div>

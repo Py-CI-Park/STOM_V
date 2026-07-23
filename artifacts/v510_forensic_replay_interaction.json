@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-07-23T10:11:58.297Z",
+  "url": "http://127.0.0.1:8770/ui/chart-replay",
+  "selectedDate": "20260227",
+  "selectedCodes": [
+    "322000HD현대에너지솔루션+30.00%"
+  ],
+  "playControl": "⏸ 일시정지",
+  "slider": {
+    "value": 0,
+    "max": 0,
+    "disabled": true
+  },
+  "canvas": {
+    "width": 1372,
+    "height": 340,
+    "cssWidth": 1372,
+    "cssHeight": 340
+  },
+  "chartText": "322000 · HD현대에너지솔루션\n라이브\n재생을 시작하면 라이브 캔들이 실시간으로 자라납니다",
+  "visibleErrors": [],
+  "result": "Quick-start entered playing state but no replay frames were exposed after more than 9 seconds.",
+  "sourceProfile": "artifacts/v510_replay_profile.json: 20260227/322000 has 376 bars"
+}

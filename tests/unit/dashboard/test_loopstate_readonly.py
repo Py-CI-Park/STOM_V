@@ -117,3 +117,14 @@ def _schema_fingerprint(db: Path) -> set:
     finally:
         con.close()
     return cols
+
+
+def test_dashboard_read_helpers_never_open_default_writable_loop_state() -> None:
+    app_source = (
+        Path(PROJECT_ROOT)
+        / "ai_strategy_loop"
+        / "dashboard"
+        / "app.py"
+    ).read_text(encoding="utf-8")
+    assert "LoopState()" not in app_source
+    assert "LoopState(readonly=True)" in app_source

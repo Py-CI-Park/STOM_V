@@ -63,7 +63,13 @@ def test_history_compare_and_condition_tree_are_immediately_usable() -> None:
 
     assert '<details className="evo-group" open' in history
     assert 'import { BtResultArea } from "./backtest-charts.jsx";' in history
-    assert "<BtResultArea baseUrl={baseUrl} isDemo={wsStatus === \"demo\"} jobId={null} evoSource={selectedAnalysis} />" in history
+    assert 'key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`}' in history
+    assert 'evoSource={selectedAnalysis}' in history
+    assert "<_HistoryStrategyCode" in history
+    assert '"/strategy_code?run="' in history
+    assert history.count('className="rp-code-block"') == 2
+    assert "stom_history_evo_pending" in history
+    assert "stom:history-evo-select" in history
     assert "분석 닫기" in history
     assert "호환되지" in history
 
@@ -96,3 +102,22 @@ def test_history_condition_tree_uses_keyboard_operable_controls() -> None:
     assert 'className="history-condition-sort"' in tree
     assert '<tr key={row.research_id} style={{' in tree
     assert '.history-condition-toggle:focus-visible' in css
+def test_history_iteration_analysis_uses_loaded_fields_and_accessible_alternatives() -> None:
+    history = _read("v4-history.jsx")
+    css = _read("v4.css")
+
+    assert 'const HISTORY_RESULT_LAYOUT_KEY = "stom_v511_result_layout"' in history
+    assert '["auto", "wide", "balanced", "dense"]' in history
+    assert 'role="radiogroup" aria-label="History 결과 레이아웃"' in history
+    assert "window.localStorage.setItem(HISTORY_RESULT_LAYOUT_KEY, mode)" in history
+    assert "generation_rows: _historyGenerationRows(selection)" in history
+    assert '["graded_score", "score"]' in history
+    assert '["mdd", "max_drawdown"]' in history
+    assert "반복 분석 사용 불가" in history
+    assert "실패 사유 사용 불가" in history
+    assert "점수 회귀:" in history
+    assert "반복 분석 텍스트 대안" in history
+    assert 'role="img" aria-label="로드된 세대 점수 추세"' in history
+    assert 'role="img" aria-label="로드된 점수와 MDD 산점도"' in history
+    assert ".v4-history-iteration-table" in css
+    assert ".v4-history-layout-wide" in css

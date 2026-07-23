@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-07-23T18:56:20+0900",
+  "port": 8770,
+  "pid": 42304,
+  "health_status": {
+    "status": "ok",
+    "contract_version": 2
+  },
+  "hall_catalog_http_status": 200,
+  "hall_catalog_total": 5364,
+  "dashboard_url": "http://127.0.0.1:8770/ui/"
+}

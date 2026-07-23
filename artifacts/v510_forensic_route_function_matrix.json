@@ -1,0 +1,360 @@
+{
+  "generatedAt": "2026-07-23T09:43:18.692Z",
+  "caseCount": 18,
+  "cases": [
+    {
+      "port": 8770,
+      "tab": "research",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=research",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 1972,
+      "canvas": 1,
+      "svg": 17,
+      "tables": 1,
+      "rows": 8,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Live",
+        "4. 반복·성과세대 요약"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "history",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=history",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 12567,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 2,
+      "rows": 539,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "History"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "reports",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=reports",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 320,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [
+        "오류 없음"
+      ],
+      "selected": [
+        "Reports",
+        "HTML 리포트"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "workbench",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=workbench",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 258,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 2,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [
+        "조회 실패: Error: HTTP 404"
+      ],
+      "selected": [
+        "성과"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "backtest",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=backtest",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 1056,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Backtest"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "replay",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=replay",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 959,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Replay"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "catalog",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=catalog",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 375,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 1,
+      "rows": 27,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "연구 자산",
+        "연혁실"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "settings",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=settings",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 230,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "설정"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8770,
+      "tab": "glossary",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?tab=glossary",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 245,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "용어"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "research",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=research",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 1972,
+      "canvas": 1,
+      "svg": 17,
+      "tables": 1,
+      "rows": 8,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Live",
+        "4. 반복·성과세대 요약"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "history",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=history",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 13490,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 4,
+      "rows": 598,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "History"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "reports",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=reports",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 322,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [
+        "오류 없음"
+      ],
+      "selected": [
+        "Reports",
+        "HTML 리포트"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "workbench",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=workbench",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 256,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 2,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "성과"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "backtest",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=backtest",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 1056,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Backtest"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "replay",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=replay",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 959,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "Replay"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "catalog",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=catalog",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 375,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 1,
+      "rows": 27,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "연구 자산",
+        "연혁실"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "settings",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=settings",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 230,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "설정"
+      ],
+      "pageErrors": []
+    },
+    {
+      "port": 8784,
+      "tab": "glossary",
+      "url": "http://127.0.0.1:8784/ui/evolution/workbench?tab=glossary",
+      "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+      "version": "v5.10.0",
+      "bundle": "ecfc1971",
+      "dom": 245,
+      "canvas": 0,
+      "svg": 12,
+      "tables": 0,
+      "rows": 0,
+      "overflowX": false,
+      "visibleErrors": [],
+      "selected": [
+        "용어"
+      ],
+      "pageErrors": []
+    }
+  ]
+}

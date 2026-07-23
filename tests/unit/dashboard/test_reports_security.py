@@ -84,6 +84,9 @@ def test_reports_catalog_exposes_verified_manifest_metadata(
             "bytes": len(html.encode("utf-8")),
             "source_sha256": "1" * 64,
             "toc": [{"id": "sec-flow", "label": "Flow"}],
+            "renderer_version": "v5.11",
+            "template_id": "quant_research",
+            "theme": "print",
         }],
     }), encoding="utf-8")
     monkeypatch.setattr(app_module, "_REPORTS_ROOT", str(reports_root))
@@ -100,6 +103,9 @@ def test_reports_catalog_exposes_verified_manifest_metadata(
     assert item["run_id"] == "demo"
     assert item["content_sha256"] == digest
     assert item["toc"] == [{"id": "sec-flow", "label": "Flow"}]
+    assert item["renderer_version"] == "v5.11"
+    assert item["template_id"] == "quant_research"
+    assert item["theme"] == "print"
     assert item["integrity_status"] == "verified"
 
 
@@ -275,7 +281,10 @@ def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregiste
 
     assert 'report.registered !== true' in source
     assert '["run", "step", "legacy"].includes(report.report_type)' in source
-    assert "미등록·검증 불가" in source
+    assert "정본 등록" in source
+    assert "소스 근거 재생성 가능" in source
+    assert "레거시 정적" in source
+    assert "검증 불가" in source
     assert "rp.research_id" in source or "selectedReport.research_id" in source
     assert "rp.run_id" in source or "selectedReport.run_id" in source
     assert "rp.status" in source and "selectedReport.status" in source
@@ -288,6 +297,9 @@ def test_reports_frontend_catalog_uses_manifest_metadata_and_preserves_unregiste
     assert "v4-reports-toc-slot.open" in css
     assert "@media (max-width: 1200px)" in css
     assert "run_report_" not in source
+    assert "reportTemplate" in source and "reportTheme" in source
+    assert "template_id" in source and "renderer_version" in source
+    assert "레거시 정적 파일은 자동 재생성·덮어쓰지 않음" in source
 
 
 def test_reports_newest_order_includes_mtime_and_matches_default_selection() -> None:

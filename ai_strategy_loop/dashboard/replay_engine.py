@@ -19,6 +19,8 @@
 from __future__ import annotations
 
 import sqlite3
+import time
+from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -34,6 +36,59 @@ DEFAULT_AGG_SEC = 10
 _MAX_ROWS_PER_CODE = 200_000
 # 동시 리플레이 종목 상한(S2 동시보기 1~10). load_replay·WS start 가 공유하는 단일 출처.
 MAX_CODES = 10
+# Per-database schema inventory.  The DB identity is part of the key, so an
+# updated daily DB never reuses stale table/column information.
+_SCHEMA_CACHE: "OrderedDict[Tuple[str, int, int], Dict[str, Tuple[str, ...]]]" = OrderedDict()
+_SCHEMA_CACHE_LIMIT = 8
+
+@dataclass
+class _QueryMeter:
+    count: int = 0
+
+    def execute(self, con: sqlite3.Connection, sql: str) -> sqlite3.Cursor:
+        self.count += 1
+        return con.execute(sql)
+
+def _db_identity(path: Path) -> Optional[Tuple[str, int, int]]:
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    return (str(path.resolve()), stat.st_mtime_ns, stat.st_size)
+
+def _schema_inventory(
+    con: sqlite3.Connection, db_path: Path, meter: Optional[_QueryMeter] = None
+) -> Dict[str, Tuple[str, ...]]:
+    """Read table schemas once per unchanged DB; excludes the non-symbol moneytop."""
+    identity = _db_identity(db_path)
+    if identity is not None:
+        cached = _SCHEMA_CACHE.get(identity)
+        if cached is not None:
+            _SCHEMA_CACHE.move_to_end(identity)
+            return cached
+    try:
+        tables = [
+            str(row[0]) for row in (
+                meter.execute(con, "SELECT name FROM sqlite_master WHERE type='table'")
+                if meter is not None else con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            ).fetchall()
+            if str(row[0]) != "moneytop"
+        ]
+        inventory = {
+            table: tuple(str(row[1]) for row in (
+                meter.execute(con, f'PRAGMA table_info("{table}")')
+                if meter is not None else con.execute(f'PRAGMA table_info("{table}")')
+            ).fetchall())
+            for table in tables
+        }
+    except sqlite3.Error:
+        return {}
+    if identity is not None:
+        _SCHEMA_CACHE[identity] = inventory
+        _SCHEMA_CACHE.move_to_end(identity)
+        while len(_SCHEMA_CACHE) > _SCHEMA_CACHE_LIMIT:
+            _SCHEMA_CACHE.popitem(last=False)
+    return inventory
 
 # 일일 DB candle 컬럼 인덱스(tick 54열 / min 57열 공통 선두 10열은 동일 레이아웃).
 #   PRAGMA 확인: 0=index, 1=현재가, 2=시가, 3=고가, 4=저가, 5=등락율,
@@ -121,54 +176,35 @@ def list_tables(date: int, src: str) -> List[str]:
 
 
 def stock_summary(date: int, src: str) -> List[Dict[str, Any]]:
-    """그날 종목별 마지막 행 요약(등락율·거래대금). 등락 내림차순 정렬.
-
-    각 항목: {code, last_change_pct, trade_value, rows}. code_info 이름 결합은
-    호출측(simulation_api)에서 한다(이 엔진은 시세 DB 만 본다).
-    """
-    con = _connect_ro(daily_db_path(date, src))
+    """Last-row summary using cached schemas and one read query per symbol."""
+    db_path = daily_db_path(date, src)
+    con = _connect_ro(db_path)
     if con is None:
         return []
     out: List[Dict[str, Any]] = []
     try:
-        tables = sorted(
-            str(r[0]) for r in con.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            ).fetchall()
-            if str(r[0]) != "moneytop"
-        )
-        for code in tables:
-            cols = _table_columns(con, code)
+        for code, cols in _schema_inventory(con, db_path).items():
             if _COL_INDEX not in cols:
                 continue
             change_expr = f'"{_COL_CHANGE}"' if _COL_CHANGE in cols else "0"
-            value_expr = f'"{_COL_CURRENT}"' if _COL_CURRENT in cols else "0"
-            tv_expr = '"당일거래대금"' if "당일거래대금" in cols else "0"
+            value_expr = '"당일거래대금"' if "당일거래대금" in cols else "0"
             try:
                 row = con.execute(
-                    f'SELECT {change_expr}, {tv_expr}, {value_expr}, COUNT(*) '
-                    f'FROM (SELECT * FROM "{code}" ORDER BY "{_COL_INDEX}")'
+                    f'SELECT {change_expr}, {value_expr}, COUNT(*) OVER () '
+                    f'FROM "{code}" ORDER BY "{_COL_INDEX}" DESC LIMIT 1'
                 ).fetchone()
-                last = con.execute(
-                    f'SELECT {change_expr}, {tv_expr} FROM "{code}" '
-                    f'ORDER BY "{_COL_INDEX}" DESC LIMIT 1'
-                ).fetchone()
-                cnt = con.execute(f'SELECT COUNT(*) FROM "{code}"').fetchone()
             except sqlite3.Error:
                 continue
-            if last is None:
-                continue
-            out.append({
-                "code": code,
-                "last_change_pct": _safe_float(last[0]),
-                "trade_value": _safe_float(last[1]),
-                "rows": int(cnt[0]) if cnt else 0,
-            })
-    except sqlite3.Error:
-        return out
+            if row is not None:
+                out.append({
+                    "code": code,
+                    "last_change_pct": _safe_float(row[0]),
+                    "trade_value": _safe_float(row[1]),
+                    "rows": int(row[2]) if row[2] is not None else 0,
+                })
     finally:
         con.close()
-    out.sort(key=lambda r: r["last_change_pct"], reverse=True)
+    out.sort(key=lambda row: row["last_change_pct"], reverse=True)
     return out
 
 
@@ -181,20 +217,16 @@ def _safe_float(value: Any) -> float:
 
 
 def _load_code_rows(
-    con: sqlite3.Connection, code: str, src: str
+    con: sqlite3.Connection,
+    code: str,
+    src: str,
+    *,
+    columns: Optional[Tuple[str, ...]] = None,
+    row_caps: Optional[Dict[str, bool]] = None,
+    meter: Optional[_QueryMeter] = None,
 ) -> List[Dict[str, Any]]:
-    """한 종목의 candle 행을 시간순 dict 리스트로 로드한다(읽기전용·무예외).
-
-    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량),
-            net_qty(순매수수량=매수−매도), trade_amt(bar 거래대금=매수+매도금액 — VWAP 분자),
-            change, strength,
-            imbalance(호가불균형=매수총잔량/매도총잔량 — 컬럼 부재 시 None),
-            buy_rest(매수총잔량 raw), sell_rest(매도총잔량 raw),
-            bid1(매수호가1)/ask1(매도호가1) — 컬럼 부재 시 None}.
-    호가/잔량/금액 컬럼은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다(구버전 DB 하위호환).
-    imbalance 와 raw 잔량은 같은 컬럼을 공유한다(중복 조회 없음).
-    """
-    cols = _table_columns(con, code)
+    """Load one symbol in time order, with optional cached schema and cap metadata."""
+    cols = list(columns) if columns is not None else _table_columns(con, code)
     if _COL_INDEX not in cols:
         return []
     buy_q = _COL_BUY_QTY_TICK if src == "tick" else _COL_BUY_QTY_MIN
@@ -222,14 +254,18 @@ def _load_code_rows(
         f'{col(_COL_BUY_TOTAL)}, {col(_COL_SELL_TOTAL)}, '
         f'{col(_COL_BID1)}, {col(_COL_ASK1)}, {col(buy_amt)}, {col(sell_amt)}, '
         f'{col(_COL_MBAR_OPEN)}, {col(_COL_MBAR_HIGH)}, {col(_COL_MBAR_LOW)} '
-        f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE}'
+        f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE + 1}'
     )
     rows: List[Dict[str, Any]] = []
     try:
-        cursor = con.execute(select)
+        cursor = meter.execute(con, select) if meter is not None else con.execute(select)
     except sqlite3.Error:
         return []
-    for r in cursor:
+    for row_index, r in enumerate(cursor):
+        if row_index >= _MAX_ROWS_PER_CODE:
+            if row_caps is not None:
+                row_caps[code] = True
+            break
         try:
             ts = int(r[0])
         except (TypeError, ValueError):
@@ -302,11 +338,13 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
     vol=합산, change/strength=버킷 마지막 값.
     """
     if agg_sec <= 1:
-        # 집계 없이 현재가를 OHLC 로 쓰되, h/l 은 행의 고저 컬럼을 존중.
+        # Tick schemas expose current-price observations; their open/high/low fields can be
+        # cumulative daily values, not per-tick OHLC. Preserve a one-second observation as a
+        # single-price candle rather than contaminating it with day extremes.
         return [
             {
                 "hms": _hms_from_index(r["ts"], "tick"),
-                "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
+                "o": r["c"], "h": r["c"], "l": r["c"],
                 "c": r["c"], "vol": r["vol"], "net_qty": r.get("net_qty"),
                 "trade_amt": r.get("trade_amt"),
                 "change": r["change"], "strength": r["strength"],
@@ -547,11 +585,13 @@ class ReplayData:
         codes: List[str],
         frames: List[Dict[str, Any]],
         session_range: Tuple[int, int],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.date = date
         self.src = src
         self.codes = codes
         self.frames = frames
+        self.metadata = metadata or {}
         timestamps = [frame["t"] for frame in frames]
         seconds = [hms_to_seconds(timestamp) for timestamp in timestamps]
         for index, (previous, current) in enumerate(zip(seconds, seconds[1:]), start=1):
@@ -606,27 +646,37 @@ def load_replay(
     agg_sec = int(agg_sec) if agg_sec else DEFAULT_AGG_SEC
     if agg_sec < 1:
         agg_sec = 1
-    codes = [str(c) for c in (codes or [])][:MAX_CODES]  # 최대 MAX_CODES 종목(S2).
+    requested_codes = [str(code).strip() for code in (codes or []) if str(code).strip()]
+    unique_codes = list(dict.fromkeys(requested_codes))
+    codes = unique_codes[:MAX_CODES]
+    capped_codes = unique_codes[MAX_CODES:]
+    started_at = time.perf_counter()
+    meter = _QueryMeter()
+    row_caps: Dict[str, bool] = {}
+    db_path = daily_db_path(date, src)
 
-    con = _connect_ro(daily_db_path(date, src))
+    con = _connect_ro(db_path)
     if con is None or not codes:
         if con is not None:
             con.close()
-        return ReplayData(date, src, codes, [], (0, 0))
+        return ReplayData(date, src, codes, [], (0, 0), {
+            "requested_codes": requested_codes, "capped_codes": capped_codes,
+            "truncated": bool(capped_codes), "query_count": 0, "load_ms": 0.0,
+            "source_fingerprint": None,
+        })
 
     # 코드별 봉 시계열(hms→bar) 적재.
     per_code: Dict[str, Dict[int, Dict[str, Any]]] = {}
     valid_codes: List[str] = []
     try:
-        existing = {
-            str(r[0]) for r in con.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            ).fetchall()
-        }
+        inventory = _schema_inventory(con, db_path, meter)
         for code in codes:
-            if code not in existing:
+            columns = inventory.get(code)
+            if columns is None:
                 continue
-            rows = _load_code_rows(con, code, src)
+            rows = _load_code_rows(
+                con, code, src, columns=columns, row_caps=row_caps, meter=meter
+            )
             if not rows:
                 continue
             bars = _aggregate_tick(rows, agg_sec) if src == "tick" else _min_bars(rows)
@@ -641,7 +691,9 @@ def load_replay(
         con.close()
 
     if not per_code:
-        return ReplayData(date, src, valid_codes, [], (0, 0))
+        return ReplayData(date, src, valid_codes, [], (0, 0), _replay_metadata(
+            db_path, requested_codes, capped_codes, row_caps, meter, started_at
+        ))
 
     # 전체 시간축(모든 코드 hms 합집합) 정렬 → frame 병합.
     all_hms = sorted({hms for series in per_code.values() for hms in series})
@@ -669,4 +721,32 @@ def load_replay(
             frames.append({"t": t, "items": items})
 
     session_range = (all_hms[0], all_hms[-1]) if all_hms else (0, 0)
-    return ReplayData(date, src, valid_codes, frames, session_range)
+    return ReplayData(date, src, valid_codes, frames, session_range, _replay_metadata(
+        db_path, requested_codes, capped_codes, row_caps, meter, started_at
+    ))
+
+def _replay_metadata(
+    db_path: Path,
+    requested_codes: List[str],
+    capped_codes: List[str],
+    row_caps: Dict[str, bool],
+    meter: _QueryMeter,
+    started_at: float,
+) -> Dict[str, Any]:
+    identity = _db_identity(db_path)
+    return {
+        "requested_codes": requested_codes,
+        "capped_codes": capped_codes,
+        "row_capped_codes": sorted(row_caps),
+        "truncated": bool(capped_codes or row_caps),
+        "query_count": meter.count,
+        "load_ms": round((time.perf_counter() - started_at) * 1000, 3),
+        "source_fingerprint": (
+            f"{identity[1]:x}-{identity[2]:x}" if identity is not None else None
+        ),
+    }
+
+
+def replay_profile(date: int, src: str, codes: List[str], *, agg_sec: int = DEFAULT_AGG_SEC) -> Dict[str, Any]:
+    """Side-effect-free profiling helper for caller-owned p50/p95 samples."""
+    return dict(load_replay(date, src, codes, agg_sec=agg_sec).metadata)

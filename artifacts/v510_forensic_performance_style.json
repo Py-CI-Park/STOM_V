@@ -1,0 +1,158 @@
+{
+  "url": "http://127.0.0.1:8770/ui/evolution/workbench",
+  "title": "STOM AI · 조건식 자율 진화 대시보드 v5.10.0",
+  "rowCount": 69,
+  "cellCount": 1328,
+  "uniqueCellColors": [
+    "rgb(232, 237, 242)"
+  ],
+  "positiveSamples": [
+    {
+      "text": "+120,000,000원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+305,178,048원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+254.3%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+255.3%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+43.3%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+120,000,000원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+301,576,794원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+251.3%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+243.2%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+51.1%",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+120,000,000원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "+300,219,347원",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    }
+  ],
+  "mddSamples": [
+    {
+      "text": "3.17",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "1.34",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "13.30",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "6",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "3.57",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "1.47",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "10.60",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "6",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "4.51",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "1.27",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "15.50",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    },
+    {
+      "text": "6",
+      "color": "rgb(232, 237, 242)",
+      "background": "rgba(0, 0, 0, 0)",
+      "className": ""
+    }
+  ],
+  "visibleError": null
+}

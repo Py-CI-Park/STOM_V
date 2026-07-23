@@ -161,7 +161,7 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnaly
                       && (r.trade_count || 0) >= 50;
                     return (
                       <tr key={r.run_id} className={selected.includes(r.run_id) ? "run-compare-row is-selected" : "run-compare-row"}>
-                        <td><input type="checkbox" checked={selected.includes(r.run_id)} onChange={() => toggleSelected(r.run_id)} /></td>
+                        <td><input type="checkbox" aria-label={`${r.run_id} 비교 선택`} checked={selected.includes(r.run_id)} onChange={() => toggleSelected(r.run_id)} /></td>
                         <td>{r.run_id}</td>
                         <td>{r.status || "-"}</td>
                         <td>{r.period || "-"}</td>

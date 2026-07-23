@@ -160,3 +160,18 @@ def test_demo_result_exposes_phase1_additive_fields(monkeypatch):
     assert result['status_kind'] == 'success'
     assert result['open_actions'] == ['open_result']
     assert result['rerun_spec'] is None
+
+
+def test_connected_backtest_idle_never_selects_implicit_demo_result() -> None:
+    frontend = (
+        Path(PROJECT_ROOT)
+        / "ai_strategy_loop"
+        / "dashboard"
+        / "frontend"
+        / "bt-tab-root.jsx"
+    ).read_text(encoding="utf-8")
+
+    assert "showDemoResult" not in frontend
+    assert 'effectiveJobId' not in frontend
+    assert 'jobId={resultJobId}' in frontend
+    assert '"__demo__"' not in frontend

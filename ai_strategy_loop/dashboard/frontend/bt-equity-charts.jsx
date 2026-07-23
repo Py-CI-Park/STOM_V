@@ -8,11 +8,19 @@ import {
   _btMoneyTick, _btDateLabel, _btDateLabelY, _btAxisTicks,
   _btReducedMotion, _BtChartEmpty,
 } from "./bt-chart-utils.jsx";
+import { ChartFrame } from "./chart-frame.jsx";
+
+function _btEquityWithEvidence(Chart, describe) {
+  return function EvidenceChart(props) {
+    const evidence = describe(props);
+    return <ChartFrame {...evidence}><Chart {...props} /></ChartFrame>;
+  };
+}
 
 /* ① 누적수익곡선 + 일별손익 — analysis.equity {daily[], cumulative[], drawdown[]}.
    일별손익은 막대(이익 teal 위 / 손실 red 아래, 좌축 원), 누적수익은 라인(amber, 우축 원).
    chart.jsx BacktestDetailChart 의 듀얼축 패턴을 분석 응답 필드명(date/pnl, date/cum_profit)에 맞춰 재현. */
-function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
+function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
   const daily = (equity && equity.daily) || [];
   const cumulative = (equity && equity.cumulative) || [];
   const [hover, setHover] = useState_btc(null);
@@ -153,6 +161,33 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
     else { setView([nv0, nv0 + newSpan]); }
     setHover(null);
   };
+  const applyBrush = (selection) => {
+    if (!selection || !onBrush) return;
+    const a = Math.min(selection.a, selection.b), b = Math.max(selection.a, selection.b);
+    const dA = daily[localToGlobal(a)] && daily[localToGlobal(a)].date;
+    const dB = daily[localToGlobal(b)] && daily[localToGlobal(b)].date;
+    if (dA != null && dB != null) onBrush(dA * 1000000, dB * 1000000 + 235959);
+  };
+  const onKeyDown = (event) => {
+    if (!n) return;
+    if (event.key === "Escape") {
+      setBrushSel(null);
+      if (onBrushClear) onBrushClear();
+      return;
+    }
+    if (event.key === "Enter" && brushSel) {
+      event.preventDefault();
+      applyBrush(brushSel);
+      return;
+    }
+    const delta = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
+    if (!delta) return;
+    event.preventDefault();
+    const current = hover == null ? 0 : hover;
+    const next = Math.max(0, Math.min(n - 1, current + delta));
+    setHover(next);
+    if (event.shiftKey) setBrushSel(previous => previous ? { ...previous, b: next } : { a: current, b: next });
+  };
 
   const last = cumulative.length ? cumulative[cumulative.length - 1].cum_profit : null;
   const peakCum = cumulative.length ? Math.max(...cumulative.map(c => c.cum_profit || 0)) : null;
@@ -202,10 +237,11 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
           )}
         </div>
         <div className="chart-wrap">
-          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" tabIndex="0" role="application"
+               aria-label="누적수익곡선. 화살표 키로 일자를 탐색하고 Shift+화살표로 구간을 선택한 뒤 Enter로 구간 분석을 적용합니다."
                style={{ cursor: dragRef.current ? (dragRef.current.mode === "brush" ? "crosshair" : "grabbing") : "crosshair" }}
                onMouseMove={onMove} onMouseLeave={() => { setHover(null); }}
-               onMouseDown={onDown} onMouseUp={onUp} onWheel={onWheel}
+               onMouseDown={onDown} onMouseUp={onUp} onWheel={onWheel} onKeyDown={onKeyDown}
                onDoubleClick={() => { setView(null); setBrushSel(null); }}>
             {/* 0 손익분기선 */}
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY}
@@ -299,7 +335,7 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
 
 /* ⑤ MAE/MFE 산점도 — analysis.mae_mfe [{mae,mfe,pnl_pct,hold_sec,code}].
    x=R_MAE(매수후 최저, ≤0), y=R_MFE(매수후 최고, ≥0). 색=손익 양/음. 사분면 가이드+호버. */
-function BtMaeMfeScatter({ points }) {
+function _BtMaeMfeScatterContent({ points }) {
   const pts = Array.isArray(points) ? points : [];
   const [hover, setHover] = useState_btc(null);
 
@@ -393,7 +429,7 @@ function BtMaeMfeScatter({ points }) {
 
 /* ④ 언더워터 곡선 — analysis.underwater {series:[{date,drawdown}], max_drawdown}.
    고점 대비 반납액(원)을 0 아래로 채워 그린다(red 영역). 최대낙폭 구간(start~trough~recovery) 표기. */
-function BtUnderwaterChart({ underwater }) {
+function _BtUnderwaterChartContent({ underwater }) {
   const series = (underwater && underwater.series) || [];
   const maxDd = underwater && underwater.max_drawdown;
   const [hover, setHover] = useState_btc(null);
@@ -528,7 +564,7 @@ function BtUnderwaterChart({ underwater }) {
 
 /* ⑪ 롤링 지표 라인(트랙 D) — analysis.rolling {window, series:[{index,sell_time,win_rate,payoff,avg_pnl_pct}]}.
    거래 순서 축으로 롤링 승률(좌축 %)·payoff(우축 배)를 듀얼축 라인으로 겹쳐 그린다. */
-function BtRollingChart({ rolling }) {
+function _BtRollingChartContent({ rolling }) {
   const series = (rolling && rolling.series) || [];
   const window = (rolling && rolling.window) || 20;
   const [hover, setHover] = useState_btc(null);
@@ -651,7 +687,7 @@ function BtRollingChart({ rolling }) {
 
 /* ⑬ 누적 거래 듀얼축(트랙 D) — analysis.cumulative_trades {series:[{index,sell_time,cum_trades,cum_profit_krw}]}.
    거래 순서 축으로 누적 거래수(좌축, 면적)와 누적 실현손익(우축, 라인)을 겹쳐 그린다. */
-function BtCumulativeTradesChart({ data }) {
+function _BtCumulativeTradesChartContent({ data }) {
   const series = (data && data.series) || [];
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
@@ -786,6 +822,37 @@ function BtCumulativeTradesChart({ data }) {
     </div>
   );
 }
+
+const BtEquityChart = _btEquityWithEvidence(_BtEquityChartContent, ({ equity }) => ({
+  title: "누적수익곡선 · 일별손익", unit: "일별·누적 손익 (원)",
+  period: "일자별", sampleCount: Array.isArray(equity && equity.daily) ? equity.daily.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.equity.daily",
+  rows: equity && equity.daily, columns: ["date", "pnl"], rowKey: "date",
+}));
+const BtMaeMfeScatter = _btEquityWithEvidence(_BtMaeMfeScatterContent, ({ points }) => ({
+  title: "MAE / MFE 산점도", unit: "수익률 (%)", period: "거래별",
+  sampleCount: Array.isArray(points) ? points.length : 0, freshness: "백테스트 분석 응답",
+  threshold: "손익분기 0%", source: "analysis.mae_mfe", rows: points,
+  columns: ["code", "mae", "mfe", "pnl_pct"], rowKey: "code",
+}));
+const BtUnderwaterChart = _btEquityWithEvidence(_BtUnderwaterChartContent, ({ underwater }) => ({
+  title: "언더워터 — Drawdown", unit: "고점 대비 반납액 (원)", period: "일자별",
+  sampleCount: Array.isArray(underwater && underwater.series) ? underwater.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "고점 대비 0원", source: "analysis.underwater.series",
+  rows: underwater && underwater.series, columns: ["date", "drawdown"], rowKey: "date",
+}));
+const BtRollingChart = _btEquityWithEvidence(_BtRollingChartContent, ({ rolling }) => ({
+  title: "롤링 지표 — 승률 · Payoff", unit: "승률 (%) · payoff (배)", period: "거래 순서",
+  sampleCount: Array.isArray(rolling && rolling.series) ? rolling.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "승률 50% · payoff 1배", source: "analysis.rolling.series",
+  rows: rolling && rolling.series, columns: ["index", "sell_time", "win_rate", "payoff", "avg_pnl_pct"], rowKey: "index",
+}));
+const BtCumulativeTradesChart = _btEquityWithEvidence(_BtCumulativeTradesChartContent, ({ data }) => ({
+  title: "누적 거래 · 누적 손익", unit: "거래 수 · 누적 손익 (원)", period: "거래 순서",
+  sampleCount: Array.isArray(data && data.series) ? data.series.length : 0,
+  freshness: "백테스트 분석 응답", threshold: "손익분기 0원", source: "analysis.cumulative_trades.series",
+  rows: data && data.series, columns: ["index", "sell_time", "cum_trades", "cum_profit_krw"], rowKey: "index",
+}));
 
 export {
   BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCumulativeTradesChart,

@@ -12,8 +12,7 @@ import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveCon
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
-import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
-import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
+import { ProfitChart, QualityTrendChart, EquityOverlayChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
 import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
@@ -303,6 +302,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
   // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
+  const [liveStageDensity, setLiveStageDensity] = useState_v4r(() => {
+    try {
+      const stored = window.localStorage.getItem("stom_v511_live_stage_density");
+      return stored === "compact" ? "compact" : "comfortable";
+    } catch (e) {
+      return "comfortable";
+    }
+  });
   const s = state || {};
   const latest = s.latest || {};
   const runId = s.run_id || "";
@@ -313,7 +320,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const selectedGen = [selectedDetailGen, s.best && s.best.gen, latestGen]
     .map(value => value == null ? null : Number(value))
     .find(value => Number.isFinite(value) && knownGenNos.includes(value));
-  const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+  const isDemo = wsStatus === "demo";
   const merged = s.best && s.winner && s.best.gen === s.winner.gen;
   const viewCode = typeof onViewCode === "function" ? onViewCode : () => {};
   const runStatus = _v4RunStatus(s.status, latest.phase);
@@ -328,6 +335,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     else if (e.key === "Home") { e.preventDefault(); setStagePin(0); }
     else if (e.key === "End") { e.preventDefault(); setStagePin(n - 1); }
   };
+  useEffect_v4r(() => {
+    try { window.localStorage.setItem("stom_v511_live_stage_density", liveStageDensity); } catch (e) {}
+  }, [liveStageDensity]);
 
   useEffect_v4r(() => {
     let active = true;
@@ -376,7 +386,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   };
 
   return (
-    <section className="v4-research v6-live" aria-labelledby="v4-research-heading">
+    <section className={"v4-research v6-live v6-live-density-" + liveStageDensity} aria-labelledby="v4-research-heading">
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
 
@@ -393,6 +403,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           {s.status === "error" || s.status === "failed"
             ? `연구 요청 실패 · ${String(s.error || (s.latest && s.latest.error) || "서버 로그를 확인하세요")}`
             : `연구 ${s.status === "blocked" ? "차단" : "진행"} · 현재 단계 ${(s.latest && s.latest.current_step) ?? "발행 대기"} · 세대 데이터 대기`}
+        </div>
+      )}
+      {runStatus.key === "complete" && runId && selectedGen != null && (
+        <div className="v511-result-ready" role="status">
+          <span>완료된 세대 g{selectedGen}의 결과 분석을 다시 열 수 있습니다.</span>
+          <button className="btn primary sm" type="button" onClick={() => setStagePin(1)}>
+            결과 분석 열기
+          </button>
         </div>
       )}
 
@@ -412,6 +430,15 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
               {liveStage === i && <i className="v6-live-dot" aria-label="진행 중"></i>}
             </button>
           ))}
+        </span>
+        <span className="v6-stage-density" role="group" aria-label="Live 단계 밀도">
+          <span>단계 밀도</span>
+          <button className={"btn ghost sm" + (liveStageDensity === "comfortable" ? " active" : "")}
+                  type="button" aria-pressed={liveStageDensity === "comfortable"}
+                  onClick={() => setLiveStageDensity("comfortable")}>여유</button>
+          <button className={"btn ghost sm" + (liveStageDensity === "compact" ? " active" : "")}
+                  type="button" aria-pressed={liveStageDensity === "compact"}
+                  onClick={() => setLiveStageDensity("compact")}>압축</button>
         </span>
         {stagePin != null && (
           <button className="btn ghost sm v5-pin-reset" onClick={() => setStagePin(null)}>
@@ -450,33 +477,31 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                 <div className="v59-result-pending">유효한 run과 세대가 발행되면 전체 결과 분석이 표시됩니다.</div>
               )}
             </section>
-            <section className="v56-cell v54-btdetail" aria-label="백테스트 상세 그래프">
+            <section className="v56-cell v59-live-result-provenance" aria-label="백테스트 결과 출처">
+              <h3 className="stom-section-label">결과 출처 · 상태</h3>
+              <p className="v59-section-intro">위 정본 결과 분석이 Live의 유일한 상세 결과 소유자입니다. 이 영역은 중복 차트 없이 선택 상태만 표시합니다.</p>
+              <div className="v59-result-provenance mono">
+                <span>source=진화 세대</span>
+                <span>run={runId || "—"}</span>
+                <span>generation={selectedGen != null ? selectedGen : "—"}</span>
+                <span>{runId && selectedGen != null ? "정본 결과 분석에 연결됨" : "유효한 run·세대 대기"}</span>
+              </div>
               <div className="v55-btd-actions">
                 <button className="btn ghost sm"
-                        title="선택 세대(미선택 시 best)를 백테스트 탭에서 결과·퀀트 분석으로 상세 확인"
+                        title="선택 세대를 백테스트 탭의 정본 결과 분석으로 연다"
+                        disabled={!runId || selectedGen == null}
                         onClick={() => {
-                          const genNo = selectedGen;
-                          if (runId && genNo != null) {
-                            try {
-                              const detail = { run_id: runId, gen_no: genNo };
-                              window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
-                              window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
-                            } catch (e) {}
-                          }
+                          if (!runId || selectedGen == null) return;
+                          try {
+                            const detail = { run_id: runId, gen_no: selectedGen };
+                            window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
+                            window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
+                          } catch (e) {}
                           window.location.href = "/ui/evolution/backtest";
                         }}>
-                  ⇲ 백테스트 탭에서 상세 분석
+                  ⇲ 백테스트 탭에서 정본 결과 분석 열기
                 </button>
               </div>
-              <h3 className="stom-section-label">컴팩트 실행 증거 · 백테스트 상세</h3>
-              <p className="v59-section-intro">빠른 단계 확인용 요약 그래프입니다. 전체 분석은 위의 정본 결과 분석을 사용합니다.</p>
-              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
-            </section>
-            {/* v5.6.1 — GUI 패리티: fold 폐지, 매트릭스 셀 직접 노출(사장님 지시) + 내부 그리드 강화 */}
-            <section className="v56-cell v56-parity" aria-label="GUI 패리티 — STOM 백테스트 결과 이미지 대사">
-              <h3 className="stom-section-label">GUI 패리티 · 컴팩트 화면 증거</h3>
-              <p className="v59-section-intro">공식 STOM 결과 화면과의 표시 대사를 확인하는 보조 증거입니다.</p>
-              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedGen} />
             </section>
           </div>
         )}

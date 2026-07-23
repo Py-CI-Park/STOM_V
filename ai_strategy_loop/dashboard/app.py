@@ -88,6 +88,26 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+_DASHBOARD_RELEASE = "v5.11.0"
+_DASHBOARD_SHELL = "v4-ops"
+_DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
+_DASHBOARD_PROCESS_STARTED_AT = int(time.time())
+
+
+def _dashboard_build_identity() -> str:
+    """Freeze the bundled frontend build identity when this backend process starts."""
+    manifest_path = os.path.join(_FRONTEND_DIR, "bundle", "manifest.json")
+    try:
+        with open(manifest_path, encoding="utf-8") as fh:
+            value = json.load(fh).get("bundles", {}).get("app.js", {}).get("v")
+        if isinstance(value, str) and _DASHBOARD_BUILD_RE.fullmatch(value):
+            return value
+    except (OSError, ValueError, AttributeError):
+        pass
+    return "unknown"
+
+
+_DASHBOARD_BUILD = _dashboard_build_identity()
 
 # UXR-P7 Reports 허브 — 리포트 HTML 을 읽기 전용·스크립트 차단으로 안전 서빙한다.
 #   허용 루트는 저장소 docs/ 하위 *.html 로 한정(alpha_lab reporting 산출물·process_flow 등).
@@ -140,12 +160,69 @@ def _report_manifest_relative_path(prefix: str, report: Dict[str, Any]) -> Optio
     return f"{prefix}/{normalized}".replace("//", "/")
 
 
-def _failed_report_metadata(reason: str) -> Dict[str, Any]:
+def _failed_report_metadata(reason: str, report: Dict[str, Any]) -> Dict[str, Any]:
+    source_sha256 = report.get("source_sha256")
+    provenance = report.get("provenance")
+    source_backed = (
+        isinstance(source_sha256, str)
+        and _REPORT_SHA256_RE.fullmatch(source_sha256.lower()) is not None
+        and isinstance(provenance, str)
+        and bool(provenance.strip())
+    )
     return {
         "registered": False,
         "integrity_status": "failed",
         "integrity_error": reason,
+        "catalog_classification": "source_backed_regenerable" if source_backed else "unverifiable",
+        "catalog_reason": (
+            f"{reason}; manifest declares source_sha256 and provenance"
+            if source_backed
+            else reason
+        ),
+        **{
+            key: report.get(key)
+            for key in ("source_sha256", "provenance", "generator", "report_type", "research_id", "run_id")
+            if report.get(key) is not None
+        },
     }
+def _is_legacy_static_manifest(payload: Any) -> bool:
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"generated_at", "count", "reports"}
+        or not isinstance(payload.get("generated_at"), str)
+        or not payload["generated_at"]
+        or not isinstance(payload.get("count"), int)
+        or isinstance(payload.get("count"), bool)
+        or not isinstance(payload.get("reports"), list)
+        or payload["count"] != len(payload["reports"])
+    ):
+        return False
+    for report in payload["reports"]:
+        if (
+            not isinstance(report, dict)
+            or set(report) != {"research_id", "step_id", "path", "sha256", "bytes", "trust"}
+            or not all(isinstance(report.get(key), str) and report[key] for key in ("research_id", "step_id", "trust"))
+            or not isinstance(report.get("sha256"), str)
+            or _REPORT_SHA256_RE.fullmatch(report["sha256"].lower()) is None
+            or not isinstance(report.get("bytes"), int)
+            or isinstance(report.get("bytes"), bool)
+            or report["bytes"] < 0
+        ):
+            return False
+    return True
+
+
+def _legacy_static_report_metadata(report: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "registered": False,
+        "integrity_status": "legacy_static",
+        "catalog_classification": "legacy_static",
+        "catalog_reason": "recognized_legacy_manifest_not_migrated",
+        "research_id": report["research_id"],
+        "trust": report["trust"],
+    }
+
+
 
 
 def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
@@ -172,6 +249,7 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
             and not isinstance(payload.get("count"), bool)
             and payload["count"] == len(reports)
         )
+        legacy_static_manifest = _is_legacy_static_manifest(payload)
         if not isinstance(reports, list):
             continue
 
@@ -181,8 +259,11 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
             rel_path = _report_manifest_relative_path(prefix, report)
             if rel_path is None:
                 continue
+            if legacy_static_manifest:
+                rows[rel_path] = _legacy_static_report_metadata(report)
+                continue
             if not manifest_valid:
-                rows[rel_path] = _failed_report_metadata("manifest_schema_invalid")
+                rows[rel_path] = _failed_report_metadata("manifest_schema_invalid", report)
                 continue
 
             expected_hash = report.get("content_sha256")
@@ -195,7 +276,7 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
                 or isinstance(expected_bytes, bool)
                 or expected_bytes < 0
             ):
-                rows[rel_path] = _failed_report_metadata("report_schema_invalid")
+                rows[rel_path] = _failed_report_metadata("report_schema_invalid", report)
                 continue
 
             full = _safe_report_path(rel_path)
@@ -209,18 +290,20 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
                         actual_bytes += len(chunk)
                         digest.update(chunk)
             except OSError:
-                rows[rel_path] = _failed_report_metadata("report_unreadable")
+                rows[rel_path] = _failed_report_metadata("report_unreadable", report)
                 continue
             if actual_bytes != expected_bytes:
-                rows[rel_path] = _failed_report_metadata("bytes_mismatch")
+                rows[rel_path] = _failed_report_metadata("bytes_mismatch", report)
                 continue
             if digest.hexdigest() != expected_hash.lower():
-                rows[rel_path] = _failed_report_metadata("content_sha256_mismatch")
+                rows[rel_path] = _failed_report_metadata("content_sha256_mismatch", report)
                 continue
 
             rows[rel_path] = {
                 "registered": True,
                 "integrity_status": "verified",
+                "catalog_classification": "canonical_registered",
+                "catalog_reason": "manifest_schema_and_content_verified",
                 **{
                     key: report.get(key)
                     for key in (
@@ -228,6 +311,7 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
                         "run_id", "generation", "cycle", "status", "publication_status", "generator",
                         "content_sha256", "source_sha256", "trust", "provenance", "toc",
                         "profile", "evidence", "decision", "limitations",
+                        "renderer_version", "template_id", "theme",
                     )
                     if report.get(key) is not None
                 },
@@ -264,6 +348,9 @@ def _report_catalog() -> list[Dict[str, Any]]:
                     "bytes": stat.st_size,
                     "mtime": int(stat.st_mtime),
                     "registered": False,
+                    "integrity_status": "unregistered",
+                    "catalog_classification": "legacy_static",
+                    "catalog_reason": "no_manifest_registration",
                 }
                 item.update(metadata.get(rel, {}))
                 items.append(item)
@@ -496,7 +583,7 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
 
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         result = compare_runs(st, run_ids)
         _attach_run_labels(result)
         # 2026-06-11 — 최신 우선 + (최근 48h 내) running 최상단. 종전 오름차순은
@@ -979,7 +1066,7 @@ def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any
 
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         all_gens = st.get_all_generations()
         runs = {r.get("run_id"): r for r in st.list_runs()}
     except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 응답.
@@ -1064,7 +1151,7 @@ def _equity_curves_payload(
 
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         all_gens = st.get_all_generations()
     except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 응답.
         return {"curves": [], "count": 0}
@@ -1260,47 +1347,80 @@ def _period_string_from_config(config_json: Optional[str]) -> Optional[str]:
     return f"{start.isoformat()} ~ {end.isoformat()}"
 
 
-def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
-    """명예의 전당 payload: 인간 벤치마크 + AI 생성 통합(읽기 전용, 무예외).
+def _catalog_number(value: Any) -> Optional[float]:
+    """Return a stored numeric value without converting missing values to zero."""
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
-    인간: reference_strategies.json을 로드한다(파일 없으면 빈 목록).
-    AI: loop_runs.db에서 gate_passed=1 AND profit>0 세대를 조회해 워크플로 확정
-        산식으로 매핑한다(추가 백테 0회).
-          - operating_capital_krw = profit / total_profit_pct × 100
-            (total_profit_pct는 '운영금 대비 수익률합계'. ≤0이면 그 행 제외).
-          - total_return_krw = profit (수익금합계, 원).
-          - total_return_pct = total_profit_pct (이미 DB; profit/운영금×100).
-          - annual_return_pct = total_return_pct / window_years (단리).
-            window_years는 runs.config_json의 bt_full_start/end에서 산출. <0.25면
-            annual_unreliable=true(짧은 창 연환산 과대) + 연평균은 그대로 계산.
-            window를 못 구하면 annual_return_pct=None.
-        graded(score) 내림차순 상위 ai_limit.
 
-    LoopState 무예외·close() 패턴은 _equity_curves_payload/_runs_payload와 동일.
-    DB/JSON 부재는 빈 목록(무예외).
+def _catalog_int(value: Any) -> Optional[int]:
+    """Return a stored integer value without converting missing values to zero."""
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
-    반환: {"human": [...], "ai": [...]}
-    """
+
+def _generation_outcome(generation: Dict[str, Any]) -> str:
+    """Classify a stored generation result without inventing a performance metric."""
+    status = str(generation.get("status") or "").lower()
+    trades = _catalog_int(generation.get("trade_count"))
+    profit = _catalog_number(generation.get("profit"))
+    if status == "unavailable":
+        return "unavailable"
+    if trades == 0:
+        return "no_trade"
+    if status in {"failed", "failure", "error"}:
+        return "failure"
+    if profit is not None and profit < 0:
+        return "loss"
+    if status in {"ok", "success", "complete", "completed"}:
+        return "success"
+    return "unknown"
+
+
+def _hall_catalog_payload(
+    *,
+    limit: int = 50,
+    offset: int = 0,
+    sort: str = "score",
+    order: str = "desc",
+    statuses: Optional[set[str]] = None,
+    gates: Optional[set[str]] = None,
+    outcomes: Optional[set[str]] = None,
+) -> Dict[str, Any]:
+    """Return a bounded, deterministic, read-only AI generation catalog."""
     from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
 
-    human = _load_reference_strategies()
+    sort_fields = {
+        "score": "score",
+        "returns": "return_pct",
+        "return_pct": "return_pct",
+        "return_krw": "return_krw",
+        "mdd": "mdd_pct",
+        "mdd_pct": "mdd_pct",
+        "trades": "trades",
+        "gen_no": "gen_no",
+    }
+    sort_field = sort_fields.get(sort, "score")
+    descending = order != "asc"
+    bounded_limit = min(max(int(limit), 1), 100)
+    bounded_offset = max(int(offset), 0)
 
     st: Optional[LoopState] = None
-    all_gens: list = []
-    run_window_cache: Dict[str, Optional[float]] = {}
-    run_period_cache: Dict[str, Optional[str]] = {}
     try:
-        st = LoopState()
-        all_gens = st.get_all_generations()
-        # 각 run의 창 길이(년)·기간 문자열을 한 번씩 조회해 캐시한다(연평균·백테기간 산출용).
-        run_ids = {str(g.get("run_id") or "") for g in all_gens if g.get("run_id")}
-        for rid in run_ids:
-            run_row = st.get_run(rid)
-            cfg_json = run_row.get("config_json") if run_row else None
-            run_window_cache[rid] = _window_years_from_config(cfg_json)
-            run_period_cache[rid] = _period_string_from_config(cfg_json)
-    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 AI 빈 목록(무예외).
-        return {"human": human, "ai": []}
+        st = LoopState(readonly=True)
+        generations = st.get_all_generations()
+        # One run-list read supplies metadata for every generation; never per-row get_run().
+        runs = {str(row.get("run_id")): row for row in st.list_runs() if row.get("run_id") is not None}
+    except Exception:  # noqa: BLE001 - absent/unreadable DB is an empty read-only catalog.
+        return {"items": [], "total": 0, "returned": 0, "next": None}
     finally:
         if st is not None:
             try:
@@ -1308,77 +1428,138 @@ def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
             except Exception:  # noqa: BLE001
                 pass
 
-    ai: list = []
-    for g in all_gens:
-        if not bool(g.get("gate_passed")):
+    items: list[Dict[str, Any]] = []
+    for generation in generations:
+        run_id_value = generation.get("run_id")
+        run_id = str(run_id_value) if run_id_value is not None else None
+        run = runs.get(run_id or "")
+        gate_raw = generation.get("gate_passed")
+        gate_passed = None if gate_raw is None else bool(gate_raw)
+        status = generation.get("status")
+        outcome = _generation_outcome(generation)
+        if statuses and str(status or "").lower() not in statuses:
             continue
-        profit = g.get("profit")
-        total_pct = g.get("total_profit_pct")
-        if profit is None or total_pct is None:
-            continue
-        try:
-            profit_f = float(profit)
-            total_pct_f = float(total_pct)
-        except (ValueError, TypeError):
-            continue
-        # 흑자(profit>0) + 수익률합계>0(운영금 역산 가능)인 세대만.
-        if profit_f <= 0 or total_pct_f <= 0:
+        if gates:
+            gate_filter = "passed" if gate_passed is True else "failed" if gate_passed is False else "unknown"
+            if gate_filter not in gates:
+                continue
+        if outcomes and outcome not in outcomes:
             continue
 
-        # 운영금 역산: profit / total_profit_pct × 100 (total_profit_pct=운영금대비%).
-        operating_capital = profit_f / total_pct_f * 100.0
-
-        run_id = str(g.get("run_id") or "")
-        gen_no = int(g.get("gen_no", -1))
-        window_years = run_window_cache.get(run_id)
-        period_str = run_period_cache.get(run_id)
-        if window_years and window_years > 0:
-            annual_pct = total_pct_f / window_years
-            annual_unreliable = window_years < 0.25
-        else:
-            annual_pct = None
-            annual_unreliable = False
-
-        # 시드(Tick_902 등 비-AILOOP, 주로 gen0)는 인간이 튜닝한 출발점이고, AILOOP_*만
-        #   AI가 직접 생성한 전략이다. 사용자가 "AI가 직접 한것"과 인간 시드를 구분해 보도록
-        #   kind를 나눈다('ai' vs 'seed'). 둘 다 loop_runs.db 출처라 ai 목록에 함께 담는다.
-        buy_name_str = str(g.get("buy_name") or "")
-        # 시드 = 명명된 비-AILOOP 전략(보통 Tick_902 등 인간 튜닝 gen0). AILOOP_* = AI 생성.
-        #   빈 이름은 시드로 확정할 수 없으므로 'ai'로 둔다(시드/AI 구분 정직성).
-        kind = "seed" if (buy_name_str and not buy_name_str.startswith("AILOOP")) else "ai"
-        ai.append({
-            "kind": kind,
+        config_json = run.get("config_json") if run else None
+        period = _period_string_from_config(config_json)
+        window_years = _window_years_from_config(config_json)
+        return_krw = _catalog_number(generation.get("profit"))
+        return_pct = _catalog_number(generation.get("total_profit_pct"))
+        operating_capital = (
+            return_krw / return_pct * 100.0
+            if return_krw is not None and return_pct not in (None, 0)
+            else None
+        )
+        annual_return_pct = (
+            return_pct / window_years
+            if return_pct is not None and window_years is not None and window_years > 0
+            else None
+        )
+        items.append({
+            "kind": "seed" if (
+                generation.get("buy_name") and not str(generation.get("buy_name")).startswith("AILOOP")
+            ) else "ai",
             "run_id": run_id,
-            "gen_no": gen_no,
-            "label": f"{run_id}/g{gen_no}",
-            "period": period_str,
-            "buy_name": g.get("buy_name"),
-            "score": (float(g.get("score")) if g.get("score") is not None else None),
+            "gen_no": _catalog_int(generation.get("gen_no")),
+            "label": f"{run_id}/g{generation.get('gen_no')}" if run_id is not None else None,
+            "status": status,
+            "gate_passed": gate_passed,
+            "outcome": outcome,
+            "score": _catalog_number(generation.get("score")),
+            "return_krw": return_krw,
+            "return_pct": return_pct,
             "operating_capital_krw": operating_capital,
-            "total_return_krw": profit_f,
-            "total_return_pct": total_pct_f,
-            "annual_return_pct": annual_pct,
-            "annual_unreliable": annual_unreliable,
-            "mdd_pct": (float(g.get("mdd")) if g.get("mdd") is not None else None),
-            "calmar": (float(g.get("calmar")) if g.get("calmar") is not None else None),
-            "payoff": (float(g.get("payoff_ratio")) if g.get("payoff_ratio") is not None else None),
-            "trades": (int(g.get("trade_count")) if g.get("trade_count") is not None else None),
-            "daily_avg_trades": (
-                float(g.get("daily_avg_trades")) if g.get("daily_avg_trades") is not None else None
-            ),
-            "max_hold_count": (
-                float(g.get("max_hold_count")) if g.get("max_hold_count") is not None else None
-            ),
+            "annual_return_pct": annual_return_pct,
+            "annual_unreliable": bool(window_years is not None and window_years < 0.25),
+            "profit": _catalog_number(generation.get("profit")),
+            "total_profit_pct": _catalog_number(generation.get("total_profit_pct")),
+            "mdd": _catalog_number(generation.get("mdd")),
+            "mdd_pct": _catalog_number(generation.get("mdd")),
+            "trade_count": _catalog_int(generation.get("trade_count")),
+            "trades": _catalog_int(generation.get("trade_count")),
+            "period": period,
+            "window_years": window_years,
+            "calmar": _catalog_number(generation.get("calmar")),
+            "payoff": _catalog_number(generation.get("payoff_ratio")),
+            "daily_avg_trades": _catalog_number(generation.get("daily_avg_trades")),
+            "max_hold_count": _catalog_number(generation.get("max_hold_count")),
+            "win_rate_pct": _catalog_number(generation.get("win_rate_pct", generation.get("win_rate"))),
+            "buy_name": generation.get("buy_name"),
+            "sell_name": generation.get("sell_name"),
+            "reason": generation.get("reason"),
+            "provenance": {
+                "source": "loop_runs.db",
+                "generation_created_at": generation.get("created_at"),
+                "run_status": run.get("status") if run else None,
+                "run_started_at": run.get("started_at") if run else None,
+                "run_finished_at": run.get("finished_at") if run else None,
+            },
         })
 
-    # graded(score) 내림차순 상위 ai_limit.
-    ai.sort(key=lambda r: (
-        (r.get("score") if r.get("score") is not None else -1e18),
-        r.get("run_id") or "", r.get("gen_no") or 0,
-    ), reverse=True)  # score 동률 시 (run_id, gen_no)로 결정론적 순서(cap 경계 안정).
-    ai = ai[: max(0, int(ai_limit))]
+    def sort_key(item: Dict[str, Any]) -> tuple[Any, ...]:
+        value = item.get(sort_field)
+        missing = value is None
+        if isinstance(value, (int, float)) and descending:
+            value = -value
+        return (missing, value, str(item.get("run_id") or ""), item.get("gen_no") if item.get("gen_no") is not None else -1)
 
-    return {"human": human, "ai": ai}
+    items.sort(key=sort_key)
+    total = len(items)
+    page = items[bounded_offset:bounded_offset + bounded_limit]
+    next_offset = bounded_offset + len(page)
+    return {
+        "items": page,
+        "total": total,
+        "returned": len(page),
+        "next": next_offset if next_offset < total else None,
+    }
+
+
+def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
+    """Legacy Hall payload: human benchmark plus the historical profitable AI subset."""
+    human = _load_reference_strategies()
+    catalog = _hall_catalog_payload(limit=100, sort="score", order="desc", gates={"passed"})
+    ai: list[Dict[str, Any]] = []
+    for item in catalog["items"]:
+        profit = item["return_krw"]
+        total_pct = item["return_pct"]
+        if profit is None or total_pct is None or profit <= 0 or total_pct <= 0:
+            continue
+        run_id = item["run_id"] or ""
+        annual_pct = None
+        annual_unreliable = False
+        # Legacy annualization remains based on the stored configured backtest window.
+        years = item.get("window_years")
+        if isinstance(years, (int, float)) and years > 0:
+            annual_pct = total_pct / years
+            annual_unreliable = years < 0.25
+        ai.append({
+            "kind": item["kind"],
+            "run_id": run_id,
+            "gen_no": item["gen_no"],
+            "label": item["label"],
+            "period": item["period"],
+            "buy_name": item["buy_name"],
+            "score": item["score"],
+            "operating_capital_krw": profit / total_pct * 100.0,
+            "total_return_krw": profit,
+            "total_return_pct": total_pct,
+            "annual_return_pct": annual_pct,
+            "annual_unreliable": annual_unreliable,
+            "mdd_pct": item["mdd_pct"],
+            "calmar": item["calmar"],
+            "payoff": item["payoff"],
+            "trades": item["trades"],
+            "daily_avg_trades": item["daily_avg_trades"],
+            "max_hold_count": item["max_hold_count"],
+        })
+    return {"human": human, "ai": ai[:max(0, int(ai_limit))]}
 
 
 def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
@@ -1400,7 +1581,7 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     # 세대 행에서 실제 전략 이름을 읽는다(시드 세대는 seed 이름일 수 있음).
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         for row in st.get_generations(run_id):
             if int(row.get("gen_no", -1)) == int(gen_no):
                 generation_found = True
@@ -1480,7 +1661,7 @@ def _prompts_payload(run_id: Optional[str], gen_no: Optional[int] = None) -> Dic
         return {"error": "run_id required", "prompts": []}
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         rows = st.get_prompts(run_id)
     except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
         return {"error": str(exc), "run_id": run_id, "gen_no": gen_no, "prompts": []}
@@ -1641,7 +1822,7 @@ def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None
 
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         run_row = st.get_run(run_id)
         gens = st.get_generations(run_id)
         prompt_rows = st.get_prompts(run_id)
@@ -1826,7 +2007,7 @@ def _run_state_payload(run_id: str) -> Dict[str, Any]:
     run_row: Optional[Dict[str, Any]] = None
     gens: list = []
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         run_row = st.get_run(run_id)
         gens = st.get_generations(run_id)
     except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 idle(무예외).
@@ -1947,7 +2128,7 @@ def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     found = False
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         for row in st.get_generations(run_id):
             if int(row.get("gen_no", -1)) == int(gen_no):
                 csv_path = row.get("csv_path")
@@ -2011,7 +2192,7 @@ def _adaptive_timing_payload(run_id: Optional[str], lookback: int) -> Dict[str, 
     csv_path: Optional[str] = None
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         rows = st.get_generations(run_id)  # gen_no 오름차순.
         if not rows:
             return {"error": f"no generations for run_id={run_id!r}"}
@@ -2079,7 +2260,7 @@ def _edge_ratio_payload(
     raw_paths: List[str] = []
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
                 # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
@@ -2152,7 +2333,7 @@ def _feature_importance_payload(
     raw_paths: List[str] = []
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
                 # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
@@ -2209,7 +2390,7 @@ def _variable_correlation_payload(
     raw_paths: List[str] = []
     st: Optional[LoopState] = None
     try:
-        st = LoopState()
+        st = LoopState(readonly=True)
         for rid in target_runs:
             for row in st.get_generations(rid):
                 # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
@@ -3602,7 +3783,27 @@ def create_app(
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
-        return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+        return {
+            "status": "ok",
+            "contract_version": C.CONTRACT_VERSION,
+            "dashboard": {
+                "shell": {
+                    "name": _DASHBOARD_SHELL,
+                    "release": _DASHBOARD_RELEASE,
+                    "build": _DASHBOARD_BUILD,
+                },
+                "release": _DASHBOARD_RELEASE,
+                "build": _DASHBOARD_BUILD,
+                "backend": {
+                    "release": _DASHBOARD_RELEASE,
+                    "build": _DASHBOARD_BUILD,
+                    "process": {
+                        "pid": os.getpid(),
+                        "started_at_unix": _DASHBOARD_PROCESS_STARTED_AT,
+                    },
+                },
+            },
+        }
     # Backend diagnostic ring: process-local, bounded, redacted and session-protected.
     import collections as _collections
     import logging as _logging
@@ -3841,6 +4042,27 @@ def create_app(
         JSON/DB가 없으면 빈 목록(무예외 계약 — 대시보드가 빈 상태를 표시).
         """
         return _hall_of_fame_payload()
+    @app.get("/hall_of_fame/catalog")
+    def hall_of_fame_catalog(
+        limit: int = 50,
+        offset: int = 0,
+        sort: str = "score",
+        order: str = "desc",
+        status: str = "",
+        gate: str = "",
+        outcome: str = "",
+    ) -> Dict[str, Any]:
+        """Bounded AI research catalog; legacy /hall_of_fame remains unchanged."""
+        filters = lambda value: {part.strip().lower() for part in value.split(",") if part.strip()}
+        return _hall_catalog_payload(
+            limit=limit,
+            offset=offset,
+            sort=sort.lower(),
+            order=order.lower(),
+            statuses=filters(status),
+            gates=filters(gate),
+            outcomes=filters(outcome),
+        )
 
     @app.get("/reference_screenshots")
     def reference_screenshots() -> Dict[str, Any]:

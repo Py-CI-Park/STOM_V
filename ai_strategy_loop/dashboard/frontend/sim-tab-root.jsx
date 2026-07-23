@@ -57,7 +57,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const [splitCols, setSplitCols] = useState_sim(_loadSplitCols);
   // 분할 행 캡(0=자동·무제한). 종목수/열 기반 자동 행을 사용자가 줄여 스크롤 그리드로 만든다.
   const [splitRows, setSplitRows] = useState_sim(_loadSplitRows);
-  // 차트 엔진 모드(live/lwc/svg) — 기본 라이브(S4). localStorage 보존.
+  // 차트 엔진 모드(live/lwc/svg) — 신규 프로필은 LWC, 명시적 localStorage 선택은 보존.
   const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
   const [viewportTick, setViewportTick] = useState_sim(0);
 
@@ -68,6 +68,15 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const autoPausedRef = useRef_sim(new Set());
 
   const wsRef = useRef_sim(null);
+  // A replay is loading until metadata arrives; a bounded timer prevents silent 0/0 playback.
+  const zeroFrameTimerRef = useRef_sim(null);
+  const receivedBarCountRef = useRef_sim(0);
+  const clearZeroFrameTimer = () => {
+    if (zeroFrameTimerRef.current) {
+      clearTimeout(zeroFrameTimerRef.current);
+      zeroFrameTimerRef.current = null;
+    }
+  };
   // 코드별 누적 bar 시계열(append). ref 로 들고 상태는 버전 카운터로 리렌더.
   const barsRef = useRef_sim({});
   const [barsVersion, setBarsVersion] = useState_sim(0);
@@ -154,32 +163,43 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   }, []);
 
 
-  // 신호 로드(buy/sell + 선택 종목 변경 시). 종목별로 1일·1종목 백테 신호를 받는다.
+  // 신호 로드 — 선택 코드 전체를 하나의 bounded batch request로 받는다.
   useEffect_sim(() => {
     if (isDemo || !baseUrl || !date || !buy || !sell || selected.length === 0) {
       setSignals({}); setSignalErr(""); return;
     }
     let cancelled = false;
-    const next = {};
-    const failedCodes = [];
-    Promise.all(selected.map(code =>
-      _simFetchJson(
-        baseUrl + "/sim/signals?date=" + encodeURIComponent(date) + "&src=" + src +
-        "&code=" + encodeURIComponent(code) +
-        "&buy=" + encodeURIComponent(buy) + "&sell=" + encodeURIComponent(sell),
-        200000
-      ).then(j => { next[code] = (j && Array.isArray(j.trades)) ? j.trades : []; })
-       .catch(e => { next[code] = []; failedCodes.push(code + ": " + String(e && e.message ? e.message : e)); })
-    )).then(() => {
+    const selectedCodes = Array.from(new Set(selected)).slice(0, _SIM_MAX_CODES);
+    _simFetchJson(
+      baseUrl + "/sim/signals/batch?date=" + encodeURIComponent(date) + "&src=" + src +
+      "&codes=" + encodeURIComponent(selectedCodes.join(",")) +
+      "&buy=" + encodeURIComponent(buy) + "&sell=" + encodeURIComponent(sell),
+      200000
+    ).then(j => {
       if (cancelled) return;
+      const next = {};
+      const results = (j && j.results && typeof j.results === "object") ? j.results : {};
+      const failedCodes = [];
+      selectedCodes.forEach(code => {
+        const result = results[code] || {};
+        next[code] = Array.isArray(result.trades) ? result.trades : [];
+        if (result.status !== "ok") failedCodes.push(code + ": " + (result.note || "신호 로드 실패"));
+      });
       setSignals(next);
       setSignalErr(failedCodes.length ? "신호 로드 실패: " + failedCodes.join(", ") : "");
+    }).catch(e => {
+      if (!cancelled) {
+        setSignals(Object.fromEntries(selectedCodes.map(code => [code, []])));
+        setSignalErr("신호 로드 실패: " + String(e && e.message ? e.message : e));
+      }
     });
     return () => { cancelled = true; };
   }, [baseUrl, isDemo, date, src, buy, sell, selected.join(",")]);
 
   // --- WS 리플레이 제어 ---
   const _stopReplay = useCallback_sim(() => {
+    clearZeroFrameTimer();
+    receivedBarCountRef.current = 0;
     if (wsRef.current) {
       try { wsRef.current.send(JSON.stringify({ action: "stop" })); } catch (e) {}
       try { wsRef.current.close(); } catch (e) {}
@@ -193,11 +213,20 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   useEffect_sim(() => () => { _stopReplay(); }, [_stopReplay]);
 
   const startReplay = useCallback_sim(() => {
-    if (isDemo || !baseUrl || !date || selected.length === 0) return;
+    const selectedCodes = Array.from(new Set(selected)).slice(0, _SIM_MAX_CODES);
+    const knownCodes = new Set(stocks.map(s => String(s.code)));
+    if (isDemo || !baseUrl || !date || loadingStocks || selectedCodes.length === 0 ||
+        !selectedCodes.every(code => knownCodes.has(String(code)))) {
+      setWsErr("날짜의 종목 목록을 불러온 뒤 유효한 종목을 선택하세요.");
+      setStatus("error");
+      return;
+    }
     _stopReplay();
     const url = _wsUrl(baseUrl, "/sim/ws");
     if (!url) { setWsErr("WS URL 생성 실패"); setStatus("error"); return; }
-    setWsErr(""); barsRef.current = {}; setBarsVersion(v => v + 1);
+    setWsErr(""); receivedBarCountRef.current = 0;
+    barsRef.current = {}; setBarsVersion(v => v + 1);
+    setStatus("loading");
 
     let ws;
     try { ws = new WebSocket(url); } catch (e) { setWsErr(String(e)); setStatus("error"); return; }
@@ -206,35 +235,49 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
     ws.onopen = () => {
       ws.send(JSON.stringify({
         action: "start", date: parseInt(date, 10), src,
-        codes: selected, speed, agg_sec: parseInt(aggSec, 10) || 10,
+        codes: selectedCodes, speed, agg_sec: parseInt(aggSec, 10) || 10,
       }));
-      setStatus("playing");
+      setStatus("loading");
+      clearZeroFrameTimer();
+      zeroFrameTimerRef.current = setTimeout(() => {
+        if (receivedBarCountRef.current === 0 && wsRef.current === ws) {
+          try { ws.close(); } catch (e) {}
+          wsRef.current = null;
+          setWsErr("리플레이 데이터를 받지 못했습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
+          setStatus("error");
+        }
+      }, 8000);
     };
     ws.onmessage = (ev) => {
       let m;
       try { m = JSON.parse(ev.data); } catch (e) {
+        clearZeroFrameTimer();
         setWsErr("리플레이 프레임 해석 실패: " + String(e && e.message ? e.message : e));
         setStatus("error");
         return;
       }
       if (!m || !m.type) {
+        clearZeroFrameTimer();
         setWsErr("리플레이 프로토콜 오류: type 누락");
         setStatus("error");
         return;
       }
       if (m.type === "meta") {
-        setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0] });
+        setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0], replay_metadata: m.replay_metadata || {} });
         setCursor(0);
+        setStatus("playing");
       } else if (m.type === "bars") {
-        // S1 결함 수정 — 코드별 시계열에 **불변(immutable) append**.
         //   기존 .push() 는 같은 배열을 mutate 해 per-code 배열 참조가 안 바뀌어
         //   SimCandleChartLWC 의 useEffect([bars]) 가 최초 1회만 돌아 봉·거래량이 1개로 동결됐다.
         //   → 매 프레임 새 배열을 만들어(store[code] = [...prev, bar]) 참조를 갱신해야
         //     LWC effect 가 매번 재실행되며 봉·거래량 히스토그램이 정상 리플레이된다.
         const store = barsRef.current;
-        (m.items || []).forEach(it => {
+        const items = Array.isArray(m.items) ? m.items : [];
+        items.forEach(it => {
           store[it.code] = [...(store[it.code] || []), _simWsBar(it, m.t)];   // 새 배열 참조(불변 append).
         });
+        receivedBarCountRef.current += items.length;
+        if (receivedBarCountRef.current > 0) clearZeroFrameTimer();
         setCursor((m.index || 0) + 1);
         setCurT(m.t);
         setBarsVersion(v => v + 1);
@@ -251,17 +294,34 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         if (m.t != null) setCurT(m.t);
         setBarsVersion(v => v + 1);
       } else if (m.type === "done") {
-        setStatus(s => (s === "playing" || s === "paused") ? "done" : s);
+        clearZeroFrameTimer();
+        if (receivedBarCountRef.current === 0) {
+          setWsErr("리플레이 데이터가 비어 있습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
+          setStatus("error");
+        } else {
+          setStatus(s => (s === "playing" || s === "paused") ? "done" : s);
+        }
       } else if (m.type === "error") {
+        clearZeroFrameTimer();
         setWsErr(m.message || "리플레이 오류"); setStatus("error");
       } else {
+        clearZeroFrameTimer();
         setWsErr("리플레이 프로토콜 오류: 알 수 없는 frame type " + String(m.type));
         setStatus("error");
       }
     };
-    ws.onerror = () => { setWsErr("WebSocket 연결 오류"); setStatus("error"); };
-    ws.onclose = () => { if (wsRef.current === ws) wsRef.current = null; };
-  }, [baseUrl, isDemo, date, src, selected, speed, aggSec, _stopReplay]);
+    ws.onerror = () => { clearZeroFrameTimer(); setWsErr("WebSocket 연결 오류"); setStatus("error"); };
+    ws.onclose = () => {
+      const isActive = wsRef.current === ws;
+      const noFrames = receivedBarCountRef.current === 0;
+      if (isActive) wsRef.current = null;
+      clearZeroFrameTimer();
+      if (isActive && noFrames) {
+        setWsErr("리플레이 연결이 데이터를 보내기 전에 종료됐습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
+        setStatus("error");
+      }
+    };
+  }, [baseUrl, isDemo, date, src, selected, stocks, loadingStocks, speed, aggSec, _stopReplay]);
 
   const _wsSend = (payload) => {
     if (wsRef.current && wsRef.current.readyState === 1) {
@@ -313,13 +373,15 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       .catch(() => { setPresetBusy(false); if (asDemo) setDemoActive(false); });
   }, [baseUrl, isDemo, _stopReplay]);
 
-  // 수동 자동재생 트리거 — 명시적 프리셋이 세팅한 date/selected 가 반영되면 1회 재생 시작.
+  // Presets wait for the selected code to appear in the loaded date inventory before opening WS.
   useEffect_sim(() => {
     if (!pendingAutoplayRef.current) return;
-    if (!date || selected.length === 0) return;
+    const knownCodes = new Set(stocks.map(s => String(s.code)));
+    if (!date || loadingStocks || selected.length === 0 ||
+        !selected.every(code => knownCodes.has(String(code)))) return;
     pendingAutoplayRef.current = false;
     startReplay();
-  }, [date, selected, startReplay]);
+  }, [date, selected, stocks, loadingStocks, startReplay]);
 
   // 최초 진입 데모 추천 — 선택 없음 + 미시청 + 백엔드 연결 시 1회. localStorage 로 재방문 시 생략.
   useEffect_sim(() => {
@@ -348,7 +410,10 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
 
   // 렌더·로직 공용 파생값(차트 그리드·신호 평탄화·재생 가능 여부).
   const codes = (meta && meta.codes && meta.codes.length) ? meta.codes : selected;
-  const canPlay = !isDemo && !!date && selected.length > 0 && (status === "idle" || status === "done" || status === "error");
+  const selectedCodesLoaded = selected.length > 0 && !loadingStocks &&
+    selected.every(code => stocks.some(stock => String(stock.code) === String(code)));
+  const canPlay = !isDemo && !!date && selectedCodesLoaded &&
+    (status === "idle" || status === "done" || status === "error");
   // 키보드 핸들러가 stale 클로저로 보지 않도록 canPlay 를 ref 로 미러링.
   const canPlayRef = useRef_sim(canPlay);
   useEffect_sim(() => { canPlayRef.current = canPlay; }, [canPlay]);
@@ -523,6 +588,24 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
             speed={speed} onSpeed={changeSpeed} cursor={cursor}
             total={meta ? meta.bars_total : 0} curT={curT}
             sessionRange={meta ? meta.session_range : [0, 0]} onSeek={seekByIndex} canPlay={canPlay} />
+          <div className="mono" role="status" style={{ fontSize: 10, color: "var(--ink-3)", padding: "0 4px" }}>
+            상태: {status} · 엔진: {engineMode === "live" ? "Canvas (고급/실험적)" : engineMode.toUpperCase()} · 소스: {src}
+            {" · "}수신 봉: {receivedBarCountRef.current}/{meta ? meta.bars_total : "?"}
+            {(() => {
+              const visible = Object.values(barsByCode).flat();
+              if (!visible.length) return " · OHLC: —";
+              const hi = Math.max(...visible.map(b => Number(b.h) || Number(b.c) || 0));
+              const lo = Math.min(...visible.map(b => Number(b.l) || Number(b.c) || Infinity));
+              return " · OHLC: " + lo.toLocaleString("ko-KR") + "–" + hi.toLocaleString("ko-KR");
+            })()}
+          </div>
+          {meta && meta.replay_metadata && meta.replay_metadata.truncated && (
+            <div className="research-empty" role="status">
+              리플레이 원본이 안전 상한으로 잘렸습니다
+              {meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length
+                ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."}
+            </div>
+          )}
 
           {selected.length > 0 && (
             <SimViewBar

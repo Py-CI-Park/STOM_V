@@ -457,9 +457,15 @@ function LiveBacktestChartInline({ state }) {
 
 // --------- Scoring view ---------
 function ScoringView({ state }) {
-  const metrics = state.current_run?.scoring?.metrics || [];
-  const composite = state.current_run?.scoring?.composite;
-  const targetFromConfig = 1.0; // could pass in
+  const scoring = state.current_run?.scoring;
+  const metrics = Array.isArray(scoring?.metrics) ? scoring.metrics : [];
+  const composite = typeof scoring?.composite === "number" && Number.isFinite(scoring.composite)
+    ? scoring.composite : null;
+  const target = typeof scoring?.target === "number" && Number.isFinite(scoring.target)
+    ? scoring.target : null;
+  const cardCount = metrics.length + 1;
+  const cardSpan = 5 - ((cardCount - 1) % 5);
+  const cardSpanTwo = 2 - ((cardCount - 1) % 2);
 
   return (
     <div className="score-view">
@@ -467,54 +473,66 @@ function ScoringView({ state }) {
         <span className="mono" style={{ color: "var(--ink-2)" }}>graded_score</span>
         <span className="mono" style={{ color: "var(--ink-3)" }}>=</span>
         <span className="mono" style={{ color: "var(--ink-1)" }}>
-          Σ (metric<sub>i</sub> × weight<sub>i</sub>)
+          Σ (emitted metric × emitted weight)
         </span>
         <span className="mono" style={{ marginLeft: "auto", color: "var(--ink-3)" }}>
-          {metrics.length}/4 채점 완료
+          {metrics.length ? `${metrics.length}개 지표 발행` : "지표 미발행"}
         </span>
       </div>
 
-      <div className="score-metrics">
-        {[0, 1, 2, 3].map(i => {
-          const m = metrics[i];
-          const ready = !!m;
-          const v = m?.value ?? 0;
-          const w = m?.weight ?? 0.25;
-          const weighted = ready ? v * w : 0;
-          const labels = ["손익 (profit factor)", "MDD 페널티", "거래수 적정성", "일관성 (sharpe-ish)"];
-          const label = m?.label || labels[i];
+      <div className="score-metrics" style={{
+        "--score-last-span": cardSpan,
+        "--score-last-span-two": cardSpanTwo,
+      }}>
+        {metrics.map((metric, i) => {
+          const m = metric && typeof metric === "object" && !Array.isArray(metric) ? metric : null;
+          const value = typeof m?.value === "number" && Number.isFinite(m.value) ? m.value : null;
+          const weight = typeof m?.weight === "number" && Number.isFinite(m.weight) ? m.weight : null;
+          const pending = m?.ready === false;
+          const malformed = !m || (!pending && (value == null || weight == null));
+          const status = pending ? "pending" : malformed ? "malformed" : "ready";
+          const weighted = value != null && weight != null ? value * weight : null;
+          const label = typeof m?.label === "string" && m.label.trim()
+            ? m.label : "지표 이름 미발행";
           return (
-            <div key={i} className={`score-metric ${ready ? "ready" : "pending"}`}>
+            <div key={m?.key || i} className={`score-metric ${status}`}>
               <div className="metric-row">
                 <span className="metric-label">{label}</span>
-                <span className="metric-weight">w={w.toFixed(2)}</span>
+                <span className="metric-weight">
+                  {weight == null ? "가중치 미발행" : `w=${weight.toFixed(2)}`}
+                </span>
               </div>
               <div className="metric-bar-wrap">
                 <div className="metric-bar">
                   <div className="metric-bar-fill"
-                       style={{ width: `${ready ? Math.min(100, v * 100) : 0}%` }}></div>
+                       style={{ width: `${value == null ? 0 : Math.max(0, Math.min(100, value * 100))}%` }}></div>
                 </div>
                 <span className="metric-val mono">
-                  {ready ? v.toFixed(3) : <span className="pulse-dot">…</span>}
+                  {value == null ? (pending ? "계산 대기" : "값 미발행") : value.toFixed(3)}
                 </span>
                 <span className="metric-weighted mono">
-                  → +{ready ? weighted.toFixed(3) : "—"}
+                  {weighted == null ? "기여도 미발행" : `→ +${weighted.toFixed(3)}`}
                 </span>
               </div>
+              {malformed && <span className="score-card-status">형식 불완전</span>}
             </div>
           );
         })}
-      </div>
-
-      <div className="score-composite">
-        <div className="composite-label">composite (graded_score)</div>
-        <div className="composite-val mono"
-             style={{ color: composite != null ? (composite >= targetFromConfig ? "var(--teal)" : "var(--ink-0)") : "var(--ink-3)" }}>
-          {composite != null ? composite.toFixed(3) : "—"}
+        <div className={`score-composite ${composite == null ? "pending" : "ready"}`}>
+          <div className="composite-label">composite (graded_score)</div>
+          <div className="composite-val mono"
+               style={{ color: composite != null && target != null && composite >= target ? "var(--teal)" : composite != null ? "var(--ink-0)" : "var(--ink-3)" }}>
+            {composite == null ? "미발행" : composite.toFixed(3)}
+          </div>
+          <span className="score-card-status mono">
+            {target == null ? "통과 기준 미발행" : `발행 기준 ≥ ${target.toFixed(3)}`}
+          </span>
+          {typeof scoring?.gate_passed === "boolean" && (
+            <span className={`pill ${scoring.gate_passed ? "gate-pass" : "gate-fail"}`}>
+              {scoring.gate_passed ? "게이트 통과(발행됨)" : "게이트 미통과(발행됨)"}
+            </span>
+          )}
         </div>
-        {composite != null && composite >= targetFromConfig && (
-          <span className="pill gate-pass">✓ 게이트 통과</span>
-        )}
       </div>
     </div>
   );
@@ -522,27 +540,35 @@ function ScoringView({ state }) {
 
 // --------- Autopsy view ---------
 function AutopsyView({ state }) {
-  const a = state.current_run?.autopsy || {};
-  const text = a.text_partial || "";
-  const target = a.text_target || "";
-  const ready = !!a.ready;
+  const autopsy = state.current_run?.autopsy;
+  const isPayload = autopsy && typeof autopsy === "object" && !Array.isArray(autopsy);
+  const text = typeof autopsy?.text_partial === "string" ? autopsy.text_partial : "";
+  const target = typeof autopsy?.text_target === "string" ? autopsy.text_target : null;
+  const pending = isPayload && autopsy.ready === false;
+  const malformed = isPayload && autopsy.ready === true && !text;
+  const status = !isPayload ? "부검 데이터 미발행"
+    : pending ? "부검 생성 대기"
+    : malformed ? "부검 본문 형식 불완전"
+    : text ? "부검 본문 발행됨"
+    : "부검 본문 미발행";
 
   return (
     <div className="autopsy-view">
       <div className="autopsy-header">
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", letterSpacing: ".12em", textTransform: "uppercase" }}>
-          AUTOPSY  ·  다음 세대 컨텍스트로 주입
+          AUTOPSY · 다음 세대 컨텍스트
         </span>
         <span className="mono" style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" }}>
-          {text.length}/{target.length} chars
+          {target == null ? "목표 길이 미발행" : `${text.length}/${target.length} chars`}
         </span>
       </div>
-      <div className="autopsy-body">
-        <span className="mono autopsy-text">{text || "..."}</span>
-        {!ready && <span className="stream-caret blink">▌</span>}
+      <div className={`autopsy-body ${pending ? "pending" : malformed ? "malformed" : ""}`}>
+        {text ? <span className="mono autopsy-text">{text}</span>
+          : <span className="mono autopsy-status">{status}</span>}
+        {pending && <span className="stream-caret blink">▌</span>}
       </div>
       <div className="autopsy-footnote">
-        부검은 LLM이 매수/매도 코드의 백테스트 결과를 자연어로 요약한 것이며, 다음 세대 프롬프트의 few-shot 컨텍스트로 전달됩니다.
+        {isPayload ? "발행된 부검만 다음 세대 컨텍스트로 사용됩니다." : "부검이 발행되면 이 영역에 표시됩니다."}
       </div>
     </div>
   );

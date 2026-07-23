@@ -372,3 +372,24 @@ def test_run_case_requires_websocket_routing_support(tmp_path):
 
     assert case["passed"] is False
     assert "route_web_socket support is required" in case["errors"][0]
+
+
+def test_v510_quality_matrix_uses_requested_breakpoints_and_collects_metrics():
+    assert v58.VIEWPORTS == (375, 768, 1199, 1200, 1920, 2560, 3440)
+
+    class MetricsPage:
+        def evaluate(self, script):
+            assert "__stomLongTasks" in script
+            assert "domNodes" in script
+            assert "historyCode" in script
+            assert "reportsCatalog" in script
+            return {
+                "domNodes": 10,
+                "svgCount": 1,
+                "canvasCount": 0,
+                "longTaskSupported": True,
+            }
+
+    metrics = v58._quality_metrics(MetricsPage())
+    assert metrics["domNodes"] == 10
+    assert metrics["longTaskSupported"] is True

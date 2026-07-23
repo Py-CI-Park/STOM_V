@@ -299,6 +299,57 @@ class TestNoExcept:
         assert [a["gen_no"] for a in out["ai"]] == [4, 3, 2]
 
 
+class TestAiResearchCatalog:
+    def test_catalog_includes_pass_fail_profit_loss_and_zero_return(
+        self, client, seeded_hof_db
+    ):
+        response = client.get(
+            "/hall_of_fame/catalog?limit=100&sort=score&order=desc"
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["total"] == 5
+        assert body["returned"] == 5
+        assert body["next"] is None
+        rows = {(row["run_id"], row["gen_no"]): row for row in body["items"]}
+        assert rows[("runA", 1)]["gate_passed"] is False
+        assert rows[("runA", 2)]["outcome"] == "loss"
+        assert rows[("runA", 3)]["return_pct"] == 0.0
+        assert rows[("runB", 0)]["outcome"] == "success"
+
+    def test_catalog_pagination_union_is_complete_and_deterministic(
+        self, client, seeded_hof_db
+    ):
+        first = client.get(
+            "/hall_of_fame/catalog?limit=2&offset=0&sort=score&order=desc"
+        ).json()
+        second = client.get(
+            f"/hall_of_fame/catalog?limit=2&offset={first['next']}&sort=score&order=desc"
+        ).json()
+        third = client.get(
+            f"/hall_of_fame/catalog?limit=2&offset={second['next']}&sort=score&order=desc"
+        ).json()
+        identities = [
+            (row["run_id"], row["gen_no"])
+            for page in (first, second, third)
+            for row in page["items"]
+        ]
+        assert len(identities) == first["total"] == 5
+        assert len(set(identities)) == 5
+        assert third["next"] is None
+
+    def test_catalog_filters_are_server_side(self, client, seeded_hof_db):
+        loss = client.get(
+            "/hall_of_fame/catalog?limit=100&outcome=loss"
+        ).json()
+        assert loss["total"] == 1
+        assert loss["items"][0]["gen_no"] == 2
+        failed_gate = client.get(
+            "/hall_of_fame/catalog?limit=100&gate=failed"
+        ).json()
+        assert failed_gate["total"] == 1
+        assert failed_gate["items"][0]["gen_no"] == 1
+
 # =====================================================================
 # 3b) 인간 결과 스크린샷 — /reference_screenshots 목록 + StaticFiles 마운트.
 # =====================================================================
@@ -387,15 +438,20 @@ class TestFrontendStructure:
         hof = src[src.find("function HallOfFamePanel("):]
         assert "총수익금(원)" in hof   # 1) 총수익금 표기 유지
         assert "백테 기간" in hof       # 2) 백테 기간 컬럼 추가
-        assert "r.period" in hof        # AI/인간 공통 period 필드 렌더
+        assert "row.period" in hof
 
-    def test_component_can_sort_by_total_return_krw_and_scrolls_horizontally(self):
-        """총수익금 기준 정렬 + 넓은 테이블 가로 스크롤 회귀 가드."""
+    def test_component_sorts_server_side_and_scrolls_horizontally(self):
+        """Server-side result sorting and wide-table scroll remain explicit."""
         src = _read_front("chart-hall-of-fame.jsx")
+        css = _read_front("v4.css")
         hof = src[src.find("function HallOfFamePanel("):]
-        assert 'key: "total_return_krw"' in hof
+        assert 'sort: sortKey' in hof
+        assert '["returns", "수익률"]' in hof
+        assert "/hall_of_fame/catalog?" in hof
         assert "hof-scroll" in hof
-        assert "minWidth" in hof
+        assert "hof-human-table" in hof and "hof-catalog-table" in hof
+        assert ".hof-human-table { min-width:" in css
+        assert ".hof-catalog-table { min-width:" in css
 
     def test_component_has_short_window_tooltip_and_legend(self):
         """3) AI '단기' 라벨 tooltip + 범례 안내."""
@@ -404,7 +460,7 @@ class TestFrontendStructure:
         # 단기 라벨에 설명 tooltip(data-tip/title) — 연평균 과대추정 경고.
         assert "과대추정" in hof
         # 범례 한 줄 안내.
-        assert "단기=연환산 신뢰낮음" in hof
+        assert "단기 창=연환산 신뢰낮음" in hof
 
     def test_reference_gallery_defined_and_wired(self):
         """4) 인간 결과 스크린샷 갤러리 — 컴포넌트 정의·엔드포인트·버튼·이미지 경로."""
@@ -431,3 +487,33 @@ class TestFrontendStructure:
         snippet = src[idx: idx + 200]
         assert "baseUrl={baseUrl}" in snippet
         assert "wsStatus={wsStatus}" in snippet
+    def test_hall_uses_shared_accessible_semantic_formatters_for_both_tables(self):
+        src = _read_front("chart-hall-of-fame.jsx")
+        assert "function HofSignedValue(" in src
+        assert "function HofMddValue(" in src
+        assert "function HofGateBadge(" in src
+        assert "function HofStatusBadge(" in src
+        assert "function HofOutcomeBadge(" in src
+        human = src[src.find("hof-human-table"):src.find("hof-catalog-table")]
+        catalog = src[src.find("hof-catalog-table"):]
+        assert "HofSignedValue" in human and "HofMddValue" in human
+        assert "HofSignedValue" in catalog and "HofMddValue" in catalog
+        assert "HofGateBadge" in catalog and "HofStatusBadge" in catalog and "HofOutcomeBadge" in catalog
+
+    def test_hall_semantics_preserve_zero_and_missing_values(self):
+        src = _read_front("chart-hall-of-fame.jsx")
+        assert 'typeof value === "number" && Number.isFinite(value)' in src
+        assert 'value > 0 ? "positive" : value < 0 ? "negative" : "neutral"' in src
+        assert '"보합"' in src
+        assert 'hofClass("metric", "missing")' in src
+        assert 'formatted.replace(/^\\+/, "")' in src
+        assert '"낮음" : tier === "caution" ? "주의" : "높음"' in src
+
+    def test_catalog_request_and_pagination_contract_remain_server_owned(self):
+        src = _read_front("chart-hall-of-fame.jsx")
+        assert 'limit: "50", offset: String(offset), sort: sortKey, order: sortDirection' in src
+        assert 'params.set("status", statusFilter)' in src
+        assert 'params.set("gate", gateFilter)' in src
+        assert 'params.set("outcome", outcomeFilter)' in src
+        assert 'catalog.next !== null' in src
+        assert 'fetchCatalog(catalog.next, true)' in src

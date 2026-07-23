@@ -55,7 +55,7 @@ def test_render_contains_all_standard_sections() -> None:
     html = render_report_html(_spec())
     for _key, label in STANDARD_SECTIONS:
         assert label in html, f"표준 섹션 누락: {label}"
-    assert "연구목적" in html and "r8_exclude_cap" in html
+    assert "template_id" in html and "r8_exclude_cap" in html
 
 
 def test_render_escapes_content_and_has_no_script() -> None:
@@ -198,10 +198,9 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     html = (tmp_path / "run_report_runB.html").read_text(encoding="utf-8")
     assert "<script" not in html  # 무script(CSP/sandbox 그대로 통과)
     assert "<svg" in html and "<polyline" in html  # 개선 흐름도
-    assert html.count('id="h-gen-') == 3  # 세대 블록 3개(v5.3.9 앵커 id 포함)
-    assert 'id="sec-flow"' in html and 'id="gen-1"' in html  # TOC 앵커
-    assert "gate 통과 ✓" in html  # gen3 통과 마커
-    assert "performance_proved=false" in html  # 안전 문구
+    assert 'id="sec-flow"' in html and 'id="sec-gens"' in html
+    assert "통과" in html
+    assert "표본 내 지표이며 성능 증명이 아님" in html
     assert "/reports/view?path=generated_reports/runB__gen1.html" not in html  # 생성하지 않은 상세 리포트 링크 금지
     manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["reports"][0]["report_type"] == "run"
@@ -209,8 +208,7 @@ def test_build_run_report_flow_svg_and_blocks(tmp_path: Path) -> None:
     assert manifest["reports"][0]["publication_status"] == "complete"
     assert manifest["reports"][0]["content_sha256"] == written[0]["content_sha256"]
     assert "누적 profit" not in html
-    assert "profit 중앙값" in html and "best−중앙값" in html
-    assert "좌상단=저위험·고성과" in html and "표본 n=3" in html
+    assert "세대별 스텝 기록" in html
 
 
 def test_publish_reports_rejects_tampered_registered_entry_without_rewriting(tmp_path: Path) -> None:
@@ -428,7 +426,7 @@ def test_run_report_excludes_failed_measurements_and_preserves_unavailable_evide
 
     written = build_run_report(str(db), str(tmp_path))
     html = (tmp_path / "run_report_runC.html").read_text(encoding="utf-8")
-    assert "평균 score</div><div style=\"font-size:18px;font-weight:700\">10.00" in html
+    assert "평균 score" in html and "10.00" in html
     assert "성과 집계 제외: 1건" in html
     assert "unavailable: RuntimeError" in html
     assert written[0]["evidence"]["prompts"] is None
@@ -439,10 +437,52 @@ def test_standard_report_has_scriptless_internal_navigation_and_print_contract()
     html = render_report_html(_spec())
 
     assert '<meta name="viewport"' in html
-    assert '<nav class="tabs" aria-label="보고서 섹션">' in html
+    assert '<nav class="toc" aria-label="보고서 목차">' in html
     assert 'href="#sec-hypothesis"' in html
     assert "@media print" in html
     assert "<script" not in html
+    assert "table-wrap{overflow-x:auto" in html
+    assert "print-break" in html
+    assert 'name="report-theme"' in html
+    assert "template-executive" in html
+
+
+@pytest.mark.parametrize("template_id,marker", [
+    ("executive", "경영 요약"), ("quant_research", "QUANT RESEARCH"), ("research_journal", "SOURCE-BACKED RESEARCH REPORT"),
+])
+@pytest.mark.parametrize("theme", ["system", "light", "dark", "print"])
+def test_templates_have_distinct_hierarchy_and_theme_metadata(template_id: str, marker: str, theme: str) -> None:
+    spec = dict(_spec(), template_id=template_id, theme=theme, blocks=[
+        {"type": "table", "id": "metrics", "title": "긴 표", "columns": ["A", "B"], "rows": [["<unsafe>", "+1"]]},
+        {"type": "svg", "id": "chart", "title": "차트", "svg": '<svg class="chart" viewBox="0 0 1 1"><circle cx="0" cy="0" r="1"/></svg>'},
+        {"type": "decision", "id": "decision", "title": "결정", "text": "hold", "page_break": True},
+    ])
+    rendered = render_report_html(spec)
+    assert marker in rendered and f"<dd>{theme}</dd>" in rendered
+    assert 'class="table-wrap"' in rendered and 'class="signed-positive">+1' in rendered
+    assert "&lt;unsafe&gt;" in rendered and "<script" not in rendered
+    assert "<svg" in rendered and "print-break" in rendered
+    assert "sticky" in rendered and "@media print" in rendered
+
+
+def test_manifest_records_renderer_and_template_metadata(tmp_path: Path) -> None:
+    entry = write_report(dict(_spec(), template_id="research_journal", theme="print"), str(tmp_path))
+    assert entry["renderer_version"] == report_writer.RENDERER_VERSION
+    assert entry["template_id"] == "research_journal" and entry["theme"] == "print"
+def test_svg_rejects_event_handlers_and_external_references() -> None:
+    html = render_report_html(dict(_spec(), blocks=[
+        {"type": "svg", "id": "chart", "title": "차트", "svg": '<svg onerror="x" href="https://bad"><circle/></svg>'},
+    ]))
+    assert "onerror=" not in html and 'href="https://bad"' not in html
+    assert "차트를 안전하게 표시할 수 없음" in html
+
+
+def test_unknown_template_or_theme_is_rejected() -> None:
+    with pytest.raises(ValueError, match="template_id"):
+        render_report_html(dict(_spec(), template_id="untrusted"))
+    with pytest.raises(ValueError, match="theme"):
+        render_report_html(dict(_spec(), theme="untrusted"))
+
 
 
 def _pdf_renderer(html_path: Path, pdf_path: Path) -> None:

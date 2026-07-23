@@ -372,19 +372,18 @@ def test_hof_inventory_gate_blocks_merge_without_field_contract() -> None:
     gate = _read("hof-inventory.jsx")
     chart = _read("chart-hall-of-fame.jsx")
     expected_sources = {
-        "kind": "HOF_KIND_META",
-        "name": "r.label",
-        "total_return_krw": "r.total_return_krw",
-        "total_return_pct": "r.total_return_pct",
-        "annual_return_pct": "r.annual_return_pct",
-        "mdd_pct": "r.mdd_pct",
-        "payoff": "r.payoff",
-        "daily_avg_trades": "r.daily_avg_trades",
-        "max_hold": "_maxHold",
-        "operating_capital_krw": "r.operating_capital_krw",
-        "period": "r.period",
+        "kind": "row.kind",
+        "name": "row.label",
+        "total_return_krw": "row.return_krw",
+        "total_return_pct": "row.return_pct",
+        "annual_return_pct": "row.annual_return_pct",
+        "mdd_pct": "row.mdd_pct",
+        "payoff": "row.payoff",
+        "daily_avg_trades": "row.daily_avg_trades",
+        "max_hold": "row.max_hold_count",
+        "operating_capital_krw": "row.operating_capital_krw",
+        "period": "row.period",
         "screenshots": "ReferenceGallery",
-        "workbench_actions": "ResearchProPanel",
     }
     dashboard_pages = _read("dashboard-pages.jsx")
     for field, render_marker in expected_sources.items():
@@ -452,3 +451,17 @@ def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     assert "Research Prompt Context Pack → Analysis Card v2 → Multi-Hypothesis Candidate Pack" in process_doc
     assert "Promotion Review = zero-generation" in process_doc
     assert "diagnostic fallback" in process_doc
+def test_hall_tables_keep_accessible_semantics_and_dense_readability() -> None:
+    hall = _read("chart-hall-of-fame.jsx")
+    css = _read("v4.css")
+    assert "hof-table hof-human-table" in hall
+    assert "hof-table hof-catalog-table" in hall
+    assert 'scope="row" className="hof-identity"' in hall
+    assert 'scope="col" className="hof-num"' in hall
+    assert "role=\"status\"" in hall
+    assert "aria-label={`MDD 위험" in hall
+    assert ".hof-table .hof-identity" in css and "position: sticky" in css
+    assert ".hof-num { text-align: right" in css
+    assert ".hof-table tbody tr:nth-child(even)" in css
+    assert ".hof-long { max-width" in css
+    assert "@media (max-width: 720px)" in css

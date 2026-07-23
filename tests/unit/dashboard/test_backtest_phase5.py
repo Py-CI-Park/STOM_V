@@ -396,17 +396,38 @@ def test_v59_result_request_guard_rejects_superseded_sources_and_preserves_mdd_a
     )
 
 
-def test_v591_backtest_charts_are_full_width_and_individually_large():
-    css = (
-        Path(PROJECT_ROOT)
-        / "ai_strategy_loop"
-        / "dashboard"
-        / "frontend"
-        / "v4.css"
-    ).read_text(encoding="utf-8")
+def test_v511_result_layout_preferences_preserve_semantic_full_spans_and_discover_diagnostics():
+    frontend = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
+    result_source = (frontend / "bt-result-area.jsx").read_text(encoding="utf-8")
+    research_source = (frontend / "v4-research.jsx").read_text(encoding="utf-8")
+    settings_source = (frontend / "v4-settings.jsx").read_text(encoding="utf-8")
+    css = (frontend / "v4.css").read_text(encoding="utf-8")
 
-    shared_grid = css.split(".bt-primary-chart-grid,", 1)[1].split("}", 1)[0]
-    assert "grid-template-columns: minmax(0, 1fr);" in shared_grid
-    assert "repeat(2" not in shared_grid
-    assert "--v59-chart-height: clamp(420px, 38vw, 560px);" in css
-    assert ".bt-diagnostic-grid { grid-template-columns: minmax(0, 1fr); }" in css
+    assert 'const _BT_RESULT_LAYOUT_KEY = "stom_v511_result_layout";' in result_source
+    assert 'const _BT_RESULT_LAYOUTS = ["auto", "wide", "balanced", "dense"];' in result_source
+    assert 'style={{ "--bt-result-columns": columns }}' in result_source
+    assert '레이아웃: {layout} · 실제 {columns}열' in result_source
+    assert 'if (available < 864) return 1;' in result_source
+    assert 'if (layout === "wide") return 1;' in result_source
+    assert 'Math.floor((available + 12) / 432)' in result_source
+    assert 'available >= 3000 ? 4 : 3' in result_source
+    assert 'available >= 2520 ? 4 : available >= 1680 ? 3 : 2' in result_source
+    for section in ("bt-result-summary", "bt-result-primary", "bt-result-evidence", "bt-result-diagnostics"):
+        assert f'className="bt-result-section {section}' in result_source
+    assert '{diagnosticsOpen && (' not in result_source
+    for diagnostic in ("BtHeatmap", "BtMaeMfeScatter", "BtQuantPanel", "BtExitReasonPanel",
+                       "BtOrderflowPanel", "BtStatTestPanel", "BtRollingChart",
+                       "BtMonthlyCalendar", "BtCumulativeTradesChart"):
+        assert f"<{diagnostic}" in result_source
+    assert 'stom_v511_result_diagnostics_open' in result_source
+    result_css = css.split(".bt-result-flow {", 1)[1].split(".bt-diagnostic-grid.is-collapsed", 1)[0]
+    assert 'repeat(var(--bt-result-columns, 2), minmax(0, 1fr))' in result_css
+    assert ".bt-result-flow {\n  display: flex;" in css
+    assert "grid-template-columns: repeat(auto" not in result_css
+
+    assert '"stom_v511_result_layout"' in settings_source
+    assert '"stom_v511_live_stage_density"' in settings_source
+    assert "v511-result-ready" in research_source
+    assert "결과 분석 열기" in research_source
+    assert 'const isDemo = wsStatus === "demo";' in research_source
+    assert "window.isDemoSource" not in research_source
