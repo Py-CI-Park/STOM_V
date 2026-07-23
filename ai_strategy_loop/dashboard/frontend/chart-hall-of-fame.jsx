@@ -3,7 +3,6 @@
    - 작은 표현 컴포넌트(LegendDot)는 chart-primitives 에서 import.
    - 포맷 헬퍼(fmtMoney)는 stom-ui 빌드 번들이 제공하는 전역(connection.jsx 의 const X = window.X
      별칭이 babel 스코프보다 먼저 로드)을 bare 호출로 그대로 쓴다.
-   - HallOfFamePanel 본문은 field-diff DEFER 결정에 따라 byte-identical 로 이동만 한다(병합/수정 금지).
 */
 import { LegendDot } from "./chart-primitives.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
@@ -16,6 +15,60 @@ const { useState: useState_rg, useEffect: useEffect_rg } = React;
    Hall separates the fixed human benchmark from the server-paginated AI
    research catalog.  Missing stored values intentionally render as "—".
    ───────────────────────────────────────────────────────────────────────── */
+const hofNumber = (value) => typeof value === "number" && Number.isFinite(value);
+const hofTone = (value) => value > 0 ? "positive" : value < 0 ? "negative" : "neutral";
+const hofClass = (kind, tone) => `hof-${kind} hof-${kind}--${tone}`;
+
+function HofSignedValue({ value, format, label }) {
+  if (!hofNumber(value)) return <span className={hofClass("metric", "missing")}>—</span>;
+  const tone = hofTone(value);
+  const prefix = value > 0 ? "+" : "";
+  const state = value > 0 ? "이익" : value < 0 ? "손실" : "보합";
+  const icon = value > 0 ? "▲" : value < 0 ? "▼" : "●";
+  return <span className={hofClass("metric", tone)} aria-label={`${label} ${state} ${prefix}${format(value)}`}>
+    <b aria-hidden="true">{icon}</b> {state} {prefix}{format(value)}
+  </span>;
+}
+
+function HofMddValue({ value }) {
+  if (!hofNumber(value)) return <span className={hofClass("mdd", "missing")}>—</span>;
+  const magnitude = Math.abs(value);
+  const tier = magnitude <= 5 ? "low" : magnitude <= 15 ? "caution" : "high";
+  const label = tier === "low" ? "낮음" : tier === "caution" ? "주의" : "높음";
+  const icon = tier === "low" ? "○" : tier === "caution" ? "!" : "▲";
+  return <span className={hofClass("mdd", tier)} aria-label={`MDD 위험 ${label} ${magnitude.toFixed(1)}%`}>
+    <b aria-hidden="true">{icon}</b> 위험 {label} {magnitude.toFixed(1)}%
+  </span>;
+}
+
+function HofToneBadge({ kind, tone, icon, label }) {
+  return <span className={hofClass(kind, tone)} role="status"><b aria-hidden="true">{icon}</b> {label}</span>;
+}
+
+function HofGateBadge({ value }) {
+  return value === true ? <HofToneBadge kind="gate" tone="pass" icon="✓" label="통과" />
+    : value === false ? <HofToneBadge kind="gate" tone="fail" icon="✕" label="미통과" />
+    : <HofToneBadge kind="gate" tone="unknown" icon="?" label="미확인" />;
+}
+
+function HofStatusBadge({ value }) {
+  const normalized = typeof value === "string" ? value.toLowerCase() : "";
+  if (["ok", "success", "complete"].includes(normalized)) return <HofToneBadge kind="status" tone="good" icon="✓" label="정상" />;
+  if (["failed", "error"].includes(normalized)) return <HofToneBadge kind="status" tone="bad" icon="✕" label="실패" />;
+  if (normalized === "unavailable") return <HofToneBadge kind="status" tone="unknown" icon="!" label="불가" />;
+  return <HofToneBadge kind="status" tone="unknown" icon="?" label="미확인" />;
+}
+
+function HofOutcomeBadge({ value }) {
+  const normalized = typeof value === "string" ? value.toLowerCase() : "";
+  if (normalized === "success") return <HofToneBadge kind="outcome" tone="good" icon="▲" label="성공" />;
+  if (normalized === "loss") return <HofToneBadge kind="outcome" tone="loss" icon="▼" label="손실" />;
+  if (normalized === "failure") return <HofToneBadge kind="outcome" tone="bad" icon="✕" label="실패" />;
+  if (normalized === "no_trade") return <HofToneBadge kind="outcome" tone="neutral" icon="●" label="거래 없음" />;
+  if (normalized === "unavailable") return <HofToneBadge kind="outcome" tone="unknown" icon="!" label="불가" />;
+  return <HofToneBadge kind="outcome" tone="unknown" icon="?" label="미확인" />;
+}
+
 function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [human, setHuman] = useState_eq([]);
   const [catalog, setCatalog] = useState_eq({ items: [], total: 0, returned: 0, next: null });
@@ -116,16 +169,18 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
         ) : (
           <>
             <div style={{ margin: "14px 0 8px", fontWeight: 700 }}>👤 인간 벤치마크 ({humanRows.length})</div>
-            <div className="hof-scroll" style={{ overflowX: "auto" }} tabIndex="0" aria-label="인간 벤치마크 표">
-              <table className="data-table" style={{ width: "100%", minWidth: 1320, fontFamily: "var(--mono)", fontSize: 12 }}>
-                <thead><tr><th>이름</th><th>운영금</th><th>총수익금(원)</th><th>총수익률</th><th>연평균</th><th>MDD</th><th>payoff</th><th>승률</th><th>일평균 거래</th><th>최대 보유</th><th>기간</th><th>거래수</th></tr></thead>
+            <div className="hof-scroll" tabIndex="0" aria-label="인간 벤치마크 표">
+              <table className="data-table hof-table hof-human-table">
+                <thead><tr><th scope="col" className="hof-identity">이름</th><th scope="col" className="hof-num">운영금</th><th scope="col" className="hof-num">총수익금(원)</th><th scope="col" className="hof-num">총수익률</th><th scope="col" className="hof-num">연평균</th><th scope="col" className="hof-num">MDD</th><th scope="col" className="hof-num">payoff</th><th scope="col" className="hof-num">승률</th><th scope="col" className="hof-num">일평균 거래</th><th scope="col" className="hof-num">최대 보유</th><th scope="col">백테 기간</th><th scope="col" className="hof-num">거래수</th></tr></thead>
                 <tbody>{humanRows.map(row => <tr key={row.label}>
-                  <td>{row.label || "—"}</td>
-                  <td>{typeof row.operating_capital_krw === "number" ? fmtMoney(row.operating_capital_krw) : "—"}</td>
-                  <td>{typeof row.total_return_krw === "number" ? fmtMoney(row.total_return_krw) : "—"}</td>
-                  <td>{fmtPct(row.total_return_pct)}</td><td>{fmtPct(row.annual_return_pct)}</td><td>{fmtNumber(row.mdd_pct)}</td>
-                  <td>{fmtNumber(row.payoff)}</td><td>{fmtPct(row.win_rate_pct)}</td><td>{fmtNumber(row.daily_avg_trades)}</td>
-                  <td>{fmtInt(row.max_holdings)}</td><td>{row.period || "—"}</td><td>{fmtInt(row.trades)}</td>
+                  <th scope="row" className="hof-identity">{row.label || "—"}</th>
+                  <td className="hof-num">{hofNumber(row.operating_capital_krw) ? fmtMoney(row.operating_capital_krw) : "—"}</td>
+                  <td className="hof-num"><HofSignedValue value={row.total_return_krw} format={value => fmtMoney(Math.abs(value))} label="총수익금" /></td>
+                  <td className="hof-num"><HofSignedValue value={row.total_return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="총수익률" /></td>
+                  <td className="hof-num"><HofSignedValue value={row.annual_return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="연평균 수익률" /></td>
+                  <td className="hof-num"><HofMddValue value={row.mdd_pct} /></td>
+                  <td className="hof-num">{fmtNumber(row.payoff)}</td><td className="hof-num">{fmtPct(row.win_rate_pct)}</td><td className="hof-num">{fmtNumber(row.daily_avg_trades)}</td>
+                  <td className="hof-num">{fmtInt(row.max_holdings)}</td><td>{row.period || "—"}</td><td className="hof-num">{fmtInt(row.trades)}</td>
                 </tr>)}</tbody>
               </table>
             </div>
@@ -153,17 +208,17 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                 정확한 총 {catalog.total} · 표시 {catalogRows.length}{lastUpdated ? " · 갱신 " + lastUpdated.toLocaleTimeString("ko-KR") : ""}
               </span>
             </div>
-            <div className="hof-scroll" style={{ overflowX: "auto" }} tabIndex="0" aria-label="AI 연구 카탈로그 표">
-              <table className="data-table" style={{ width: "100%", minWidth: 1960, fontFamily: "var(--mono)", fontSize: 12 }}>
-                <thead><tr><th>run / gen</th><th>종류</th><th>상태</th><th>gate</th><th>결과</th><th>score</th><th>운영금</th><th>총수익금(원)</th><th>총수익률</th><th>연평균</th><th>MDD</th><th>Calmar</th><th>payoff</th><th>승률</th><th>거래수</th><th>일평균 거래</th><th>최대 보유</th><th>기간</th><th>매수 조건식</th><th>매도 조건식</th><th>사유</th><th>출처</th></tr></thead>
+            <div className="hof-scroll" tabIndex="0" aria-label="AI 연구 카탈로그 표">
+              <table className="data-table hof-table hof-catalog-table">
+                <thead><tr><th scope="col" className="hof-identity">run / gen</th><th scope="col">종류</th><th scope="col">상태</th><th scope="col">gate</th><th scope="col">결과</th><th scope="col" className="hof-num">score</th><th scope="col" className="hof-num">운영금</th><th scope="col" className="hof-num">총수익금(원)</th><th scope="col" className="hof-num">총수익률</th><th scope="col" className="hof-num">연평균</th><th scope="col" className="hof-num">MDD</th><th scope="col" className="hof-num">Calmar</th><th scope="col" className="hof-num">payoff</th><th scope="col" className="hof-num">승률</th><th scope="col" className="hof-num">거래수</th><th scope="col" className="hof-num">일평균 거래</th><th scope="col" className="hof-num">최대 보유</th><th scope="col">백테 기간</th><th scope="col">매수 조건식</th><th scope="col">매도 조건식</th><th scope="col">사유</th><th scope="col">출처</th></tr></thead>
                 <tbody>{catalogRows.map(row => <tr key={`${row.run_id}/${row.gen_no}`}>
-                  <td>{row.label || "—"}</td><td>{row.kind || "—"}</td><td>{row.status || "—"}</td><td>{row.gate_passed === null ? "—" : row.gate_passed ? "통과" : "미통과"}</td>
-                  <td>{row.outcome || "—"}{row.annual_unreliable ? <small title="짧은 백테 기간의 연환산은 신뢰도가 낮습니다." style={{ marginLeft: 4, color: "var(--ink-3)" }}>단기</small> : null}</td>
-                  <td>{fmtNumber(row.score)}</td><td>{typeof row.operating_capital_krw === "number" ? fmtMoney(row.operating_capital_krw) : "—"}</td>
-                  <td>{typeof row.return_krw === "number" ? fmtMoney(row.return_krw) : "—"}</td><td>{fmtPct(row.return_pct)}</td>
-                  <td>{fmtPct(row.annual_return_pct)}</td><td>{fmtNumber(row.mdd_pct)}</td><td>{fmtNumber(row.calmar)}</td><td>{fmtNumber(row.payoff)}</td>
-                  <td>{fmtPct(row.win_rate_pct)}</td><td>{fmtInt(row.trades)}</td><td>{fmtNumber(row.daily_avg_trades)}</td><td>{fmtInt(row.max_hold_count)}</td><td>{row.period || "—"}</td>
-                  <td>{row.buy_name || "—"}</td><td>{row.sell_name || "—"}</td><td>{row.reason || "—"}</td>
+                  <th scope="row" className="hof-identity">{row.label || "—"}</th><td>{row.kind || "—"}</td><td><HofStatusBadge value={row.status} /></td><td><HofGateBadge value={row.gate_passed} /></td>
+                  <td><HofOutcomeBadge value={row.outcome} />{row.annual_unreliable ? <small className="hof-short-window" title="짧은 백테 기간의 연환산은 신뢰도가 낮습니다.">단기</small> : null}</td>
+                  <td className="hof-num">{fmtNumber(row.score)}</td><td className="hof-num">{hofNumber(row.operating_capital_krw) ? fmtMoney(row.operating_capital_krw) : "—"}</td>
+                  <td className="hof-num"><HofSignedValue value={row.return_krw} format={value => fmtMoney(Math.abs(value))} label="총수익금" /></td><td className="hof-num"><HofSignedValue value={row.return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="총수익률" /></td>
+                  <td className="hof-num"><HofSignedValue value={row.annual_return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="연평균 수익률" /></td><td className="hof-num"><HofMddValue value={row.mdd_pct} /></td><td className="hof-num">{fmtNumber(row.calmar)}</td><td className="hof-num">{fmtNumber(row.payoff)}</td>
+                  <td className="hof-num">{fmtPct(row.win_rate_pct)}</td><td className="hof-num">{fmtInt(row.trades)}</td><td className="hof-num">{fmtNumber(row.daily_avg_trades)}</td><td className="hof-num">{fmtInt(row.max_hold_count)}</td><td>{row.period || "—"}</td>
+                  <td className="hof-long" title={row.buy_name || "—"}>{row.buy_name || "—"}</td><td className="hof-long" title={row.sell_name || "—"}>{row.sell_name || "—"}</td><td className="hof-long" title={row.reason || "—"}>{row.reason || "—"}</td>
                   <td>{row.provenance && row.provenance.source ? row.provenance.source : "—"}</td>
                 </tr>)}</tbody>
               </table>

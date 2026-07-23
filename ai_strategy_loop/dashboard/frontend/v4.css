@@ -1360,6 +1360,85 @@
 }
 .hof-scroll { max-height: clamp(420px, 68vh, 820px); overflow: auto !important; scrollbar-gutter: stable; }
 .hof-scroll thead th { position: sticky; top: 0; z-index: 2; background: var(--bg-1); }
+/* Hall of Fame: dense catalog semantics remain readable without relying on color alone. */
+.hof-scroll {
+  max-width: 100%;
+  overflow: auto !important;
+  border: 1px solid var(--line-2);
+  background: var(--bg-0);
+  scrollbar-gutter: stable both-edges;
+}
+.hof-table {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.hof-human-table { min-width: 1450px; }
+.hof-catalog-table { min-width: 2380px; }
+.hof-table :where(th, td) {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-1);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.hof-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-2);
+  color: var(--ink-0);
+  font-size: 12px;
+  font-weight: 700;
+  border-bottom: 2px solid var(--line-2);
+}
+.hof-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--bg-2) 58%, transparent); }
+.hof-table tbody tr:hover,
+.hof-table tbody tr:focus-within,
+.hof-table tbody tr[aria-selected="true"] { background: color-mix(in srgb, var(--teal) 12%, var(--bg-1)); }
+.hof-table .hof-identity {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 144px;
+  background: var(--bg-0);
+  box-shadow: 1px 0 0 var(--line-2), 8px 0 12px color-mix(in srgb, var(--bg-0) 72%, transparent);
+  font-weight: 700;
+  text-align: left;
+}
+.hof-table thead .hof-identity { z-index: 4; background: var(--bg-2); }
+.hof-table tbody tr:nth-child(even) .hof-identity { background: color-mix(in srgb, var(--bg-2) 58%, var(--bg-0)); }
+.hof-table tbody tr:hover .hof-identity,
+.hof-table tbody tr:focus-within .hof-identity,
+.hof-table tbody tr[aria-selected="true"] .hof-identity { background: color-mix(in srgb, var(--teal) 12%, var(--bg-1)); }
+.hof-num { text-align: right; font-variant-numeric: tabular-nums; }
+.hof-long { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.hof-metric, .hof-mdd, .hof-gate, .hof-status, .hof-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  border-radius: 4px;
+}
+.hof-metric--positive, .hof-status--good, .hof-gate--pass, .hof-outcome--good { color: var(--teal); }
+.hof-metric--negative, .hof-status--bad, .hof-gate--fail, .hof-outcome--bad, .hof-outcome--loss, .hof-mdd--high { color: var(--red); }
+.hof-metric--neutral, .hof-outcome--neutral, .hof-mdd--low { color: var(--ink-1); }
+.hof-mdd--caution, .hof-status--unknown, .hof-gate--unknown, .hof-outcome--unknown { color: var(--amber); }
+.hof-metric--missing, .hof-mdd--missing { color: var(--ink-3); font-weight: 500; }
+.hof-gate, .hof-status, .hof-outcome {
+  padding: 2px 5px;
+  border: 1px solid currentColor;
+  background: var(--bg-1);
+  font-size: 11px;
+}
+.hof-short-window { margin-left: 4px; color: var(--ink-2); font-size: 10px; }
+@media (max-width: 720px) {
+  .hof-table { font-size: 12px; }
+  .hof-table :where(th, td) { padding: 8px; }
+  .hof-table .hof-identity { min-width: 120px; }
+  .hof-long { max-width: 160px; }
+}
 .v4-settings { display: flex; flex-direction: column; gap: var(--v59-gap); }
 .v4-settings > .panel { border-radius: var(--v59-radius); }
 .v4-settings select {
