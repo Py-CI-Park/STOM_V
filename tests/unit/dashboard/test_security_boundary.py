@@ -60,6 +60,28 @@ def test_public_reads_never_issue_session_cookie(monkeypatch, tmp_path: Path) ->
     assert health.headers.get("set-cookie") is None
     assert status.headers.get("set-cookie") is None
     assert client.cookies.get(SESSION_COOKIE_NAME) is None
+def test_health_exposes_bounded_dashboard_process_identity_without_bootstrap(monkeypatch, tmp_path: Path) -> None:
+    """Health is public and read-only while exposing enough identity to detect stale backends."""
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get("/health", headers=ORIGIN_HEADER)
+    dashboard = response.json()["dashboard"]
+    shell = dashboard["shell"]
+    backend = dashboard["backend"]
+
+    assert response.status_code == 200
+    assert response.headers.get("set-cookie") is None
+    assert shell["name"] == "v4-ops"
+    assert shell["release"] == "v5.11.0"
+    assert dashboard["release"] == shell["release"] == backend["release"]
+    assert dashboard["build"] == shell["build"] == backend["build"]
+    assert 1 <= len(shell["build"]) <= 64
+    assert "/" not in shell["build"] and "\\" not in shell["build"]
+    assert isinstance(backend["process"]["pid"], int) and backend["process"]["pid"] > 0
+    assert isinstance(backend["process"]["started_at_unix"], int)
+    assert client.cookies.get(SESSION_COOKIE_NAME) is None
+
+
 
 def test_session_bound_debug_logs_are_not_cacheable(monkeypatch, tmp_path: Path) -> None:
     client = _client(monkeypatch, tmp_path)
@@ -113,6 +135,7 @@ def test_top_level_v4_navigation_without_origin_issues_session_cookie(
         "/ui/evolution",
         "/ui/evolution/records",
         "/ui/evolution/catalog",
+        "/ui/evolution/workbench",
         "/ui/backtest",
         "/ui/chart-replay",
     ],

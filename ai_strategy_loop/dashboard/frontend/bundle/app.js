@@ -37043,7 +37043,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.10.0";
+  var V4_DASH_VERSION = "v5.11.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {
@@ -37117,6 +37117,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     "audit": "history",
     "process": "research"
   };
+  var V4_CANONICAL_PATHS = {
+    "research": "/ui/evolution",
+    "history": "/ui/evolution/records",
+    "workbench": "/ui/evolution/workbench",
+    "backtest": "/ui/backtest",
+    "replay": "/ui/chart-replay",
+    "catalog": "/ui/evolution/catalog"
+  };
+  function v4CanonicalPathForTab(tab) {
+    return V4_CANONICAL_PATHS[tab] || "";
+  }
   var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
   function v4TabFromPathname(pathname) {
     try {
@@ -37131,11 +37142,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function v4InitialTab() {
     try {
+      const fromPath = v4TabFromPathname(window.location.pathname);
+      if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t && V4_TAB_KEYS.includes(t)) return t;
       if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
-      const fromPath = v4TabFromPathname(window.location.pathname);
-      if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
     } catch (e) {
     }
     return "research";
@@ -37187,6 +37198,25 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     return "";
   }
+  function v4BackendMismatch(identity4, buildVer) {
+    if (identity4 === void 0) return "";
+    if (!identity4 || typeof identity4 !== "object") return "\uBC31\uC5D4\uB4DC\uAC00 \uB300\uC2DC\uBCF4\uB4DC \uB9B4\uB9AC\uC2A4/\uBE4C\uB4DC \uC2DD\uBCC4\uC790\uB97C \uC81C\uACF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    const shell = identity4.shell;
+    const backend = identity4.backend;
+    if (!shell || typeof shell !== "object" || !backend || typeof backend !== "object") {
+      return "\uBC31\uC5D4\uB4DC \uB300\uC2DC\uBCF4\uB4DC \uC2DD\uBCC4\uC790 \uD615\uC2DD\uC774 \uC9C0\uC6D0\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    }
+    if (shell.name !== "v4-ops" || shell.release !== V4_DASH_VERSION) {
+      return "\uD504\uB860\uD2B8\uC5D4\uB4DC\uC640 \uBC31\uC5D4\uB4DC \uB300\uC2DC\uBCF4\uB4DC \uB9B4\uB9AC\uC2A4\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    }
+    if (buildVer && shell.build !== buildVer) {
+      return "\uD504\uB860\uD2B8\uC5D4\uB4DC\uC640 \uBC31\uC5D4\uB4DC\uAC00 \uC11C\uB85C \uB2E4\uB978 \uBE4C\uB4DC\uB97C \uBCF4\uACE0\uD569\uB2C8\uB2E4.";
+    }
+    if (backend.release !== shell.release || backend.build !== shell.build) {
+      return "\uBC31\uC5D4\uB4DC \uD504\uB85C\uC138\uC2A4\uC640 \uB300\uC2DC\uBCF4\uB4DC \uC178 \uC2DD\uBCC4\uC790\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.";
+    }
+    return "";
+  }
   function V4RailIcon({ name }) {
     const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
     if (name === "research") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12 L6 8 L9 10 L15 3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "3", r: "1.3", fill: "currentColor", stroke: "none" }));
@@ -37229,6 +37259,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const pendingTabFocusRef = useRef_v4("");
     const [buildVer] = useState_v4(() => v4BundleVersion());
     const [newVer, setNewVer] = useState_v4("");
+    const [backendDashboard, setBackendDashboard] = useState_v4(void 0);
     useEffect_v4(() => {
       if (!buildVer) return void 0;
       const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((j) => {
@@ -37241,10 +37272,32 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => clearInterval(id2);
     }, [buildVer]);
     useEffect_v4(() => {
+      const controller = new AbortController();
+      setBackendDashboard(void 0);
+      fetch(baseUrl + "/health", { signal: controller.signal }).then((response) => response.ok ? response.json() : null).then((payload) => {
+        if (!controller.signal.aborted) setBackendDashboard(payload && payload.dashboard ? payload.dashboard : null);
+      }).catch(() => {
+        if (!controller.signal.aborted) setBackendDashboard(null);
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
       document.title = "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC " + V4_DASH_VERSION;
     }, [theme]);
+    useEffect_v4(() => {
+      const fromPath = v4TabFromPathname(window.location.pathname);
+      if (!fromPath) return;
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("tab")) {
+          url.searchParams.delete("tab");
+          window.history.replaceState(null, "", url.pathname + url.search);
+        }
+      } catch (e) {
+      }
+    }, []);
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
     }, [activeTab]);
@@ -37370,7 +37423,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setActiveTab(key);
       try {
         const url = new URL(window.location.href);
-        url.searchParams.set("tab", key);
+        const canonicalPath = v4CanonicalPathForTab(key);
+        if (canonicalPath) {
+          url.pathname = canonicalPath;
+          url.searchParams.delete("tab");
+        } else {
+          url.pathname = "/ui/v4/";
+          url.searchParams.set("tab", key);
+        }
         window.history.replaceState(null, "", url.pathname + url.search);
       } catch (e) {
       }
@@ -37382,6 +37442,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       selectTab(next);
     };
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
+    const backendMismatch = v4BackendMismatch(backendDashboard, buildVer);
     return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-tabs", role: "tablist", "aria-label": "V4 \uC5F0\uAD6C \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4", "aria-orientation": tabOrientation }, V4_TABS.map((tab, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: tab.key }, tab.group === "secondary" && V4_TABS[i - 1] && V4_TABS[i - 1].group !== "secondary" && /* @__PURE__ */ React.createElement("div", { className: "v4-rail-div", role: "presentation", "aria-hidden": "true", title: "\uBCF4\uC870 \uB3C4\uAD6C(\uBD84\uC11D\xB7\uAC10\uC0AC\xB7\uCEE8\uD14D\uC2A4\uD2B8)" }, /* @__PURE__ */ React.createElement("span", null, "\uBCF4\uC870")), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -37412,6 +37473,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ") \u2014 \uC774 \uD0ED\uC740 \uAD6C\uBC84\uC804(",
       buildVer,
       ")\uC785\uB2C8\uB2E4. \uD074\uB9AD\uD558\uC5EC \uC0C8\uB85C\uACE0\uCE68"
+    ), backendMismatch && /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        role: "alert",
+        className: "v6-stale-banner",
+        style: { cursor: "default" },
+        title: "\uC790\uB3D9 \uC0C8\uB85C\uACE0\uCE68\uC774\uB098 \uC0C1\uD0DC \uBCC0\uACBD \uC5C6\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."
+      },
+      "\uBC31\uC5D4\uB4DC \uD638\uD658\uC131 \uACBD\uACE0 \u2014 ",
+      backendMismatch,
+      " \uD604\uC7AC \uD0ED\uC744 \uC0C8\uB85C\uACE0\uCE68\uD558\uAE30 \uC804\uC5D0 \uBC30\uD3EC \uD504\uB85C\uC138\uC2A4\uB97C \uD655\uC778\uD558\uC138\uC694."
     ), /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono v6-dash-ver" }, "\uB300\uC2DC\uBCF4\uB4DC ", /* @__PURE__ */ React.createElement("b", null, V4_DASH_VERSION), " \xB7 build ", buildVer || "?", " \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), buildVer && /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-sfx build v4-verfx" + (verFx ? " on" : ""), onClick: () => setVerFx((v) => !v), title: "\uBC84\uC804 \uD558\uC774\uB77C\uC774\uD2B8 \uD6A8\uACFC \uD1A0\uAE00(app.js?v=)", "aria-pressed": verFx }, "build ", buildVer), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
       V4BaseControl,
       {

@@ -88,6 +88,26 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+_DASHBOARD_RELEASE = "v5.11.0"
+_DASHBOARD_SHELL = "v4-ops"
+_DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
+_DASHBOARD_PROCESS_STARTED_AT = int(time.time())
+
+
+def _dashboard_build_identity() -> str:
+    """Freeze the bundled frontend build identity when this backend process starts."""
+    manifest_path = os.path.join(_FRONTEND_DIR, "bundle", "manifest.json")
+    try:
+        with open(manifest_path, encoding="utf-8") as fh:
+            value = json.load(fh).get("bundles", {}).get("app.js", {}).get("v")
+        if isinstance(value, str) and _DASHBOARD_BUILD_RE.fullmatch(value):
+            return value
+    except (OSError, ValueError, AttributeError):
+        pass
+    return "unknown"
+
+
+_DASHBOARD_BUILD = _dashboard_build_identity()
 
 # UXR-P7 Reports 허브 — 리포트 HTML 을 읽기 전용·스크립트 차단으로 안전 서빙한다.
 #   허용 루트는 저장소 docs/ 하위 *.html 로 한정(alpha_lab reporting 산출물·process_flow 등).
@@ -3762,7 +3782,27 @@ def create_app(
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
-        return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+        return {
+            "status": "ok",
+            "contract_version": C.CONTRACT_VERSION,
+            "dashboard": {
+                "shell": {
+                    "name": _DASHBOARD_SHELL,
+                    "release": _DASHBOARD_RELEASE,
+                    "build": _DASHBOARD_BUILD,
+                },
+                "release": _DASHBOARD_RELEASE,
+                "build": _DASHBOARD_BUILD,
+                "backend": {
+                    "release": _DASHBOARD_RELEASE,
+                    "build": _DASHBOARD_BUILD,
+                    "process": {
+                        "pid": os.getpid(),
+                        "started_at_unix": _DASHBOARD_PROCESS_STARTED_AT,
+                    },
+                },
+            },
+        }
     # Backend diagnostic ring: process-local, bounded, redacted and session-protected.
     import collections as _collections
     import logging as _logging
