@@ -18,21 +18,26 @@ const {
   useRef: useRef_slc, useEffect: useEffect_slc, useState: useState_slc,
 } = React;
 
-// 팔레트(캔버스 직접 hex — CSS 변수 불가). simulation-charts.jsx 와 동일 톤.
-const _SLC_UP = "#4cd6b3";        // 상승(teal).
-const _SLC_DOWN = "#ff5d6c";      // 하락(red).
+// Canvas cannot consume var() directly; resolve theme tokens at draw time with stable dark fallbacks.
+const _SLC_UP = "#4cd6b3";
+const _SLC_DOWN = "#ff5d6c";
 const _SLC_INK1 = "#c8cdd7";
 const _SLC_INK3 = "#6b7480";
 const _SLC_GRID = "rgba(255,255,255,0.05)";
 const _SLC_LINE = "rgba(255,255,255,0.10)";
 const _SLC_BG = "transparent";
+function _slcThemeColor(token, fallback) {
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+    return value || fallback;
+  } catch (e) { return fallback; }
+}
 
-// 보이는 캔들 수(라이브 윈도우 — 오토스크롤로 최신이 우측). 과대 입력은 우측 N개로 한정.
+// Visible candle count. Sparse bars reserve slots on the left so the active bars remain focused at right.
 const _SLC_WINDOW = 120;
-// 봉이 적은 리플레이 초반에 봉들이 전체 폭으로 퍼져 윅만 두드러지는 왜곡 방지 —
-//   최소 48슬롯 폭으로 왼쪽부터 채운다(실차트 관습). 렌더·히트테스트가 같은 식을 써야 한다.
 const _SLC_MIN_SLOTS = 48;
 function _slcSlot(innerW, n) { return innerW / Math.max(n, _SLC_MIN_SLOTS); }
+function _slcLeadingSlots(n) { return Math.max(0, _SLC_MIN_SLOTS - n); }
 // 최신 캔들 성장 lerp 시간(ms). 새 OHLC 도착 시 이 시간 동안 현재값→목표값 보간.
 const _SLC_LERP_MS = 150;
 // 마지막 가격선 플래시 지속(ms).
@@ -242,7 +247,7 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
     const n = view.length;
     if (n === 0 || x < layout.padL || x > rect.width - layout.padR) { _setHover(null); return; }
     const slot = _slcSlot(rect.width - layout.padL - layout.padR, n);
-    const i = Math.floor((x - layout.padL) / slot);
+    const i = Math.floor((x - layout.padL) / slot) - _slcLeadingSlots(n);
     if (i >= 0 && i < n) _setHover({ idx: i, base: arr.length - n }); else _setHover(null);
   };
   const _setHover = (h) => { hoverRef.current = h; setHover(h); markDirty(); };
@@ -382,7 +387,8 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
   const innerW = cssW - L.padL - L.padR;
   const slot = _slcSlot(innerW, n);
   const candleW = Math.max(1, Math.min(13, slot * 0.64));
-  const xCenter = (i) => L.padL + slot * (i + 0.5);
+  const leadingSlots = _slcLeadingSlots(n);
+  const xCenter = (i) => L.padL + slot * (leadingSlots + i + 0.5);
 
   // 가격 스케일.
   const priceTop = L.padT;
@@ -396,7 +402,13 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
   }
   if (!isFinite(pMax)) pMax = 1;
   if (!isFinite(pMin)) pMin = 0;
-  const pRange = (pMax - pMin) || 1;
+  const rawRange = Math.max(0, pMax - pMin);
+  const minRange = Math.max(1, Math.max(Math.abs(pMax), Math.abs(pMin), 1) * 0.01);
+  const paddedRange = Math.max(rawRange, minRange) * 1.14;
+  const midPrice = (pMax + pMin) / 2;
+  pMax = midPrice + paddedRange / 2;
+  pMin = midPrice - paddedRange / 2;
+  const pRange = pMax - pMin;
   const yPrice = (v) => priceBot - ((v - pMin) / pRange) * L.priceH;
 
   // 거래량 스케일.
@@ -501,30 +513,32 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
     stripTop += L.stripH + L.gap;
   }
 
-  // --- 마지막 가격선 + 플래시 ---
+  // Last-price guide is withheld for sparse startup bars; the price tag remains a compact cue.
   const last = view[n - 1];
   const yLast = yPrice(last.c || 0);
-  let lineColor = (last.c || 0) >= (last.o || 0) ? _SLC_UP : _SLC_DOWN;
-  let lineAlpha = 0.55;
+  let lineColor = (last.c || 0) >= (last.o || 0) ? _slcThemeColor("--teal", _SLC_UP) : _slcThemeColor("--red", _SLC_DOWN);
+  let lineAlpha = n < 8 ? 0.18 : 0.55;
   if (anim.flashKind) {
     const ft = (now - anim.flashStart) / _SLC_FLASH_MS;
     if (ft < 1) {
-      lineColor = anim.flashKind === "up" ? _SLC_UP : _SLC_DOWN;
-      lineAlpha = 0.55 + (1 - ft) * 0.45;   // 점멸: 밝게 시작→감쇠.
+      lineColor = anim.flashKind === "up" ? _slcThemeColor("--teal", _SLC_UP) : _slcThemeColor("--red", _SLC_DOWN);
+      lineAlpha = (n < 8 ? 0.18 : 0.55) + (1 - ft) * 0.25;
     } else {
       anim.flashKind = null;
     }
   }
-  ctx.save();
-  ctx.globalAlpha = lineAlpha;
-  ctx.strokeStyle = lineColor; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
-  ctx.beginPath(); ctx.moveTo(L.padL, yLast); ctx.lineTo(cssW - L.padR, yLast); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.restore();
-  // 마지막가 가격 태그(우측).
+  if (n >= 8) {
+    ctx.save();
+    ctx.globalAlpha = lineAlpha;
+    ctx.strokeStyle = lineColor; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(L.padL, yLast); ctx.lineTo(cssW - L.padR, yLast); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+  // Last-price price tag (right).
   ctx.fillStyle = lineColor; ctx.globalAlpha = 1;
   ctx.fillRect(cssW - L.padR, yLast - 8, L.padR, 16);
-  ctx.fillStyle = "#0c1014"; ctx.textAlign = "right"; ctx.font = "9px " + _slcFont();
+  ctx.fillStyle = _slcThemeColor("--bg-0", "#0c1014"); ctx.textAlign = "right"; ctx.font = "9px " + _slcFont();
   ctx.fillText(_slcPriceTick(last.c), cssW - 1, yLast + 1);
 
   // --- 신호 마커(매수▲/매도▼) — curT 이하만. nearest bar 스냅 ---

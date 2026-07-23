@@ -9812,10 +9812,21 @@ def signal_sell(pos, bar, ind):
   var _SLC_DOWN = "#ff5d6c";
   var _SLC_INK3 = "#6b7480";
   var _SLC_GRID = "rgba(255,255,255,0.05)";
+  function _slcThemeColor(token, fallback) {
+    try {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+      return value || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
   var _SLC_WINDOW = 120;
   var _SLC_MIN_SLOTS = 48;
   function _slcSlot(innerW, n) {
     return innerW / Math.max(n, _SLC_MIN_SLOTS);
+  }
+  function _slcLeadingSlots(n) {
+    return Math.max(0, _SLC_MIN_SLOTS - n);
   }
   var _SLC_LERP_MS = 150;
   var _SLC_FLASH_MS = 220;
@@ -10017,7 +10028,7 @@ def signal_sell(pos, bar, ind):
         return;
       }
       const slot = _slcSlot(rect.width - layout.padL - layout.padR, n);
-      const i = Math.floor((x - layout.padL) / slot);
+      const i = Math.floor((x - layout.padL) / slot) - _slcLeadingSlots(n);
       if (i >= 0 && i < n) _setHover({ idx: i, base: arr2.length - n });
       else _setHover(null);
     };
@@ -10115,7 +10126,8 @@ def signal_sell(pos, bar, ind):
     const innerW = cssW - L.padL - L.padR;
     const slot = _slcSlot(innerW, n);
     const candleW = Math.max(1, Math.min(13, slot * 0.64));
-    const xCenter = (i) => L.padL + slot * (i + 0.5);
+    const leadingSlots = _slcLeadingSlots(n);
+    const xCenter = (i) => L.padL + slot * (leadingSlots + i + 0.5);
     const priceTop = L.padT;
     const priceBot = L.padT + L.priceH;
     let pMax = -Infinity, pMin = Infinity;
@@ -10127,7 +10139,13 @@ def signal_sell(pos, bar, ind):
     }
     if (!isFinite(pMax)) pMax = 1;
     if (!isFinite(pMin)) pMin = 0;
-    const pRange = pMax - pMin || 1;
+    const rawRange = Math.max(0, pMax - pMin);
+    const minRange = Math.max(1, Math.max(Math.abs(pMax), Math.abs(pMin), 1) * 0.01);
+    const paddedRange = Math.max(rawRange, minRange) * 1.14;
+    const midPrice = (pMax + pMin) / 2;
+    pMax = midPrice + paddedRange / 2;
+    pMin = midPrice - paddedRange / 2;
+    const pRange = pMax - pMin;
     const yPrice = (v) => priceBot - (v - pMin) / pRange * L.priceH;
     const volTop = priceBot + L.gap;
     const volBot = volTop + L.volH;
@@ -10226,32 +10244,34 @@ def signal_sell(pos, bar, ind):
     }
     const last = view[n - 1];
     const yLast = yPrice(last.c || 0);
-    let lineColor = (last.c || 0) >= (last.o || 0) ? _SLC_UP : _SLC_DOWN;
-    let lineAlpha = 0.55;
+    let lineColor = (last.c || 0) >= (last.o || 0) ? _slcThemeColor("--teal", _SLC_UP) : _slcThemeColor("--red", _SLC_DOWN);
+    let lineAlpha = n < 8 ? 0.18 : 0.55;
     if (anim.flashKind) {
       const ft = (now2 - anim.flashStart) / _SLC_FLASH_MS;
       if (ft < 1) {
-        lineColor = anim.flashKind === "up" ? _SLC_UP : _SLC_DOWN;
-        lineAlpha = 0.55 + (1 - ft) * 0.45;
+        lineColor = anim.flashKind === "up" ? _slcThemeColor("--teal", _SLC_UP) : _slcThemeColor("--red", _SLC_DOWN);
+        lineAlpha = (n < 8 ? 0.18 : 0.55) + (1 - ft) * 0.25;
       } else {
         anim.flashKind = null;
       }
     }
-    ctx.save();
-    ctx.globalAlpha = lineAlpha;
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 3]);
-    ctx.beginPath();
-    ctx.moveTo(L.padL, yLast);
-    ctx.lineTo(cssW - L.padR, yLast);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
+    if (n >= 8) {
+      ctx.save();
+      ctx.globalAlpha = lineAlpha;
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(L.padL, yLast);
+      ctx.lineTo(cssW - L.padR, yLast);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
     ctx.fillStyle = lineColor;
     ctx.globalAlpha = 1;
     ctx.fillRect(cssW - L.padR, yLast - 8, L.padR, 16);
-    ctx.fillStyle = "#0c1014";
+    ctx.fillStyle = _slcThemeColor("--bg-0", "#0c1014");
     ctx.textAlign = "right";
     ctx.font = "9px " + _slcFont();
     ctx.fillText(_slcPriceTick(last.c), cssW - 1, yLast + 1);
@@ -30449,7 +30469,7 @@ def signal_sell(pos, bar, ind):
   });
   var _SIM_MAX_CODES = 10;
   var _SIM_DEMO_SPEED = 20;
-  var _SIM_ENGINE_MODES = [["live", "\uB77C\uC774\uBE0C"], ["lwc", "LWC"], ["svg", "SVG"]];
+  var _SIM_ENGINE_MODES = [["lwc", "LWC \xB7 \uAE30\uBCF8"], ["live", "Canvas \xB7 \uACE0\uAE09/\uC2E4\uD5D8\uC801"], ["svg", "SVG \xB7 \uD3F4\uBC31"]];
   var _SIM_ENGINE_LS_KEY = "stom.sim.engine.v1";
   var _SIM_CHART_MODES = [["split", "\uBD84\uD560"], ["overlay", "\uC624\uBC84\uB808\uC774"]];
   var _SIM_SPLIT_LS_KEY = "stom.sim.split.v1";
@@ -30519,9 +30539,9 @@ def signal_sell(pos, bar, ind):
   function _loadEngineMode() {
     try {
       const v = window.localStorage.getItem(_SIM_ENGINE_LS_KEY);
-      return v === "lwc" || v === "svg" || v === "live" ? v : "live";
+      return v === "lwc" || v === "svg" || v === "live" ? v : "lwc";
     } catch (e) {
-      return "live";
+      return "lwc";
     }
   }
   function _saveEngineMode(v) {
@@ -30579,9 +30599,9 @@ def signal_sell(pos, bar, ind):
     letterSpacing: ".3px"
   };
   var _SIM_ENGINE_ROWS = [
-    ["\uB77C\uC774\uBE0C", "Canvas\xB7\uAE30\uBCF8\xB7\uCD5C\uACBD\uB7C9 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["LWC", "\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC"]
+    ["LWC", "\uAE30\uBCF8 \xB7 \uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774"],
+    ["Canvas", "\uACE0\uAE09/\uC2E4\uD5D8\uC801 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
+    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"]
   ];
   function _flattenSignals(signals, codes) {
     const out = [];
@@ -31304,6 +31324,14 @@ def signal_sell(pos, bar, ind):
     const [highlightSig, setHighlightSig] = useState_sim(null);
     const autoPausedRef = useRef_sim(/* @__PURE__ */ new Set());
     const wsRef = useRef_sim(null);
+    const zeroFrameTimerRef = useRef_sim(null);
+    const receivedBarCountRef = useRef_sim(0);
+    const clearZeroFrameTimer = () => {
+      if (zeroFrameTimerRef.current) {
+        clearTimeout(zeroFrameTimerRef.current);
+        zeroFrameTimerRef.current = null;
+      }
+    };
     const barsRef = useRef_sim({});
     const [barsVersion, setBarsVersion] = useState_sim(0);
     useEffect_sim(() => {
@@ -31425,6 +31453,8 @@ def signal_sell(pos, bar, ind):
       };
     }, [baseUrl, isDemo, date, src, buy, sell, selected2.join(",")]);
     const _stopReplay = useCallback_sim(() => {
+      clearZeroFrameTimer();
+      receivedBarCountRef.current = 0;
       if (wsRef.current) {
         try {
           wsRef.current.send(JSON.stringify({ action: "stop" }));
@@ -31447,7 +31477,13 @@ def signal_sell(pos, bar, ind):
       _stopReplay();
     }, [_stopReplay]);
     const startReplay = useCallback_sim(() => {
-      if (isDemo || !baseUrl || !date || selected2.length === 0) return;
+      const selectedCodes = Array.from(new Set(selected2)).slice(0, _SIM_MAX_CODES);
+      const knownCodes = new Set(stocks.map((s) => String(s.code)));
+      if (isDemo || !baseUrl || !date || loadingStocks || selectedCodes.length === 0 || !selectedCodes.every((code) => knownCodes.has(String(code)))) {
+        setWsErr("\uB0A0\uC9DC\uC758 \uC885\uBAA9 \uBAA9\uB85D\uC744 \uBD88\uB7EC\uC628 \uB4A4 \uC720\uD6A8\uD55C \uC885\uBAA9\uC744 \uC120\uD0DD\uD558\uC138\uC694.");
+        setStatus("error");
+        return;
+      }
       _stopReplay();
       const url = _wsUrl(baseUrl, "/sim/ws");
       if (!url) {
@@ -31456,8 +31492,10 @@ def signal_sell(pos, bar, ind):
         return;
       }
       setWsErr("");
+      receivedBarCountRef.current = 0;
       barsRef.current = {};
       setBarsVersion((v) => v + 1);
+      setStatus("loading");
       let ws;
       try {
         ws = new WebSocket(url);
@@ -31472,22 +31510,36 @@ def signal_sell(pos, bar, ind):
           action: "start",
           date: parseInt(date, 10),
           src,
-          codes: selected2,
+          codes: selectedCodes,
           speed,
           agg_sec: parseInt(aggSec, 10) || 10
         }));
-        setStatus("playing");
+        setStatus("loading");
+        clearZeroFrameTimer();
+        zeroFrameTimerRef.current = setTimeout(() => {
+          if (receivedBarCountRef.current === 0 && wsRef.current === ws) {
+            try {
+              ws.close();
+            } catch (e) {
+            }
+            wsRef.current = null;
+            setWsErr("\uB9AC\uD50C\uB808\uC774 \uB370\uC774\uD130\uB97C \uBC1B\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uB0A0\uC9DC\xB7\uC885\uBAA9\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD55C \uB4A4 \uC7AC\uC2DC\uB3C4\uD558\uC138\uC694.");
+            setStatus("error");
+          }
+        }, 8e3);
       };
       ws.onmessage = (ev) => {
         let m;
         try {
           m = JSON.parse(ev.data);
         } catch (e) {
+          clearZeroFrameTimer();
           setWsErr("\uB9AC\uD50C\uB808\uC774 \uD504\uB808\uC784 \uD574\uC11D \uC2E4\uD328: " + String(e && e.message ? e.message : e));
           setStatus("error");
           return;
         }
         if (!m || !m.type) {
+          clearZeroFrameTimer();
           setWsErr("\uB9AC\uD50C\uB808\uC774 \uD504\uB85C\uD1A0\uCF5C \uC624\uB958: type \uB204\uB77D");
           setStatus("error");
           return;
@@ -31495,11 +31547,15 @@ def signal_sell(pos, bar, ind):
         if (m.type === "meta") {
           setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0], replay_metadata: m.replay_metadata || {} });
           setCursor(0);
+          setStatus("playing");
         } else if (m.type === "bars") {
           const store = barsRef.current;
-          (m.items || []).forEach((it) => {
+          const items = Array.isArray(m.items) ? m.items : [];
+          items.forEach((it) => {
             store[it.code] = [...store[it.code] || [], _simWsBar(it, m.t)];
           });
+          receivedBarCountRef.current += items.length;
+          if (receivedBarCountRef.current > 0) clearZeroFrameTimer();
           setCursor((m.index || 0) + 1);
           setCurT(m.t);
           setBarsVersion((v) => v + 1);
@@ -31513,23 +31569,39 @@ def signal_sell(pos, bar, ind):
           if (m.t != null) setCurT(m.t);
           setBarsVersion((v) => v + 1);
         } else if (m.type === "done") {
-          setStatus((s) => s === "playing" || s === "paused" ? "done" : s);
+          clearZeroFrameTimer();
+          if (receivedBarCountRef.current === 0) {
+            setWsErr("\uB9AC\uD50C\uB808\uC774 \uB370\uC774\uD130\uAC00 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uB0A0\uC9DC\xB7\uC885\uBAA9\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD55C \uB4A4 \uC7AC\uC2DC\uB3C4\uD558\uC138\uC694.");
+            setStatus("error");
+          } else {
+            setStatus((s) => s === "playing" || s === "paused" ? "done" : s);
+          }
         } else if (m.type === "error") {
+          clearZeroFrameTimer();
           setWsErr(m.message || "\uB9AC\uD50C\uB808\uC774 \uC624\uB958");
           setStatus("error");
         } else {
+          clearZeroFrameTimer();
           setWsErr("\uB9AC\uD50C\uB808\uC774 \uD504\uB85C\uD1A0\uCF5C \uC624\uB958: \uC54C \uC218 \uC5C6\uB294 frame type " + String(m.type));
           setStatus("error");
         }
       };
       ws.onerror = () => {
+        clearZeroFrameTimer();
         setWsErr("WebSocket \uC5F0\uACB0 \uC624\uB958");
         setStatus("error");
       };
       ws.onclose = () => {
-        if (wsRef.current === ws) wsRef.current = null;
+        const isActive = wsRef.current === ws;
+        const noFrames = receivedBarCountRef.current === 0;
+        if (isActive) wsRef.current = null;
+        clearZeroFrameTimer();
+        if (isActive && noFrames) {
+          setWsErr("\uB9AC\uD50C\uB808\uC774 \uC5F0\uACB0\uC774 \uB370\uC774\uD130\uB97C \uBCF4\uB0B4\uAE30 \uC804\uC5D0 \uC885\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uB0A0\uC9DC\xB7\uC885\uBAA9\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD55C \uB4A4 \uC7AC\uC2DC\uB3C4\uD558\uC138\uC694.");
+          setStatus("error");
+        }
       };
-    }, [baseUrl, isDemo, date, src, selected2, speed, aggSec, _stopReplay]);
+    }, [baseUrl, isDemo, date, src, selected2, stocks, loadingStocks, speed, aggSec, _stopReplay]);
     const _wsSend = (payload) => {
       if (wsRef.current && wsRef.current.readyState === 1) {
         try {
@@ -31586,10 +31658,11 @@ def signal_sell(pos, bar, ind):
     }, [baseUrl, isDemo, _stopReplay]);
     useEffect_sim(() => {
       if (!pendingAutoplayRef.current) return;
-      if (!date || selected2.length === 0) return;
+      const knownCodes = new Set(stocks.map((s) => String(s.code)));
+      if (!date || loadingStocks || selected2.length === 0 || !selected2.every((code) => knownCodes.has(String(code)))) return;
       pendingAutoplayRef.current = false;
       startReplay();
-    }, [date, selected2, startReplay]);
+    }, [date, selected2, stocks, loadingStocks, startReplay]);
     useEffect_sim(() => {
       if (demoTriedRef.current) return;
       if (isDemo || !baseUrl) return;
@@ -31611,7 +31684,8 @@ def signal_sell(pos, bar, ind):
       applyDemo(mode, false, true);
     }, [applyDemo]);
     const codes = meta && meta.codes && meta.codes.length ? meta.codes : selected2;
-    const canPlay = !isDemo && !!date && selected2.length > 0 && (status === "idle" || status === "done" || status === "error");
+    const selectedCodesLoaded = selected2.length > 0 && !loadingStocks && selected2.every((code) => stocks.some((stock) => String(stock.code) === String(code)));
+    const canPlay = !isDemo && !!date && selectedCodesLoaded && (status === "idle" || status === "done" || status === "error");
     const canPlayRef = useRef_sim(canPlay);
     useEffect_sim(() => {
       canPlayRef.current = canPlay;
@@ -31788,7 +31862,13 @@ def signal_sell(pos, bar, ind):
         onSeek: seekByIndex,
         canPlay
       }
-    ), meta && meta.replay_metadata && meta.replay_metadata.truncated && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uB9AC\uD50C\uB808\uC774 \uC6D0\uBCF8\uC774 \uC548\uC804 \uC0C1\uD55C\uC73C\uB85C \uC798\uB838\uC2B5\uB2C8\uB2E4", meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."), selected2.length > 0 && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mono", role: "status", style: { fontSize: 10, color: "var(--ink-3)", padding: "0 4px" } }, "\uC0C1\uD0DC: ", status, " \xB7 \uC5D4\uC9C4: ", engineMode === "live" ? "Canvas (\uACE0\uAE09/\uC2E4\uD5D8\uC801)" : engineMode.toUpperCase(), " \xB7 \uC18C\uC2A4: ", src, " \xB7 ", "\uC218\uC2E0 \uBD09: ", receivedBarCountRef.current, "/", meta ? meta.bars_total : "?", (() => {
+      const visible = Object.values(barsByCode).flat();
+      if (!visible.length) return " \xB7 OHLC: \u2014";
+      const hi = Math.max(...visible.map((b) => Number(b.h) || Number(b.c) || 0));
+      const lo = Math.min(...visible.map((b) => Number(b.l) || Number(b.c) || Infinity));
+      return " \xB7 OHLC: " + lo.toLocaleString("ko-KR") + "\u2013" + hi.toLocaleString("ko-KR");
+    })()), meta && meta.replay_metadata && meta.replay_metadata.truncated && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uB9AC\uD50C\uB808\uC774 \uC6D0\uBCF8\uC774 \uC548\uC804 \uC0C1\uD55C\uC73C\uB85C \uC798\uB838\uC2B5\uB2C8\uB2E4", meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."), selected2.length > 0 && /* @__PURE__ */ React.createElement(
       SimViewBar,
       {
         indicators,
