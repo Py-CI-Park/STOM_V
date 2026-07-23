@@ -95,7 +95,7 @@ def test_harness_attributes_jsdom_virtual_console_errors() -> None:
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=30,
+        timeout=60,  # Full dashboard suite contention can push the jsdom probe beyond 30 seconds on Windows.
         check=False,
     )
 
