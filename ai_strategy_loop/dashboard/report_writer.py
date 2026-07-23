@@ -8,13 +8,17 @@ import json
 import os
 import shutil
 import tempfile
+import re
 from urllib.parse import quote
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TypedDict
 
 REPORT_SCHEMA_VERSION = "stom-research-report-v1"
 REPORT_STATUS = "complete"
 REPORT_GENERATOR = "ai_strategy_loop.dashboard.report_writer"
+RENDERER_VERSION = "v5.11"
+TEMPLATE_IDS = ("executive", "quant_research", "research_journal")
+THEMES = ("system", "light", "dark", "print")
 STANDARD_SECTIONS: tuple[tuple[str, str], ...] = (
     ("hypothesis", "가설 / 원인"), ("method", "방법"), ("results", "결과 (데이터·차트)"),
     ("analysis", "분석"), ("conclusion", "결론"), ("limits", "한계"),
@@ -24,11 +28,8 @@ STANDARD_SECTIONS: tuple[tuple[str, str], ...] = (
 MAX_REPORTS = 1000
 MAX_BYTES_EACH = 2 * 1024 * 1024
 _INLINE_STYLE = (
-    ":root{color-scheme:light dark}body{--bg:#fff;--ink:#18212b;--muted:#556;--surface:#f4f6f8;--border:#cfd8e3;--accent:#087f5b;--link:#065cc2;font-family:system-ui,'Malgun Gothic',sans-serif;max-width:1040px;margin:0 auto;padding:28px;color:var(--ink);background:var(--bg);line-height:1.65}"
-    "body:has(#report-theme-light:checked){color-scheme:light}body:has(#report-theme-dark:checked){color-scheme:dark;--bg:#111820;--ink:#e6edf3;--muted:#b6c2ce;--surface:#19232e;--border:#3b4a59;--accent:#6ee7b7;--link:#8ab4f8}@media(prefers-color-scheme:dark){body:has(#report-theme-system:checked){color-scheme:dark;--bg:#111820;--ink:#e6edf3;--muted:#b6c2ce;--surface:#19232e;--border:#3b4a59;--accent:#6ee7b7;--link:#8ab4f8}}"
-    "h1{font-size:26px;border-bottom:2px solid var(--ink);padding-bottom:10px}h2{font-size:17px;margin-top:28px;color:var(--accent)}.summary,.kpis,.callout,dl.meta{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}.kpis{display:flex;gap:12px;flex-wrap:wrap}.kpis div{min-width:130px}.kpis b{display:block;font-size:18px}.callout{border-left:4px solid var(--accent)}dl.meta dt{font-weight:600;color:var(--muted)}dl.meta dd{margin:0 0 8px}"
-    "nav.tabs{position:sticky;top:0;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--border)}nav.tabs a{flex:0 0 auto;padding:6px 10px;border:1px solid var(--border);border-radius:999px;text-decoration:none;font-size:12px}.report-theme{display:flex;align-items:center;gap:8px;justify-content:flex-end;font-size:12px;color:var(--muted)}.report-theme fieldset{display:flex;gap:8px;margin:0;padding:4px 8px;border:1px solid var(--border);border-radius:999px}.report-theme legend{padding:0 4px}.report-theme label{cursor:pointer}section{scroll-margin-top:58px}footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}a{color:var(--link)}ul{margin:0;padding-left:18px}pre,code{font-family:ui-monospace,Consolas,monospace;overflow:auto}pre{padding:12px;background:var(--surface);border-radius:6px}table{display:block;max-width:100%;overflow:auto;border-collapse:collapse}th,td{border:1px solid var(--border);padding:6px;text-align:left}"
-    "@media(max-width:640px){body{padding:14px}h1{font-size:20px}.report-theme{justify-content:flex-start}}@media print{body{color:#111;background:#fff;max-width:none;padding:0}nav.tabs,.report-theme{position:static;display:none}.summary,.kpis,.callout,dl.meta,pre{background:#fff;color:#111}section{break-inside:avoid}}"
+    ":root{color-scheme:light dark;--bg:#fff;--ink:#18212b;--muted:#52606d;--surface:#f5f7fa;--border:#cbd5e1;--accent:#087f5b;--link:#075dc4}"
+    "*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,'Malgun Gothic',sans-serif}.layout{max-width:1440px;margin:auto;padding:clamp(14px,3vw,48px);display:grid;grid-template-columns:minmax(160px,230px) minmax(0,1fr);gap:clamp(16px,3vw,42px)}article{min-width:0}.toc{position:sticky;top:0;align-self:start;padding:14px 0}.toc a{display:block;padding:5px 8px;color:var(--muted);text-decoration:none;border-left:2px solid transparent}.toc a:hover,.toc a:focus{color:var(--accent);border-color:var(--accent)}.theme{font-size:12px;color:var(--muted);margin-bottom:12px}.theme label{margin-right:8px}.cover,.hero,.card,.callout,.decision,dl.meta{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:clamp(14px,2vw,28px);margin-bottom:20px}.cover{border-top:5px solid var(--accent)}.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.1em}.hero h1{font-size:clamp(25px,4vw,46px);line-height:1.15;margin:.2em 0}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:20px 0}.kpi{padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}.kpi b{display:block;font-size:22px}.callout{border-left:5px solid var(--accent)}.decision{border-left:5px solid #b7791f;font-weight:600}h2{font-size:21px;margin:38px 0 12px;color:var(--accent);scroll-margin-top:20px}h3{font-size:16px}section{scroll-margin-top:20px}.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}table{width:100%;min-width:520px;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}th{background:var(--surface)}.signed-positive{color:#087f5b}.signed-negative,.risk-high{color:#b42318}.status-pass{color:#087f5b}.status-fail{color:#b42318}svg.chart{display:block;max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}dl.meta{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}dl.meta dt{font-weight:700;color:var(--muted)}dl.meta dd{margin:0}a{color:var(--link)}footer{font-size:12px;color:var(--muted);margin-top:34px}.template-journal .history-item{border-left:2px solid var(--border);padding:4px 0 12px 14px}.template-quant_research .hero{border-radius:0}.template-executive .method-detail{display:none}body:has(#report-theme-light:checked){color-scheme:light}body:has(#report-theme-dark:checked){color-scheme:dark;--bg:#101820;--ink:#e6edf3;--muted:#b6c2ce;--surface:#19232e;--border:#3b4a59;--accent:#6ee7b7;--link:#8ab4f8}@media(prefers-color-scheme:dark){body:has(#report-theme-system:checked){color-scheme:dark;--bg:#101820;--ink:#e6edf3;--muted:#b6c2ce;--surface:#19232e;--border:#3b4a59;--accent:#6ee7b7;--link:#8ab4f8}}@media(max-width:700px){.layout{display:block}.toc{position:sticky;z-index:2;background:var(--bg);overflow-x:auto;white-space:nowrap;border-bottom:1px solid var(--border);margin-bottom:18px}.toc a{display:inline-block}.theme{white-space:nowrap}}@media print{body{color:#111;background:#fff}.layout{display:block;padding:0}.toc,.theme{display:none}.cover,.hero,.card,.callout,.decision,dl.meta{background:#fff}.page-break{break-before:page}.print-break{break-before:page}section{break-inside:avoid}}"
 )
 
 
@@ -69,6 +70,7 @@ _CANONICAL_ENTRY_KEYS = {
     "provenance", "toc", "profile", "evidence", "decision", "limitations",
     "step_id", "sha256",
 }
+_RENDERED_ENTRY_KEYS = _CANONICAL_ENTRY_KEYS | {"renderer_version", "template_id", "theme"}
 _PDF_ENTRY_KEYS = {"pdf_path", "pdf_bytes", "pdf_sha256", "pdf_source_content_sha256"}
 _LEGACY_MANIFEST_KEYS = {"generated_at", "count", "reports"}
 _LEGACY_ENTRY_KEYS = {"research_id", "step_id", "path", "sha256", "bytes", "trust"}
@@ -232,31 +234,114 @@ def _render_list_or_text(value: Any, *, as_links: bool = False) -> str:
     return f"<p>{_esc(value)}</p>"
 
 
+class ReportBlock(TypedDict, total=False):
+    """Escaped-data document block accepted by the offline renderer."""
+    type: str
+    id: str
+    title: str
+    text: Any
+    items: list[Any]
+    rows: list[list[Any]]
+    columns: list[str]
+    values: dict[str, Any]
+    svg: str
+    level: str
+    page_break: bool
+
+
+def _safe_svg(value: Any) -> str:
+    """Allow only inert inline SVG produced by the adapter; reject executable markup."""
+    svg = "" if value is None else str(value)
+    if not svg.lstrip().startswith("<svg") or re.search(r"<script\b|<foreignobject\b|on[a-z]+\s*=|(?:href|xlink:href)\s*=|javascript:", svg, re.IGNORECASE):
+        return "<p class='muted'>(차트를 안전하게 표시할 수 없음)</p>"
+    return svg
+
+
+def _cell_class(value: Any) -> str:
+    text = str(value).strip().lower()
+    if text.startswith("-"):
+        return "signed-negative"
+    if text.startswith("+"):
+        return "signed-positive"
+    if text in {"pass", "passed", "complete", "통과"}:
+        return "status-pass"
+    if text in {"fail", "failed", "blocked", "high", "실패", "높음"}:
+        return "status-fail risk-high"
+    return ""
+
+
+def _render_block(block: ReportBlock) -> str:
+    kind, block_id = block.get("type", "text"), _esc(block.get("id", "section"))
+    title = _esc(block.get("title", ""))
+    if kind == "kpis":
+        return '<div class="kpis">' + "".join(f'<div class="kpi"><small>{_esc(key)}</small><b>{_esc(value)}</b></div>' for key, value in block.get("values", {}).items()) + "</div>"
+    if kind == "table":
+        columns = block.get("columns", [])
+        rows = block.get("rows", [])
+        head = "".join(f"<th scope=\"col\">{_esc(column)}</th>" for column in columns)
+        body = "".join("<tr>" + "".join(f'<td class="{_cell_class(cell)}">{_esc(cell)}</td>' for cell in row) + "</tr>" for row in rows)
+        return f'<section id="{block_id}" class="card"><h2>{title}</h2><div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div></section>'
+    if kind == "svg":
+        return f'<section id="{block_id}"><h2>{title}</h2>{_safe_svg(block.get("svg"))}</section>'
+    if kind == "history":
+        return f'<section id="{block_id}"><h2>{title}</h2>' + "".join(f'<div class="history-item">{_esc(item)}</div>' for item in block.get("items", [])) + "</section>"
+    if kind == "links":
+        return f'<section id="{block_id}"><h2>{title}</h2>{_render_list_or_text(block.get("items", []), as_links=True)}</section>'
+    css = "decision" if kind == "decision" else "callout" if kind in {"callout", "finding", "limitations", "provenance"} else "card"
+    content = _render_list_or_text(block.get("items") if "items" in block else block.get("text"))
+    return f'<section id="{block_id}" class="{css}{" print-break" if block.get("page_break") else ""}"><h2>{title}</h2>{content}</section>'
+
+
+def _document_blocks(spec: dict) -> list[ReportBlock]:
+    blocks = spec.get("blocks")
+    if isinstance(blocks, list):
+        return [block for block in blocks if isinstance(block, dict) and isinstance(block.get("type"), str)]
+    return [
+        {
+            "type": "links" if key in {"related_docs", "related_commits"} else "text",
+            "id": f"sec-{key}",
+            "title": label,
+            **({"items": spec.get(key)} if key in {"related_docs", "related_commits"} else {"text": spec.get(key)}),
+        }
+        for key, label in STANDARD_SECTIONS
+    ]
+
+
 def render_report_html(spec: dict) -> str:
-    """Render escaped, script-free standard report HTML."""
+    """Render a typed, inert document. All data is escaped; SVG is explicitly inert."""
     normalized = dict(spec)
     if normalized.get("limitations") is None and normalized.get("limits") is not None:
         normalized["limitations"] = normalized["limits"]
     normalized["limits"] = normalized.get("limitations")
+    template_id = str(normalized.get("template_id") or "executive")
+    if template_id not in TEMPLATE_IDS:
+        raise ValueError(f"unknown report template_id: {template_id}")
+    theme = str(normalized.get("theme") or "system")
+    if theme not in THEMES:
+        raise ValueError(f"unknown report theme: {theme}")
     title = _esc(normalized.get("title") or normalized.get("research_id") or "연구 리포트")
-    sections = "".join(
-        f'<section id="sec-{key}"><h2>{_esc(label)}</h2>{_render_list_or_text(normalized.get(key), as_links=key in ("related_docs", "related_commits"))}</section>'
-        for key, label in STANDARD_SECTIONS
+    blocks = _document_blocks(normalized)
+    toc = [{"id": str(block.get("id", "")), "label": str(block.get("title", ""))} for block in blocks if block.get("id") and block.get("title")]
+    navigation = "".join(f'<a href="#{_esc(item["id"])}">{_esc(item["label"])}</a>' for item in toc)
+    kpis = normalized.get("kpis") or (normalized.get("evidence") if isinstance(normalized.get("evidence"), dict) else {})
+    hero = f'<header class="hero"><div class="eyebrow">{_esc(template_id.replace("_", " ").upper())} · {RENDERER_VERSION}</div><h1>{title}</h1><p>{_esc(normalized.get("executive_summary") or normalized.get("purpose") or "")}</p></header>'
+    cover = f'<header class="cover"><div class="eyebrow">SOURCE-BACKED RESEARCH REPORT</div><h1>{title}</h1><p>연구 ID: {_esc(normalized.get("research_id"))}</p></header>'
+    body = "".join(_render_block(block) for block in blocks)
+    if template_id == "executive":
+        body = f'<section id="executive-summary" class="card"><h2>경영 요약</h2>{_render_list_or_text(normalized.get("executive_summary") or normalized.get("decision"))}</section>' + _render_block({"type": "kpis", "values": kpis}) + body
+    elif template_id == "quant_research":
+        body = _render_block({"type": "kpis", "values": kpis}) + body
+    else:
+        body = '<section id="journal-context" class="card"><h2>연구 맥락</h2>' + _render_list_or_text(normalized.get("purpose")) + "</section>" + body
+    meta = f'<dl class="meta"><dt>template_id</dt><dd>{_esc(template_id)}</dd><dt>theme</dt><dd>{_esc(theme)}</dd><dt>provenance</dt><dd>{_esc(normalized.get("provenance") or normalized.get("source") or "(미기재)")}</dd><dt>trust</dt><dd>{_esc(normalized.get("trust") or "derived")}</dd></dl>'
+    theme_controls = (
+        '<div class="theme"><label><input id="report-theme-system" type="radio" name="report-theme"'
+        + (" checked" if theme in {"system", "print"} else "") + '> 시스템</label><label><input id="report-theme-light" type="radio" name="report-theme"'
+        + (" checked" if theme == "light" else "") + '> 밝게</label><label><input id="report-theme-dark" type="radio" name="report-theme"'
+        + (" checked" if theme == "dark" else "") + '> 어둡게</label><span>인쇄는 브라우저 인쇄 모드에서 최적화됩니다.</span></div>'
     )
-    tabs = '<nav class="tabs" aria-label="보고서 섹션">' + "".join(
-        f'<a href="#sec-{key}">{_esc(label)}</a>' for key, label in STANDARD_SECTIONS
-    ) + "</nav>"
-    evidence = normalized.get("evidence") if isinstance(normalized.get("evidence"), dict) else {}
-    kpis = "".join(f"<div><small>{_esc(key)}</small><b>{_esc(value)}</b></div>" for key, value in list(evidence.items())[:8])
-    summary = normalized.get("executive_summary") or normalized.get("decision") or normalized.get("conclusion")
-    return (
-        '<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        f"<title>{title}</title><style>{_INLINE_STYLE}</style></head><body><article><div class=\"report-theme\"><fieldset><legend>표시 모드</legend><label><input id=\"report-theme-system\" type=\"radio\" name=\"report-theme\" checked> 시스템</label><label><input id=\"report-theme-light\" type=\"radio\" name=\"report-theme\"> 밝게</label><label><input id=\"report-theme-dark\" type=\"radio\" name=\"report-theme\"> 어둡게</label></fieldset></div><h1>{title}</h1>"
-        f"<div class=\"summary\"><b>경영 요약</b>{_render_list_or_text(summary)}</div>"
-        f"{'<div class=\"kpis\"><b>근거 지표</b>' + kpis + '</div>' if kpis else ''}"
-        f"<dl class=\"meta\"><dt>연구목적</dt><dd>{_esc(normalized.get('purpose'))}</dd><dt>일자</dt><dd>{_esc(normalized.get('date') or _now_iso())}</dd><dt>research_id</dt><dd>{_esc(normalized.get('research_id'))}</dd><dt>step_id</dt><dd>{_esc(normalized.get('step_id'))}</dd></dl>{tabs}{sections}"
-        f"<footer>생성 {_now_iso()} · trust={_esc(normalized.get('trust') or 'derived')} · provenance={_esc(normalized.get('provenance') or normalized.get('source') or '(미기재)')} · 원문 불변 · 읽기 전용(sandbox·CSP 서빙)</footer></article></body></html>"
-    )
+    lead = cover if template_id == "research_journal" else hero
+    return f'<!DOCTYPE html><html lang="ko" class="template-{_esc(template_id)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{_INLINE_STYLE}</style></head><body><main class="layout"><nav class="toc" aria-label="보고서 목차">{navigation}</nav><article>{theme_controls}{lead}{meta}{body}<footer>renderer={RENDERER_VERSION} · generated {_now_iso()} · 원문 불변 · 읽기 전용(sandbox·CSP 서빙)</footer></article></main></body></html>'
 
 
 def _source_sha256(spec: dict) -> str:
@@ -306,6 +391,9 @@ def report_entry(spec: dict, path: str, html_text: str, *, report_type: str = "s
         "evidence": spec.get("evidence"),
         "decision": spec.get("decision"),
         "limitations": spec.get("limitations", spec.get("limits")),
+        "renderer_version": RENDERER_VERSION,
+        "template_id": str(spec.get("template_id") or "executive"),
+        "theme": str(spec.get("theme") or "system"),
         # Legacy aliases are retained for consumers of the pre-v1 manifest.
         "step_id": step_id,
         "sha256": content_sha256,
@@ -323,7 +411,10 @@ def _manifest(entries: list[dict]) -> dict:
         "reports": entries,
     }
 def _validate_v1_entry(entry: Any) -> dict:
-    if not isinstance(entry, dict) or set(entry) not in (_CANONICAL_ENTRY_KEYS, _CANONICAL_ENTRY_KEYS | _PDF_ENTRY_KEYS):
+    if not isinstance(entry, dict) or set(entry) not in (
+        _CANONICAL_ENTRY_KEYS, _CANONICAL_ENTRY_KEYS | _PDF_ENTRY_KEYS,
+        _RENDERED_ENTRY_KEYS, _RENDERED_ENTRY_KEYS | _PDF_ENTRY_KEYS,
+    ):
         raise ValueError("v1 manifest entry has an invalid field set")
     strings = ("report_id", "report_type", "research_id", "run_id", "status", "generator", "generated_at", "trust", "step_id")
     if (
@@ -338,6 +429,11 @@ def _validate_v1_entry(entry: Any) -> dict:
         or (entry["generation"] is not None and not _is_exact_int(entry["generation"]))
         or (entry["provenance"] is not None and not isinstance(entry["provenance"], str))
         or any(not _is_json_value(entry[key]) for key in ("cycle", "profile", "evidence", "decision", "limitations"))
+        or ({"renderer_version", "template_id", "theme"} <= set(entry) and (
+            entry["renderer_version"] != RENDERER_VERSION
+            or entry["template_id"] not in TEMPLATE_IDS
+            or entry["theme"] not in THEMES
+        ))
         or not isinstance(entry["toc"], list)
         or any(not isinstance(item, dict) or set(item) != {"id", "label"} or not all(isinstance(item[key], str) for key in item) for item in entry["toc"])
     ):

@@ -311,6 +311,7 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
                         "run_id", "generation", "cycle", "status", "publication_status", "generator",
                         "content_sha256", "source_sha256", "trust", "provenance", "toc",
                         "profile", "evidence", "decision", "limitations",
+                        "renderer_version", "template_id", "theme",
                     )
                     if report.get(key) is not None
                 },
