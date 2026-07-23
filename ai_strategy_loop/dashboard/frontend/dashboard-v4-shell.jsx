@@ -29,7 +29,7 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.10.0";
+const V4_DASH_VERSION = "v5.11.0";
 // v5.10 P2 — process-local browser diagnostic ring. Entries are redacted before
 // they enter the ring; no diagnostic data is persisted by this frontend.
 (function _initFeLogBuffer() {
@@ -112,6 +112,18 @@ const V4_PATH_TAB_MAP = {
   "audit": "history",
   "process": "research",
 };
+const V4_CANONICAL_PATHS = {
+  "research": "/ui/evolution",
+  "history": "/ui/evolution/records",
+  "workbench": "/ui/evolution/workbench",
+  "backtest": "/ui/backtest",
+  "replay": "/ui/chart-replay",
+  "catalog": "/ui/evolution/catalog",
+};
+
+function v4CanonicalPathForTab(tab) {
+  return V4_CANONICAL_PATHS[tab] || "";
+}
 
 // v5.3.1: 은퇴 탭(audit·verdict·lab·alpha) legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
 const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
@@ -128,11 +140,11 @@ function v4TabFromPathname(pathname) {
 
 function v4InitialTab() {
   try {
+    const fromPath = v4TabFromPathname(window.location.pathname);
+    if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t && V4_TAB_KEYS.includes(t)) return t;
     if (t && V4_LEGACY_TAB_ALIAS[t]) return V4_LEGACY_TAB_ALIAS[t];
-    const fromPath = v4TabFromPathname(window.location.pathname);
-    if (fromPath && V4_TAB_KEYS.includes(fromPath)) return fromPath;
   } catch (e) {}
   return "research";
 }
@@ -187,6 +199,25 @@ function v4BundleVersion() {
   } catch (e) {}
   return "";
 }
+function v4BackendMismatch(identity, buildVer) {
+  if (identity === undefined) return "";
+  if (!identity || typeof identity !== "object") return "백엔드가 대시보드 릴리스/빌드 식별자를 제공하지 않습니다.";
+  const shell = identity.shell;
+  const backend = identity.backend;
+  if (!shell || typeof shell !== "object" || !backend || typeof backend !== "object") {
+    return "백엔드 대시보드 식별자 형식이 지원되지 않습니다.";
+  }
+  if (shell.name !== "v4-ops" || shell.release !== V4_DASH_VERSION) {
+    return "프론트엔드와 백엔드 대시보드 릴리스가 일치하지 않습니다.";
+  }
+  if (buildVer && shell.build !== buildVer) {
+    return "프론트엔드와 백엔드가 서로 다른 빌드를 보고합니다.";
+  }
+  if (backend.release !== shell.release || backend.build !== shell.build) {
+    return "백엔드 프로세스와 대시보드 셸 식별자가 일치하지 않습니다.";
+  }
+  return "";
+}
 
 function V4RailIcon({ name }) {
   const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
@@ -235,6 +266,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [buildVer] = useState_v4(() => v4BundleVersion());
   // v5.3.8: 구버전 탭 감지 — 열린 탭이 옛 JS 를 들고 있으면 배너로 새로고침 유도(검수 불일치 재발 방지).
   const [newVer, setNewVer] = useState_v4("");
+  const [backendDashboard, setBackendDashboard] = useState_v4(undefined);
   useEffect_v4(() => {
     if (!buildVer) return undefined;
     const check = () => fetch("/ui/bundle/manifest.json?ts=" + Date.now(), { cache: "no-store" })
@@ -248,6 +280,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     check();
     return () => clearInterval(id);
   }, [buildVer]);
+  useEffect_v4(() => {
+    const controller = new AbortController();
+    setBackendDashboard(undefined);
+    fetch(baseUrl + "/health", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => { if (!controller.signal.aborted) setBackendDashboard(payload && payload.dashboard ? payload.dashboard : null); })
+      .catch(() => { if (!controller.signal.aborted) setBackendDashboard(null); });
+    return () => controller.abort();
+  }, [baseUrl]);
 
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -255,6 +296,17 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     // v5.3.9: 브라우저 탭 제목에 대시보드 버전 명시(V4 잔존 표기 제거).
     document.title = "STOM AI · 조건식 자율 진화 대시보드 " + V4_DASH_VERSION;
   }, [theme]);
+  useEffect_v4(() => {
+    const fromPath = v4TabFromPathname(window.location.pathname);
+    if (!fromPath) return;
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("tab")) {
+        url.searchParams.delete("tab");
+        window.history.replaceState(null, "", url.pathname + url.search);
+      }
+    } catch (e) {}
+  }, []);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
   useEffect_v4(() => {
     if (!pendingTabFocusRef.current) return;
@@ -381,7 +433,14 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     setActiveTab(key);
     try {
       const url = new URL(window.location.href);
-      url.searchParams.set("tab", key);
+      const canonicalPath = v4CanonicalPathForTab(key);
+      if (canonicalPath) {
+        url.pathname = canonicalPath;
+        url.searchParams.delete("tab");
+      } else {
+        url.pathname = "/ui/v4/";
+        url.searchParams.set("tab", key);
+      }
       window.history.replaceState(null, "", url.pathname + url.search);
     } catch (e) {}
   };
@@ -392,6 +451,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     selectTab(next);
   };
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
+  const backendMismatch = v4BackendMismatch(backendDashboard, buildVer);
 
   return (
     <div className="v4-root" data-v4-tab={activeTab}>
@@ -438,6 +498,12 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                   title="이 탭은 이전 빌드를 실행 중입니다. 클릭하면 최신 버전으로 새로고침합니다.">
             ⟳ 새 버전 배포됨 (build {newVer}) — 이 탭은 구버전({buildVer})입니다. 클릭하여 새로고침
           </button>
+        )}
+        {backendMismatch && (
+          <div role="alert" className="v6-stale-banner" style={{ cursor: "default" }}
+               title="자동 새로고침이나 상태 변경 없이 표시됩니다.">
+            백엔드 호환성 경고 — {backendMismatch} 현재 탭을 새로고침하기 전에 배포 프로세스를 확인하세요.
+          </div>
         )}
         <header className="v4-topbar">
           <div className="v4-brand">

@@ -38,6 +38,7 @@ UI_DEEP_LINKS = {
     "/ui/evolution/verdict": 200,
     "/ui/backtest": 200,
     "/ui/chart-replay": 200,
+    "/ui/evolution/catalog": 200,
 }
 
 UI_LEGACY_ALIASES = {
@@ -147,6 +148,19 @@ def test_dashboard_ui_deep_links_preserve_v4_ops_default_and_explicit_v3_selecto
     ]:
         asset = client.get(asset_route)
         assert asset.status_code == 200
+def test_canonical_path_precedes_conflicting_tab_and_frontend_normalizes_url(monkeypatch, tmp_path: Path) -> None:
+    """A canonical path owns its view even when a compatibility tab query disagrees."""
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.get("/ui/evolution/workbench?tab=research")
+    source = (FRONTEND / "dashboard-v4-shell.jsx").read_text(encoding="utf-8")
+
+    assert response.status_code == 200
+    assert response.headers["x-stom-dashboard-version"] == "v4-ops"
+    assert source.index("const fromPath = v4TabFromPathname(window.location.pathname);") < source.index(
+        'const t = new URLSearchParams(window.location.search).get("tab");'
+    )
+    assert 'url.searchParams.delete("tab");' in source
 
 
 def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, tmp_path: Path) -> None:
