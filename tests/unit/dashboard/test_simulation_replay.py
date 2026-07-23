@@ -306,8 +306,49 @@ class TestTickAggregation:
 
     def test_tick_agg_sec_one_no_aggregation(self, synthetic_tick_db):
         rd = RE.load_replay(20250102, "tick", ["005930"], agg_sec=1)
-        # 집계 없음 → 7 행 그대로.
         assert rd.bars_total == 7
+
+    def test_one_second_tick_ohlc_uses_current_price_not_daily_extremes(self, synthetic_tick_db):
+        rd = RE.load_replay(20250102, "tick", ["005930"], agg_sec=1)
+        bars = [frame["items"][0] for frame in rd.frames]
+        # Fixture high/low are price+2/-2 (standing in for cumulative-day fields).
+        assert [(bar["o"], bar["h"], bar["l"], bar["c"]) for bar in bars] == [
+            (100.0 + i, 100.0 + i, 100.0 + i, 100.0 + i) for i in range(7)
+        ]
+        assert all(bar["h"] >= max(bar["o"], bar["c"]) and
+                   bar["l"] <= min(bar["o"], bar["c"]) for bar in bars)
+
+
+class TestReplayFrontendV511Contracts:
+    @staticmethod
+    def _frontend(name: str) -> str:
+        return (Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend" / name).read_text(
+            encoding="utf-8"
+        )
+
+    def test_new_engine_preference_defaults_to_lwc_and_explicit_modes_survive(self):
+        source = self._frontend("sim-tab-utils.jsx")
+        assert '? v : "lwc"' in source
+        assert 'v === "lwc" || v === "svg" || v === "live"' in source
+        assert "Canvas · 고급/실험적" in source
+
+    def test_zero_frame_playback_has_bounded_recoverable_error_contract(self):
+        source = self._frontend("sim-tab-root.jsx")
+        assert 'setStatus("loading")' in source
+        assert "zeroFrameTimerRef.current = setTimeout" in source
+        assert "}, 8000)" in source
+        assert "리플레이 데이터를 받지 못했습니다" in source
+        assert "receivedBarCountRef.current > 0" in source
+
+    def test_sparse_canvas_geometry_right_aligns_and_deemphasizes_guide(self):
+        source = self._frontend("sim-live-chart.jsx")
+        assert "function _slcLeadingSlots(n)" in source
+        assert "leadingSlots + i + 0.5" in source
+        assert "const minRange" in source
+        assert "if (n >= 8)" in source
+        for n in (1, 2, 20, 120):
+            leading = max(0, 48 - n)
+            assert leading + n <= max(n, 48)
 
 
 # --------------------------------------------------------------- live indicators

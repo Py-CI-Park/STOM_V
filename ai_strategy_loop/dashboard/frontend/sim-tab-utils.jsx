@@ -34,9 +34,8 @@ const _simWsBar = (it, t) => ({
 });
 const _SIM_MAX_CODES = 10;                  // S2 동시보기 1~10(백엔드 replay_engine.MAX_CODES 와 일치).
 const _SIM_DEMO_SPEED = 20;                 // 자동 데모 배속(빠른 둘러보기).
-// 차트 엔진 모드 — 라이브(Canvas·기본) / LWC(lightweight-charts) / SVG(폴백 순수 SVG).
-//   S4: "라이브" 가 기본. 멀티 비교용 overlay 는 별도 보기 모드(_SIM_VIEW_MODES)로 분리.
-const _SIM_ENGINE_MODES = [["live", "라이브"], ["lwc", "LWC"], ["svg", "SVG"]];
+// 차트 엔진 모드 — LWC(기본·전문 줌/크로스헤어) / Canvas(고급·실험적) / SVG(폴백).
+const _SIM_ENGINE_MODES = [["lwc", "LWC · 기본"], ["live", "Canvas · 고급/실험적"], ["svg", "SVG · 폴백"]];
 const _SIM_ENGINE_LS_KEY = "stom.sim.engine.v1";
 // 멀티차트 보기 모드 — split(분할 그리드) / overlay(정규화 한 차트 겹침).
 const _SIM_CHART_MODES = [["split", "분할"], ["overlay", "오버레이"]];
@@ -91,12 +90,13 @@ function _loadSplitRows() {
 function _saveSplitRows(v) {
   try { window.localStorage.setItem(_SIM_ROWS_LS_KEY, String(v)); } catch (e) {}
 }
-// 차트 엔진 모드(live/lwc/svg) 로드/저장. 기본 라이브(S4). LWC 부재 환경이어도 live/svg 동작.
+// 차트 엔진: v5.11 이전의 명시적 live/svg/lwc 선택은 보존한다. 키가 없거나 손상된 신규
+// 프로필만 LWC로 이관한다.
 function _loadEngineMode() {
   try {
     const v = window.localStorage.getItem(_SIM_ENGINE_LS_KEY);
-    return (v === "lwc" || v === "svg" || v === "live") ? v : "live";
-  } catch (e) { return "live"; }
+    return (v === "lwc" || v === "svg" || v === "live") ? v : "lwc";
+  } catch (e) { return "lwc"; }
 }
 function _saveEngineMode(v) {
   try { window.localStorage.setItem(_SIM_ENGINE_LS_KEY, String(v)); } catch (e) {}
@@ -167,13 +167,11 @@ const _SIM_VIEWBAR_LABEL = {
   fontSize: 11, color: "var(--ink-1)", fontWeight: 600, letterSpacing: ".3px",
 };
 
-// 엔진 비대칭 설명 팝오버 — 3엔진의 실제 역할/오더플로우 지원 차이를 표로 보여준다(7.2).
-//   라이브=Canvas·기본·최경량·풀 오더플로우 / SVG=무의존 폴백·풀 오더플로우 /
-//   LWC=전문 줌·크로스헤어·체결강도 오버레이만.
+// 엔진 역할 설명 — Canvas는 오더플로우가 필요한 고급/실험적 선택지다.
 const _SIM_ENGINE_ROWS = [
-  ["라이브", "Canvas·기본·최경량 · 풀 오더플로우(체결강도·호가·net-delta)"],
+  ["LWC", "기본 · 전문 줌/크로스헤어 · 체결강도 오버레이"],
+  ["Canvas", "고급/실험적 · 풀 오더플로우(체결강도·호가·net-delta)"],
   ["SVG", "무의존 폴백 · 풀 오더플로우(체결강도·호가·net-delta)"],
-  ["LWC", "전문 줌/크로스헤어 · 체결강도 오버레이만"],
 ];
 
 // 종목별 신호를 단일 로그용 평탄화(매수 시각순 정렬).

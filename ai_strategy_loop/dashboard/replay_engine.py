@@ -338,11 +338,13 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
     vol=합산, change/strength=버킷 마지막 값.
     """
     if agg_sec <= 1:
-        # 집계 없이 현재가를 OHLC 로 쓰되, h/l 은 행의 고저 컬럼을 존중.
+        # Tick schemas expose current-price observations; their open/high/low fields can be
+        # cumulative daily values, not per-tick OHLC. Preserve a one-second observation as a
+        # single-price candle rather than contaminating it with day extremes.
         return [
             {
                 "hms": _hms_from_index(r["ts"], "tick"),
-                "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
+                "o": r["c"], "h": r["c"], "l": r["c"],
                 "c": r["c"], "vol": r["vol"], "net_qty": r.get("net_qty"),
                 "trade_amt": r.get("trade_amt"),
                 "change": r["change"], "strength": r["strength"],
