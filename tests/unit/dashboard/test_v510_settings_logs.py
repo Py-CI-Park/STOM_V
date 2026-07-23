@@ -30,3 +30,21 @@ def test_settings_logs_are_manual_bounded_read_only_and_exportable() -> None:
     assert 'method: "POST"' not in settings
     assert "new WebSocket" not in settings
     assert "localStorage.setItem" not in settings
+def test_settings_probes_query_filter_and_scoped_layout_reset_are_source_bound() -> None:
+    settings = _source("v4-settings.jsx")
+    css = _source("v4.css")
+
+    assert "Release / Capability Probes" in settings
+    assert '"/health"' in settings
+    assert "_v4sCapabilityRows(manifest, health)" in settings
+    assert "Capability probe 사용 불가" in settings
+    assert "const [logQuery, setLogQuery]" in settings
+    assert 'type="search"' in settings
+    assert "normalizedQuery" in settings
+    assert "includes(normalizedQuery)" in settings
+    assert 'link.download = "stom-dashboard-redacted-logs.txt"' in settings
+    assert '"stom_v511_result_layout"' in settings
+    assert "resetKeys.forEach(key => window.localStorage.removeItem(key))" in settings
+    assert "localStorage.clear" not in settings
+    assert ".v4s-probe-grid" in css
+    assert ".v4s-log-table" in css
