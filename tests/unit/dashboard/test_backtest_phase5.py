@@ -471,3 +471,19 @@ class TestRunRejectsMissingStrategy:
 
         assert body["status"] == "ok", body
         client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
+
+
+class TestChildProcessEmitsUtf8:
+    """CLI 한글 실패 사유가 잡 기록에서 깨지면 사용자가 원인을 읽을 수 없다."""
+
+    def test_child_env_pins_utf8_stdout(self) -> None:
+        from ai_strategy_loop.dashboard import backtest_jobs
+
+        source = Path(backtest_jobs.__file__).read_text(encoding="utf-8")
+        run_one = source.split("def _run_one(", 1)[1].split("def _finalize(", 1)[0]
+
+        # 부모는 utf-8 로 읽는다.
+        assert 'encoding="utf-8", errors="replace"' in run_one
+        # 그러므로 자식도 utf-8 로 내보내야 한다(Windows 기본은 cp949).
+        assert 'env["PYTHONIOENCODING"] = "utf-8"' in run_one
+        assert run_one.index('env["PYTHONIOENCODING"]') < run_one.index("subprocess.Popen(")

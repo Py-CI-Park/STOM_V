@@ -488,6 +488,11 @@ class BacktestJobManager:
         env = dict(os.environ)
         env["STOM_ALLOW_MINIMAL_SETTING"] = "1"
         env["PYTHONUNBUFFERED"] = "1"
+        # 자식 stdout 을 UTF-8 로 고정한다. 부모는 아래 Popen 에서 utf-8/errors="replace" 로
+        #   읽는데, Windows 기본 콘솔 인코딩(cp949)으로 나온 한글은 전부 U+FFFD 로 치환돼
+        #   복구가 불가능하다. 실제로 잡 기록의 실패 사유가 "������ ���� ..." 로 남아
+        #   사용자가 원인을 읽을 수 없었다(2026-07-26 실측).
+        env["PYTHONIOENCODING"] = "utf-8"
         # 워크벤치는 운영 strategy.db 를 대상으로 한다(bootstrap 의 루프 격리 오버라이드를 되돌림).
         env["STOM_CLI_DB_STRATEGY"] = str(self._strategy_db)
         # 스모크/서브셋 백테: back_db_override 가 있으면 시세 DB를 교체한다.
