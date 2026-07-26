@@ -45,8 +45,8 @@ def test_code_viewer_embeds_strategy_inspector_and_unavailable_reason() -> None:
     assert "unavailable: strategy code not found for this generation" in src
 
 
-def test_code_viewer_has_vertical_expand_reader_mode() -> None:
-    """Given strategy code can be long, When viewing it, Then a vertical expand control exists."""
+def test_code_viewer_has_expand_reader_mode() -> None:
+    """Given strategy code can be long, When viewing it, Then an expand-to-fullscreen control exists."""
     src = _read_front("code-viewer.jsx")
     css = _read_front("styles.css")
 
@@ -54,10 +54,26 @@ def test_code_viewer_has_vertical_expand_reader_mode() -> None:
     assert "code-viewer-modal" in src
     assert "code-viewer-expanded" in src
     assert "aria-pressed={expandedCodeView}" in src
-    assert "세로 확대" in src
+    # v5.11.2: 라벨이 '세로 확대' → '전체화면'으로 바뀌었다(가로도 함께 넓어지므로).
+    assert "전체화면" in src
+    assert "기본 크기" in src
     assert ".code-viewer-modal.code-viewer-expanded" in css
     assert ".code-viewer-modal.code-viewer-expanded .code-block" in css
     assert "72vh" in css
+
+
+def test_code_viewer_supports_side_by_side_search_and_font_size() -> None:
+    """Given buy/sell must be compared, When the popup opens, Then split view, search and font size exist."""
+    src = _read_front("code-viewer.jsx")
+    css = _read_front("v4.css")
+
+    assert "code-viewer-split-toggle" in src
+    assert "aria-pressed={splitView}" in src
+    assert "매수·매도 나란히" in src
+    assert "_CV_FONT_STEPS" in src
+    assert "cv-hit" in src
+    assert ".cv-body.split" in css
+    assert ".code-block .cv-hit" in css
 
 
 def test_index_loads_strategy_inspector_before_app() -> None:

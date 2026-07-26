@@ -23880,15 +23880,58 @@ def signal_sell(pos, bar, ind):
     }
     return out;
   }
-  function CvCodeBlock({ code }) {
-    const highlighted = useMemo_cv(() => highlightPython(code), [code]);
-    if (!code) return /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, "unavailable: strategy code not found for this generation.");
-    return /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, highlighted.map((row, i) => /* @__PURE__ */ React.createElement("div", { key: i }, /* @__PURE__ */ React.createElement("span", { className: "ln" }, row.ln), row.parts.map((p, j) => /* @__PURE__ */ React.createElement("span", { key: j, className: p.cls }, p.t)))));
+  function _cvMatchRanges(lineText, needle) {
+    if (!needle) return [];
+    const lower2 = lineText.toLowerCase();
+    const target = needle.toLowerCase();
+    const ranges = [];
+    let from = lower2.indexOf(target);
+    while (from !== -1) {
+      ranges.push([from, from + target.length]);
+      from = lower2.indexOf(target, from + target.length);
+    }
+    return ranges;
   }
+  function _cvSplitToken(text, offset, ranges, keyPrefix) {
+    if (ranges.length === 0) return text;
+    const end = offset + text.length;
+    const hits = ranges.filter(([s, e]) => s < end && e > offset);
+    if (hits.length === 0) return text;
+    const out = [];
+    let cursor = offset;
+    for (const [s, e] of hits) {
+      const from = Math.max(s, offset);
+      const to = Math.min(e, end);
+      if (from > cursor) out.push(text.slice(cursor - offset, from - offset));
+      out.push(/* @__PURE__ */ React.createElement("mark", { key: `${keyPrefix}-${from}`, className: "cv-hit" }, text.slice(from - offset, to - offset)));
+      cursor = to;
+    }
+    if (cursor < end) out.push(text.slice(cursor - offset));
+    return out;
+  }
+  function CvCodeBlock({ code, query = "", emptyLabel }) {
+    const highlighted = useMemo_cv(() => highlightPython(code), [code]);
+    if (!code) return /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, emptyLabel || "unavailable: strategy code not found for this generation.");
+    const needle = String(query || "").trim();
+    return /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, highlighted.map((row, i) => {
+      const lineText = row.parts.map((p) => p.t).join("");
+      const ranges = _cvMatchRanges(lineText, needle);
+      let offset = 0;
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: ranges.length ? "cv-hit-line" : void 0 }, /* @__PURE__ */ React.createElement("span", { className: "ln" }, row.ln), row.parts.map((p, j) => {
+        const at = offset;
+        offset += p.t.length;
+        return /* @__PURE__ */ React.createElement("span", { key: j, className: p.cls }, _cvSplitToken(p.t, at, ranges, `${i}-${j}`));
+      }));
+    }));
+  }
+  var _CV_FONT_STEPS = [11, 12.5, 14, 16, 18];
   function CodeViewer({ generation, onClose, runId, baseUrl }) {
     const [tab, setTab] = useState_cv("buy");
     const [copied, setCopied] = useState_cv(false);
     const [expandedCodeView, setExpandedCodeView] = useState_cv(false);
+    const [splitView, setSplitView] = useState_cv(false);
+    const [fontIdx, setFontIdx] = useState_cv(1);
+    const [query, setQuery] = useState_cv("");
     const [fetched, setFetched] = useState_cv(null);
     const [loading, setLoading] = useState_cv(false);
     const [fetchErr, setFetchErr] = useState_cv(null);
@@ -23920,32 +23963,82 @@ def signal_sell(pos, bar, ind):
     const sellCode = generation.sell_code || fetched && fetched.sell_code || "";
     const code = tab === "buy" ? buyCode : sellCode;
     const name = tab === "buy" ? generation.buy_name : generation.sell_name;
-    const modalClass = `modal code-viewer-modal ${expandedCodeView ? "code-viewer-expanded" : ""}`;
+    const fontSize = _CV_FONT_STEPS[Math.max(0, Math.min(_CV_FONT_STEPS.length - 1, fontIdx))];
+    const modalClass = "modal code-viewer-modal" + (expandedCodeView ? " code-viewer-expanded" : "") + (splitView ? " code-viewer-split" : "");
     const modalStyle = {
-      width: expandedCodeView ? "min(1320px, calc(100vw - 20px))" : "min(960px, calc(100vw - 32px))",
+      width: expandedCodeView ? "calc(100vw - 20px)" : splitView ? "min(1720px, calc(100vw - 32px))" : "min(960px, calc(100vw - 32px))",
       maxHeight: expandedCodeView ? "calc(100vh - 18px)" : void 0
     };
-    const onCopy = async () => {
+    const countHits = (text) => {
+      const needle = String(query || "").trim().toLowerCase();
+      if (!needle) return 0;
+      return String(text || "").toLowerCase().split(needle).length - 1;
+    };
+    const hits = splitView ? countHits(buyCode) + countHits(sellCode) : countHits(code);
+    const copyText = async (text) => {
       try {
-        await navigator.clipboard.writeText(code || "");
+        await navigator.clipboard.writeText(text || "");
         setCopied(true);
         setTimeout(() => setCopied(false), 1400);
       } catch (e) {
       }
     };
+    const onCopy = () => copyText(splitView ? `# \uB9E4\uC218 \u2014 ${generation.buy_name || "\u2014"}
+${buyCode}
+
+# \uB9E4\uB3C4 \u2014 ${generation.sell_name || "\u2014"}
+${sellCode}` : code);
     return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
       if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ React.createElement("div", { className: modalClass, style: modalStyle, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC804\uB7B5 \uCF54\uB4DC \uBCF4\uAE30", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(generation.gen_no).padStart(2, "0"), " \xB7 score ", fmtScore(generation.graded_score), generation.gate_passed && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)", marginLeft: 8 } }, "\u2713 \uAC8C\uC774\uD2B8 \uD1B5\uACFC"), isErr && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)", marginLeft: 8 } }, "\u26A0 \uC624\uB958"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("div", { className: modalClass, style: modalStyle, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC804\uB7B5 \uCF54\uB4DC \uBCF4\uAE30", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(generation.gen_no).padStart(2, "0"), " \xB7 score ", fmtScore(generation.graded_score), generation.gate_passed && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)", marginLeft: 8 } }, "\u2713 \uAC8C\uC774\uD2B8 \uD1B5\uACFC"), isErr && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)", marginLeft: 8 } }, "\u26A0 \uC624\uB958"))), /* @__PURE__ */ React.createElement("div", { className: "cv-toolbar" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input cv-search",
+        type: "search",
+        spellCheck: false,
+        placeholder: "\uC870\uAC74\uC2DD \uC548\uC5D0\uC11C \uCC3E\uAE30 (\uC608: \uB4F1\uB77D\uC728)",
+        value: query,
+        onChange: (e) => setQuery(e.target.value)
+      }
+    ), query.trim() && /* @__PURE__ */ React.createElement("span", { className: "cv-hitcount mono" }, hits, "\uAC74"), /* @__PURE__ */ React.createElement("span", { className: "cv-fontctl", role: "group", "aria-label": "\uAE00\uC790 \uD06C\uAE30" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFontIdx(Math.max(0, fontIdx - 1)),
+        disabled: fontIdx <= 0,
+        title: "\uAE00\uC790 \uC791\uAC8C"
+      },
+      "A\u2212"
+    ), /* @__PURE__ */ React.createElement("b", { className: "mono" }, fontSize, "px"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFontIdx(Math.min(_CV_FONT_STEPS.length - 1, fontIdx + 1)),
+        disabled: fontIdx >= _CV_FONT_STEPS.length - 1,
+        title: "\uAE00\uC790 \uD06C\uAC8C"
+      },
+      "A+"
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        "aria-pressed": splitView,
+        "data-testid": "code-viewer-split-toggle",
+        "data-tip": splitView ? "\uD55C \uCABD\uC529 \uD06C\uAC8C \uBD05\uB2C8\uB2E4." : "\uB9E4\uC218\uC640 \uB9E4\uB3C4\uB97C \uB098\uB780\uD788 \uB193\uACE0 \uBE44\uAD50\uD569\uB2C8\uB2E4.",
+        onClick: () => setSplitView(!splitView)
+      },
+      splitView ? "\uD55C\uCABD\uB9CC \uBCF4\uAE30" : "\uB9E4\uC218\xB7\uB9E4\uB3C4 \uB098\uB780\uD788"
+    ), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn ghost sm",
         "data-testid": "code-viewer-height-toggle",
-        "data-tip": expandedCodeView ? "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uAE30\uBCF8 \uB192\uC774\uB85C \uC904\uC785\uB2C8\uB2E4." : "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uC138\uB85C\uB85C \uD655\uB300\uD569\uB2C8\uB2E4.",
+        "data-tip": expandedCodeView ? "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uAE30\uBCF8 \uD06C\uAE30\uB85C \uC904\uC785\uB2C8\uB2E4." : "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uD654\uBA74 \uC804\uCCB4\uB85C \uB113\uD799\uB2C8\uB2E4.",
         "aria-pressed": expandedCodeView,
         onClick: () => setExpandedCodeView(!expandedCodeView)
       },
-      expandedCodeView ? "\uAE30\uBCF8 \uB192\uC774" : "\uC138\uB85C \uD655\uB300"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onCopy }, copied ? "\uBCF5\uC0AC\uB428 \u2713" : "\uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "code-tabs" }, /* @__PURE__ */ React.createElement(
+      expandedCodeView ? "\uAE30\uBCF8 \uD06C\uAE30" : "\uC804\uCCB4\uD654\uBA74"
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onCopy }, copied ? "\uBCF5\uC0AC\uB428 \u2713" : splitView ? "\uB9E4\uC218+\uB9E4\uB3C4 \uBCF5\uC0AC" : "\uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))), !splitView && /* @__PURE__ */ React.createElement("div", { className: "code-tabs" }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: `code-tab ${tab === "buy" ? "active" : ""}`,
@@ -23963,7 +24056,14 @@ def signal_sell(pos, bar, ind):
       /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"),
       " \uB9E4\uB3C4 \u2014 ",
       generation.sell_name || "\u2014"
-    ), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, (code || "").split("\n").length, " lines")), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" } }, loading ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, "\uCF54\uB4DC \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : fetchErr && !code ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--red)" } }, "\uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", fetchErr) : /* @__PURE__ */ React.createElement(CvCodeBlock, { code })), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, (code || "").split("\n").length, " lines")), /* @__PURE__ */ React.createElement("div", { className: "cv-body" + (splitView ? " split" : ""), style: { fontSize } }, loading ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, "\uCF54\uB4DC \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : fetchErr && !buyCode && !sellCode ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--red)" } }, "\uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", fetchErr) : splitView ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\u25CF"), " \uB9E4\uC218 \u2014 ", generation.buy_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (buyCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(buyCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: buyCode, query, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uC218 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." })), /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"), " \uB9E4\uB3C4 \u2014 ", generation.sell_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (sellCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(sellCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: sellCode, query, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." }))) : /* @__PURE__ */ React.createElement(
+      CvCodeBlock,
+      {
+        code,
+        query,
+        emptyLabel: `\uC774 \uC138\uB300\uC758 ${tab === "buy" ? "\uB9E4\uC218" : "\uB9E4\uB3C4"} \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.`
+      }
+    )), /* @__PURE__ */ React.createElement(
       StrategyInspectorTabs,
       {
         generation,

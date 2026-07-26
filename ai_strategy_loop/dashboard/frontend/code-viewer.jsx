@@ -65,31 +65,80 @@ function highlightPython(code) {
   return out;
 }
 
-function CvCodeBlock({ code }) {
+// 검색 하이라이트는 줄 전체 좌표에서 계산한다. 토큰 단위로 찾으면 한글 식별자처럼
+//   highlightPython 이 한 글자씩 쪼개는 토큰에서는 절대 매치되지 않는다(2026-07-26 실측).
+function _cvMatchRanges(lineText, needle) {
+  if (!needle) return [];
+  const lower = lineText.toLowerCase();
+  const target = needle.toLowerCase();
+  const ranges = [];
+  let from = lower.indexOf(target);
+  while (from !== -1) {
+    ranges.push([from, from + target.length]);
+    from = lower.indexOf(target, from + target.length);
+  }
+  return ranges;
+}
+
+// 한 토큰(offset ~ offset+text.length)을 매치 구간과 교차시켜 <mark> 로 쪼갠다.
+function _cvSplitToken(text, offset, ranges, keyPrefix) {
+  if (ranges.length === 0) return text;
+  const end = offset + text.length;
+  const hits = ranges.filter(([s, e]) => s < end && e > offset);
+  if (hits.length === 0) return text;
+  const out = [];
+  let cursor = offset;
+  for (const [s, e] of hits) {
+    const from = Math.max(s, offset);
+    const to = Math.min(e, end);
+    if (from > cursor) out.push(text.slice(cursor - offset, from - offset));
+    out.push(<mark key={`${keyPrefix}-${from}`} className="cv-hit">{text.slice(from - offset, to - offset)}</mark>);
+    cursor = to;
+  }
+  if (cursor < end) out.push(text.slice(cursor - offset));
+  return out;
+}
+
+function CvCodeBlock({ code, query = "", emptyLabel }) {
   const highlighted = useMemo_cv(() => highlightPython(code), [code]);
   if (!code) return (
     <div className="code-block" style={{ color: "var(--ink-3)" }}>
-      unavailable: strategy code not found for this generation.
+      {emptyLabel || "unavailable: strategy code not found for this generation."}
     </div>
   );
+  const needle = String(query || "").trim();
   return (
     <pre className="code-block">
-      {highlighted.map((row, i) => (
-        <div key={i}>
-          <span className="ln">{row.ln}</span>
-          {row.parts.map((p, j) => (
-            <span key={j} className={p.cls}>{p.t}</span>
-          ))}
-        </div>
-      ))}
+      {highlighted.map((row, i) => {
+        const lineText = row.parts.map(p => p.t).join("");
+        const ranges = _cvMatchRanges(lineText, needle);
+        let offset = 0;
+        return (
+          <div key={i} className={ranges.length ? "cv-hit-line" : undefined}>
+            <span className="ln">{row.ln}</span>
+            {row.parts.map((p, j) => {
+              const at = offset;
+              offset += p.t.length;
+              return <span key={j} className={p.cls}>{_cvSplitToken(p.t, at, ranges, `${i}-${j}`)}</span>;
+            })}
+          </div>
+        );
+      })}
     </pre>
   );
 }
+
+const _CV_FONT_STEPS = [11, 12.5, 14, 16, 18];
 
 function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const [tab, setTab] = useState_cv("buy");
   const [copied, setCopied] = useState_cv(false);
   const [expandedCodeView, setExpandedCodeView] = useState_cv(false);
+  // v5.11.2 — 조건식은 "읽고 비교하는" 대상이다. 한쪽씩만 크게 보는 것으로는 부족해서
+  //   매수·매도 나란히 보기, 글자 크기, 검색 하이라이트, 전체화면을 팝업에 넣는다.
+  const [splitView, setSplitView] = useState_cv(false);
+  const [fontIdx, setFontIdx] = useState_cv(1);
+  const [query, setQuery] = useState_cv("");
   // P10 — 세대 행(GenView)에는 코드가 없다. 인라인 코드(데모 소스)가 없으면
   //   /strategy_code?run=&gen= 로 fetch 해 채운다. {buy_code, sell_code} 또는 null.
   const [fetched, setFetched] = useState_cv(null);
@@ -124,19 +173,31 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const sellCode = generation.sell_code || (fetched && fetched.sell_code) || "";
   const code = tab === "buy" ? buyCode : sellCode;
   const name = tab === "buy" ? generation.buy_name : generation.sell_name;
-  const modalClass = `modal code-viewer-modal ${expandedCodeView ? "code-viewer-expanded" : ""}`;
+  const fontSize = _CV_FONT_STEPS[Math.max(0, Math.min(_CV_FONT_STEPS.length - 1, fontIdx))];
+  const modalClass = "modal code-viewer-modal"
+    + (expandedCodeView ? " code-viewer-expanded" : "")
+    + (splitView ? " code-viewer-split" : "");
   const modalStyle = {
-    width: expandedCodeView ? "min(1320px, calc(100vw - 20px))" : "min(960px, calc(100vw - 32px))",
+    width: expandedCodeView ? "calc(100vw - 20px)" : (splitView ? "min(1720px, calc(100vw - 32px))" : "min(960px, calc(100vw - 32px))"),
     maxHeight: expandedCodeView ? "calc(100vh - 18px)" : undefined,
   };
+  const countHits = (text) => {
+    const needle = String(query || "").trim().toLowerCase();
+    if (!needle) return 0;
+    return String(text || "").toLowerCase().split(needle).length - 1;
+  };
+  const hits = splitView ? countHits(buyCode) + countHits(sellCode) : countHits(code);
 
-  const onCopy = async () => {
+  const copyText = async (text) => {
     try {
-      await navigator.clipboard.writeText(code || "");
+      await navigator.clipboard.writeText(text || "");
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
     } catch {}
   };
+  const onCopy = () => copyText(splitView
+    ? `# 매수 — ${generation.buy_name || "—"}\n${buyCode}\n\n# 매도 — ${generation.sell_name || "—"}\n${sellCode}`
+    : code);
 
   return (
     <div className="modal-bd" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -150,48 +211,83 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
               {isErr && <span style={{ color: "var(--red)", marginLeft: 8 }}>⚠ 오류</span>}
             </span>
           </h2>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div className="cv-toolbar">
+            <input className="input cv-search" type="search" spellCheck={false}
+                   placeholder="조건식 안에서 찾기 (예: 등락율)"
+                   value={query} onChange={(e) => setQuery(e.target.value)} />
+            {query.trim() && <span className="cv-hitcount mono">{hits}건</span>}
+            <span className="cv-fontctl" role="group" aria-label="글자 크기">
+              <button className="btn ghost sm" onClick={() => setFontIdx(Math.max(0, fontIdx - 1))}
+                      disabled={fontIdx <= 0} title="글자 작게">A−</button>
+              <b className="mono">{fontSize}px</b>
+              <button className="btn ghost sm" onClick={() => setFontIdx(Math.min(_CV_FONT_STEPS.length - 1, fontIdx + 1))}
+                      disabled={fontIdx >= _CV_FONT_STEPS.length - 1} title="글자 크게">A+</button>
+            </span>
+            <button className="btn ghost sm" aria-pressed={splitView}
+                    data-testid="code-viewer-split-toggle"
+                    data-tip={splitView ? "한 쪽씩 크게 봅니다." : "매수와 매도를 나란히 놓고 비교합니다."}
+                    onClick={() => setSplitView(!splitView)}>
+              {splitView ? "한쪽만 보기" : "매수·매도 나란히"}
+            </button>
             <button
               className="btn ghost sm"
               data-testid="code-viewer-height-toggle"
-              data-tip={expandedCodeView ? "조건식 보기 창을 기본 높이로 줄입니다." : "조건식 보기 창을 세로로 확대합니다."}
+              data-tip={expandedCodeView ? "조건식 보기 창을 기본 크기로 줄입니다." : "조건식 보기 창을 화면 전체로 넓힙니다."}
               aria-pressed={expandedCodeView}
               onClick={() => setExpandedCodeView(!expandedCodeView)}
             >
-              {expandedCodeView ? "기본 높이" : "세로 확대"}
+              {expandedCodeView ? "기본 크기" : "전체화면"}
             </button>
             <button className="btn ghost sm" onClick={onCopy}>
-              {copied ? "복사됨 ✓" : "복사"}
+              {copied ? "복사됨 ✓" : (splitView ? "매수+매도 복사" : "복사")}
             </button>
             <button className="btn ghost sm" onClick={onClose}>닫기</button>
           </div>
         </div>
 
-        <div className="code-tabs">
-          <div className={`code-tab ${tab === "buy" ? "active" : ""}`}
-               onClick={() => setTab("buy")}>
-            <span style={{ color: "var(--teal)" }}>●</span> 매수 — {generation.buy_name || "—"}
+        {!splitView && (
+          <div className="code-tabs">
+            <div className={`code-tab ${tab === "buy" ? "active" : ""}`}
+                 onClick={() => setTab("buy")}>
+              <span style={{ color: "var(--teal)" }}>●</span> 매수 — {generation.buy_name || "—"}
+            </div>
+            <div className={`code-tab ${tab === "sell" ? "active" : ""}`}
+                 onClick={() => setTab("sell")}>
+              <span style={{ color: "var(--amber)" }}>●</span> 매도 — {generation.sell_name || "—"}
+            </div>
+            <div style={{ marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
+              {(code || "").split("\n").length} lines
+            </div>
           </div>
-          <div className={`code-tab ${tab === "sell" ? "active" : ""}`}
-               onClick={() => setTab("sell")}>
-            <span style={{ color: "var(--amber)" }}>●</span> 매도 — {generation.sell_name || "—"}
-          </div>
-          <div style={{ marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
-            {(code || "").split("\n").length} lines
-          </div>
-        </div>
+        )}
 
-        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div className={"cv-body" + (splitView ? " split" : "")} style={{ fontSize }}>
           {loading ? (
-            <div className="code-block" style={{ color: "var(--ink-3)" }}>
-              코드 불러오는 중…
-            </div>
-          ) : fetchErr && !code ? (
-            <div className="code-block" style={{ color: "var(--red)" }}>
-              코드 조회 실패: {fetchErr}
-            </div>
+            <div className="code-block" style={{ color: "var(--ink-3)" }}>코드 불러오는 중…</div>
+          ) : fetchErr && !buyCode && !sellCode ? (
+            <div className="code-block" style={{ color: "var(--red)" }}>코드 조회 실패: {fetchErr}</div>
+          ) : splitView ? (
+            <>
+              <section className="cv-pane">
+                <header>
+                  <span style={{ color: "var(--teal)" }}>●</span> 매수 — {generation.buy_name || "—"}
+                  <small className="mono">{(buyCode || "").split("\n").length} lines</small>
+                  <button className="btn ghost sm" onClick={() => copyText(buyCode)}>복사</button>
+                </header>
+                <CvCodeBlock code={buyCode} query={query} emptyLabel="이 세대의 매수 조건식 코드를 찾지 못했습니다." />
+              </section>
+              <section className="cv-pane">
+                <header>
+                  <span style={{ color: "var(--amber)" }}>●</span> 매도 — {generation.sell_name || "—"}
+                  <small className="mono">{(sellCode || "").split("\n").length} lines</small>
+                  <button className="btn ghost sm" onClick={() => copyText(sellCode)}>복사</button>
+                </header>
+                <CvCodeBlock code={sellCode} query={query} emptyLabel="이 세대의 매도 조건식 코드를 찾지 못했습니다." />
+              </section>
+            </>
           ) : (
-            <CvCodeBlock code={code} />
+            <CvCodeBlock code={code} query={query}
+                         emptyLabel={`이 세대의 ${tab === "buy" ? "매수" : "매도"} 조건식 코드를 찾지 못했습니다.`} />
           )}
         </div>
 

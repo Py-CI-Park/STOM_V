@@ -1750,6 +1750,23 @@
 .bt-monthly-calendar-table { width: 100%; min-width: 830px; }
 .bt-quant-card .panel-bd { overflow: auto; }
 
+/* Code viewer popup: 조건식은 읽고(크게) 비교하고(나란히) 찾는(검색) 대상이다. */
+.cv-toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cv-search { min-width: 190px; max-width: 260px; font-size: 12px; }
+.cv-hitcount { color: var(--teal); font-size: 11px; }
+.cv-fontctl { display: inline-flex; align-items: center; gap: 4px; }
+.cv-fontctl b { min-width: 42px; color: var(--ink-3); font-size: 10.5px; text-align: center; }
+.cv-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.cv-body .code-block { font-size: inherit; }
+.cv-body.split { flex-direction: row; gap: 10px; padding: 0 12px 10px; }
+.cv-body.split > .cv-pane { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line-1); border-radius: 10px; overflow: hidden; }
+.cv-pane > header { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--line-1); background: var(--bg-1); color: var(--ink-1); font-size: 12px; }
+.cv-pane > header small { margin-left: auto; color: var(--ink-3); font-size: 10.5px; }
+.cv-pane > .code-block { flex: 1 1 auto; min-height: 0; max-height: none; }
+.code-viewer-modal.code-viewer-expanded .cv-pane > .code-block { max-height: none; }
+.code-block .cv-hit { padding: 0 1px; border-radius: 3px; background: rgba(240,179,90,.35); color: inherit; }
+.code-block .cv-hit-line { background: rgba(240,179,90,.07); }
+
 /* Autopsy: "어디서 잃었나"는 숫자 나열이 아니라 길이 비교로 읽혀야 한다. */
 .autopsy-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
 .autopsy-kpis > div { min-width: 0; padding: 8px 10px; border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-0); }
