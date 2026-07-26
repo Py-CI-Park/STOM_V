@@ -27315,7 +27315,7 @@ ${sellCode}` : code);
   // ai_strategy_loop/dashboard/frontend/bt-tab-run.jsx
   function _btDefaultEngineCount() {
     const logicalCpus = Number(globalThis.navigator && globalThis.navigator.hardwareConcurrency) || 4;
-    return Math.max(1, Math.min(16, Math.floor(logicalCpus * 0.25)));
+    return Math.max(1, Math.min(64, Math.floor(logicalCpus * 0.25)));
   }
   function _SweepParamBuilder({ rows, onChange, disabled }) {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -27751,7 +27751,7 @@ ${sellCode}` : code);
         className: "input",
         type: "number",
         min: "1",
-        max: tradingDays && tradingDays.max_engines ? Math.min(16, tradingDays.max_engines) : 16,
+        max: tradingDays && tradingDays.max_engines ? Math.min(64, tradingDays.max_engines) : 64,
         value: engines,
         "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC218",
         "aria-describedby": "bt-engine-hint",

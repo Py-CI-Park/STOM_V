@@ -293,7 +293,9 @@ class BacktestRunPayload(_MutationPayload):
     start: int = Field(ge=20_000_101, le=20_991_231)
     end: int = Field(ge=20_000_101, le=20_991_231)
     timeframe: Literal["tick", "min"] = "min"
-    engines: int = Field(default=4, ge=1, le=16)
+    # v5.11.4 — 상한 16 은 코어가 적던 시절의 값이다. 64코어급 워크스테이션에서
+    #   전 기간 전종목 백테스트를 돌릴 수 없어 상한만 올린다(기본값 규칙은 불변).
+    engines: int = Field(default=4, ge=1, le=64)
     timeout: int = Field(default=600, ge=1, le=86_400)
     divid_mode: ShortText = ""
     one_code: ShortText | None = None

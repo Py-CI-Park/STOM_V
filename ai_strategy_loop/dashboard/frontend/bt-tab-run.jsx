@@ -9,7 +9,7 @@ import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, useMemo_bt, _btFe
 
 function _btDefaultEngineCount() {
   const logicalCpus = Number(globalThis.navigator && globalThis.navigator.hardwareConcurrency) || 4;
-  return Math.max(1, Math.min(16, Math.floor(logicalCpus * 0.25)));
+  return Math.max(1, Math.min(64, Math.floor(logicalCpus * 0.25)));
 }
 
 // ===========================================================================
@@ -430,7 +430,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           <div className="field bt-engine-field" style={{ minWidth: 118 }}>
             <label>엔진 수 (CPU 25%)</label>
             <input className="input" type="number" min="1"
-                   max={tradingDays && tradingDays.max_engines ? Math.min(16, tradingDays.max_engines) : 16}
+                   max={tradingDays && tradingDays.max_engines ? Math.min(64, tradingDays.max_engines) : 64}
                    value={engines} aria-label="백테스트 엔진 수"
                    aria-describedby="bt-engine-hint"
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
