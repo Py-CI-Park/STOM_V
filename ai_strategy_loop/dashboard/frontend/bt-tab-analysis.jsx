@@ -255,7 +255,7 @@ function BtCollapsible({ title, accent, defaultOpen, children }) {
 //   선택 시 부모로 {run_id, gen_no} 를 올려 BtResultArea 가 run/gen 모드로 로드한다.
 //   진화 탭 파일은 건드리지 않는다 — /runs·/bt/evo_gens 읽기 전용 계약만 소비.
 // ===========================================================================
-function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
+function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetCompareA, onCompareB }) {
   const [runs, setRuns] = useState_bt([]);
   const [runId, setRunId] = useState_bt("");
   const [gens, setGens] = useState_bt([]);
@@ -334,27 +334,50 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
                   <div className="research-empty">세대가 없습니다</div>
                 ) : gens.map(g => {
                   const active = activeEvo && activeEvo.run_id === runId && activeEvo.gen_no === g.gen_no;
+                  // v5.11.3 — 세대끼리도 A/B 비교가 된다. 기준(A)이 잡혀 있고 다른 세대이며
+                  //   양쪽 다 결과 CSV 가 있어야 비교 표본이 성립한다.
+                  const evoKey = runId + "/" + g.gen_no;
+                  const isCompareA = compareA === evoKey;
+                  const canCompareB = !!compareA && !isCompareA && g.has_csv;
                   return (
-                    <button key={g.gen_no} onClick={() => onPickGen(runId, g.gen_no)}
+                    <div key={g.gen_no}
                       style={{
-                        textAlign: "left", padding: "6px 9px", borderRadius: 5, cursor: "pointer",
-                        border: "1px solid " + (active ? "var(--violet)" : "var(--line-1)"),
+                        padding: "6px 9px", borderRadius: 5,
+                        border: "1px solid " + (active ? "var(--violet)" : (isCompareA ? "var(--teal-dim)" : "var(--line-1)")),
                         background: active ? "rgba(168,130,255,0.08)" : "var(--bg-0)",
                         display: "flex", alignItems: "center", gap: 8,
                       }}>
-                      <span className="mono" style={{ fontSize: 11, color: active ? "var(--violet)" : "var(--ink-0)", flexShrink: 0 }}>
-                        g{g.gen_no}
-                      </span>
-                      <span className={"badge " + (g.gate_passed ? "done" : "idle")} style={{ flexShrink: 0 }}>
-                        {g.gate_passed ? "gate" : "—"}
-                      </span>
-                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
-                        {g.strategy_gist || g.buy_name || ""}
-                      </span>
-                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>
-                        {g.trade_count}거래{g.has_csv ? "" : " ·축약"}
-                      </span>
-                    </button>
+                      <button onClick={() => onPickGen(runId, g.gen_no)}
+                        title="이 세대의 결과 분석을 연다"
+                        style={{
+                          textAlign: "left", background: "transparent", border: 0, padding: 0,
+                          cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
+                        }}>
+                        <span className="mono" style={{ fontSize: 11, color: active ? "var(--violet)" : "var(--ink-0)", flexShrink: 0 }}>
+                          g{g.gen_no}
+                        </span>
+                        <span className={"badge " + (g.gate_passed ? "done" : "idle")} style={{ flexShrink: 0 }}>
+                          {g.gate_passed ? "gate" : "—"}
+                        </span>
+                        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+                          {g.strategy_gist || g.buy_name || ""}
+                        </span>
+                        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>
+                          {g.trade_count}거래{g.has_csv ? "" : " ·축약"}
+                        </span>
+                      </button>
+                      {typeof onSetCompareA === "function" && g.has_csv && (
+                        <button className={"btn ghost sm" + (isCompareA ? " active" : "")}
+                                style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                title={isCompareA ? "비교 기준(A) 해제" : "이 세대를 비교 기준(A)으로 고정"}
+                                onClick={() => onSetCompareA(isCompareA ? "" : evoKey)}>A</button>
+                      )}
+                      {canCompareB && typeof onCompareB === "function" && (
+                        <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                title={"기준(" + compareA + ") 과 이 세대를 비교"}
+                                onClick={() => onCompareB(evoKey)}>B</button>
+                      )}
+                    </div>
                   );
                 })}
               </div>

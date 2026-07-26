@@ -26448,8 +26448,8 @@ ${sellCode}` : code);
       label: "\uC9C4\uD654 \uC138\uB300",
       range: true,
       monteCarlo: true,
-      compare: false,
-      notes: { range: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uC2DC\uACC4\uC5F4\uB85C \uAD6C\uAC04\uC744 \uB2E4\uC2DC \uACC4\uC0B0\uD569\uB2C8\uB2E4.", monteCarlo: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uD45C\uBCF8\uC73C\uB85C \uACC4\uC0B0\uD569\uB2C8\uB2E4.", compare: "A/B \uBE44\uAD50\uB294 \uC644\uB8CC \uC7A1 \uACB0\uACFC\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4." }
+      compare: true,
+      notes: { range: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uC2DC\uACC4\uC5F4\uB85C \uAD6C\uAC04\uC744 \uB2E4\uC2DC \uACC4\uC0B0\uD569\uB2C8\uB2E4.", monteCarlo: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uD45C\uBCF8\uC73C\uB85C \uACC4\uC0B0\uD569\uB2C8\uB2E4.", compare: "\uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC\uC5D0\uC11C A\xB7B \uB97C \uACE8\uB77C \uC138\uB300\uB07C\uB9AC \uBE44\uAD50\uD569\uB2C8\uB2E4." }
     },
     // 결과 CSV 가 없는 세대(메트릭 행만 남은 축약 결과) — 표본이 없으므로 정직하게 미지원.
     evolution_summary: {
@@ -28546,7 +28546,7 @@ ${sellCode}` : code);
       /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, open ? "\u25BE \uC811\uAE30" : "\u25B8 \uD3BC\uCE58\uAE30")
     ), open && children2);
   }
-  function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
+  function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetCompareA, onCompareB }) {
     const [runs, setRuns] = useState_bt([]);
     const [runId, setRunId] = useState_bt("");
     const [gens, setGens] = useState_bt([]);
@@ -28588,27 +28588,66 @@ ${sellCode}` : code);
     }, [baseUrl, isDemo, runId, activeEvo, onPickGen]);
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRuns, disabled: isDemo || loadingRuns }, loadingRuns ? "\uB85C\uB529\u2026" : "\u21BB run")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uC9C4\uD654 run \uBAA9\uB85D\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC9C4\uD654 run"), /* @__PURE__ */ React.createElement("select", { className: "select", value: runId, onChange: (e) => setRunId(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 run \uC120\uD0DD \u2014"), runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.run_id, r.label ? " \xB7 " + r.label : "", r.status ? " [" + r.status + "]" : "")))), runId && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 280, overflowY: "auto" } }, loadingGens ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC138\uB300 \uB85C\uB529 \uC911\u2026") : gens.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : gens.map((g) => {
       const active = activeEvo && activeEvo.run_id === runId && activeEvo.gen_no === g.gen_no;
+      const evoKey = runId + "/" + g.gen_no;
+      const isCompareA = compareA === evoKey;
+      const canCompareB = !!compareA && !isCompareA && g.has_csv;
       return /* @__PURE__ */ React.createElement(
-        "button",
+        "div",
         {
           key: g.gen_no,
-          onClick: () => onPickGen(runId, g.gen_no),
           style: {
-            textAlign: "left",
             padding: "6px 9px",
             borderRadius: 5,
-            cursor: "pointer",
-            border: "1px solid " + (active ? "var(--violet)" : "var(--line-1)"),
+            border: "1px solid " + (active ? "var(--violet)" : isCompareA ? "var(--teal-dim)" : "var(--line-1)"),
             background: active ? "rgba(168,130,255,0.08)" : "var(--bg-0)",
             display: "flex",
             alignItems: "center",
             gap: 8
           }
         },
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: active ? "var(--violet)" : "var(--ink-0)", flexShrink: 0 } }, "g", g.gen_no),
-        /* @__PURE__ */ React.createElement("span", { className: "badge " + (g.gate_passed ? "done" : "idle"), style: { flexShrink: 0 } }, g.gate_passed ? "gate" : "\u2014"),
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 } }, g.strategy_gist || g.buy_name || ""),
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, g.trade_count, "\uAC70\uB798", g.has_csv ? "" : " \xB7\uCD95\uC57D")
+        /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            onClick: () => onPickGen(runId, g.gen_no),
+            title: "\uC774 \uC138\uB300\uC758 \uACB0\uACFC \uBD84\uC11D\uC744 \uC5F0\uB2E4",
+            style: {
+              textAlign: "left",
+              background: "transparent",
+              border: 0,
+              padding: 0,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flex: 1,
+              minWidth: 0
+            }
+          },
+          /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: active ? "var(--violet)" : "var(--ink-0)", flexShrink: 0 } }, "g", g.gen_no),
+          /* @__PURE__ */ React.createElement("span", { className: "badge " + (g.gate_passed ? "done" : "idle"), style: { flexShrink: 0 } }, g.gate_passed ? "gate" : "\u2014"),
+          /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 } }, g.strategy_gist || g.buy_name || ""),
+          /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, g.trade_count, "\uAC70\uB798", g.has_csv ? "" : " \xB7\uCD95\uC57D")
+        ),
+        typeof onSetCompareA === "function" && g.has_csv && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "btn ghost sm" + (isCompareA ? " active" : ""),
+            style: { flexShrink: 0, fontSize: 10, padding: "2px 6px" },
+            title: isCompareA ? "\uBE44\uAD50 \uAE30\uC900(A) \uD574\uC81C" : "\uC774 \uC138\uB300\uB97C \uBE44\uAD50 \uAE30\uC900(A)\uC73C\uB85C \uACE0\uC815",
+            onClick: () => onSetCompareA(isCompareA ? "" : evoKey)
+          },
+          "A"
+        ),
+        canCompareB && typeof onCompareB === "function" && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "btn ghost sm",
+            style: { flexShrink: 0, fontSize: 10, padding: "2px 6px" },
+            title: "\uAE30\uC900(" + compareA + ") \uACFC \uC774 \uC138\uB300\uB97C \uBE44\uAD50",
+            onClick: () => onCompareB(evoKey)
+          },
+          "B"
+        )
       );
     })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "run ", runs.length, "\uAC1C \xB7 \uC138\uB300 ", gens.length, "\uAC1C (\uC77D\uAE30 \uC804\uC6A9)"))));
   }
@@ -28752,6 +28791,15 @@ ${sellCode}` : code);
   }
 
   // ai_strategy_loop/dashboard/frontend/bt-tab-root.jsx
+  function _btCompareParams(key, side) {
+    const raw = String(key || "");
+    if (!raw) return "";
+    const cut = raw.lastIndexOf("/");
+    if (cut > 0) {
+      return "run_" + side + "=" + encodeURIComponent(raw.slice(0, cut)) + "&gen_" + side + "=" + encodeURIComponent(raw.slice(cut + 1));
+    }
+    return "job_" + side + "=" + encodeURIComponent(raw);
+  }
   function BacktestTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_bt(null);
@@ -28816,9 +28864,9 @@ ${sellCode}` : code);
       window.addEventListener("stom:bt-evo-select", onSelect);
       return () => window.removeEventListener("stom:bt-evo-select", onSelect);
     }, [onPickGen]);
-    const runCompare = useCallback_bt((jobB) => {
-      if (isDemo || !baseUrl || !compareA || !jobB) return;
-      const url = baseUrl + "/bt/compare?job_a=" + encodeURIComponent(compareA) + "&job_b=" + encodeURIComponent(jobB);
+    const runCompare = useCallback_bt((keyB) => {
+      if (isDemo || !baseUrl || !compareA || !keyB) return;
+      const url = baseUrl + "/bt/compare?" + _btCompareParams(compareA, "a") + "&" + _btCompareParams(keyB, "b");
       _btFetchJson(url, 12e3).then((j) => setCompareView(j || null)).catch(() => setCompareView(null));
     }, [baseUrl, isDemo, compareA]);
     const onSetCompareA = useCallback_bt((jobId) => {
@@ -28978,7 +29026,18 @@ ${sellCode}` : code);
         selectedName: sellName,
         reloadKey
       }
-    ))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80(\uC2E4\uD589 \uC804\uC6A9 \uC900\uBE44)", accent: "var(--amber)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtBackFinderPreflightPanel, { baseUrl, isDemo, buyName }))), subTab === "result" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "bt-source-legend", role: "note" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC"), /* @__PURE__ */ React.createElement("span", null, "AI \uC5F0\uAD6C \uB8E8\uD504\uAC00 \uC2A4\uC2A4\uB85C \uB3CC\uB9B0 \uC138\uB300\uBCC4 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uACB0\uACFC CSV\uAC00 \uB0A8\uC544 \uC788\uC5B4 \uBC14\uB85C \uBD84\uC11D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC7A1 \uACB0\uACFC \xB7 \uC2E4\uD589 \uAE30\uB85D"), /* @__PURE__ */ React.createElement("span", null, "\uC774 \uD654\uBA74\uC5D0\uC11C \uC0AC\uB78C\uC774 \uC9C1\uC811 \uC2E4\uD589 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uB9CC\uB4E0 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uC644\uC8FC\uD574\uC57C \uBD84\uC11D \uACB0\uACFC\uAC00 \uB0A8\uC2B5\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC", accent: "var(--violet)", defaultOpen: true }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80(\uC2E4\uD589 \uC804\uC6A9 \uC900\uBE44)", accent: "var(--amber)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtBackFinderPreflightPanel, { baseUrl, isDemo, buyName }))), subTab === "result" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "bt-source-legend", role: "note" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC"), /* @__PURE__ */ React.createElement("span", null, "AI \uC5F0\uAD6C \uB8E8\uD504\uAC00 \uC2A4\uC2A4\uB85C \uB3CC\uB9B0 \uC138\uB300\uBCC4 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uACB0\uACFC CSV\uAC00 \uB0A8\uC544 \uC788\uC5B4 \uBC14\uB85C \uBD84\uC11D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC7A1 \uACB0\uACFC \xB7 \uC2E4\uD589 \uAE30\uB85D"), /* @__PURE__ */ React.createElement("span", null, "\uC774 \uD654\uBA74\uC5D0\uC11C \uC0AC\uB78C\uC774 \uC9C1\uC811 \uC2E4\uD589 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uB9CC\uB4E0 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uC644\uC8FC\uD574\uC57C \uBD84\uC11D \uACB0\uACFC\uAC00 \uB0A8\uC2B5\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC", accent: "var(--violet)", defaultOpen: true }, /* @__PURE__ */ React.createElement(
+      BtEvoSelector,
+      {
+        baseUrl,
+        isDemo,
+        onPickGen,
+        activeEvo: evoSource,
+        compareA,
+        onSetCompareA,
+        onCompareB: runCompare
+      }
+    )), /* @__PURE__ */ React.createElement(
       BtResultLibrary,
       {
         baseUrl,

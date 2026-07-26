@@ -1797,11 +1797,53 @@ def _compare_delta(a: Optional[Dict[str, Any]], b: Optional[Dict[str, Any]]) -> 
     return delta
 
 
+def _compare_side_for_run(run_id: str, gen_no: Optional[int]) -> Optional[Dict[str, Any]]:
+    """진화 세대의 비교 페이로드 — 잡과 동일 스키마. 세대/CSV 없음이면 None(무예외).
+
+    세대 결과도 잡과 같은 거래 CSV 를 남기므로 같은 방식으로 요약·수익곡선을 만든다.
+    이것이 없어 A/B 비교가 '완료 잡 전용'으로 묶여 있었고, 정작 완주한 잡이 없어
+    비교 기능 자체를 쓸 수 없었다(2026-07-26).
+    """
+    if not run_id or gen_no is None:
+        return None
+    row = _gen_row_readonly(run_id, int(gen_no))
+    if row is None:
+        return None
+    csv_path = _resolve_gen_csv(row)
+    if not csv_path:
+        return None
+    trades = analysis.load_trades_csv(csv_path)
+    summary = analysis.summary_metrics(trades)
+    return {
+        "job_id": f"gen:{run_id}:{int(gen_no)}",
+        "run_id": run_id,
+        "gen_no": int(gen_no),
+        "source_type": "generation",
+        "label": f"{run_id} / g{int(gen_no)}",
+        "status": row.get("status"),
+        "metrics": summary,
+        "summary": summary,
+        "equity": analysis.equity_series(trades),
+        "trade_count": summary["trade_count"],
+    }
+
+
 @backtest_router.get("/compare")
-def compare_jobs(job_a: str = "", job_b: str = "") -> Dict[str, Any]:
-    """두 잡 A/B 비교 — 각 메트릭·수익곡선 + delta(b-a). 한쪽 없으면 해당 키 null(무예외)."""
-    a = _compare_side(job_a)
-    b = _compare_side(job_b)
+def compare_jobs(
+    job_a: str = "",
+    job_b: str = "",
+    run_a: str = "",
+    gen_a: Optional[int] = None,
+    run_b: str = "",
+    gen_b: Optional[int] = None,
+) -> Dict[str, Any]:
+    """A/B 비교 — 각 메트릭·수익곡선 + delta(b-a). 한쪽 없으면 해당 키 null(무예외).
+
+    양쪽 모두 완료 잡(job_a/job_b) 또는 진화 세대(run_a+gen_a / run_b+gen_b)를 받는다.
+    한쪽은 잡, 다른 쪽은 세대인 교차 비교도 같은 스키마로 처리된다.
+    """
+    a = _compare_side(job_a) if job_a else _compare_side_for_run(run_a, gen_a)
+    b = _compare_side(job_b) if job_b else _compare_side_for_run(run_b, gen_b)
     return {
         "a": a,
         "b": b,

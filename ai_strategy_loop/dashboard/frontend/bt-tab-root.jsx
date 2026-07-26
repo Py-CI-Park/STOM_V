@@ -13,6 +13,18 @@ import { BtRunPanel, BtResultLibrary } from "./bt-tab-run.jsx";
 import { BtModeResultPanel } from "./bt-tab-mode-results.jsx";
 import { BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioPanel, BtBackFinderPreflightPanel } from "./bt-tab-analysis.jsx";
 
+// 비교 키 → 쿼리 파라미터. 잡은 job_id 하나, 진화 세대는 "run_id/gen_no" 를 쪼갠다.
+function _btCompareParams(key, side) {
+  const raw = String(key || "");
+  if (!raw) return "";
+  const cut = raw.lastIndexOf("/");
+  if (cut > 0) {
+    return "run_" + side + "=" + encodeURIComponent(raw.slice(0, cut))
+         + "&gen_" + side + "=" + encodeURIComponent(raw.slice(cut + 1));
+  }
+  return "job_" + side + "=" + encodeURIComponent(raw);
+}
+
 // ===========================================================================
 // 탭 루트 — 헬스 배지 + 좌(라이브러리·에디터·실행) / 우(결과) 레이아웃.
 //   결과·분석 영역(BtResultArea + 메트릭 카드 + 차트 + 기여/인사이트)은
@@ -90,11 +102,12 @@ function BacktestTab({ baseUrl, wsStatus }) {
     return () => window.removeEventListener("stom:bt-evo-select", onSelect);
   }, [onPickGen]);
 
-  // 비교(B) 실행 — A 고정 후 다른 잡을 B 로 비교.
-  const runCompare = useCallback_bt((jobB) => {
-    if (isDemo || !baseUrl || !compareA || !jobB) return;
-    const url = baseUrl + "/bt/compare?job_a=" + encodeURIComponent(compareA)
-              + "&job_b=" + encodeURIComponent(jobB);
+  // 비교(B) 실행 — A 고정 후 다른 결과를 B 로 비교.
+  //   비교 키는 잡이면 job_id, 진화 세대면 "run_id/gen_no" 다. 세대끼리도, 잡과 세대를
+  //   섞어서도 같은 스키마로 비교된다(v5.11.3).
+  const runCompare = useCallback_bt((keyB) => {
+    if (isDemo || !baseUrl || !compareA || !keyB) return;
+    const url = baseUrl + "/bt/compare?" + _btCompareParams(compareA, "a") + "&" + _btCompareParams(keyB, "b");
     _btFetchJson(url, 12000)
       .then(j => setCompareView(j || null))
       .catch(() => setCompareView(null));
@@ -239,7 +252,8 @@ function BacktestTab({ baseUrl, wsStatus }) {
             </div>
           </div>
           <BtCollapsible title="진화 세대 결과 라이브러리" accent="var(--violet)" defaultOpen={true}>
-            <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
+            <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource}
+                           compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
           </BtCollapsible>
           <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
                            selectedJobId={resultJobId} onReload={reloadJobs}

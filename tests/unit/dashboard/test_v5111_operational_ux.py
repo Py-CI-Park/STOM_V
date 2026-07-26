@@ -10,6 +10,10 @@ def _read(name: str) -> str:
     return (FRONTEND / name).read_text(encoding="utf-8")
 
 
+def _read_backend(name: str) -> str:
+    return (FRONTEND.parent / name).read_text(encoding="utf-8")
+
+
 def test_live_strategy_code_and_diff_have_independent_resilient_requests() -> None:
     source = _read("panels-config.jsx")
     viewer = _read("code-viewer.jsx")
@@ -192,3 +196,28 @@ def test_reports_catalog_and_settings_use_readable_full_width_contracts() -> Non
     assert 'className="v4-cat-viewdesc"' in catalog
     assert ".v4-settings {" in css and "max-width: none" in css
     assert ".v4-catalog-table" in css and "font-size: 13px" in css
+
+
+def test_ab_compare_accepts_evolution_generations() -> None:
+    """A/B 비교가 완료 잡 전용이면, 완주한 잡이 없는 동안에는 기능 자체를 못 쓴다."""
+    api = _read_backend("backtest_api.py")
+    analysis_panel = _read("bt-tab-analysis.jsx")
+    root = _read("bt-tab-root.jsx")
+    result_area = _read("bt-result-area.jsx")
+
+    # 세대도 잡과 같은 스키마로 비교 페이로드를 만든다.
+    assert "def _compare_side_for_run" in api
+    assert "run_a: str" in api and "gen_a: Optional[int]" in api
+    assert "run_b: str" in api and "gen_b: Optional[int]" in api
+
+    # 결과 라이브러리에서 세대마다 A/B 를 고른다.
+    assert "onSetCompareA" in analysis_panel and "onCompareB" in analysis_panel
+    assert "canCompareB" in analysis_panel
+
+    # 비교 키는 잡이면 job_id, 세대면 run_id/gen_no 로 갈린다.
+    assert "function _btCompareParams" in root
+    assert '"run_" + side' in root and '"job_" + side' in root
+
+    # 세대 소스도 A/B 비교 지원으로 표기한다.
+    evolution_block = result_area.split("evolution: {", 1)[1].split("},", 1)[0]
+    assert "compare: true" in evolution_block

@@ -42,8 +42,8 @@ const _BT_RESULT_CAPABILITIES = {
   job: { label: "완료 잡", range: true, monteCarlo: true, compare: true,
     notes: { range: "완료 잡의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "완료 잡의 거래 표본으로 계산합니다.", compare: "다른 완료 잡을 비교 대상으로 선택할 수 있습니다." } },
   // 세대 결과도 잡과 같은 거래 CSV 를 남긴다 → 구간 재계산·몬테카를로 표본이 실제로 존재한다.
-  evolution: { label: "진화 세대", range: true, monteCarlo: true, compare: false,
-    notes: { range: "세대 결과 CSV 의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "세대 결과 CSV 의 거래 표본으로 계산합니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
+  evolution: { label: "진화 세대", range: true, monteCarlo: true, compare: true,
+    notes: { range: "세대 결과 CSV 의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "세대 결과 CSV 의 거래 표본으로 계산합니다.", compare: "결과 라이브러리에서 A·B 를 골라 세대끼리 비교합니다." } },
   // 결과 CSV 가 없는 세대(메트릭 행만 남은 축약 결과) — 표본이 없으므로 정직하게 미지원.
   evolution_summary: { label: "진화 세대 · 메트릭 요약", range: false, monteCarlo: false, compare: false,
     notes: { range: "이 세대에는 결과 CSV 가 없어 구간을 다시 계산할 수 없습니다.", monteCarlo: "이 세대에는 결과 CSV 가 없어 몬테카를로 표본을 만들 수 없습니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
