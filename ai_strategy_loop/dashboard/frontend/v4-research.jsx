@@ -12,6 +12,7 @@ import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveCon
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
+import { ResearchImprovementCard } from "./research-improvement.jsx";
 import { ProfitChart, QualityTrendChart, EquityOverlayChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
@@ -578,6 +579,10 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             )}
             {s.winner && approvalBlockReason && <p className="v4-research-error" role="alert">최종 승인 차단 · {approvalBlockReason}</p>}
             <PopulationPanel state={s} wsStatus={wsStatus} />
+            {/* v5.11.2 — "지금 세대가 어떤가"가 아니라 "세대를 거듭하며 좋아지고 있나"에 답한다. */}
+            <div className="v54-span-all">
+              <ResearchImprovementCard state={s} baseUrl={baseUrl} runId={runId} />
+            </div>
             <section className="v6-stage-lab v54-span-all" aria-label="세대 진화 분석(전폭)">
               <h3 className="stom-section-label">세대 진화 분석 · 개별 그래프</h3>
               <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />

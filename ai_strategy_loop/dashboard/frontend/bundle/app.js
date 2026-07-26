@@ -27966,7 +27966,7 @@ ${sellCode}` : code);
     const analysisReadyCount = filtered.filter(_btJobOpenable).length;
     const terminalArchiveCount = filtered.length - analysisReadyCount;
     const displayJobs = showTerminalArchive ? filtered : filtered.filter(_btJobOpenable);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uC7A1 \uACB0\uACFC \xB7 \uC2E4\uD589 \uAE30\uB85D", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginLeft: 6 } }, "\uBD84\uC11D \uAC00\uB2A5 ", analysisReadyCount, " \xB7 \uC804\uCCB4 ", filtered.length, "/", (jobs || []).length)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload, disabled: isDemo }, "\u21BB")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uACB0\uACFC \uC774\uB825\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uC7A1 \uACB0\uACFC \xB7 \uC2E4\uD589 \uAE30\uB85D ", /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: "var(--ink-3)", fontWeight: 400 } }, "\u2014 \uC774 \uD654\uBA74\uC5D0\uC11C \uC9C1\uC811 \uC2E4\uD589\uD55C \uBC31\uD14C\uC2A4\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginLeft: 6 } }, "\uBD84\uC11D \uAC00\uB2A5 ", analysisReadyCount, " \xB7 \uC804\uCCB4 ", filtered.length, "/", (jobs || []).length)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload, disabled: isDemo }, "\u21BB")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uACB0\uACFC \uC774\uB825\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -28009,7 +28009,7 @@ ${sellCode}` : code);
         onClick: () => setShowTerminalArchive((show) => !show)
       },
       showTerminalArchive ? "\uC885\uB8CC \uAE30\uB85D \uC228\uAE30\uAE30" : `\uCDE8\uC18C\xB7\uC2E4\uD328 \uAE30\uB85D ${terminalArchiveCount}\uAC74`
-    )), displayJobs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, (jobs || []).length === 0 ? "\uC2E4\uD589 \uC774\uB825\uC774 \uC5C6\uC2B5\uB2C8\uB2E4" : filtered.length === 0 ? "\uC870\uAC74\uC5D0 \uB9DE\uB294 \uC2E4\uD589 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4" : "\uBD84\uC11D \uC0B0\uCD9C\uBB3C\uC774 \uB0A8\uC544 \uC788\uB294 \uC7A1 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC704\uC758 \uC9C4\uD654 \uC138\uB300 \uACB0\uACFC\uB97C \uC120\uD0DD\uD558\uAC70\uB098 \uC885\uB8CC \uAE30\uB85D\uC5D0\uC11C \uAC19\uC740 \uC870\uAC74\uC73C\uB85C \uC7AC\uC2E4\uD589\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" } }, displayJobs.slice(0, visibleLimit).map((j) => {
+    )), displayJobs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty bt-jobs-empty" }, (jobs || []).length === 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\uC544\uC9C1 \uC774 \uD654\uBA74\uC5D0\uC11C \uC2E4\uD589\uD55C \uBC31\uD14C\uC2A4\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC704 ", /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uD589"), " \uD0ED\uC5D0\uC11C \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04\uC744 \uACE0\uB974\uACE0 \uC2E4\uD589\uD558\uBA74 \uC5EC\uAE30\uC5D0 \uC313\uC785\uB2C8\uB2E4.") : filtered.length === 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\uAC80\uC0C9\xB7\uD0DC\uADF8 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC2E4\uD589 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uAC80\uC0C9\uC5B4\uB97C \uC9C0\uC6B0\uAC70\uB098 \uD544\uD130\uB97C \uD574\uC81C\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("b", null, "\uBD84\uC11D\uD560 \uC218 \uC788\uB294 \uC7A1 \uACB0\uACFC\uAC00 \uC544\uC9C1 \uD558\uB098\uB3C4 \uC5C6\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("span", null, "\uAE30\uB85D ", (jobs || []).length, "\uAC74\uC740 \uBAA8\uB450 ", /* @__PURE__ */ React.createElement("b", null, "\uC911\uAC04\uC5D0 \uC911\uC9C0\uB418\uC5C8\uAC70\uB098 \uC2E4\uD328"), "\uD574\uC11C \uACB0\uACFC CSV\uAC00 \uB0A8\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uBC31\uD14C\uC2A4\uD2B8\uB294 \uB05D\uAE4C\uC9C0 \uC644\uC8FC\uD574\uC57C \uBD84\uC11D \uC0B0\uCD9C\uBB3C\uC774 \uC0DD\uAE41\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("span", null, "\uC9C0\uAE08 \uACB0\uACFC\uB97C \uBCF4\uACE0 \uC2F6\uB2E4\uBA74 \uC704\uC758 ", /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC"), "\uB97C \uC120\uD0DD\uD558\uC138\uC694 \u2014 AI \uB8E8\uD504\uAC00 \uC644\uC8FC\uC2DC\uD0A8 \uACB0\uACFC\uB77C \uBC14\uB85C \uBD84\uC11D\uB429\uB2C8\uB2E4. \uC9C1\uC811 \uC2E4\uD589\uD55C \uACB0\uACFC\uAC00 \uD544\uC694\uD558\uBA74 ", /* @__PURE__ */ React.createElement("b", null, "\uCDE8\uC18C\xB7\uC2E4\uD328 \uAE30\uB85D"), "\uC744 \uD3BC\uCCD0 \uAC19\uC740 \uC870\uAC74\uC73C\uB85C \uC7AC\uC2E4\uD589\uD558\uACE0, \uC774\uBC88\uC5D0\uB294 \uC644\uB8CC\uB420 \uB54C\uAE4C\uC9C0 \uB450\uC138\uC694."))) : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" } }, displayJobs.slice(0, visibleLimit).map((j) => {
       const statusKind = j.status_kind || j.status;
       const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
       const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
@@ -28978,7 +28978,7 @@ ${sellCode}` : code);
         selectedName: sellName,
         reloadKey
       }
-    ))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80(\uC2E4\uD589 \uC804\uC6A9 \uC900\uBE44)", accent: "var(--amber)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtBackFinderPreflightPanel, { baseUrl, isDemo, buyName }))), subTab === "result" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC", accent: "var(--violet)", defaultOpen: true }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80(\uC2E4\uD589 \uC804\uC6A9 \uC900\uBE44)", accent: "var(--amber)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtBackFinderPreflightPanel, { baseUrl, isDemo, buyName }))), subTab === "result" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "bt-source-legend", role: "note" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC"), /* @__PURE__ */ React.createElement("span", null, "AI \uC5F0\uAD6C \uB8E8\uD504\uAC00 \uC2A4\uC2A4\uB85C \uB3CC\uB9B0 \uC138\uB300\uBCC4 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uACB0\uACFC CSV\uAC00 \uB0A8\uC544 \uC788\uC5B4 \uBC14\uB85C \uBD84\uC11D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC7A1 \uACB0\uACFC \xB7 \uC2E4\uD589 \uAE30\uB85D"), /* @__PURE__ */ React.createElement("span", null, "\uC774 \uD654\uBA74\uC5D0\uC11C \uC0AC\uB78C\uC774 \uC9C1\uC811 \uC2E4\uD589 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uB9CC\uB4E0 \uBC31\uD14C\uC2A4\uD2B8\uC785\uB2C8\uB2E4. \uC644\uC8FC\uD574\uC57C \uBD84\uC11D \uACB0\uACFC\uAC00 \uB0A8\uC2B5\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uACB0\uACFC \uB77C\uC774\uBE0C\uB7EC\uB9AC", accent: "var(--violet)", defaultOpen: true }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(
       BtResultLibrary,
       {
         baseUrl,
@@ -36053,6 +36053,115 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4RunControls });
 
+  // ai_strategy_loop/dashboard/frontend/research-improvement.jsx
+  var { useMemo: useMemo_ri, useEffect: useEffect_ri, useState: useState_ri } = React;
+  function _riNum(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  function riAnnualizedPct(totalPct, years) {
+    const total = _riNum(totalPct);
+    const y = _riNum(years);
+    if (total == null || y == null || y <= 0) return null;
+    const growth = 1 + total / 100;
+    if (growth <= 0) return null;
+    return (Math.pow(growth, 1 / y) - 1) * 100;
+  }
+  function riImprovementSeries(generations) {
+    const rows = (Array.isArray(generations) ? generations : []).filter((g) => g && _riNum(g.gen_no) != null).slice().sort((a, b) => Number(a.gen_no) - Number(b.gen_no));
+    let bestProfit = null;
+    let bestPct = null;
+    return rows.map((g) => {
+      const profit = _riNum(g.profit);
+      const pct = _riNum(g.total_profit_pct);
+      if (profit != null && (bestProfit == null || profit > bestProfit)) bestProfit = profit;
+      if (pct != null && (bestPct == null || pct > bestPct)) bestPct = pct;
+      return {
+        gen: Number(g.gen_no),
+        profit,
+        pct,
+        bestProfit,
+        bestPct,
+        isRecord: profit != null && profit === bestProfit,
+        gatePassed: !!g.gate_passed
+      };
+    });
+  }
+  function _RiChart({ series }) {
+    const W = 1400, H = 320, padL = 58, padR = 16, padT = 14, padB = 30;
+    const iw = W - padL - padR, ih = H - padT - padB;
+    const pts = series.filter((p) => p.pct != null);
+    if (pts.length < 2) {
+      return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC138\uB300\uAC00 2\uAC1C \uC774\uC0C1 \uC644\uB8CC\uB418\uBA74 \uAC1C\uC120 \uCD94\uC774\uB97C \uADF8\uB9BD\uB2C8\uB2E4.");
+    }
+    const values = pts.flatMap((p) => [p.pct, p.bestPct]).filter((v) => v != null);
+    const lo = Math.min(...values), hi = Math.max(...values);
+    const span = hi - lo || 1;
+    const x = (i) => padL + (pts.length === 1 ? iw / 2 : i / (pts.length - 1) * iw);
+    const y = (v) => padT + ih - (v - lo) / span * ih;
+    const path = (key) => pts.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+    const zeroY = lo <= 0 && hi >= 0 ? y(0) : null;
+    return /* @__PURE__ */ React.createElement("div", { className: "chart-wrap ri-chart" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        className: "bt-plot-svg",
+        role: "img",
+        "aria-label": "\uC138\uB300\uBCC4 \uC218\uC775\uB960\uACFC \uC9C0\uAE08\uAE4C\uC9C0 \uCD5C\uACE0 \uC218\uC775\uB960 \uCD94\uC774"
+      },
+      /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }),
+      zeroY != null && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: zeroY, x2: padL + iw, y2: zeroY, stroke: "var(--line-2)", strokeDasharray: "4 4" }),
+      /* @__PURE__ */ React.createElement("path", { d: path("bestPct"), fill: "none", stroke: "var(--teal)", strokeWidth: "3" }),
+      /* @__PURE__ */ React.createElement("path", { d: path("pct"), fill: "none", stroke: "var(--violet)", strokeWidth: "1.6", strokeDasharray: "5 3" }),
+      pts.map((p, i) => /* @__PURE__ */ React.createElement(
+        "circle",
+        {
+          key: p.gen,
+          cx: x(i),
+          cy: y(p.pct),
+          r: p.isRecord ? 4.2 : 2.6,
+          fill: p.isRecord ? "var(--teal)" : "var(--ink-3)"
+        }
+      )),
+      /* @__PURE__ */ React.createElement("text", { x: padL - 6, y: y(hi) + 4, textAnchor: "end", fontSize: "11", fill: "var(--ink-3)" }, hi.toFixed(1), "%"),
+      /* @__PURE__ */ React.createElement("text", { x: padL - 6, y: y(lo) + 4, textAnchor: "end", fontSize: "11", fill: "var(--ink-3)" }, lo.toFixed(1), "%"),
+      /* @__PURE__ */ React.createElement("text", { x: padL, y: H - 8, fontSize: "11", fill: "var(--ink-3)" }, "g", pts[0].gen),
+      /* @__PURE__ */ React.createElement("text", { x: padL + iw, y: H - 8, textAnchor: "end", fontSize: "11", fill: "var(--ink-3)" }, "g", pts[pts.length - 1].gen)
+    ));
+  }
+  function ResearchImprovementCard({ state, baseUrl, runId }) {
+    const series = useMemo_ri(() => riImprovementSeries(state && state.generations), [state && state.generations]);
+    const [years, setYears] = useState_ri(null);
+    useEffect_ri(() => {
+      setYears(null);
+      if (!baseUrl || !runId) return void 0;
+      const controller = new AbortController();
+      fetch(baseUrl + "/runs", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const hit = (j && j.runs || []).find((r) => r && r.run_id === runId);
+        const list = hit && Array.isArray(hit.years) ? hit.years : null;
+        if (list && list.length > 0) setYears(list.length);
+      }).catch(() => {
+      });
+      return () => controller.abort();
+    }, [baseUrl, runId]);
+    const last = series.length ? series[series.length - 1] : null;
+    const bestPct = last ? last.bestPct : null;
+    const bestProfit = last ? last.bestProfit : null;
+    const annual = riAnnualizedPct(bestPct, years);
+    let sinceRecord = null;
+    for (let i = series.length - 1; i >= 0; i -= 1) {
+      if (series[i].isRecord) {
+        sinceRecord = series.length - 1 - i;
+        break;
+      }
+    }
+    const gateCount = series.filter((p) => p.gatePassed).length;
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC5F0\uAD6C\uAC00 \uC2E4\uC81C\uB85C \uC88B\uC544\uC9C0\uACE0 \uC788\uB098 \xB7 \uC138\uB300\uBCC4 \uAC1C\uC120 \uCD94\uC774"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, series.length, "\uC138\uB300 \xB7 \uAC8C\uC774\uD2B8 \uD1B5\uACFC ", gateCount, "\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, series.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC644\uB8CC\uB41C \uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC5F0\uAD6C\uAC00 \uD55C \uC138\uB300\uB77C\uB3C4 \uB05D\uB098\uBA74 \uAC1C\uC120 \uCD94\uC774\uAC00 \uADF8\uB824\uC9D1\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "ri-kpis" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC9C0\uAE08\uAE4C\uC9C0 \uCD5C\uACE0 \uC218\uC775\uAE08"), /* @__PURE__ */ React.createElement("b", { className: bestProfit != null && bestProfit < 0 ? "neg" : "pos" }, bestProfit == null ? "\uBBF8\uBC1C\uD589" : fmtMoney(bestProfit)), /* @__PURE__ */ React.createElement("small", null, "\uBAA8\uB4E0 \uC138\uB300 \uC911 \uAC00\uC7A5 \uC88B\uC558\uB358 \uAC12")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC9C0\uAE08\uAE4C\uC9C0 \uCD5C\uACE0 \uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("b", { className: bestPct != null && bestPct < 0 ? "neg" : "pos" }, bestPct == null ? "\uBBF8\uBC1C\uD589" : `${bestPct.toFixed(2)}%`), /* @__PURE__ */ React.createElement("small", null, "\uC804\uCCB4 \uAE30\uAC04 \uB204\uC801 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC5F0\uD3C9\uADE0 \uC218\uC775\uB960 ", /* @__PURE__ */ React.createElement("i", null, "\uD30C\uC0DD\uAC12")), /* @__PURE__ */ React.createElement("b", { className: annual != null && annual < 0 ? "neg" : "pos" }, annual == null ? "\uBBF8\uBC1C\uD589" : `${annual.toFixed(2)}%`), /* @__PURE__ */ React.createElement("small", null, annual == null ? "\uC5F0\uAD6C \uAE30\uAC04(\uC5F0 \uC218)\uC774 \uD655\uC778\uB418\uC9C0 \uC54A\uC544 \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4." : `\uB204\uC801 \uC218\uC775\uB960\uC744 ${years}\uB144 \uAE30\uD558\uD3C9\uADE0\uC73C\uB85C \uD658\uC0B0 \u2014 \uBC31\uC5D4\uB4DC\uAC00 \uBC1C\uD589\uD55C \uAC12\uC774 \uC544\uB2D9\uB2C8\uB2E4.`)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uCD5C\uACE0 \uAE30\uB85D \uAC31\uC2E0"), /* @__PURE__ */ React.createElement("b", { className: sinceRecord != null && sinceRecord >= 5 ? "neg" : "pos" }, sinceRecord == null ? "\uBBF8\uBC1C\uD589" : sinceRecord === 0 ? "\uC9C1\uC804 \uC138\uB300" : `${sinceRecord}\uC138\uB300 \uC804`), /* @__PURE__ */ React.createElement("small", null, sinceRecord != null && sinceRecord >= 5 ? "\uC5EC\uB7EC \uC138\uB300\uC9F8 \uCD5C\uACE0\uCE58\uAC00 \uAC31\uC2E0\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4 \u2014 \uD0D0\uC0C9 \uBC29\uD5A5\uC744 \uBC14\uAFC0 \uC2DC\uC810\uC785\uB2C8\uB2E4." : "\uCD5C\uADFC\uC5D0 \uAC1C\uC120\uC774 \uC788\uC5C8\uC2B5\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro" }, /* @__PURE__ */ React.createElement("b", null, "\uAD75\uC740 \uC120"), "\uC740 \uC9C0\uAE08\uAE4C\uC9C0\uC758 \uCD5C\uACE0 \uC218\uC775\uB960(\uACC4\uB2E8\uCC98\uB7FC \uC62C\uB77C\uAC00\uC57C \uC815\uC0C1), ", /* @__PURE__ */ React.createElement("b", null, "\uC810\uC120"), "\uC740 \uAC01 \uC138\uB300\uC758 \uC131\uC801\uC785\uB2C8\uB2E4. \uC810\uC120\uC774 \uC624\uB974\uB0B4\uB824\uB3C4 \uAD75\uC740 \uC120\uC774 \uACC4\uB2E8\uC2DD\uC73C\uB85C \uC62C\uB77C\uAC00\uBA74 \uC5F0\uAD6C\uAC00 \uC804\uC9C4\uD558\uACE0 \uC788\uB294 \uAC83\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(_RiChart, { series }))));
+  }
+  Object.assign(window, { ResearchImprovementCard, riImprovementSeries, riAnnualizedPct });
+
   // ai_strategy_loop/dashboard/frontend/v4-charts.jsx
   var { useEffect: useEffect_v4c, useRef: useRef_v4c } = React;
   function _v4Tok(name) {
@@ -36606,7 +36715,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onApprove: requestApproval,
           onViewCode: viewCode
         }
-      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })))
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchImprovementCard, { state: s, baseUrl, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })))
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {

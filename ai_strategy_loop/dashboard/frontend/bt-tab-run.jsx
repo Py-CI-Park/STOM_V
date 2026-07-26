@@ -716,7 +716,7 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          잡 결과 · 실행 기록
+          잡 결과 · 실행 기록 <span style={{ fontSize: 11, color: "var(--ink-3)", fontWeight: 400 }}>— 이 화면에서 직접 실행한 백테스트</span>
           <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
             분석 가능 {analysisReadyCount} · 전체 {filtered.length}/{(jobs || []).length}
           </span>
@@ -758,12 +758,24 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
             </div>
             {/* 목록 */}
             {displayJobs.length === 0 ? (
-              <div className="research-empty">
-                {(jobs || []).length === 0
-                  ? "실행 이력이 없습니다"
-                  : filtered.length === 0
-                    ? "조건에 맞는 실행 기록이 없습니다"
-                    : "분석 산출물이 남아 있는 잡 결과가 없습니다. 위의 진화 세대 결과를 선택하거나 종료 기록에서 같은 조건으로 재실행하세요."}
+              <div className="research-empty bt-jobs-empty">
+                {(jobs || []).length === 0 ? (
+                  <>아직 이 화면에서 실행한 백테스트가 없습니다. 위 <b>실행</b> 탭에서 조건식과 기간을 고르고 실행하면 여기에 쌓입니다.</>
+                ) : filtered.length === 0 ? (
+                  <>검색·태그 조건에 맞는 실행 기록이 없습니다. 검색어를 지우거나 필터를 해제하세요.</>
+                ) : (
+                  <>
+                    <b>분석할 수 있는 잡 결과가 아직 하나도 없습니다.</b>
+                    <span>
+                      기록 {(jobs || []).length}건은 모두 <b>중간에 중지되었거나 실패</b>해서 결과 CSV가 남지 않았습니다.
+                      백테스트는 끝까지 완주해야 분석 산출물이 생깁니다.
+                    </span>
+                    <span>
+                      지금 결과를 보고 싶다면 위의 <b>진화 세대 결과 라이브러리</b>를 선택하세요 — AI 루프가 완주시킨 결과라 바로 분석됩니다.
+                      직접 실행한 결과가 필요하면 <b>취소·실패 기록</b>을 펼쳐 같은 조건으로 재실행하고, 이번에는 완료될 때까지 두세요.
+                    </span>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" }}>

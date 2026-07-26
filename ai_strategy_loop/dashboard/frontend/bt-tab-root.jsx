@@ -226,6 +226,18 @@ function BacktestTab({ baseUrl, wsStatus }) {
       {/* 결과 분석 탭 — 결과 라이브러리 + 전폭 결과/분석 영역 + 접이식 분석 섹션 */}
       {subTab === "result" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* v5.11.2 — 두 목록이 무엇이 다른지 화면에서 먼저 말한다. 이 구분을 모르면
+              "결과가 왜 없냐"가 UI 고장으로 오해된다(사용자 지적 2026-07-26). */}
+          <div className="bt-source-legend" role="note">
+            <div>
+              <b>진화 세대 결과</b>
+              <span>AI 연구 루프가 스스로 돌린 세대별 백테스트입니다. 결과 CSV가 남아 있어 바로 분석할 수 있습니다.</span>
+            </div>
+            <div>
+              <b>잡 결과 · 실행 기록</b>
+              <span>이 화면에서 사람이 직접 실행 버튼을 눌러 만든 백테스트입니다. 완주해야 분석 결과가 남습니다.</span>
+            </div>
+          </div>
           <BtCollapsible title="진화 세대 결과 라이브러리" accent="var(--violet)" defaultOpen={true}>
             <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
           </BtCollapsible>
