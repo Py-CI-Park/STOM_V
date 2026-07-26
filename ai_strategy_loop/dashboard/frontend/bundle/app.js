@@ -10978,31 +10978,53 @@ def signal_sell(pos, bar, ind):
   function _CdPill({ label, tone = "info", title }) {
     return /* @__PURE__ */ React.createElement("span", { className: `condition-discovery-pill ${tone}`, title }, label);
   }
-  var _CD_TABS = [
-    { key: "policy", label: "\uC815\uCC45\xB7\uAC8C\uC774\uD2B8", description: "\uC0DD\uC131\uC758 \uD5C8\uC6A9 \uBC94\uC704\uC640 \uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uBA3C\uC800 \uD655\uC778\uD569\uB2C8\uB2E4." },
-    { key: "observability", label: "\uC5F0\uAD6C \uAD00\uCC30\uC131", description: "\uC5F0\uAD6C \uC785\uB825\xB7\uBD84\uAE30\xB7\uD6C4\uBCF4\uC758 \uCD9C\uCC98\uB97C \uAC80\uD1A0\uD569\uB2C8\uB2E4." },
-    { key: "evidence", label: "\uC99D\uAC70 \uAC74\uC804\uC131", description: "\uC800\uC7A5 \uC601\uC218\uC99D\uACFC \uCC28\uB2E8 \uADFC\uAC70\uAC00 \uC2B9\uACA9 \uD310\uB2E8\uC744 \uC9C0\uC9C0\uD558\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4." }
+  function _CdTerm({ ko, en }) {
+    return /* @__PURE__ */ React.createElement("span", { className: "condition-discovery-term" }, ko, en ? /* @__PURE__ */ React.createElement("small", null, en) : null);
+  }
+  var _CD_WORD = {
+    present: "\uC788\uC74C",
+    missing: "\uC5C6\uC74C",
+    pending: "\uD655\uC778 \uC911",
+    ok: "\uC815\uC0C1",
+    required: "\uD544\uC218",
+    not_required: "\uBD88\uD544\uC694",
+    optional: "\uC120\uD0DD",
+    accepted: "\uB9DE\uC558\uC74C",
+    rejected: "\uBE57\uB098\uAC10",
+    inconclusive: "\uD310\uB2E8 \uBD88\uAC00",
+    untested: "\uD655\uC778 \uC804",
+    blocked: "\uB9C9\uD798",
+    allowed: "\uD5C8\uC6A9",
+    advisory_process_only: "\uCC38\uACE0 \uC808\uCC28 \uC804\uC6A9",
+    requires_frozen_snapshot: "\uB3D9\uACB0 \uC2A4\uB0C5\uC0F7 \uD544\uC694",
+    requires_hard_gates: "\uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD544\uC694",
+    requires_human_approval: "\uC0AC\uB78C \uC2B9\uC778 \uD544\uC694",
+    human_approval_required: "\uC0AC\uB78C \uC2B9\uC778 \uD544\uC694",
+    requires_complete_evidence_health: "\uC99D\uAC70 \uC644\uBE44 \uD544\uC694",
+    hard_gate_not_passed: "\uD558\uB4DC \uAC8C\uC774\uD2B8 \uBBF8\uD1B5\uACFC",
+    research_prompt_maturity_only: "\uC5F0\uAD6C \uC131\uC219\uB3C4 \uAE30\uB85D \uC804\uC6A9"
+  };
+  function _cdWord(value) {
+    if (value == null || value === "") return "\uBBF8\uBC1C\uD589";
+    const key = String(value).trim().toLowerCase();
+    return _CD_WORD[key] || String(value);
+  }
+  function _CdFact({ ko, en, value, hint }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement(_CdTerm, { ko, en }), /* @__PURE__ */ React.createElement("b", null, _cdWord(value)), hint ? /* @__PURE__ */ React.createElement("small", null, hint) : null);
+  }
+  var _CD_SECTIONS = [
+    { key: "policy", label: "\u2460 \uADDC\uCE59 \u2014 \uC5B4\uB514\uAE4C\uC9C0 \uB9CC\uB4E4 \uC218 \uC788\uB098", hint: "\uC0DD\uC131\uC774 \uD5C8\uC6A9\uB41C \uBC94\uC704\uC640, \uB118\uC73C\uBA74 \uBB34\uC870\uAC74 \uD0C8\uB77D\uD558\uB294 \uD55C\uB3C4\uC785\uB2C8\uB2E4." },
+    { key: "observability", label: "\u2461 \uACFC\uC815 \u2014 \uC774 \uD6C4\uBCF4\uAC00 \uC5B4\uB5BB\uAC8C \uB098\uC654\uB098", hint: "\uC5B4\uB5A4 \uC790\uB8CC\uB97C \uC77D\uACE0, \uC5B4\uB5A4 \uACBD\uB85C\uB85C \uAC08\uB77C\uC838, \uBA87 \uAC1C\uC758 \uD6C4\uBCF4\uAC00 \uB9CC\uB4E4\uC5B4\uC84C\uB294\uC9C0\uC785\uB2C8\uB2E4." },
+    { key: "evidence", label: "\u2462 \uC99D\uAC70 \u2014 \uBB34\uC5C7\uC774 \uC2B9\uACA9\uC744 \uB9C9\uACE0 \uC788\uB098", hint: "\uC800\uC7A5\uB41C \uADFC\uAC70\uAC00 \uCDA9\uBD84\uD55C\uC9C0, \uC9C0\uAE08 \uB9C9\uD600 \uC788\uB294 \uC774\uC720\uAC00 \uBB34\uC5C7\uC778\uC9C0\uC785\uB2C8\uB2E4." }
   ];
   function ConditionDiscoveryPanel({ state, wsStatus }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
     const discovery = (_a = state.page_data) == null ? void 0 : _a.condition_discovery;
     const scores = (_b = state.page_data) == null ? void 0 : _b.advisory_scores;
     const feedback = (_c = state.page_data) == null ? void 0 : _c.condition_feedback;
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const [activeTab, setActiveTab] = useState_pan("policy");
-    const onTabKeyDown = (event) => {
-      const current = _CD_TABS.findIndex((tab) => tab.key === activeTab);
-      let next = current;
-      if (event.key === "ArrowRight") next = (current + 1) % _CD_TABS.length;
-      else if (event.key === "ArrowLeft") next = (current - 1 + _CD_TABS.length) % _CD_TABS.length;
-      else if (event.key === "Home") next = 0;
-      else if (event.key === "End") next = _CD_TABS.length - 1;
-      else return;
-      event.preventDefault();
-      setActiveTab(_CD_TABS[next].key);
-    };
     if (!discovery) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel condition-discovery-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "preset \xB7 hard gates \xB7 evidence")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uC870\uAC74\uC2DD \uBC1C\uAD74 \uC815\uCC45/\uC810\uC218\uB294 \uB77C\uC774\uBE0C \uC0C1\uD0DC\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 \uC138\uB300 \uC644\uB8CC \uC2DC condition_discovery page_data\uAC00 \uBC1C\uD589\uB429\uB2C8\uB2E4.")));
+      return /* @__PURE__ */ React.createElement("div", { className: "panel condition-discovery-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uADDC\uCE59 \xB7 \uACFC\uC815 \xB7 \uC99D\uAC70")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uC870\uAC74\uC2DD \uBC1C\uAD74 \uADDC\uCE59\uACFC \uC810\uC218\uB294 \uC2E4\uC81C \uC5F0\uAD6C\uAC00 \uB3CC \uB54C \uD45C\uC2DC\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 \uD55C \uC138\uB300\uAC00 \uB05D\uB098\uBA74 \uADDC\uCE59\xB7\uACFC\uC815\xB7\uC99D\uAC70\uAC00 \uC5EC\uAE30\uC5D0 \uCC44\uC6CC\uC9D1\uB2C8\uB2E4.")));
     }
     const policy = discovery.policy || {};
     const gate = discovery.hard_gates || {};
@@ -11030,45 +11052,95 @@ def signal_sell(pos, bar, ind):
     const analysisFields = analysisCards.required_fields || [];
     const promptFields = promptReceipts.required_fields || [];
     const blockerItems = promotionBlockers.blockers || [];
-    return /* @__PURE__ */ React.createElement("div", { className: "panel condition-discovery-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, discovery.preset || "fast", " \xB7 \uC810\uC218\uB294 advisory-only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd condition-discovery-body" }, /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-hero" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "preset"), /* @__PURE__ */ React.createElement("b", null, policy.label || discovery.preset), /* @__PURE__ */ React.createElement("small", null, policy.purpose || "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAE30\uBCF8 \uC815\uCC45")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "time window"), /* @__PURE__ */ React.createElement("b", null, timeWindow.timeframe || "\u2014", " \xB7 ", _cdTime(timeWindow.start_time), "~", _cdTime(timeWindow.end_time)), /* @__PURE__ */ React.createElement("small", null, timeWindow.notes || timeWindow.source || "window policy")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "MDD gate"), /* @__PURE__ */ React.createElement("b", null, (_g = mddGate.cap) != null ? _g : "\u2014", "%"), /* @__PURE__ */ React.createElement("small", null, "preset cap ", (_h = mddGate.preset_cap) != null ? _h : "\u2014", " \xB7 configured ", (_i = mddGate.configured_cap) != null ? _i : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "trade gate"), /* @__PURE__ */ React.createElement("b", null, (_j = tradeGate.value) != null ? _j : "\u2014", " / day"), /* @__PURE__ */ React.createElement("small", null, tradeGate.authority || "hard gate"))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-score-row", "aria-label": "100\uC810 advisory score cards" }, /* @__PURE__ */ React.createElement("div", { className: "condition-score-card" }, /* @__PURE__ */ React.createElement("span", null, "\uC131\uACFC \uC810\uC218"), /* @__PURE__ */ React.createElement("b", null, _cdScore(perf.score)), /* @__PURE__ */ React.createElement("small", null, perf.scale || "0-100", " \xB7 promotion authority \uC5C6\uC74C")), /* @__PURE__ */ React.createElement("div", { className: "condition-score-card" }, /* @__PURE__ */ React.createElement("span", null, "\uC0DD\uC131\uD488\uC9C8 \uC810\uC218"), /* @__PURE__ */ React.createElement("b", null, _cdScore(quality.score)), /* @__PURE__ */ React.createElement("small", null, quality.scale || "0-100", " \xB7 \uBB38\uBC95/\uB2E4\uC591\uC131/\uBE44\uC6A9/\uB9E4\uB3C4\uAD6C\uC870")), /* @__PURE__ */ React.createElement("div", { className: "condition-score-card authority" }, /* @__PURE__ */ React.createElement("span", null, "\uC2B9\uACA9/Export"), /* @__PURE__ */ React.createElement("b", null, authority.promotion_review_ready ? "review-ready" : "blocked"), /* @__PURE__ */ React.createElement("small", null, "score_can_promote=", String(authority.score_can_promote === true)))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-tabs", role: "tablist", "aria-label": "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4 \uC0C1\uC138", onKeyDown: onTabKeyDown }, _CD_TABS.map((tab) => /* @__PURE__ */ React.createElement(
-      "button",
+    return /* @__PURE__ */ React.createElement("div", { className: "panel condition-discovery-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, discovery.preset || "fast", " \xB7 \uC810\uC218\uB294 \uCC38\uACE0\uC6A9(\uC2B9\uACA9 \uAD8C\uD55C \uC5C6\uC74C)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd condition-discovery-body" }, /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-lede" }, "\uC774 \uD328\uB110\uC740 ", /* @__PURE__ */ React.createElement("b", null, "AI\uAC00 \uC870\uAC74\uC2DD\uC744 \uB9CC\uB4E4 \uB54C \uC9C0\uCF1C\uC57C \uD558\uB294 \uADDC\uCE59"), "\uACFC ", /* @__PURE__ */ React.createElement("b", null, "\uC9C0\uAE08 \uC2E4\uC804 \uC2B9\uACA9\uC774 \uB9C9\uD600 \uC788\uB294 \uC774\uC720"), "\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBCF4\uC5EC\uC90D\uB2C8\uB2E4. \uC810\uC218\uB294 \uC5F0\uAD6C \uCC38\uACE0\uC6A9\uC774\uBA70, \uC810\uC218\uB9CC\uC73C\uB85C\uB294 \uC5B4\uB5A4 \uC804\uB7B5\uB3C4 \uC2B9\uACA9\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-hero" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, /* @__PURE__ */ React.createElement(_CdTerm, { ko: "\uD0D0\uC0C9 \uC815\uCC45", en: "preset" })), /* @__PURE__ */ React.createElement("b", null, policy.label || discovery.preset), /* @__PURE__ */ React.createElement("small", null, policy.purpose || "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uAE30\uBCF8 \uC815\uCC45")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, /* @__PURE__ */ React.createElement(_CdTerm, { ko: "\uC5F0\uAD6C \uC2DC\uAC04\uB300", en: "time window" })), /* @__PURE__ */ React.createElement("b", null, timeWindow.timeframe || "\u2014", " \xB7 ", _cdTime(timeWindow.start_time), "~", _cdTime(timeWindow.end_time)), /* @__PURE__ */ React.createElement("small", null, "\uC774 \uC2DC\uAC04\uB300 \uBC16\uC758 \uAC70\uB798\uB294 \uC5F0\uAD6C \uB300\uC0C1\uC774 \uC544\uB2D9\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, /* @__PURE__ */ React.createElement(_CdTerm, { ko: "\uCD5C\uB300 \uB099\uD3ED \uD55C\uB3C4", en: "MDD gate" })), /* @__PURE__ */ React.createElement("b", null, (_g = mddGate.cap) != null ? _g : "\u2014", "%"), /* @__PURE__ */ React.createElement("small", null, "\uC774\uBCF4\uB2E4 \uB354 \uAE4A\uAC8C \uBB3C\uB9AC\uBA74 \uBB34\uC870\uAC74 \uD0C8\uB77D \xB7 \uAE30\uBCF8 ", (_h = mddGate.preset_cap) != null ? _h : "\u2014", " / \uC124\uC815 ", (_i = mddGate.configured_cap) != null ? _i : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, /* @__PURE__ */ React.createElement(_CdTerm, { ko: "\uD558\uB8E8 \uCD5C\uC18C \uAC70\uB798", en: "trade gate" })), /* @__PURE__ */ React.createElement("b", null, (_j = tradeGate.value) != null ? _j : "\u2014", "\uAC74 / \uC77C"), /* @__PURE__ */ React.createElement("small", null, "\uAC70\uB798\uAC00 \uC774\uBCF4\uB2E4 \uB4DC\uBB3C\uBA74 \uD45C\uBCF8\uC774 \uBAA8\uC790\uB77C \uD0C8\uB77D\uD569\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-score-row", "aria-label": "\uCC38\uACE0\uC6A9 100\uC810 \uC810\uC218 \uCE74\uB4DC" }, /* @__PURE__ */ React.createElement("div", { className: "condition-score-card" }, /* @__PURE__ */ React.createElement("span", null, "\uC131\uACFC \uC810\uC218 ", /* @__PURE__ */ React.createElement("small", null, "performance")), /* @__PURE__ */ React.createElement("b", null, _cdScore(perf.score)), /* @__PURE__ */ React.createElement("small", null, perf.scale || "0-100", "\uC810 \xB7 \uCC38\uACE0\uC6A9(\uC2B9\uACA9 \uAD8C\uD55C \uC5C6\uC74C)")), /* @__PURE__ */ React.createElement("div", { className: "condition-score-card" }, /* @__PURE__ */ React.createElement("span", null, "\uC0DD\uC131 \uD488\uC9C8 \uC810\uC218 ", /* @__PURE__ */ React.createElement("small", null, "condition quality")), /* @__PURE__ */ React.createElement("b", null, _cdScore(quality.score)), /* @__PURE__ */ React.createElement("small", null, "\uBB38\uBC95 \xB7 \uB2E4\uC591\uC131 \xB7 \uBE44\uC6A9 \xB7 \uB9E4\uB3C4 \uAD6C\uC870")), /* @__PURE__ */ React.createElement("div", { className: "condition-score-card authority" + (authority.promotion_review_ready ? "" : " blocked") }, /* @__PURE__ */ React.createElement("span", null, "\uC2E4\uC804 \uC2B9\uACA9 ", /* @__PURE__ */ React.createElement("small", null, "promotion / export")), /* @__PURE__ */ React.createElement("b", null, authority.promotion_review_ready ? "\uC0AC\uB78C \uAC80\uD1A0 \uAC00\uB2A5" : "\uB9C9\uD798"), /* @__PURE__ */ React.createElement("small", null, authority.score_can_promote === true ? "\uC810\uC218\uB85C \uC2B9\uACA9 \uAC00\uB2A5" : "\uC810\uC218\uB9CC\uC73C\uB85C\uB294 \uC2B9\uACA9 \uBD88\uAC00"))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-board" }, /* @__PURE__ */ React.createElement("section", { className: "condition-discovery-block", "aria-label": _CD_SECTIONS[0].label }, /* @__PURE__ */ React.createElement("h4", null, _CD_SECTIONS[0].label), /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, _CD_SECTIONS[0].hint), /* @__PURE__ */ React.createElement(
+      _CdFact,
       {
-        key: tab.key,
-        type: "button",
-        role: "tab",
-        id: `condition-discovery-tab-${tab.key}`,
-        "aria-selected": activeTab === tab.key,
-        "aria-controls": `condition-discovery-panel-${tab.key}`,
-        tabIndex: activeTab === tab.key ? 0 : -1,
-        className: "condition-discovery-tab" + (activeTab === tab.key ? " active" : ""),
-        onClick: () => setActiveTab(tab.key)
-      },
-      tab.label
-    ))), _CD_TABS.map((tab) => {
-      var _a2, _b2, _c2, _d2, _e2, _f2;
-      return activeTab === tab.key && /* @__PURE__ */ React.createElement(
-        "section",
-        {
-          key: tab.key,
-          id: `condition-discovery-panel-${tab.key}`,
-          role: "tabpanel",
-          "aria-labelledby": `condition-discovery-tab-${tab.key}`,
-          className: "condition-discovery-tabpanel"
-        },
-        /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, tab.description),
-        tab.key === "policy" && /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-grid condition-discovery-policy-grid" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uC815\uCC45 \uAD8C\uD55C"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "generation authority"), /* @__PURE__ */ React.createElement("b", null, modeAuthority.generation_allowed === true ? "research generation allowed" : modeAuthority.generation_allowed === false ? "zero-generation review" : "authority pending/blocked"), /* @__PURE__ */ React.createElement("small", null, modeAuthority.process || ((_a2 = discovery.current_process) == null ? void 0 : _a2.code) || "process", " \xB7 ", modeAuthority.preset || discovery.preset))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uD558\uB4DC \uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "MDD"), /* @__PURE__ */ React.createElement("b", null, (_b2 = mddGate.cap) != null ? _b2 : "\u2014", "%"), /* @__PURE__ */ React.createElement("small", null, "preset ", (_c2 = mddGate.preset_cap) != null ? _c2 : "\u2014", " \xB7 configured ", (_d2 = mddGate.configured_cap) != null ? _d2 : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "minimum daily trades"), /* @__PURE__ */ React.createElement("b", null, (_e2 = tradeGate.value) != null ? _e2 : "\u2014", " / day"), /* @__PURE__ */ React.createElement("small", null, tradeGate.authority || "hard gate")))),
-        tab.key === "observability" && /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-grid research-observability-grid", "aria-label": "Research Pack Branch Tree" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Research Pack / Branch Tree"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "context pack health: ", contextPackHealth.status || "pending", " \xB7 budget\u2264", contextPackHealth.fail_closed_budget_tokens || 25e4), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, contextFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "info" }))), branchTree.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "condition-discovery-note condition-discovery-branch-tree" }, branchTree.map((step) => /* @__PURE__ */ React.createElement("li", { key: step.step }, /* @__PURE__ */ React.createElement("b", null, step.step), " \u2192 ", step.output)))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Candidate pack \xB7 Analysis cards"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "candidate pack"), /* @__PURE__ */ React.createElement("b", null, candidatePack.recommended_candidates || "2-3+"), /* @__PURE__ */ React.createElement("small", null, "min ", candidatePack.min_candidates || 2, " \xB7 fallback ", candidatePack.fallback_source || "diagnostic fallback")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, candidateFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "success" }))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "analysis cards"), /* @__PURE__ */ React.createElement("b", null, analysisCards.schema || "analysis_card_v2"), /* @__PURE__ */ React.createElement("small", null, analysisFields.join(" \xB7 ") || "root cause / segment contribution / insight score"))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Prompt receipts \xB7 Fallback"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "prompt receipts"), /* @__PURE__ */ React.createElement("b", null, promptReceipts.prompt_maturity_authority || "research_prompt_maturity_only"), /* @__PURE__ */ React.createElement("small", null, promptFields.join(" \xB7 ") || "downstream official backtest result required")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "fallback status: deterministic filter-only \uD6C4\uBCF4\uB294 diagnostic fallback\uC73C\uB85C\uB9CC \uD45C\uC2DC\uB418\uACE0 prompt maturity credit\uC740 0\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Promotion blockers"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "promotion-review"), /* @__PURE__ */ React.createElement("b", null, promotionBlockers.generation_allowed === false ? "zero generation" : "research only"), /* @__PURE__ */ React.createElement("small", null, promotionBlockers.authority || "fresh/frozen holdout \xB7 OOS/WF \xB7 slippage advisory required")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, blockerItems.length === 0 ? /* @__PURE__ */ React.createElement(_CdPill, { label: "blockers pending", tone: "info" }) : blockerItems.map((blocker) => /* @__PURE__ */ React.createElement(_CdPill, { key: blocker, label: blocker, tone: "danger" }))))),
-        tab.key === "evidence" && /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-grid" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Evidence health"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, evidenceRows.map((row) => /* @__PURE__ */ React.createElement(
-          _CdPill,
-          {
-            key: row.name,
-            label: `${row.name}:${row.status}`,
-            tone: row.blocker_reason ? "danger" : row.status === "present" ? "success" : "info",
-            title: row.blocker_reason || (row.required ? "required" : "optional")
-          }
-        ))), blockedBy.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note danger" }, "authority blocked: ", blockedBy.join(" \xB7 "))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Prompt / Equity \uC800\uC7A5"), persistenceRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "persistence rows pending") : persistenceRows.map((row) => /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row", key: row.kind }, /* @__PURE__ */ React.createElement("span", null, row.kind), /* @__PURE__ */ React.createElement("b", null, row.status), /* @__PURE__ */ React.createElement("small", null, row.count == null ? "count unavailable" : `${row.count} records`)))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uBD80\uAC80 hypothesis"), hypotheses.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uAC00\uC815 \uD658\uB958 \uB300\uAE30") : hypotheses.slice(0, 3).map((row) => /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row", key: row.id }, /* @__PURE__ */ React.createElement("span", null, row.status), /* @__PURE__ */ React.createElement("b", null, row.id), /* @__PURE__ */ React.createElement("small", null, row.hypothesis)))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "Human DB pattern cards"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-row" }, /* @__PURE__ */ React.createElement("span", null, "cards"), /* @__PURE__ */ React.createElement("b", null, patternCards.length), /* @__PURE__ */ React.createElement("small", null, ((_f2 = feedback == null ? void 0 : feedback.pattern_cards) == null ? void 0 : _f2.authority) || "creativity only")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uC784\uACC4\uAC12\xB7\uC804\uCCB4\uC2DD\xB7\uC131\uACFC \uBCF5\uC0AC\uB294 anti-copy guard\uAC00 \uCC28\uB2E8\uD569\uB2C8\uB2E4.")))
-      );
-    })));
+        ko: "\uC0DD\uC131 \uAD8C\uD55C",
+        en: "generation authority",
+        value: modeAuthority.generation_allowed === true ? "\uC5F0\uAD6C\uC6A9 \uC0DD\uC131 \uD5C8\uC6A9" : modeAuthority.generation_allowed === false ? "\uC0DD\uC131 \uAE08\uC9C0 \xB7 \uAC80\uD1A0 \uC804\uC6A9" : "\uAD8C\uD55C \uD655\uC778 \uC911",
+        hint: `${modeAuthority.process || ((_k = discovery.current_process) == null ? void 0 : _k.code) || "process"} \xB7 ${modeAuthority.preset || discovery.preset}`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uCD5C\uB300 \uB099\uD3ED \uD55C\uB3C4",
+        en: "MDD",
+        value: `${(_l = mddGate.cap) != null ? _l : "\u2014"}%`,
+        hint: `\uAE30\uBCF8 ${(_m = mddGate.preset_cap) != null ? _m : "\u2014"} \xB7 \uD604\uC7AC \uC124\uC815 ${(_n = mddGate.configured_cap) != null ? _n : "\u2014"}`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uD558\uB8E8 \uCD5C\uC18C \uAC70\uB798 \uC218",
+        en: "minimum daily trades",
+        value: `${(_o = tradeGate.value) != null ? _o : "\u2014"}\uAC74 / \uC77C`,
+        hint: "\uC774 \uD55C\uB3C4\uB294 \uC810\uC218\uB85C \uC0C1\uC1C4\uB418\uC9C0 \uC54A\uB294 \uD1B5\uACFC \uC870\uAC74\uC785\uB2C8\uB2E4."
+      }
+    )), /* @__PURE__ */ React.createElement("section", { className: "condition-discovery-block", "aria-label": _CD_SECTIONS[1].label }, /* @__PURE__ */ React.createElement("h4", null, _CD_SECTIONS[1].label), /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, _CD_SECTIONS[1].hint), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uC5F0\uAD6C \uC790\uB8CC \uBB36\uC74C \uC0C1\uD0DC",
+        en: "context pack",
+        value: contextPackHealth.status || "\uD655\uC778 \uC911",
+        hint: `\uC77D\uB294 \uC790\uB8CC \uD1A0\uD070 \uC0C1\uD55C ${(contextPackHealth.fail_closed_budget_tokens || 25e4).toLocaleString()} \u2014 \uB118\uC73C\uBA74 \uC0DD\uC131\uC744 \uBA48\uCDA5\uB2C8\uB2E4.`
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, contextFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "info", title: "\uC0DD\uC131 \uC804\uC5D0 \uBC18\uB4DC\uC2DC \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uC790\uB8CC \uD56D\uBAA9" }))), branchTree.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "condition-discovery-note condition-discovery-branch-tree" }, branchTree.map((step) => /* @__PURE__ */ React.createElement("li", { key: step.step }, /* @__PURE__ */ React.createElement("b", null, step.step), " \u2192 ", step.output))), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uD6C4\uBCF4 \uBB36\uC74C",
+        en: "candidate pack",
+        value: `${candidatePack.recommended_candidates || "2-3+"}\uAC1C \uAD8C\uC7A5`,
+        hint: `\uCD5C\uC18C ${candidatePack.min_candidates || 2}\uAC1C \xB7 \uBD80\uC871\uD558\uBA74 ${candidatePack.fallback_source || "\uC9C4\uB2E8\uC6A9 \uB300\uCCB4 \uD6C4\uBCF4"}`
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, candidateFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "success", title: "\uD6C4\uBCF4\uB9C8\uB2E4 \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uD56D\uBAA9" }))), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uBD84\uC11D \uCE74\uB4DC \uD615\uC2DD",
+        en: "analysis cards",
+        value: analysisCards.schema || "analysis_card_v2",
+        hint: analysisFields.join(" \xB7 ") || "\uC6D0\uC778 \xB7 \uAD6C\uAC04 \uAE30\uC5EC \xB7 \uC778\uC0AC\uC774\uD2B8 \uC810\uC218"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uD504\uB86C\uD504\uD2B8 \uAE30\uB85D",
+        en: "prompt receipts",
+        value: promptReceipts.prompt_maturity_authority || "\uC5F0\uAD6C \uC131\uC219\uB3C4 \uAE30\uB85D \uC804\uC6A9",
+        hint: promptFields.join(" \xB7 ") || "\uC2E4\uC81C \uC2B9\uACA9\uC740 \uACF5\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uAC00 \uC788\uC5B4\uC57C \uD569\uB2C8\uB2E4."
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uADDC\uCE59\uB9CC\uC73C\uB85C \uAC78\uB7EC\uB0B8 \uD6C4\uBCF4\uB294 ", /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uB2E8\uC6A9 \uB300\uCCB4 \uD6C4\uBCF4"), "\uB85C\uB9CC \uD45C\uC2DC\uB418\uACE0 \uC131\uC219\uB3C4 \uC810\uC218\uB97C \uBC1B\uC9C0 \uBABB\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "condition-discovery-block", "aria-label": _CD_SECTIONS[2].label }, /* @__PURE__ */ React.createElement("h4", null, _CD_SECTIONS[2].label), /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, _CD_SECTIONS[2].hint), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uC2B9\uACA9 \uB2E8\uACC4",
+        en: "promotion review",
+        value: promotionBlockers.generation_allowed === false ? "\uC0DD\uC131 \uAE08\uC9C0 \uC0C1\uD0DC" : "\uC5F0\uAD6C \uB2E8\uACC4",
+        hint: "\uC2E4\uC804 \uC2B9\uACA9\uC5D0\uB294 \uC2E0\uADDC\xB7\uB3D9\uACB0 \uD640\uB4DC\uC544\uC6C3, OOS/\uC804\uC9C4\uBD84\uC11D, \uC2AC\uB9AC\uD53C\uC9C0 \uCC38\uACE0\uCE58, \uC0AC\uB78C \uC2B9\uC778\uC774 \uBAA8\uB450 \uD544\uC694\uD569\uB2C8\uB2E4."
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, blockerItems.length === 0 ? /* @__PURE__ */ React.createElement(_CdPill, { label: "\uB9C9\uB294 \uD56D\uBAA9 \uC9D1\uACC4 \uC911", tone: "info" }) : blockerItems.map((blocker) => /* @__PURE__ */ React.createElement(_CdPill, { key: blocker, label: _cdWord(blocker), tone: "danger", title: blocker + " \u2014 \uC774 \uD56D\uBAA9\uC774 \uCC44\uC6CC\uC9C8 \uB54C\uAE4C\uC9C0 \uC2B9\uACA9\uC774 \uB9C9\uD799\uB2C8\uB2E4." }))), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-subhead" }, "\uC99D\uAC70 \uC0C1\uD0DC ", /* @__PURE__ */ React.createElement("small", null, "evidence health")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, evidenceRows.length === 0 ? /* @__PURE__ */ React.createElement(_CdPill, { label: "\uC99D\uAC70 \uC9D1\uACC4 \uB300\uAE30", tone: "info" }) : evidenceRows.map((row) => /* @__PURE__ */ React.createElement(
+      _CdPill,
+      {
+        key: row.name,
+        label: `${row.name} \xB7 ${_cdWord(row.status)}`,
+        tone: row.blocker_reason ? "danger" : row.status === "present" ? "success" : "info",
+        title: row.blocker_reason || (row.required ? "\uD544\uC218 \uC99D\uAC70" : "\uC120\uD0DD \uC99D\uAC70")
+      }
+    ))), blockedBy.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note danger", title: blockedBy.join(" \xB7 ") }, "\uC9C0\uAE08 \uB9C9\uACE0 \uC788\uB294 \uAC83: ", blockedBy.map(_cdWord).join(" \xB7 ")), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-subhead" }, "\uC800\uC7A5 \uAE30\uB85D ", /* @__PURE__ */ React.createElement("small", null, "persistence")), persistenceRows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uC800\uC7A5 \uAE30\uB85D \uC9D1\uACC4 \uB300\uAE30") : persistenceRows.map((row) => /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        key: row.kind,
+        ko: row.kind,
+        value: row.status,
+        hint: row.count == null ? "\uAC74\uC218 \uBBF8\uBC1C\uD589" : `${row.count}\uAC74 \uC800\uC7A5\uB428`
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-subhead" }, "\uBD80\uAC80\uC774 \uC138\uC6B4 \uAC00\uC815 ", /* @__PURE__ */ React.createElement("small", null, "hypothesis")), hypotheses.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uC544\uC9C1 \uD658\uB958\uB41C \uAC00\uC815\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : hypotheses.slice(0, 3).map((row) => /* @__PURE__ */ React.createElement(_CdFact, { key: row.id, ko: row.id, value: row.status, hint: row.hypothesis })), /* @__PURE__ */ React.createElement(
+      _CdFact,
+      {
+        ko: "\uC0AC\uB78C \uB9E4\uB9E4 \uD328\uD134 \uCE74\uB4DC",
+        en: "human pattern cards",
+        value: `${patternCards.length}\uC7A5`,
+        hint: "\uC544\uC774\uB514\uC5B4 \uCC38\uACE0\uC6A9\uC785\uB2C8\uB2E4. \uC784\uACC4\uAC12\xB7\uC804\uCCB4\uC2DD\xB7\uC131\uACFC \uBCF5\uC0AC\uB294 \uCC28\uB2E8\uB429\uB2C8\uB2E4."
+      }
+    )))));
   }
   function _pct(x) {
     return typeof x === "number" && Number.isFinite(x) ? (x * 100).toFixed(0) + "%" : "\uBBF8\uBC1C\uD589";
@@ -11087,14 +11159,27 @@ def signal_sell(pos, bar, ind):
     if (typeof t.operator === "string" && t.threshold != null) return `${variable} ${t.operator} ${_num(t.threshold)}`;
     return variable;
   }
-  function _SegRows({ title, rows }) {
+  function _segDiff(row) {
+    return row && typeof row.return_diff === "number" && Number.isFinite(row.return_diff) ? row.return_diff : null;
+  }
+  function _SegRows({ title, rows, limit = 6 }) {
     if (!Array.isArray(rows) || rows.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, title), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, rows.map((s, i) => {
-      const valid = s && typeof s === "object" && !Array.isArray(s);
-      if (!valid) return /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--amber)", padding: "3px 0" } }, "\uC138\uADF8\uBA3C\uD2B8 \uD615\uC2DD \uBD88\uC644\uC804");
-      const diff = typeof s.return_diff === "number" && Number.isFinite(s.return_diff) ? s.return_diff : null;
-      return /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { color: diff != null && diff < 0 ? "var(--red)" : "var(--ink-1)" } }, typeof s.label === "string" ? s.label : "\uB77C\uBCA8 \uBBF8\uBC1C\uD589"), ` \xB7 ${typeof s.count === "number" ? s.count : "\uAC74\uC218 \uBBF8\uBC1C\uD589"}\uAC74 \xB7 \uC2B9\uB960 ${_pct(s.win_rate)} \xB7 \uD3C9\uADE0 ${typeof s.avg_return === "number" && Number.isFinite(s.avg_return) ? `${_num(s.avg_return)}%` : "\uBBF8\uBC1C\uD589"} \xB7 \uB300\uBE44 ${diff == null ? "\uBBF8\uBC1C\uD589" : `${diff >= 0 ? "+" : ""}${_num(diff)}%p`}`);
-    })));
+    const valid = rows.filter((r) => r && typeof r === "object" && !Array.isArray(r));
+    const broken = rows.length - valid.length;
+    const ordered = valid.slice().sort((a, b) => {
+      var _a, _b;
+      return ((_a = _segDiff(a)) != null ? _a : 0) - ((_b = _segDiff(b)) != null ? _b : 0);
+    }).slice(0, limit);
+    const scale = Math.max(1e-9, ...ordered.map((r) => {
+      var _a;
+      return Math.abs((_a = _segDiff(r)) != null ? _a : 0);
+    }));
+    return /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-group" }, /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-title" }, title), /* @__PURE__ */ React.createElement("ul", { className: "autopsy-seg-list" }, ordered.map((s, i) => {
+      const diff = _segDiff(s);
+      const negative = diff != null && diff < 0;
+      const width = diff == null ? 0 : Math.min(100, Math.abs(diff) / scale * 100);
+      return /* @__PURE__ */ React.createElement("li", { key: i, className: "autopsy-seg-row" + (negative ? " negative" : "") }, /* @__PURE__ */ React.createElement("span", { className: "autopsy-seg-label" }, typeof s.label === "string" ? s.label : "\uB77C\uBCA8 \uBBF8\uBC1C\uD589"), /* @__PURE__ */ React.createElement("i", { className: "autopsy-seg-bar", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("b", { style: { width: width + "%" } })), /* @__PURE__ */ React.createElement("b", { className: "autopsy-seg-diff" }, diff == null ? "\uBBF8\uBC1C\uD589" : `${diff >= 0 ? "+" : ""}${_num(diff)}%p`), /* @__PURE__ */ React.createElement("small", { className: "autopsy-seg-meta" }, typeof s.count === "number" ? `${s.count}\uAC74` : "\uAC74\uC218 \uBBF8\uBC1C\uD589", " \xB7 \uC2B9\uB960 ", _pct(s.win_rate), " \xB7 \uD3C9\uADE0 ", typeof s.avg_return === "number" && Number.isFinite(s.avg_return) ? `${_num(s.avg_return)}%` : "\uBBF8\uBC1C\uD589"));
+    })), broken > 0 && /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-note" }, "\uD615\uC2DD\uC774 \uBD88\uC644\uC804\uD55C \uAD6C\uAC04 ", broken, "\uAC74\uC740 \uD45C\uC2DC\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."));
   }
   function _autopsyAvailability(data) {
     if (!data) return "\uBD80\uAC80 \uB370\uC774\uD130 \uBBF8\uBC1C\uD589";
@@ -11117,7 +11202,19 @@ def signal_sell(pos, bar, ind):
     var _a;
     const autopsy = (_a = state.page_data) == null ? void 0 : _a.autopsy;
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \xB7 \uAD6C\uCCB4 \uC784\uACC4\uAC12")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, _autopsyAvailability(autopsy) ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, _autopsyAvailability(autopsy)) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_AuthorityStatus, { data: autopsy }), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 10 } }, "\uAC70\uB798 ", typeof autopsy.trade_count === "number" ? autopsy.trade_count : "\uBBF8\uBC1C\uD589", "\uAC74 \xB7 \uC804\uCCB4 \uC2B9\uB960 ", _pct(autopsy.overall_win_rate), " \xB7 \uD3C9\uADE0 ", _num(autopsy.overall_avg_return), "%"), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300 \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.time_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uCD1D \uBC34\uB4DC \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.market_cap_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uAD50\uCC28(\uC2DC\uAC04\uB300\xD7\uC2DC\uCD1D)", rows: autopsy.cross_segments }), Array.isArray(autopsy.thresholds) && autopsy.thresholds.length > 0 ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uBC1C\uD589\uB41C \uC784\uACC4\uAC12(\uC190\uC2E4 \uAD6C\uAC04)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, autopsy.thresholds.map((t, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, `${_ThresholdCond(t)} \xB7 ${typeof (t == null ? void 0 : t.count) === "number" ? t.count : "\uAC74\uC218 \uBBF8\uBC1C\uD589"}\uAC74 \xB7 \uC2B9\uB960 ${_pct(t == null ? void 0 : t.win_rate)} \xB7 \uD3C9\uADE0 ${typeof (t == null ? void 0 : t.mean_return) === "number" && Number.isFinite(t.mean_return) ? `${_num(t.mean_return)}%` : "\uBBF8\uBC1C\uD589"}`)))) : /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC784\uACC4\uAC12 \uBBF8\uBC1C\uD589"))));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC5B4\uB514\uC11C \uC783\uC5C8\uB294\uAC00 \xB7 \uB2E4\uC74C \uC870\uAC74\uC2DD\uC774 \uACE0\uCE60 \uC9C0\uC810")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, _autopsyAvailability(autopsy) ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, _autopsyAvailability(autopsy)) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(_AuthorityStatus, { data: autopsy }), /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro", style: { marginTop: 0 } }, "\uB9C9\uB300\uB294 ", /* @__PURE__ */ React.createElement("b", null, "\uC804\uCCB4 \uD3C9\uADE0 \uB300\uBE44 \uC5BC\uB9C8\uB098 \uB354 \uB098\uBE74\uB294\uC9C0"), "(%p)\uC785\uB2C8\uB2E4. \uAE38\uC218\uB85D \uC190\uC2E4\uC774 \uADF8 \uAD6C\uAC04\uC5D0 \uBAB0\uB824 \uC788\uB2E4\uB294 \uB73B\uC774\uACE0, \uB2E4\uC74C \uC138\uB300 \uC870\uAC74\uC2DD\uC740 \uBCF4\uD1B5 \uC5EC\uAE30\uBD80\uD130 \uC190\uBD05\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "autopsy-kpis" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, typeof autopsy.trade_count === "number" ? `${autopsy.trade_count}\uAC74` : "\uBBF8\uBC1C\uD589")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC804\uCCB4 \uC2B9\uB960"), /* @__PURE__ */ React.createElement("b", null, _pct(autopsy.overall_win_rate))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD3C9\uADE0 \uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("b", null, _num(autopsy.overall_avg_return), "%"))), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300\uBCC4 \u2014 \uC5B8\uC81C \uC783\uC5C8\uB098", rows: autopsy.time_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC00\uCD1D\uC561 \uBC34\uB4DC\uBCC4 \u2014 \uC5B4\uB5A4 \uC885\uBAA9\uC5D0\uC11C \uC783\uC5C8\uB098", rows: autopsy.market_cap_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300 \xD7 \uC2DC\uCD1D \uAD50\uCC28 \u2014 \uAC00\uC7A5 \uC881\uD78C \uAD6C\uAC04", rows: autopsy.cross_segments }), Array.isArray(autopsy.thresholds) && autopsy.thresholds.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-group" }, /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-title" }, "\uBC14\uB85C \uC4F8 \uC218 \uC788\uB294 \uC784\uACC4\uAC12 \u2014 \uC774 \uC870\uAC74\uC774\uBA74 \uC190\uC2E4 \uAD6C\uAC04"), /* @__PURE__ */ React.createElement("ul", { className: "autopsy-threshold-list" }, autopsy.thresholds.map((t, i) => /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("b", { className: "mono" }, _ThresholdCond(t)), /* @__PURE__ */ React.createElement("small", null, typeof (t == null ? void 0 : t.count) === "number" ? `${t.count}\uAC74` : "\uAC74\uC218 \uBBF8\uBC1C\uD589", " \xB7 \uC2B9\uB960 ", _pct(t == null ? void 0 : t.win_rate), " \xB7 \uD3C9\uADE0 ", typeof (t == null ? void 0 : t.mean_return) === "number" && Number.isFinite(t.mean_return) ? `${_num(t.mean_return)}%` : "\uBBF8\uBC1C\uD589"))))) : /* @__PURE__ */ React.createElement("div", { className: "autopsy-seg-note" }, "\uC544\uC9C1 \uC784\uACC4\uAC12\uC774 \uBC1C\uD589\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."))));
+  }
+  function AutopsyFocusCard({ state, onOpenAutopsy }) {
+    var _a;
+    const autopsy = (_a = state.page_data) == null ? void 0 : _a.autopsy;
+    const unavailable = _autopsyAvailability(autopsy);
+    const pool = unavailable ? [] : [].concat(Array.isArray(autopsy.cross_segments) ? autopsy.cross_segments : []).concat(Array.isArray(autopsy.time_segments) ? autopsy.time_segments : []).concat(Array.isArray(autopsy.market_cap_segments) ? autopsy.market_cap_segments : []).filter((r) => r && typeof r === "object" && _segDiff(r) != null && _segDiff(r) < 0);
+    const worst = pool.sort((a, b) => _segDiff(a) - _segDiff(b)).slice(0, 3);
+    const scale = Math.max(1e-9, ...worst.map((r) => Math.abs(_segDiff(r))));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC9C1\uC804 \uC138\uB300\uAC00 \uC783\uC740 \uACF3 \xB7 \uC694\uC57D"), typeof onOpenAutopsy === "function" && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onOpenAutopsy, title: "\uCC44\uC810\xB7\uBD80\uAC80 \uB2E8\uACC4\uC5D0\uC11C \uC804\uCCB4 \uBD80\uAC80\uC744 \uBD05\uB2C8\uB2E4" }, "\uC804\uCCB4 \uBD80\uAC80 \uBCF4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, unavailable || worst.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, unavailable || "\uC9C1\uC804 \uC138\uB300\uC5D0\uC11C \uD3C9\uADE0\uBCF4\uB2E4 \uB69C\uB837\uD558\uAC8C \uB098\uBE74\uB358 \uAD6C\uAC04\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro", style: { marginTop: 0 } }, "\uC774\uBC88 \uC138\uB300 \uC870\uAC74\uC2DD\uC740 \uC544\uB798 \uAD6C\uAC04\uC744 \uD53C\uD558\uAC70\uB098 \uC870\uAC74\uC744 \uC881\uD788\uB294 \uBC29\uD5A5\uC73C\uB85C \uB9CC\uB4E4\uC5B4\uC9D1\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("ul", { className: "autopsy-seg-list" }, worst.map((s, i) => {
+      const diff = _segDiff(s);
+      return /* @__PURE__ */ React.createElement("li", { key: i, className: "autopsy-seg-row negative" }, /* @__PURE__ */ React.createElement("span", { className: "autopsy-seg-label" }, typeof s.label === "string" ? s.label : "\uB77C\uBCA8 \uBBF8\uBC1C\uD589"), /* @__PURE__ */ React.createElement("i", { className: "autopsy-seg-bar", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("b", { style: { width: Math.min(100, Math.abs(diff) / scale * 100) + "%" } })), /* @__PURE__ */ React.createElement("b", { className: "autopsy-seg-diff" }, _num(diff), "%p"), /* @__PURE__ */ React.createElement("small", { className: "autopsy-seg-meta" }, typeof s.count === "number" ? `${s.count}\uAC74` : "\uAC74\uC218 \uBBF8\uBC1C\uD589", " \xB7 \uC2B9\uB960 ", _pct(s.win_rate)));
+    })))));
   }
   function _lnNum(x) {
     return typeof x === "number" ? x.toFixed(2) : "\u2014";
@@ -11147,10 +11244,10 @@ def signal_sell(pos, bar, ind):
       color: passed ? "var(--good, #2ecc71)" : "var(--warn, #e0a030)"
     } }, passed ? "holdout \uD1B5\uACFC \u2713" : "holdout \uBBF8\uD1B5\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !hasData ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 holdout \uC878\uC5C5\uAC80\uC0AC\uB294 \uB77C\uC774\uBE0C \uC2E4\uD589(graduation_holdout=ON)\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "holdout \uC878\uC5C5\uAC80\uC0AC OFF \uB610\uB294 \uB300\uAE30 \u2014 train \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD6C4\uBCF4\uC5D0 \uD55C\uD574 holdout \uD310\uC815\uC774 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `train \uAC70\uB798 ${holdout.train_trade_count} \xB7 holdout \uAC70\uB798 ${holdout.trade_count}`), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `holdout MDD ${_hoNum(holdout.mdd_pct)}% \xB7 holdout \uC218\uC775 ${typeof holdout.total_profit === "number" ? holdout.total_profit.toLocaleString() : "\u2014"}\uC6D0`), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", marginTop: 4 } }, `\uD310\uC815: ${holdout.reason || holdout.status}`))));
   }
-  Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel });
+  Object.assign(window, { AutopsyPanel, AutopsyFocusCard, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel });
 
   // ai_strategy_loop/dashboard/frontend/panels.jsx
-  Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
+  Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, AutopsyFocusCard, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
 
   // ai_strategy_loop/dashboard/webui-build/src/react-jsx-runtime-shim.js
   var React2 = window.React;
@@ -23258,17 +23355,17 @@ def signal_sell(pos, bar, ind):
 
   // ai_strategy_loop/dashboard/frontend/hypothesis.jsx
   var _VERDICT_META = {
-    accepted: { label: "\uCC44\uD0DD", color: "var(--teal)", tip: "\uC2E4\uCE21 \uB378\uD0C0 \uBD80\uD638\uAC00 \uAE30\uB300 \uBC29\uD5A5\uACFC \uC77C\uCE58(\uAC00\uC815\uC774 \uB9DE\uC558\uB2E4)" },
-    rejected: { label: "\uAE30\uAC01", color: "var(--red)", tip: "\uC2E4\uCE21 \uB378\uD0C0 \uBD80\uD638\uAC00 \uAE30\uB300 \uBC29\uD5A5\uACFC \uBC18\uB300(\uAC00\uC815\uC774 \uBE57\uB098\uAC14\uB2E4)" },
-    inconclusive: { label: "\uD310\uC815\uBD88\uAC00", color: "var(--ink-3)", tip: "\uB378\uD0C0 \uC5C6\uC74C(\uBD80\uBAA8 \uC5C6\uC74C/\uD0A4 \uB204\uB77D) \uB610\uB294 \uC6C0\uC9C1\uC784 \uBBF8\uBBF8" },
-    untested: { label: "\uBBF8\uAC80\uC99D", color: "var(--ink-3)", tip: "\uC544\uC9C1 \uB2E4\uC74C \uC138\uB300 \uB378\uD0C0\uB85C \uAC80\uC99D\uB418\uC9C0 \uC54A\uC74C" }
+    accepted: { label: "\uB9DE\uC558\uC74C", color: "var(--teal)", tip: "\uB2E4\uC74C \uC138\uB300\uC5D0\uC11C \uAE30\uB300\uD55C \uBC29\uD5A5\uC73C\uB85C \uC2E4\uC81C\uB85C \uC6C0\uC9C1\uC600\uC2B5\uB2C8\uB2E4." },
+    rejected: { label: "\uBE57\uB098\uAC10", color: "var(--red)", tip: "\uB2E4\uC74C \uC138\uB300\uC5D0\uC11C \uAE30\uB300\uC640 \uBC18\uB300 \uBC29\uD5A5\uC73C\uB85C \uC6C0\uC9C1\uC600\uC2B5\uB2C8\uB2E4." },
+    inconclusive: { label: "\uD310\uB2E8 \uBD88\uAC00", color: "var(--ink-3)", tip: "\uBE44\uAD50\uD560 \uC774\uC804 \uC138\uB300\uAC00 \uC5C6\uAC70\uB098 \uBCC0\uD654\uAC00 \uB108\uBB34 \uC791\uC544 \uD310\uC815\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." },
+    untested: { label: "\uD655\uC778 \uC804", color: "var(--ink-3)", tip: "\uC544\uC9C1 \uB2E4\uC74C \uC138\uB300 \uACB0\uACFC\uAC00 \uB098\uC624\uC9C0 \uC54A\uC544 \uAC80\uC99D \uC804\uC785\uB2C8\uB2E4." }
   };
   var _SIDE_LABEL = { buy: "\uB9E4\uC218", sell: "\uB9E4\uB3C4", both: "\uACF5\uD1B5" };
   var _METRIC_LABEL = {
-    mdd: "MDD",
+    mdd: "\uCD5C\uB300 \uB099\uD3ED",
     profit: "\uCD1D\uC190\uC775",
-    daily_avg_trades: "\uC77C\uD3C9\uADE0\uAC70\uB798",
-    graded: "graded"
+    daily_avg_trades: "\uD558\uB8E8 \uD3C9\uADE0 \uAC70\uB798",
+    graded: "\uC885\uD569 \uC810\uC218"
   };
   function _VerdictPill({ verdict }) {
     const meta = _VERDICT_META[verdict] || _VERDICT_META.untested;
@@ -23293,9 +23390,15 @@ def signal_sell(pos, bar, ind):
     }
     if (!target) return null;
     const hyps = target.hypotheses || [];
-    const genLabel = `gen_${String(target.gen_no).padStart(2, "0")}`;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uAC00\uC815 \uB8E8\uD504 \u2014 Hypothesis (", genLabel, ")"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC2E4\uD589\u2192\uBD84\uC11D\u2192\uAC00\uC815\u2192\uAC1C\uC120 \uACFC\uD559\uC801 \uBC29\uBC95 \uB8E8\uD504")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 } }, hyps.map((h, i) => {
-      const dir = (h.expected_direction || 0) > 0 ? "\u2191" : (h.expected_direction || 0) < 0 ? "\u2193" : "\xB7";
+    const genLabel = `${target.gen_no}\uC138\uB300`;
+    const tally = { accepted: 0, rejected: 0, other: 0 };
+    for (const h of hyps) {
+      if (h.verdict === "accepted") tally.accepted += 1;
+      else if (h.verdict === "rejected") tally.rejected += 1;
+      else tally.other += 1;
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC774\uBC88\uC5D0 \uC138\uC6B4 \uAC00\uC815\uACFC \uACB0\uACFC \xB7 ", genLabel), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB9DE\uC558\uC74C ", tally.accepted, " \xB7 \uBE57\uB098\uAC10 ", tally.rejected, " \xB7 \uD655\uC778 \uC804 ", tally.other)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro", style: { marginTop: 0 } }, "AI\uAC00 ", /* @__PURE__ */ React.createElement("b", null, "\u201C\uC774\uB807\uAC8C \uACE0\uCE58\uBA74 \uC774 \uC9C0\uD45C\uAC00 \uC88B\uC544\uC9C8 \uAC83\u201D"), "\uC774\uB77C\uACE0 \uBBF8\uB9AC \uC801\uC5B4 \uB454 \uC608\uC0C1\uC785\uB2C8\uB2E4. \uB2E4\uC74C \uC138\uB300 \uC2E4\uC81C \uACB0\uACFC\uC640 \uBE44\uAD50\uD574 \uB9DE\uC558\uB294\uC9C0 \uBE57\uB098\uAC14\uB294\uC9C0\uB97C \uD310\uC815\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 } }, hyps.map((h, i) => {
+      const dir = (h.expected_direction || 0) > 0 ? "\uB192\uC774\uB824 \uD568 \u2191" : (h.expected_direction || 0) < 0 ? "\uB0AE\uCD94\uB824 \uD568 \u2193" : "\uBC29\uD5A5 \uBBF8\uC9C0\uC815";
       const metric = _METRIC_LABEL[h.target_metric] || h.target_metric || "\u2014";
       const sideLabel = _SIDE_LABEL[h.side] || h.side || "\u2014";
       const obs = h.observed_delta;
@@ -23304,14 +23407,14 @@ def signal_sell(pos, bar, ind):
         background: "var(--bg-1)",
         border: "1px solid var(--line-1)",
         borderRadius: 6
-      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "pill", style: { fontSize: 10 } }, sideLabel), /* @__PURE__ */ React.createElement(_VerdictPill, { verdict: h.verdict }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, metric, " ", dir), typeof obs === "number" && /* @__PURE__ */ React.createElement(
+      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "pill", style: { fontSize: 10 } }, sideLabel), /* @__PURE__ */ React.createElement(_VerdictPill, { verdict: h.verdict }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, metric, " \xB7 ", dir), typeof obs === "number" && /* @__PURE__ */ React.createElement(
         "span",
         {
           className: "mono",
           style: { fontSize: 10.5, color: "var(--ink-2)", marginLeft: "auto" },
-          "data-tip": "\uB2E4\uC74C \uC138\uB300 \uC2E4\uCE21 \uB378\uD0C0(\uD310\uC815 \uADFC\uAC70)"
+          "data-tip": "\uB2E4\uC74C \uC138\uB300\uC5D0\uC11C \uC2E4\uC81C\uB85C \uBCC0\uD55C \uAC12(\uD310\uC815 \uADFC\uAC70)"
         },
-        "\u0394 ",
+        "\uC2E4\uC81C \uBCC0\uD654 ",
         obs >= 0 ? "+" : "",
         obs.toFixed(4)
       )), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "var(--ink-0)", lineHeight: 1.5 } }, h.text || "\u2014"), h.basis && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 2 } }, "\uADFC\uAC70: ", h.basis));
@@ -36357,16 +36460,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-labelledby": "v6-stage-tab-" + V6_STAGES[activeStage].key,
         "aria-live": "polite"
       },
-      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix v59-stage-generate" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
-      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix v59-stage-backtest" }, /* @__PURE__ */ React.createElement("div", { className: "v56-cell" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 })), /* @__PURE__ */ React.createElement("div", { className: "v56-cell v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement("section", { className: "v59-live-result-analysis v54-span-all", "aria-labelledby": "v59-live-result-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "v59-live-result-heading", className: "stom-section-label" }, "\uC804\uCCB4 \uACB0\uACFC \uBD84\uC11D \xB7 Backtest\uC640 \uB3D9\uC77C\uD55C \uC815\uBCF8"), /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro" }, "\uC120\uD0DD\xB7best\xB7\uCD5C\uC2E0 \uC21C\uC11C\uB85C \uC720\uD6A8\uD55C \uC138\uB300\uB97C \uC5F0\uACB0\uD574 \uC790\uBCF8\uACE1\uC120, \uBD84\uD3EC, \uC704\uD5D8 \uBC0F \uAC70\uB798 \uBD84\uC11D\uC744 Backtest \uC18C\uC720 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uC7AC\uC0AC\uC6A9\uD569\uB2C8\uB2E4."), runId && selectedGen != null ? /* @__PURE__ */ React.createElement(
-        BtResultArea,
-        {
-          baseUrl,
-          isDemo,
-          jobId: null,
-          evoSource: { run_id: runId, gen_no: selectedGen }
-        }
-      ) : /* @__PURE__ */ React.createElement("div", { className: "v59-result-pending" }, "\uC720\uD6A8\uD55C run\uACFC \uC138\uB300\uAC00 \uBC1C\uD589\uB418\uBA74 \uC804\uCCB4 \uACB0\uACFC \uBD84\uC11D\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "v56-cell v59-live-result-provenance", "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uCD9C\uCC98" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uACB0\uACFC \uCD9C\uCC98 \xB7 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro" }, "\uC704 \uC815\uBCF8 \uACB0\uACFC \uBD84\uC11D\uC774 Live\uC758 \uC720\uC77C\uD55C \uC0C1\uC138 \uACB0\uACFC \uC18C\uC720\uC790\uC785\uB2C8\uB2E4. \uC774 \uC601\uC5ED\uC740 \uC911\uBCF5 \uCC28\uD2B8 \uC5C6\uC774 \uC120\uD0DD \uC0C1\uD0DC\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v59-result-provenance mono" }, /* @__PURE__ */ React.createElement("span", null, "source=\uC9C4\uD654 \uC138\uB300"), /* @__PURE__ */ React.createElement("span", null, "run=", runId || "\u2014"), /* @__PURE__ */ React.createElement("span", null, "generation=", selectedGen != null ? selectedGen : "\u2014"), /* @__PURE__ */ React.createElement("span", null, runId && selectedGen != null ? "\uC815\uBCF8 \uACB0\uACFC \uBD84\uC11D\uC5D0 \uC5F0\uACB0\uB428" : "\uC720\uD6A8\uD55C run\xB7\uC138\uB300 \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "v55-btd-actions" }, /* @__PURE__ */ React.createElement(
+      activeStage === 0 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix v59-stage-generate" }, /* @__PURE__ */ React.createElement(AutopsyFocusCard, { state: s, onOpenAutopsy: () => onStagePin(2) }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus })),
+      activeStage === 1 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix v59-stage-backtest" }, /* @__PURE__ */ React.createElement("div", { className: "v56-cell" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode, pinnedIdx: 1 })), /* @__PURE__ */ React.createElement("div", { className: "v56-cell v6-engine-xl" }, /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement("section", { className: "v59-live-result-analysis v54-span-all", "aria-labelledby": "v59-live-result-heading" }, /* @__PURE__ */ React.createElement("div", { className: "v59-live-result-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "v59-live-result-heading", className: "stom-section-label" }, "\uC804\uCCB4 \uACB0\uACFC \uBD84\uC11D \xB7 Backtest\uC640 \uB3D9\uC77C\uD55C \uC815\uBCF8"), /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro" }, "\uC120\uD0DD\xB7best\xB7\uCD5C\uC2E0 \uC21C\uC11C\uB85C \uC720\uD6A8\uD55C \uC138\uB300\uB97C \uC5F0\uACB0\uD574 \uC790\uBCF8\uACE1\uC120, \uBD84\uD3EC, \uC704\uD5D8 \uBC0F \uAC70\uB798 \uBD84\uC11D\uC744 Backtest \uC18C\uC720 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uC7AC\uC0AC\uC6A9\uD569\uB2C8\uB2E4.", runId && selectedGen != null ? ` \uD604\uC7AC \uC5F0\uACB0: run ${runId} \xB7 g${selectedGen}` : " \uC720\uD6A8\uD55C run\xB7\uC138\uB300\uB97C \uAE30\uB2E4\uB9AC\uB294 \uC911\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement(
         "button",
         {
           className: "btn ghost sm",
@@ -36380,11 +36475,19 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
               window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
             } catch (e) {
             }
-            window.location.href = "/ui/evolution/backtest";
+            window.location.href = "/?tab=backtest";
           }
         },
-        "\u21F2 \uBC31\uD14C\uC2A4\uD2B8 \uD0ED\uC5D0\uC11C \uC815\uBCF8 \uACB0\uACFC \uBD84\uC11D \uC5F4\uAE30"
-      )))),
+        "\u21F2 \uBC31\uD14C\uC2A4\uD2B8 \uD0ED\uC5D0\uC11C \uC5F4\uAE30"
+      )), runId && selectedGen != null ? /* @__PURE__ */ React.createElement(
+        BtResultArea,
+        {
+          baseUrl,
+          isDemo,
+          jobId: null,
+          evoSource: { run_id: runId, gen_no: selectedGen }
+        }
+      ) : /* @__PURE__ */ React.createElement("div", { className: "v59-result-pending" }, "\uC720\uD6A8\uD55C run\uACFC \uC138\uB300\uAC00 \uBC1C\uD589\uB418\uBA74 \uC804\uCCB4 \uACB0\uACFC \uBD84\uC11D\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4."))),
       activeStage === 2 && /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix v59-stage-score" }, /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v6_gate", label: "\uAC8C\uC774\uD2B8\xB7\uCC44\uC810 \uAE30\uC900 \xB7 \uD604\uC7AC run \uC720\uD6A8\uAC12 (\uD074\uB9AD \uC0C1\uC138)" }, /* @__PURE__ */ React.createElement("div", { className: "v55-gatefold-grid" }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 })))), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(
         GenerationsTable,
         {

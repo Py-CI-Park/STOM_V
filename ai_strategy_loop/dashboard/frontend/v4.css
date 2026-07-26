@@ -1132,37 +1132,79 @@
 }
 .active-strategy-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-/* Governance is one readable surface with three explicit purposes. */
-.condition-discovery-tabs {
+/* Governance is one readable surface with three explicit purposes.
+   v5.11.2 — 탭을 없애고 규칙·과정·증거를 항상 같이 보여준다. 셋을 따로 보면
+   "왜 막혔는가"를 판단할 수 없어서, 탭 전환이 곧 판단 비용이었다. */
+.condition-discovery-lede {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-1);
+  border-left: 3px solid var(--teal);
+  border-radius: 8px;
+  background: var(--bg-0);
+  color: var(--ink-1);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.condition-discovery-lede b { color: var(--ink-0); }
+.condition-discovery-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  align-items: stretch;
+}
+.condition-discovery-block {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0;
-  border-bottom: 1px solid var(--line-1);
-}
-.condition-discovery-tab {
-  min-height: 40px;
-  padding: 8px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-.condition-discovery-tab.active {
-  color: var(--teal);
-  border-bottom-color: var(--teal);
-}
-.condition-discovery-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.condition-discovery-tabpanel { min-height: 300px; }
-.condition-discovery-tabpanel .condition-discovery-grid { align-items: stretch; }
-.condition-discovery-tabpanel .condition-discovery-grid > section {
-  min-height: 260px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
   padding: 12px;
   border: 1px solid var(--line-1);
   border-radius: 10px;
   background: var(--bg-0);
 }
+.condition-discovery-block > h4 {
+  margin: 0 0 2px;
+  color: var(--ink-0);
+  font-size: 13px;
+  letter-spacing: .01em;
+}
+.condition-discovery-block .condition-discovery-tab-intro { margin: 0 0 8px; }
+.condition-discovery-subhead {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-1);
+  color: var(--ink-1);
+  font-size: 12px;
+  font-weight: 600;
+}
+.condition-discovery-subhead small { margin-left: 6px; color: var(--ink-3); font: 10px var(--mono); font-weight: 400; }
+.condition-discovery-term { display: inline; color: var(--ink-1); }
+.condition-discovery-term small { margin-left: 5px; color: var(--ink-3); font: 9.5px var(--mono); text-transform: none; letter-spacing: 0; }
+/* 이 보드의 한 줄은 [무엇] [값] / [설명] 이다. 좁은 고정폭 3열을 그대로 쓰면
+   한국어 라벨이 세로로 쪼개져 읽히지 않는다(2026-07-26 실측). */
+.condition-discovery-block .condition-discovery-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 2px;
+  align-items: baseline;
+}
+.condition-discovery-block .condition-discovery-row > span {
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+}
+.condition-discovery-block .condition-discovery-row > b {
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.condition-discovery-block .condition-discovery-row > small { grid-column: 1 / -1; color: var(--ink-3); }
+.condition-score-card.authority.blocked b { color: var(--amber); }
+@media (max-width: 1500px) { .condition-discovery-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .condition-discovery-board { grid-template-columns: minmax(0, 1fr); } }
 
 /* Backtest/Live/History share one 12-column result rhythm. */
 .bt-result-flow {
@@ -1205,15 +1247,16 @@
 .bt-result-capabilities b { color: var(--ink-1); }
 .bt-result-capabilities .ok { color: var(--teal); }
 .bt-result-capabilities .unsupported { color: var(--ink-3); }
-.v59-result-provenance { height: auto !important; min-height: 0 !important; }
-.v59-result-provenance .v59-result-provenance {
+/* v5.11.2 — '결과 출처 · 상태' 중복 블록 제거. 연결 상태는 결과 분석 헤더 한 줄로 합쳤다. */
+.v59-live-result-head {
   display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px 12px;
-  padding: 8px 0;
-  color: var(--ink-2);
-  font-size: 11px;
 }
+.v59-live-result-head > div { min-width: 0; }
+.v59-live-result-head .v59-section-intro { margin-bottom: 6px; }
 .bt-result-section {
   min-width: 0;
   padding: 12px;
@@ -1543,8 +1586,6 @@
 }
 @media (max-width: 640px) {
   .bt-summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-  .condition-discovery-tabs { flex-direction: column; }
-  .condition-discovery-tab { width: 100%; text-align: left; }
 }
 
 /* ═══ v5.11.1 operational UX acceptance ═══ */
@@ -1708,6 +1749,35 @@
 .bt-monthly-calendar-scroll { min-height: 310px; padding: 8px 0; }
 .bt-monthly-calendar-table { width: 100%; min-width: 830px; }
 .bt-quant-card .panel-bd { overflow: auto; }
+
+/* Autopsy: "어디서 잃었나"는 숫자 나열이 아니라 길이 비교로 읽혀야 한다. */
+.autopsy-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.autopsy-kpis > div { min-width: 0; padding: 8px 10px; border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-0); }
+.autopsy-kpis span { display: block; color: var(--ink-3); font-size: 10.5px; }
+.autopsy-kpis b { display: block; margin-top: 3px; color: var(--ink-0); font: 15px var(--mono); }
+.autopsy-seg-group { margin-bottom: 14px; }
+.autopsy-seg-title { margin-bottom: 6px; color: var(--ink-1); font-size: 12px; font-weight: 600; }
+.autopsy-seg-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.autopsy-seg-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 1.1fr) minmax(60px, 2fr) 66px;
+  gap: 4px 9px;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--bg-2);
+}
+.autopsy-seg-label { min-width: 0; color: var(--ink-0); font-size: 12px; overflow-wrap: anywhere; }
+.autopsy-seg-bar { display: block; height: 11px; border-radius: 6px; background: var(--bg-2); overflow: hidden; }
+.autopsy-seg-bar b { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), var(--blue)); }
+.autopsy-seg-row.negative .autopsy-seg-bar b { background: linear-gradient(90deg, rgba(255,107,107,.55), var(--red)); }
+.autopsy-seg-diff { text-align: right; color: var(--ink-1); font: 12px var(--mono); }
+.autopsy-seg-row.negative .autopsy-seg-diff { color: var(--red); }
+.autopsy-seg-meta { grid-column: 1 / -1; color: var(--ink-3); font-size: 10.5px; }
+.autopsy-seg-note { color: var(--ink-3); font-size: 11px; }
+.autopsy-threshold-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.autopsy-threshold-list li { padding: 7px 9px; border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-0); }
+.autopsy-threshold-list b { display: block; color: var(--ink-0); font-size: 12px; overflow-wrap: anywhere; }
+.autopsy-threshold-list small { display: block; margin-top: 3px; color: var(--ink-3); font-size: 10.5px; }
 
 /* Settings and Glossary share the same full-canvas, equal-card dashboard contract. */
 .v4-settings { align-items: stretch; }

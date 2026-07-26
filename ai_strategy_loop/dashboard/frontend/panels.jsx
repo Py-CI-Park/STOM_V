@@ -13,9 +13,9 @@
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { ConnBadge, StatusBadge, ResearchCriteriaBanner, ExportStatusBanner } from "./panels-status.jsx";
 import { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel } from "./panels-config.jsx";
-import { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel } from "./panels-analysis.jsx";
+import { AutopsyPanel, AutopsyFocusCard, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel } from "./panels-analysis.jsx";
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, AutopsyFocusCard, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
 
 // Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { ActiveConfigPanel, ActiveStrategyPanel, AutopsyPanel, ConditionDiscoveryPanel, ConnBadge, CostPanel, CurrentGenPanel, ExportStatusBanner, FeedbackPanel, HoldoutPanel, LineagePanel, MetaPanel, PopulationPanel, ResearchCriteriaBanner, StatusBadge };
+export { ActiveConfigPanel, ActiveStrategyPanel, AutopsyFocusCard, AutopsyPanel, ConditionDiscoveryPanel, ConnBadge, CostPanel, CurrentGenPanel, ExportStatusBanner, FeedbackPanel, HoldoutPanel, LineagePanel, MetaPanel, PopulationPanel, ResearchCriteriaBanner, StatusBadge };

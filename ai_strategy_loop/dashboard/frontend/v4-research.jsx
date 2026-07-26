@@ -8,7 +8,7 @@
  *   채점·부검 스테이지. ProcessFlowPanel 은 벨트·스테이지 탭과 3중 중복이라 제거(N7).
  */
 // dual-safe ESM import. KEEP each on ONE physical line.
-import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
+import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, AutopsyFocusCard, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
@@ -484,6 +484,9 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
            aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
         {activeStage === 0 && (
           <div className="v6-stage-grid v59-matrix v59-stage-generate">
+            {/* v5.11.2 — 왜 이렇게 만드는가(부검 근거) → 무엇을 기대하는가(가정) →
+                무엇을 만들었는가(조건식) → 어떤 규칙을 지키는가(거버넌스) 순서로 읽힌다. */}
+            <AutopsyFocusCard state={s} onOpenAutopsy={() => onStagePin(2)} />
             <HypothesisPanel state={s} />
             <ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} />
             <ConditionDiscoveryPanel state={s} wsStatus={wsStatus} />
@@ -499,26 +502,20 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <div className="v56-cell v6-engine-xl">
               <EnginePanel state={s} wsStatus={wsStatus} />
             </div>
+            {/* v5.11.2 — 결과 소유자는 이 섹션 하나다. 아래에 있던 '결과 출처 · 상태' 중복
+                블록은 같은 사실을 두 번 말할 뿐이라 제거하고, 실제로 쓰이는 이동 버튼만
+                헤더로 올렸다(구 버튼의 링크 /ui/evolution/backtest 는 404 였다). */}
             <section className="v59-live-result-analysis v54-span-all" aria-labelledby="v59-live-result-heading">
-              <h3 id="v59-live-result-heading" className="stom-section-label">전체 결과 분석 · Backtest와 동일한 정본</h3>
-              <p className="v59-section-intro">선택·best·최신 순서로 유효한 세대를 연결해 자본곡선, 분포, 위험 및 거래 분석을 Backtest 소유 컴포넌트로 재사용합니다.</p>
-              {runId && selectedGen != null ? (
-                <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={null}
-                              evoSource={{ run_id: runId, gen_no: selectedGen }} />
-              ) : (
-                <div className="v59-result-pending">유효한 run과 세대가 발행되면 전체 결과 분석이 표시됩니다.</div>
-              )}
-            </section>
-            <section className="v56-cell v59-live-result-provenance" aria-label="백테스트 결과 출처">
-              <h3 className="stom-section-label">결과 출처 · 상태</h3>
-              <p className="v59-section-intro">위 정본 결과 분석이 Live의 유일한 상세 결과 소유자입니다. 이 영역은 중복 차트 없이 선택 상태만 표시합니다.</p>
-              <div className="v59-result-provenance mono">
-                <span>source=진화 세대</span>
-                <span>run={runId || "—"}</span>
-                <span>generation={selectedGen != null ? selectedGen : "—"}</span>
-                <span>{runId && selectedGen != null ? "정본 결과 분석에 연결됨" : "유효한 run·세대 대기"}</span>
-              </div>
-              <div className="v55-btd-actions">
+              <div className="v59-live-result-head">
+                <div>
+                  <h3 id="v59-live-result-heading" className="stom-section-label">전체 결과 분석 · Backtest와 동일한 정본</h3>
+                  <p className="v59-section-intro">
+                    선택·best·최신 순서로 유효한 세대를 연결해 자본곡선, 분포, 위험 및 거래 분석을 Backtest 소유 컴포넌트로 재사용합니다.
+                    {runId && selectedGen != null
+                      ? ` 현재 연결: run ${runId} · g${selectedGen}`
+                      : " 유효한 run·세대를 기다리는 중입니다."}
+                  </p>
+                </div>
                 <button className="btn ghost sm"
                         title="선택 세대를 백테스트 탭의 정본 결과 분석으로 연다"
                         disabled={!runId || selectedGen == null}
@@ -529,11 +526,17 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                             window.dispatchEvent(new CustomEvent("stom:bt-evo-select", { detail }));
                             window.localStorage.setItem("stom_bt_evo_pending", JSON.stringify(detail));
                           } catch (e) {}
-                          window.location.href = "/ui/evolution/backtest";
+                          window.location.href = "/?tab=backtest";
                         }}>
-                  ⇲ 백테스트 탭에서 정본 결과 분석 열기
+                  ⇲ 백테스트 탭에서 열기
                 </button>
               </div>
+              {runId && selectedGen != null ? (
+                <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={null}
+                              evoSource={{ run_id: runId, gen_no: selectedGen }} />
+              ) : (
+                <div className="v59-result-pending">유효한 run과 세대가 발행되면 전체 결과 분석이 표시됩니다.</div>
+              )}
             </section>
           </div>
         )}

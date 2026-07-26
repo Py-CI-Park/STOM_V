@@ -342,7 +342,9 @@ def test_v59_live_research_source_contracts() -> None:
     assert "active-strategy-code-columns" in config
     assert "slice(0, limit)" not in config
     assert "매수 복사" in config and "매도 복사" in config and "함께 복사" in config
-    assert 'role="tablist"' in analysis
-    assert 'role="tab"' in analysis
-    assert 'role="tabpanel"' in analysis
-    assert "onTabKeyDown" in analysis
+    # v5.11.2 — 거버넌스는 탭으로 나누지 않는다. 규칙·과정·증거를 동시에 보여야
+    #   "무엇이 승격을 막고 있나"를 한 번에 판단할 수 있다(사용자 요구 2026-07-26).
+    assert "condition-discovery-board" in analysis
+    assert "_CD_SECTIONS" in analysis
+    assert 'role="tablist" aria-label="조건식 발굴 거버넌스 상세"' not in analysis
+    assert "onTabKeyDown" not in analysis

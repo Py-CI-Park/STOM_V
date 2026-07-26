@@ -14,10 +14,10 @@
 
 // verdict → pill 스타일/라벨 매핑. 색은 styles.css var 토큰만 사용한다.
 const _VERDICT_META = {
-  accepted:     { label: "채택", color: "var(--teal)",  tip: "실측 델타 부호가 기대 방향과 일치(가정이 맞았다)" },
-  rejected:     { label: "기각", color: "var(--red)",   tip: "실측 델타 부호가 기대 방향과 반대(가정이 빗나갔다)" },
-  inconclusive: { label: "판정불가", color: "var(--ink-3)", tip: "델타 없음(부모 없음/키 누락) 또는 움직임 미미" },
-  untested:     { label: "미검증", color: "var(--ink-3)", tip: "아직 다음 세대 델타로 검증되지 않음" },
+  accepted:     { label: "맞았음", color: "var(--teal)",  tip: "다음 세대에서 기대한 방향으로 실제로 움직였습니다." },
+  rejected:     { label: "빗나감", color: "var(--red)",   tip: "다음 세대에서 기대와 반대 방향으로 움직였습니다." },
+  inconclusive: { label: "판단 불가", color: "var(--ink-3)", tip: "비교할 이전 세대가 없거나 변화가 너무 작아 판정할 수 없습니다." },
+  untested:     { label: "확인 전", color: "var(--ink-3)", tip: "아직 다음 세대 결과가 나오지 않아 검증 전입니다." },
 };
 
 // side → 뱃지 라벨. 어느 측 전략을 고치려는 가정인가.
@@ -25,10 +25,10 @@ const _SIDE_LABEL = { buy: "매수", sell: "매도", both: "공통" };
 
 // target_metric → 사람이 읽는 라벨(가정이 겨냥하는 지표).
 const _METRIC_LABEL = {
-  mdd: "MDD",
+  mdd: "최대 낙폭",
   profit: "총손익",
-  daily_avg_trades: "일평균거래",
-  graded: "graded",
+  daily_avg_trades: "하루 평균 거래",
+  graded: "종합 점수",
 };
 
 function _VerdictPill({ verdict }) {
@@ -56,23 +56,34 @@ function HypothesisPanel({ state }) {
   if (!target) return null;
 
   const hyps = target.hypotheses || [];
-  const genLabel = `gen_${String(target.gen_no).padStart(2, "0")}`;
+  const genLabel = `${target.gen_no}세대`;
+  const tally = { accepted: 0, rejected: 0, other: 0 };
+  for (const h of hyps) {
+    if (h.verdict === "accepted") tally.accepted += 1;
+    else if (h.verdict === "rejected") tally.rejected += 1;
+    else tally.other += 1;
+  }
 
   return (
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--violet)" }}></span>
-          가정 루프 — Hypothesis ({genLabel})
+          이번에 세운 가정과 결과 · {genLabel}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          실행→분석→가정→개선 과학적 방법 루프
+          맞았음 {tally.accepted} · 빗나감 {tally.rejected} · 확인 전 {tally.other}
         </span>
       </div>
       <div className="panel-bd">
+        <p className="v59-section-intro" style={{ marginTop: 0 }}>
+          AI가 <b>“이렇게 고치면 이 지표가 좋아질 것”</b>이라고 미리 적어 둔 예상입니다.
+          다음 세대 실제 결과와 비교해 맞았는지 빗나갔는지를 판정합니다.
+        </p>
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
           {hyps.map((h, i) => {
-            const dir = (h.expected_direction || 0) > 0 ? "↑" : (h.expected_direction || 0) < 0 ? "↓" : "·";
+            const dir = (h.expected_direction || 0) > 0 ? "높이려 함 ↑"
+              : (h.expected_direction || 0) < 0 ? "낮추려 함 ↓" : "방향 미지정";
             const metric = _METRIC_LABEL[h.target_metric] || h.target_metric || "—";
             const sideLabel = _SIDE_LABEL[h.side] || h.side || "—";
             const obs = h.observed_delta;
@@ -87,12 +98,12 @@ function HypothesisPanel({ state }) {
                   <span className="pill" style={{ fontSize: 10 }}>{sideLabel}</span>
                   <_VerdictPill verdict={h.verdict} />
                   <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-                    {metric} {dir}
+                    {metric} · {dir}
                   </span>
                   {typeof obs === "number" && (
                     <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", marginLeft: "auto" }}
-                          data-tip="다음 세대 실측 델타(판정 근거)">
-                      Δ {obs >= 0 ? "+" : ""}{obs.toFixed(4)}
+                          data-tip="다음 세대에서 실제로 변한 값(판정 근거)">
+                      실제 변화 {obs >= 0 ? "+" : ""}{obs.toFixed(4)}
                     </span>
                   )}
                 </div>

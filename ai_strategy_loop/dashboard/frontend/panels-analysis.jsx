@@ -150,10 +150,54 @@ function _cdScore(score) {
 function _CdPill({ label, tone = "info", title }) {
   return <span className={`condition-discovery-pill ${tone}`} title={title}>{label}</span>;
 }
-const _CD_TABS = [
-  { key: "policy", label: "정책·게이트", description: "생성의 허용 범위와 하드 게이트를 먼저 확인합니다." },
-  { key: "observability", label: "연구 관찰성", description: "연구 입력·분기·후보의 출처를 검토합니다." },
-  { key: "evidence", label: "증거 건전성", description: "저장 영수증과 차단 근거가 승격 판단을 지지하는지 확인합니다." },
+
+// 쉬운 우리말을 앞에, 원어(로그·코드에서 보게 될 이름)를 작게 뒤에 붙인다.
+//   사용자는 한국어만 읽어도 되고, 로그를 뒤질 때는 원어로 검색할 수 있다.
+function _CdTerm({ ko, en }) {
+  return (
+    <span className="condition-discovery-term">
+      {ko}{en ? <small>{en}</small> : null}
+    </span>
+  );
+}
+
+// 백엔드가 쓰는 상태 낱말을 그대로 노출하지 않는다 — 화면에서는 우리말이 정본이다.
+const _CD_WORD = {
+  present: "있음", missing: "없음", pending: "확인 중", ok: "정상",
+  required: "필수", not_required: "불필요", optional: "선택",
+  accepted: "맞았음", rejected: "빗나감", inconclusive: "판단 불가", untested: "확인 전",
+  blocked: "막힘", allowed: "허용",
+  advisory_process_only: "참고 절차 전용",
+  requires_frozen_snapshot: "동결 스냅샷 필요",
+  requires_hard_gates: "하드 게이트 통과 필요",
+  requires_human_approval: "사람 승인 필요",
+  human_approval_required: "사람 승인 필요",
+  requires_complete_evidence_health: "증거 완비 필요",
+  hard_gate_not_passed: "하드 게이트 미통과",
+  research_prompt_maturity_only: "연구 성숙도 기록 전용",
+};
+function _cdWord(value) {
+  if (value == null || value === "") return "미발행";
+  const key = String(value).trim().toLowerCase();
+  return _CD_WORD[key] || String(value);
+}
+
+// 한 줄 = 한 사실. label 은 쉬운 우리말, hint 는 왜/무엇을 뜻하는지.
+function _CdFact({ ko, en, value, hint }) {
+  return (
+    <div className="condition-discovery-row">
+      <_CdTerm ko={ko} en={en} />
+      <b>{_cdWord(value)}</b>
+      {hint ? <small>{hint}</small> : null}
+    </div>
+  );
+}
+
+// 세 영역(규칙·과정·증거)은 탭으로 감추지 않는다 — 한 화면에서 같이 읽어야 판단이 된다.
+const _CD_SECTIONS = [
+  { key: "policy", label: "① 규칙 — 어디까지 만들 수 있나", hint: "생성이 허용된 범위와, 넘으면 무조건 탈락하는 한도입니다." },
+  { key: "observability", label: "② 과정 — 이 후보가 어떻게 나왔나", hint: "어떤 자료를 읽고, 어떤 경로로 갈라져, 몇 개의 후보가 만들어졌는지입니다." },
+  { key: "evidence", label: "③ 증거 — 무엇이 승격을 막고 있나", hint: "저장된 근거가 충분한지, 지금 막혀 있는 이유가 무엇인지입니다." },
 ];
 
 function ConditionDiscoveryPanel({ state, wsStatus }) {
@@ -162,18 +206,6 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
   const feedback = state.page_data?.condition_feedback;
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
-  const [activeTab, setActiveTab] = useState_pan("policy");
-  const onTabKeyDown = (event) => {
-    const current = _CD_TABS.findIndex(tab => tab.key === activeTab);
-    let next = current;
-    if (event.key === "ArrowRight") next = (current + 1) % _CD_TABS.length;
-    else if (event.key === "ArrowLeft") next = (current - 1 + _CD_TABS.length) % _CD_TABS.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = _CD_TABS.length - 1;
-    else return;
-    event.preventDefault();
-    setActiveTab(_CD_TABS[next].key);
-  };
 
   if (!discovery) {
     return (
@@ -183,13 +215,13 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             <span className="dot" style={{ background: "var(--teal)" }}></span>조건식 발굴 거버넌스
             {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
           </div>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>preset · hard gates · evidence</span>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>규칙 · 과정 · 증거</span>
         </div>
         <div className="panel-bd">
           <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
             {isDemo
-              ? "데모 모드 — 조건식 발굴 정책/점수는 라이브 상태에서 발행됩니다."
-              : "실시간 데이터 대기 — 세대 완료 시 condition_discovery page_data가 발행됩니다."}
+              ? "데모 모드 — 조건식 발굴 규칙과 점수는 실제 연구가 돌 때 표시됩니다."
+              : "실시간 데이터 대기 — 한 세대가 끝나면 규칙·과정·증거가 여기에 채워집니다."}
           </div>
         </div>
       </div>
@@ -231,187 +263,142 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          {discovery.preset || "fast"} · 점수는 advisory-only
+          {discovery.preset || "fast"} · 점수는 참고용(승격 권한 없음)
         </span>
       </div>
       <div className="panel-bd condition-discovery-body">
+        <p className="condition-discovery-lede">
+          이 패널은 <b>AI가 조건식을 만들 때 지켜야 하는 규칙</b>과 <b>지금 실전 승격이 막혀 있는 이유</b>를 한 화면에서 보여줍니다.
+          점수는 연구 참고용이며, 점수만으로는 어떤 전략도 승격되지 않습니다.
+        </p>
         <div className="condition-discovery-hero">
           <div>
-            <span className="stat-label">preset</span>
+            <span className="stat-label"><_CdTerm ko="탐색 정책" en="preset" /></span>
             <b>{policy.label || discovery.preset}</b>
             <small>{policy.purpose || "조건식 발굴 기본 정책"}</small>
           </div>
           <div>
-            <span className="stat-label">time window</span>
+            <span className="stat-label"><_CdTerm ko="연구 시간대" en="time window" /></span>
             <b>{timeWindow.timeframe || "—"} · {_cdTime(timeWindow.start_time)}~{_cdTime(timeWindow.end_time)}</b>
-            <small>{timeWindow.notes || timeWindow.source || "window policy"}</small>
+            <small>이 시간대 밖의 거래는 연구 대상이 아닙니다.</small>
           </div>
           <div>
-            <span className="stat-label">MDD gate</span>
+            <span className="stat-label"><_CdTerm ko="최대 낙폭 한도" en="MDD gate" /></span>
             <b>{mddGate.cap ?? "—"}%</b>
-            <small>preset cap {mddGate.preset_cap ?? "—"} · configured {mddGate.configured_cap ?? "—"}</small>
+            <small>이보다 더 깊게 물리면 무조건 탈락 · 기본 {mddGate.preset_cap ?? "—"} / 설정 {mddGate.configured_cap ?? "—"}</small>
           </div>
           <div>
-            <span className="stat-label">trade gate</span>
-            <b>{tradeGate.value ?? "—"} / day</b>
-            <small>{tradeGate.authority || "hard gate"}</small>
+            <span className="stat-label"><_CdTerm ko="하루 최소 거래" en="trade gate" /></span>
+            <b>{tradeGate.value ?? "—"}건 / 일</b>
+            <small>거래가 이보다 드물면 표본이 모자라 탈락합니다.</small>
           </div>
         </div>
 
-        <div className="condition-discovery-score-row" aria-label="100점 advisory score cards">
+        <div className="condition-discovery-score-row" aria-label="참고용 100점 점수 카드">
           <div className="condition-score-card">
-            <span>성과 점수</span>
+            <span>성과 점수 <small>performance</small></span>
             <b>{_cdScore(perf.score)}</b>
-            <small>{perf.scale || "0-100"} · promotion authority 없음</small>
+            <small>{perf.scale || "0-100"}점 · 참고용(승격 권한 없음)</small>
           </div>
           <div className="condition-score-card">
-            <span>생성품질 점수</span>
+            <span>생성 품질 점수 <small>condition quality</small></span>
             <b>{_cdScore(quality.score)}</b>
-            <small>{quality.scale || "0-100"} · 문법/다양성/비용/매도구조</small>
+            <small>문법 · 다양성 · 비용 · 매도 구조</small>
           </div>
-          <div className="condition-score-card authority">
-            <span>승격/Export</span>
-            <b>{authority.promotion_review_ready ? "review-ready" : "blocked"}</b>
-            <small>score_can_promote={String(authority.score_can_promote === true)}</small>
+          <div className={"condition-score-card authority" + (authority.promotion_review_ready ? "" : " blocked")}>
+            <span>실전 승격 <small>promotion / export</small></span>
+            <b>{authority.promotion_review_ready ? "사람 검토 가능" : "막힘"}</b>
+            <small>{authority.score_can_promote === true ? "점수로 승격 가능" : "점수만으로는 승격 불가"}</small>
           </div>
         </div>
 
-        <div className="condition-discovery-tabs" role="tablist" aria-label="조건식 발굴 거버넌스 상세" onKeyDown={onTabKeyDown}>
-          {_CD_TABS.map(tab => (
-            <button key={tab.key} type="button" role="tab" id={`condition-discovery-tab-${tab.key}`}
-                    aria-selected={activeTab === tab.key} aria-controls={`condition-discovery-panel-${tab.key}`}
-                    tabIndex={activeTab === tab.key ? 0 : -1}
-                    className={"condition-discovery-tab" + (activeTab === tab.key ? " active" : "")}
-                    onClick={() => setActiveTab(tab.key)}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {_CD_TABS.map(tab => activeTab === tab.key && (
-          <section key={tab.key} id={`condition-discovery-panel-${tab.key}`} role="tabpanel"
-                   aria-labelledby={`condition-discovery-tab-${tab.key}`} className="condition-discovery-tabpanel">
-            <p className="condition-discovery-tab-intro">{tab.description}</p>
-            {tab.key === "policy" && (
-              <div className="condition-discovery-grid condition-discovery-policy-grid">
-                <section>
-                  <h4>정책 권한</h4>
-                  <div className="condition-discovery-row">
-                    <span>generation authority</span>
-                    <b>{modeAuthority.generation_allowed === true ? "research generation allowed" : (modeAuthority.generation_allowed === false ? "zero-generation review" : "authority pending/blocked")}</b>
-                    <small>{modeAuthority.process || discovery.current_process?.code || "process"} · {modeAuthority.preset || discovery.preset}</small>
-                  </div>
-                </section>
-                <section>
-                  <h4>하드 게이트</h4>
-                  <div className="condition-discovery-row">
-                    <span>MDD</span>
-                    <b>{mddGate.cap ?? "—"}%</b>
-                    <small>preset {mddGate.preset_cap ?? "—"} · configured {mddGate.configured_cap ?? "—"}</small>
-                  </div>
-                  <div className="condition-discovery-row">
-                    <span>minimum daily trades</span>
-                    <b>{tradeGate.value ?? "—"} / day</b>
-                    <small>{tradeGate.authority || "hard gate"}</small>
-                  </div>
-                </section>
-              </div>
-            )}
-            {tab.key === "observability" && (
-              <div className="condition-discovery-grid research-observability-grid" aria-label="Research Pack Branch Tree">
-                <section>
-                  <h4>Research Pack / Branch Tree</h4>
-                  <div className="condition-discovery-note">
-                    context pack health: {contextPackHealth.status || "pending"} · budget≤{contextPackHealth.fail_closed_budget_tokens || 250000}
-                  </div>
-                  <div className="condition-discovery-pillrow">
-                    {contextFields.map(field => <_CdPill key={field} label={field} tone="info" />)}
-                  </div>
-                  {branchTree.length > 0 && (
-                    <ol className="condition-discovery-note condition-discovery-branch-tree">
-                      {branchTree.map(step => <li key={step.step}><b>{step.step}</b> → {step.output}</li>)}
-                    </ol>
-                  )}
-                </section>
-                <section>
-                  <h4>Candidate pack · Analysis cards</h4>
-                  <div className="condition-discovery-row">
-                    <span>candidate pack</span>
-                    <b>{candidatePack.recommended_candidates || "2-3+"}</b>
-                    <small>min {candidatePack.min_candidates || 2} · fallback {candidatePack.fallback_source || "diagnostic fallback"}</small>
-                  </div>
-                  <div className="condition-discovery-pillrow">
-                    {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" />)}
-                  </div>
-                  <div className="condition-discovery-row">
-                    <span>analysis cards</span>
-                    <b>{analysisCards.schema || "analysis_card_v2"}</b>
-                    <small>{analysisFields.join(" · ") || "root cause / segment contribution / insight score"}</small>
-                  </div>
-                </section>
-                <section>
-                  <h4>Prompt receipts · Fallback</h4>
-                  <div className="condition-discovery-row">
-                    <span>prompt receipts</span>
-                    <b>{promptReceipts.prompt_maturity_authority || "research_prompt_maturity_only"}</b>
-                    <small>{promptFields.join(" · ") || "downstream official backtest result required"}</small>
-                  </div>
-                  <div className="condition-discovery-note">
-                    fallback status: deterministic filter-only 후보는 diagnostic fallback으로만 표시되고 prompt maturity credit은 0입니다.
-                  </div>
-                </section>
-                <section>
-                  <h4>Promotion blockers</h4>
-                  <div className="condition-discovery-row">
-                    <span>promotion-review</span>
-                    <b>{promotionBlockers.generation_allowed === false ? "zero generation" : "research only"}</b>
-                    <small>{promotionBlockers.authority || "fresh/frozen holdout · OOS/WF · slippage advisory required"}</small>
-                  </div>
-                  <div className="condition-discovery-pillrow">
-                    {blockerItems.length === 0 ? <_CdPill label="blockers pending" tone="info" /> : blockerItems.map(blocker => <_CdPill key={blocker} label={blocker} tone="danger" />)}
-                  </div>
-                </section>
-              </div>
-            )}
-            {tab.key === "evidence" && (
-              <div className="condition-discovery-grid">
-                <section>
-                  <h4>Evidence health</h4>
-                  <div className="condition-discovery-pillrow">
-                    {evidenceRows.map(row => (
-                      <_CdPill key={row.name} label={`${row.name}:${row.status}`}
-                               tone={row.blocker_reason ? "danger" : (row.status === "present" ? "success" : "info")}
-                               title={row.blocker_reason || (row.required ? "required" : "optional")} />
-                    ))}
-                  </div>
-                  {blockedBy.length > 0 && <div className="condition-discovery-note danger">authority blocked: {blockedBy.join(" · ")}</div>}
-                </section>
-                <section>
-                  <h4>Prompt / Equity 저장</h4>
-                  {persistenceRows.length === 0 ? <div className="condition-discovery-note">persistence rows pending</div> : persistenceRows.map(row => (
-                    <div className="condition-discovery-row" key={row.kind}>
-                      <span>{row.kind}</span><b>{row.status}</b><small>{row.count == null ? "count unavailable" : `${row.count} records`}</small>
-                    </div>
-                  ))}
-                </section>
-                <section>
-                  <h4>부검 hypothesis</h4>
-                  {hypotheses.length === 0 ? <div className="condition-discovery-note">가정 환류 대기</div> : hypotheses.slice(0, 3).map(row => (
-                    <div className="condition-discovery-row" key={row.id}>
-                      <span>{row.status}</span><b>{row.id}</b><small>{row.hypothesis}</small>
-                    </div>
-                  ))}
-                </section>
-                <section>
-                  <h4>Human DB pattern cards</h4>
-                  <div className="condition-discovery-row">
-                    <span>cards</span><b>{patternCards.length}</b><small>{feedback?.pattern_cards?.authority || "creativity only"}</small>
-                  </div>
-                  <div className="condition-discovery-note">임계값·전체식·성과 복사는 anti-copy guard가 차단합니다.</div>
-                </section>
-              </div>
-            )}
+        <div className="condition-discovery-board">
+          <section className="condition-discovery-block" aria-label={_CD_SECTIONS[0].label}>
+            <h4>{_CD_SECTIONS[0].label}</h4>
+            <p className="condition-discovery-tab-intro">{_CD_SECTIONS[0].hint}</p>
+            <_CdFact ko="생성 권한" en="generation authority"
+                     value={modeAuthority.generation_allowed === true
+                       ? "연구용 생성 허용"
+                       : (modeAuthority.generation_allowed === false ? "생성 금지 · 검토 전용" : "권한 확인 중")}
+                     hint={`${modeAuthority.process || discovery.current_process?.code || "process"} · ${modeAuthority.preset || discovery.preset}`} />
+            <_CdFact ko="최대 낙폭 한도" en="MDD" value={`${mddGate.cap ?? "—"}%`}
+                     hint={`기본 ${mddGate.preset_cap ?? "—"} · 현재 설정 ${mddGate.configured_cap ?? "—"}`} />
+            <_CdFact ko="하루 최소 거래 수" en="minimum daily trades" value={`${tradeGate.value ?? "—"}건 / 일`}
+                     hint="이 한도는 점수로 상쇄되지 않는 통과 조건입니다." />
           </section>
-        ))}
+
+          <section className="condition-discovery-block" aria-label={_CD_SECTIONS[1].label}>
+            <h4>{_CD_SECTIONS[1].label}</h4>
+            <p className="condition-discovery-tab-intro">{_CD_SECTIONS[1].hint}</p>
+            <_CdFact ko="연구 자료 묶음 상태" en="context pack"
+                     value={contextPackHealth.status || "확인 중"}
+                     hint={`읽는 자료 토큰 상한 ${(contextPackHealth.fail_closed_budget_tokens || 250000).toLocaleString()} — 넘으면 생성을 멈춥니다.`} />
+            <div className="condition-discovery-pillrow">
+              {contextFields.map(field => <_CdPill key={field} label={field} tone="info" title="생성 전에 반드시 채워져야 하는 자료 항목" />)}
+            </div>
+            {branchTree.length > 0 && (
+              <ol className="condition-discovery-note condition-discovery-branch-tree">
+                {branchTree.map(step => <li key={step.step}><b>{step.step}</b> → {step.output}</li>)}
+              </ol>
+            )}
+            <_CdFact ko="후보 묶음" en="candidate pack" value={`${candidatePack.recommended_candidates || "2-3+"}개 권장`}
+                     hint={`최소 ${candidatePack.min_candidates || 2}개 · 부족하면 ${candidatePack.fallback_source || "진단용 대체 후보"}`} />
+            <div className="condition-discovery-pillrow">
+              {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" title="후보마다 채워져야 하는 항목" />)}
+            </div>
+            <_CdFact ko="분석 카드 형식" en="analysis cards" value={analysisCards.schema || "analysis_card_v2"}
+                     hint={analysisFields.join(" · ") || "원인 · 구간 기여 · 인사이트 점수"} />
+            <_CdFact ko="프롬프트 기록" en="prompt receipts"
+                     value={promptReceipts.prompt_maturity_authority || "연구 성숙도 기록 전용"}
+                     hint={promptFields.join(" · ") || "실제 승격은 공식 백테스트 결과가 있어야 합니다."} />
+            <div className="condition-discovery-note">
+              규칙만으로 걸러낸 후보는 <b>진단용 대체 후보</b>로만 표시되고 성숙도 점수를 받지 못합니다.
+            </div>
+          </section>
+
+          <section className="condition-discovery-block" aria-label={_CD_SECTIONS[2].label}>
+            <h4>{_CD_SECTIONS[2].label}</h4>
+            <p className="condition-discovery-tab-intro">{_CD_SECTIONS[2].hint}</p>
+            <_CdFact ko="승격 단계" en="promotion review"
+                     value={promotionBlockers.generation_allowed === false ? "생성 금지 상태" : "연구 단계"}
+                     hint="실전 승격에는 신규·동결 홀드아웃, OOS/전진분석, 슬리피지 참고치, 사람 승인이 모두 필요합니다." />
+            <div className="condition-discovery-pillrow">
+              {blockerItems.length === 0
+                ? <_CdPill label="막는 항목 집계 중" tone="info" />
+                : blockerItems.map(blocker => <_CdPill key={blocker} label={_cdWord(blocker)} tone="danger" title={blocker + " — 이 항목이 채워질 때까지 승격이 막힙니다."} />)}
+            </div>
+            <div className="condition-discovery-subhead">증거 상태 <small>evidence health</small></div>
+            <div className="condition-discovery-pillrow">
+              {evidenceRows.length === 0
+                ? <_CdPill label="증거 집계 대기" tone="info" />
+                : evidenceRows.map(row => (
+                  <_CdPill key={row.name} label={`${row.name} · ${_cdWord(row.status)}`}
+                           tone={row.blocker_reason ? "danger" : (row.status === "present" ? "success" : "info")}
+                           title={row.blocker_reason || (row.required ? "필수 증거" : "선택 증거")} />
+                ))}
+            </div>
+            {blockedBy.length > 0 && (
+              <div className="condition-discovery-note danger" title={blockedBy.join(" · ")}>
+                지금 막고 있는 것: {blockedBy.map(_cdWord).join(" · ")}
+              </div>
+            )}
+            <div className="condition-discovery-subhead">저장 기록 <small>persistence</small></div>
+            {persistenceRows.length === 0
+              ? <div className="condition-discovery-note">저장 기록 집계 대기</div>
+              : persistenceRows.map(row => (
+                <_CdFact key={row.kind} ko={row.kind} value={row.status}
+                         hint={row.count == null ? "건수 미발행" : `${row.count}건 저장됨`} />
+              ))}
+            <div className="condition-discovery-subhead">부검이 세운 가정 <small>hypothesis</small></div>
+            {hypotheses.length === 0
+              ? <div className="condition-discovery-note">아직 환류된 가정이 없습니다.</div>
+              : hypotheses.slice(0, 3).map(row => (
+                <_CdFact key={row.id} ko={row.id} value={row.status} hint={row.hypothesis} />
+              ))}
+            <_CdFact ko="사람 매매 패턴 카드" en="human pattern cards" value={`${patternCards.length}장`}
+                     hint="아이디어 참고용입니다. 임계값·전체식·성과 복사는 차단됩니다." />
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -436,24 +423,41 @@ function _ThresholdCond(t) {
   return variable;
 }
 
-function _SegRows({ title, rows }) {
+// 부검은 "어디서 얼마나 잃었는가"를 한눈에 보여줘야 다음 조건식 수정으로 이어진다.
+//   숫자만 늘어놓으면 어떤 구간이 더 나쁜지 비교가 안 되므로 막대 길이로 대비를 보인다.
+function _segDiff(row) {
+  return row && typeof row.return_diff === "number" && Number.isFinite(row.return_diff) ? row.return_diff : null;
+}
+
+function _SegRows({ title, rows, limit = 6 }) {
   if (!Array.isArray(rows) || rows.length === 0) return null;
+  const valid = rows.filter(r => r && typeof r === "object" && !Array.isArray(r));
+  const broken = rows.length - valid.length;
+  // 최악(대비가 가장 낮은) 구간부터 — 고쳐야 할 순서와 화면 순서를 일치시킨다.
+  const ordered = valid.slice().sort((a, b) => (_segDiff(a) ?? 0) - (_segDiff(b) ?? 0)).slice(0, limit);
+  const scale = Math.max(1e-9, ...ordered.map(r => Math.abs(_segDiff(r) ?? 0)));
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>{title}</div>
-      <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-        {rows.map((s, i) => {
-          const valid = s && typeof s === "object" && !Array.isArray(s);
-          if (!valid) return <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--amber)", padding: "3px 0" }}>세그먼트 형식 불완전</li>;
-          const diff = typeof s.return_diff === "number" && Number.isFinite(s.return_diff) ? s.return_diff : null;
+    <div className="autopsy-seg-group">
+      <div className="autopsy-seg-title">{title}</div>
+      <ul className="autopsy-seg-list">
+        {ordered.map((s, i) => {
+          const diff = _segDiff(s);
+          const negative = diff != null && diff < 0;
+          const width = diff == null ? 0 : Math.min(100, (Math.abs(diff) / scale) * 100);
           return (
-            <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
-              <span style={{ color: diff != null && diff < 0 ? "var(--red)" : "var(--ink-1)" }}>{typeof s.label === "string" ? s.label : "라벨 미발행"}</span>
-              {` · ${typeof s.count === "number" ? s.count : "건수 미발행"}건 · 승률 ${_pct(s.win_rate)} · 평균 ${typeof s.avg_return === "number" && Number.isFinite(s.avg_return) ? `${_num(s.avg_return)}%` : "미발행"} · 대비 ${diff == null ? "미발행" : `${diff >= 0 ? "+" : ""}${_num(diff)}%p`}`}
+            <li key={i} className={"autopsy-seg-row" + (negative ? " negative" : "")}>
+              <span className="autopsy-seg-label">{typeof s.label === "string" ? s.label : "라벨 미발행"}</span>
+              <i className="autopsy-seg-bar" aria-hidden="true"><b style={{ width: width + "%" }}></b></i>
+              <b className="autopsy-seg-diff">{diff == null ? "미발행" : `${diff >= 0 ? "+" : ""}${_num(diff)}%p`}</b>
+              <small className="autopsy-seg-meta">
+                {typeof s.count === "number" ? `${s.count}건` : "건수 미발행"} · 승률 {_pct(s.win_rate)} ·
+                평균 {typeof s.avg_return === "number" && Number.isFinite(s.avg_return) ? `${_num(s.avg_return)}%` : "미발행"}
+              </small>
             </li>
           );
         })}
       </ul>
+      {broken > 0 && <div className="autopsy-seg-note">형식이 불완전한 구간 {broken}건은 표시하지 않았습니다.</div>}
     </div>
   );
 }
@@ -495,7 +499,7 @@ function AutopsyPanel({ state, wsStatus }) {
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          손실 집중 세그먼트 · 구체 임계값
+          어디서 잃었는가 · 다음 조건식이 고칠 지점
         </span>
       </div>
       <div className="panel-bd">
@@ -506,27 +510,92 @@ function AutopsyPanel({ state, wsStatus }) {
         ) : (
           <div>
             <_AuthorityStatus data={autopsy} />
-            <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 10 }}>
-              거래 {typeof autopsy.trade_count === "number" ? autopsy.trade_count : "미발행"}건 · 전체 승률 {_pct(autopsy.overall_win_rate)} · 평균 {_num(autopsy.overall_avg_return)}%
+            <p className="v59-section-intro" style={{ marginTop: 0 }}>
+              막대는 <b>전체 평균 대비 얼마나 더 나빴는지</b>(%p)입니다. 길수록 손실이 그 구간에 몰려 있다는 뜻이고,
+              다음 세대 조건식은 보통 여기부터 손봅니다.
+            </p>
+            <div className="autopsy-kpis">
+              <div><span>거래</span><b>{typeof autopsy.trade_count === "number" ? `${autopsy.trade_count}건` : "미발행"}</b></div>
+              <div><span>전체 승률</span><b>{_pct(autopsy.overall_win_rate)}</b></div>
+              <div><span>평균 수익률</span><b>{_num(autopsy.overall_avg_return)}%</b></div>
             </div>
-            <_SegRows title="시간대 손실 집중" rows={autopsy.time_segments} />
-            <_SegRows title="시총 밴드 손실 집중" rows={autopsy.market_cap_segments} />
-            <_SegRows title="교차(시간대×시총)" rows={autopsy.cross_segments} />
+            <_SegRows title="시간대별 — 언제 잃었나" rows={autopsy.time_segments} />
+            <_SegRows title="시가총액 밴드별 — 어떤 종목에서 잃었나" rows={autopsy.market_cap_segments} />
+            <_SegRows title="시간대 × 시총 교차 — 가장 좁힌 구간" rows={autopsy.cross_segments} />
             {Array.isArray(autopsy.thresholds) && autopsy.thresholds.length > 0 ? (
-              <div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>발행된 임계값(손실 구간)</div>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              <div className="autopsy-seg-group">
+                <div className="autopsy-seg-title">바로 쓸 수 있는 임계값 — 이 조건이면 손실 구간</div>
+                <ul className="autopsy-threshold-list">
                   {autopsy.thresholds.map((t, i) => (
-                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
-                      {`${_ThresholdCond(t)} · ${typeof t?.count === "number" ? t.count : "건수 미발행"}건 · 승률 ${_pct(t?.win_rate)} · 평균 ${typeof t?.mean_return === "number" && Number.isFinite(t.mean_return) ? `${_num(t.mean_return)}%` : "미발행"}`}
+                    <li key={i}>
+                      <b className="mono">{_ThresholdCond(t)}</b>
+                      <small>
+                        {typeof t?.count === "number" ? `${t.count}건` : "건수 미발행"} · 승률 {_pct(t?.win_rate)} ·
+                        평균 {typeof t?.mean_return === "number" && Number.isFinite(t.mean_return) ? `${_num(t.mean_return)}%` : "미발행"}
+                      </small>
                     </li>
                   ))}
                 </ul>
               </div>
             ) : (
-              <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>임계값 미발행</div>
+              <div className="autopsy-seg-note">아직 임계값이 발행되지 않았습니다.</div>
             )}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// 1단계(생성)에서도 "무엇을 고치려는가"의 근거를 볼 수 있어야 한다.
+//   전체 부검은 3단계에 그대로 남고, 여기서는 최악 구간 3개만 요약한다.
+function AutopsyFocusCard({ state, onOpenAutopsy }) {
+  const autopsy = state.page_data?.autopsy;
+  const unavailable = _autopsyAvailability(autopsy);
+  const pool = unavailable
+    ? []
+    : []
+      .concat(Array.isArray(autopsy.cross_segments) ? autopsy.cross_segments : [])
+      .concat(Array.isArray(autopsy.time_segments) ? autopsy.time_segments : [])
+      .concat(Array.isArray(autopsy.market_cap_segments) ? autopsy.market_cap_segments : [])
+      .filter(r => r && typeof r === "object" && _segDiff(r) != null && _segDiff(r) < 0);
+  const worst = pool.sort((a, b) => _segDiff(a) - _segDiff(b)).slice(0, 3);
+  const scale = Math.max(1e-9, ...worst.map(r => Math.abs(_segDiff(r))));
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--red)" }}></span>직전 세대가 잃은 곳 · 요약</div>
+        {typeof onOpenAutopsy === "function" && (
+          <button className="btn ghost sm" onClick={onOpenAutopsy} title="채점·부검 단계에서 전체 부검을 봅니다">전체 부검 보기</button>
+        )}
+      </div>
+      <div className="panel-bd">
+        {unavailable || worst.length === 0 ? (
+          <div className="research-empty">
+            {unavailable || "직전 세대에서 평균보다 뚜렷하게 나빴던 구간이 없습니다."}
+          </div>
+        ) : (
+          <>
+            <p className="v59-section-intro" style={{ marginTop: 0 }}>
+              이번 세대 조건식은 아래 구간을 피하거나 조건을 좁히는 방향으로 만들어집니다.
+            </p>
+            <ul className="autopsy-seg-list">
+              {worst.map((s, i) => {
+                const diff = _segDiff(s);
+                return (
+                  <li key={i} className="autopsy-seg-row negative">
+                    <span className="autopsy-seg-label">{typeof s.label === "string" ? s.label : "라벨 미발행"}</span>
+                    <i className="autopsy-seg-bar" aria-hidden="true"><b style={{ width: Math.min(100, (Math.abs(diff) / scale) * 100) + "%" }}></b></i>
+                    <b className="autopsy-seg-diff">{_num(diff)}%p</b>
+                    <small className="autopsy-seg-meta">
+                      {typeof s.count === "number" ? `${s.count}건` : "건수 미발행"} · 승률 {_pct(s.win_rate)}
+                    </small>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
       </div>
     </div>
@@ -677,7 +746,7 @@ function _rcTime(ts) {
   catch { return "—"; }
 }
 
-Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel });
+Object.assign(window, { AutopsyPanel, AutopsyFocusCard, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel });
 
 // Track Z — dual-safe ESM export (stripped by build-app.mjs in the concat path; kept by the bundle for real module scope). KEEP on ONE physical line.
-export { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel };
+export { AutopsyPanel, AutopsyFocusCard, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel };

@@ -131,17 +131,26 @@ def test_evidence_workspace_labels_each_owner_surface() -> None:
     app = _read("app.jsx")
     assert "function ConditionDiscoveryPanel" in panels
     assert "조건식 발굴 거버넌스" in panels
-    assert "생성품질 점수" in panels
-    assert "Human DB pattern cards" in panels
-    assert "Research Pack / Branch Tree" in panels
-    assert "context pack health" in panels
-    assert "candidate pack" in panels
-    assert "analysis cards" in panels
-    assert "prompt receipts" in panels
-    assert "fallback status" in panels
-    assert "Promotion blockers" in panels
-    assert "zero-generation review" in panels
-    assert "authority pending/blocked" in panels
+    # v5.11.2 — 화면 정본은 우리말이고 원어는 보조 표기로만 남는다(사용자 요구 2026-07-26).
+    #   같은 사실을 계속 다루되, 전문 용어를 그대로 노출하지 않는다.
+    assert "생성 품질 점수" in panels
+    assert "사람 매매 패턴 카드" in panels
+    assert "연구 자료 묶음 상태" in panels
+    assert "후보 묶음" in panels
+    assert "분석 카드 형식" in panels
+    assert "프롬프트 기록" in panels
+    assert "진단용 대체 후보" in panels
+    assert "승격 단계" in panels
+    assert "생성 금지 · 검토 전용" in panels
+    assert "권한 확인 중" in panels
+    # 원어는 <small> 보조 표기로 계속 검색 가능해야 한다.
+    for english in ("context pack", "candidate pack", "analysis cards", "prompt receipts",
+                    "promotion review", "human pattern cards", "evidence health"):
+        assert english in panels
+    # 탭으로 감추지 않고 규칙·과정·증거를 한 화면에 같이 둔다.
+    assert "condition-discovery-board" in panels
+    assert "condition-discovery-tab\"" not in panels
+    assert 'role="tablist" aria-label="조건식 발굴 거버넌스 상세"' not in panels
     assert "<ConditionDiscoveryPanel state={state} wsStatus={wsStatus} />" in app
     assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="workbench"', 'activeKey="verdict"'):
