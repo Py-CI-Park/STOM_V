@@ -1788,6 +1788,19 @@
 .ns-item small { display: block; margin-top: 4px; color: var(--ink-3); font: 10.5px var(--mono); }
 .ns-gap { margin: 10px 0 0; color: var(--ink-3); font-size: 10.5px; }
 
+/* v5.11.3 — 3440px 급 화면에서 설명 문단이 화면 폭 전체로 늘어나면 눈이 줄을 놓친다.
+   본문 문단만 읽기 좋은 길이로 제한한다(카드·표·차트 폭은 그대로 둔다). */
+.v59-section-intro, .bt-section-purpose, .condition-discovery-lede,
+.condition-discovery-tab-intro, .v4-history-feature-copy, .ns-item span {
+  max-width: 110ch;
+}
+/* 새로 추가한 조작 요소도 키보드 초점이 보이게 한다. */
+.cv-toolbar .btn:focus-visible, .autopsy-seg-row button:focus-visible,
+.ns-item a:focus-visible, .bt-source-legend a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }
 .ri-kpis > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-0); }

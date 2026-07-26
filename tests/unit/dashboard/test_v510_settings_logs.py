@@ -34,10 +34,12 @@ def test_settings_probes_query_filter_and_scoped_layout_reset_are_source_bound()
     settings = _source("v4-settings.jsx")
     css = _source("v4.css")
 
-    assert "Release / Capability Probes" in settings
+    # v5.11.3 — 제목은 우리말이 정본이고 원어는 보조 표기로만 남는다.
+    assert "버전 · 기능 확인" in settings
+    assert "Release / Capability" in settings
     assert '"/health"' in settings
     assert "_v4sCapabilityRows(manifest, health)" in settings
-    assert "Capability probe 사용 불가" in settings
+    assert "기능 확인 불가" in settings
     assert "const [logQuery, setLogQuery]" in settings
     assert 'type="search"' in settings
     assert "normalizedQuery" in settings

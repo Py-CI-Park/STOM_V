@@ -88,12 +88,12 @@ const V4_DASH_VERSION = "v5.11.0";
 //   key 는 불변(딥링크·파리티 보존). Bench→성과(전당) 개명. 아이콘은 stroke currentColor 인라인 SVG.
 // v5.6 U11 — 연구 흐름 순서: Live → History → Reports(결과 열람) → 성과 → Backtest → Replay.
 const V4_TABS = [
-  { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 스테이지 구동 실시간 관찰", group: "primary" },
-  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
-  { key: "reports", label: "Reports", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
+  { key: "research", label: "라이브", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 스테이지 구동 실시간 관찰", group: "primary" },
+  { key: "history", label: "기록", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색", group: "primary" },
+  { key: "reports", label: "보고서", full: "Reports · 리포트 뷰어", badge: "DOC", hint: "리포트 HTML 안전 뷰어 · 읽기 전용(sandbox)", group: "primary" },
   { key: "workbench", label: "성과", full: "명예의 전당 · 인간+AI 성과", badge: "HALL", hint: "명예의 전당 전용 — 인간 벤치마크와 AI 연구 성과 비교", group: "primary" },
-  { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
-  { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
+  { key: "backtest", label: "백테스트", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트", group: "primary" },
+  { key: "replay", label: "리플레이", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락", group: "primary" },
   { key: "catalog", label: "연구 자산", full: "연구 자산 (P4 비정본 preview prototype + 진행 관찰)", badge: "자산", hint: "연혁실·함정지도·절실험실·출구은행·진행 관찰(구 Alpha)·B1 — 읽기 전용 · 비정본 preview", group: "secondary" },
   { key: "settings", label: "설정", full: "설정 · 대시보드 관리", badge: "CFG", hint: "화면 배치·UI 저장상태·버전 정보·로그 — 클라이언트 표시 설정 전용", group: "secondary" },
   { key: "glossary", label: "용어", full: "용어 · 종합 위키", badge: "WIKI", hint: "지표·분석·거버넌스 용어를 한 곳에서 — 읽기 전용", group: "secondary" },
@@ -469,12 +469,10 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         <div className="v4-rail-spacer"></div>
         <button type="button" className={"v4-rail-item" + (contextDrawerOpen ? " active" : "")} onClick={() => setContextDrawerOpen(v => !v)} title="AI Context Pack(개발자 서랍) 토글" aria-pressed={contextDrawerOpen}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>
-          <span className="v4-ri-label">Context</span>
+          <span className="v4-ri-label">컨텍스트</span>
         </button>
-        <a className="v4-rail-item" href="/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
-          <span className="v4-ri-label">LEGACY</span>
-        </a>
+        {/* v5.11.3 — 대시보드는 하나다. 레거시 셸로 가는 상시 버튼을 레일에서 뺐다.
+            비상 진입은 `?dashboard_version=legacy` 쿼리로만 남는다(서버 라우트 불변). */}
       </aside>
 
       {/* ===== 워크스페이스 ===== */}
