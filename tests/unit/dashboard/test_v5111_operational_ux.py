@@ -129,6 +129,32 @@ def test_reports_and_performance_add_data_backed_visual_summary_surfaces() -> No
     assert "performance-distribution" in performance
 
 
+def test_report_summary_falls_back_to_published_run_metrics_with_visible_origin() -> None:
+    """보고서 메타데이터에 없으면 같은 run 의 발행 값을 쓰되, 출처를 감추지 않는다."""
+    reports = _read("v4-reports.jsx")
+    board = _read("report-summary-board.jsx")
+
+    # 선택된 보고서의 run 만 조회해 넘긴다.
+    assert "selectedRunId" in reports
+    assert "runMeta={runMeta}" in reports
+    assert "/runs?limit=500" in reports
+
+    # 보고서 → run 기록 순서로 찾고, 출처를 값과 함께 표시한다.
+    assert "function reportSummaryResolve" in board
+    assert '"report"' in board and '"run"' in board and '"derived"' in board
+    assert "_RS_SOURCE_LABEL" in board
+    assert "연구 run 기록" in board
+    assert '"origin-" + entry.origin' in board
+    css = _read("v4.css")
+    assert ".v4-report-summary-kpis article.origin-run" in css
+    assert ".v4-report-summary-kpis article.origin-derived" in css
+    # 연평균은 발행값이 없을 때만 기간으로 환산하고 파생값으로 표기한다.
+    assert "riAnnualizedPct" in board
+    assert "파생값" in board
+    # 어디에도 없으면 여전히 미발행이다.
+    assert "미발행" in board
+
+
 def test_settings_and_glossary_use_one_equal_dashboard_panel_contract() -> None:
     css = _read("v4.css")
 

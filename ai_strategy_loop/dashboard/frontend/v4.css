@@ -1878,6 +1878,11 @@
 .v4-report-summary-visual i b { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue)); }
 .v4-report-summary-visual .risk i b, .v4-report-summary-visual .negative i b { background: var(--red); }
 .v4-report-summary-visual strong { text-align: right; }
+/* v5.11.3 — 값마다 어디서 온 값인지 보이게 한다(보고서 / run 기록 / 파생값). */
+.v4-report-summary-note { margin: 0 0 10px; padding: 7px 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--blue); border-radius: 7px; color: var(--ink-2); font-size: 11px; }
+.v4-report-summary-note b { color: var(--ink-0); }
+.v4-report-summary-kpis article.origin-run { border-left-color: var(--blue); }
+.v4-report-summary-kpis article.origin-derived { border-left-color: var(--amber); }
 .v4-report-summary-table-wrap { overflow: auto; }
 .v4-report-summary-table-wrap table { width: 100%; font-size: 12.5px; }
 

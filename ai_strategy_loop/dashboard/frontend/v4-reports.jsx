@@ -175,6 +175,23 @@ function V4Reports({ baseUrl }) {
 
   const reports = list || [];
   const selectedReport = reports.find(rp => rp.path === sel) || null;
+  // v5.11.3 — 보고서 메타데이터에 없는 지표는 같은 run 의 연구 기록에서 연결한다.
+  //   선택된 보고서의 run 만 조회하므로 목록 전체를 끌어오지 않는다.
+  const selectedRunId = selectedReport && selectedReport.run_id ? String(selectedReport.run_id) : "";
+  const [runMeta, setRunMeta] = useState_rp7(null);
+  useEffect_rp7(() => {
+    setRunMeta(null);
+    if (!baseUrl || !selectedRunId) return undefined;
+    const controller = new AbortController();
+    fetch(baseUrl + "/runs?limit=500", { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => {
+        const hit = ((j && j.runs) || []).find(r => r && String(r.run_id) === selectedRunId);
+        if (!controller.signal.aborted && hit) setRunMeta(hit);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [baseUrl, selectedRunId]);
   const toc = _reportToc(selectedReport);
   const viewUrl = sel ? (baseUrl + "/reports/view?path=" + encodeURIComponent(sel)) : "";
   const frameSrc = viewUrl ? (anchor ? viewUrl + "#" + anchor : viewUrl) : "";
@@ -295,7 +312,7 @@ function V4Reports({ baseUrl }) {
                 <button role="tab" aria-selected={reportView === "html"} className={"btn ghost sm" + (reportView === "html" ? " active" : "")} onClick={() => setReportView("html")}>HTML 보고서</button>
                 <button role="tab" aria-selected={reportView === "provenance"} className={"btn ghost sm" + (reportView === "provenance" ? " active" : "")} onClick={() => setReportView("provenance")}>정본 · 출처</button>
               </div>}
-              {reportView === "summary" && <ReportSummaryBoard report={selectedReport} />}
+              {reportView === "summary" && <ReportSummaryBoard report={selectedReport} runMeta={runMeta} />}
               {reportView === "provenance" && selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
                 <header><span className={"v4-report-badge " + _reportClassification(selectedReport)}>{_reportClassificationLabel(_reportClassification(selectedReport))}</span><b>정본 등록 · 검증 · 생성 출처</b></header>
                 <div className="v4-report-details">
