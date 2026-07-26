@@ -41,8 +41,12 @@ const _BT_METRIC_CARDS = [
 const _BT_RESULT_CAPABILITIES = {
   job: { label: "완료 잡", range: true, monteCarlo: true, compare: true,
     notes: { range: "완료 잡의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "완료 잡의 거래 표본으로 계산합니다.", compare: "다른 완료 잡을 비교 대상으로 선택할 수 있습니다." } },
-  evolution: { label: "진화 세대", range: false, monteCarlo: false, compare: false,
-    notes: { range: "세대 요약에는 구간별 거래 시계열이 없습니다.", monteCarlo: "세대 요약에는 몬테카를로 입력 거래 표본이 없습니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
+  // 세대 결과도 잡과 같은 거래 CSV 를 남긴다 → 구간 재계산·몬테카를로 표본이 실제로 존재한다.
+  evolution: { label: "진화 세대", range: true, monteCarlo: true, compare: false,
+    notes: { range: "세대 결과 CSV 의 거래 시계열로 구간을 다시 계산합니다.", monteCarlo: "세대 결과 CSV 의 거래 표본으로 계산합니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
+  // 결과 CSV 가 없는 세대(메트릭 행만 남은 축약 결과) — 표본이 없으므로 정직하게 미지원.
+  evolution_summary: { label: "진화 세대 · 메트릭 요약", range: false, monteCarlo: false, compare: false,
+    notes: { range: "이 세대에는 결과 CSV 가 없어 구간을 다시 계산할 수 없습니다.", monteCarlo: "이 세대에는 결과 CSV 가 없어 몬테카를로 표본을 만들 수 없습니다.", compare: "A/B 비교는 완료 잡 결과만 지원합니다." } },
   demo: { label: "데모", range: false, monteCarlo: false, compare: false,
     notes: { range: "데모 상태는 결과 artifact를 발행하지 않습니다.", monteCarlo: "데모 상태는 결과 artifact를 발행하지 않습니다.", compare: "데모 상태는 완료 잡을 제공하지 않습니다." } },
   none: { label: "선택 없음", range: false, monteCarlo: false, compare: false,
@@ -108,9 +112,14 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
 
   // 결과 소스별 지원 기능은 UI와 요청 경로가 함께 따르는 명시 계약이다.
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-  const sourceKind = isDemo ? "demo" : (jobId ? "job" : (isEvo ? "evolution" : "none"));
+  // 세대 결과의 기능 지원은 '세대라서'가 아니라 '결과 CSV 가 실제로 있느냐'로 결정한다.
+  //   응답 도착 전에는 축약(요약) 계약을 가정해 없는 표본을 먼저 요청하지 않는다.
+  const evoHasSeries = isEvo && !!(result && result.has_csv === true);
+  const sourceKind = isDemo
+    ? "demo"
+    : (jobId ? "job" : (isEvo ? (evoHasSeries ? "evolution" : "evolution_summary") : "none"));
   const capabilities = _BT_RESULT_CAPABILITIES[sourceKind];
-  const hasSource = sourceKind === "job" || sourceKind === "evolution";
+  const hasSource = sourceKind === "job" || sourceKind === "evolution" || sourceKind === "evolution_summary";
   const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
 
   const load = useCallback_btc(() => {
@@ -134,6 +143,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     } else {
       url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id)
           + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+      if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
     }
     _btFetchJson(url, 8000, controller.signal)
       .then(j => {
@@ -150,11 +160,11 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       });
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
-  // 몬테카를로 재계산(현재 구간 반영). 잡 전용 — 진화 세대는 스킵. 무예외.
+  // 몬테카를로 재계산(현재 구간 반영). 완료 잡과 결과 CSV 가 있는 진화 세대 모두 지원. 무예외.
   const loadMc = useCallback_btc(() => {
     const requestState = mcRequestRef.current;
     if (requestState.controller) requestState.controller.abort();
-    if (isDemo || !baseUrl || !jobId) {
+    if (isDemo || !baseUrl || (!jobId && !isEvo)) {
       requestState.controller = null;
       setMc(null);
       setMcLoading(false);
@@ -165,7 +175,11 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     mcRequestRef.current = { seq, controller };
     const expectedKey = sourceKey;
     setMcLoading(true);
-    let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
+    let url = baseUrl + "/bt/analysis/montecarlo?n=2000&"
+            + (jobId
+                ? "job_id=" + encodeURIComponent(jobId)
+                : "run_id=" + encodeURIComponent(evoSource.run_id)
+                  + "&gen_no=" + encodeURIComponent(evoSource.gen_no));
     if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
     _btFetchJson(url, 12000, controller.signal)
       .then(j => {
@@ -178,7 +192,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       .finally(() => {
         if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
       });
-  }, [baseUrl, isDemo, jobId, sourceKey, range]);
+  }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
   useEffect_btc(() => {
     sourceKeyRef.current = sourceKey;
@@ -391,7 +405,7 @@ return (
           <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
           <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
           {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
-          <a className="btn ghost sm" href="/ui/chart-replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
+          <a className="btn ghost sm" href="/?tab=replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
         </div>
       );
     })()}

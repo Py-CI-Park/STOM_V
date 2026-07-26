@@ -26220,12 +26220,21 @@ def signal_sell(pos, bar, ind):
       compare: true,
       notes: { range: "\uC644\uB8CC \uC7A1\uC758 \uAC70\uB798 \uC2DC\uACC4\uC5F4\uB85C \uAD6C\uAC04\uC744 \uB2E4\uC2DC \uACC4\uC0B0\uD569\uB2C8\uB2E4.", monteCarlo: "\uC644\uB8CC \uC7A1\uC758 \uAC70\uB798 \uD45C\uBCF8\uC73C\uB85C \uACC4\uC0B0\uD569\uB2C8\uB2E4.", compare: "\uB2E4\uB978 \uC644\uB8CC \uC7A1\uC744 \uBE44\uAD50 \uB300\uC0C1\uC73C\uB85C \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4." }
     },
+    // 세대 결과도 잡과 같은 거래 CSV 를 남긴다 → 구간 재계산·몬테카를로 표본이 실제로 존재한다.
     evolution: {
       label: "\uC9C4\uD654 \uC138\uB300",
+      range: true,
+      monteCarlo: true,
+      compare: false,
+      notes: { range: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uC2DC\uACC4\uC5F4\uB85C \uAD6C\uAC04\uC744 \uB2E4\uC2DC \uACC4\uC0B0\uD569\uB2C8\uB2E4.", monteCarlo: "\uC138\uB300 \uACB0\uACFC CSV \uC758 \uAC70\uB798 \uD45C\uBCF8\uC73C\uB85C \uACC4\uC0B0\uD569\uB2C8\uB2E4.", compare: "A/B \uBE44\uAD50\uB294 \uC644\uB8CC \uC7A1 \uACB0\uACFC\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4." }
+    },
+    // 결과 CSV 가 없는 세대(메트릭 행만 남은 축약 결과) — 표본이 없으므로 정직하게 미지원.
+    evolution_summary: {
+      label: "\uC9C4\uD654 \uC138\uB300 \xB7 \uBA54\uD2B8\uB9AD \uC694\uC57D",
       range: false,
       monteCarlo: false,
       compare: false,
-      notes: { range: "\uC138\uB300 \uC694\uC57D\uC5D0\uB294 \uAD6C\uAC04\uBCC4 \uAC70\uB798 \uC2DC\uACC4\uC5F4\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.", monteCarlo: "\uC138\uB300 \uC694\uC57D\uC5D0\uB294 \uBAAC\uD14C\uCE74\uB97C\uB85C \uC785\uB825 \uAC70\uB798 \uD45C\uBCF8\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.", compare: "A/B \uBE44\uAD50\uB294 \uC644\uB8CC \uC7A1 \uACB0\uACFC\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4." }
+      notes: { range: "\uC774 \uC138\uB300\uC5D0\uB294 \uACB0\uACFC CSV \uAC00 \uC5C6\uC5B4 \uAD6C\uAC04\uC744 \uB2E4\uC2DC \uACC4\uC0B0\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", monteCarlo: "\uC774 \uC138\uB300\uC5D0\uB294 \uACB0\uACFC CSV \uAC00 \uC5C6\uC5B4 \uBAAC\uD14C\uCE74\uB97C\uB85C \uD45C\uBCF8\uC744 \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", compare: "A/B \uBE44\uAD50\uB294 \uC644\uB8CC \uC7A1 \uACB0\uACFC\uB9CC \uC9C0\uC6D0\uD569\uB2C8\uB2E4." }
     },
     demo: {
       label: "\uB370\uBAA8",
@@ -26286,9 +26295,10 @@ def signal_sell(pos, bar, ind):
       };
     }, [fullscreen]);
     const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-    const sourceKind = isDemo ? "demo" : jobId ? "job" : isEvo ? "evolution" : "none";
+    const evoHasSeries = isEvo && !!(result && result.has_csv === true);
+    const sourceKind = isDemo ? "demo" : jobId ? "job" : isEvo ? evoHasSeries ? "evolution" : "evolution_summary" : "none";
     const capabilities = _BT_RESULT_CAPABILITIES[sourceKind];
-    const hasSource = sourceKind === "job" || sourceKind === "evolution";
+    const hasSource = sourceKind === "job" || sourceKind === "evolution" || sourceKind === "evolution_summary";
     const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
     const load = useCallback_btc(() => {
       const requestState = resultRequestRef.current;
@@ -26313,6 +26323,9 @@ def signal_sell(pos, bar, ind):
         }
       } else {
         url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+        if (range) {
+          url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+        }
       }
       _btFetchJson(url, 8e3, controller.signal).then((j) => {
         if (!btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
@@ -26329,7 +26342,7 @@ def signal_sell(pos, bar, ind):
     const loadMc = useCallback_btc(() => {
       const requestState = mcRequestRef.current;
       if (requestState.controller) requestState.controller.abort();
-      if (isDemo || !baseUrl || !jobId) {
+      if (isDemo || !baseUrl || !jobId && !isEvo) {
         requestState.controller = null;
         setMc(null);
         setMcLoading(false);
@@ -26340,7 +26353,7 @@ def signal_sell(pos, bar, ind):
       mcRequestRef.current = { seq, controller };
       const expectedKey = sourceKey;
       setMcLoading(true);
-      let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
+      let url = baseUrl + "/bt/analysis/montecarlo?n=2000&" + (jobId ? "job_id=" + encodeURIComponent(jobId) : "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no));
       if (range) {
         url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
       }
@@ -26352,7 +26365,7 @@ def signal_sell(pos, bar, ind):
       }).finally(() => {
         if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
       });
-    }, [baseUrl, isDemo, jobId, sourceKey, range]);
+    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
     useEffect_btc(() => {
       sourceKeyRef.current = sourceKey;
       setResult(null);
@@ -26507,7 +26520,7 @@ def signal_sell(pos, bar, ind):
         const buy = spec.buy || result.buy || "\u2014";
         const sell = spec.sell || result.sell || "\u2014";
         const period = spec.start && spec.end ? `${spec.start}~${spec.end}` : result.period || "\u2014";
-        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm", href: "/ui/chart-replay", title: "\uC774 \uC870\uAC74\uC2DD \uC2E0\uD638 \uB9E5\uB77D\uC744 \uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778" }, "\u25B6 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778"));
+        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm", href: "/?tab=replay", title: "\uC774 \uC870\uAC74\uC2DD \uC2E0\uD638 \uB9E5\uB77D\uC744 \uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778" }, "\u25B6 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778"));
       })(), range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
         "span",
         {

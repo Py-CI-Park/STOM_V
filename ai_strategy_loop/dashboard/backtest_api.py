@@ -1275,7 +1275,7 @@ def get_result(
         return _demo_result()
     # 진화 세대 경로 — 잡 매니저를 거치지 않고 loop_runs.db(읽기 전용)에서 직접.
     if not job_id and run_id and gen_no is not None:
-        return _result_for_run(run_id, int(gen_no))
+        return _result_for_run(run_id, int(gen_no), t_start, t_end)
     manager = get_job_manager()
     record = manager.get(job_id, log_tail=0)
     if not record.get("available"):
@@ -1322,6 +1322,24 @@ def _analysis_for_job(
 ) -> List[Dict[str, Any]]:
     """잡 결과 CSV → trades 리스트(분석 개별 엔드포인트 공용, 옵션 매수시간 범위 필터)."""
     csv_path = get_job_manager().result_csv_path(job_id)
+    trades = analysis.load_trades_csv(csv_path)
+    return analysis.filter_trades(trades, t_start, t_end)
+
+
+def _analysis_for_run(
+    run_id: str, gen_no: int, t_start: Optional[int] = None, t_end: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    """진화 세대 CSV → trades 리스트(잡과 동일 계약). 세대/CSV 없음이면 빈 목록(무예외).
+
+    세대 결과도 잡과 같은 거래 CSV 를 남기므로 몬테카를로·구간 분석 입력 표본이 실제로
+    존재한다. 이 헬퍼가 없던 동안 세대 결과는 '표본 없음'으로 잘못 안내됐다.
+    """
+    row = _gen_row_readonly(run_id, int(gen_no))
+    if row is None:
+        return []
+    csv_path = _resolve_gen_csv(row)
+    if not csv_path:
+        return []
     trades = analysis.load_trades_csv(csv_path)
     return analysis.filter_trades(trades, t_start, t_end)
 
@@ -1423,19 +1441,24 @@ def evo_generations(run_id: str = "") -> Dict[str, Any]:
     return {"items": items, "count": len(items), "run_id": run_id}
 
 
-def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
+def _result_for_run(
+    run_id: str, gen_no: int, t_start: Optional[int] = None, t_end: Optional[int] = None
+) -> Dict[str, Any]:
     """run/gen 세대 → 잡 결과(/bt/result)와 동일 스키마 응답(무예외).
 
-    csv_path 존재 시 풀 분석(잡과 동일 묶음). CSV 부재 시 generations 행 메트릭
-    요약 + 빈 분석 구조(차트/분석 생략, 카드만). 세대 없음이면 available=False.
+    csv_path 존재 시 풀 분석(잡과 동일 묶음, t_start/t_end 구간 한정 지원). CSV 부재 시
+    generations 행 메트릭 요약 + 빈 분석 구조(차트/분석 생략, 카드만). 세대 없음이면
+    available=False.
     """
     row = _gen_row_readonly(run_id, gen_no)
     if row is None:
         return {"available": False, "run_id": run_id, "gen_no": gen_no}
     csv_path = _resolve_gen_csv(row)
     if csv_path:
-        bundle = analysis.full_analysis(csv_path)
+        ranged = t_start is not None or t_end is not None
+        bundle = analysis.full_analysis(csv_path, t_start, t_end)
         return {
+            "ranged": ranged,
             "available": True,
             "run_id": run_id,
             "gen_no": gen_no,
@@ -1665,11 +1688,25 @@ def analysis_montecarlo(
     ruin_pct: float = 30.0,
     t_start: Optional[int] = None,
     t_end: Optional[int] = None,
+    run_id: str = "",
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
-    """몬테카를로 — 일별 손익 셔플 재배열로 MDD/최종손익 분포·파산확률·팬차트."""
+    """몬테카를로 — 일별 손익 셔플 재배열로 MDD/최종손익 분포·파산확률·팬차트.
+
+    입력 경로는 /bt/result 와 같다: job_id(완료 잡) 또는 run_id+gen_no(진화 세대).
+    세대도 같은 거래 CSV 를 남기므로 동일한 표본으로 계산한다.
+    """
     n = max(0, min(int(n), _MC_MAX_N))
-    trades = _analysis_for_job(job_id, t_start, t_end)
-    return {"job_id": job_id, "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct)}
+    if not job_id and run_id and gen_no is not None:
+        trades = _analysis_for_run(run_id, int(gen_no), t_start, t_end)
+    else:
+        trades = _analysis_for_job(job_id, t_start, t_end)
+    return {
+        "job_id": job_id,
+        "run_id": run_id,
+        "gen_no": gen_no,
+        "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct),
+    }
 
 
 @backtest_router.get("/analysis/orderflow")
