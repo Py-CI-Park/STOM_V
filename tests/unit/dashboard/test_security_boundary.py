@@ -136,6 +136,7 @@ def test_top_level_v4_navigation_without_origin_issues_session_cookie(
 @pytest.mark.parametrize(
     "path",
     [
+        "/",
         "/ui/",
         "/ui/evolution",
         "/ui/evolution/records",

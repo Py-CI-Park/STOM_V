@@ -39,7 +39,10 @@ MAX_WEBSOCKET_MESSAGE_CHARS: Final = 128 * 1024
 #   V4 graph-first 승격(2026-07-17)으로 정본 진입이 /ui/·/ui/evolution·/ui/backtest·
 #   /ui/chart-replay 로 이동했으나 부트스트랩이 /ui/v4 에만 고정돼, 정본 경로 진입 시
 #   세션 미발급 → /ws 가 4401 session_required 로 무한 거부되던 회귀를 교정(UXR-P2).
+#   v5.11.2: 진입점을 정본 루트로 통합하면서 "/" 가 셸을 직접 서빙하게 됐다. 부트스트랩
+#   목록에 "/" 를 넣지 않으면 새 방문자가 세션 없이 셸을 받아 /ws 가 다시 4401 로 거부된다.
 BOOTSTRAP_PATHS: Final = frozenset({
+    "/",
     "/ui/",
     "/ui/v4", "/ui/v4/",
     "/ui/evolution",
