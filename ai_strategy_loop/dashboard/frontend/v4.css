@@ -1658,6 +1658,7 @@
 /* v5.11.2 — one chart is one evidence unit across Live, Backtest, and History. */
 :root {
   --bt-analysis-card-height: 520px;
+  --bt-analysis-plot-height: 300px;
   --dashboard-utility-card-height: 460px;
 }
 .bt-analysis-matrix {
@@ -1680,8 +1681,28 @@
 }
 .bt-analysis-matrix > .chart-frame > .panel,
 .bt-analysis-matrix > .panel > .panel-bd { flex: 1 1 auto; min-height: 0; }
-.bt-analysis-matrix .chart-wrap,
-.bt-analysis-matrix svg { width: 100%; min-height: 270px; max-height: 310px; }
+/* 카드 겉높이만 같고 그래프 높이가 제각각이면 같은 매트릭스로 읽히지 않는다.
+   플롯 박스와 svg 를 같은 토큰으로 고정한다. `.bt-result-flow .panel svg{max-height:420px}`
+   보다 선택자 특정도가 같고 뒤에 오므로 이 규칙이 이긴다(2026-07-26 실측 회귀 수정). */
+.bt-analysis-matrix .panel .chart-wrap,
+.bt-analysis-matrix .chart-frame .chart-wrap,
+.bt-analysis-matrix .chart-wrap {
+  width: 100%;
+  height: var(--bt-analysis-plot-height);
+  min-height: var(--bt-analysis-plot-height);
+  max-height: var(--bt-analysis-plot-height);
+  overflow: hidden;
+}
+.bt-analysis-matrix .panel svg,
+.bt-analysis-matrix .chart-frame svg,
+.bt-analysis-matrix .chart-wrap svg,
+.bt-analysis-matrix svg.bt-plot-svg {
+  width: 100%;
+  height: var(--bt-analysis-plot-height);
+  min-height: var(--bt-analysis-plot-height);
+  max-height: var(--bt-analysis-plot-height);
+  display: block;
+}
 .bt-analysis-matrix .chart-frame-fallback { margin-top: auto; }
 .bt-analysis-unavailable { justify-content: stretch; }
 .bt-monthly-calendar-scroll { min-height: 310px; padding: 8px 0; }

@@ -86,7 +86,10 @@ function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
   const sx = v => padL + ((v - xMin) / xr) * iw;
   const sy = v => padT + ih - ((v - yMin) / yr) * ih;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }} role="img" aria-label={`${xLab} 대 ${yLab} 산점도`}>
+    // 플롯 높이는 매트릭스 공통 토큰(.bt-plot-svg)이 정한다 — 인라인 height 를 두면
+    //   같은 매트릭스 안에서 카드마다 그래프 높이가 달라진다(2026-07-26 실측 372/303/420px).
+    <svg viewBox={`0 0 ${W} ${H}`} className="bt-plot-svg" preserveAspectRatio="none"
+         role="img" aria-label={`${xLab} 대 ${yLab} 산점도`}>
       <line x1={padL} y1={padT + ih} x2={padL + iw} y2={padT + ih} stroke="var(--line)" />
       <line x1={padL} y1={padT} x2={padL} y2={padT + ih} stroke="var(--line)" />
       {yMin < 0 && yMax > 0 && <line x1={padL} y1={sy(0)} x2={padL + iw} y2={sy(0)} stroke="var(--line-2)" strokeDasharray="3 3" />}

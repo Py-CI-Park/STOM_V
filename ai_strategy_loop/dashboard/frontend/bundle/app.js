@@ -26109,39 +26109,59 @@ def signal_sell(pos, bar, ind):
     const xr = xMax - xMin || 1, yr = yMax - yMin || 1;
     const sx = (v) => padL + (v - xMin) / xr * iw;
     const sy = (v) => padT + ih - (v - yMin) / yr * ih;
-    return /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, style: { width: "100%", height: "auto" }, role: "img", "aria-label": `${xLab} \uB300 ${yLab} \uC0B0\uC810\uB3C4` }, /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }), /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }), yMin < 0 && yMax > 0 && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: sy(0), x2: padL + iw, y2: sy(0), stroke: "var(--line-2)", strokeDasharray: "3 3" }), pts.map((p, i) => /* @__PURE__ */ React.createElement(
-      "circle",
-      {
-        key: i,
-        cx: sx(p.x),
-        cy: sy(p.y),
-        r: 2.6,
-        fill: colorFn ? colorFn(p) : p.y >= 0 ? "var(--teal)" : "var(--red)",
-        fillOpacity: 0.65
-      }
-    )), ols && /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: sx(xMin),
-        y1: sy(ols.a + ols.b * xMin),
-        x2: sx(xMax),
-        y2: sy(ols.a + ols.b * xMax),
-        stroke: "var(--violet)",
-        strokeWidth: 2,
-        strokeDasharray: "6 3"
-      }
-    ), /* @__PURE__ */ React.createElement("text", { x: padL + iw / 2, y: H - 6, textAnchor: "middle", fontSize: "10.5", fill: "var(--ink-3)" }, xLab), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        x: 12,
-        y: padT + ih / 2,
-        textAnchor: "middle",
-        fontSize: "10.5",
-        fill: "var(--ink-3)",
-        transform: `rotate(-90 12 ${padT + ih / 2})`
-      },
-      yLab
-    ));
+    return (
+      // 플롯 높이는 매트릭스 공통 토큰(.bt-plot-svg)이 정한다 — 인라인 height 를 두면
+      //   같은 매트릭스 안에서 카드마다 그래프 높이가 달라진다(2026-07-26 실측 372/303/420px).
+      /* @__PURE__ */ React.createElement(
+        "svg",
+        {
+          viewBox: `0 0 ${W} ${H}`,
+          className: "bt-plot-svg",
+          preserveAspectRatio: "none",
+          role: "img",
+          "aria-label": `${xLab} \uB300 ${yLab} \uC0B0\uC810\uB3C4`
+        },
+        /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }),
+        /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }),
+        yMin < 0 && yMax > 0 && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: sy(0), x2: padL + iw, y2: sy(0), stroke: "var(--line-2)", strokeDasharray: "3 3" }),
+        pts.map((p, i) => /* @__PURE__ */ React.createElement(
+          "circle",
+          {
+            key: i,
+            cx: sx(p.x),
+            cy: sy(p.y),
+            r: 2.6,
+            fill: colorFn ? colorFn(p) : p.y >= 0 ? "var(--teal)" : "var(--red)",
+            fillOpacity: 0.65
+          }
+        )),
+        ols && /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: sx(xMin),
+            y1: sy(ols.a + ols.b * xMin),
+            x2: sx(xMax),
+            y2: sy(ols.a + ols.b * xMax),
+            stroke: "var(--violet)",
+            strokeWidth: 2,
+            strokeDasharray: "6 3"
+          }
+        ),
+        /* @__PURE__ */ React.createElement("text", { x: padL + iw / 2, y: H - 6, textAnchor: "middle", fontSize: "10.5", fill: "var(--ink-3)" }, xLab),
+        /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            x: 12,
+            y: padT + ih / 2,
+            textAnchor: "middle",
+            fontSize: "10.5",
+            fill: "var(--ink-3)",
+            transform: `rotate(-90 12 ${padT + ih / 2})`
+          },
+          yLab
+        )
+      )
+    );
   }
   var _BTQ_DOW = ["\uC77C", "\uC6D4", "\uD654", "\uC218", "\uBAA9", "\uAE08", "\uD1A0"];
   function BtQuantPanel({ analysis }) {
